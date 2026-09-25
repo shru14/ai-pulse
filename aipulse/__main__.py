@@ -5,7 +5,7 @@ import sys
 import threading
 import time
 import traceback
-from datetime import datetime
+from datetime import date, datetime, timedelta, timezone
 
 from . import cluster, store
 from .collect import collect, reclassify, resummarize, retag
@@ -100,7 +100,6 @@ def main():
         if never:
             print(f"  {len(never)} sources not fetched yet")
     elif a.cmd == "bills":
-        from datetime import date, datetime, timedelta, timezone
         from . import bills
         conn = store.connect(a.db)
         since = datetime.now(timezone.utc) - timedelta(days=a.us_days) if a.us_days else None

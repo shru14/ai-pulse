@@ -450,6 +450,13 @@ def test_command_line_entry_point_starts(tmp_path):
     assert run("--help").returncode == 0
     result = run("sources")
     assert result.returncode == 0 and "sources checked" in result.stdout
+    result = run("build", "--out", str(tmp_path / "site"))
+    assert result.returncode == 0 and (tmp_path / "site" / "data.json").exists()
+    # An import inside main() makes that name local to all of main(), so the other commands crash on it
+    # (UnboundLocalError); collect can't run here (network), so check for it directly.
+    from aipulse import __main__ as cli
+    code = cli.main.__code__
+    assert not set(code.co_varnames + code.co_cellvars) & set(vars(cli)), "a module-level name is re-imported in main()"
 
 
 def test_every_us_state_is_on_the_us_map():
