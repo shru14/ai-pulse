@@ -1,0 +1,14 @@
+# Local database and its backups (the published site starts from data/seed.db)
+aipulse.db
+aipulse.db-*
+aipulse.db.bak-*
+
+# Logs and local-only files
+*.log
+server.err
+tunnel-url.txt
+site/
+
+__pycache__/
+.pytest_cache/
+.claude/

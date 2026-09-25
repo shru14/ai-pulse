@@ -1,0 +1,69 @@
+{
+ "actions": [
+  {
+   "actionCode": "H11100",
+   "actionDate": "2026-09-24",
+   "committees": [
+    {
+     "name": "Oversight and Government Reform Committee",
+     "systemCode": "hsgo00",
+     "url": "https://api.congress.gov/v3/committee/house/hsgo00?format=json"
+    }
+   ],
+   "sourceSystem": {
+    "code": 2,
+    "name": "House floor actions"
+   },
+   "text": "Referred to the Committee on Education and Workforce, and in addition to the Committee on Oversight and Government Reform, for a period to be subsequently determined by the Speaker, in each case for consideration of such provisions as fall within the jurisdiction of the committee concerned.",
+   "type": "IntroReferral"
+  },
+  {
+   "actionCode": "H11100",
+   "actionDate": "2026-09-24",
+   "committees": [
+    {
+     "name": "Education and Workforce Committee",
+     "systemCode": "hsed00",
+     "url": "https://api.congress.gov/v3/committee/house/hsed00?format=json"
+    }
+   ],
+   "sourceSystem": {
+    "code": 2,
+    "name": "House floor actions"
+   },
+   "text": "Referred to the Committee on Education and Workforce, and in addition to the Committee on Oversight and Government Reform, for a period to be subsequently determined by the Speaker, in each case for consideration of such provisions as fall within the jurisdiction of the committee concerned.",
+   "type": "IntroReferral"
+  },
+  {
+   "actionCode": "Intro-H",
+   "actionDate": "2026-09-24",
+   "sourceSystem": {
+    "code": 9,
+    "name": "Library of Congress"
+   },
+   "text": "Introduced in House",
+   "type": "IntroReferral"
+  },
+  {
+   "actionCode": "1000",
+   "actionDate": "2026-09-24",
+   "sourceSystem": {
+    "code": 9,
+    "name": "Library of Congress"
+   },
+   "text": "Introduced in House",
+   "type": "IntroReferral"
+  }
+ ],
+ "pagination": {
+  "count": 4
+ },
+ "request": {
+  "billNumber": "10578",
+  "billType": "hr",
+  "billUrl": "https://api.congress.gov/v3/bill/119/hr/10578?format=json",
+  "congress": "119",
+  "contentType": "application/json",
+  "format": "json"
+ }
+}

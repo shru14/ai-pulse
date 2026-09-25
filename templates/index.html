@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F3F4F7; --surface:#FFFFFF; --ink:#141925; --muted:#5B6275; --line:#DDE0E8;
+  --accent:#2F4FD8; --accent-soft:#E6EAFB;
+  --c-tool:#0E7C6B; --c-tool-soft:#DDF2EE;
+  --c-news:#2F4FD8; --c-news-soft:#E6EAFB;
+  --c-policy:#B4531A; --c-policy-soft:#FAE9DE;
+  --c-research:#7A3DB8; --c-research-soft:#EFE4FA;
+  --c-reg:#B02E62; --c-reg-soft:#FBE3EC;
+  --warn:#8A5300; --warn-soft:#FFF1D6;
+  --seq-1:#b7d3f6; --seq-2:#6da7ec; --seq-3:#2a78d6; --seq-4:#184f95;
+  --map-empty:#E3E6ED; --map-stroke:#FFFFFF;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F121A; --surface:#171B26; --ink:#E7E9F0; --muted:#98A0B4; --line:#2A3040;
+    --accent:#8FA3FF; --accent-soft:#222B4D;
+    --c-tool:#5CCFB9; --c-tool-soft:#15332E;
+    --c-news:#8FA3FF; --c-news-soft:#222B4D;
+    --c-policy:#F0A26E; --c-policy-soft:#3A2618;
+    --c-research:#C9A2F2; --c-research-soft:#2E2140;
+    --c-reg:#F28AB3; --c-reg-soft:#3D1C29;
+    --warn:#F5C66B; --warn-soft:#3A2E12;
+    --seq-1:#184f95; --seq-2:#2a78d6; --seq-3:#6da7ec; --seq-4:#b7d3f6;
+    --map-empty:#252B39; --map-stroke:#0F121A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F121A; --surface:#171B26; --ink:#E7E9F0; --muted:#98A0B4; --line:#2A3040;
+  --accent:#8FA3FF; --accent-soft:#222B4D;
+  --c-tool:#5CCFB9; --c-tool-soft:#15332E;
+  --c-news:#8FA3FF; --c-news-soft:#222B4D;
+  --c-policy:#F0A26E; --c-policy-soft:#3A2618;
+  --c-research:#C9A2F2; --c-research-soft:#2E2140;
+  --c-reg:#F28AB3; --c-reg-soft:#3D1C29;
+  --warn:#F5C66B; --warn-soft:#3A2E12;
+  --seq-1:#184f95; --seq-2:#2a78d6; --seq-3:#6da7ec; --seq-4:#b7d3f6;
+  --map-empty:#252B39; --map-stroke:#0F121A;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:860px;margin:0 auto}
+header.top{padding-block:28px 12px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,6vw,44px);letter-spacing:-.02em;margin:0;line-height:1}
+h1 .pulse{display:inline-block;width:.32em;height:.32em;border-radius:50%;background:var(--accent);margin-left:.12em;vertical-align:.5em;animation:beat 2.4s ease-in-out infinite}
+@keyframes beat{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+@media (prefers-reduced-motion: reduce){h1 .pulse{animation:none}}
+.sub{color:var(--muted);margin:6px 0 0;max-width:52ch}
+.status{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;line-height:1.6}
+.status b{color:var(--ink);font-weight:500}
+.health{margin-top:4px;text-align:left}
+.health summary{cursor:pointer;display:inline-block;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn);border-radius:4px;padding:1px 8px;font:500 12px var(--mono)}
+.health summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.health ul{margin:6px 0 0;padding:8px 10px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;max-width:420px;font:12px var(--body);color:var(--ink)}
+.health li + li{margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.health li span{display:block;color:var(--muted);font-family:var(--mono)}
+
+.controls{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{font:600 14px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.tab .n{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[aria-pressed="true"] .n{color:var(--bg);opacity:.7}
+.tab:focus-visible,.search:focus-visible,a:focus-visible,.tag:focus-visible,.range:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row2{display:flex;gap:8px;flex-wrap:wrap}
+.search{flex:1 1 220px;min-width:0;font:16px var(--body);padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.range{font:14px var(--body);padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+
+.day{margin-top:26px}
+.day h2{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;gap:10px;align-items:center}
+.day h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.items{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.item > :not(.cat){grid-column:2}
+.cat{grid-row:1 / span 4;align-self:start;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;white-space:nowrap;margin-top:3px}
+.cat.tool{color:var(--c-tool);background:var(--c-tool-soft)}
+.cat.news{color:var(--c-news);background:var(--c-news-soft)}
+.cat.policy{color:var(--c-policy);background:var(--c-policy-soft)}
+.cat.research{color:var(--c-research);background:var(--c-research-soft)}
+.groups{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.groups[hidden]{display:none}
+.group{font:13px var(--body);border:1px solid var(--line);background:none;color:var(--muted);padding:3px 10px;border-radius:999px;cursor:pointer}
+.group .n{font-family:var(--mono);font-size:11px;margin-left:4px;opacity:.8}
+.group[aria-pressed="true"]{color:var(--sub-c);border-color:var(--sub-c);background:var(--sub-soft)}
+.group.place-filter{color:var(--ink);border-color:var(--ink)}
+.group:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.authors{font-size:14px;color:var(--muted);margin:0}
+.cat.regulation{color:var(--c-reg);background:var(--c-reg-soft)}
+.place{font:500 12px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;cursor:pointer}
+.place:hover{border-color:var(--muted)}
+.day h2 .count{color:var(--muted);font-weight:400}
+
+.life{display:flex;flex-wrap:wrap;align-items:center;row-gap:4px;margin:6px 0 2px;padding:0;list-style:none;font:12px var(--mono);color:var(--muted)}
+.life li{display:flex;align-items:center}
+.life li + li::before{content:"";width:16px;height:2px;background:var(--line);margin:0 6px}
+.life li.done{color:var(--ink)}
+.life li.done + li.done::before{background:var(--c-reg)}
+.life li.now{font-weight:600}
+.life li.ended{color:var(--c-reg)}
+.life .when{color:var(--muted);margin-left:5px;font-weight:400}
+.us-map-title{font-family:var(--display);font-weight:700;font-size:18px;margin:26px 0 4px}
+.mapwrap{margin-top:40px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 16px 16px}
+.mapwrap[hidden]{display:none}
+.mapwrap h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0;letter-spacing:-.01em}
+.mapwrap .note{color:var(--muted);font-size:14px;margin:4px 0 12px}
+.map{position:relative}
+.map svg{display:block;width:100%;height:auto}
+.map path{fill:var(--map-empty);stroke:var(--map-stroke);stroke-width:.5;vector-effect:non-scaling-stroke}
+.map .b1{fill:var(--seq-1)} .map .b2{fill:var(--seq-2)} .map .b3{fill:var(--seq-3)} .map .b4{fill:var(--seq-4)}
+.map circle{stroke:var(--surface);stroke-width:1.5;vector-effect:non-scaling-stroke;fill:var(--map-empty)}
+.map .hit{cursor:pointer}
+.map .hit:hover,.map .hit:focus-visible{stroke:var(--ink);stroke-width:1.2;outline:none}
+.map .sel{stroke:var(--ink);stroke-width:2}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font:13px var(--body);padding:6px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,calc(-100% - 12px));z-index:2}
+.tip[hidden]{display:none}
+.tip b{font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font:12px var(--mono);color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px}
+.ranking{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+.ranking[hidden]{display:none}
+.ranking th{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.ranking td{padding:6px 8px;border-bottom:1px solid var(--line)}
+.ranking td.num,.ranking th.num{text-align:right;font-family:var(--mono)}
+.ranking button{font:inherit;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.ranking tr.sel td{background:var(--bg)}
+.item h3{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.25;margin:0;text-wrap:balance}
+.item h3 a{color:var(--ink);text-decoration:none}
+.item h3 a:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.item p{margin:0;color:var(--ink);opacity:.85;max-width:68ch}
+.meta{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px}
+.meta a{color:var(--muted)}
+.tag{font:12px var(--mono);color:var(--muted);background:none;border:1px dashed var(--line);border-radius:4px;padding:1px 6px;cursor:pointer}
+.tag:hover{color:var(--ink);border-color:var(--muted)}
+.also{grid-column:2;font-size:14px;margin-top:2px}
+.also summary{cursor:pointer;font:500 12px var(--mono);color:var(--accent);width:max-content;list-style:none}
+.also summary::-webkit-details-marker{display:none}
+.also summary::before{content:"+ ";}
+.also[open] summary::before{content:"\2212  ";}
+.also summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.also ul{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.also li{color:var(--muted)}
+.also li a{color:var(--ink)}
+.also li .src{font:12px var(--mono);color:var(--muted);margin-left:6px}
+@media (max-width:560px){
+  .status{text-align:left}
+  .item{grid-template-columns:1fr}
+  .cat{grid-row:auto;justify-self:start;margin-top:0}
+  .item > :not(.cat){grid-column:auto}
+}
+.more{display:flex;justify-content:center;margin-top:18px}
+.more button{font:600 14px var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 18px;cursor:pointer}
+.more button:hover{border-color:var(--muted)}
+.more button:disabled{cursor:progress;color:var(--muted)}
+.more button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.empty{margin-top:40px;color:var(--muted);text-align:center}
+footer{margin-top:36px;font-size:13px;color:var(--muted)}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>AI Pulse<span class="pulse" aria-hidden="true"></span></h1>
+      <p class="sub">Model and tool releases, industry news, AI policy and politics, new research papers and a day-by-day AI regulation tracker, with the source link, what it covers and the date it happened.</p>
+    </div>
+    <div class="status" id="status">Loading feed…</div>
+  </header>
+
+  <div class="controls">
+    <div class="tabs" role="group" aria-label="Category">
+      <button class="tab" id="tab-all" data-cat="all" aria-pressed="true">All <span class="n" id="n-all">0</span></button>
+      <button class="tab" id="tab-tool" data-cat="tool" aria-pressed="false">Releases &amp; tools <span class="n" id="n-tool">0</span></button>
+      <button class="tab" id="tab-news" data-cat="news" aria-pressed="false">Industry news <span class="n" id="n-news">0</span></button>
+      <button class="tab" id="tab-policy" data-cat="policy" aria-pressed="false">Policy &amp; politics <span class="n" id="n-policy">0</span></button>
+      <button class="tab" id="tab-research" data-cat="research" aria-pressed="false">Research papers <span class="n" id="n-research">0</span></button>
+      <button class="tab" id="tab-regulation" data-cat="regulation" aria-pressed="false">Regulation tracker <span class="n" id="n-regulation">0</span></button>
+    </div>
+    <div class="groups" id="placebar" hidden></div>
+    <div class="row2">
+      <input class="search" id="q" type="search" placeholder="Search titles, summaries, companies, people…" aria-label="Search">
+      <select class="range" id="range" aria-label="Time range">
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="0">All time</option>
+      </select>
+    </div>
+  </div>
+
+  <main id="feed"></main>
+  <p class="empty" id="empty" hidden></p>
+  <div class="more"><button type="button" id="more" hidden>Load more</button></div>
+  <section class="mapwrap" id="mapwrap" aria-labelledby="map-title" hidden>
+    <h2 id="map-title">Where AI rules moved</h2>
+    <p class="note" id="map-note"></p>
+    <div class="map" id="map"><div class="tip" id="tip" hidden></div></div>
+    <div class="legend" id="legend"></div>
+    <table class="ranking" id="ranking"><thead><tr><th>Jurisdiction</th><th class="num">Proposals</th><th class="num">Laws adopted</th><th class="num">Total</th></tr></thead><tbody></tbody></table>
+    <h3 class="us-map-title" id="us-title">United States by state</h3>
+    <p class="note" id="us-note"></p>
+    <div class="map" id="usmap"><div class="tip" id="ustip" hidden></div></div>
+    <div class="legend" id="uslegend"></div>
+  </section>
+  <footer>Summaries are written from the linked reporting; follow the source link for the full story.</footer>
+</div>
+
+<script>
+const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation"};
+const CATS = ["tool","news","policy","research","regulation"];
+// Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
+const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", expert:"Expert view"};
+// items: the cards loaded so far for the current tab / search / range / country (the server filters and
+// pages them); counts: cards per tab; mapTally: proposals and laws per country for the tracker's map.
+const state = {cat:"all", place:null, q:"", range:30, items:[], page:0, total:0, hasMore:false, loading:false,
+               error:false, counts:{}, mapTally:null, stories:0, status:null, places:{}, failing:[]};
+const PER_PAGE = 40;
+try{ const s = JSON.parse(localStorage.getItem("aipulse-ui")||"{}"); if(s.cat) state.cat=s.cat; if(s.range!=null) state.range=s.range; }catch(e){}
+
+// A link like /#regulation opens that tab; /?q=kotek#regulation also searches.
+if(CATS.includes(location.hash.slice(1))) state.cat = location.hash.slice(1);
+{ const q = new URLSearchParams(location.search).get("q"); if(q) state.q = q; }
+
+const $ = id => document.getElementById(id);
+function saveUI(){ try{ localStorage.setItem("aipulse-ui", JSON.stringify({cat:state.cat, range:state.range})); }catch(e){} }
+
+function domainOf(u){ try{ return new URL(u).hostname.replace(/^www\./,""); }catch(e){ return ""; } }
+function fmtDay(d){
+  const dt = new Date(d+"T12:00:00");
+  const today = new Date(); today.setHours(12,0,0,0);
+  const diff = Math.round((today - dt)/864e5);
+  const label = dt.toLocaleDateString(undefined,{weekday:"short", day:"numeric", month:"short", year:"numeric"});
+  if(diff===0) return "Today · "+label;
+  if(diff===1) return "Yesterday · "+label;
+  return label;
+}
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+
+function render(){
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.cat===state.cat)));
+  $("range").value = String(state.range);
+  CATS.forEach(c => $("n-"+c).textContent = state.counts[c] ?? 0);
+  $("n-all").textContent = state.counts.all ?? 0;
+  const tracker = state.cat==="regulation";
+  renderPlaceBar(tracker);
+  const list = state.items;  // already filtered, grouped and sorted by the server
+
+  const feed = $("feed"); feed.replaceChildren();
+  const byDay = new Map();
+  list.forEach(it => { if(!byDay.has(it.date)) byDay.set(it.date, []); byDay.get(it.date).push(it); });
+  for(const [day, its] of byDay){
+    const sec = el("section","day"); const h2 = el("h2",null,fmtDay(day));
+    if(tracker) h2.append(el("span","count", its.length+(its.length===1?" item":" items")));
+    sec.append(h2);
+    const wrap = el("div","items");
+    its.forEach(it => {
+      const art = el("article","item");
+      const life = it.lifecycle;
+      const nowStep = life && life.steps.find(st => st.stage === life.current);
+      art.append(el("span","cat "+it.category, (nowStep && nowStep.label) || (it.category==="regulation" && ACTION_LABEL[it.action]) || CAT_LABEL[it.category] || it.category));
+      const h = el("h3"); const a = el("a",null,it.title); a.href = it.url; a.target="_blank"; a.rel="noopener"; h.append(a); art.append(h);
+      if(it.authors && it.authors.length){
+        const shown = it.authors.slice(0,6).join(", ");
+        art.append(el("p","authors", shown + (it.authors.length>6 ? " +"+(it.authors.length-6)+" more" : "")));
+      }
+      if(it.summary) art.append(el("p",null,it.summary));
+      if(life) art.append(lifecycleStrip(life));
+      const meta = el("div","meta");
+      const src = el("a",null, it.source || domainOf(it.url)); src.href = it.url; src.target="_blank"; src.rel="noopener";
+      (it.jurisdictions||[]).forEach(code => {
+        const b = el("button","place",code); b.type="button"; b.title = "Show only "+placeName(code);
+        b.setAttribute("aria-label", "Filter tracker to "+placeName(code));
+        b.addEventListener("click", () => { state.cat="regulation"; state.place=code; saveUI(); load(true); });
+        meta.append(b);
+      });
+      meta.append(src, el("span",null,({research:"Published ", regulation:"Reported "}[it.category]||"Released ")+it.date));
+      // Tracker cards already show their countries as chips; don't repeat them as tags.
+      const chipNames = new Set((it.jurisdictions||[]).map(placeName));
+      (it.tags||[]).filter(t => !chipNames.has(t)).forEach(t => { const b = el("button","tag","#"+t); b.type="button"; b.addEventListener("click",()=>{ state.q=t; $("q").value=t; load(true); }); meta.append(b); });
+      art.append(meta);
+      // The same event reported by other outlets: one card, "N sources", expandable to the others.
+      if(it.also && it.also.length){
+        const d = el("details","also");
+        d.append(el("summary",null,(it.also.length+1)+" sources"));
+        const ul = el("ul");
+        it.also.forEach(o => {
+          const li = el("li"); const a = el("a",null,o.title); a.href=o.url; a.target="_blank"; a.rel="noopener";
+          li.append(a, el("span","src",(o.source||domainOf(o.url))+" · "+o.date)); ul.append(li);
+        });
+        d.append(ul); art.append(d);
+      }
+      wrap.append(art);
+    });
+    sec.append(wrap); feed.append(sec);
+  }
+  const empty = $("empty");
+  if(!list.length && !state.loading){
+    empty.hidden = false;
+    empty.textContent = state.error ? (STATIC ? "Couldn't load stories. Try reloading the page." : "Couldn't load stories. Is the server running?")
+      : state.stories ? "No stories match these filters. Try a wider time range or clear the search."
+      : "The feed is empty. The first stories appear after the next update.";
+  } else empty.hidden = true;
+  const more = $("more");
+  more.hidden = !state.hasMore;
+  more.disabled = state.loading;
+  more.textContent = state.loading ? "Loading\u2026" : "Load more ("+(state.total - list.length)+" left)";
+  $("mapwrap").hidden = !tracker;
+  if(tracker) renderMap();
+  renderStatus();
+}
+
+// Ask the server for a page of cards. reset=true starts over (new tab, search, range or country);
+// otherwise the next page is appended. Responses to superseded requests are dropped.
+let requestSeq = 0;
+async function load(reset){
+  if(!reset && (state.loading || !state.hasMore)) return;
+  const seq = ++requestSeq;
+  const page = reset ? 1 : state.page + 1;
+  const params = new URLSearchParams({page, per_page: PER_PAGE});
+  if(state.cat !== "all") params.set("category", state.cat);
+  if(state.q.trim()) params.set("q", state.q.trim());
+  if(state.range) params.set("days", state.range);
+  if(state.cat === "regulation" && state.place) params.set("place", state.place);
+  state.loading = true; render();
+  try{
+    const data = await fetchItems(params);
+    if(seq !== requestSeq) return;
+    state.items = reset ? data.items : state.items.concat(data.items);
+    Object.assign(state, {page: data.page, total: data.total, hasMore: data.hasMore, counts: data.counts,
+      mapTally: data.map || null, stories: data.stories, places: data.jurisdictions || state.places,
+      failing: data.failingSources || [], status: data.lastRun ? {lastRun: data.lastRun.ran_at} : null, error: false});
+  }catch(e){
+    if(seq !== requestSeq) return;
+    state.error = true;
+  }
+  state.loading = false;
+  render();
+}
+
+// On GitHub Pages there is no server: the build (python -m aipulse build) writes every card to data.json,
+// and the page filters, searches and pages it here, answering with what /api/items would.
+const STATIC = document.documentElement.dataset.static === "1";
+let staticData = null;
+async function fetchItems(params){
+  if(!STATIC) return (await fetch("api/items?"+params)).json();
+  if(!staticData){
+    const r = await fetch("data.json", {cache:"no-cache"});
+    if(!r.ok) throw new Error("data.json: "+r.status);
+    staticData = await r.json();
+  }
+  return staticPayload(staticData, params);
+}
+
+const fold = t => t.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
+// Every search word must start a word of some outlet's version; a light stem stands in for the server's
+// Porter stemming ("regulate" and "regulations" find "regulation", "policies" finds "policy").
+const stem = w => { const s = w.replace(/(ations?|ators?|ates?|ated|ating|ions?|ory|ies|ing|ed|es|s|ly)$/, ""); return s.length >= 4 ? s : w; };
+
+function staticPayload(d, params){
+  const days = +params.get("days") || 0, cat = params.get("category"), place = params.get("place");
+  const perPage = +params.get("per_page") || 40, page = +params.get("page") || 1;
+  const words = (fold(params.get("q") || "").match(/[\p{L}\p{N}]+/gu) || []).map(stem);
+  let since = "";
+  if(days){ const t = new Date(); t.setUTCDate(t.getUTCDate() - days); since = t.toISOString().slice(0, 10); }
+  const base = d.cards.filter(c => c.date >= since && words.every(w => c.s.includes(" "+w)));
+  const counts = {tool:0, news:0, policy:0, research:0, regulation:0};
+  base.forEach(c => { counts[c.category] = (counts[c.category] || 0) + 1; });
+  counts.all = base.length;
+  const eu = new Set(d.euMembers);
+  let list = cat ? base.filter(c => c.category === cat) : base;
+  if(place) list = list.filter(c => c.jurisdictions.includes(place) || (eu.has(place) && c.jurisdictions.includes("EU")));
+  const out = {items: list.slice((page-1)*perPage, page*perPage), page, perPage, total: list.length,
+    hasMore: page*perPage < list.length, counts, stories: d.stories, lastRun: d.lastRun,
+    jurisdictions: d.jurisdictions, failingSources: d.failingSources};
+  if(cat === "regulation"){
+    const national = {}, laws = {}; let n = 0;
+    base.filter(c => c.category === "regulation" && c.action !== "expert").forEach(c => {
+      n++;
+      c.jurisdictions.forEach(j => { national[j] = (national[j]||0) + 1; if(c.action === "law") laws[j] = (laws[j]||0) + 1; });
+    });
+    out.map = {national, laws, cards: n};
+  }
+  return out;
+}
+
+// Introduced -> passed -> signed -> in force, with the date each stage was reached (official record).
+function lifecycleStrip(life){
+  const ol = el("ol","life"); ol.setAttribute("aria-label","Lifecycle of "+life.number);
+  life.steps.forEach(st => {
+    const ended = st.stage === "vetoed" || st.stage === "withdrawn";
+    const li = el("li", [st.date ? "done" : "", st.stage === life.current ? "now" : "", ended ? "ended" : ""].filter(Boolean).join(" "));
+    li.append(document.createTextNode((st.date ? "\u2713 " : "\u25cb ") + st.label));
+    if(st.date) li.append(el("span","when",st.date));
+    else li.append(el("span","when","not yet"));
+    ol.append(li);
+  });
+  return ol;
+}
+
+function placeName(code){ return (state.places[code]||{}).name || code; }
+
+// Shown only while a country picked on the map or a card filters the tracker.
+function renderPlaceBar(tracker){
+  const box = $("placebar");
+  box.hidden = !(tracker && state.place);
+  box.replaceChildren();
+  if(box.hidden) return;
+  const c = el("button","group place-filter", "Showing "+placeName(state.place)+" ✕"); c.type="button";
+  c.setAttribute("aria-label", "Clear country filter "+placeName(state.place));
+  c.addEventListener("click", () => { state.place=null; load(true); });
+  box.append(c);
+}
+
+// ---------- Map: pre-projected world paths from /world.json, shaded by actions per jurisdiction ----------
+const world = {data:null, loading:false, paths:new Map(), dots:new Map()};
+const RANGE_LABEL = {7:"the last 7 days", 30:"the last 30 days", 90:"the last 90 days", 0:"all time"};
+
+async function loadWorld(){
+  if(world.data || world.loading) return;
+  world.loading = true;
+  try{ world.data = await (await fetch("world.json")).json(); render(); }
+  catch(e){ $("map").prepend(el("p","note","The map couldn't load; the table below has the same numbers.")); }
+}
+
+function bins(max){
+  // Four sequential classes: fixed small steps, proportional ones once counts grow.
+  const t = max <= 8 ? [1,2,4,7] : [1, Math.ceil(max*.15), Math.ceil(max*.35), Math.ceil(max*.6)];
+  for(let i=1;i<t.length;i++) if(t[i] <= t[i-1]) t[i] = t[i-1]+1;
+  return t;
+}
+
+function renderMap(){
+  // Proposals and laws per country for the whole tab (not just the loaded cards), from the server.
+  const {national, laws, cards: n} = state.mapTally || {national:{}, laws:{}, cards:0};
+  const eu = national.EU || 0;
+  const totalFor = code => (national[code]||0) + ((state.places[code]||{}).eu ? eu : 0);
+  $("map-note").textContent = n
+    ? n+" proposal"+(n===1?"":"s")+" and adopted law"+(n===1?"":"s")+" in "+RANGE_LABEL[state.range]+"."+(eu ? " EU-wide actions count for every member state." : "")+" Click a country to filter the list."
+    : "No proposals or adopted laws in "+RANGE_LABEL[state.range]+" yet.";
+
+  const values = Object.keys(state.places).filter(c => c!=="EU" && c!=="INTL").map(totalFor);
+  const t = bins(Math.max(0, ...values));
+  const cls = v => v<=0 ? "" : v>=t[3] ? "b4" : v>=t[2] ? "b3" : v>=t[1] ? "b2" : "b1";
+
+  loadWorld();
+  const box = $("map");
+  if(world.data && !box.querySelector("svg")){
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS,"svg");
+    svg.setAttribute("viewBox", world.data.viewBox); svg.setAttribute("role","group");
+    svg.setAttribute("aria-label","World map of AI regulatory actions by country");
+    // Paths are keyed by map id here; country codes are attached in paint(), since the story
+    // data (and with it the jurisdiction list) may arrive after the map.
+    world.data.countries.forEach(c => {
+      const p = document.createElementNS(NS,"path"); p.setAttribute("d", c.d);
+      p.dataset.name = c.name; svg.append(p); world.paths.set(c.id, p);
+    });
+    world.svg = svg;
+    box.append(svg);
+    const tip = $("tip");
+    const show = (target, x, y) => {
+      const code = target.dataset.code, v = code ? totalFor(code) : 0;
+      const nat = national[code]||0, shared = v - nat;
+      tip.replaceChildren(el("b",null,target.dataset.name));
+      tip.append(document.createTextNode(v ? " · "+v+" action"+(v===1?"":"s")+(shared ? " ("+nat+" national, "+shared+" EU-wide)" : "") : " · no tracked actions"));
+      tip.style.left = x+"px"; tip.style.top = y+"px"; tip.hidden = false;
+    };
+    svg.addEventListener("pointermove", e => {
+      if(!(e.target instanceof SVGPathElement || e.target instanceof SVGCircleElement)){ tip.hidden = true; return; }
+      const r = box.getBoundingClientRect(); show(e.target, e.clientX - r.left, e.clientY - r.top);
+    });
+    svg.addEventListener("pointerleave", () => { tip.hidden = true; });
+    svg.addEventListener("focusin", e => {
+      const r = box.getBoundingClientRect(), b = e.target.getBoundingClientRect();
+      show(e.target, b.left - r.left + b.width/2, b.top - r.top);
+    });
+    svg.addEventListener("focusout", () => { tip.hidden = true; });
+    const pick = e => { const code = e.target.dataset && e.target.dataset.code; if(code && totalFor(code)){ state.place = state.place===code ? null : code; load(true); } };
+    svg.addEventListener("click", pick);
+    svg.addEventListener("keydown", e => { if(e.key==="Enter" || e.key===" "){ e.preventDefault(); pick(e); } });
+  }
+  const paint = (code, node) => {
+    const v = totalFor(code);
+    node.setAttribute("class", [cls(v), v ? "hit" : "", state.place===code ? "sel" : ""].filter(Boolean).join(" "));
+    if(v){ node.setAttribute("tabindex","0"); node.setAttribute("role","button"); node.setAttribute("aria-label", placeName(code)+": "+v+" actions"); }
+    else { node.removeAttribute("tabindex"); node.removeAttribute("role"); node.removeAttribute("aria-label"); }
+  };
+  if(world.svg) Object.entries(state.places).forEach(([code, pl]) => {
+    let node = pl.mapId ? world.paths.get(pl.mapId) : world.dots.get(code);
+    if(!node && pl.dot){  // too small for the world map: draw a dot
+      node = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      node.setAttribute("cx", pl.dot[0]); node.setAttribute("cy", pl.dot[1]); node.setAttribute("r", 3.5);
+      node.dataset.name = pl.name; world.svg.append(node); world.dots.set(code, node);
+    }
+    if(!node) return;
+    node.dataset.code = code;
+    paint(code, node);
+  });
+
+  const lg = $("legend"); lg.replaceChildren();
+  const ranges = [[t[0], t[1]-1], [t[1], t[2]-1], [t[2], t[3]-1], [t[3], null]];
+  ranges.forEach(([lo, hi], i) => {
+    const s = el("span"); const sw = el("i"); sw.style.background = "var(--seq-"+(i+1)+")";
+    s.append(sw, document.createTextNode(hi===null ? lo+"+" : lo===hi ? String(lo) : lo+"–"+hi)); lg.append(s);
+  });
+  const none = el("span"); const sw0 = el("i"); sw0.style.background = "var(--map-empty)"; none.append(sw0, document.createTextNode("none")); lg.append(none);
+
+  const rows = Object.keys(national).sort((a,b) => national[b]-national[a] || placeName(a).localeCompare(placeName(b)));
+  const tb = $("ranking").querySelector("tbody"); tb.replaceChildren();
+  rows.forEach(code => {
+    const tr = el("tr"); if(state.place===code) tr.className = "sel";
+    const td = el("td"); const b = el("button",null,placeName(code)); b.type="button";
+    b.addEventListener("click", () => { state.place = state.place===code ? null : code; load(true); });
+    td.append(b);
+    const l = laws[code]||0;
+    tr.append(td, el("td","num",String(national[code]-l)), el("td","num",String(l)), el("td","num",String(national[code])));
+    tb.append(tr);
+  });
+  $("ranking").hidden = !rows.length;
+  renderUsMap(national);
+}
+
+const usMap = {data:null, loading:false, paths:new Map()};
+async function loadUsMap(){
+  if(usMap.data || usMap.loading) return;
+  usMap.loading = true;
+  try{ usMap.data = await (await fetch("us.json")).json(); render(); }
+  catch(e){ $("usmap").prepend(el("p","note","The US map couldn't load.")); }
+}
+
+function renderUsMap(national){
+  const val = st => national["US-"+st] || 0;
+  const states = Object.keys(national).filter(c => c.startsWith("US-"));
+  const n = states.reduce((sum, c) => sum + national[c], 0);
+  $("us-note").textContent = n ? "Proposals and laws named in a US state's stories, federal ones excluded. Click a state to filter the list."
+    : "No state-level proposals or laws in "+RANGE_LABEL[state.range]+" yet.";
+  const t = bins(Math.max(0, ...states.map(c => national[c])));
+  const cls = v => v<=0 ? "" : v>=t[3] ? "b4" : v>=t[2] ? "b3" : v>=t[1] ? "b2" : "b1";
+  loadUsMap();
+  const box = $("usmap");
+  if(usMap.data && !box.querySelector("svg")){
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS,"svg");
+    svg.setAttribute("viewBox", usMap.data.viewBox); svg.setAttribute("role","group");
+    svg.setAttribute("aria-label","Map of AI proposals and laws by US state");
+    usMap.data.states.forEach(st => {
+      const p = document.createElementNS(NS,"path"); p.setAttribute("d", st.d);
+      p.dataset.name = st.name; p.dataset.code = "US-"+st.id; svg.append(p); usMap.paths.set(st.id, p);
+    });
+    box.append(svg);
+    const tip = $("ustip");
+    const show = (target, x, y) => {
+      const v = national[target.dataset.code] || 0;
+      tip.replaceChildren(el("b",null,target.dataset.name));
+      tip.append(document.createTextNode(v ? " \u00b7 "+v+" proposal"+(v===1?"":"s")+" or law"+(v===1?"":"s") : " \u00b7 none tracked"));
+      tip.style.left = x+"px"; tip.style.top = y+"px"; tip.hidden = false;
+    };
+    svg.addEventListener("pointermove", e => {
+      if(!(e.target instanceof SVGPathElement)){ tip.hidden = true; return; }
+      const r = box.getBoundingClientRect(); show(e.target, e.clientX - r.left, e.clientY - r.top);
+    });
+    svg.addEventListener("pointerleave", () => { tip.hidden = true; });
+    svg.addEventListener("focusin", e => {
+      const r = box.getBoundingClientRect(), b = e.target.getBoundingClientRect();
+      show(e.target, b.left - r.left + b.width/2, b.top - r.top);
+    });
+    svg.addEventListener("focusout", () => { tip.hidden = true; });
+    const pick = e => { const code = e.target.dataset && e.target.dataset.code; if(code && national[code]){ state.place = state.place===code ? null : code; load(true); } };
+    svg.addEventListener("click", pick);
+    svg.addEventListener("keydown", e => { if(e.key==="Enter" || e.key===" "){ e.preventDefault(); pick(e); } });
+  }
+  usMap.paths.forEach((node, st) => {
+    const code = "US-"+st, v = val(st);
+    node.setAttribute("class", [cls(v), v ? "hit" : "", state.place===code ? "sel" : ""].filter(Boolean).join(" "));
+    if(v){ node.setAttribute("tabindex","0"); node.setAttribute("role","button"); node.setAttribute("aria-label", placeName(code)+": "+v); }
+    else { node.removeAttribute("tabindex"); node.removeAttribute("role"); node.removeAttribute("aria-label"); }
+  });
+  const lg = $("uslegend"); lg.replaceChildren();
+  [[t[0], t[1]-1], [t[1], t[2]-1], [t[2], t[3]-1], [t[3], null]].forEach(([lo, hi], i) => {
+    const s = el("span"); const sw = el("i"); sw.style.background = "var(--seq-"+(i+1)+")";
+    s.append(sw, document.createTextNode(hi===null ? lo+"+" : lo===hi ? String(lo) : lo+"\u2013"+hi)); lg.append(s);
+  });
+  const none = el("span"); const sw0 = el("i"); sw0.style.background = "var(--map-empty)"; none.append(sw0, document.createTextNode("none")); lg.append(none);
+}
+
+function renderStatus(){
+  const s = $("status");
+  const n = state.stories;
+  const last = state.status && state.status.lastRun;
+  const when = t => new Date(t).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+  s.replaceChildren();
+  const l1 = el("div"); l1.append(el("b",null,String(n)), document.createTextNode(" stories tracked"));
+  const l2 = el("div", null, last ? "Last update "+when(last) : "Not collected yet");
+  s.append(l1, l2);
+  // Sources that failed several collections in a row; otherwise a dead feed would just go quiet.
+  const failing = state.failing || [];
+  if(failing.length){
+    const d = el("details","health");
+    d.append(el("summary",null,"⚠ "+failing.length+" source"+(failing.length===1?"":"s")+" failing"));
+    const ul = el("ul");
+    failing.forEach(f => {
+      const li = el("li",null,f.name);
+      li.append(el("span",null,f.failures+" runs in a row · last worked "+(f.last_success ? when(f.last_success) : "never")));
+      if(f.last_error) li.append(el("span",null,f.last_error));
+      ul.append(li);
+    });
+    d.append(ul); s.append(d);
+  }
+}
+
+document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => { state.cat=b.dataset.cat; state.place=null; saveUI(); load(true); }));
+let t; $("q").addEventListener("input", e => { clearTimeout(t); t=setTimeout(()=>{ state.q=e.target.value; load(true); },250); });
+$("range").addEventListener("change", e => { state.range=Number(e.target.value); saveUI(); load(true); });
+$("more").addEventListener("click", () => load(false));
+$("q").value = state.q;
+if("IntersectionObserver" in window){
+  new IntersectionObserver(es => { if(es.some(e => e.isIntersecting)) load(false); }, {rootMargin: "600px"}).observe($("more"));
+}
+load(true);
+setInterval(() => location.reload(), 30*60*1000);
+</script>
+
+</body></html>

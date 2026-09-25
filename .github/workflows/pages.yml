@@ -1,0 +1,72 @@
+# Every 6 hours: collect new stories, then publish the static site to GitHub Pages.
+# The database is carried from run to run in the Actions cache; the first run (or one after the cache
+# was evicted) starts from data/seed.db.
+name: Collect and publish
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"  # 00:00, 06:00, 12:00, 18:00 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  collect-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore the database
+        uses: actions/cache/restore@v4
+        with:
+          path: aipulse.db
+          key: aipulse-db-${{ github.run_id }}
+          restore-keys: aipulse-db-
+
+      - name: Start from the seed if there is no saved database
+        run: "[ -f aipulse.db ] || cp data/seed.db aipulse.db"
+
+      - name: Collect
+        env:
+          CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
+        run: python -m aipulse --db aipulse.db collect
+
+      - name: Fold the write-ahead log into the database file
+        if: always()
+        run: python -c "import sqlite3; c = sqlite3.connect('aipulse.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.execute('PRAGMA journal_mode=DELETE'); c.close()"
+
+      - name: Save the database
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: aipulse.db
+          key: aipulse-db-${{ github.run_id }}
+
+      - name: Build the site
+        run: python -m aipulse --db aipulse.db build --out site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

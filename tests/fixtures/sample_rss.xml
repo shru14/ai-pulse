@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Sample</title>
+<item><title>OpenAI releases a new open-weight model</title><link>https://example.com/openai-open-model</link>
+<description>&lt;p&gt;OpenAI launched an open-weight model available via API today.&lt;/p&gt;</description>
+<pubDate>Thu, 24 Sep 2026 10:00:00 GMT</pubDate></item>
+<item><title>EU Commission opens consultation on AI Act rules</title><link>https://example.com/eu-ai-act</link>
+<description>The European Commission wants feedback on regulation guidelines for general-purpose AI.</description>
+<pubDate>Wed, 23 Sep 2026 08:00:00 GMT</pubDate></item>
+<item><title>Local bakery wins award</title><link>https://example.com/bakery</link>
+<description>Bread.</description><pubDate>Wed, 23 Sep 2026 08:00:00 GMT</pubDate></item>
+</channel></rss>

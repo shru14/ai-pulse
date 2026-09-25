@@ -1,0 +1,144 @@
+{
+ "data": [
+  {
+   "process_id": "2021-0106",
+   "label": "2021/0106(COD)",
+   "process_type": "def/ep-procedure-types/COD",
+   "process_title": {
+    "en": "Harmonised rules on Artificial Intelligence (Artificial Intelligence Act) and amending certain Union Legislative Acts\n"
+   },
+   "consists_of": [
+    {
+     "activity_date": "2024-02-13",
+     "had_activity_type": "def/ep-activities/COMMITTEE_APPROVE_PROVISIONAL_AGREEMENT",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-03-15",
+     "had_activity_type": "def/ep-activities/COMMITTEE_ADOPTING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2024-06-13",
+     "had_activity_type": "def/ep-activities/SIGNATURE",
+     "occured_at_stage": null
+    },
+    {
+     "activity_date": "2023-05-11",
+     "had_activity_type": "def/ep-activities/COMMITTEE_ADOPTING_REPORT",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2024-03-13",
+     "had_activity_type": "def/ep-activities/PLENARY_AMEND_PROPOSAL",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-03-03",
+     "had_activity_type": "def/ep-activities/COMMITTEE_TABLING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-04-20",
+     "had_activity_type": "def/ep-activities/COMMITTEE_TABLING_REPORT",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2023-06-14",
+     "had_activity_type": "def/ep-activities/PLENARY_VOTE",
+     "occured_at_stage": null
+    },
+    {
+     "activity_date": "2021-06-07",
+     "had_activity_type": "def/ep-activities/REFERRAL",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2023-05-22",
+     "had_activity_type": "def/ep-activities/TABLING_PLENARY",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-03-02",
+     "had_activity_type": "def/ep-activities/COMMITTEE_TABLING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2023-06-14",
+     "had_activity_type": "def/ep-activities/PLENARY_REFER_COMMITTEE_INTERINSTITUTIONAL_NEGOTIATIONS",
+     "occured_at_stage": null
+    },
+    {
+     "activity_date": "2023-06-14",
+     "had_activity_type": "def/ep-activities/PLENARY_AMEND",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-09-05",
+     "had_activity_type": "def/ep-activities/COMMITTEE_ADOPTING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-03-29",
+     "had_activity_type": "def/ep-activities/COMMITTEE_TABLING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2024-03-13",
+     "had_activity_type": "def/ep-activities/PLENARY_VOTE_RESULTS",
+     "occured_at_stage": null
+    },
+    {
+     "activity_date": "2021-12-10",
+     "had_activity_type": "def/ep-activities/COMMITTEE_TABLING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2024-03-13",
+     "had_activity_type": "def/ep-activities/PLENARY_VOTE",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-06-14",
+     "had_activity_type": "def/ep-activities/COMMITTEE_ADOPTING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2024-03-12",
+     "had_activity_type": "def/ep-activities/PLENARY_DEBATE",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2023-06-13",
+     "had_activity_type": "def/ep-activities/PLENARY_DEBATE",
+     "occured_at_stage": null
+    },
+    {
+     "activity_date": "2024-07-12",
+     "had_activity_type": "def/ep-activities/PUBLICATION_OFFICIAL_JOURNAL",
+     "occured_at_stage": null
+    },
+    {
+     "activity_date": "2023-06-14",
+     "had_activity_type": "def/ep-activities/PLENARY_VOTE_RESULTS",
+     "occured_at_stage": null
+    },
+    {
+     "activity_date": "2022-07-12",
+     "had_activity_type": "def/ep-activities/COMMITTEE_ADOPTING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-06-15",
+     "had_activity_type": "def/ep-activities/COMMITTEE_ADOPTING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    },
+    {
+     "activity_date": "2022-02-21",
+     "had_activity_type": "def/ep-activities/COMMITTEE_TABLING_OPINION",
+     "occured_at_stage": "http://publications.europa.eu/resource/authority/procedure-phase/RDG1"
+    }
+   ]
+  }
+ ]
+}
