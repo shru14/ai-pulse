@@ -89,8 +89,14 @@ for bills updated since the last sync; the one-time backfill is:
 python -m aipulse bills --eu-since 2019 --us-days 30
 ```
 
-Set your congress.gov key for the scheduled tasks with `setx CONGRESS_API_KEY your-key` (then restart the
-tasks). Not connected yet: US state legislatures (needs an Open States API key) and the OECD.AI policy
+The key is read from the `CONGRESS_API_KEY` environment variable and never stored in the repository:
+
+- **GitHub Actions** (the public site): repository secret `CONGRESS_API_KEY` (Settings → Secrets and
+  variables → Actions); the workflow passes it to the collect step. The shared `DEMO_KEY` doesn't work
+  there, since every GitHub runner shares its limit.
+- **This PC** (the scheduled tasks): `setx CONGRESS_API_KEY your-key`, then restart the tasks.
+
+To replace the key, request a new one at https://api.congress.gov/sign-up/ and update both places. Not connected yet: US state legislatures (needs an Open States API key) and the OECD.AI policy
 database (no public API).
 
 US stories also record their state (`US-OR` next to `US`, from state names, governors and abbreviations
@@ -199,7 +205,8 @@ database between runs in the Actions cache and starts from `data/seed.db` when t
 
 1. Push this folder to a **public** GitHub repository.
 2. Settings → Pages → Source: **GitHub Actions**.
-3. Optional: Settings → Secrets and variables → Actions → `CONGRESS_API_KEY`.
+3. Settings → Secrets and variables → Actions → New repository secret `CONGRESS_API_KEY` (US bill
+   stages; without it congress.gov refuses GitHub's servers and shows as a failing source).
 
 The site is then at `https://<user>.github.io/<repo>/`. GitHub pauses scheduled workflows in a repository
 with no commits for 60 days; it emails a warning, and one click (or any commit) turns them back on.
