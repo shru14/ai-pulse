@@ -10,7 +10,8 @@ or company behind it:
 
 - **Professors**: new arXiv papers (CS and ML categories) by about 80 leading AI professors across North
   America, Europe, Asia, the Middle East and Oceania (`PROFESSORS` in `aipulse/sources.py`). A paper is kept
-  only when one of its authors matches a listed name exactly, which filters out namesakes
+  only when one of its authors matches a listed name exactly, which filters out namesakes. Papers come
+  from arXiv's daily lists of new papers per category (`rss.arxiv.org`), which cloud servers can read
 - **Big tech and frontier labs**: papers claimed on Hugging Face Daily Papers by one of the companies in
   `COMPANIES` (Google/DeepMind, Microsoft, Meta, Apple, Amazon, NVIDIA, Alibaba/Qwen, Tencent, ByteDance,
   DeepSeek, OpenAI, Anthropic and others), plus Apple's own paper feed
@@ -111,8 +112,8 @@ asks for 40 cards at a time ("Load more" appears at the bottom and also loads by
 ## Source health
 
 Every fetch is retried when a host is busy: HTTP 429 (rate limit) and 5xx errors and network timeouts
-wait 2s, then 6s (or the server's `Retry-After`, up to 60s) before giving up. arXiv and Hugging Face
-always list their latest papers, so an empty reply from them is retried too and counts as a failure if
+wait 2s, then 6s (or the server's `Retry-After`, up to 60s) before giving up. Hugging Face
+always lists its latest papers, so an empty reply from it is retried too and counts as a failure if
 it stays empty. Each source's last attempt, last success, failures in a row and last error are stored,
 and the page header shows "⚠ N sources failing" once a source has failed 3 collections in a row (click
 it for details). One good fetch clears the warning.

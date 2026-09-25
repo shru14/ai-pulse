@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<rss xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+  <channel>
+    <title>cs.AI updates on arXiv.org</title>
+    <item>
+      <title>Robot Learning from Play at Scale</title>
+      <link>https://arxiv.org/abs/2609.00001</link>
+      <description>arXiv:2609.00001v1 Announce Type: new 
+Abstract: We train a robot policy on ten thousand hours of undirected play data.</description>
+      <arxiv:announce_type>new</arxiv:announce_type>
+      <dc:creator>Jane Q. Doe, Chelsea Finn, Sergey Levine</dc:creator>
+      <pubDate>Fri, 25 Sep 2026 00:00:00 -0400</pubDate>
+    </item>
+    <item>
+      <title>A Cross-Listed Paper on Alignment</title>
+      <link>https://arxiv.org/abs/2609.00002</link>
+      <description>arXiv:2609.00002v1 Announce Type: cross 
+Abstract: Alignment &amp; oversight for language models.</description>
+      <arxiv:announce_type>cross</arxiv:announce_type>
+      <dc:creator>A. Person and Percy Liang</dc:creator>
+      <pubDate>Fri, 25 Sep 2026 00:00:00 -0400</pubDate>
+    </item>
+    <item>
+      <title>An Old Paper, Revised</title>
+      <link>https://arxiv.org/abs/2401.00003</link>
+      <description>arXiv:2401.00003v4 Announce Type: replace 
+Abstract: Revised.</description>
+      <arxiv:announce_type>replace</arxiv:announce_type>
+      <dc:creator>Sergey Levine</dc:creator>
+      <pubDate>Fri, 25 Sep 2026 00:00:00 -0400</pubDate>
+    </item>
+  </channel>
+</rss>

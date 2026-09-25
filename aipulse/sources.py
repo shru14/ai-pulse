@@ -28,7 +28,7 @@ adopted law in a recognisable country; see collect.apply_regulation.
 Add, remove or edit entries freely. Any RSS 2.0 or Atom feed works.
 """
 
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import quote_plus
 
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
@@ -48,7 +48,9 @@ SOURCES = [
     {"name": "The Decoder", "url": "https://the-decoder.com/feed/", "category": "news"},
 
     # --- Policy and politics ---
-    {"name": "EU AI Act Newsletter", "url": "https://artificialintelligenceact.substack.com/feed", "category": "policy"},
+    # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
+    # the publisher's own site feed carries its explainers and analysis.
+    {"name": "EU AI Act Newsletter", "url": "https://artificialintelligenceact.eu/feed/", "category": "policy"},
     {"name": "Google News: AI regulation",
      "url": "https://news.google.com/rss/search?q=%22AI%22+(regulation+OR+legislation+OR+%22AI+Act%22+OR+executive+order)+when:2d&hl=en-US&gl=US&ceid=US:en",
      "category": "policy"},
@@ -191,31 +193,21 @@ ARXIV_CATEGORIES = ["cs.AI", "cs.LG", "cs.CL", "cs.CV", "cs.RO", "cs.CR", "cs.MA
 ARXIV_ETHICS_CATEGORIES = ["cs.CY", "cs.AI", "cs.HC", "cs.LG", "cs.CL"]
 
 
-def arxiv_author_url(names: list[str], categories=ARXIV_CATEGORIES, max_results: int = 50) -> str:
-    authors = " OR ".join(f'au:"{n}"' for n in names)
-    cats = " OR ".join(f"cat:{c}" for c in categories)
-    query = {"search_query": f"({authors}) AND ({cats})", "sortBy": "submittedDate",
-             "sortOrder": "descending", "max_results": max_results}
-    return "http://export.arxiv.org/api/query?" + urlencode(query)
+def arxiv_rss_url(categories) -> str:
+    return "https://rss.arxiv.org/rss/" + "+".join(categories)
 
 
-_names = [n for n, _ in PROFESSORS]
-for i in range(0, len(_names), 10):
-    chunk = _names[i : i + 10]
-    SOURCES.append({
-        "name": "arXiv", "label": f"arXiv: {chunk[0]} + {len(chunk) - 1} professors",
-        "url": arxiv_author_url(chunk), "category": "research",
-        "ai_only": True, "max_age_days": 14, "pause": 3, "professors": chunk, "expect_entries": True,
-    })
-
-_expert_names = [n for n, _, _ in EXPERTS]
-for i in range(0, len(_expert_names), 10):
-    chunk = _expert_names[i : i + 10]
-    SOURCES.append({
-        "name": "arXiv", "label": f"arXiv: {chunk[0]} + {len(chunk) - 1} scholars",
-        "url": arxiv_author_url(chunk, ARXIV_ETHICS_CATEGORIES), "category": "regulation",
-        "ai_only": True, "max_age_days": 14, "pause": 3, "professors": chunk, "expert": True, "expect_entries": True,
-    })
+# Each day's new arXiv papers in these categories, kept only when a listed person is an author. (arXiv's
+# search API would find them by name, but it refuses requests from cloud servers such as GitHub Actions.)
+# The lists are empty on weekends and holidays, when arXiv announces nothing.
+SOURCES += [
+    {"name": "arXiv", "label": f"arXiv new papers: {len(PROFESSORS)} professors", "format": "arxiv_rss",
+     "url": arxiv_rss_url(ARXIV_CATEGORIES), "category": "research", "ai_only": True, "max_age_days": 14,
+     "professors": [n for n, _ in PROFESSORS]},
+    {"name": "arXiv", "label": f"arXiv new papers: {len(EXPERTS)} scholars", "format": "arxiv_rss",
+     "url": arxiv_rss_url(ARXIV_ETHICS_CATEGORIES), "category": "regulation", "ai_only": True, "max_age_days": 14,
+     "professors": [n for n, _, _ in EXPERTS], "expert": True},
+]
 
 SOURCES += [
     # Papers big tech and frontier labs claim on Hugging Face (listed professors are matched here too).

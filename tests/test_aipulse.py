@@ -589,3 +589,24 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     assert {p.name for p in (tmp_path / "site").iterdir()} >= {"world.json", "us.json", ".nojekyll"}
+
+
+def test_arxiv_rss_splits_authors_and_skips_revisions(tmp_path):
+    entries = feeds.parse_arxiv_rss((FIX / "sample_arxiv_rss.xml").read_bytes())
+    assert [e["url"][-5:] for e in entries] == ["00001", "00002"]  # the "replace" item is left out
+    assert entries[0]["authors"] == ["Jane Q. Doe", "Chelsea Finn", "Sergey Levine"]
+    assert entries[1]["authors"] == ["A. Person", "Percy Liang"]
+    assert entries[0]["summary"].startswith("We train a robot policy")  # "arXiv:... Announce Type" dropped
+    assert entries[1]["summary"] == "Alignment & oversight for language models."
+    conn = store.connect(tmp_path / "t.db")
+    src = [{"name": "arXiv", "url": "x", "format": "arxiv_rss", "category": "research", "ai_only": True,
+            "professors": ["Sergey Levine", "Fei-Fei Li"]}]
+    collect(conn, src, max_age_days=100000, fetcher=lambda u: (FIX / "sample_arxiv_rss.xml").read_bytes(),
+            log=lambda *_: None)
+    assert [(i["title"], i["tags"]) for i in store.query(conn)] == [("Robot Learning from Play at Scale", ["Sergey Levine"])]
+
+
+def test_sources_avoid_hosts_that_block_cloud_servers():
+    # The site is built on GitHub Actions: arXiv's search API (406) and Substack (Cloudflare 403) refuse it.
+    from aipulse.sources import SOURCES
+    assert not [s["url"] for s in SOURCES if "export.arxiv.org/api" in s["url"] or "substack.com" in s["url"]]

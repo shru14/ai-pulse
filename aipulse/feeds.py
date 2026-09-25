@@ -148,4 +148,27 @@ def parse_hf_daily(json_bytes: bytes) -> list[dict]:
     return entries
 
 
-PARSERS = {"feed": parse, "hf_daily": parse_hf_daily}
+ARXIV = "{http://arxiv.org/schemas/atom}"
+_ARXIV_PREFIX = re.compile(r"^arXiv:\S+\s+Announce Type:\s*\S+\s*(Abstract:\s*)?", re.I)
+
+
+def parse_arxiv_rss(xml_bytes: bytes) -> list[dict]:
+    """rss.arxiv.org: each day's new papers in some categories. Its author field is one comma-separated
+    string, and the abstract starts with "arXiv:<id> Announce Type: new Abstract:". Revised versions of
+    older papers ("replace") are left out; new papers and cross-lists are kept."""
+    entries = []
+    for it in ET.fromstring(xml_bytes).iter("item"):
+        if (_text(it.find(f"{ARXIV}announce_type")) or "new").startswith("replace"):
+            continue
+        authors = re.split(r",\s*|\s+and\s+", html.unescape(_text(it.find(f"{DC}creator")) or ""))
+        entries.append({
+            "title": clean_text(_text(it.find("title")), 200),
+            "url": _text(it.find("link")),
+            "summary": clean_text(_ARXIV_PREFIX.sub("", html.unescape(_text(it.find("description")) or "").strip())),
+            "published": parse_date(_text(it.find("pubDate"))),
+            "authors": [n for a in authors if (n := clean_text(a, 80))],
+        })
+    return entries
+
+
+PARSERS = {"feed": parse, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss}
