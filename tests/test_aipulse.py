@@ -102,6 +102,16 @@ def test_regulatory_action_and_jurisdiction():
     assert classify.regulatory_action("EU businesses urge China to adopt comprehensive AI law") != "law"
     assert jurisdictions.detect("New Mexico passes AI law") == ["US"]  # a US state, not Mexico
     assert jurisdictions.detect("Latin America weighs AI rules") == []
+    assert jurisdictions.detect('Family dressed in "Lake America" sweatshirts') == []
+
+
+def test_policy_search_story_about_a_private_person_is_news():
+    # A place that only describes a person or business doesn't keep a story under "policy".
+    for title in ['The bank executive who used AI to dress her family in "Lake America" sweatshirts is no longer employed',
+                  "Michigan CEO loses job after posting AI-made image of her family in 'Lake America' sweaters",
+                  "Michigan credit union CEO out after posting AI photo"]:
+        assert classify.categorize(title, "", "policy") == "news", title
+    assert classify.categorize("Maryland Sets AI Guardrails as States Confront Data Center Boom", "", "policy") == "policy"
 
 
 def test_policy_needs_action_and_place_to_become_regulation():

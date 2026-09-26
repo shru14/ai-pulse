@@ -229,12 +229,22 @@ def retag(conn) -> int:
 
 
 def reclassify(conn) -> int:
-    """Re-run the regulation rules over stored policy and regulation stories. Returns how many changed."""
+    """Re-run the sorting and regulation rules over stored policy and regulation stories.
+    Returns how many changed."""
     changed = 0
     for it in store.query(conn, None, None, None, limit=100000):
         if it["category"] not in ("policy", "regulation") or it["action"] == EXPERT:
             continue
         before = (it["category"], it["jurisdictions"], it["action"] or None)
+        if it["category"] == "policy" and it["source"] not in bills.OFFICIAL_SOURCES:
+            # A story only reaches "policy" from a policy feed or by scoring as policy, so re-sorting
+            # with "policy" as the default drops the ones a policy search picked up by mistake.
+            text = "" if brief.is_draft(it["summary"]) else it["summary"]
+            it["category"] = classify.categorize(it["title"], text, "policy")
+            if it["category"] != "policy":
+                store.set_regulation(conn, it["id"], it["category"], [], None)
+                changed += 1
+                continue
         apply_regulation(it)
         if (it["category"], it["jurisdictions"], it["action"]) != before:
             store.set_regulation(conn, it["id"], it["category"], it["jurisdictions"], it["action"])

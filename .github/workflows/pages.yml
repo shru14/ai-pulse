@@ -48,6 +48,10 @@ jobs:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
         run: python -m aipulse --db aipulse.db collect
 
+      # Stored stories keep the category they got when collected; this applies rule fixes to them too.
+      - name: Re-sort stored stories with the current rules
+        run: python -m aipulse --db aipulse.db reclassify
+
       - name: Fold the write-ahead log into the database file
         if: always()
         run: python -c "import sqlite3; c = sqlite3.connect('aipulse.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.execute('PRAGMA journal_mode=DELETE'); c.close()"

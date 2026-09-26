@@ -20,7 +20,7 @@ JURISDICTIONS: dict[str, tuple] = {
                                     r"\bEDPB\b", r"European Data Protection", r"EU AI Act", r"AI Office", r"Brussels",
                                     r"Council of the EU", r"\bMEPs?\b"]),
     "US": ("United States", "840", [r"\bU\.S\.(?!\w)", r"\bUS\b", r"\bUSA\b", r"United States",
-                                    r"(?<!Latin )(?<!South )(?<!Central )\bAmerica(ns?)?\b", r"\bCongress",
+                                    r"(?<!Latin )(?<!South )(?<!Central )(?<!Lake )(?<!Captain )(?<!Bank of )\bAmerica(ns?)?\b", r"\bCongress",
                                     r"White House", r"\bFTC\b", r"Federal Trade Commission", r"\bFCC\b", r"\bSEC\b",
                                     r"\bFDA\b", r"\bNIST\b", r"\bDOJ\b", r"Justice Department", r"Trump administration",
                                     r"\bCalifornia", r"\bColorado", r"\bTexas", r"New York(?! Times)", r"\bIllinois",
@@ -47,7 +47,7 @@ JURISDICTIONS: dict[str, tuple] = {
     "MY": ("Malaysia", "458", [r"\bMalaysia"]),
     "TH": ("Thailand", "764", [r"\bThailand\b", r"\bThai\b"]),
     "VN": ("Vietnam", "704", [r"\bVietnam", r"Viet Nam"]),
-    "PH": ("Philippines", "608", [r"\bPhilippine", r"\bFilipino"]),
+    "PH": ("Philippines", "608", [r"\bPhilippine", r"\bFilipino", r"\bCHEd\b"]),
     "PK": ("Pakistan", "586", [r"\bPakistan"]),
     "BD": ("Bangladesh", "050", [r"\bBangladesh"]),
     "AU": ("Australia", "036", [r"\bAustralia", r"\bCanberra\b", r"\beSafety\b"]),
@@ -112,15 +112,29 @@ _patterns = {code: re.compile("|".join(v[2])) for code, v in JURISDICTIONS.items
 _OBJECT = re.compile(r"\b(with|against|on|toward|towards|urg(e|es|ed|ing)|asks?|pressures?)\s+(the\s+)?$", re.I)
 
 
-def _in_order(text: str, actors_only: bool) -> list[str]:
+# A place right before these describes a person or business, not a government acting:
+# "Michigan CEO loses job", "Michigan credit union CEO out", "Texas startup raises $50M".
+_PRIVATE = re.compile(r"^\s+(?:[\w'’-]+\s+){0,2}?(CEOs?|executives?|execs?|founders?|bosses|boss|man|men|woman|"
+                      r"women|teens?|students?|couples?|family|families|startups?|compan(y|ies)|firms?|banks?|"
+                      r"credit unions?)\b", re.I)
+
+
+def _in_order(text: str, actors_only: bool, governments_only: bool = False) -> list[str]:
     hits = []
     for code, pattern in _patterns.items():
         for m in pattern.finditer(text):
             if actors_only and _OBJECT.search(text[max(0, m.start() - 20) : m.start()]):
                 continue
+            if governments_only and _PRIVATE.search(text[m.end() : m.end() + 40]):
+                continue
             hits.append((m.start(), code))
             break
     return [code for _, code in sorted(hits)]
+
+
+def acting(title: str) -> list[str]:
+    """Places named in the headline as governments acting, with no fallback: [] for "Michigan CEO loses job"."""
+    return _in_order(title, True, governments_only=True)
 
 
 def detect(title: str, summary: str = "", limit: int = 4, actors_only: bool = False) -> list[str]:

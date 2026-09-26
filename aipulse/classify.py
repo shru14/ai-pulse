@@ -74,7 +74,7 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
         return "news"
     if tool >= 3 and tool > policy:
         return "tool"
-    if default == "policy" and policy == 0 and regulatory_action(title) is None and not jurisdictions.detect(title):
+    if default == "policy" and policy == 0 and regulatory_action(title) is None and not jurisdictions.acting(title):
         return "news"  # a policy search picked up a story with nothing about government in it
     return default
 
