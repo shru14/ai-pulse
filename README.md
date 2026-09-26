@@ -1,7 +1,7 @@
 # AI Pulse
 
-A self-hosted briefing on what's happening in AI. AI Pulse reads company blogs, newsrooms, government
-sites and research archives every 6 hours, keeps only AI stories, sorts each into one of five streams and
+A self-hosted briefing on what's happening in AI. AI Pulse reads ~45 open sources (lab blogs, newsrooms,
+government records and research archives) every 6 hours, keeps only AI stories, sorts each into one of five streams and
 links every card to the original reporting.
 
 **Live site:** https://shru14.github.io/ai-pulse/
@@ -47,7 +47,7 @@ Or `python -m aipulse run --every-hours 6` to serve and collect on a timer in on
 | `serve` / `run` | Serve the page and JSON API / serve and collect on a timer |
 | `reclassify` | Re-run the sorting and tagging rules over stored stories (after changing them) |
 | `resummarize` | Re-clean stored headlines and summaries |
-| `backfill --since DATE` | One-time research history (see below) |
+| `backfill --since DATE` | One-time history back to 2023 (see below) |
 | `regroup` | Regroup every story into cards (one card per event) |
 | `bills` | Sync bill stages from congress.gov and the European Parliament |
 | `evaluate` | Score the sorting rules against hand-labelled stories |
@@ -76,19 +76,41 @@ removed). A summary is the description the publisher put in its own feed; a stor
 short factual line from its stream, places and companies.
 
 No AI model or paid API is used: summaries are the publishers' own text, and sorting is keyword rules.
-Only sources that allow automated access (their robots.txt and terms) are read; Google News and Bing
-News don't, so neither is used.
+
+## Sources
+
+Only free, open sources are read, and only ones whose **robots.txt allows automated access** and whose
+**terms don't restrict** showing a headline with a short description and a link (checked September 2026).
+The full list, with each feed's settings, is in `aipulse/sources.py`.
+
+| Stream | Sources |
+|---|---|
+| Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
+| Industry news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World, South China Morning Post, TechCabal |
+| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, **Federal Register** (US federal records), **GOV.UK** (UK government) |
+| Regulation tracker | European Data Protection Board, European Commission, congress.gov and European Parliament bill records, arXiv papers by ~40 ethics and law scholars |
+| Research | arXiv (new papers by ~80 professors), Hugging Face Daily Papers, Apple Machine Learning Research |
+
+**Left out on purpose:** Google News (its robots.txt disallows automated access) and Bing News (its feed
+terms allow only personal RSS readers), so neither is used for stories or summaries; BBC News (its terms
+forbid modified feeds); The New York Times, The Guardian and Wired (their terms couldn't be confirmed);
+The Register (its robots.txt disallows the feed). Before adding a source, check its robots.txt and terms.
 
 ## History back to 2023
 
-Daily collection only sees what feeds hold today, so `python -m aipulse backfill` fills the research
-history back to 1 January 2023 (`--since` for another date, `--only research|papers` for one group):
+Daily collection only sees what feeds hold today, so `python -m aipulse backfill` fills every stream back
+to 1 January 2023 (`--since` for another date, `--only feeds|official|research|papers` for one group):
 
-- **Research and expert papers:** arXiv's search API for every listed professor and scholar, and Hugging Face Daily Papers
-  day by day (from May 2023) for big tech and frontier lab papers.
+- **Feeds** (news, releases, policy): each source's own archive. Some feeds list years of posts (OpenAI,
+  Hugging Face); WordPress feeds page back in time (`?paged=2, 3, ...`: TechCrunch, The Decoder,
+  SiliconANGLE, Ars Technica, MIT Technology Review, MarkTechPost, NVIDIA, Microsoft Research, CSET,
+  AI Now, EPIC, TechCabal), read page by page until the start date.
+- **Official records:** the Federal Register and GOV.UK search APIs, one month at a time.
+- **Research and expert papers:** arXiv's search API for every listed professor and scholar, and Hugging
+  Face Daily Papers day by day (from May 2023) for big tech and frontier lab papers.
 
-It takes a couple of hours and must run on a PC (arXiv refuses cloud servers); finished searches are
-remembered, so it can be stopped and resumed. To publish the result, gzip the database to
+It takes a few hours and must run on a PC (arXiv refuses cloud servers); pages read and searches done
+are remembered, so it can be stopped and resumed. To publish the result, gzip the database to
 `data/seed.db.gz`, bump the `v2` in the workflow's database cache key, and push: the next run starts
 from the new seed. The site loads the last 90 days at once and older cards (one file per year) only
 for "All time".
@@ -146,13 +168,13 @@ row shows as "⚠ N sources failing" under the intro; `python -m aipulse sources
 ```
 aipulse/
   sources.py        feed list, professors, experts, companies
-  feeds.py          RSS/Atom fetching and parsing
+  feeds.py          fetching and parsing: RSS/Atom, arXiv, Hugging Face, Federal Register, GOV.UK
   classify.py       AI relevance, stream, tag and regulatory-action rules
   jurisdictions.py  countries, blocs and US states the tracker recognises
   brief.py          headline and summary cleaning
   brands.py         brand logos found in headlines (Simple Icons, Wikidata)
   bills.py          congress.gov and European Parliament bill stages
-  backfill.py       one-time history back to 2023
+  backfill.py       one-time history back to 2023 (feed archives, official records, papers)
   cluster.py        grouping the same event into one card
   store.py          SQLite schema, full-text search, queries
   collect.py        the collection run
@@ -164,4 +186,6 @@ tests/                unit and end-to-end tests with fixture feeds (python -m py
 ```
 
 AI company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub. Other brand
-logos: [Simple Icons](https://simpleicons.org) (CC0) or the brand's own website icon.
+logos: [Simple Icons](https://simpleicons.org) (CC0) or the brand's own website icon. Federal Register
+documents are US government works (public domain). GOV.UK items contain public sector information
+licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
