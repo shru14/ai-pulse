@@ -58,7 +58,7 @@ jobs:
       - name: Collect
         env:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
-        run: python -m aipulse --db aipulse.db collect
+        run: python -m aipulse --db aipulse.db collect --no-summaries  # the batch below does them
 
       # Summaries repaired on a PC (python -m aipulse summaries, then export-summaries): fill in weak ones.
       - name: Apply repaired summaries

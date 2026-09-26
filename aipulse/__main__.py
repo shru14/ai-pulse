@@ -21,6 +21,7 @@ def main():
 
     c = sub.add_parser("collect", help="fetch all sources once and store new stories")
     c.add_argument("--max-age-days", type=int, default=3)
+    c.add_argument("--no-summaries", action="store_true", help="skip looking up summaries for headline-only stories")
 
     s = sub.add_parser("serve", help="serve the feed page and JSON API")
     s.add_argument("--host", default="127.0.0.1")
@@ -70,7 +71,7 @@ def main():
     if a.cmd == "collect":
         print(f"[{datetime.now():%Y-%m-%d %H:%M}] Collecting")
         conn = store.connect(a.db)
-        print(f"[{datetime.now():%Y-%m-%d %H:%M}] Added {collect(conn, max_age_days=a.max_age_days)} new stories.")
+        print(f"[{datetime.now():%Y-%m-%d %H:%M}] Added {collect(conn, max_age_days=a.max_age_days, summaries=not a.no_summaries)} new stories.")
     elif a.cmd == "serve":
         store.connect(a.db).close()
         serve(a.db, a.host, a.port)

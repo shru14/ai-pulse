@@ -49,7 +49,7 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
 
 
 def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, log=print,
-            official_bills: bool | None = None, backfill: bool = False) -> int:
+            official_bills: bool | None = None, backfill: bool = False, summaries: bool = True) -> int:
     """official_bills: also sync bill stages from congress.gov and the European Parliament
     (default: only for the configured SOURCES, not for test feeds).
     backfill: a history run (aipulse/backfill.py). Its one-off searches stay out of source health, and
@@ -162,10 +162,11 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     if backfill:
         return added  # the backfill regroups and looks up logos once, at the end
     cluster.assign(conn)  # put new stories on the same card as other outlets' versions, and on bills' cards
-    try:
-        refresh_summaries(conn, fetcher, log=log)
-    except Exception as e:
-        log(f"  summaries: {e}")
+    if summaries:  # off on GitHub, where the separate summaries batch gets Google's rate limit to itself
+        try:
+            refresh_summaries(conn, fetcher, log=log)
+        except Exception as e:
+            log(f"  summaries: {e}")
     try:  # look up brand logos for recent cards now, so the page finds them cached
         brands.add_logos(conn, store.cards(conn, days=30, limit=1000)[0], lookups=300)
     except Exception as e:
