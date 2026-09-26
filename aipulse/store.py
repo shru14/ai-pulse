@@ -286,10 +286,13 @@ def cards(conn: sqlite3.Connection, category=None, q=None, days=None, place=None
     if leads:
         ids = [c["id"] for c in leads]
         also: dict[str, list[dict]] = {}
-        marks = ",".join("?" * len(ids))
-        for r in conn.execute(f"SELECT title, source, url, date, cluster FROM items WHERE cluster IN ({marks})"
-                              f" AND id != cluster ORDER BY date, added_at", ids):
-            also.setdefault(r["cluster"], []).append({k: r[k] for k in ("title", "source", "url", "date")})
+        # In batches: SQLite caps the values one query can take, and the static build asks for every card.
+        for i in range(0, len(ids), 900):
+            batch = ids[i:i + 900]
+            marks = ",".join("?" * len(batch))
+            for r in conn.execute(f"SELECT title, source, url, date, cluster FROM items WHERE cluster IN ({marks})"
+                                  f" AND id != cluster ORDER BY date, added_at", batch):
+                also.setdefault(r["cluster"], []).append({k: r[k] for k in ("title", "source", "url", "date")})
         for c in leads:
             c["also"] = also.get(c["id"], [])
             if c.get("bill"):  # a tracked bill: its lifecycle timeline

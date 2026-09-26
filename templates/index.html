@@ -178,6 +178,7 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .mchart{position:relative;margin-top:14px;overflow-x:auto;overscroll-behavior-x:contain}
 .mchart svg{display:block}
+.mchart .mhidden{margin:6px 0 0;font-size:13px;color:var(--muted);position:sticky;left:0}
 .mchart .grid{stroke:var(--line);stroke-width:1}
 .mchart .tick{font:11px var(--mono);fill:var(--muted)}
 .mchart .lane{font:600 13px var(--body);fill:var(--ink)}
@@ -185,6 +186,7 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .mchart .lanebg{fill:var(--bg)}
 .mchart .dot{fill:var(--c-tool);stroke:var(--surface);stroke-width:2}
 .mchart .dot.open{fill:var(--surface);stroke:var(--c-tool);stroke-width:2.5}
+.mchart .dot.soon{fill:var(--surface);stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2 2}
 .mchart .hit{fill:transparent;cursor:pointer}
 .mchart g.m:hover .dot,.mchart g.m:focus-visible .dot{stroke:var(--ink);stroke-width:2.5}
 .mchart g.m:focus-visible{outline:none}
@@ -196,24 +198,14 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .mlegend span{display:inline-flex;align-items:center;gap:6px}
 .mkey{width:10px;height:10px;border-radius:50%;background:var(--c-tool);display:inline-block}
 .mkey.open{background:var(--surface);box-shadow:inset 0 0 0 2.5px var(--c-tool)}
+.mkey.soon{background:var(--surface);border:1.5px dashed var(--muted)}
+.msrc a{color:inherit}
+.muses{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.muses button{font:600 13px var(--body);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px;cursor:pointer}
+.muses button:hover{color:var(--ink);border-color:var(--muted)}
+.muses button[aria-pressed="true"]{color:var(--ink);background:var(--c-tool-soft);border-color:var(--c-tool)}
+.muses button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .msrc{margin-left:auto;font-size:12px}
-.mtable-wrap{overflow-x:auto;margin-top:14px}
-.mtable{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}
-.mtable th{text-align:left;padding:0;border-bottom:1px solid var(--line);white-space:nowrap}
-.mtable th button{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:0;padding:8px;cursor:pointer;width:100%;text-align:inherit}
-.mtable th[aria-sort] button{color:var(--ink)}
-.mtable th button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.mtable td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
-.mtable .num{text-align:right;font-family:var(--mono);font-size:13px}
-.mtable a{color:var(--ink);text-decoration:none;font-weight:600}
-.mtable a:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
-.mtable .lab{display:inline-flex;align-items:center;gap:8px;color:var(--muted);vertical-align:middle;line-height:1.2}
-.mtable .lab svg{width:16px;height:16px;flex:none}
-.mtable .w{font:12px var(--mono);color:var(--muted)}
-.mtable .w a{font-weight:500;color:var(--c-tool)}
-.mmore{margin-top:10px;font:600 13px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
-.mmore:hover{border-color:var(--muted)}
-.mmore:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .feedhead{font-family:var(--display);font-weight:700;font-size:20px;margin:28px 0 0;letter-spacing:-.01em}
 @media (max-width:560px){ .models{padding:12px} .msrc{margin-left:0} }
 .item h3{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.25;margin:0;text-wrap:balance}
@@ -289,22 +281,32 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   <section class="models" id="models" aria-labelledby="models-title" hidden>
     <div class="mhead">
       <div>
-        <h2 id="models-title">New models</h2>
+        <h2 id="models-title">Notable models</h2>
         <p class="mnote" id="models-note"></p>
       </div>
-      <div class="seg" id="mweights" role="group" aria-label="Show models">
-        <button type="button" data-w="all" aria-pressed="true">All</button>
-        <button type="button" data-w="open" aria-pressed="false">Open weights</button>
-        <button type="button" data-w="closed" aria-pressed="false">Closed</button>
+      <div class="seg" id="maccess" role="group" aria-label="Access">
+        <button type="button" data-a="all" aria-pressed="true">All</button>
+        <button type="button" data-a="open" aria-pressed="false">Open weights</button>
+        <button type="button" data-a="api" aria-pressed="false">API</button>
+        <button type="button" data-a="app" aria-pressed="false">App only</button>
       </div>
+    </div>
+    <div class="muses" id="muses" role="group" aria-label="What it's for">
+      <button type="button" data-u="all" aria-pressed="true">All uses</button>
+      <button type="button" data-u="language" aria-pressed="false">Language</button>
+      <button type="button" data-u="coding" aria-pressed="false">Coding</button>
+      <button type="button" data-u="vision" aria-pressed="false">Vision &amp; multimodal</button>
+      <button type="button" data-u="image-video" aria-pressed="false">Image &amp; video</button>
+      <button type="button" data-u="speech" aria-pressed="false">Speech &amp; audio</button>
+      <button type="button" data-u="science" aria-pressed="false">Science</button>
+      <button type="button" data-u="robotics" aria-pressed="false">Robotics</button>
     </div>
     <div class="mchart" id="mchart"><div class="mtip" id="mtip" hidden></div></div>
     <div class="mlegend">
-      <span><i class="mkey"></i>Closed weights</span><span><i class="mkey open"></i>Open weights</span>
-      <span class="msrc">Release = date added to OpenRouter · click a dot for the model page</span>
+      <span><i class="mkey"></i>API or app</span><span><i class="mkey open"></i>Open weights</span>
+      <span><i class="mkey soon"></i>Announced, not released</span>
+      <span class="msrc">Notable models: <a href="https://epoch.ai/data/notable-ai-models" target="_blank" rel="noopener">Epoch AI</a> (CC BY 4.0) · prices: OpenRouter</span>
     </div>
-    <div class="mtable-wrap"><table class="mtable" id="mtable"><thead></thead><tbody></tbody></table></div>
-    <button type="button" class="mmore" id="mmore" hidden></button>
   </section>
   <h2 class="feedhead" id="feedhead" hidden>Release news</h2>
   <main id="feed"></main>
@@ -521,11 +523,15 @@ function cardIcon(it){
 }
 
 // ---------- Releases: model tracker. Models from OpenRouter (aipulse/models.py), one lane per lab. ----------
-const mview = {weights:"all", sort:"released", dir:-1, all:false};
+const mview = {access:"all", use:"all"};
+const USE_LABEL = {language:"Language", coding:"Coding", vision:"Vision & multimodal", "image-video":"Image & video",
+                   speech:"Speech & audio", science:"Science", robotics:"Robotics"};
+const ACCESS_LABEL = {open:"Open weights", api:"API", app:"App only (no API)", unreleased:"Announced, not released"};
+const fmtParams = p => !p ? "" : p >= 1e12 ? (p/1e12).toFixed(1).replace(/\.0$/,"")+"T params" : p >= 1e9 ? Math.round(p/1e9)+"B params" : Math.round(p/1e6)+"M params";
 const LAB_LOGO = {qwen:"Alibaba", nvidia:"Nvidia", "meta llama":"Meta", "mistral ai":"Mistral", "x-ai":"xAI", spacexai:"xAI"};
 const fmtCtx = n => !n ? "—" : n >= 1e6 ? (n/1e6).toFixed(n % 1e6 >= 1e5 ? 1 : 0)+"M" : Math.round(n/1000)+"K";
 const fmtPrice = v => v == null ? "—" : v === 0 ? "Free" : "$"+(v < 0.1 ? v.toFixed(3) : v < 10 ? v.toFixed(2) : v.toFixed(0));
-const modelUrl = m => "https://openrouter.ai/"+m.id;
+const modelUrl = m => m.link || (m.router_id ? "https://openrouter.ai/"+m.router_id : "");
 const dayMs = 864e5, toDay = s => Date.parse(s+"T00:00:00Z");
 
 // A lab's logo as an <svg> (the page's own for the big AI labs, else the one the server found), or null.
@@ -548,8 +554,9 @@ function labLogo(m){
 function shownModels(){
   const q = state.q.trim().toLowerCase();
   return (state.models || []).filter(m =>
-    (mview.weights === "all" || (mview.weights === "open") === !!m.weights) &&
-    (!q || (m.name+" "+m.lab+" "+m.id).toLowerCase().includes(q)));
+    (mview.access === "all" || m.access === mview.access) &&
+    (mview.use === "all" || (m.uses || "").split(",").includes(mview.use)) &&
+    (!q || (m.name+" "+m.lab).toLowerCase().includes(q)));
 }
 
 function renderModels(){
@@ -557,29 +564,36 @@ function renderModels(){
   box.hidden = !(tool && state.models);
   $("feedhead").hidden = !tool || box.hidden;
   if(box.hidden) return;
-  document.querySelectorAll("#mweights button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.w === mview.weights)));
+  document.querySelectorAll("#maccess button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.a === mview.access)));
+  document.querySelectorAll("#muses button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.u === mview.use)));
   const list = shownModels();
-  const labs = new Set(list.map(m => m.lab)), open = list.filter(m => m.weights).length;
-  const span = {7:"in the last 7 days", 30:"in the last 30 days", 90:"in the last 90 days", 0:"so far"}[state.range];
+  const labs = new Set(list.map(m => m.lab)), open = list.filter(m => m.access === "open").length;
+  const span = {7:"in the last 7 days", 30:"in the last 30 days", 90:"in the last 90 days", 0:"since January 2023"}[state.range];
+  const what = (mview.use === "all" ? "" : USE_LABEL[mview.use].toLowerCase()+" ") + "model";
   $("models-note").textContent = list.length
-    ? list.length+" model"+(list.length===1?"":"s")+" from "+labs.size+" lab"+(labs.size===1?"":"s")+" "+span+" · "+open+" with open weights"
-    : "No new models "+span+(state.q.trim() ? " matching your search" : "")+".";
+    ? list.length+" notable "+what+(list.length===1?"":"s")+" from "+labs.size+" lab"+(labs.size===1?"":"s")+" "+span+
+      (mview.access === "all" ? " · "+open+" with open weights" : "")
+    : "No notable "+what+"s "+span+(state.q.trim() ? " matching your search" : "")+". Try a longer time range.";
   renderModelChart(list);
-  renderModelTable(list);
 }
 
 function renderModelChart(list){
   const box = $("mchart"), tip = $("mtip");
-  box.querySelectorAll(":scope > svg").forEach(s => s.remove()); tip.hidden = true;
+  box.querySelectorAll(":scope > svg, :scope > .mhidden").forEach(s => s.remove()); tip.hidden = true;
   if(!list.length) return;
   // Lanes: the busiest labs (by models in view), the rest folded into "Other labs".
   const byLab = new Map();
   list.forEach(m => { if(!byLab.has(m.lab)) byLab.set(m.lab, []); byLab.get(m.lab).push(m); });
   let lanes = [...byLab.entries()].sort((a,b) => b[1].length - a[1].length || (a[1][0].released < b[1][0].released ? 1 : -1));
-  const MAX = 8;
-  if(lanes.length > MAX){
-    const rest = lanes.slice(MAX-1).flatMap(l => l[1]);
-    lanes = lanes.slice(0, MAX-1).concat([["Other labs ("+(lanes.length-MAX+1)+")", rest, true]]);
+  // A lane for the rest only while it stays readable; over long ranges it would be a smear of dots.
+  const MAX = 8, rest = lanes.slice(MAX-1).flatMap(l => l[1]), restLabs = lanes.length - MAX + 1;
+  let hidden = "";
+  if(lanes.length > MAX && rest.length <= 24){
+    lanes = lanes.slice(0, MAX-1).concat([["Other labs ("+restLabs+")", rest, true]]);
+  } else if(lanes.length > MAX){
+    lanes = lanes.slice(0, MAX);
+    const more = lanes.length ? rest.length - lanes[MAX-1][1].length : 0;
+    hidden = "+ "+more+" more from "+(restLabs-1)+" other labs. Pick a use or a shorter range to see them.";
   }
   const today = toDay(new Date().toISOString().slice(0,10));
   const first = state.range ? today - state.range*dayMs : Math.min(...list.map(m => toDay(m.released)));
@@ -589,7 +603,7 @@ function renderModelChart(list){
   const x = t => X0 + (t - first) / Math.max(dayMs, today - first) * (W - X0 - PR);
   const svg = document.createElementNS(SVG_NS,"svg");
   svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", "0 0 "+W+" "+H);
-  svg.setAttribute("role","img"); svg.setAttribute("aria-label", "Timeline of "+list.length+" model releases by lab; the table below lists them");
+  svg.setAttribute("role","img"); svg.setAttribute("aria-label", "Timeline of "+list.length+" model releases by lab; each dot is focusable and names its model");
   const add = (tag, attrs, parent) => { const e = document.createElementNS(SVG_NS, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); (parent || svg).append(e); return e; };
   lanes.forEach((lane, i) => { if(i % 2 === 0) add("rect", {x:0, y:TOP + i*LH, width:W, height:LH, class:"lanebg", rx:6}); });
   // Date ticks: about six, on round steps, counted back from today.
@@ -612,68 +626,33 @@ function renderModelChart(list){
     const perDay = {};
     models.slice().sort((a,b) => a.released < b.released ? -1 : 1).forEach(m => {
       const k = (perDay[m.released] = (perDay[m.released] || 0) + 1) - 1;
-      const g = add("g", {class:"m", tabindex:0, role:"link", "aria-label": m.name+", "+m.lab+", released "+m.released});
+      const g = add("g", {class:"m", tabindex:0, role:"link", "aria-label": m.name+", "+m.lab+", "+m.released+", "+(ACCESS_LABEL[m.access] || "")});
       const cx = Math.min(W - PR, x(toDay(m.released)) + k*11);
       add("circle", {cx:cx, cy:cy, r:12, class:"hit"}, g);
-      add("circle", {cx:cx, cy:cy, r:5.5, class:"dot"+(m.weights ? " open" : "")}, g);
+      add("circle", {cx:cx, cy:cy, r:5.5, class:"dot"+(m.access === "open" ? " open" : m.access === "unreleased" ? " soon" : "")}, g);
       const show = () => {
+        const uses = (m.uses || "").split(",").filter(Boolean).map(u => USE_LABEL[u]).join(", ");
         tip.replaceChildren(el("b",null,m.name),
           el("span",null,m.lab+" · "+new Date(toDay(m.released)).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"})),
-          el("span",null,"Context "+fmtCtx(m.context)+" · "+fmtPrice(m.price_in)+" in / "+fmtPrice(m.price_out)+" out per 1M"),
-          el("span",null, m.weights ? "Open weights: "+m.weights : "Closed weights"));
+          el("span",null,[ACCESS_LABEL[m.access], fmtParams(m.params)].filter(Boolean).join(" · ")));
+        if(uses) tip.append(el("span",null,uses));
+        if(m.context) tip.append(el("span",null,"Context "+fmtCtx(m.context)+" · "+fmtPrice(m.price_in)+" in / "+fmtPrice(m.price_out)+" out per 1M"));
         tip.style.left = Math.min(Math.max(cx - box.scrollLeft, 130), box.clientWidth - 130)+"px"; tip.style.top = cy+"px"; tip.hidden = false;
       };
       g.addEventListener("pointerenter", show); g.addEventListener("focus", show);
       g.addEventListener("pointerleave", () => { tip.hidden = true; }); g.addEventListener("blur", () => { tip.hidden = true; });
-      const go = () => window.open(modelUrl(m), "_blank", "noopener");
+      const go = () => { if(modelUrl(m)) window.open(modelUrl(m), "_blank", "noopener"); };
       g.addEventListener("click", go);
       g.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); go(); } });
     });
   });
   box.append(svg);
+  if(hidden) box.append(el("p","mhidden",hidden));
   box.scrollLeft = box.scrollWidth;  // narrow screens: open on the newest releases
 }
 
-const MCOLS = [["name","Model"],["lab","Lab"],["released","Released"],["context","Context","num"],
-               ["price_in","Input $/1M","num"],["price_out","Output $/1M","num"],["weights","Weights"]];
-function renderModelTable(list){
-  const table = $("mtable"), head = table.tHead, body = table.tBodies[0];
-  head.replaceChildren(); body.replaceChildren();
-  const tr = el("tr");
-  MCOLS.forEach(([key, label, cls]) => {
-    const th = el("th", cls); th.scope = "col";
-    if(mview.sort === key) th.setAttribute("aria-sort", mview.dir < 0 ? "descending" : "ascending");
-    const b = el("button", null, label + (mview.sort === key ? (mview.dir < 0 ? " ↓" : " ↑") : "")); b.type = "button";
-    b.addEventListener("click", () => {
-      mview.dir = mview.sort === key ? -mview.dir : (key === "released" || key === "context" ? -1 : 1);
-      mview.sort = key; renderModels();
-    });
-    th.append(b); tr.append(th);
-  });
-  head.append(tr);
-  const val = (m, k) => k === "weights" ? (m.weights ? 1 : 0) : m[k] == null ? Infinity : m[k];
-  const rows = list.slice().sort((a,b) => {
-    const va = val(a, mview.sort), vb = val(b, mview.sort);
-    return (typeof va === "string" ? va.localeCompare(vb) : va - vb) * mview.dir || (a.released < b.released ? 1 : -1);
-  });
-  const LIMIT = 10, shown = mview.all ? rows : rows.slice(0, LIMIT);
-  shown.forEach(m => {
-    const r = el("tr");
-    const name = el("td"); const a = el("a", null, m.name); a.href = modelUrl(m); a.target = "_blank"; a.rel = "noopener"; a.title = m.id; name.append(a);
-    const lab = el("td"); const ls = el("span","lab"); const logo = labLogo(m); if(logo) ls.append(logo); ls.append(document.createTextNode(m.lab)); lab.append(ls);
-    const w = el("td","w");
-    if(m.weights){ const h = el("a", null, "Open ↗"); h.href = "https://huggingface.co/"+m.weights; h.target = "_blank"; h.rel = "noopener"; h.title = m.weights; w.append(h); }
-    else w.textContent = "Closed";
-    r.append(name, lab, el("td", null, m.released), el("td","num",fmtCtx(m.context)),
-             el("td","num",fmtPrice(m.price_in)), el("td","num",fmtPrice(m.price_out)), w);
-    body.append(r);
-  });
-  const more = $("mmore");
-  more.hidden = rows.length <= LIMIT;
-  more.textContent = mview.all ? "Show fewer" : "Show all "+rows.length+" models";
-}
-document.querySelectorAll("#mweights button").forEach(b => b.addEventListener("click", () => { mview.weights = b.dataset.w; renderModels(); }));
-$("mmore").addEventListener("click", () => { mview.all = !mview.all; renderModels(); });
+document.querySelectorAll("#maccess button").forEach(b => b.addEventListener("click", () => { mview.access = b.dataset.a; renderModels(); }));
+document.querySelectorAll("#muses button").forEach(b => b.addEventListener("click", () => { mview.use = b.dataset.u; renderModels(); }));
 { let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if(state.cat === "tool") renderModels(); }, 150); }); }
 
 // Summaries show three lines; the ones that are cut off get a "Read more" toggle.
@@ -722,12 +701,23 @@ async function load(reset){
 // and the page filters, searches and pages it here, answering with what /api/items would.
 const STATIC = document.documentElement.dataset.static === "1";
 let staticData = null;
+let archiveLoaded = false;
 async function fetchItems(params){
   if(!STATIC) return (await fetch("api/items?"+params)).json();
   if(!staticData){
     const r = await fetch("data.json", {cache:"no-cache"});
     if(!r.ok) throw new Error("data.json: "+r.status);
     staticData = await r.json();
+  }
+  // data.json holds about the last 90 days; "All time" also needs the yearly archive files.
+  if(!+params.get("days") && !archiveLoaded && (staticData.archive || []).length){
+    const years = await Promise.all(staticData.archive.map(async a => {
+      const r = await fetch(a.file, {cache:"no-cache"});
+      if(!r.ok) throw new Error(a.file+": "+r.status);
+      return r.json();
+    }));
+    staticData.cards = staticData.cards.concat(...years);
+    archiveLoaded = true;
   }
   return staticPayload(staticData, params);
 }

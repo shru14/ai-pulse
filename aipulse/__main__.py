@@ -36,6 +36,10 @@ def main():
     sub.add_parser("evaluate", help="score the sorting rules against hand-labelled stories")
     sub.add_parser("sources", help="show each source's health: last success, failures in a row, last error")
     sub.add_parser("regroup", help="regroup every stored story into cards (one card per event)")
+    bf = sub.add_parser("backfill", help="one-time history: every stream back to --since (default 2023-01-01)")
+    bf.add_argument("--since", default="2023-01-01", help="start date, YYYY-MM-DD")
+    bf.add_argument("--only", action="append", choices=["news", "experts", "research", "papers"],
+                    help="run just these groups (repeatable)")
     bl = sub.add_parser("bills", help="sync AI bills' stages from congress.gov and the European Parliament")
     bl.add_argument("--eu-since", type=int, help="also discover EU procedures from this year on (one-time backfill)")
     bl.add_argument("--us-days", type=int, help="look at US bills updated in the last N days (default: since last sync)")
@@ -120,6 +124,11 @@ def main():
     elif a.cmd == "build":
         from .static import build
         print(f"Wrote {build(store.connect(a.db), a.out)} cards to {a.out}/")
+    elif a.cmd == "backfill":
+        from datetime import date as _date
+        from .backfill import run as backfill
+        conn = store.connect(a.db)
+        print(f"Added {backfill(conn, _date.fromisoformat(a.since), a.only)} stories.")
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

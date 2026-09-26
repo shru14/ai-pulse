@@ -591,6 +591,25 @@ def test_static_build_holds_every_card(tmp_path):
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll"}
 
 
+def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
+    import json
+    from datetime import date
+    from aipulse.static import build
+    conn = store.connect(tmp_path / "t.db")
+    old = {"title": "OpenAI releases GPT-4 to developers", "summary": "", "url": "https://example.com/gpt4",
+           "source": "Example", "category": "tool", "date": "2023-03-14", "tags": ["OpenAI"], "authors": []}
+    store.insert(conn, old)
+    store.insert(conn, {**old, "title": "A new model this week", "url": "https://example.com/new",
+                        "date": date.today().isoformat()})
+    conn.commit()
+    build(conn, tmp_path / "site")
+    data = json.loads((tmp_path / "site" / "data.json").read_text(encoding="utf-8"))
+    assert [c["title"] for c in data["cards"]] == ["A new model this week"]  # the page loads this at once
+    assert data["archive"] == [{"file": "archive/2023.json", "cards": 1}]  # fetched for "All time"
+    year = json.loads((tmp_path / "site" / "archive" / "2023.json").read_text(encoding="utf-8"))
+    assert [c["title"] for c in year] == ["OpenAI releases GPT-4 to developers"]
+
+
 def test_arxiv_rss_splits_authors_and_skips_revisions(tmp_path):
     entries = feeds.parse_arxiv_rss((FIX / "sample_arxiv_rss.xml").read_bytes())
     assert [e["url"][-5:] for e in entries] == ["00001", "00002"]  # the "replace" item is left out
@@ -660,4 +679,51 @@ def test_models_from_openrouter(tmp_path):
     assert parsed[1]["weights"] == "Qwen/Qwen3.8-Flash" and parsed[1]["price_in"] == 0
     conn = store.connect(tmp_path / "t.db")
     assert models.save(conn, parsed) == 2 and models.save(conn, parsed) == 0  # refreshing isn't "new"
-    assert [m["name"] for m in models.recent(conn)] == ["Claude Opus 5.5", "Qwen3.8 Flash"]
+    rows = models.parse_epoch(
+        "Model,Organization,Publication date,Domain,Task,Parameters,Model accessibility,Link\n"
+        "Claude Opus 5.5,Anthropic,2026-09-22,\"Language,Multimodal\",\"Chat,Code generation\",,API access,https://a.example\n"
+        "Qwen3.8 Flash,\"Alibaba,Qwen Team\",2026-09-20,Language,Chat,30000000000,Open weights (unrestricted),\n"
+        "Veo 5,Google DeepMind,2026-09-01,Video,Text-to-video,,Hosted access (no API),\n"
+        "Old model,Meta AI,2022-11-30,Language,Chat,,Unreleased,\n")
+    assert [(r["name"], r["lab"], r["uses"], r["access"]) for r in rows] == [
+        ("Claude Opus 5.5", "Anthropic", "language,coding,vision", "api"),
+        ("Qwen3.8 Flash", "Alibaba", "language", "open"),
+        ("Veo 5", "Google", "image-video", "app")]  # 2022 is before the tracker starts
+    models.save_notable(conn, rows)
+    listed = {m["name"]: m for m in models.recent(conn)}
+    assert list(listed) == ["Claude Opus 5.5", "Qwen3.8 Flash", "Veo 5"]
+    # OpenRouter's price and context join by name; models it doesn't serve have none.
+    assert (listed["Claude Opus 5.5"]["price_in"], listed["Claude Opus 5.5"]["context"]) == (4.0, 1000000)
+    assert "price_in" not in listed["Veo 5"]
+
+
+def test_newest_models_fill_epochs_lag_from_labs_that_matter(tmp_path):
+    from aipulse import models
+    conn = store.connect(tmp_path / "t.db")
+    epoch = [{"key": f"GPT-{i}|2026-0{i}-01", "name": f"GPT-{i}", "lab": "OpenAI", "released": f"2026-0{i}-01",
+              "uses": "language", "access": "api", "params": None, "link": ""} for i in (1, 2, 3)]
+    epoch.append({"key": "Tiny|2026-08-30", "name": "Tiny", "lab": "SmallCo", "released": "2026-08-30",
+                  "uses": "language", "access": "open", "params": None, "link": ""})
+    models.save_notable(conn, epoch)
+    base = {"context": 1000000, "price_in": 2.0, "price_out": 8.0, "weights": "", "inputs": "text,image",
+            "outputs": "text", "description": ""}
+    models.save(conn, [
+        {**base, "id": "openai/gpt-4", "name": "GPT-4", "lab": "OpenAI", "released": "2026-09-05"},  # after Epoch's last
+        {**base, "id": "openai/gpt-latest", "name": "GPT Latest", "lab": "OpenAI", "released": "2026-09-05"},  # an alias
+        {**base, "id": "smallco/tiny-2", "name": "Tiny 2", "lab": "SmallCo", "released": "2026-09-05"},  # not a big lab
+        {**base, "id": "openai/gpt-0", "name": "GPT-0", "lab": "OpenAI", "released": "2026-01-01"},  # long before
+    ])
+    names = [m["name"] for m in models.recent(conn)]
+    assert "GPT-4" in names and "GPT Latest" not in names and "Tiny 2" not in names and "GPT-0" not in names
+    gpt4 = next(m for m in models.recent(conn) if m["name"] == "GPT-4")
+    assert (gpt4["uses"], gpt4["access"], gpt4["price_in"]) == ("language,vision", "api", 2.0)
+
+
+def test_cards_for_more_stories_than_sqlite_takes_in_one_query(tmp_path):
+    conn = store.connect(tmp_path / "t.db")
+    for i in range(1200):  # over SQLite's per-query limit on older builds (999)
+        store.insert(conn, {"title": f"Story number {i} about AI", "summary": "", "url": f"https://e.com/{i}",
+                            "source": "E", "category": "news", "date": "2026-09-01", "tags": [], "authors": []})
+    conn.commit()
+    cards, total = store.cards(conn, limit=10**9)
+    assert total == 1200 and len(cards) == 1200 and all(c["also"] == [] for c in cards)

@@ -27,11 +27,14 @@ Pure Python 3.10+, standard library only: nothing to install.
 - **Cards** show a logo for the company involved (or the country, or a topic symbol), a summary
   (long ones fold behind "Read more"), clickable tags, and the date and source link. The same event
   reported by several outlets is one card with "N sources".
-- **Model tracker** (top of Releases): every new model with its lab, release date, context window and
-  price per million tokens, from OpenRouter's public model list (closed and open-weight models). A timeline
-  shows one lane per lab with a dot per release (filled = closed, ring = open weights; hover for details,
-  click for the model page); the table below sorts by any column and links open weights to Hugging Face.
-  It follows the time range and search.
+- **Notable models** (top of Releases): a timeline of the models that mattered since January 2023, one lane
+  per lab and a dot per release (filled = API or app, ring = open weights, dashed = announced but not
+  released). Filter by use (Language, Coding, Vision & multimodal, Image & video, Speech & audio, Science,
+  Robotics) and access (Open weights, API, App only); hover for size, uses and, where OpenRouter serves the
+  model, context window and price per million tokens; click for the announcement or paper. The list is
+  Epoch AI's [notable models](https://epoch.ai/data/notable-ai-models) (CC BY 4.0). Epoch adds models a few
+  days after release, so until then the newest OpenRouter models from labs with three or more notable
+  models fill the gap. It follows the time range and search.
 - **Regulation tracker**: click a country chip on a card to see only that country. US bills and EU procedures show their stage,
   from introduced to in force.
 - **Light / dark** follows your system; the button in the top bar overrides it.
@@ -83,6 +86,25 @@ News, or writes a short factual draft.
 `claude-haiku-4-5-20251001`) for the summary, stream and tags instead. Without a key everything runs
 offline for free.
 
+## History back to 2023
+
+Daily collection only sees what feeds hold today, so `python -m aipulse backfill` fills every stream back
+to 1 January 2023 (`--since` for another date, `--only news|experts|research|papers` for one group):
+
+- **News, policy, regulation:** the site's own Google News searches, one month at a time, plus searches
+  standing in for the publisher and lab feeds (TechCrunch, The Verge, OpenAI, ...). Google News returns up
+  to 100 stories per search, so each month is capped at that; old headline-only stories get a short
+  draft summary.
+- **Expert views:** each scholar's Google News search, a year at a time.
+- **Research:** arXiv's search API for every listed professor and scholar, and Hugging Face Daily Papers
+  day by day (from May 2023) for big tech and frontier lab papers.
+
+It takes a couple of hours and must run on a PC (arXiv refuses cloud servers); finished searches are
+remembered, so it can be stopped and resumed. To publish the result, gzip the database to
+`data/seed.db.gz`, bump the `v2` in the workflow's database cache key, and push: the next run starts
+from the new seed. The site loads the last 90 days at once and older cards (one file per year) only
+for "All time".
+
 ## Bills from official records
 
 | Source | Stages | What you need |
@@ -99,8 +121,9 @@ One-time backfill: `python -m aipulse bills --eu-since 2019 --us-days 30`.
 
 **GitHub Pages (the public site).** `.github/workflows/pages.yml` runs every 6 hours (00, 06, 12, 18 UTC),
 on every push to `main` and on demand. It collects, re-sorts stored stories, builds the static site and
-deploys it, carrying the database between runs in the Actions cache (starting from `data/seed.db`). The
-static page filters, searches and pages `data.json` in the browser. A push shows up on the site after a
+deploys it, carrying the database between runs in the Actions cache (starting from `data/seed.db.gz`). The
+static page filters, searches and pages `data.json` (and, for "All time", the yearly `archive/` files) in
+the browser. A push shows up on the site after a
 few minutes, once collection finishes. To set up your own copy: push to a public repository, set
 Settings → Pages → Source to **GitHub Actions**, and add the `CONGRESS_API_KEY` secret.
 
@@ -141,7 +164,8 @@ aipulse/
   brief.py          headline and summary cleaning
   brands.py         brand logos found in headlines (Simple Icons, Wikidata)
   bills.py          congress.gov and European Parliament bill stages
-  models.py         new AI models from OpenRouter for the model tracker
+  models.py         notable models (Epoch AI) and API models with prices (OpenRouter)
+  backfill.py       one-time history back to 2023
   cluster.py        grouping the same event into one card
   enrich.py         optional Claude summaries
   store.py          SQLite schema, full-text search, queries
@@ -153,5 +177,5 @@ templates/index.html  the page
 tests/                unit and end-to-end tests with fixture feeds (python -m pytest -q)
 ```
 
-AI company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub. Other brand
+Notable models: [Epoch AI](https://epoch.ai/data/notable-ai-models), CC BY 4.0. AI company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub. Other brand
 logos: [Simple Icons](https://simpleicons.org) (CC0) or the brand's own website icon.

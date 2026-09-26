@@ -1,6 +1,7 @@
 # Every 6 hours: collect new stories, then publish the static site to GitHub Pages.
 # The database is carried from run to run in the Actions cache; the first run (or one after the cache
-# was evicted) starts from data/seed.db.
+# was evicted) starts from data/seed.db.gz. The "v2" in the cache key marks the seed with history back to
+# 2023 (python -m aipulse backfill); bump it whenever a new seed should replace the saved database.
 name: Collect and publish
 
 on:
@@ -37,8 +38,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: aipulse.db
-          key: aipulse-db-${{ github.run_id }}
-          restore-keys: aipulse-db-
+          key: aipulse-db-v2-${{ github.run_id }}
+          restore-keys: aipulse-db-v2-
 
       # Brand logo lookups (aipulse/brands.py), kept apart so the database's cache never changes shape.
       - name: Restore brand logos
@@ -52,7 +53,7 @@ jobs:
           restore-keys: brands-
 
       - name: Start from the seed if there is no saved database
-        run: "[ -f aipulse.db ] || cp data/seed.db aipulse.db"
+        run: "[ -f aipulse.db ] || gunzip -c data/seed.db.gz > aipulse.db"
 
       - name: Collect
         env:
@@ -72,7 +73,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: aipulse.db
-          key: aipulse-db-${{ github.run_id }}
+          key: aipulse-db-v2-${{ github.run_id }}
 
       - name: Build the site
         run: python -m aipulse --db aipulse.db build --out site

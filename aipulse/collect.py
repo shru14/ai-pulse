@@ -48,9 +48,11 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
 
 
 def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, log=print,
-            official_bills: bool | None = None) -> int:
+            official_bills: bool | None = None, backfill: bool = False) -> int:
     """official_bills: also sync bill stages from congress.gov and the European Parliament
-    (default: only for the configured SOURCES, not for test feeds)."""
+    (default: only for the configured SOURCES, not for test feeds).
+    backfill: a history run (aipulse/backfill.py). Its one-off searches stay out of source health, and
+    headline-only stories get a short draft instead of a Bing lookup each."""
     cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
     added, errors = 0, []
     use_llm = enrich.enabled()
@@ -61,7 +63,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
         except Exception as exc:  # one broken feed shouldn't stop the run
             errors.append(f"{src['name']}: {exc}")
             log(f"  ! {src['name']}: {exc}")
-            store.record_source(conn, src.get("label", src["name"]), src["url"], ok=False, error=str(exc) or type(exc).__name__)
+            if not backfill:
+                store.record_source(conn, src.get("label", src["name"]), src["url"], ok=False, error=str(exc) or type(exc).__name__)
             conn.commit()
             continue
 
@@ -94,6 +97,10 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 title, source = title.rsplit(" - ", 1)
             title = brief.clean_title(title, source)
             summary = brief.clean_summary(e["summary"], title, source)
+            if backfill:
+                from .backfill import is_noise  # forums, docs, status pages, other languages
+                if is_noise(title, source):
+                    continue
 
             ai_only = src.get("ai_only", src["category"] == "tool")
             if not ai_only and not classify.is_ai_related(title, e["summary"]):
@@ -136,10 +143,14 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                     continue  # the tracker's searches are broad; keep only proposals and laws from them
 
             if not store.exists(conn, item["url"]):
-                fill_summary(item, fetcher)
+                if backfill and not item["summary"]:
+                    item["summary"] = brief.draft(item, PLACE_NAMES)
+                else:
+                    fill_summary(item, fetcher)
             if store.insert(conn, item):
                 new_here += 1
-        store.record_source(conn, src.get("label", src["name"]), src["url"], ok=True, entries=len(entries), added=new_here)
+        if not backfill:
+            store.record_source(conn, src.get("label", src["name"]), src["url"], ok=True, entries=len(entries), added=new_here)
         conn.commit()
         added += new_here
         log(f"  {src['name']}: {new_here} new")
@@ -148,6 +159,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     if official_bills if official_bills is not None else sources is SOURCES:
         bills.sync(conn, fetcher, log=log)  # official bill stages (congress.gov, European Parliament)
         models.sync(conn, fetcher, log=log)  # new AI models for the Releases stream's tracker
+    if backfill:
+        return added  # the backfill regroups and looks up logos once, at the end
     cluster.assign(conn)  # put new stories on the same card as other outlets' versions, and on bills' cards
     try:  # look up brand logos for recent cards now, so the page finds them cached
         brands.add_logos(conn, store.cards(conn, days=30, limit=1000)[0], lookups=300)

@@ -11,7 +11,7 @@ import json
 import re
 import shutil
 import unicodedata
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import brands, jurisdictions, models, store
@@ -34,6 +34,9 @@ def search_text(conn) -> dict[str, str]:
     return {k: " " + " ".join(sorted(v)) for k, v in words.items()}
 
 
+RECENT_DAYS = 92  # a little over the page's longest range short of "All time"
+
+
 def build(conn, out: str | Path) -> int:
     """Write the static site into `out` (replaced). Returns how many cards it holds."""
     out = Path(out)
@@ -53,8 +56,22 @@ def build(conn, out: str | Path) -> int:
         c["s"] = text.get(c["id"], "")
         for k in ("added_at", "cluster"):
             c.pop(k, None)
+    # The page loads data.json at once (the 7, 30 and 90-day views); older cards go into one file per
+    # year under archive/, fetched only when someone picks "All time".
+    recent_since = (datetime.now(timezone.utc).date() - timedelta(days=RECENT_DAYS)).isoformat()
+    recent = [c for c in cards if c["date"] >= recent_since]
+    years: dict[str, list[dict]] = {}
+    for c in cards:
+        if c["date"] < recent_since:
+            years.setdefault(c["date"][:4], []).append(c)
+    if years:
+        (out / "archive").mkdir()
+    archive = []
+    for year, year_cards in sorted(years.items(), reverse=True):
+        (out / "archive" / f"{year}.json").write_text(json.dumps(year_cards, separators=(",", ":")), encoding="utf-8")
+        archive.append({"file": f"archive/{year}.json", "cards": len(year_cards)})
     health = store.source_health(conn, [s["url"] for s in SOURCES])
-    data = {"built": datetime.now(timezone.utc).isoformat(timespec="seconds"), "cards": cards,
+    data = {"built": datetime.now(timezone.utc).isoformat(timespec="seconds"), "cards": recent, "archive": archive,
             "stories": store.story_count(conn), "lastRun": store.last_run(conn),
             "jurisdictions": jurisdictions.meta(), "euMembers": sorted(EU_MEMBERS),
             "failingSources": [h for h in health if h["failing"]], "models": models.recent(conn)}
