@@ -65,16 +65,25 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .lede{margin:0;max-width:70ch;color:var(--muted);font-size:16px;line-height:1.55}
 .lede strong{color:var(--ink);font-weight:600}
 /* The five streams, explained; each opens its tab. */
-.streams{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}
+.streams{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}
 .stream{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:12px;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;cursor:pointer;box-shadow:inset 0 3px 0 var(--cat-c);transition:border-color .15s}
 .stream:hover{border-color:var(--cat-c)}
 .stream:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .stream .ico{width:32px;height:32px;border-radius:8px;margin-bottom:4px}
 .stream .ico svg{width:18px;height:18px}
 .stream b{font-weight:600;font-size:14px}
-.stream span:not(.ico){font-size:13px;line-height:1.35;color:var(--muted)}
+.stream .shead{display:flex;justify-content:space-between;align-items:flex-start;width:100%;margin-bottom:4px}
+.stream .shead .ico{margin-bottom:0}
+.stream .n{font:500 12px var(--mono);color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+.stream .desc{font-size:13px;line-height:1.35;color:var(--muted)}
+.stream[aria-pressed="true"]{border-color:var(--cat-c);background:var(--cat-soft)}
+.stream[aria-pressed="true"] .desc{color:var(--ink)}
+.stream[aria-pressed="true"] .n{color:var(--cat-c);border-color:var(--cat-c);background:var(--surface)}
+.streams.fade-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent)}
+.streams.fade-l{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 20px),transparent)}
+.streams.fade-l.fade-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 20px,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to right,transparent,#000 20px,#000 calc(100% - 20px),transparent)}
 @media (max-width:760px){
-  .streams{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-inline:-16px;padding:2px 16px}
+  .streams{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;scrollbar-width:none;margin-inline:-16px;padding:2px 16px}
   .streams::-webkit-scrollbar{display:none}
   .stream{flex:0 0 200px;scroll-snap-align:start}
 }
@@ -89,19 +98,12 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .health li span{display:block;color:var(--muted);font-family:var(--mono)}
 
 .controls{position:sticky;top:var(--bar-h);z-index:5;background:var(--bg);padding-block:12px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
-/* One row: category pills (scroll sideways when they don't fit) and the time range. */
+/* One row: the chosen stream (click to clear), search and time range. */
 .toolbar{display:flex;gap:8px;align-items:center}
-.tabs{position:relative;flex:1 1 auto;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;padding:2px}
-.tabs::-webkit-scrollbar{display:none}
-.tabs.fade-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
-.tabs.fade-l{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 32px),transparent)}
-.tabs.fade-l.fade-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent)}
-.tab{flex:none;white-space:nowrap;font:600 14px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
-.tab .n{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400}
-.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.tab[aria-pressed="true"] .n{color:var(--bg);opacity:.7}
-.tab:focus-visible,.search:focus-visible,a:focus-visible,.tag:focus-visible,.range:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.search{width:100%;font:16px var(--body);padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.catchip{flex:none;font-weight:600}
+.catchip[hidden]{display:none}
+.search:focus-visible,a:focus-visible,.tag:focus-visible,.range:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.search{flex:1 1 auto;min-width:0;font:16px var(--body);padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 .range{flex:none;font:14px var(--body);padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 
 .day{margin-top:26px}
@@ -247,24 +249,18 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
       to the original reporting.</p>
     <div class="status" id="status">Loading feed…</div>
   </div>
-  <div class="streams" aria-label="What's inside">
-    <button type="button" class="stream tool" data-cat="tool"><b>Releases</b><span>New models, product features and open-source launches</span></button>
-    <button type="button" class="stream news" data-cat="news"><b>Industry news</b><span>Funding, deals, partnerships and company moves</span></button>
-    <button type="button" class="stream policy" data-cat="policy"><b>Policy</b><span>What governments, courts and politicians are doing about AI</span></button>
-    <button type="button" class="stream research" data-cat="research"><b>Research</b><span>New papers from arXiv, top labs and leading scholars</span></button>
-    <button type="button" class="stream regulation" data-cat="regulation"><b>Regulation tracker</b><span>Bills and laws followed from proposal to force, by country</span></button>
+  <div class="streams" id="streams" role="group" aria-label="Streams: pick one to show only its stories">
+    <button type="button" class="stream tool" id="tab-tool" data-cat="tool" aria-pressed="false"><span class="shead"><span class="n" id="n-tool">0</span></span><b>Releases</b><span class="desc">New models, product features and open-source launches</span></button>
+    <button type="button" class="stream news" id="tab-news" data-cat="news" aria-pressed="false"><span class="shead"><span class="n" id="n-news">0</span></span><b>Industry news</b><span class="desc">Funding, deals, partnerships and company moves</span></button>
+    <button type="button" class="stream policy" id="tab-policy" data-cat="policy" aria-pressed="false"><span class="shead"><span class="n" id="n-policy">0</span></span><b>Policy</b><span class="desc">What governments, courts and politicians are doing about AI</span></button>
+    <button type="button" class="stream research" id="tab-research" data-cat="research" aria-pressed="false"><span class="shead"><span class="n" id="n-research">0</span></span><b>Research</b><span class="desc">New papers from arXiv, top labs and leading scholars</span></button>
+    <button type="button" class="stream regulation" id="tab-regulation" data-cat="regulation" aria-pressed="false"><span class="shead"><span class="n" id="n-regulation">0</span></span><b>Regulation tracker</b><span class="desc">Bills and laws followed from proposal to force, by country</span></button>
   </div>
 
   <div class="controls">
     <div class="toolbar">
-      <div class="tabs" id="tabs" role="group" aria-label="Category">
-        <button class="tab" id="tab-all" data-cat="all" aria-pressed="true">All <span class="n" id="n-all">0</span></button>
-        <button class="tab" id="tab-tool" data-cat="tool" aria-pressed="false">Releases <span class="n" id="n-tool">0</span></button>
-        <button class="tab" id="tab-news" data-cat="news" aria-pressed="false">Industry news <span class="n" id="n-news">0</span></button>
-        <button class="tab" id="tab-policy" data-cat="policy" aria-pressed="false">Policy <span class="n" id="n-policy">0</span></button>
-        <button class="tab" id="tab-research" data-cat="research" aria-pressed="false">Research <span class="n" id="n-research">0</span></button>
-        <button class="tab" id="tab-regulation" data-cat="regulation" aria-pressed="false">Regulation tracker <span class="n" id="n-regulation">0</span></button>
-      </div>
+      <button type="button" class="group place-filter catchip" id="catchip" hidden></button>
+      <input class="search" id="q" type="search" placeholder="Search titles, summaries, companies, people…" aria-label="Search">
       <select class="range" id="range" aria-label="Time range">
         <option value="7">7 days</option>
         <option value="30" selected>30 days</option>
@@ -273,7 +269,6 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
       </select>
     </div>
     <div class="groups" id="placebar" hidden></div>
-    <input class="search" id="q" type="search" placeholder="Search titles, summaries, companies, people…" aria-label="Search">
   </div>
 
   <section class="kpis" id="kpis" aria-label="Regulation tracker totals" hidden></section>
@@ -296,6 +291,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 <script>
 const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation"};
 const CATS = ["tool","news","policy","research","regulation"];
+const STREAM_NAME = {tool:"Releases", news:"Industry news", policy:"Policy", research:"Research", regulation:"Regulation tracker"};
 // Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
 const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", expert:"Expert view"};
 // items: the cards loaded so far for the current tab / search / range / country (the server filters and
@@ -330,11 +326,13 @@ function fmtDay(d){
 function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
 
 function render(){
-  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.cat===state.cat)));
+  document.querySelectorAll(".stream").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.cat===state.cat)));
   showActiveTab();
+  const chip = $("catchip");
+  chip.hidden = state.cat === "all";
+  if(!chip.hidden){ chip.textContent = STREAM_NAME[state.cat]+" ✕"; chip.setAttribute("aria-label", "Show all streams, not just "+STREAM_NAME[state.cat]); }
   $("range").value = String(state.range);
   CATS.forEach(c => $("n-"+c).textContent = state.counts[c] ?? 0);
-  $("n-all").textContent = state.counts.all ?? 0;
   const tracker = state.cat==="regulation";
   renderPlaceBar(tracker);
   const list = state.items;  // already filtered, grouped and sorted by the server
@@ -706,32 +704,34 @@ function renderStatus(){
   }
 }
 
-document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => { state.cat=b.dataset.cat; state.place=null; saveUI(); load(true); }));
-// On narrow screens the pills scroll sideways: fade the edge that has more, and keep the chosen pill in view.
+// On narrow screens the stream cards scroll sideways: fade the edge that has more, keep the chosen one in view.
 function tabFades(){
-  const s = $("tabs");
+  const s = $("streams");
   s.classList.toggle("fade-l", s.scrollLeft > 2);
   s.classList.toggle("fade-r", s.scrollLeft + s.clientWidth < s.scrollWidth - 2);
 }
 let shownTab = null;
 function showActiveTab(){
-  const s = $("tabs"), b = $("tab-"+state.cat);
+  const s = $("streams"), b = $("tab-"+state.cat);
   if(b && shownTab !== state.cat){
     shownTab = state.cat;
     if(b.offsetLeft < s.scrollLeft || b.offsetLeft + b.offsetWidth > s.scrollLeft + s.clientWidth)
-      s.scrollLeft = b.offsetLeft - (s.clientWidth - b.offsetWidth) / 2;
+      s.scrollLeft = b.offsetLeft - parseFloat(getComputedStyle(s).paddingLeft);  // line up with the snap point
   }
   tabFades();
 }
-$("tabs").addEventListener("scroll", tabFades, {passive:true});
+$("streams").addEventListener("scroll", tabFades, {passive:true});
+window.addEventListener("resize", tabFades);
+// Web fonts change the cards' widths after the first render.
+if(document.fonts) document.fonts.ready.then(() => { shownTab = null; showActiveTab(); });
+const pickCat = cat => { state.cat=cat; state.place=null; saveUI(); load(true); };
+// A stream card shows only that stream; clicking the chosen one again (or its chip) goes back to all.
 document.querySelectorAll(".stream").forEach(b => {
   const tile = el("span","ico"); tile.setAttribute("aria-hidden","true");
-  tile.append(svgIcon(SYMBOL[CAT_SYMBOL[b.dataset.cat]])); b.prepend(tile);
-  b.addEventListener("click", () => { state.cat=b.dataset.cat; state.place=null; saveUI(); load(true); });
+  tile.append(svgIcon(SYMBOL[CAT_SYMBOL[b.dataset.cat]])); b.querySelector(".shead").prepend(tile);
+  b.addEventListener("click", () => pickCat(state.cat === b.dataset.cat ? "all" : b.dataset.cat));
 });
-window.addEventListener("resize", tabFades);
-// Web fonts change the pills' widths after the first render.
-if(document.fonts) document.fonts.ready.then(() => { shownTab = null; showActiveTab(); });
+$("catchip").addEventListener("click", () => pickCat("all"));
 
 // The logo opens the All tab and goes back to the top of the feed.
 document.querySelectorAll("header.top a[data-cat]").forEach(a => a.addEventListener("click", e => {
