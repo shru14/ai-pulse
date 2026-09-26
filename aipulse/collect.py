@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
 import time
 from datetime import datetime, timedelta, timezone
@@ -143,8 +144,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                     continue  # the tracker's searches are broad; keep only proposals and laws from them
 
             if not store.exists(conn, item["url"]):
-                if backfill and not item["summary"]:
-                    item["summary"] = brief.draft(item, PLACE_NAMES)
+                if backfill and not item["summary"] and item["date"] < _days_ago(REFRESH_DAYS):
+                    item["summary"] = brief.draft(item, PLACE_NAMES)  # old news: a lookup each would take hours
                 else:
                     fill_summary(item, fetcher)
             if store.insert(conn, item):
@@ -162,6 +163,10 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     if backfill:
         return added  # the backfill regroups and looks up logos once, at the end
     cluster.assign(conn)  # put new stories on the same card as other outlets' versions, and on bills' cards
+    try:
+        refresh_summaries(conn, fetcher, log=log)
+    except Exception as e:
+        log(f"  summaries: {e}")
     try:  # look up brand logos for recent cards now, so the page finds them cached
         brands.add_logos(conn, store.cards(conn, days=30, limit=1000)[0], lookups=300)
     except Exception as e:
@@ -173,13 +178,80 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
 PLACE_NAMES = {code: v[0] for code, v in jurisdictions.JURISDICTIONS.items()}
 
 
+REFRESH_DAYS = 30  # stories this recent always get a real summary lookup
+
+
+def _days_ago(n: int) -> str:
+    return (datetime.now(timezone.utc) - timedelta(days=n)).date().isoformat()
+
+
+def refresh_summaries(conn, fetcher=feeds.fetch, limit: int | None = 300, log=print,
+                      since: str | None = None, recent_only: bool = True, workers: int = 1) -> int:
+    """Retry the Bing lookup for headline-only stories that ended up with a draft, nothing, or just
+    their headline (a lookup that failed, or a history run), newest first. Returns how many got one.
+
+    Every collection runs it for the last 30 days, retrying only stories added in the last 3 days so
+    each gets a few chances without being looked up forever. `python -m aipulse summaries --since
+    2026-01-01` runs it once over a longer span, several lookups at a time (`workers`)."""
+    added = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat() if recent_only else ""
+    rows = conn.execute(
+        "SELECT id, title, summary, source, url FROM items "
+        "WHERE date >= ? AND added_at >= ? AND url LIKE '%news.google.com%' ORDER BY date DESC",
+        (since or _days_ago(REFRESH_DAYS), added)).fetchall()
+    todo = [r for r in rows if _weak(r["summary"], r["title"], r["source"])][:limit]  # e.g. headline + publisher
+    lookup = functools.partial(feeds.fetch, attempts=1) if fetcher is feeds.fetch else fetcher
+    fixed = done = 0
+    # Lookups run in threads (they're network waits); the database is written from this thread only.
+    with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+        futures = {pool.submit(brief.find_summary, r["title"], r["url"], r["source"], lookup): r for r in todo}
+        for fut in as_completed(futures):
+            r, done = futures[fut], done + 1
+            snippet = fut.result()
+            if snippet:
+                store.update_text(conn, r["id"], r["title"], snippet)
+                conn.commit()  # at once: the web server and collection need the lock too
+                fixed += 1
+            if done % 200 == 0:
+                log(f"  summaries: {done}/{len(todo)} looked up, {fixed} found")
+    conn.commit()
+    if todo:
+        log(f"  summaries: {fixed} of {len(todo)} headline-only stories found on Bing News")
+    return fixed
+
+
+def _weak(summary: str, title: str, source: str) -> bool:
+    return not summary or brief.is_draft(summary) or not brief.clean_summary(summary, title, source)
+
+
+def export_summaries(conn, since: str) -> dict[str, str]:
+    """Real summaries of headline-only (Google News) stories since a date, by story id. The repair runs on
+    a PC (Google limits how fast its links can be decoded); this carries its results to the public site."""
+    rows = conn.execute("SELECT id, title, summary, source FROM items WHERE date >= ? AND url LIKE '%news.google.com%'",
+                        (since,)).fetchall()
+    return {r["id"]: r["summary"] for r in rows if not _weak(r["summary"], r["title"], r["source"])}
+
+
+def apply_summaries(conn, summaries: dict[str, str]) -> int:
+    """Fill in stories whose summary is still weak from an export_summaries() file. Returns how many changed."""
+    changed = 0
+    for i in range(0, len(summaries), 500):
+        ids = list(summaries)[i:i + 500]
+        for r in conn.execute(f"SELECT id, title, summary, source FROM items WHERE id IN ({','.join('?' * len(ids))})",
+                              ids).fetchall():
+            if _weak(r["summary"], r["title"], r["source"]):
+                store.update_text(conn, r["id"], r["title"], summaries[r["id"]])
+                changed += 1
+    conn.commit()
+    return changed
+
+
 def fill_summary(item: dict, fetcher=feeds.fetch) -> None:
     """Give a headline-only story a "what it covers" line: the lead text of the same story found on
     Bing News, else a short draft from its category, places and tags."""
     if not item["summary"] and "news.google.com" in item["url"]:
         # Lookups are optional extras: one attempt, no retry waits.
         lookup = functools.partial(feeds.fetch, attempts=1) if fetcher is feeds.fetch else fetcher
-        item["summary"] = brief.lookup_snippet(item["title"], lookup)
+        item["summary"] = brief.find_summary(item["title"], item["url"], item.get("source", ""), lookup)
     if not item["summary"]:
         item["summary"] = brief.draft(item, PLACE_NAMES)
 

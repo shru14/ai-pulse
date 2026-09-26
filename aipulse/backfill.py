@@ -110,7 +110,9 @@ def paper_sources(since: date, until: date) -> list[dict]:
 
 
 # Site searches also find a site's forums, docs, help pages and status incidents; the daily feeds don't.
-_NOT_NEWS_SOURCE = re.compile(r"Community|Developers|Help Center|Platform|Academy|academy\.|Forum|cdn\.|Status|Docs",
+# "OpenAI Help Center", "OpenAI Developer Community", "academy.openai.com" - but not "World Economic Forum".
+_NOT_NEWS_SOURCE = re.compile(r"^\S+ (Developer Community|Community|Help Center|Platform|Academy|Forum|"
+                              r"Status|Docs)$|^(academy|cdn|help|status|community|platform|developers?|docs|forum)\.",
                               re.I)
 _STATUS = re.compile(r"^(Elevated|Increased|Degraded|Partial|Major|Intermittent)\b.*\b(errors?|latency|outage|"
                      r"performance|availability)\b|^(Outage|Incident)\b", re.I)

@@ -60,6 +60,10 @@ jobs:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
         run: python -m aipulse --db aipulse.db collect
 
+      # Summaries repaired on a PC (python -m aipulse summaries, then export-summaries): fill in weak ones.
+      - name: Apply repaired summaries
+        run: python -m aipulse --db aipulse.db apply-summaries data/summaries.json
+
       # Stored stories keep the category they got when collected; this applies rule fixes to them too.
       - name: Re-sort stored stories with the current rules
         run: python -m aipulse --db aipulse.db reclassify

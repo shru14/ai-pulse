@@ -35,6 +35,8 @@ def items_payload(conn, qs: dict) -> dict:
                "hasMore": page * per_page < total, "counts": store.card_counts(conn, q, days),
                "stories": store.story_count(conn), "lastRun": store.last_run(conn),
                "jurisdictions": jurisdictions.meta(), "failingSources": [h for h in health if h["failing"]]}
+    if page == 1:  # "This week" box above the cards
+        payload["week"] = store.highlights(conn, category)
     if category == "regulation":
         payload["map"] = store.regulation_tally(conn, q, days)
     if category == "tool":  # the model tracker above the Releases cards

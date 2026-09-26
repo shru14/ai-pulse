@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import re
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
@@ -130,9 +130,11 @@ def _migrate(conn: sqlite3.Connection) -> bool:
     for column in ("cluster", "bill"):
         if column not in have:
             conn.execute(f"ALTER TABLE items ADD COLUMN {column} TEXT NOT NULL DEFAULT ''")
-    # Stories without a card of their own yet stand alone until the next regroup.
-    conn.execute("UPDATE items SET cluster = id WHERE cluster = ''")
-    conn.commit()
+    # Stories without a card of their own yet stand alone until the next regroup. Only write when
+    # there are some: opening the database shouldn't wait for another process's write lock.
+    if conn.execute("SELECT 1 FROM items WHERE cluster = '' LIMIT 1").fetchone():
+        conn.execute("UPDATE items SET cluster = id WHERE cluster = ''")
+        conn.commit()
     return rebuilt
 
 
@@ -325,6 +327,32 @@ def regulation_tally(conn: sqlite3.Connection, q=None, days=None) -> dict:
             if r[1] == "law":
                 laws[code] = laws.get(code, 0) + 1
     return {"national": national, "laws": laws, "cards": n}
+
+
+def highlights(conn: sqlite3.Connection, category=None, days: int = 7, limit: int = 3) -> list[dict]:
+    """The week's biggest cards: covered by the most outlets. Research ranks papers by the tracked
+    professors and labs behind them; the regulation tracker puts adopted laws first (no expert views)."""
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).date().isoformat()
+    where, args = ["i.cluster = i.id", "i.date >= ?"], [since]
+    if category:
+        where.append("i.category = ?")
+        args.append(category)
+    outlets = "(SELECT COUNT(*) FROM items j WHERE j.cluster = i.id)"
+    if category == "research":
+        order = "(length(i.tags) - length(replace(i.tags, ',', ''))) DESC"
+    elif category == "regulation":
+        where.append("i.action != 'expert'")
+        order = f"(i.action = 'law') DESC, {outlets} DESC"
+    else:
+        order = f"{outlets} DESC"
+    rows = conn.execute(f"SELECT i.*, {outlets} AS outlets FROM items i WHERE {' AND '.join(where)} "
+                        f"ORDER BY {order}, i.date DESC, i.added_at DESC LIMIT ?", [*args, limit]).fetchall()
+    out = []
+    for r in rows:
+        c = _row(r)
+        c["outlets"] = r["outlets"]
+        out.append(c)
+    return out
 
 
 def story_count(conn: sqlite3.Connection) -> int:

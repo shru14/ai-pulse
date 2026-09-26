@@ -165,6 +165,19 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .life li.now{font-weight:600}
 .life li.ended{color:var(--c-reg)}
 .life .when{color:var(--muted);margin-left:5px;font-weight:400}
+/* ---------- This week: the stream's three biggest stories of the last 7 days ---------- */
+.week{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px 6px}
+.week[hidden]{display:none}
+.week h2{font-family:var(--display);font-weight:700;font-size:18px;margin:0 0 4px;letter-spacing:-.01em}
+.wlist{list-style:none;margin:0;padding:0;counter-reset:w}
+.wlist li{counter-increment:w;display:grid;grid-template-columns:22px 1fr;gap:0 8px;padding:10px 0;border-top:1px solid var(--line)}
+.wlist li:first-child{border-top:0}
+.wlist li::before{content:counter(w);grid-row:1 / span 3;font:600 13px var(--mono);color:var(--muted);padding-top:2px}
+.wlist a{color:var(--ink);text-decoration:none;font-weight:600;line-height:1.35}
+.wlist a:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.wlist a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wlist .wsum{font-size:14px;color:var(--muted);margin:2px 0 0;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.wlist .wmeta{font:12px var(--mono);color:var(--muted);margin-top:3px}
 /* ---------- Releases: model tracker (timeline by lab + sortable table) ---------- */
 .models{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
 .models[hidden],.feedhead[hidden]{display:none}
@@ -278,6 +291,10 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
     <div class="groups" id="placebar" hidden></div>
   </div>
 
+  <section class="week" id="week" aria-labelledby="week-title" hidden>
+    <h2 id="week-title">This week</h2>
+    <ol class="wlist" id="wlist"></ol>
+  </section>
   <section class="models" id="models" aria-labelledby="models-title" hidden>
     <div class="mhead">
       <div>
@@ -432,7 +449,29 @@ function render(){
   more.disabled = state.loading;
   more.textContent = state.loading ? "Loading\u2026" : "Load more ("+(state.total - list.length)+" left)";
   renderStatus();
+  renderWeek();
   renderModels();
+}
+
+// "This week in ...": the three biggest stories of the last 7 days (most outlets; see store.highlights).
+function renderWeek(){
+  const box = $("week"), list = state.week || [];
+  box.hidden = !list.length || !!state.q.trim() || !!state.place;
+  if(box.hidden) return;
+  $("week-title").textContent = "This week" + (state.cat === "all" ? "" : " in " + STREAM_NAME[state.cat]);
+  const ol = $("wlist"); ol.replaceChildren();
+  list.forEach(it => {
+    const li = el("li");
+    const a = el("a", null, it.title); a.href = it.url; a.target = "_blank"; a.rel = "noopener";
+    li.append(a);
+    if(it.summary && !/^(A release|Industry news|Policy news|A paper|A proposal|A law adopted)\b/.test(it.summary))
+      li.append(el("p", "wsum", it.summary));
+    const d = new Date(it.date+"T12:00:00").toLocaleDateString(undefined, {weekday:"short", day:"numeric", month:"short"});
+    const bits = [it.outlets > 1 ? it.outlets+" outlets" : (it.source || domainOf(it.url)), d];
+    if(state.cat === "all") bits.unshift(STREAM_NAME[it.category] || "");
+    li.append(el("div", "wmeta", bits.filter(Boolean).join(" · ")));
+    ol.append(li);
+  });
 }
 
 // ---------- Card icons: company logo, else the place, else a topic or category symbol ----------
@@ -688,7 +727,7 @@ async function load(reset){
     Object.assign(state, {page: data.page, total: data.total, hasMore: data.hasMore, counts: data.counts,
       mapTally: data.map || null, stories: data.stories, places: data.jurisdictions || state.places,
       failing: data.failingSources || [], status: data.lastRun ? {lastRun: data.lastRun.ran_at} : null, error: false,
-      models: data.models || null});
+      models: data.models || null, week: data.week || state.week});
   }catch(e){
     if(seq !== requestSeq) return;
     state.error = true;
@@ -727,6 +766,20 @@ const fold = t => t.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
 // Porter stemming ("regulate" and "regulations" find "regulation", "policies" finds "policy").
 const stem = w => { const s = w.replace(/(ations?|ators?|ates?|ated|ating|ions?|ory|ies|ing|ed|es|s|ly)$/, ""); return s.length >= 4 ? s : w; };
 
+// The static site's version of store.highlights: the last 7 days, most outlets first.
+function staticWeek(cards, cat){
+  const t = new Date(); t.setUTCDate(t.getUTCDate() - 7);
+  const since = t.toISOString().slice(0, 10);
+  const outlets = c => (c.also || []).length + 1;
+  const tagCount = c => (c.tags || []).length;
+  let list = cards.filter(c => c.date >= since && (!cat || c.category === cat));
+  if(cat === "regulation") list = list.filter(c => c.action !== "expert");
+  const score = cat === "research" ? c => tagCount(c)
+    : cat === "regulation" ? c => (c.action === "law" ? 1000 : 0) + outlets(c) : outlets;
+  return list.map(c => ({...c, outlets: outlets(c)}))
+    .sort((a,b) => score(b) - score(a) || (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)).slice(0, 3);
+}
+
 function staticPayload(d, params){
   const days = +params.get("days") || 0, cat = params.get("category"), place = params.get("place");
   const perPage = +params.get("per_page") || 40, page = +params.get("page") || 1;
@@ -744,6 +797,7 @@ function staticPayload(d, params){
     hasMore: page*perPage < list.length, counts, stories: d.stories, lastRun: d.lastRun,
     jurisdictions: d.jurisdictions, failingSources: d.failingSources};
   if(cat === "tool") out.models = (d.models || []).filter(m => m.released >= since);
+  if(page === 1) out.week = staticWeek(d.cards, cat);
   if(cat === "regulation"){
     const national = {}, laws = {}; let n = 0;
     base.filter(c => c.category === "regulation" && c.action !== "expert").forEach(c => {

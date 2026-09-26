@@ -727,3 +727,81 @@ def test_cards_for_more_stories_than_sqlite_takes_in_one_query(tmp_path):
     conn.commit()
     cards, total = store.cards(conn, limit=10**9)
     assert total == 1200 and len(cards) == 1200 and all(c["also"] == [] for c in cards)
+
+
+def test_headline_plus_subtitle_is_not_a_summary():
+    from aipulse.brief import clean_summary
+    title = "Pre-training a 1.11B LLM on a 6 GB Laptop GPU"
+    assert clean_summary(title + " — Measured, Not Claimed Hugging Face", title, "Hugging Face") == ""
+    assert clean_summary("OpenAI releases GPT-6. The new model handles longer tasks and costs less for developers.",
+                         "OpenAI releases GPT-6", "X") == "The new model handles longer tasks and costs less for developers."
+
+
+def test_recent_headline_only_stories_get_their_summary_retried(tmp_path):
+    from aipulse.collect import refresh_summaries
+    conn = store.connect(tmp_path / "t.db")
+    today = __import__("datetime").date.today().isoformat()
+    base = {"source": "Example", "category": "news", "date": today, "tags": [], "authors": []}
+    store.insert(conn, {**base, "title": "Acme launches a robot that folds laundry", "summary": "Industry news.",
+                        "url": "https://news.google.com/rss/articles/a"})
+    store.insert(conn, {**base, "title": "Old story with a real summary", "summary": "It has real text in it, clearly.",
+                        "url": "https://news.google.com/rss/articles/b"})
+    conn.commit()
+    bing = (b'<rss><channel><item><title>Acme launches a robot that folds laundry</title><link>https://e.com/x</link>'
+            b'<description>The machine folds a basket of shirts in ten minutes and ships next spring.</description>'
+            b'</item></channel></rss>')
+    assert refresh_summaries(conn, fetcher=lambda url: bing, log=lambda *_: None) == 1
+    got = dict(conn.execute("SELECT title, summary FROM items").fetchall())
+    assert got["Acme launches a robot that folds laundry"].startswith("The machine folds a basket")
+    assert got["Old story with a real summary"] == "It has real text in it, clearly."  # left alone
+
+
+def test_article_summary_uses_the_publishers_description(monkeypatch):
+    from aipulse import brief
+    monkeypatch.delenv("AIPULSE_OFFLINE", raising=False)
+    pages = {
+        "https://e.com/robot": '<html><head><meta property="og:description" content="The machine folds a basket of '
+                               'shirts in ten minutes and ships next spring to homes in the US."></head></html>',
+        "https://e.com/hf": '<html><head><meta name="description" content="We&#39;re on a journey to advance and '
+                            'democratize artificial intelligence through open source."></head></html>',
+    }
+    monkeypatch.setattr(brief, "_http", lambda url, **kw: (pages[url], url))
+    assert brief.article_summary("https://e.com/robot", "Acme launches a laundry robot").startswith("The machine folds")
+    assert brief.article_summary("https://e.com/hf", "A new open model") == ""  # the site's slogan, not the story
+
+
+def test_this_weeks_highlights(tmp_path):
+    from datetime import date, timedelta
+    conn = store.connect(tmp_path / "t.db")
+    today, old = date.today().isoformat(), (date.today() - timedelta(days=20)).isoformat()
+    def add(title, url, category="news", when=today, **extra):
+        store.insert(conn, {"title": title, "summary": "", "url": url, "source": "E", "category": category,
+                            "date": when, "tags": [], "authors": [], **extra})
+    add("Chip deal announced", "https://e.com/1")
+    add("Chip deal announced, other outlet", "https://f.com/1")
+    add("Small news", "https://e.com/2")
+    add("Big but old", "https://e.com/3", when=old)
+    add("Draft rules published", "https://e.com/4", "regulation", action="proposal", jurisdictions=["EU"])
+    add("AI law signed", "https://e.com/5", "regulation", action="law", jurisdictions=["US"])
+    add("A scholar's op-ed", "https://e.com/6", "regulation", action="expert")
+    ids = {r[1]: r[0] for r in conn.execute("SELECT id, title FROM items")}
+    conn.execute("UPDATE items SET cluster = ? WHERE id = ?", (ids["Chip deal announced"], ids["Chip deal announced, other outlet"]))
+    conn.commit()
+    news = store.highlights(conn, "news")
+    assert [c["title"] for c in news] == ["Chip deal announced", "Small news"]  # most outlets first; old one left out
+    assert news[0]["outlets"] == 2
+    assert [c["title"] for c in store.highlights(conn, "regulation")] == ["AI law signed", "Draft rules published"]
+
+
+def test_repaired_summaries_travel_to_another_database(tmp_path):
+    from aipulse.collect import apply_summaries, export_summaries
+    story = {"title": "Acme launches a laundry robot", "url": "https://news.google.com/rss/articles/x",
+             "source": "E", "category": "news", "date": "2026-05-01", "tags": [], "authors": []}
+    here, there = store.connect(tmp_path / "pc.db"), store.connect(tmp_path / "ci.db")
+    store.insert(here, {**story, "summary": "The machine folds a basket of shirts in ten minutes."})
+    store.insert(there, {**story, "summary": "Industry news."})  # a draft
+    here.commit(); there.commit()
+    found = export_summaries(here, "2026-01-01")
+    assert list(found.values()) == ["The machine folds a basket of shirts in ten minutes."]
+    assert apply_summaries(there, found) == 1 and apply_summaries(there, found) == 0  # only weak ones change
+    assert there.execute("SELECT summary FROM items").fetchone()[0].startswith("The machine folds")

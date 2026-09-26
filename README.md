@@ -22,6 +22,9 @@ Pure Python 3.10+, standard library only: nothing to install.
 
 - **Stream cards** at the top pick a stream and show its count; click the chosen card again (or its
   chip next to the search box, or the logo) to see everything.
+- **This week** (top of every stream): the three biggest stories of the last 7 days, ranked by how many
+  outlets covered them (research: by the tracked professors and labs behind a paper; regulation tracker:
+  adopted laws first). Hidden while searching.
 - **Search** and the **time range** (7, 30, 90 days, all time) stay pinned while you scroll. Search matches
   word beginnings and stems ("regulate" finds "regulation") across headlines, summaries, sources, tags and authors.
 - **Cards** show a logo for the company involved (or the country, or a topic symbol), a summary
@@ -55,6 +58,8 @@ Or `python -m aipulse run --every-hours 6` to serve and collect on a timer in on
 | `serve` / `run` | Serve the page and JSON API / serve and collect on a timer |
 | `reclassify` | Re-run the sorting and tagging rules over stored stories (after changing them) |
 | `resummarize` | Re-clean stored headlines and summaries |
+| `summaries --since DATE` | Look up real summaries for headline-only stories since a date |
+| `backfill --since DATE` | One-time history for every stream (see below) |
 | `regroup` | Regroup every story into cards (one card per event) |
 | `bills` | Sync bill stages from congress.gov and the European Parliament |
 | `evaluate` | Score the sorting rules against hand-labelled stories |
@@ -79,8 +84,11 @@ accuracy and every mistake, and a test stops the scores from dropping. After edi
 `python -m aipulse reclassify`; the GitHub workflow also runs it after every collection.
 
 Headlines and summaries are cleaned in `aipulse/brief.py` (desk labels, site names and boilerplate
-removed). Google News items carry only a headline, so the collector finds the story's lead text on Bing
-News, or writes a short factual draft.
+removed). Google News items carry only a headline, so the collector follows the link to the original
+article and uses the description its publisher wrote (its meta tags); failing that, the lead text of
+the same story on Bing News; only then a short factual draft. Every collection retries recent stories
+that ended up with a draft, and `python -m aipulse summaries --since 2026-01-01` repairs a longer span
+(several lookups at a time).
 
 **Optional:** with `ANTHROPIC_API_KEY` set, the collector asks Claude (`AIPULSE_MODEL`, default
 `claude-haiku-4-5-20251001`) for the summary, stream and tags instead. Without a key everything runs
