@@ -1,8 +1,6 @@
 """Decide whether an item is AI-related and which category it belongs in.
 
-Keyword rules keep this free and offline. If ANTHROPIC_API_KEY is set, the
-collector can optionally ask Claude for a better summary and category
-(see enrich.py).
+Keyword rules only: no AI model or paid API is used anywhere.
 """
 
 from __future__ import annotations

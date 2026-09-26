@@ -8,7 +8,7 @@ import re
 import time
 from datetime import datetime, timedelta, timezone
 
-from . import bills, brands, brief, classify, cluster, enrich, feeds, jurisdictions, store
+from . import bills, brands, brief, classify, cluster, feeds, jurisdictions, store
 from .sources import COMPANIES, EXPERT_FIELDS, PROFESSORS, SOURCES
 
 # The regulation tracker follows proposals and adopted laws; other actions stay under "policy".
@@ -56,7 +56,6 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     headline-only stories get a short draft instead of a Bing lookup each."""
     cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
     added, errors = 0, []
-    use_llm = enrich.enabled()
 
     for src in sources:
         try:
@@ -128,18 +127,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 item.update(category="regulation", action=EXPERT, jurisdictions=[],
                             tags=list(dict.fromkeys(people + fields)))
 
-            better = None
-            if use_llm and not store.title_exists(conn, item["title"]):
-                better = enrich.enrich(item["title"], item["summary"], item["source"])
-                if better:
-                    if better.get("relevant") is False:
-                        continue
-                    if src["category"] != "research" and not expert:  # these keep their tab and tags
-                        item["category"] = better["category"]
-                        item["tags"] = (better.get("tags") or item["tags"])[:4]
-                    item["summary"] = better.get("summary") or item["summary"]
             if not expert:
-                apply_regulation(item, src.get("jurisdictions", []), better)
+                apply_regulation(item, src.get("jurisdictions", []))
                 if src["category"] == "regulation" and item["category"] != "regulation":
                     continue  # the tracker's searches are broad; keep only proposals and laws from them
 
@@ -312,7 +301,7 @@ def resummarize(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
-def apply_regulation(item: dict, default_jurisdictions: list[str] = (), llm: dict | None = None) -> None:
+def apply_regulation(item: dict, default_jurisdictions: list[str] = ()) -> None:
     """Move a policy story into the regulation tracker when it reports a proposal or an adopted law.
 
     Needs both one of those actions and at least one jurisdiction; anything else (including
@@ -322,14 +311,11 @@ def apply_regulation(item: dict, default_jurisdictions: list[str] = (), llm: dic
         return
     if item.get("source") in bills.OFFICIAL_SOURCES:  # official bill records are sorted by bills.py
         return
-    llm = llm or {}
-    action = llm.get("action") if llm.get("action") in classify.ACTIONS else None
-    action = action or classify.regulatory_action(item["title"])
+    action = classify.regulatory_action(item["title"])
     # Google News summaries repeat the headline plus the publisher's name, which can name a country.
     # Generated drafts ("A proposal in the United States and China.") are ignored so they can't feed back.
     summary = "" if item["summary"].startswith(item["title"][:40]) or brief.is_draft(item["summary"]) else item["summary"]
-    places = [j for j in llm.get("jurisdictions") or [] if j in jurisdictions.JURISDICTIONS]
-    places = places or jurisdictions.detect(item["title"], summary, actors_only=True) or list(default_jurisdictions)
+    places = jurisdictions.detect(item["title"], summary, actors_only=True) or list(default_jurisdictions)
     if action in TRACKED_ACTIONS and places:
         places = places[:4]
         if "US" in places:  # which state, for the US-by-state map ("US-OR" next to "US")

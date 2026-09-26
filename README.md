@@ -82,9 +82,7 @@ the same story on Bing News; only then a short factual draft. Every collection r
 that ended up with a draft, and `python -m aipulse summaries --since 2026-01-01` repairs a longer span
 (several lookups at a time).
 
-**Optional:** with `ANTHROPIC_API_KEY` set, the collector asks Claude (`AIPULSE_MODEL`, default
-`claude-haiku-4-5-20251001`) for the summary, stream and tags instead. Without a key everything runs
-offline for free.
+No AI model or paid API is used: summaries are the publishers' own text, and sorting is keyword rules.
 
 ## History back to 2023
 
@@ -166,7 +164,6 @@ aipulse/
   bills.py          congress.gov and European Parliament bill stages
   backfill.py       one-time history back to 2023
   cluster.py        grouping the same event into one card
-  enrich.py         optional Claude summaries
   store.py          SQLite schema, full-text search, queries
   collect.py        the collection run
   evaluate.py       scoring the rules against labelled stories
