@@ -199,13 +199,6 @@ def test_expert_feed_items_are_tagged_by_person(tmp_path):
     assert reclassify(conn) == 0  # expert items are never re-sorted into policy
 
 
-def test_every_mapped_jurisdiction_is_on_the_world_map():
-    import json
-    ids = {c["id"] for c in json.loads((Path(__file__).parent.parent / "templates" / "world.json").read_text("utf-8"))["countries"]}
-    for code, info in jurisdictions.meta().items():
-        assert info["mapId"] in ids or "dot" in info or code in ("EU", "INTL") or code.startswith("US-"), code
-
-
 def test_clean_title():
     from aipulse.brief import clean_title
     assert clean_title("UK regulator proposes AI rules \u2014 Cyprus Mail") == "UK regulator proposes AI rules"
@@ -344,6 +337,7 @@ def test_country_filter_includes_eu_wide_rules_for_members(tmp_path):
     assert titles("US") == ["Texas passes AI bill"]
     tally = items_payload(conn, {"category": "regulation"})["map"]
     assert tally["cards"] == 3 and tally["national"] == {"FR": 1, "EU": 1, "US": 1} and tally["laws"]["US"] == 1
+    assert tally["lawCards"] == 3  # one per story, however many places it names
 
 
 def test_search_index_follows_edits(tmp_path):
@@ -469,12 +463,6 @@ def test_command_line_entry_point_starts(tmp_path):
     assert not set(code.co_varnames + code.co_cellvars) & set(vars(cli)), "a module-level name is re-imported in main()"
 
 
-def test_every_us_state_is_on_the_us_map():
-    import json
-    states = {s["id"] for s in json.loads((Path(__file__).parent.parent / "templates" / "us.json").read_text("utf-8"))["states"]}
-    assert states == set(jurisdictions.US_STATES)  # 50 states + DC
-
-
 def test_us_tracker_stories_record_their_state():
     item = {"title": "Kotek signs order to regulate AI use in Oregon government", "summary": "", "category": "policy"}
     apply_regulation(item)
@@ -598,7 +586,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} >= {"world.json", "us.json", ".nojekyll"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll"}
 
 
 def test_arxiv_rss_splits_authors_and_skips_revisions(tmp_path):

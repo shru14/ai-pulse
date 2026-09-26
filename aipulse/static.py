@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import jurisdictions, store
-from .server import EU_MEMBERS, TEMPLATE, US_MAP, WORLD
+from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
 
 _WORD = re.compile(r"[^\W_]+")
@@ -57,7 +57,5 @@ def build(conn, out: str | Path) -> int:
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
     (out / "index.html").write_text(page, encoding="utf-8")
-    shutil.copy(WORLD, out / "world.json")
-    shutil.copy(US_MAP, out / "us.json")
     (out / ".nojekyll").write_text("")
     return len(cards)

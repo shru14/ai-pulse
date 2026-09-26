@@ -11,8 +11,6 @@ from . import jurisdictions, store
 from .sources import SOURCES
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
-WORLD = TEMPLATE.with_name("world.json")
-US_MAP = TEMPLATE.with_name("us.json")
 
 PER_PAGE = 40
 MAX_PER_PAGE = 200
@@ -69,10 +67,6 @@ def make_handler(db_path: str):
                 elif url.path == "/api/sources":
                     self._send(json.dumps(store.source_health(conn, [s["url"] for s in SOURCES])).encode(),
                                "application/json")
-                elif url.path == "/world.json":
-                    self._send(WORLD.read_bytes(), "application/json")
-                elif url.path == "/us.json":
-                    self._send(US_MAP.read_bytes(), "application/json")
                 else:
                     self._send(b"Not found", "text/plain", 404)
             finally:

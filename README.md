@@ -47,9 +47,10 @@ python -m aipulse run --every-hours 6
 ### Regulation tracker details
 
 Proposals and laws are tagged with the jurisdiction (country, `EU`, or `INTL` for bodies like the UN and
-OECD). A world map at the end shades each country by how many proposals and laws it had in the selected
-time range (EU-wide ones count for every member state); click a country or a row in the table under it
-to filter the list. Open the tab directly at `/#regulation`.
+OECD). The top of the tab shows how many laws were adopted and proposals made in the selected time range,
+and in how many countries, blocs and US states. "Breakdown by region" lists each jurisdiction's proposals and
+laws by world region, then US states by census region; click one to filter the list (filtering to an EU
+member also shows EU-wide actions). Open the tab directly at `/#regulation`.
 
 Proposals and laws get there two ways: policy stories from any feed whose headline names both the action
 and a jurisdiction, and dedicated sources (the EDPB, the European Commission's digital strategy news, and
@@ -100,7 +101,7 @@ To replace the key, request a new one at https://api.congress.gov/sign-up/ and u
 database (no public API).
 
 US stories also record their state (`US-OR` next to `US`, from state names, governors and abbreviations
-like "Ore."), and the tracker's map section has a second map of the US by state.
+like "Ore."), so the breakdown can list them by state.
 
 ## Search and paging
 
@@ -194,7 +195,7 @@ timer (a failed collection is logged and retried next cycle), but it stops when 
 
 ## Publish on GitHub Pages (free, no PC needed)
 
-`python -m aipulse build --out site` writes a static copy of the site: the page, the two maps and
+`python -m aipulse build --out site` writes a static copy of the site: the page and
 `data.json` with every card. The page sees `data-static="1"` and filters, searches and pages
 `data.json` in the browser instead of calling `/api/items` (search is a close match to the server's:
 every word must start a word of the story, with light stemming).
@@ -225,13 +226,11 @@ aipulse/
   feeds.py      RSS/Atom fetching and parsing (stdlib XML)
   classify.py   AI relevance, category, tag and regulatory-action rules
   jurisdictions.py  countries/blocs the regulation tracker recognises
-  geo.py        builds templates/world.json (the tracker's map) from Natural Earth data
   enrich.py     optional Claude summaries via the Messages API
   store.py      SQLite schema, dedupe, queries
   collect.py    the collection run
   server.py     page + JSON API
   static.py     static copy of the site for GitHub Pages
 templates/index.html   the feed page
-templates/world.json   pre-projected world map paths (regenerate with python -m aipulse.geo)
 tests/                 unit and end-to-end tests with fixture feeds
 ```

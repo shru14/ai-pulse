@@ -313,15 +313,16 @@ def regulation_tally(conn: sqlite3.Connection, q=None, days=None) -> dict:
     where, args = _card_where("regulation", q, days)
     national: dict[str, int] = {}
     laws: dict[str, int] = {}
-    n = 0
+    n = law_cards = 0
     for r in conn.execute(f"SELECT i.jurisdictions, i.action FROM items i WHERE {where} AND i.action != 'expert'",
                           args):
         n += 1
+        law_cards += r[1] == "law"
         for code in filter(None, r[0].split(",")):
             national[code] = national.get(code, 0) + 1
             if r[1] == "law":
                 laws[code] = laws.get(code, 0) + 1
-    return {"national": national, "laws": laws, "cards": n}
+    return {"national": national, "laws": laws, "cards": n, "lawCards": law_cards}
 
 
 def story_count(conn: sqlite3.Connection) -> int:
