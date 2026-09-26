@@ -164,43 +164,9 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .life li.now{font-weight:600}
 .life li.ended{color:var(--c-reg)}
 .life .when{color:var(--muted);margin-left:5px;font-weight:400}
-.breakdown{margin-top:10px}
-.breakdown[hidden]{display:none}
-.bd{background:var(--surface);border:1px solid var(--line);border-radius:10px}
-.bd > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:12px 14px;font-weight:600}
-.bd > summary::-webkit-details-marker{display:none}
-.bd > summary::before{content:"";width:7px;height:7px;flex:none;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s}
-.bd[open] > summary::before{transform:rotate(45deg)}
-.bd > summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
-.bd .rmeta{margin-left:auto}
-.bd-body{padding:0 14px 14px}
-.bd-body .regions{margin-top:0}
-.bd-sub{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
-.bd-sub[hidden]{display:none}
-@media (prefers-reduced-motion: reduce){.bd > summary::before{transition:none}}
 .kpis{display:flex;flex-wrap:wrap;gap:4px 20px;margin-top:18px;font-size:15px;color:var(--muted)}
 .kpis[hidden]{display:none}
 .kpis b{font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
-.regions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
-.regions:empty{display:none}
-.region{border:1px solid var(--line);border-radius:10px;background:var(--bg)}
-.region summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px}
-.region summary::-webkit-details-marker{display:none}
-.region summary::before{content:"";width:7px;height:7px;flex:none;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;margin-right:2px}
-.region[open] summary::before{transform:rotate(45deg)}
-.region summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
-.region .rname{font-weight:600;margin-right:auto}
-.region .rmeta{font:12px var(--mono);color:var(--muted);white-space:nowrap}
-.region .ranking{margin:0 0 6px}
-.region .ranking :is(th,td):first-child{padding-left:14px}
-.region .ranking :is(th,td):last-child{padding-right:14px}
-@media (prefers-reduced-motion: reduce){.region summary::before{transition:none}}
-.ranking{width:100%;border-collapse:collapse;font-size:14px}
-.ranking th{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
-.ranking td{padding:6px 8px;border-bottom:1px solid var(--line)}
-.ranking td.num,.ranking th.num{text-align:right;font-family:var(--mono)}
-.ranking button{font:inherit;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
-.ranking tr.sel td{background:var(--bg)}
 .item h3{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.25;margin:0;text-wrap:balance}
 .item h3 a{color:var(--ink);text-decoration:none}
 .item h3 a:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
@@ -272,16 +238,6 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   </div>
 
   <section class="kpis" id="kpis" aria-label="Regulation tracker totals" hidden></section>
-  <section class="breakdown" id="breakdown" hidden>
-    <details class="bd">
-      <summary>Breakdown by region <span class="rmeta" id="bd-meta"></span></summary>
-      <div class="bd-body">
-        <div class="regions" id="regions"></div>
-        <h3 class="bd-sub" id="us-sub">US states</h3>
-        <div class="regions" id="usregions"></div>
-      </div>
-    </details>
-  </section>
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
@@ -404,8 +360,6 @@ function render(){
   more.hidden = !state.hasMore;
   more.disabled = state.loading;
   more.textContent = state.loading ? "Loading\u2026" : "Load more ("+(state.total - list.length)+" left)";
-  $("breakdown").hidden = !(tracker && state.mapTally);
-  if(tracker && state.mapTally) renderRegions(state.mapTally.national, state.mapTally.laws);
   renderKpis(tracker);
   renderStatus();
 }
@@ -597,7 +551,7 @@ function lifecycleStrip(life){
 
 function placeName(code){ return (state.places[code]||{}).name || code; }
 
-// Shown only while a country picked in the breakdown or on a card filters the tracker.
+// Shown only while a country picked on a card filters the tracker.
 function renderPlaceBar(tracker){
   const box = $("placebar");
   box.hidden = !(tracker && state.place);
@@ -607,76 +561,6 @@ function renderPlaceBar(tracker){
   c.setAttribute("aria-label", "Clear country filter "+placeName(state.place));
   c.addEventListener("click", () => { state.place=null; load(true); });
   box.append(c);
-}
-
-const RANGE_LABEL = {7:"the last 7 days", 30:"the last 30 days", 90:"the last 90 days", 0:"all time"};
-
-// ---------- Proposals and laws per jurisdiction, in collapsible panels by region ----------
-const REGIONS = [
-  ["International bodies", ["INTL","EU"]],
-  ["Americas", ["US","CA","MX","BR","AR","CL","CO","PE"]],
-  ["Europe", ["GB","FR","DE","IT","ES","NL","IE","BE","LU","SE","DK","FI","PL","AT","PT","GR","CZ","HU","RO","EE","MT",
-              "CH","NO","RU","UA","BG","HR","CY","LV","LT","SK","SI"]],
-  ["Asia-Pacific", ["CN","IN","JP","KR","TW","HK","SG","ID","MY","TH","VN","PH","PK","BD","AU","NZ"]],
-  ["Middle East & Africa", ["TR","IL","AE","SA","QA","EG","NG","KE","GH","RW","ZA"]],
-];
-const US_REGIONS = [
-  // US states by census region; federal actions are the "United States" row under Americas.
-  ["West", ["AK","AZ","CA","CO","HI","ID","MT","NV","NM","OR","UT","WA","WY"].map(s => "US-"+s)],
-  ["Midwest", ["IL","IN","IA","KS","MI","MN","MO","NE","ND","OH","SD","WI"].map(s => "US-"+s)],
-  ["South", ["AL","AR","DE","DC","FL","GA","KY","LA","MD","MS","NC","OK","SC","TN","TX","VA","WV"].map(s => "US-"+s)],
-  ["Northeast", ["CT","ME","MA","NH","NJ","NY","PA","RI","VT"].map(s => "US-"+s)],
-];
-const openRegions = new Set();  // panels the reader opened or closed stay that way across re-renders
-const regionsTouched = new Set();
-
-// Countries and blocs by world region, then US states by census region.
-function renderRegions(national, laws){
-  const placed = new Set(REGIONS.concat(US_REGIONS).flatMap(r => r[1]));
-  const other = Object.keys(national).filter(c => !placed.has(c));
-  regionPanels($("regions"), REGIONS.concat(other.length ? [["Other", other]] : []), national, laws);
-  regionPanels($("usregions"), US_REGIONS, national, laws);
-  $("us-sub").hidden = !$("usregions").childElementCount;
-  const n = Object.keys(national).length;
-  $("bd-meta").textContent = n+" place"+(n===1?"":"s");
-}
-
-function regionPanels(box, regions, national, laws){
-  box.replaceChildren();
-  const groups = regions
-    .map(([name, codes]) => {
-      const rows = codes.filter(c => national[c]).sort((a,b) => national[b]-national[a] || placeName(a).localeCompare(placeName(b)));
-      return {name, rows, total: rows.reduce((s,c) => s + national[c], 0)};
-    })
-    .filter(g => g.rows.length);
-  if(!regionsTouched.has(box.id)){  // start with the busiest region open
-    regions.forEach(r => openRegions.delete(r[0]));
-    if(groups.length) openRegions.add(groups.reduce((a,b) => b.total > a.total ? b : a).name);
-  }
-  groups.forEach(g => {
-    const d = el("details","region");
-    d.open = openRegions.has(g.name) || g.rows.includes(state.place);
-    const s = el("summary");
-    s.append(el("span","rname",g.name),
-             el("span","rmeta", g.rows.length+" place"+(g.rows.length===1?"":"s")+" · "+g.total+" action"+(g.total===1?"":"s")));
-    d.append(s);
-    d.addEventListener("toggle", () => { regionsTouched.add(box.id); d.open ? openRegions.add(g.name) : openRegions.delete(g.name); });
-    const table = el("table","ranking");
-    const head = el("tr");
-    [["Jurisdiction",""],["Proposals","num"],["Laws adopted","num"],["Total","num"]].forEach(([t,c]) => head.append(el("th",c,t)));
-    const thead = el("thead"); thead.append(head);
-    const tb = el("tbody");
-    g.rows.forEach(code => {
-      const tr = el("tr"); if(state.place===code) tr.className = "sel";
-      const td = el("td"); const b = el("button",null,placeName(code)); b.type="button";
-      b.addEventListener("click", () => { state.place = state.place===code ? null : code; load(true); });
-      td.append(b);
-      const l = laws[code]||0;
-      tr.append(td, el("td","num",String(national[code]-l)), el("td","num",String(l)), el("td","num",String(national[code])));
-      tb.append(tr);
-    });
-    table.append(thead, tb); d.append(table); box.append(d);
-  });
 }
 
 function renderStatus(){

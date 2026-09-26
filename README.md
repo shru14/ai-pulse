@@ -1,236 +1,146 @@
-# AI Pulse (self-hosted)
+# AI Pulse
 
-A small, dependency-free tracker for AI news. It pulls RSS/Atom feeds, keeps only AI stories,
-sorts each into **Releases & tools**, **Industry news**, **Policy & politics**, **Research papers** or the
-**Regulation tracker**,
-and shows them as a filterable feed with the source link, a summary of what the story covers, and the date.
+A self-hosted briefing on what's happening in AI. AI Pulse reads company blogs, newsrooms, government
+sites and research archives every 6 hours, keeps only AI stories, sorts each into one of five streams and
+links every card to the original reporting.
 
-The **Research papers** tab lists papers only (no news or blog posts), each tagged with the professor
-or company behind it:
+**Live site:** https://shru14.github.io/ai-pulse/
 
-- **Professors**: new arXiv papers (CS and ML categories) by about 80 leading AI professors across North
-  America, Europe, Asia, the Middle East and Oceania (`PROFESSORS` in `aipulse/sources.py`). A paper is kept
-  only when one of its authors matches a listed name exactly, which filters out namesakes. Papers come
-  from arXiv's daily lists of new papers per category (`rss.arxiv.org`), which cloud servers can read
-- **Big tech and frontier labs**: papers claimed on Hugging Face Daily Papers by one of the companies in
-  `COMPANIES` (Google/DeepMind, Microsoft, Meta, Apple, Amazon, NVIDIA, Alibaba/Qwen, Tencent, ByteDance,
-  DeepSeek, OpenAI, Anthropic and others), plus Apple's own paper feed
+Pure Python 3.10+, standard library only: nothing to install.
 
-The **Regulation tracker** tab is a daily feed of AI **proposals** (bills, draft rules, consultations) and
-**adopted laws** (signed, passed, in force, executive orders), each tagged with its jurisdiction, plus
-**expert views**: what about 40 AI ethics, philosophy and law scholars (`EXPERTS` in `aipulse/sources.py`)
-publish or are quoted on, from a daily Google News search per person and their arXiv papers.
+## The five streams
 
-Requires Python 3.10+. No packages to install.
+| Stream | What's in it |
+|---|---|
+| **Releases** | New models, product features and open-source launches |
+| **Industry news** | Funding, deals, partnerships and company moves |
+| **Policy** | What governments, courts and politicians are doing about AI: investigations, lawsuits, guidance, debates |
+| **Research** | Papers only: new arXiv papers by ~80 leading AI professors (matched by exact author name), and papers from big tech and frontier labs via Hugging Face Daily Papers |
+| **Regulation tracker** | AI **proposals** (bills, draft rules, consultations) and **adopted laws** (passed, signed, in force, executive orders), tagged by country, plus **expert views** from ~40 AI ethics, philosophy and law scholars |
+
+## Using the page
+
+- **Stream cards** at the top pick a stream and show its count; click the chosen card again (or its
+  chip next to the search box, or the logo) to see everything.
+- **Search** and the **time range** (7, 30, 90 days, all time) stay pinned while you scroll. Search matches
+  word beginnings and stems ("regulate" finds "regulation") across headlines, summaries, sources, tags and authors.
+- **Cards** show a logo for the company involved (or the country, or a topic symbol), a summary
+  (long ones fold behind "Read more"), clickable tags, and the date and source link. The same event
+  reported by several outlets is one card with "N sources".
+- **Regulation tracker** opens with its totals (laws adopted, proposals, countries and blocs, US states);
+  click a country chip on a card to see only that country. US bills and EU procedures show their stage,
+  from introduced to in force.
+- **Light / dark** follows your system; the button in the top bar overrides it.
+- Links open a stream directly: `/#policy`, `/#regulation`; `/?q=nvidia` also searches.
 
 ## Quick start
 
 ```bash
-python -m aipulse collect     # fetch all sources once into aipulse.db
+python -m aipulse collect     # fetch every source once into aipulse.db
 python -m aipulse serve       # open http://127.0.0.1:8000
 ```
 
-Or run both together, re-collecting every 6 hours:
+Or `python -m aipulse run --every-hours 6` to serve and collect on a timer in one process.
 
-```bash
-python -m aipulse run --every-hours 6
-```
-
-## What you get
-
-| URL | What it is |
+| Command | Does |
 |---|---|
-| `/` | The feed page: category tabs, search, time range, stories grouped by day |
-| `/api/items?category=policy&q=EU&days=7&page=1` | One page of cards (40 by default, `per_page` up to 200) plus tab counts; `place=FR` filters the tracker by country; `grouped=0` returns separate stories |
-| `/api/sources` | Health of every source |
+| `collect` | Fetch all sources and store new stories (`--max-age-days 3`) |
+| `serve` / `run` | Serve the page and JSON API / serve and collect on a timer |
+| `reclassify` | Re-run the sorting and tagging rules over stored stories (after changing them) |
+| `resummarize` | Re-clean stored headlines and summaries |
+| `regroup` | Regroup every story into cards (one card per event) |
+| `bills` | Sync bill stages from congress.gov and the European Parliament |
+| `evaluate` | Score the sorting rules against hand-labelled stories |
+| `sources` | Show each source's health |
+| `build --out site` | Write the static site for GitHub Pages |
+| `prune --keep-days 365` | Delete old stories |
 
-### Regulation tracker details
+The server also answers `/api/items?category=policy&q=EU&days=7&page=1` (one page of cards plus stream
+counts; `place=FR` filters the tracker) and `/api/sources`.
 
-Proposals and laws are tagged with the jurisdiction (country, `EU`, or `INTL` for bodies like the UN and
-OECD). The top of the tab shows how many laws were adopted and proposals made in the selected time range,
-and in how many countries, blocs and US states. "Breakdown by region" lists each jurisdiction's proposals and
-laws by world region, then US states by census region; click one to filter the list (filtering to an EU
-member also shows EU-wide actions). Open the tab directly at `/#regulation`.
+## How stories are sorted
 
-Proposals and laws get there two ways: policy stories from any feed whose headline names both the action
-and a jurisdiction, and dedicated sources (the EDPB, the European Commission's digital strategy news, and
-Google News searches for new laws, bills and rules by region). Enforcement, investigations and guidance
-stay under Policy. The keyword rules live in `ACTIONS` in `aipulse/classify.py` and
-`aipulse/jurisdictions.py`; `TRACKED_ACTIONS` in `aipulse/collect.py` picks which actions the tracker
-shows. After changing them, run `python -m aipulse reclassify` to re-sort stories already stored.
+Keyword rules in `aipulse/classify.py` decide whether a story is about AI, which stream it belongs to,
+and its tags (companies, places, topics). Each source has a default stream; a story from a policy search
+with nothing about government in it drops to Industry news. A policy story moves to the Regulation
+tracker when its headline reports a proposal or an adopted law and names who acted
+(`aipulse/jurisdictions.py` knows ~60 countries and blocs plus US states). Enforcement, investigations and
+guidance stay under Policy.
 
-Expert views are articles that mention the person, found by searching their name, so some are interviews
-or quotes rather than pieces they wrote. To follow someone else, add them to `EXPERTS`.
+`tests/fixtures/labels.csv` holds 100 hand-labelled stories; `python -m aipulse evaluate` prints the
+accuracy and every mistake, and a test stops the scores from dropping. After editing the rules, run
+`python -m aipulse reclassify`; the GitHub workflow also runs it after every collection.
 
-## Headlines and summaries (no API key needed)
+Headlines and summaries are cleaned in `aipulse/brief.py` (desk labels, site names and boilerplate
+removed). Google News items carry only a headline, so the collector finds the story's lead text on Bing
+News, or writes a short factual draft.
 
-`aipulse/brief.py` tidies every story as it's collected: headlines lose desk labels ("Watch:",
-"Eurobites:") and trailing site names, and summaries keep the first one or two informative sentences
-without boilerplate (author bios, "The post … appeared first on", newsletter prompts). Google News
-items carry only a headline, so the collector looks the headline up on Bing News RSS and uses the lead
-text of the matching story; if there's no close match it writes a short draft from what it knows
-("A proposal in the United Kingdom, involving Google."). A summary never repeats its headline.
-Run `python -m aipulse resummarize` to apply changes to stories already stored.
+**Optional:** with `ANTHROPIC_API_KEY` set, the collector asks Claude (`AIPULSE_MODEL`, default
+`claude-haiku-4-5-20251001`) for the summary, stream and tags instead. Without a key everything runs
+offline for free.
 
-## Bills through their lifecycle
+## Bills from official records
 
-The regulation tracker follows AI bills from official records, not just the news:
-
-| Source | What it gives | Access |
+| Source | Stages | Access |
 |---|---|---|
-| congress.gov API | US federal bills and joint resolutions with AI in the title: introduced, passed one chamber, passed Congress, signed, became law (or vetoed) | Free key from https://api.congress.gov/sign-up/; without one the shared `DEMO_KEY` is used (about 30 requests an hour) |
-| European Parliament open data | EU legislative procedures (COD) with AI in the title: proposed, Parliament position, final vote, signed, published in the Official Journal | No key |
+| congress.gov API | Introduced → passed one chamber → passed Congress → signed → became law (or vetoed) | Free key: https://api.congress.gov/sign-up/ |
+| European Parliament open data | Proposed → Parliament position → final vote → signed → Official Journal | No key |
 
-Each bill is one card in the tracker, dated at its latest stage so it moves up the feed when it advances,
-with the whole timeline on the card. News stories that name the bill (by number, e.g. "H.R. 10538", or by
-short title, e.g. "Artificial Intelligence Act") are attached to the same card. Every collection checks
-for bills updated since the last sync; the one-time backfill is:
+Each bill is one card dated at its latest stage, with news that names the bill attached. The key is read
+from `CONGRESS_API_KEY` and never stored in the repository: set it as a repository secret for the public
+site (Settings → Secrets and variables → Actions) and with `setx CONGRESS_API_KEY your-key` on this PC.
+One-time backfill: `python -m aipulse bills --eu-since 2019 --us-days 30`.
 
-```bash
-python -m aipulse bills --eu-since 2019 --us-days 30
-```
+## Hosting
 
-The key is read from the `CONGRESS_API_KEY` environment variable and never stored in the repository:
+**GitHub Pages (the public site).** `.github/workflows/pages.yml` runs every 6 hours (00, 06, 12, 18 UTC),
+on every push to `main` and on demand. It collects, re-sorts stored stories, builds the static site and
+deploys it, carrying the database between runs in the Actions cache (starting from `data/seed.db`). The
+static page filters, searches and pages `data.json` in the browser. A push shows up on the site after a
+few minutes, once collection finishes. To set up your own copy: push to a public repository, set
+Settings → Pages → Source to **GitHub Actions**, and add the `CONGRESS_API_KEY` secret.
 
-- **GitHub Actions** (the public site): repository secret `CONGRESS_API_KEY` (Settings → Secrets and
-  variables → Actions); the workflow passes it to the collect step. The shared `DEMO_KEY` doesn't work
-  there, since every GitHub runner shares its limit.
-- **This PC** (the scheduled tasks): `setx CONGRESS_API_KEY your-key`, then restart the tasks.
+**This PC (Windows Task Scheduler).**
 
-To replace the key, request a new one at https://api.congress.gov/sign-up/ and update both places. Not connected yet: US state legislatures (needs an Open States API key) and the OECD.AI policy
-database (no public API).
+| Task | When | Runs |
+|---|---|---|
+| `AI Pulse server` | At logon | `pythonw -m aipulse --log server.log serve --port 8080` |
+| `AI Pulse collect` | Every 6 hours | `pythonw -m aipulse --log collect.log collect` |
 
-US stories also record their state (`US-OR` next to `US`, from state names, governors and abbreviations
-like "Ore."), so the breakdown can list them by state.
-
-## Search and paging
-
-The page never downloads every story. The server filters, searches and pages the stories, and the page
-asks for 40 cards at a time ("Load more" appears at the bottom and also loads by itself as you scroll).
-
-- **Search** uses SQLite's FTS5 full-text index over headlines, summaries, sources, tags and authors, kept
-  in sync by triggers. Words match by prefix and stem ("regulat" and "regulate" find "regulation"),
-  accents are ignored, and a card matches if any outlet's version of the story does.
-- **Cards** are stored: each story records its card's lead story (`cluster`). New stories are grouped
-  after every collection (the last 14 days are regrouped); `python -m aipulse regroup` regroups everything.
-- On a test database of 40,000 stories (over a year at ~100 a day) page requests take 30-250 ms and
-  adding a story takes under a millisecond.
+The server reads `templates/index.html` on every request, so page changes show on reload; restart the
+server task after changing Python code. On Linux or macOS, use cron with the same two commands.
 
 ## Source health
 
-Every fetch is retried when a host is busy: HTTP 429 (rate limit) and 5xx errors and network timeouts
-wait 2s, then 6s (or the server's `Retry-After`, up to 60s) before giving up. Hugging Face
-always lists its latest papers, so an empty reply from it is retried too and counts as a failure if
-it stays empty. Each source's last attempt, last success, failures in a row and last error are stored,
-and the page header shows "⚠ N sources failing" once a source has failed 3 collections in a row (click
-it for details). One good fetch clears the warning.
-
-- `python -m aipulse sources` prints the health of every source
-- `/api/sources` returns the same as JSON
-
-## Measuring the sorting rules
-
-`tests/fixtures/labels.csv` holds 100 stories labelled by hand with the right tab, and for tracker
-stories the action and jurisdictions. `python -m aipulse evaluate` runs the keyword rules over them and
-prints accuracy plus every mistake; a test keeps the scores from dropping below the floors in
-`tests/test_aipulse.py`. Labelling rules:
-
-- **regulation**: a government, legislature or regulator officially *proposes* a rule (bill, draft
-  rules, formal proposal) or *adopts* one (law passed or signed, in force, executive order).
-  Jurisdictions are where the acting government is, not countries it's about.
-- **policy**: other government and AI stories: investigations, lawsuits, debates, statements,
-  explainers, guidance, and companies' submissions to governments.
-- **news** / **tool**: industry news; product, model or feature releases.
-
-To correct a label, edit the `category`, `action` or `jurisdictions` cell (codes like `US`, `EU`,
-comma-separated) and re-run the evaluation.
-
-## Better summaries with Claude (optional)
-
-Set an API key and the collector will ask Claude to write a neutral 1-2 sentence summary,
-pick the category, add tags, and drop stories that aren't really about AI:
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-export AIPULSE_MODEL=claude-haiku-4-5-20251001   # optional; this is the default
-python -m aipulse collect
-```
-
-Without a key it uses keyword rules (`aipulse/classify.py`), which work offline and cost nothing.
+Busy hosts (HTTP 429, 5xx, timeouts) are retried with backoff. A source that fails 3 collections in a
+row shows as "⚠ N sources failing" under the intro; `python -m aipulse sources` lists the details.
 
 ## Customize
 
-- **Sources:** edit `aipulse/sources.py`. Any RSS or Atom feed works; give each a default category.
-  To follow another researcher, add their name to `PROFESSORS`.
-  Google News search feeds (`news.google.com/rss/search?q=...`) are a quick way to follow a topic,
-  e.g. a country's AI legislation.
-- **Categories and tags:** keyword lists live in `aipulse/classify.py`.
-- **Retention:** `python -m aipulse prune --keep-days 180`.
-
-## Keep it updating every 6 hours
-
-Run the web server and the collector as two separate scheduled jobs, so updates survive restarts and
-don't depend on a terminal staying open. `--log FILE` appends output to a file for windowless runs.
-
-**Windows (Task Scheduler)** — this machine uses two tasks:
-
-| Task | Trigger | Runs |
-|---|---|---|
-| `AI Pulse server` | at logon; restarts if it crashes | `pythonw -m aipulse --log server.log serve --port 8080` |
-| `AI Pulse collect` | every 6 hours (00:00, 06:00, 12:00, 18:00); a run missed while the PC was off or asleep starts as soon as possible | `pythonw -m aipulse --log collect.log collect` |
-
-Check them with `Get-ScheduledTask "AI Pulse*" | Get-ScheduledTaskInfo`, run a collection now with
-`Start-ScheduledTask "AI Pulse collect"`, and see what each run did in `collect.log`. Remove them with
-`Unregister-ScheduledTask "AI Pulse server"` (and `"AI Pulse collect"`).
-
-**Linux / macOS (cron):**
-
-```cron
-0 */6 * * * cd /path/to/ai-pulse-app && python3 -m aipulse --log collect.log collect
-@reboot     cd /path/to/ai-pulse-app && python3 -m aipulse --log server.log serve --host 0.0.0.0
-```
-
-For a quick single process instead, `python -m aipulse run --every-hours 6` serves and collects on a
-timer (a failed collection is logged and retried next cycle), but it stops when that process does.
-
-## Publish on GitHub Pages (free, no PC needed)
-
-`python -m aipulse build --out site` writes a static copy of the site: the page and
-`data.json` with every card. The page sees `data-static="1"` and filters, searches and pages
-`data.json` in the browser instead of calling `/api/items` (search is a close match to the server's:
-every word must start a word of the story, with light stemming).
-
-`.github/workflows/pages.yml` does this on GitHub every 6 hours (00:00, 06:00, 12:00, 18:00 UTC), on
-every push to `main`, and on demand (Actions → Collect and publish → Run workflow). It carries the
-database between runs in the Actions cache and starts from `data/seed.db` when there is none.
-
-1. Push this folder to a **public** GitHub repository.
-2. Settings → Pages → Source: **GitHub Actions**.
-3. Settings → Secrets and variables → Actions → New repository secret `CONGRESS_API_KEY` (US bill
-   stages; without it congress.gov refuses GitHub's servers and shows as a failing source).
-
-The site is then at `https://<user>.github.io/<repo>/`. GitHub pauses scheduled workflows in a repository
-with no commits for 60 days; it emails a warning, and one click (or any commit) turns them back on.
-
-## Tests
-
-```bash
-python -m pytest -q
-```
+- **Sources:** `aipulse/sources.py`. Any RSS or Atom feed works; give it a default stream. Add names to
+  `PROFESSORS` or `EXPERTS` to follow more people. Google News search feeds are a quick way to follow a topic.
+- **Rules and tags:** `aipulse/classify.py` and `aipulse/jurisdictions.py`.
+- **Company logos:** `LOGOS` in `templates/index.html`, keyed by the company names in `COMPANY_TERMS`.
 
 ## Project layout
 
 ```
 aipulse/
-  sources.py    feed list
-  feeds.py      RSS/Atom fetching and parsing (stdlib XML)
-  classify.py   AI relevance, category, tag and regulatory-action rules
-  jurisdictions.py  countries/blocs the regulation tracker recognises
-  enrich.py     optional Claude summaries via the Messages API
-  store.py      SQLite schema, dedupe, queries
-  collect.py    the collection run
-  server.py     page + JSON API
-  static.py     static copy of the site for GitHub Pages
-templates/index.html   the feed page
-tests/                 unit and end-to-end tests with fixture feeds
+  sources.py        feed list, professors, experts, companies
+  feeds.py          RSS/Atom fetching and parsing
+  classify.py       AI relevance, stream, tag and regulatory-action rules
+  jurisdictions.py  countries, blocs and US states the tracker recognises
+  brief.py          headline and summary cleaning
+  bills.py          congress.gov and European Parliament bill stages
+  cluster.py        grouping the same event into one card
+  enrich.py         optional Claude summaries
+  store.py          SQLite schema, full-text search, queries
+  collect.py        the collection run
+  evaluate.py       scoring the rules against labelled stories
+  server.py         page and JSON API
+  static.py         static site for GitHub Pages
+templates/index.html  the page
+tests/                unit and end-to-end tests with fixture feeds (python -m pytest -q)
 ```
+
+Company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub.
