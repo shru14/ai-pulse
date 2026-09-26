@@ -21,6 +21,7 @@ Optional per-source keys:
                 it is retried, and counts as a failed fetch if it stays empty
   label         name shown in source health checks when several sources share a name (arXiv)
   jurisdictions regulation sources: codes to use when a story doesn't name a place (e.g. ["EU"])
+  paged         the feed pages back in time (WordPress: ?paged=2, 3, ...); the history run reads it back to 2023
 
 Policy stories from any source move to the regulation tracker when they report a proposal or an
 adopted law in a recognisable country; see collect.apply_regulation.
@@ -29,23 +30,73 @@ Add, remove or edit entries freely. Any RSS 2.0 or Atom feed works, as long as t
 access (its robots.txt and terms): Google News and Bing News don't, so neither is used.
 """
 
+# Every source below was checked (September 2026): its robots.txt allows fetching it and its terms don't
+# restrict showing headlines with a short description and a link. Feeds that forbid that (BBC News: no
+# modified feeds) or whose terms couldn't be confirmed (NYT, The Guardian, Wired) are left out.
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
     {"name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "category": "tool"},
     {"name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/", "category": "tool"},
+    {"name": "Google DeepMind Blog", "url": "https://deepmind.google/blog/rss.xml", "category": "tool"},
+    {"name": "Google Research Blog", "url": "https://research.google/blog/rss/", "category": "tool"},
     {"name": "Hugging Face Blog", "url": "https://huggingface.co/blog/feed.xml", "category": "tool"},
+    {"name": "Mistral AI", "url": "https://mistral.ai/rss.xml", "category": "tool"},
+    {"name": "Microsoft Research", "url": "https://www.microsoft.com/en-us/research/feed/", "category": "tool",
+     "ai_only": False, "paged": True},
+    {"name": "NVIDIA Blog", "url": "https://blogs.nvidia.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True, "paged": True},
+    {"name": "AWS Machine Learning Blog", "url": "https://aws.amazon.com/blogs/machine-learning/feed/", "category": "tool"},
+    {"name": "Engineering at Meta", "url": "https://engineering.fb.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True, "paged": True},
+    {"name": "GitHub Blog", "url": "https://github.blog/ai-and-ml/feed/", "category": "tool"},
+    {"name": "Databricks Blog", "url": "https://www.databricks.com/feed", "category": "tool", "ai_only": False},
+    {"name": "Cloudflare Blog", "url": "https://blog.cloudflare.com/tag/ai/rss/", "category": "tool"},
+    {"name": "Ollama Blog", "url": "https://ollama.com/blog/rss.xml", "category": "tool"},
 
     # --- Industry news ---
-    {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news"},
+    {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",
+     "paged": True},
     {"name": "The Verge AI", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "category": "news"},
-    {"name": "Ars Technica AI", "url": "https://arstechnica.com/ai/feed/", "category": "news"},
-    {"name": "MIT Technology Review AI", "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed", "category": "news"},
-    {"name": "The Decoder", "url": "https://the-decoder.com/feed/", "category": "news"},
+    {"name": "Ars Technica AI", "url": "https://arstechnica.com/ai/feed/", "category": "news", "paged": True},
+    {"name": "MIT Technology Review AI", "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+     "category": "news", "paged": True},
+    {"name": "The Decoder", "url": "https://the-decoder.com/feed/", "category": "news", "paged": True},
+    {"name": "SiliconANGLE AI", "url": "https://siliconangle.com/category/ai/feed/", "category": "news", "paged": True},
+    {"name": "MarkTechPost", "url": "https://www.marktechpost.com/feed/", "category": "news", "ai_only": True, "paged": True},
+    {"name": "ZDNET AI", "url": "https://www.zdnet.com/topic/artificial-intelligence/rss.xml", "category": "news"},
+    {"name": "404 Media", "url": "https://www.404media.co/rss/", "category": "news"},
+    {"name": "Engadget", "url": "https://www.engadget.com/rss.xml", "category": "news", "ai_in_title": True},
+    {"name": "MIT News", "url": "https://news.mit.edu/topic/mitartificial-intelligence2-rss.xml", "category": "news",
+     "ai_only": True},
+    {"name": "Tech Xplore", "url": "https://techxplore.com/rss-feed/machine-learning-ai-news/", "category": "news",
+     "ai_only": True},
+    {"name": "ScienceDaily", "url": "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml",
+     "category": "news", "ai_only": True},
+    # Beyond the US: Asia, Africa and the rest of the world.
+    {"name": "Rest of World", "url": "https://restofworld.org/feed/latest", "category": "news"},
+    {"name": "South China Morning Post", "url": "https://www.scmp.com/rss/320663/feed", "category": "news"},
+    {"name": "TechCabal", "url": "https://techcabal.com/feed/", "category": "news", "paged": True},
 
     # --- Policy and politics ---
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
     # the publisher's own site feed carries its explainers and analysis.
     {"name": "EU AI Act Newsletter", "url": "https://artificialintelligenceact.eu/feed/", "category": "policy"},
+    {"name": "CSET", "url": "https://cset.georgetown.edu/feed/", "category": "policy", "ai_only": True, "paged": True},
+    {"name": "AI Now Institute", "url": "https://ainowinstitute.org/feed", "category": "policy", "ai_only": True,
+     "paged": True},
+    {"name": "Future of Life Institute", "url": "https://futureoflife.org/feed/", "category": "policy", "ai_only": True},
+    {"name": "EFF", "url": "https://www.eff.org/rss/updates.xml", "category": "policy", "ai_in_title": True},
+    {"name": "EPIC", "url": "https://epic.org/feed/", "category": "policy", "paged": True},
+    # Governments' own publications (US federal records and GOV.UK are public-domain / Open Government Licence).
+    {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"]},
+    {"name": "Federal Register", "format": "federal_register", "category": "policy", "jurisdictions": ["US"],
+     "ai_in_title": True,
+     "url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bterm%5D=%22artificial+intelligence%22"
+            "&order=newest&per_page=50&fields%5B%5D=title&fields%5B%5D=html_url&fields%5B%5D=abstract"
+            "&fields%5B%5D=publication_date"},
+    {"name": "GOV.UK", "format": "govuk", "category": "policy", "jurisdictions": ["GB"], "ai_in_title": True,
+     "url": "https://www.gov.uk/api/search.json?q=%22artificial+intelligence%22&order=-public_timestamp&count=50"
+            "&fields=title,link,description,public_timestamp"},
 ]
 
 # --- Regulation tracker: proposals and adopted laws ---

@@ -695,3 +695,40 @@ def test_stories_from_google_news_are_removed_once(tmp_path):
     assert [tuple(r) for r in conn.execute("SELECT url, cluster = id FROM items")] == [("https://e.com/1", 1)]
     store.insert(conn, {**base, "title": "Later", "url": "https://news.google.com/rss/articles/b"})
     assert purge_disallowed(conn, log=lambda *_: None) == 0  # runs once per database
+
+
+def test_government_apis_parse():
+    fr = b'{"results": [{"title": "Artificial Intelligence Safety Rule", "html_url": "https://www.federalregister.gov/d/1",' \
+         b' "abstract": "The agency proposes rules for AI systems.", "publication_date": "2024-02-01"}]}'
+    [e] = feeds.parse_federal_register(fr)
+    assert (e["url"], e["summary"], e["published"].date().isoformat()) == (
+        "https://www.federalregister.gov/d/1", "The agency proposes rules for AI systems.", "2024-02-01")
+    uk = b'{"results": [{"title": "AI white paper", "link": "/government/publications/ai-white-paper",' \
+         b' "description": "A pro-innovation approach.", "public_timestamp": "2023-03-29T09:00:00Z"}]}'
+    [g] = feeds.parse_govuk(uk)
+    assert g["url"] == "https://www.gov.uk/government/publications/ai-white-paper" and g["published"].year == 2023
+
+
+def test_feed_archive_pages_back_to_the_start_date(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import backfill
+    def rss(*items):
+        body = "".join(f"<item><title>AI story {t}</title><link>https://e.com/{t}</link>"
+                       f"<description>An AI model story number {t} with enough words.</description>"
+                       f"<pubDate>{d}</pubDate></item>" for t, d in items)
+        return f"<rss><channel>{body}</channel></rss>".encode()
+    pages = {1: rss(("a", "Mon, 01 Sep 2025 10:00:00 GMT")), 2: rss(("b", "Mon, 01 Jan 2024 10:00:00 GMT")),
+             3: rss(("c", "Mon, 01 Jan 2022 10:00:00 GMT")), 4: rss(("d", "Mon, 01 Jan 2021 10:00:00 GMT"))}
+    asked = []
+    def fetch(url):
+        n = int(url.rsplit("paged=", 1)[1]) if "paged=" in url else 1
+        asked.append(n)
+        return pages[n]
+    monkeypatch.setattr(backfill, "SOURCES", [{"name": "Blog", "url": "https://e.com/feed/", "category": "news",
+                                               "ai_only": True, "paged": True}])
+    import aipulse.collect as col
+    monkeypatch.setattr(col.time, "sleep", lambda s: None)  # collect's pause between sources
+    conn = store.connect(tmp_path / "t.db")
+    assert backfill.feed_archives(conn, date(2023, 1, 1), fetch, log=lambda *_: None) == 2
+    assert asked == [1, 2, 3]  # page 3 reaches before 2023: stop there (its old story is left out)
+    assert backfill.feed_archives(conn, date(2023, 1, 1), fetch, log=lambda *_: None) == 0  # remembered as done

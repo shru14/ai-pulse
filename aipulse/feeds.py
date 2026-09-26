@@ -171,4 +171,23 @@ def parse_arxiv_rss(xml_bytes: bytes) -> list[dict]:
     return entries
 
 
-PARSERS = {"feed": parse, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss}
+def parse_federal_register(json_bytes: bytes) -> list[dict]:
+    """Federal Register API (documents.json): US federal rules, proposed rules, notices and presidential
+    documents, each with its official abstract."""
+    return [{"title": clean_text(d.get("title"), 200), "url": d.get("html_url") or "",
+             "summary": clean_text(d.get("abstract") or ""), "published": parse_date(d.get("publication_date")),
+             "authors": []}
+            for d in json.loads(json_bytes).get("results") or []]
+
+
+def parse_govuk(json_bytes: bytes) -> list[dict]:
+    """GOV.UK search API: UK government news, policy papers, consultations and guidance."""
+    return [{"title": clean_text(r.get("title"), 200),
+             "url": r["link"] if r.get("link", "").startswith("http") else "https://www.gov.uk" + r.get("link", ""),
+             "summary": clean_text(r.get("description") or ""), "published": parse_date(r.get("public_timestamp")),
+             "authors": []}
+            for r in json.loads(json_bytes).get("results") or [] if r.get("link")]
+
+
+PARSERS = {"feed": parse, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
+           "federal_register": parse_federal_register, "govuk": parse_govuk}

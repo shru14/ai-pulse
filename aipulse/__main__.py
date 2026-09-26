@@ -39,7 +39,7 @@ def main():
     sub.add_parser("status", help="Markdown summary of the feed and failing sources (for the run page)")
     bf = sub.add_parser("backfill", help="one-time history: every stream back to --since (default 2023-01-01)")
     bf.add_argument("--since", default="2023-01-01", help="start date, YYYY-MM-DD")
-    bf.add_argument("--only", action="append", choices=["research", "papers"],
+    bf.add_argument("--only", action="append", choices=["feeds", "official", "research", "papers"],
                     help="run just these groups (repeatable)")
     bl = sub.add_parser("bills", help="sync AI bills' stages from congress.gov and the European Parliament")
     bl.add_argument("--eu-since", type=int, help="also discover EU procedures from this year on (one-time backfill)")
