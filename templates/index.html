@@ -565,11 +565,15 @@ function renderPlaceBar(tracker){
 
 function renderStatus(){
   const s = $("status");
-  const n = state.stories;
+  // Same unit as the stream counts (one card per event, however many outlets reported it), for the
+  // current time range and search, so it always equals their sum.
+  const n = state.counts.all ?? 0;
+  const span = {7:"in the last 7 days", 30:"in the last 30 days", 90:"in the last 90 days", 0:"in total"}[state.range];
   const last = state.status && state.status.lastRun;
   const when = t => new Date(t).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
   s.replaceChildren();
-  const l1 = el("div"); l1.append(el("b",null,String(n)), document.createTextNode(" stories tracked"));
+  const l1 = el("div"); l1.append(el("b",null,String(n)), document.createTextNode(
+    (n===1 ? " story " : " stories ") + (state.q.trim() ? "matching your search " : "") + span));
   const l2 = el("div", null, last ? "Last update "+when(last) : "Not collected yet");
   s.append(l1, l2);
   // Sources that failed several collections in a row; otherwise a dead feed would just go quiet.
