@@ -337,7 +337,6 @@ def test_country_filter_includes_eu_wide_rules_for_members(tmp_path):
     assert titles("US") == ["Texas passes AI bill"]
     tally = items_payload(conn, {"category": "regulation"})["map"]
     assert tally["cards"] == 3 and tally["national"] == {"FR": 1, "EU": 1, "US": 1} and tally["laws"]["US"] == 1
-    assert tally["lawCards"] == 3  # one per story, however many places it names
 
 
 def test_search_index_follows_edits(tmp_path):

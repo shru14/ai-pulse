@@ -164,9 +164,6 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .life li.now{font-weight:600}
 .life li.ended{color:var(--c-reg)}
 .life .when{color:var(--muted);margin-left:5px;font-weight:400}
-.kpis{display:flex;flex-wrap:wrap;gap:4px 20px;margin-top:18px;font-size:15px;color:var(--muted)}
-.kpis[hidden]{display:none}
-.kpis b{font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
 .item h3{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.25;margin:0;text-wrap:balance}
 .item h3 a{color:var(--ink);text-decoration:none}
 .item h3 a:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
@@ -237,7 +234,6 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
     <div class="groups" id="placebar" hidden></div>
   </div>
 
-  <section class="kpis" id="kpis" aria-label="Regulation tracker totals" hidden></section>
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
@@ -360,7 +356,6 @@ function render(){
   more.hidden = !state.hasMore;
   more.disabled = state.loading;
   more.textContent = state.loading ? "Loading\u2026" : "Load more ("+(state.total - list.length)+" left)";
-  renderKpis(tracker);
   renderStatus();
 }
 
@@ -431,21 +426,6 @@ function cardIcon(it){
   const topic = tags.find(t => TOPIC_SYMBOL[t]);
   tile.append(svgIcon(SYMBOL[topic ? TOPIC_SYMBOL[topic] : CAT_SYMBOL[it.category] || "news"]));
   return tile;
-}
-
-// Tracker headline numbers for the current time range and search (country filter aside).
-function renderKpis(tracker){
-  const box = $("kpis");
-  box.hidden = !(tracker && state.mapTally);
-  if(box.hidden) return;
-  const {national, cards, lawCards = 0} = state.mapTally;
-  const codes = Object.keys(national);
-  const states = codes.filter(c => c.startsWith("US-")).length;
-  box.replaceChildren();
-  [[lawCards, lawCards===1 ? "law adopted" : "laws adopted"], [cards - lawCards, cards - lawCards===1 ? "proposal" : "proposals"],
-   [codes.length - states, "countries & blocs"], [states, states===1 ? "US state" : "US states"]].forEach(([n, label]) => {
-    const s = el("span"); s.append(el("b",null,String(n)), document.createTextNode(" "+label)); box.append(s);
-  });
 }
 
 // Summaries show three lines; the ones that are cut off get a "Read more" toggle.
@@ -525,12 +505,12 @@ function staticPayload(d, params){
     hasMore: page*perPage < list.length, counts, stories: d.stories, lastRun: d.lastRun,
     jurisdictions: d.jurisdictions, failingSources: d.failingSources};
   if(cat === "regulation"){
-    const national = {}, laws = {}; let n = 0, lawCards = 0;
+    const national = {}, laws = {}; let n = 0;
     base.filter(c => c.category === "regulation" && c.action !== "expert").forEach(c => {
-      n++; if(c.action === "law") lawCards++;
+      n++;
       c.jurisdictions.forEach(j => { national[j] = (national[j]||0) + 1; if(c.action === "law") laws[j] = (laws[j]||0) + 1; });
     });
-    out.map = {national, laws, cards: n, lawCards};
+    out.map = {national, laws, cards: n};
   }
   return out;
 }
