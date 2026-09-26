@@ -40,6 +40,7 @@ def main():
     sm.add_argument("--since", default=None, help="YYYY-MM-DD (default: the last 30 days)")
     sm.add_argument("--workers", type=int, default=6, help="lookups at a time")
     sm.add_argument("--limit", type=int, default=None, help="at most this many stories")
+    sm.add_argument("--minutes", type=float, default=None, help="stop after this long (a batch per run)")
     ex = sub.add_parser("export-summaries", help="write repaired summaries since a date to a JSON file")
     ex.add_argument("--since", default="2026-01-01")
     ex.add_argument("--out", default="data/summaries.json")
@@ -136,7 +137,8 @@ def main():
     elif a.cmd == "summaries":
         from .collect import refresh_summaries
         conn = store.connect(a.db)
-        n = refresh_summaries(conn, since=a.since, recent_only=False, workers=a.workers, limit=a.limit)
+        n = refresh_summaries(conn, since=a.since, recent_only=False, workers=a.workers, limit=a.limit,
+                              minutes=a.minutes)
         print(f"Found summaries for {n} stories.")
     elif a.cmd == "export-summaries":
         import json as _json

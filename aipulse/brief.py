@@ -157,6 +157,11 @@ def _google(url: str, **kw) -> tuple[str, str]:
             _google_next[0] = time.time() + GOOGLE_GAP
 
 
+def google_blocked() -> bool:
+    """True while Google is rate-limiting link decoding (see _google)."""
+    return time.time() < _google_blocked_until[0]
+
+
 def google_news_target(url: str) -> str | None:
     """The original article behind a news.google.com/rss/articles/... link. Google encodes it; its
     article page carries a signature that its own decoding endpoint accepts."""

@@ -185,37 +185,59 @@ def _days_ago(n: int) -> str:
     return (datetime.now(timezone.utc) - timedelta(days=n)).date().isoformat()
 
 
+RETRY_AFTER_DAYS = 14  # a story with no summary to be found anywhere is tried again after this
+
+
 def refresh_summaries(conn, fetcher=feeds.fetch, limit: int | None = 300, log=print,
-                      since: str | None = None, recent_only: bool = True, workers: int = 1) -> int:
+                      since: str | None = None, recent_only: bool = True, workers: int = 1,
+                      minutes: float | None = None) -> int:
     """Retry the Bing lookup for headline-only stories that ended up with a draft, nothing, or just
     their headline (a lookup that failed, or a history run), newest first. Returns how many got one.
 
     Every collection runs it for the last 30 days, retrying only stories added in the last 3 days so
     each gets a few chances without being looked up forever. `python -m aipulse summaries --since
-    2026-01-01` runs it once over a longer span, several lookups at a time (`workers`)."""
+    2026-01-01` runs it over a longer span: a batch per run (`minutes`), newest first. A long run stops
+    when Google starts rate-limiting (the next batch carries on), and stories with nothing to be found
+    are skipped for two weeks so batches keep moving back in time."""
+    deadline = time.time() + minutes * 60 if minutes else None
+    tried = {r[0][len("summary-tried:"):] for r in conn.execute(
+        "SELECT key FROM meta WHERE key LIKE 'summary-tried:%' AND value >= ?", (_days_ago(RETRY_AFTER_DAYS),))}
     added = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat() if recent_only else ""
     rows = conn.execute(
         "SELECT id, title, summary, source, url FROM items "
         "WHERE date >= ? AND added_at >= ? AND url LIKE '%news.google.com%' ORDER BY date DESC",
         (since or _days_ago(REFRESH_DAYS), added)).fetchall()
-    todo = [r for r in rows if _weak(r["summary"], r["title"], r["source"])][:limit]  # e.g. headline + publisher
+    todo = [r for r in rows if r["id"] not in tried and _weak(r["summary"], r["title"], r["source"])][:limit]
     lookup = functools.partial(feeds.fetch, attempts=1) if fetcher is feeds.fetch else fetcher
     fixed = done = 0
     # Lookups run in threads (they're network waits); the database is written from this thread only.
-    with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-        futures = {pool.submit(brief.find_summary, r["title"], r["url"], r["source"], lookup): r for r in todo}
-        for fut in as_completed(futures):
-            r, done = futures[fut], done + 1
-            snippet = fut.result()
-            if snippet:
-                store.update_text(conn, r["id"], r["title"], snippet)
-                conn.commit()  # at once: the web server and collection need the lock too
-                fixed += 1
-            if done % 200 == 0:
-                log(f"  summaries: {done}/{len(todo)} looked up, {fixed} found")
+    pool = ThreadPoolExecutor(max_workers=max(1, workers))
+    futures = {pool.submit(brief.find_summary, r["title"], r["url"], r["source"], lookup): r for r in todo}
+    stopped = ""
+    for fut in as_completed(futures):
+        r, done = futures[fut], done + 1
+        snippet = fut.result()
+        if snippet:
+            store.update_text(conn, r["id"], r["title"], snippet)
+            fixed += 1
+        elif not brief.google_blocked():  # truly nothing to find, not just Google being busy
+            conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)",
+                         (f"summary-tried:{r['id']}", _days_ago(0)))
+        conn.commit()  # at once: the web server and collection need the lock too
+        if done % 200 == 0:
+            log(f"  summaries: {done}/{len(todo)} looked up, {fixed} found")
+        if not recent_only and brief.google_blocked():
+            stopped = "Google is rate-limiting"
+        elif deadline and time.time() > deadline:
+            stopped = f"{minutes:g}-minute batch done"
+        if stopped:
+            break
+    pool.shutdown(wait=True, cancel_futures=True)
     conn.commit()
+    if stopped:
+        log(f"  summaries: stopped after {done} ({stopped}); the next run carries on")
     if todo:
-        log(f"  summaries: {fixed} of {len(todo)} headline-only stories found on Bing News")
+        log(f"  summaries: {fixed} of {len(todo)} headline-only stories got a real summary")
     return fixed
 
 
