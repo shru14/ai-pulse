@@ -36,13 +36,20 @@ jobs:
       - name: Restore the database
         uses: actions/cache/restore@v4
         with:
+          path: aipulse.db
+          key: aipulse-db-${{ github.run_id }}
+          restore-keys: aipulse-db-
+
+      # Brand logo lookups (aipulse/brands.py), kept apart so the database's cache never changes shape.
+      - name: Restore brand logos
+        uses: actions/cache/restore@v4
+        with:
           path: |
-            aipulse.db
             data/brands.json
             data/brands-wikidata.json
             data/brand-icons
-          key: aipulse-db-${{ github.run_id }}
-          restore-keys: aipulse-db-
+          key: brands-${{ github.run_id }}
+          restore-keys: brands-
 
       - name: Start from the seed if there is no saved database
         run: "[ -f aipulse.db ] || cp data/seed.db aipulse.db"
@@ -64,15 +71,21 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: |
-            aipulse.db
-            data/brands.json
-            data/brands-wikidata.json
-            data/brand-icons
+          path: aipulse.db
           key: aipulse-db-${{ github.run_id }}
 
       - name: Build the site
         run: python -m aipulse --db aipulse.db build --out site
+
+      - name: Save brand logos
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data/brands.json
+            data/brands-wikidata.json
+            data/brand-icons
+          key: brands-${{ github.run_id }}
 
       - uses: actions/configure-pages@v5
 

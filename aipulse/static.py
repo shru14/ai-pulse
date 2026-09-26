@@ -14,7 +14,7 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import brands, jurisdictions, store
+from . import brands, jurisdictions, models, store
 from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
 
@@ -57,7 +57,8 @@ def build(conn, out: str | Path) -> int:
     data = {"built": datetime.now(timezone.utc).isoformat(timespec="seconds"), "cards": cards,
             "stories": store.story_count(conn), "lastRun": store.last_run(conn),
             "jurisdictions": jurisdictions.meta(), "euMembers": sorted(EU_MEMBERS),
-            "failingSources": [h for h in health if h["failing"]]}
+            "failingSources": [h for h in health if h["failing"]], "models": models.recent(conn)}
+    brands.lab_logos(data["models"])
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
 
     page = TEMPLATE.read_text(encoding="utf-8")

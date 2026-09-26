@@ -12,7 +12,7 @@ Pure Python 3.10+, standard library only: nothing to install.
 
 | Stream | What's in it |
 |---|---|
-| **Releases** | New models, product features and open-source launches |
+| **Releases** | New models, product features and open-source launches, topped by a **model tracker** (below) |
 | **Industry news** | Funding, deals, partnerships and company moves |
 | **Policy** | What governments, courts and politicians are doing about AI: investigations, lawsuits, guidance, debates |
 | **Research** | Papers only: new arXiv papers by ~80 leading AI professors (matched by exact author name), and papers from big tech and frontier labs via Hugging Face Daily Papers |
@@ -27,6 +27,11 @@ Pure Python 3.10+, standard library only: nothing to install.
 - **Cards** show a logo for the company involved (or the country, or a topic symbol), a summary
   (long ones fold behind "Read more"), clickable tags, and the date and source link. The same event
   reported by several outlets is one card with "N sources".
+- **Model tracker** (top of Releases): every new model with its lab, release date, context window and
+  price per million tokens, from OpenRouter's public model list (closed and open-weight models). A timeline
+  shows one lane per lab with a dot per release (filled = closed, ring = open weights; hover for details,
+  click for the model page); the table below sorts by any column and links open weights to Hugging Face.
+  It follows the time range and search.
 - **Regulation tracker**: click a country chip on a card to see only that country. US bills and EU procedures show their stage,
   from introduced to in force.
 - **Light / dark** follows your system; the button in the top bar overrides it.
@@ -136,6 +141,7 @@ aipulse/
   brief.py          headline and summary cleaning
   brands.py         brand logos found in headlines (Simple Icons, Wikidata)
   bills.py          congress.gov and European Parliament bill stages
+  models.py         new AI models from OpenRouter for the model tracker
   cluster.py        grouping the same event into one card
   enrich.py         optional Claude summaries
   store.py          SQLite schema, full-text search, queries

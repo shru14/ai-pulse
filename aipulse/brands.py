@@ -250,6 +250,18 @@ def logo_for(title: str, tags: list[str], common: set[str], budget: list[int]) -
     return None
 
 
+def lab_logos(models: list[dict]) -> None:
+    """Attach a Simple Icons logo to each model whose lab is a brand there ("Xiaomi", "Tencent")."""
+    si = si_index()
+    for m in models:
+        if m["lab"].lower() in _CURATED:
+            continue  # the page has its own logo
+        brand = si.get(m["lab"])
+        path = brand and si_path(brand["slug"])
+        if path:
+            m["logo"] = {"name": brand["title"], "hex": "#" + brand["hex"], "path": path}
+
+
 _common_cache: tuple[int, set[str]] = (-1, set())
 
 
