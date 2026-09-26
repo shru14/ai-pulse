@@ -87,6 +87,11 @@ jobs:
       - name: Build the site
         run: python -m aipulse --db aipulse.db build --out site
 
+      # Shown on the run's page (github.com/<user>/<repo>/actions): progress you can check from a phone.
+      - name: Report progress
+        if: always()
+        run: python -m aipulse --db aipulse.db status >> "$GITHUB_STEP_SUMMARY"
+
       - name: Save brand logos
         if: always()
         uses: actions/cache/save@v4

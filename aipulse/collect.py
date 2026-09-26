@@ -245,6 +245,21 @@ def _weak(summary: str, title: str, source: str) -> bool:
     return not summary or brief.is_draft(summary) or not brief.clean_summary(summary, title, source)
 
 
+def status_report(conn, since: str = "2026-01-01") -> str:
+    """A few lines of Markdown for the GitHub run page: size of the feed and the summary backlog."""
+    rows = conn.execute("SELECT title, summary, source FROM items WHERE date >= ? AND url LIKE '%news.google.com%'",
+                        (since,)).fetchall()
+    weak = sum(_weak(r["summary"], r["title"], r["source"]) for r in rows)
+    week = conn.execute("SELECT COUNT(*) FROM items WHERE date >= ?", (_days_ago(7),)).fetchone()[0]
+    total = conn.execute("SELECT COUNT(*) FROM items").fetchone()[0]
+    failing = [h["name"] for h in store.source_health(conn, [s["url"] for s in SOURCES]) if h["failing"]]
+    lines = ["### AI Pulse",
+             f"- **Stories:** {total:,} in total, {week:,} from the last 7 days",
+             f"- **Summaries still to repair** (headline-only stories since {since}): **{weak:,}** of {len(rows):,}",
+             f"- **Failing sources:** {', '.join(failing) if failing else 'none'}"]
+    return "\n".join(lines) + "\n"
+
+
 def export_summaries(conn, since: str) -> dict[str, str]:
     """Real summaries of headline-only (Google News) stories since a date, by story id. The repair runs on
     a PC (Google limits how fast its links can be decoded); this carries its results to the public site."""
