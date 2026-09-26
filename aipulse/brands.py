@@ -6,7 +6,7 @@ Nothing is listed by hand. For each name in a headline (a run of capitalised wor
 1. Simple Icons (~3,000 brands, CC0, simpleicons.org): a vector logo in the brand's colour. The index
    is downloaded to data/brands.json and refreshed weekly.
 2. Wikidata: if the name is an entity described as a company or product with an official website,
-   that website's icon (via Google's favicon service). This covers brands Simple Icons had to remove,
+   that website's own icon (its /favicon.ico, when the site's robots.txt allows it). This covers brands Simple Icons had to remove,
    like Slack and Salesforce.
 
 A plain one-word name ("Astra", "Make") must also be a company or product on Wikidata under exactly
@@ -22,8 +22,10 @@ import os
 import re
 import time
 import unicodedata
+import urllib.error
 import urllib.parse
 import urllib.request
+import urllib.robotparser
 from pathlib import Path
 
 from . import classify, jurisdictions
@@ -32,7 +34,6 @@ SI_VERSION = "16"  # Simple Icons major version; jsDelivr serves its latest rele
 SI_INDEX_URL = f"https://cdn.jsdelivr.net/npm/simple-icons@{SI_VERSION}/data/simple-icons.json"
 SI_ICON_URL = f"https://cdn.jsdelivr.net/npm/simple-icons@{SI_VERSION}/icons/{{slug}}.svg"
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"
-FAVICON_URL = "https://www.google.com/s2/favicons?domain={host}&sz=64"
 
 DATA = Path(__file__).resolve().parent.parent / "data"
 SI_INDEX_FILE = DATA / "brands.json"
@@ -76,6 +77,29 @@ def _get(url: str, timeout: int = 10) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return resp.read()
+
+
+# Image types a website icon may come as, by their first bytes.
+_ICON_TYPES = ((b"\x00\x00\x01\x00", "ico"), (b"\x89PNG", "png"), (b"\xff\xd8\xff", "jpg"), (b"GIF8", "gif"))
+
+
+def site_icon(host: str) -> tuple[bytes, str]:
+    """(image, extension) of a website's own /favicon.ico, if its robots.txt allows fetching it."""
+    rules = urllib.robotparser.RobotFileParser()
+    try:
+        rules.parse(_get(f"https://{host}/robots.txt").decode("utf-8", "replace").splitlines())
+    except urllib.error.HTTPError as e:
+        if e.code not in (404, 410):  # no robots.txt means no rules; anything else, don't risk it
+            raise
+        rules.parse([])
+    url = f"https://{host}/favicon.ico"
+    if not rules.can_fetch(USER_AGENT, url):
+        raise PermissionError(f"{host} doesn't allow fetching its icon")
+    data = _get(url)
+    ext = next((e for magic, e in _ICON_TYPES if data.startswith(magic)), None)
+    if not ext:
+        raise ValueError(f"{host}/favicon.ico isn't an image")
+    return data, ext
 
 
 # ---------- Simple Icons ----------
@@ -160,6 +184,13 @@ def wikidata(name: str, budget: list[int]) -> dict | None:
     when it isn't cached and the budget of new lookups is spent. Misses are re-checked after 30 days."""
     cache = _wd_cache()
     hit = cache.get(name)
+    if hit and (hit.get("icon") or "").startswith("site-"):  # from Google's favicon service, no longer used
+        (ICON_DIR / hit["icon"]).unlink(missing_ok=True)
+        if budget[0] <= 0:
+            return dict(hit, icon=None)  # fetched from the site itself on a later call
+        budget[0] -= 1
+        hit["icon"] = _save_icon(name, hit["site"]) if hit.get("site") else None
+        return hit
     if hit and (hit.get("brand") or time.time() - hit.get("checked", 0) < RECHECK_MISSES):
         if hit.get("icon") and not (ICON_DIR / hit["icon"]).exists():
             return dict(hit, icon=None)
@@ -172,15 +203,21 @@ def wikidata(name: str, budget: list[int]) -> dict | None:
     except Exception:
         return None  # network trouble: try again next time
     if entry["site"]:
-        try:
-            data = _get(FAVICON_URL.format(host=urllib.parse.quote(entry["site"])))  # 404 raises when there's none
-            ICON_DIR.mkdir(parents=True, exist_ok=True)
-            entry["icon"] = f"site-{slug(name)}.{'jpg' if data[:3] == bytes([255, 216, 255]) else 'png'}"
-            (ICON_DIR / entry["icon"]).write_bytes(data)
-        except Exception:
-            pass
+        entry["icon"] = _save_icon(name, entry["site"])
     cache[name] = entry
     return entry
+
+
+def _save_icon(name: str, host: str) -> str | None:
+    """Download the website's icon into ICON_DIR; its file name, or None if there's none we may use."""
+    try:
+        data, ext = site_icon(host)
+    except Exception:
+        return None
+    ICON_DIR.mkdir(parents=True, exist_ok=True)
+    icon = f"own-{slug(name)}.{ext}"
+    (ICON_DIR / icon).write_bytes(data)
+    return icon
 
 
 # ---------- Finding the brand in a headline ----------

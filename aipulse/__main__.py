@@ -21,7 +21,6 @@ def main():
 
     c = sub.add_parser("collect", help="fetch all sources once and store new stories")
     c.add_argument("--max-age-days", type=int, default=3)
-    c.add_argument("--no-summaries", action="store_true", help="skip looking up summaries for headline-only stories")
 
     s = sub.add_parser("serve", help="serve the feed page and JSON API")
     s.add_argument("--host", default="127.0.0.1")
@@ -37,20 +36,10 @@ def main():
     sub.add_parser("evaluate", help="score the sorting rules against hand-labelled stories")
     sub.add_parser("sources", help="show each source's health: last success, failures in a row, last error")
     sub.add_parser("regroup", help="regroup every stored story into cards (one card per event)")
-    sm = sub.add_parser("summaries", help="look up real summaries for headline-only stories since a date")
-    sm.add_argument("--since", default=None, help="YYYY-MM-DD (default: the last 30 days)")
-    sm.add_argument("--workers", type=int, default=6, help="lookups at a time")
-    sm.add_argument("--limit", type=int, default=None, help="at most this many stories")
-    sm.add_argument("--minutes", type=float, default=None, help="stop after this long (a batch per run)")
-    sub.add_parser("status", help="Markdown summary of the feed and the summary backlog (for the run page)")
-    ex = sub.add_parser("export-summaries", help="write repaired summaries since a date to a JSON file")
-    ex.add_argument("--since", default="2026-01-01")
-    ex.add_argument("--out", default="data/summaries.json")
-    ap = sub.add_parser("apply-summaries", help="fill in weak summaries from an export-summaries file")
-    ap.add_argument("file", nargs="?", default="data/summaries.json")
+    sub.add_parser("status", help="Markdown summary of the feed and failing sources (for the run page)")
     bf = sub.add_parser("backfill", help="one-time history: every stream back to --since (default 2023-01-01)")
     bf.add_argument("--since", default="2023-01-01", help="start date, YYYY-MM-DD")
-    bf.add_argument("--only", action="append", choices=["news", "experts", "research", "papers"],
+    bf.add_argument("--only", action="append", choices=["research", "papers"],
                     help="run just these groups (repeatable)")
     bl = sub.add_parser("bills", help="sync AI bills' stages from congress.gov and the European Parliament")
     bl.add_argument("--eu-since", type=int, help="also discover EU procedures from this year on (one-time backfill)")
@@ -71,7 +60,7 @@ def main():
     if a.cmd == "collect":
         print(f"[{datetime.now():%Y-%m-%d %H:%M}] Collecting")
         conn = store.connect(a.db)
-        print(f"[{datetime.now():%Y-%m-%d %H:%M}] Added {collect(conn, max_age_days=a.max_age_days, summaries=not a.no_summaries)} new stories.")
+        print(f"[{datetime.now():%Y-%m-%d %H:%M}] Added {collect(conn, max_age_days=a.max_age_days)} new stories.")
     elif a.cmd == "serve":
         store.connect(a.db).close()
         serve(a.db, a.host, a.port)
@@ -136,32 +125,9 @@ def main():
     elif a.cmd == "build":
         from .static import build
         print(f"Wrote {build(store.connect(a.db), a.out)} cards to {a.out}/")
-    elif a.cmd == "summaries":
-        from .collect import refresh_summaries
-        conn = store.connect(a.db)
-        n = refresh_summaries(conn, since=a.since, recent_only=False, workers=a.workers, limit=a.limit,
-                              minutes=a.minutes)
-        print(f"Found summaries for {n} stories.")
     elif a.cmd == "status":
         from .collect import status_report
         print(status_report(store.connect(a.db)))
-    elif a.cmd == "export-summaries":
-        import json as _json
-        from .collect import export_summaries
-        found = export_summaries(store.connect(a.db), a.since)
-        with open(a.out, "w", encoding="utf-8") as f:
-            _json.dump(found, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
-        print(f"Wrote {len(found)} summaries to {a.out}.")
-    elif a.cmd == "apply-summaries":
-        import json as _json
-        import os as _os
-        from .collect import apply_summaries
-        if not _os.path.exists(a.file):
-            print(f"No {a.file}; nothing to apply.")
-        else:
-            with open(a.file, encoding="utf-8") as f:
-                n = apply_summaries(store.connect(a.db), _json.load(f))
-            print(f"Filled in {n} summaries from {a.file}.")
     elif a.cmd == "backfill":
         from datetime import date as _date
         from .backfill import run as backfill

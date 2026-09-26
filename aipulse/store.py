@@ -329,32 +329,6 @@ def regulation_tally(conn: sqlite3.Connection, q=None, days=None) -> dict:
     return {"national": national, "laws": laws, "cards": n}
 
 
-def highlights(conn: sqlite3.Connection, category=None, days: int = 7, limit: int = 3) -> list[dict]:
-    """The week's biggest cards: covered by the most outlets. Research ranks papers by the tracked
-    professors and labs behind them; the regulation tracker puts adopted laws first (no expert views)."""
-    since = (datetime.now(timezone.utc) - timedelta(days=days)).date().isoformat()
-    where, args = ["i.cluster = i.id", "i.date >= ?"], [since]
-    if category:
-        where.append("i.category = ?")
-        args.append(category)
-    outlets = "(SELECT COUNT(*) FROM items j WHERE j.cluster = i.id)"
-    if category == "research":
-        order = "(length(i.tags) - length(replace(i.tags, ',', ''))) DESC"
-    elif category == "regulation":
-        where.append("i.action != 'expert'")
-        order = f"(i.action = 'law') DESC, {outlets} DESC"
-    else:
-        order = f"{outlets} DESC"
-    rows = conn.execute(f"SELECT i.*, {outlets} AS outlets FROM items i WHERE {' AND '.join(where)} "
-                        f"ORDER BY {order}, i.date DESC, i.added_at DESC LIMIT ?", [*args, limit]).fetchall()
-    out = []
-    for r in rows:
-        c = _row(r)
-        c["outlets"] = r["outlets"]
-        out.append(c)
-    return out
-
-
 def story_count(conn: sqlite3.Connection) -> int:
     return conn.execute("SELECT COUNT(*) FROM items").fetchone()[0]
 

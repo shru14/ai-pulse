@@ -193,7 +193,7 @@ def test_hugging_face_collect(tmp_path):
 
 def test_expert_feed_items_are_tagged_by_person(tmp_path):
     conn = store.connect(tmp_path / "t.db")
-    sources = [{"name": "Google News: Shannon Vallor", "url": "rss", "category": "regulation",
+    sources = [{"name": "Scholar: Shannon Vallor", "url": "rss", "category": "regulation",
                 "expert": "Shannon Vallor"}]
     collect(conn, sources, max_age_days=100000, fetcher=lambda u: (FIX / "sample_rss.xml").read_bytes(),
             log=lambda *_: None)
@@ -222,21 +222,16 @@ def test_clean_summary_never_repeats_the_headline():
     assert clean_summary("Great story. The post Great story appeared first on Blog.", "x") == ""
 
 
-def test_headline_only_items_get_a_lookup_or_a_draft(monkeypatch):
-    from aipulse import brief
+def test_headline_only_items_get_a_draft():
     from aipulse.collect import fill_summary
-    monkeypatch.setattr(brief.time, "sleep", lambda s: None)
-    rss = b"""<rss><channel><item><title>Kotek issues executive order on AI procurement safeguards</title>
-      <link>https://example.com/a</link><description>Gov. Tina Kotek issued an executive order directing Oregon
-      to develop safety standards for the state's use of AI.</description></item></channel></rss>"""
     item = {"title": "Kotek issues executive order establishing AI procurement safeguards", "summary": "",
-            "url": "https://news.google.com/rss/articles/x", "category": "regulation", "action": "law",
-            "jurisdictions": ["US"], "tags": []}
-    fill_summary(item, lambda u: rss)
-    assert item["summary"].startswith("Gov. Tina Kotek issued an executive order")
-    miss = {**item, "summary": "", "tags": ["Google"]}
-    fill_summary(miss, lambda u: b"<rss><channel></channel></rss>")
-    assert miss["summary"] == "A law adopted in the United States, involving Google."
+            "url": "https://example.com/a", "category": "regulation", "action": "law",
+            "jurisdictions": ["US"], "tags": ["Google"]}
+    fill_summary(item)
+    assert item["summary"] == "A law adopted in the United States, involving Google."
+    kept = {**item, "summary": "The order sets safety standards."}
+    fill_summary(kept)
+    assert kept["summary"] == "The order sets safety standards."  # a real summary is left alone
 
 
 # Accuracy floors on the hand-labelled stories (python -m aipulse evaluate). Raise them as the rules
@@ -649,11 +644,11 @@ def test_brand_logo_needs_confirmation_for_plain_words(monkeypatch):
     monkeypatch.setattr(brands, "si_index", lambda: {"Astra": {"title": "Astra", "slug": "astra", "hex": "5C2EDE"},
                                                      "YouTube": {"title": "YouTube", "slug": "youtube", "hex": "FF0000"}})
     monkeypatch.setattr(brands, "si_path", lambda s: "M0 0h24v24H0z")
-    known = {"Slack": {"brand": True, "site": "slack.com", "icon": "site-slack.png"},
+    known = {"Slack": {"brand": True, "site": "slack.com", "icon": "own-slack.ico"},
              "Astra": {"brand": False, "site": None, "icon": None}, "Ando": {"brand": False, "site": None, "icon": None}}
     monkeypatch.setattr(brands, "wikidata", lambda name, budget: known.get(name))
     logo = lambda title, tags=(): brands.logo_for(title, list(tags), set(), [10])
-    assert logo("Ando wants to take on Slack")["src"] == "brand-icons/site-slack.png"
+    assert logo("Ando wants to take on Slack")["src"] == "brand-icons/own-slack.ico"
     assert logo("Astra and Opus just passed Turing's test") is None  # a plain word Wikidata doesn't call a brand
     assert logo("YouTube promises custom feeds")["hex"] == "#FF0000"  # distinctive: no confirmation needed
     assert logo("Meta's new glasses use Slack", ["Meta"]) is None  # the page's own AI-company logos come first
@@ -677,71 +672,26 @@ def test_headline_plus_subtitle_is_not_a_summary():
                          "OpenAI releases GPT-6", "X") == "The new model handles longer tasks and costs less for developers."
 
 
-def test_recent_headline_only_stories_get_their_summary_retried(tmp_path):
-    from aipulse.collect import refresh_summaries
+def test_no_source_or_lookup_uses_sites_that_forbid_automated_access():
+    # Google News (robots.txt) and Bing News (its feed terms) don't allow this use; neither does Google's
+    # favicon service. Nothing in the app may fetch from them.
+    code = "\n".join(f.read_text(encoding="utf-8") for f in (FIX.parent.parent / "aipulse").glob("*.py") if f.name != "collect.py")
+    for host in ("news.google.com", "bing.com", "google.com/s2"):
+        assert host not in code, host
+    from aipulse.sources import SOURCES
+    assert not [s["url"] for s in SOURCES if "google.com" in s["url"].split("/")[2] and "blog.google" not in s["url"]]
+
+
+def test_stories_from_google_news_are_removed_once(tmp_path):
+    from aipulse.collect import purge_disallowed
     conn = store.connect(tmp_path / "t.db")
-    today = __import__("datetime").date.today().isoformat()
-    base = {"source": "Example", "category": "news", "date": today, "tags": [], "authors": []}
-    store.insert(conn, {**base, "title": "Acme launches a robot that folds laundry", "summary": "Industry news.",
-                        "url": "https://news.google.com/rss/articles/a"})
-    store.insert(conn, {**base, "title": "Old story with a real summary", "summary": "It has real text in it, clearly.",
-                        "url": "https://news.google.com/rss/articles/b"})
+    base = {"summary": "", "source": "E", "category": "news", "date": "2026-05-01", "tags": [], "authors": []}
+    store.insert(conn, {**base, "title": "Chip deal announced", "url": "https://news.google.com/rss/articles/a"})
+    store.insert(conn, {**base, "title": "Chip deal announced, says another outlet", "url": "https://e.com/1"})
+    ids = {r[1]: r[0] for r in conn.execute("SELECT id, url FROM items")}
+    conn.execute("UPDATE items SET cluster = ?", (ids["https://news.google.com/rss/articles/a"],))
     conn.commit()
-    bing = (b'<rss><channel><item><title>Acme launches a robot that folds laundry</title><link>https://e.com/x</link>'
-            b'<description>The machine folds a basket of shirts in ten minutes and ships next spring.</description>'
-            b'</item></channel></rss>')
-    assert refresh_summaries(conn, fetcher=lambda url: bing, log=lambda *_: None) == 1
-    got = dict(conn.execute("SELECT title, summary FROM items").fetchall())
-    assert got["Acme launches a robot that folds laundry"].startswith("The machine folds a basket")
-    assert got["Old story with a real summary"] == "It has real text in it, clearly."  # left alone
-
-
-def test_article_summary_uses_the_publishers_description(monkeypatch):
-    from aipulse import brief
-    monkeypatch.delenv("AIPULSE_OFFLINE", raising=False)
-    pages = {
-        "https://e.com/robot": '<html><head><meta property="og:description" content="The machine folds a basket of '
-                               'shirts in ten minutes and ships next spring to homes in the US."></head></html>',
-        "https://e.com/hf": '<html><head><meta name="description" content="We&#39;re on a journey to advance and '
-                            'democratize artificial intelligence through open source."></head></html>',
-    }
-    monkeypatch.setattr(brief, "_http", lambda url, **kw: (pages[url], url))
-    assert brief.article_summary("https://e.com/robot", "Acme launches a laundry robot").startswith("The machine folds")
-    assert brief.article_summary("https://e.com/hf", "A new open model") == ""  # the site's slogan, not the story
-
-
-def test_this_weeks_highlights(tmp_path):
-    from datetime import date, timedelta
-    conn = store.connect(tmp_path / "t.db")
-    today, old = date.today().isoformat(), (date.today() - timedelta(days=20)).isoformat()
-    def add(title, url, category="news", when=today, **extra):
-        store.insert(conn, {"title": title, "summary": "", "url": url, "source": "E", "category": category,
-                            "date": when, "tags": [], "authors": [], **extra})
-    add("Chip deal announced", "https://e.com/1")
-    add("Chip deal announced, other outlet", "https://f.com/1")
-    add("Small news", "https://e.com/2")
-    add("Big but old", "https://e.com/3", when=old)
-    add("Draft rules published", "https://e.com/4", "regulation", action="proposal", jurisdictions=["EU"])
-    add("AI law signed", "https://e.com/5", "regulation", action="law", jurisdictions=["US"])
-    add("A scholar's op-ed", "https://e.com/6", "regulation", action="expert")
-    ids = {r[1]: r[0] for r in conn.execute("SELECT id, title FROM items")}
-    conn.execute("UPDATE items SET cluster = ? WHERE id = ?", (ids["Chip deal announced"], ids["Chip deal announced, other outlet"]))
-    conn.commit()
-    news = store.highlights(conn, "news")
-    assert [c["title"] for c in news] == ["Chip deal announced", "Small news"]  # most outlets first; old one left out
-    assert news[0]["outlets"] == 2
-    assert [c["title"] for c in store.highlights(conn, "regulation")] == ["AI law signed", "Draft rules published"]
-
-
-def test_repaired_summaries_travel_to_another_database(tmp_path):
-    from aipulse.collect import apply_summaries, export_summaries
-    story = {"title": "Acme launches a laundry robot", "url": "https://news.google.com/rss/articles/x",
-             "source": "E", "category": "news", "date": "2026-05-01", "tags": [], "authors": []}
-    here, there = store.connect(tmp_path / "pc.db"), store.connect(tmp_path / "ci.db")
-    store.insert(here, {**story, "summary": "The machine folds a basket of shirts in ten minutes."})
-    store.insert(there, {**story, "summary": "Industry news."})  # a draft
-    here.commit(); there.commit()
-    found = export_summaries(here, "2026-01-01")
-    assert list(found.values()) == ["The machine folds a basket of shirts in ten minutes."]
-    assert apply_summaries(there, found) == 1 and apply_summaries(there, found) == 0  # only weak ones change
-    assert there.execute("SELECT summary FROM items").fetchone()[0].startswith("The machine folds")
+    assert purge_disallowed(conn, log=lambda *_: None) == 1
+    assert [tuple(r) for r in conn.execute("SELECT url, cluster = id FROM items")] == [("https://e.com/1", 1)]
+    store.insert(conn, {**base, "title": "Later", "url": "https://news.google.com/rss/articles/b"})
+    assert purge_disallowed(conn, log=lambda *_: None) == 0  # runs once per database

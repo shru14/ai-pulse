@@ -25,10 +25,9 @@ Optional per-source keys:
 Policy stories from any source move to the regulation tracker when they report a proposal or an
 adopted law in a recognisable country; see collect.apply_regulation.
 
-Add, remove or edit entries freely. Any RSS 2.0 or Atom feed works.
+Add, remove or edit entries freely. Any RSS 2.0 or Atom feed works, as long as the site allows automated
+access (its robots.txt and terms): Google News and Bing News don't, so neither is used.
 """
-
-from urllib.parse import quote_plus
 
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
@@ -41,47 +40,25 @@ SOURCES = [
     {"name": "The Verge AI", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "category": "news"},
     {"name": "Ars Technica AI", "url": "https://arstechnica.com/ai/feed/", "category": "news"},
     {"name": "MIT Technology Review AI", "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed", "category": "news"},
-    # VentureBeat's own feed (venturebeat.com/category/ai/feed/) answers every request with 429,
-    # so its stories come through a Google News search limited to the site.
-    {"name": "VentureBeat AI", "url": "https://news.google.com/rss/search?q=site:venturebeat.com+AI+when:2d&hl=en-US&gl=US&ceid=US:en",
-     "category": "news"},
     {"name": "The Decoder", "url": "https://the-decoder.com/feed/", "category": "news"},
 
     # --- Policy and politics ---
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
     # the publisher's own site feed carries its explainers and analysis.
     {"name": "EU AI Act Newsletter", "url": "https://artificialintelligenceact.eu/feed/", "category": "policy"},
-    {"name": "Google News: AI regulation",
-     "url": "https://news.google.com/rss/search?q=%22AI%22+(regulation+OR+legislation+OR+%22AI+Act%22+OR+executive+order)+when:2d&hl=en-US&gl=US&ceid=US:en",
-     "category": "policy"},
-    {"name": "Google News: AI policy Europe",
-     "url": "https://news.google.com/rss/search?q=%22artificial+intelligence%22+(EU+OR+Commission+OR+Bundestag+OR+Parliament)+policy+when:2d&hl=en-GB&gl=GB&ceid=GB:en",
-     "category": "policy"},
 ]
 
 # --- Regulation tracker: proposals and adopted laws ---
-_GN = "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q="
 _REG = {"category": "regulation"}
 SOURCES += [
     {**_REG, "name": "European Data Protection Board", "url": "https://www.edpb.europa.eu/feed/news_en",
      "jurisdictions": ["EU"]},
     {**_REG, "name": "European Commission: Digital Strategy", "url": "https://digital-strategy.ec.europa.eu/en/rss.xml",
      "jurisdictions": ["EU"]},
-    {**_REG, "name": "Google News: AI laws passed",
-     "url": _GN + "AI+(law+OR+bill+OR+act)+(passed+OR+signed+OR+enacted+OR+%22takes+effect%22+OR+%22into+force%22+OR+approved)+when:3d"},
-    {**_REG, "name": "Google News: AI bills and draft rules",
-     "url": _GN + "AI+(bill+OR+%22draft+law%22+OR+%22draft+rules%22+OR+%22proposed+rules%22+OR+consultation+OR+legislation)+(introduced+OR+proposes+OR+unveils+OR+tabled)+when:3d"},
-    {**_REG, "name": "Google News: AI rules in Asia-Pacific",
-     "url": _GN + "AI+(regulation+OR+law+OR+rules+OR+bill)+(China+OR+India+OR+Japan+OR+Korea+OR+Singapore+OR+Indonesia+OR+Vietnam+OR+Australia)+when:3d"},
-    {**_REG, "name": "Google News: AI rules in the Americas, Africa & Middle East",
-     "url": _GN + "AI+(regulation+OR+law+OR+bill+OR+rules)+(Brazil+OR+Canada+OR+Mexico+OR+Chile+OR+Nigeria+OR+Kenya+OR+%22South+Africa%22+OR+UAE+OR+Saudi)+when:3d"},
-    {**_REG, "name": "Google News: AI rules in Europe",
-     "url": _GN + "AI+(law+OR+bill+OR+rules+OR+%22AI+Act%22)+(EU+OR+UK+OR+France+OR+Germany+OR+Italy+OR+Spain+OR+%22European+Commission%22)+when:3d"},
 ]
 
 # --- Regulation tracker: AI ethics, philosophy and law scholars, followed daily ---
-# Each person gets a Google News search (their op-eds, interviews and work covered in the press);
-# their arXiv papers are picked up by the author searches further down.
+# Their arXiv papers are picked up by the author matching further down.
 EXPERTS = [
     # Philosophy and ethics
     ("Luciano Floridi", "Philosophy", "Yale"),
@@ -126,11 +103,6 @@ EXPERTS = [
     ("Matt Sheehan", "Governance", "Carnegie Endowment"),
 ]
 EXPERT_FIELDS = {name: field for name, field, _ in EXPERTS}
-for _name, _field, _org in EXPERTS:
-    SOURCES.append({
-        "name": f"Google News: {_name}", "category": "regulation", "expert": _name,
-        "url": _GN + quote_plus(f'"{_name}"') + "+AI+when:7d", "max_age_days": 7, "max_items": 3, "pause": 1,
-    })
 
 # --- Research: papers only, tagged by professor or company ---
 # Papers by leading AI professors worldwide (arXiv author search). A paper is kept only when one of

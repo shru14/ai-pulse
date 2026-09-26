@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import functools
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
 import time
 from datetime import datetime, timedelta, timezone
@@ -49,13 +47,13 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
 
 
 def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, log=print,
-            official_bills: bool | None = None, backfill: bool = False, summaries: bool = True) -> int:
+            official_bills: bool | None = None, backfill: bool = False) -> int:
     """official_bills: also sync bill stages from congress.gov and the European Parliament
     (default: only for the configured SOURCES, not for test feeds).
-    backfill: a history run (aipulse/backfill.py). Its one-off searches stay out of source health, and
-    headline-only stories get a short draft instead of a Bing lookup each."""
+    backfill: a history run (aipulse/backfill.py). Its one-off searches stay out of source health."""
     cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
     added, errors = 0, []
+    purge_disallowed(conn, log)
 
     for src in sources:
         try:
@@ -91,16 +89,9 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 matched = [professors[k] for a in authors if (k := classify.name_key(a)) in professors]
                 if professors and not matched:
                     continue
-            # Google News titles end with " - Publisher"; keep the publisher as the source.
-            title, source = e["title"], src["name"]
-            if "news.google.com" in src["url"] and " - " in title:
-                title, source = title.rsplit(" - ", 1)
-            title = brief.clean_title(title, source)
+            source = src["name"]
+            title = brief.clean_title(e["title"], source)
             summary = brief.clean_summary(e["summary"], title, source)
-            if backfill:
-                from .backfill import is_noise  # forums, docs, status pages, other languages
-                if is_noise(title, source):
-                    continue
 
             ai_only = src.get("ai_only", src["category"] == "tool")
             if not ai_only and not classify.is_ai_related(title, e["summary"]):
@@ -133,10 +124,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                     continue  # the tracker's searches are broad; keep only proposals and laws from them
 
             if not store.exists(conn, item["url"]):
-                if backfill and not item["summary"] and item["date"] < _days_ago(REFRESH_DAYS):
-                    item["summary"] = brief.draft(item, PLACE_NAMES)  # old news: a lookup each would take hours
-                else:
-                    fill_summary(item, fetcher)
+                fill_summary(item)
             if store.insert(conn, item):
                 new_here += 1
         if not backfill:
@@ -151,11 +139,6 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     if backfill:
         return added  # the backfill regroups and looks up logos once, at the end
     cluster.assign(conn)  # put new stories on the same card as other outlets' versions, and on bills' cards
-    if summaries:  # off on GitHub, where the separate summaries batch gets Google's rate limit to itself
-        try:
-            refresh_summaries(conn, fetcher, log=log)
-        except Exception as e:
-            log(f"  summaries: {e}")
     try:  # look up brand logos for recent cards now, so the page finds them cached
         brands.add_logos(conn, store.cards(conn, days=30, limit=1000)[0], lookups=300)
     except Exception as e:
@@ -167,122 +150,50 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
 PLACE_NAMES = {code: v[0] for code, v in jurisdictions.JURISDICTIONS.items()}
 
 
-REFRESH_DAYS = 30  # stories this recent always get a real summary lookup
-
-
 def _days_ago(n: int) -> str:
     return (datetime.now(timezone.utc) - timedelta(days=n)).date().isoformat()
 
 
-RETRY_AFTER_DAYS = 14  # a story with no summary to be found anywhere is tried again after this
+PURGE_KEY = "purged:google-news"
 
 
-def refresh_summaries(conn, fetcher=feeds.fetch, limit: int | None = 300, log=print,
-                      since: str | None = None, recent_only: bool = True, workers: int = 1,
-                      minutes: float | None = None) -> int:
-    """Retry the Bing lookup for headline-only stories that ended up with a draft, nothing, or just
-    their headline (a lookup that failed, or a history run), newest first. Returns how many got one.
-
-    Every collection runs it for the last 30 days, retrying only stories added in the last 3 days so
-    each gets a few chances without being looked up forever. `python -m aipulse summaries --since
-    2026-01-01` runs it over a longer span: a batch per run (`minutes`), newest first. A long run stops
-    when Google starts rate-limiting (the next batch carries on), and stories with nothing to be found
-    are skipped for two weeks so batches keep moving back in time."""
-    deadline = time.time() + minutes * 60 if minutes else None
-    tried = {r[0][len("summary-tried:"):] for r in conn.execute(
-        "SELECT key FROM meta WHERE key LIKE 'summary-tried:%' AND value >= ?", (_days_ago(RETRY_AFTER_DAYS),))}
-    added = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat() if recent_only else ""
-    rows = conn.execute(
-        "SELECT id, title, summary, source, url FROM items "
-        "WHERE date >= ? AND added_at >= ? AND url LIKE '%news.google.com%' ORDER BY date DESC",
-        (since or _days_ago(REFRESH_DAYS), added)).fetchall()
-    todo = [r for r in rows if r["id"] not in tried and _weak(r["summary"], r["title"], r["source"])][:limit]
-    lookup = functools.partial(feeds.fetch, attempts=1) if fetcher is feeds.fetch else fetcher
-    fixed = done = 0
-    # Lookups run in threads (they're network waits); the database is written from this thread only.
-    pool = ThreadPoolExecutor(max_workers=max(1, workers))
-    futures = {pool.submit(brief.find_summary, r["title"], r["url"], r["source"], lookup): r for r in todo}
-    stopped = ""
-    for fut in as_completed(futures):
-        r, done = futures[fut], done + 1
-        snippet = fut.result()
-        if snippet:
-            store.update_text(conn, r["id"], r["title"], snippet)
-            fixed += 1
-        elif not brief.google_blocked():  # truly nothing to find, not just Google being busy
-            conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)",
-                         (f"summary-tried:{r['id']}", _days_ago(0)))
-        conn.commit()  # at once: the web server and collection need the lock too
-        if done % 200 == 0:
-            log(f"  summaries: {done}/{len(todo)} looked up, {fixed} found")
-        if not recent_only and brief.google_blocked():
-            stopped = "Google is rate-limiting"
-        elif deadline and time.time() > deadline:
-            stopped = f"{minutes:g}-minute batch done"
-        if stopped:
-            break
-    pool.shutdown(wait=True, cancel_futures=True)
+def purge_disallowed(conn, log=print) -> int:
+    """Delete stories collected through Google News: its robots.txt and terms don't allow automated
+    access, and their summaries came from decoding Google's links or from Bing News, whose terms forbid
+    showing its results publicly. Runs once per database; returns how many stories were deleted."""
+    if conn.execute("SELECT 1 FROM meta WHERE key = ?", (PURGE_KEY,)).fetchone():
+        return 0
+    n = conn.execute("DELETE FROM items WHERE url LIKE '%news.google.com%'").rowcount
+    conn.execute("DELETE FROM sources WHERE url LIKE '%news.google.com%'")
+    conn.execute("DELETE FROM meta WHERE key LIKE 'summary-tried:%' OR (key LIKE 'backfill:%'"
+                 " AND key NOT LIKE 'backfill:arXiv%' AND key NOT LIKE 'backfill:Hugging Face%')")
+    conn.execute("UPDATE items SET cluster = id WHERE cluster NOT IN (SELECT id FROM items)")  # lead was deleted
+    conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", (PURGE_KEY, _days_ago(0)))
     conn.commit()
-    if stopped:
-        log(f"  summaries: stopped after {done} ({stopped}); the next run carries on")
-    if todo:
-        log(f"  summaries: {fixed} of {len(todo)} headline-only stories got a real summary")
-    return fixed
+    if n:
+        cluster.assign(conn, days=None)
+        log(f"  removed {n} stories collected through Google News")
+    return n
 
 
-def _weak(summary: str, title: str, source: str) -> bool:
-    return not summary or brief.is_draft(summary) or not brief.clean_summary(summary, title, source)
-
-
-def status_report(conn, since: str = "2026-01-01") -> str:
-    """A few lines of Markdown for the GitHub run page: size of the feed and the summary backlog."""
-    rows = conn.execute("SELECT title, summary, source FROM items WHERE date >= ? AND url LIKE '%news.google.com%'",
-                        (since,)).fetchall()
-    weak = sum(_weak(r["summary"], r["title"], r["source"]) for r in rows)
+def status_report(conn) -> str:
+    """A few lines of Markdown for the GitHub run page: size of the feed and failing sources."""
     week = conn.execute("SELECT COUNT(*) FROM items WHERE date >= ?", (_days_ago(7),)).fetchone()[0]
     total = conn.execute("SELECT COUNT(*) FROM items").fetchone()[0]
     failing = [h["name"] for h in store.source_health(conn, [s["url"] for s in SOURCES]) if h["failing"]]
     lines = ["### AI Pulse",
              f"- **Stories:** {total:,} in total, {week:,} from the last 7 days",
-             f"- **Summaries still to repair** (headline-only stories since {since}): **{weak:,}** of {len(rows):,}",
              f"- **Failing sources:** {', '.join(failing) if failing else 'none'}"]
     return "\n".join(lines) + "\n"
 
 
-def export_summaries(conn, since: str) -> dict[str, str]:
-    """Real summaries of headline-only (Google News) stories since a date, by story id. The repair runs on
-    a PC (Google limits how fast its links can be decoded); this carries its results to the public site."""
-    rows = conn.execute("SELECT id, title, summary, source FROM items WHERE date >= ? AND url LIKE '%news.google.com%'",
-                        (since,)).fetchall()
-    return {r["id"]: r["summary"] for r in rows if not _weak(r["summary"], r["title"], r["source"])}
-
-
-def apply_summaries(conn, summaries: dict[str, str]) -> int:
-    """Fill in stories whose summary is still weak from an export_summaries() file. Returns how many changed."""
-    changed = 0
-    for i in range(0, len(summaries), 500):
-        ids = list(summaries)[i:i + 500]
-        for r in conn.execute(f"SELECT id, title, summary, source FROM items WHERE id IN ({','.join('?' * len(ids))})",
-                              ids).fetchall():
-            if _weak(r["summary"], r["title"], r["source"]):
-                store.update_text(conn, r["id"], r["title"], summaries[r["id"]])
-                changed += 1
-    conn.commit()
-    return changed
-
-
-def fill_summary(item: dict, fetcher=feeds.fetch) -> None:
-    """Give a headline-only story a "what it covers" line: the lead text of the same story found on
-    Bing News, else a short draft from its category, places and tags."""
-    if not item["summary"] and "news.google.com" in item["url"]:
-        # Lookups are optional extras: one attempt, no retry waits.
-        lookup = functools.partial(feeds.fetch, attempts=1) if fetcher is feeds.fetch else fetcher
-        item["summary"] = brief.find_summary(item["title"], item["url"], item.get("source", ""), lookup)
+def fill_summary(item: dict) -> None:
+    """Give a story whose feed has no description a short draft from its category, places and tags."""
     if not item["summary"]:
         item["summary"] = brief.draft(item, PLACE_NAMES)
 
 
-def resummarize(conn, fetcher=feeds.fetch, log=print) -> int:
+def resummarize(conn, log=print) -> int:
     """Re-clean stored headlines and summaries and fill in headline-only stories. Returns how many changed."""
     changed = 0
     for it in store.query(conn, None, None, None, limit=100000):
@@ -290,7 +201,7 @@ def resummarize(conn, fetcher=feeds.fetch, log=print) -> int:
         # Drafts are rebuilt from scratch so they reflect the story's current sorting.
         summary = "" if brief.is_draft(it["summary"]) else brief.clean_summary(it["summary"], title, it["source"])
         updated = {**it, "title": title, "summary": summary}
-        fill_summary(updated, fetcher)
+        fill_summary(updated)
         if (updated["title"], updated["summary"]) != (it["title"], it["summary"]):
             store.update_text(conn, it["id"], updated["title"], updated["summary"])
             changed += 1
@@ -312,7 +223,7 @@ def apply_regulation(item: dict, default_jurisdictions: list[str] = ()) -> None:
     if item.get("source") in bills.OFFICIAL_SOURCES:  # official bill records are sorted by bills.py
         return
     action = classify.regulatory_action(item["title"])
-    # Google News summaries repeat the headline plus the publisher's name, which can name a country.
+    # A summary that repeats the headline plus the publisher's name can name a country.
     # Generated drafts ("A proposal in the United States and China.") are ignored so they can't feed back.
     summary = "" if item["summary"].startswith(item["title"][:40]) or brief.is_draft(item["summary"]) else item["summary"]
     places = jurisdictions.detect(item["title"], summary, actors_only=True) or list(default_jurisdictions)

@@ -22,9 +22,6 @@ Pure Python 3.10+, standard library only: nothing to install.
 
 - **Stream cards** at the top pick a stream and show its count; click the chosen card again (or its
   chip next to the search box, or the logo) to see everything.
-- **This week** (top of every stream): the three biggest stories of the last 7 days, ranked by how many
-  outlets covered them (research: by the tracked professors and labs behind a paper; regulation tracker:
-  adopted laws first). Hidden while searching.
 - **Search** and the **time range** (7, 30, 90 days, all time) stay pinned while you scroll. Search matches
   word beginnings and stems ("regulate" finds "regulation") across headlines, summaries, sources, tags and authors.
 - **Cards** show a logo for the company involved (or the country, or a topic symbol), a summary
@@ -50,8 +47,7 @@ Or `python -m aipulse run --every-hours 6` to serve and collect on a timer in on
 | `serve` / `run` | Serve the page and JSON API / serve and collect on a timer |
 | `reclassify` | Re-run the sorting and tagging rules over stored stories (after changing them) |
 | `resummarize` | Re-clean stored headlines and summaries |
-| `summaries --since DATE` | Look up real summaries for headline-only stories since a date |
-| `backfill --since DATE` | One-time history for every stream (see below) |
+| `backfill --since DATE` | One-time research history (see below) |
 | `regroup` | Regroup every story into cards (one card per event) |
 | `bills` | Sync bill stages from congress.gov and the European Parliament |
 | `evaluate` | Score the sorting rules against hand-labelled stories |
@@ -76,25 +72,19 @@ accuracy and every mistake, and a test stops the scores from dropping. After edi
 `python -m aipulse reclassify`; the GitHub workflow also runs it after every collection.
 
 Headlines and summaries are cleaned in `aipulse/brief.py` (desk labels, site names and boilerplate
-removed). Google News items carry only a headline, so the collector follows the link to the original
-article and uses the description its publisher wrote (its meta tags); failing that, the lead text of
-the same story on Bing News; only then a short factual draft. Every collection retries recent stories
-that ended up with a draft, and `python -m aipulse summaries --since 2026-01-01` repairs a longer span
-(several lookups at a time).
+removed). A summary is the description the publisher put in its own feed; a story without one gets a
+short factual line from its stream, places and companies.
 
 No AI model or paid API is used: summaries are the publishers' own text, and sorting is keyword rules.
+Only sources that allow automated access (their robots.txt and terms) are read; Google News and Bing
+News don't, so neither is used.
 
 ## History back to 2023
 
-Daily collection only sees what feeds hold today, so `python -m aipulse backfill` fills every stream back
-to 1 January 2023 (`--since` for another date, `--only news|experts|research|papers` for one group):
+Daily collection only sees what feeds hold today, so `python -m aipulse backfill` fills the research
+history back to 1 January 2023 (`--since` for another date, `--only research|papers` for one group):
 
-- **News, policy, regulation:** the site's own Google News searches, one month at a time, plus searches
-  standing in for the publisher and lab feeds (TechCrunch, The Verge, OpenAI, ...). Google News returns up
-  to 100 stories per search, so each month is capped at that; old headline-only stories get a short
-  draft summary.
-- **Expert views:** each scholar's Google News search, a year at a time.
-- **Research:** arXiv's search API for every listed professor and scholar, and Hugging Face Daily Papers
+- **Research and expert papers:** arXiv's search API for every listed professor and scholar, and Hugging Face Daily Papers
   day by day (from May 2023) for big tech and frontier lab papers.
 
 It takes a couple of hours and must run on a PC (arXiv refuses cloud servers); finished searches are
@@ -143,12 +133,12 @@ row shows as "⚠ N sources failing" under the intro; `python -m aipulse sources
 ## Customize
 
 - **Sources:** `aipulse/sources.py`. Any RSS or Atom feed works; give it a default stream. Add names to
-  `PROFESSORS` or `EXPERTS` to follow more people. Google News search feeds are a quick way to follow a topic.
+  `PROFESSORS` or `EXPERTS` to follow more people. Check a site's robots.txt and terms before adding it.
 - **Rules and tags:** `aipulse/classify.py` and `aipulse/jurisdictions.py`.
 - **Company logos:** the 12 AI companies in `COMPANY_TERMS` use the colour logos in `LOGOS`
   (`templates/index.html`). Any other brand a headline names is found automatically by `aipulse/brands.py`:
   Simple Icons' index of ~3,000 brands first, then Wikidata (a company or product with an official website,
-  shown with that site's icon). Plain words like "Astra" count only if Wikidata confirms a company by that
+  shown with that site's own icon, if its robots.txt allows fetching it). Plain words like "Astra" count only if Wikidata confirms a company by that
   name. Lookups are cached in `data/` (and in the Actions cache on GitHub), so each name is checked once.
 
 ## Project layout

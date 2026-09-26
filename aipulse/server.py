@@ -35,11 +35,12 @@ def items_payload(conn, qs: dict) -> dict:
                "hasMore": page * per_page < total, "counts": store.card_counts(conn, q, days),
                "stories": store.story_count(conn), "lastRun": store.last_run(conn),
                "jurisdictions": jurisdictions.meta(), "failingSources": [h for h in health if h["failing"]]}
-    if page == 1:  # "This week" box above the cards
-        payload["week"] = store.highlights(conn, category)
     if category == "regulation":
         payload["map"] = store.regulation_tally(conn, q, days)
     return payload
+
+
+ICON_TYPES = {"ico": "image/x-icon", "png": "image/png", "jpg": "image/jpeg", "gif": "image/gif"}
 
 
 def make_handler(db_path: str):
@@ -70,8 +71,9 @@ def make_handler(db_path: str):
                 elif url.path.startswith("/brand-icons/"):
                     name = url.path.rsplit("/", 1)[1]
                     f = brands.ICON_DIR / name
-                    if name.startswith("site-") and name.endswith((".png", ".jpg")) and "/" not in name and f.is_file():
-                        self._send(f.read_bytes(), "image/jpeg" if name.endswith(".jpg") else "image/png")
+                    kind = ICON_TYPES.get(name.rsplit(".", 1)[-1])
+                    if name.startswith("own-") and kind and "/" not in name and f.is_file():
+                        self._send(f.read_bytes(), kind)
                     else:
                         self._send(b"Not found", "text/plain", 404)
                 elif url.path == "/api/sources":

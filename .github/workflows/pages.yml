@@ -58,16 +58,7 @@ jobs:
       - name: Collect
         env:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
-        run: python -m aipulse --db aipulse.db collect --no-summaries  # the batch below does them
-
-      # Summaries repaired on a PC (python -m aipulse summaries, then export-summaries): fill in weak ones.
-      - name: Apply repaired summaries
-        run: python -m aipulse --db aipulse.db apply-summaries data/summaries.json
-
-      # This year's headline-only stories, a 12-minute batch per run (newest first): Google only allows a
-      # slow pace for decoding its links, so the backlog is worked off over a few days.
-      - name: Repair a batch of this year's summaries
-        run: python -m aipulse --db aipulse.db summaries --since 2026-01-01 --workers 1 --minutes 12
+        run: python -m aipulse --db aipulse.db collect
 
       # Stored stories keep the category they got when collected; this applies rule fixes to them too.
       - name: Re-sort stored stories with the current rules

@@ -4,37 +4,19 @@
 - clean_summary() keeps the first informative sentences of the feed text, drops boilerplate
   (author bios, "The post ... appeared first on", newsletter prompts) and anything that only
   repeats the headline. It returns "" when nothing is left, so the page never shows the headline twice.
-- article_summary() fills in Google News items, whose feed text is just the headline: it follows the
-  link to the original article and uses the description the publisher wrote for it (its meta tags).
-- lookup_snippet() is the fallback: it searches Bing News RSS for the headline and uses the lead text
-  of the matching story.
-- draft() is the last resort: a short line built from what the tracker already knows about the story
+- draft() fills in a story whose feed has no description: a short line built from what the tracker
+  already knows about the story
   (its kind, the places it names, the companies or people tagged), e.g.
   "A proposal in the United Kingdom, involving Google."
 """
 
 from __future__ import annotations
 
-import html
-import json
-import os
 import re
-import threading
-import time
-import urllib.error
-import urllib.request
-from urllib.parse import quote_plus, urlencode, urlsplit
 
-from . import classify, feeds, jurisdictions
+from . import classify, jurisdictions
 
 MAX_CHARS = 300
-USER_AGENT = "Mozilla/5.0 (compatible; AIPulse/1.0; +https://github.com/shru14/ai-pulse) personal news reader"
-# Site-wide descriptions that say nothing about the story.
-_GENERIC = re.compile(r"^(a )?blog post by\b|democratize artificial intelligence|^we.re on a journey|"
-                      r"^(read|discover|explore|learn|find out|get|stay|see) (more|the latest|about|up to date|all)\b|"
-                      r"^(subscribe|sign up|log in|join)\b|all impacted services|^(the )?latest (news|updates)\b|"
-                      r"^(official|welcome to)\b", re.I)
-
 _LABEL = re.compile(r"^(watch|video|exclusive|breaking|update[d]?|live|eurobites|podcast|listen|photos?)\s*[:|\-–—]\s*",
                     re.I)
 _SITE_SUFFIX = re.compile(r"\s+[|\-–—]\s+([^|\-–—]{2,40})$")
@@ -93,7 +75,7 @@ def clean_summary(text: str, title: str, source: str = "") -> str:
     text = re.sub(r"\s+", " ", text or "").strip()
     if not text:
         return ""
-    # Google News style: "<headline> <publisher>"; nothing to add.
+    # "<headline> <publisher>": nothing to add.
     if similarity(text, title) > 0.75 or text.lower().startswith(title.lower()[:60]):
         rest = text[len(title):].strip() if text.lower().startswith(title.lower()) else ""
         if source and rest.lower().endswith(source.lower()):
@@ -114,126 +96,6 @@ def clean_summary(text: str, title: str, source: str = "") -> str:
         cut = summary[:MAX_CHARS].rsplit(" ", 1)[0].rstrip(",;:")
         summary = cut + "…"
     return re.sub(r"\s*(\.\.\.|…)+$", "…", summary)
-
-
-def _http(url: str, data: bytes | None = None, headers: dict | None = None, timeout: int = 12,
-          retry: bool = True) -> tuple[str, str]:
-    """GET (or POST) a page; one retry after a pause when the host says it's busy (HTTP 429)."""
-    for attempt in range(2 if retry else 1):
-        req = urllib.request.Request(url, data=data, headers={"User-Agent": USER_AGENT, **(headers or {})})
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                return resp.read(2_000_000).decode("utf-8", "replace"), resp.geturl()
-        except urllib.error.HTTPError as e:
-            if e.code != 429 or attempt or not retry:
-                raise
-            time.sleep(8)
-    raise RuntimeError("unreachable")
-
-
-# Google allows only a slow, steady pace for decoding its links: one request at a time across threads,
-# 1.5 s apart. After it says "too many requests", links aren't decoded at all for a few minutes (the
-# lookup falls back to Bing at once) instead of everyone waiting.
-GOOGLE_GAP, GOOGLE_COOLDOWN = 1.5, 300
-_google_lock = threading.Lock()
-_google_next = [0.0]
-_google_blocked_until = [0.0]
-
-
-def _google(url: str, **kw) -> tuple[str, str]:
-    if time.time() < _google_blocked_until[0]:
-        raise RuntimeError("Google is rate-limiting; skipping for now")
-    with _google_lock:
-        wait = _google_next[0] - time.time()
-        if wait > 0:
-            time.sleep(wait)
-        try:
-            return _http(url, retry=False, **kw)
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
-                _google_blocked_until[0] = time.time() + GOOGLE_COOLDOWN
-            raise
-        finally:
-            _google_next[0] = time.time() + GOOGLE_GAP
-
-
-def google_blocked() -> bool:
-    """True while Google is rate-limiting link decoding (see _google)."""
-    return time.time() < _google_blocked_until[0]
-
-
-def google_news_target(url: str) -> str | None:
-    """The original article behind a news.google.com/rss/articles/... link. Google encodes it; its
-    article page carries a signature that its own decoding endpoint accepts."""
-    art_id = urlsplit(url).path.rsplit("/", 1)[-1]
-    page, _ = _google(f"https://news.google.com/articles/{art_id}")
-    sig, ts = re.search(r'data-n-a-sg="([^"]+)"', page), re.search(r'data-n-a-ts="([^"]+)"', page)
-    if not (sig and ts):
-        return None
-    inner = ["garturlreq", [["X", "X", ["X", "X"], None, None, 1, 1, "US:en", None, 1, None, None, None, None, None,
-                             0, 1], "X", "X", 1, [1, 1, 1], 1, 1, None, 0, 0, None, 0],
-             art_id, int(ts.group(1)), sig.group(1)]
-    body = urlencode({"f.req": json.dumps([[["Fbv4je", json.dumps(inner), None, "generic"]]])}).encode()
-    resp, _ = _google("https://news.google.com/_/DotsSplashUi/data/batchexecute", data=body,
-                    headers={"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"})
-    m = re.search(r'\[\\"garturlres\\",\\"(.*?)\\"', resp)
-    return m.group(1).encode().decode("unicode_escape") if m else None
-
-
-_META = [re.compile(p, re.I) for p in (
-    r'<meta[^>]+property=["\']og:description["\'][^>]+content=["\']([^"\']+)',
-    r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:description',
-    r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)',
-    r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+name=["\']description',
-    r'<meta[^>]+name=["\']twitter:description["\'][^>]+content=["\']([^"\']+)')]
-
-
-def article_summary(url: str, title: str, source: str = "") -> str:
-    """The publisher's own description of the story (og:description / meta description), cleaned, or ""."""
-    if os.environ.get("AIPULSE_OFFLINE"):  # tests
-        return ""
-    try:
-        target = google_news_target(url) if "news.google.com" in url else url
-        if not target:
-            return ""
-        page, _ = _http(target)
-    except Exception:
-        return ""
-    head = page[: page.find("</head>")] if "</head>" in page else page[:200_000]
-    for pattern in _META:
-        m = pattern.search(head)
-        if m:
-            text = html.unescape(m.group(1)).strip()
-            if text and not _GENERIC.search(text):
-                return clean_summary(text, title, source)
-    return ""
-
-
-def find_summary(title: str, url: str, source: str = "", fetcher=feeds.fetch) -> str:
-    """A real summary for a headline-only story: the article's own description, else Bing News."""
-    return article_summary(url, title, source) or lookup_snippet(title, fetcher)
-
-
-MATCH = 0.5  # headline word overlap needed to accept a Bing result as the same story
-
-
-def lookup_snippet(title: str, fetcher=feeds.fetch, pause: float = 1.0) -> str:
-    """Lead text of the same story from Bing News RSS, or "" if no close match is found.
-
-    Tries the plain headline, then the quoted headline; each finds stories the other misses.
-    """
-    for query in (title, f'"{title}"'):
-        try:
-            entries = feeds.parse(fetcher("https://www.bing.com/news/search?format=rss&q=" + quote_plus(query)))
-        except Exception:
-            entries = []
-        time.sleep(pause)
-        best = max(entries, key=lambda e: similarity(e["title"], title), default=None)
-        if best and similarity(best["title"], title) >= MATCH:
-            snippet = clean_summary(best["summary"], title)
-            if snippet:
-                return snippet
-    return ""
 
 
 _KIND = {"tool": "A release", "news": "Industry news", "policy": "Policy news", "research": "A paper",
