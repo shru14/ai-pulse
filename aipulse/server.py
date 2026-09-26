@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from . import brands, jurisdictions, models, store
+from . import brands, jurisdictions, store
 from .sources import SOURCES
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
@@ -39,9 +39,6 @@ def items_payload(conn, qs: dict) -> dict:
         payload["week"] = store.highlights(conn, category)
     if category == "regulation":
         payload["map"] = store.regulation_tally(conn, q, days)
-    if category == "tool":  # the model tracker above the Releases cards
-        payload["models"] = models.recent(conn, days)
-        brands.lab_logos(payload["models"])
     return payload
 
 

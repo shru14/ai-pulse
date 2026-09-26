@@ -8,7 +8,7 @@ import re
 import time
 from datetime import datetime, timedelta, timezone
 
-from . import bills, brands, brief, classify, cluster, enrich, feeds, jurisdictions, models, store
+from . import bills, brands, brief, classify, cluster, enrich, feeds, jurisdictions, store
 from .sources import COMPANIES, EXPERT_FIELDS, PROFESSORS, SOURCES
 
 # The regulation tracker follows proposals and adopted laws; other actions stay under "policy".
@@ -159,7 +159,6 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
 
     if official_bills if official_bills is not None else sources is SOURCES:
         bills.sync(conn, fetcher, log=log)  # official bill stages (congress.gov, European Parliament)
-        models.sync(conn, fetcher, log=log)  # new AI models for the Releases stream's tracker
     if backfill:
         return added  # the backfill regroups and looks up logos once, at the end
     cluster.assign(conn)  # put new stories on the same card as other outlets' versions, and on bills' cards

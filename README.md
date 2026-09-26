@@ -12,7 +12,7 @@ Pure Python 3.10+, standard library only: nothing to install.
 
 | Stream | What's in it |
 |---|---|
-| **Releases** | New models, product features and open-source launches, topped by a **model tracker** (below) |
+| **Releases** | New models, product features and open-source launches |
 | **Industry news** | Funding, deals, partnerships and company moves |
 | **Policy** | What governments, courts and politicians are doing about AI: investigations, lawsuits, guidance, debates |
 | **Research** | Papers only: new arXiv papers by ~80 leading AI professors (matched by exact author name), and papers from big tech and frontier labs via Hugging Face Daily Papers |
@@ -30,14 +30,6 @@ Pure Python 3.10+, standard library only: nothing to install.
 - **Cards** show a logo for the company involved (or the country, or a topic symbol), a summary
   (long ones fold behind "Read more"), clickable tags, and the date and source link. The same event
   reported by several outlets is one card with "N sources".
-- **Notable models** (top of Releases): a timeline of the models that mattered since January 2023, one lane
-  per lab and a dot per release (filled = API or app, ring = open weights, dashed = announced but not
-  released). Filter by use (Language, Coding, Vision & multimodal, Image & video, Speech & audio, Science,
-  Robotics) and access (Open weights, API, App only); hover for size, uses and, where OpenRouter serves the
-  model, context window and price per million tokens; click for the announcement or paper. The list is
-  Epoch AI's [notable models](https://epoch.ai/data/notable-ai-models) (CC BY 4.0). Epoch adds models a few
-  days after release, so until then the newest OpenRouter models from labs with three or more notable
-  models fill the gap. It follows the time range and search.
 - **Regulation tracker**: click a country chip on a card to see only that country. US bills and EU procedures show their stage,
   from introduced to in force.
 - **Light / dark** follows your system; the button in the top bar overrides it.
@@ -172,7 +164,6 @@ aipulse/
   brief.py          headline and summary cleaning
   brands.py         brand logos found in headlines (Simple Icons, Wikidata)
   bills.py          congress.gov and European Parliament bill stages
-  models.py         notable models (Epoch AI) and API models with prices (OpenRouter)
   backfill.py       one-time history back to 2023
   cluster.py        grouping the same event into one card
   enrich.py         optional Claude summaries
@@ -185,5 +176,5 @@ templates/index.html  the page
 tests/                unit and end-to-end tests with fixture feeds (python -m pytest -q)
 ```
 
-Notable models: [Epoch AI](https://epoch.ai/data/notable-ai-models), CC BY 4.0. AI company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub. Other brand
+AI company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub. Other brand
 logos: [Simple Icons](https://simpleicons.org) (CC0) or the brand's own website icon.

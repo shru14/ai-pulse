@@ -659,66 +659,6 @@ def test_brand_logo_needs_confirmation_for_plain_words(monkeypatch):
     assert logo("Meta's new glasses use Slack", ["Meta"]) is None  # the page's own AI-company logos come first
 
 
-def test_models_from_openrouter(tmp_path):
-    from aipulse import models
-    reply = {"data": [
-        {"id": "anthropic/claude-opus-5.5", "name": "Anthropic: Claude Opus 5.5", "created": 1790035200,
-         "context_length": 1000000, "pricing": {"prompt": "0.000004", "completion": "0.00002"},
-         "architecture": {"input_modalities": ["text", "image"], "output_modalities": ["text"]}},
-        {"id": "qwen/qwen3.8-flash", "name": "Qwen: Qwen3.8 Flash", "created": 1790035200, "context_length": 262144,
-         "pricing": {"prompt": "0", "completion": "0"}, "hugging_face_id": "Qwen/Qwen3.8-Flash"},
-        {"id": "anthropic/claude-opus-5.5:batch", "name": "Anthropic: Claude Opus 5.5 (batch)", "created": 1790035200,
-         "pricing": {"prompt": "0.000002", "completion": "0.00001"}},                      # a variant
-        {"id": "typesafe/router", "name": "Router", "created": 1790035200, "pricing": {"prompt": "-1"}},  # a router
-    ]}
-    parsed = models.parse(reply)
-    assert [m["id"] for m in parsed] == ["anthropic/claude-opus-5.5", "qwen/qwen3.8-flash"]
-    opus = parsed[0]
-    assert (opus["lab"], opus["name"], opus["price_in"], opus["price_out"], opus["weights"]) == \
-        ("Anthropic", "Claude Opus 5.5", 4.0, 20.0, "")
-    assert parsed[1]["weights"] == "Qwen/Qwen3.8-Flash" and parsed[1]["price_in"] == 0
-    conn = store.connect(tmp_path / "t.db")
-    assert models.save(conn, parsed) == 2 and models.save(conn, parsed) == 0  # refreshing isn't "new"
-    rows = models.parse_epoch(
-        "Model,Organization,Publication date,Domain,Task,Parameters,Model accessibility,Link\n"
-        "Claude Opus 5.5,Anthropic,2026-09-22,\"Language,Multimodal\",\"Chat,Code generation\",,API access,https://a.example\n"
-        "Qwen3.8 Flash,\"Alibaba,Qwen Team\",2026-09-20,Language,Chat,30000000000,Open weights (unrestricted),\n"
-        "Veo 5,Google DeepMind,2026-09-01,Video,Text-to-video,,Hosted access (no API),\n"
-        "Old model,Meta AI,2022-11-30,Language,Chat,,Unreleased,\n")
-    assert [(r["name"], r["lab"], r["uses"], r["access"]) for r in rows] == [
-        ("Claude Opus 5.5", "Anthropic", "language,coding,vision", "api"),
-        ("Qwen3.8 Flash", "Alibaba", "language", "open"),
-        ("Veo 5", "Google", "image-video", "app")]  # 2022 is before the tracker starts
-    models.save_notable(conn, rows)
-    listed = {m["name"]: m for m in models.recent(conn)}
-    assert list(listed) == ["Claude Opus 5.5", "Qwen3.8 Flash", "Veo 5"]
-    # OpenRouter's price and context join by name; models it doesn't serve have none.
-    assert (listed["Claude Opus 5.5"]["price_in"], listed["Claude Opus 5.5"]["context"]) == (4.0, 1000000)
-    assert "price_in" not in listed["Veo 5"]
-
-
-def test_newest_models_fill_epochs_lag_from_labs_that_matter(tmp_path):
-    from aipulse import models
-    conn = store.connect(tmp_path / "t.db")
-    epoch = [{"key": f"GPT-{i}|2026-0{i}-01", "name": f"GPT-{i}", "lab": "OpenAI", "released": f"2026-0{i}-01",
-              "uses": "language", "access": "api", "params": None, "link": ""} for i in (1, 2, 3)]
-    epoch.append({"key": "Tiny|2026-08-30", "name": "Tiny", "lab": "SmallCo", "released": "2026-08-30",
-                  "uses": "language", "access": "open", "params": None, "link": ""})
-    models.save_notable(conn, epoch)
-    base = {"context": 1000000, "price_in": 2.0, "price_out": 8.0, "weights": "", "inputs": "text,image",
-            "outputs": "text", "description": ""}
-    models.save(conn, [
-        {**base, "id": "openai/gpt-4", "name": "GPT-4", "lab": "OpenAI", "released": "2026-09-05"},  # after Epoch's last
-        {**base, "id": "openai/gpt-latest", "name": "GPT Latest", "lab": "OpenAI", "released": "2026-09-05"},  # an alias
-        {**base, "id": "smallco/tiny-2", "name": "Tiny 2", "lab": "SmallCo", "released": "2026-09-05"},  # not a big lab
-        {**base, "id": "openai/gpt-0", "name": "GPT-0", "lab": "OpenAI", "released": "2026-01-01"},  # long before
-    ])
-    names = [m["name"] for m in models.recent(conn)]
-    assert "GPT-4" in names and "GPT Latest" not in names and "Tiny 2" not in names and "GPT-0" not in names
-    gpt4 = next(m for m in models.recent(conn) if m["name"] == "GPT-4")
-    assert (gpt4["uses"], gpt4["access"], gpt4["price_in"]) == ("language,vision", "api", 2.0)
-
-
 def test_cards_for_more_stories_than_sqlite_takes_in_one_query(tmp_path):
     conn = store.connect(tmp_path / "t.db")
     for i in range(1200):  # over SQLite's per-query limit on older builds (999)
