@@ -14,7 +14,7 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import jurisdictions, store
+from . import brands, jurisdictions, store
 from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
 
@@ -43,6 +43,12 @@ def build(conn, out: str | Path) -> int:
 
     cards, _ = store.cards(conn, limit=10**9, eu_members=EU_MEMBERS)
     text = search_text(conn)
+    brands.add_logos(conn, cards, lookups=400)
+    icons = {c["logo"]["src"] for c in cards if c.get("logo", {}).get("src")}
+    if icons:
+        (out / "brand-icons").mkdir()
+        for src in icons:
+            shutil.copy(brands.ICON_DIR / Path(src).name, out / src)
     for c in cards:
         c["s"] = text.get(c["id"], "")
         for k in ("added_at", "cluster"):

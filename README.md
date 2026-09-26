@@ -80,10 +80,10 @@ offline for free.
 
 ## Bills from official records
 
-| Source | Stages | Access |
+| Source | Stages | What you need |
 |---|---|---|
-| congress.gov API | Introduced → passed one chamber → passed Congress → signed → became law (or vetoed) | Free key: https://api.congress.gov/sign-up/ |
-| European Parliament open data | Proposed → Parliament position → final vote → signed → Official Journal | No key |
+| congress.gov API | Introduced → passed one chamber → passed Congress → signed → became law (or vetoed) | A free API key ([sign up](https://api.congress.gov/sign-up/)) |
+| European Parliament open data | Proposed → Parliament position → final vote → signed → Official Journal | Nothing: open data, no sign-up |
 
 Each bill is one card dated at its latest stage, with news that names the bill attached. The key is read
 from `CONGRESS_API_KEY` and never stored in the repository: set it as a repository secret for the public
@@ -119,7 +119,11 @@ row shows as "⚠ N sources failing" under the intro; `python -m aipulse sources
 - **Sources:** `aipulse/sources.py`. Any RSS or Atom feed works; give it a default stream. Add names to
   `PROFESSORS` or `EXPERTS` to follow more people. Google News search feeds are a quick way to follow a topic.
 - **Rules and tags:** `aipulse/classify.py` and `aipulse/jurisdictions.py`.
-- **Company logos:** `LOGOS` in `templates/index.html`, keyed by the company names in `COMPANY_TERMS`.
+- **Company logos:** the 12 AI companies in `COMPANY_TERMS` use the colour logos in `LOGOS`
+  (`templates/index.html`). Any other brand a headline names is found automatically by `aipulse/brands.py`:
+  Simple Icons' index of ~3,000 brands first, then Wikidata (a company or product with an official website,
+  shown with that site's icon). Plain words like "Astra" count only if Wikidata confirms a company by that
+  name. Lookups are cached in `data/` (and in the Actions cache on GitHub), so each name is checked once.
 
 ## Project layout
 
@@ -130,6 +134,7 @@ aipulse/
   classify.py       AI relevance, stream, tag and regulatory-action rules
   jurisdictions.py  countries, blocs and US states the tracker recognises
   brief.py          headline and summary cleaning
+  brands.py         brand logos found in headlines (Simple Icons, Wikidata)
   bills.py          congress.gov and European Parliament bill stages
   cluster.py        grouping the same event into one card
   enrich.py         optional Claude summaries
@@ -142,4 +147,5 @@ templates/index.html  the page
 tests/                unit and end-to-end tests with fixture feeds (python -m pytest -q)
 ```
 
-Company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub.
+AI company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub. Other brand
+logos: [Simple Icons](https://simpleicons.org) (CC0) or the brand's own website icon.

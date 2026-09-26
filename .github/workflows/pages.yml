@@ -36,7 +36,11 @@ jobs:
       - name: Restore the database
         uses: actions/cache/restore@v4
         with:
-          path: aipulse.db
+          path: |
+            aipulse.db
+            data/brands.json
+            data/brands-wikidata.json
+            data/brand-icons
           key: aipulse-db-${{ github.run_id }}
           restore-keys: aipulse-db-
 
@@ -60,7 +64,11 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: aipulse.db
+          path: |
+            aipulse.db
+            data/brands.json
+            data/brands-wikidata.json
+            data/brand-icons
           key: aipulse-db-${{ github.run_id }}
 
       - name: Build the site

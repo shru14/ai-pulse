@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from . import jurisdictions, store
+from . import brands, jurisdictions, store
 from .sources import SOURCES
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
@@ -29,6 +29,7 @@ def items_payload(conn, qs: dict) -> dict:
     per_page = _int(qs.get("per_page"), PER_PAGE, 1, MAX_PER_PAGE)
     page = _int(qs.get("page"), 1, 1, 10**6)
     items, total = store.cards(conn, category, q, days, place, per_page, (page - 1) * per_page, EU_MEMBERS)
+    brands.add_logos(conn, items, lookups=10)  # collection looks names up ahead; this only catches stragglers
     health = store.source_health(conn, [s["url"] for s in SOURCES])
     payload = {"items": items, "page": page, "perPage": per_page, "total": total,
                "hasMore": page * per_page < total, "counts": store.card_counts(conn, q, days),
@@ -64,6 +65,13 @@ def make_handler(db_path: str):
                     else:
                         payload = items_payload(conn, qs)
                     self._send(json.dumps(payload).encode(), "application/json")
+                elif url.path.startswith("/brand-icons/"):
+                    name = url.path.rsplit("/", 1)[1]
+                    f = brands.ICON_DIR / name
+                    if name.startswith("site-") and name.endswith((".png", ".jpg")) and "/" not in name and f.is_file():
+                        self._send(f.read_bytes(), "image/jpeg" if name.endswith(".jpg") else "image/png")
+                    else:
+                        self._send(b"Not found", "text/plain", 404)
                 elif url.path == "/api/sources":
                     self._send(json.dumps(store.source_health(conn, [s["url"] for s in SOURCES])).encode(),
                                "application/json")

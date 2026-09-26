@@ -123,6 +123,7 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .ico.logo{background:#FFFFFF;border:1px solid var(--line);color:#141925}
 .ico.logo svg{fill:currentColor;stroke:none}
+.ico.logo img{width:22px;height:22px;object-fit:contain;border-radius:4px}
 .ico.mono{font:600 12px var(--mono);letter-spacing:.02em}
 
 .body{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -207,9 +208,9 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
     <button class="theme" id="theme" type="button"></button>
   </header>
   <div class="intro">
-    <p class="lede"><strong>Your briefing on what's happening in AI.</strong> AI Pulse reads company blogs, newsrooms,
-      government sites and research archives, sorts every story into one of five streams, and links each card
-      to the original reporting.</p>
+    <p class="lede"><strong>Your briefing on what's happening in AI.</strong><br>AI Pulse reads company blogs,
+      newsrooms, government sites and research archives, sorts every story into one of five streams and links
+      each card to the original reporting.</p>
     <div class="status" id="status">Loading feed…</div>
   </div>
   <div class="streams" id="streams" role="group" aria-label="Streams: pick one to show only its stories">
@@ -406,6 +407,12 @@ function svgIcon(d){
   const p = document.createElementNS(SVG_NS,"path"); p.setAttribute("d", d); svg.append(p);
   return svg;
 }
+// Logo tiles are white, so very light brand colours (yellow, white) use the text colour instead.
+function readableOnWhite(hex){
+  const n = parseInt(String(hex).replace("#",""), 16);
+  if(Number.isNaN(n)) return "#141925";
+  return (0.299*(n>>16) + 0.587*((n>>8)&255) + 0.114*(n&255)) / 255 > 0.8 ? "#141925" : "#"+String(hex).replace("#","");
+}
 function placeCode(it){
   const codes = (it.jurisdictions||[]).filter(c => !c.startsWith("US-"));
   if(codes.length) return codes[0];
@@ -419,6 +426,18 @@ function cardIcon(it){
   if(company){
     tile.classList.add("logo"); tile.title = company;
     tile.innerHTML = LOGOS[company];  // fixed markup from the table above, never story text
+    return tile;
+  }
+  // Any other brand the headline names, found by the server (aipulse/brands.py).
+  if(it.logo && (it.logo.path || it.logo.src)){
+    tile.classList.add("logo"); tile.title = it.logo.name;
+    if(it.logo.path){
+      const svg = svgIcon(it.logo.path); svg.style.fill = readableOnWhite(it.logo.hex); tile.append(svg);
+    } else {
+      const img = el("img"); img.src = it.logo.src; img.alt = ""; img.width = 22; img.height = 22; img.loading = "lazy";
+      img.addEventListener("error", () => tile.replaceWith(cardIcon({...it, logo:null})));
+      tile.append(img);
+    }
     return tile;
   }
   const place = (it.category === "regulation" || it.category === "policy") && placeCode(it);

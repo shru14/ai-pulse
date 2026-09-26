@@ -1,5 +1,8 @@
+import os
 import sqlite3
 from pathlib import Path
+
+os.environ["AIPULSE_OFFLINE"] = "1"  # brand logos: cached data only, no network
 
 from aipulse import classify, feeds, store
 from aipulse import jurisdictions
@@ -607,3 +610,31 @@ def test_sources_avoid_hosts_that_block_cloud_servers():
     # The site is built on GitHub Actions: arXiv's search API (406) and Substack (Cloudflare 403) refuse it.
     from aipulse.sources import SOURCES
     assert not [s["url"] for s in SOURCES if "export.arxiv.org/api" in s["url"] or "substack.com" in s["url"]]
+
+
+def test_brand_names_in_headlines():
+    from aipulse import brands
+    common = {"some", "discover", "make"}
+    assert brands.names("Ando wants to take on Slack with a team messaging app", common) == ["Ando", "Slack"]
+    assert brands.names("Black Forest Labs launches FLUX 3 Action", common)[0] == "Black Forest Labs"
+    assert brands.names("ElevenLabs’ CEO on margins and IPO timing", common)[0] == "ElevenLabs"
+    assert brands.names("PrismML brings tiny LLMs to Qualcomm-powered glasses", common) == ["PrismML", "LLMs", "Qualcomm"]
+    assert brands.names("Some Supabase customers are exposing data", common) == ["Supabase"]
+    # Title Case Headlines: only distinctive names ("Discover", "Make" are ordinary words there)
+    assert brands.names("Can AI Help Us Discover The Origin Of Consciousness?", common) == []
+    assert brands.names("How to Make the U.S.-China AI Race Less Dangerous", common) == []
+
+
+def test_brand_logo_needs_confirmation_for_plain_words(monkeypatch):
+    from aipulse import brands
+    monkeypatch.setattr(brands, "si_index", lambda: {"Astra": {"title": "Astra", "slug": "astra", "hex": "5C2EDE"},
+                                                     "YouTube": {"title": "YouTube", "slug": "youtube", "hex": "FF0000"}})
+    monkeypatch.setattr(brands, "si_path", lambda s: "M0 0h24v24H0z")
+    known = {"Slack": {"brand": True, "site": "slack.com", "icon": "site-slack.png"},
+             "Astra": {"brand": False, "site": None, "icon": None}, "Ando": {"brand": False, "site": None, "icon": None}}
+    monkeypatch.setattr(brands, "wikidata", lambda name, budget: known.get(name))
+    logo = lambda title, tags=(): brands.logo_for(title, list(tags), set(), [10])
+    assert logo("Ando wants to take on Slack")["src"] == "brand-icons/site-slack.png"
+    assert logo("Astra and Opus just passed Turing's test") is None  # a plain word Wikidata doesn't call a brand
+    assert logo("YouTube promises custom feeds")["hex"] == "#FF0000"  # distinctive: no confirmation needed
+    assert logo("Meta's new glasses use Slack", ["Meta"]) is None  # the page's own AI-company logos come first

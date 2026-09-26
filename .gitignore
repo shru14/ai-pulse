@@ -9,6 +9,11 @@ server.err
 tunnel-url.txt
 site/
 
+# Brand logo caches (downloaded; see aipulse/brands.py)
+data/brands.json
+data/brands-wikidata.json
+data/brand-icons/
+
 __pycache__/
 .pytest_cache/
 .claude/
