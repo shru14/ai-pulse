@@ -1,7 +1,7 @@
 # AI Pulse
 
 A free, non-commercial, worldwide briefing on AI: new models and products, industry news, research,
-government policy and AI laws in every country. It reads ~75 open sources every 6 hours, keeps only AI
+government policy and AI laws in every country. It reads ~80 open sources every 6 hours, keeps only AI
 stories, sorts them into five streams and links every card to the original.
 
 **Live site:** https://shru14.github.io/ai-pulse/
@@ -56,7 +56,7 @@ Times' terms allow brief excerpts with credit and a link back).
 |---|---|
 | Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
 | Global news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World |
-| Regional news (AI headlines only) | **Asia:** South China Morning Post, Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, TechCentral, ITWeb, IT News Africa, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
+| Regional news (AI headlines only) | **Asia:** South China Morning Post, Pandaily and TechNode (China's AI labs and launches), Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news) |
 | Research | arXiv (API), Hugging Face Daily Papers, Apple Machine Learning Research |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and arXiv papers by ~40 AI ethics and law scholars |

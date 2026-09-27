@@ -76,6 +76,11 @@ SOURCES = [
     {"name": "Rest of World", "url": "https://restofworld.org/feed/latest", "category": "news"},
     {"name": "South China Morning Post", "url": "https://www.scmp.com/rss/320663/feed", "category": "news"},
     {"name": "TechCabal", "url": "https://techcabal.com/feed/", "category": "news", "paged": True},
+    # China's AI labs and launches (DeepSeek, Qwen, Kimi...). TechNode's AI tag feed lists ~600 stories (5 MB),
+    # so only the newest are read.
+    {"name": "Pandaily", "url": "https://pandaily.com/feed/", "category": "news"},
+    {"name": "TechNode", "url": "https://technode.com/tag/ai/feed/", "category": "news", "ai_only": True, "max_items": 40},
+    {"name": "iAfrikan", "url": "https://www.iafrikan.com/rss/", "category": "news"},
     # Regional news, so countries without an official source still show up. None has terms restricting
     # its feed; VnExpress's feed terms allow free use by individuals and non-profits with the source named.
     {"name": "Focus Taiwan", "url": "https://feeds.feedburner.com/rsscna/engnews/", "category": "news", "ai_in_title": True},
