@@ -41,11 +41,11 @@ def main():
     bf.add_argument("--since", default="2023-01-01", help="start date, YYYY-MM-DD")
     bf.add_argument("--only", action="append", choices=["feeds", "official", "research", "papers"],
                     help="run just these groups (repeatable)")
-    bl = sub.add_parser("bills", help="sync AI bills' stages from congress.gov and the European Parliament")
+    bl = sub.add_parser("bills", help="sync AI bills' stages from congress.gov, the European Parliament and the UK Parliament")
     bl.add_argument("--eu-since", type=int, help="also discover EU procedures from this year on (one-time backfill)")
     bl.add_argument("--us-days", type=int, help="look at US bills updated in the last N days (default: since last sync)")
     bl.add_argument("--max-pages", type=int, default=8, help="congress.gov pages of 250 updated bills per run")
-    bl.add_argument("--only", choices=["us", "eu"], help="sync just one source")
+    bl.add_argument("--only", choices=["us", "eu", "uk"], help="sync just one source")
 
     b = sub.add_parser("build", help="write a static copy of the site (for GitHub Pages)")
     b.add_argument("--out", default="site", help="output folder, replaced (default: site)")
@@ -111,17 +111,18 @@ def main():
         years = list(range(a.eu_since, date.today().year + 1)) if a.eu_since else None
         results = {}
         for name, run in (("us", lambda: bills.sync_congress(conn, since=since, max_pages=a.max_pages)),
-                          ("eu", lambda: bills.sync_europarl(conn, years=years))):
+                          ("eu", lambda: bills.sync_europarl(conn, years=years)),
+                          ("uk", lambda: bills.sync_uk(conn))):
             if a.only and a.only != name:
                 continue
             try:  # one source failing (e.g. congress.gov's rate limit) doesn't stop the other
                 results[name] = run()
             except Exception as exc:
                 results[name] = f"failed ({exc})"
-        us, eu = results.get("us", "skipped"), results.get("eu", "skipped")
+        us, eu, uk = (results.get(k, "skipped") for k in ("us", "eu", "uk"))
         cluster.assign(conn, days=None)
         tracked = conn.execute("SELECT jurisdiction, stage, COUNT(*) FROM bills GROUP BY 1, 2 ORDER BY 1, 2").fetchall()
-        print(f"US: {us} bills changed stage; EU: {eu}. Tracking: " + ", ".join(f"{j} {s} {n}" for j, s, n in tracked))
+        print(f"US: {us} bills changed stage; EU: {eu}; UK: {uk}. Tracking: " + ", ".join(f"{j} {s} {n}" for j, s, n in tracked))
     elif a.cmd == "build":
         from .static import build
         print(f"Wrote {build(store.connect(a.db), a.out)} cards to {a.out}/")

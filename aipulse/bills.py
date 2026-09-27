@@ -5,6 +5,8 @@
   bills updated since the last sync, keeps those with AI in the title, and reads their official actions.
 - EU: the European Parliament's open data API (no key). AI procedures are found by their English title;
   their events give the stages.
+- UK: the UK Parliament Bills API (no key; Open Parliament Licence). AI bills are found by title searches;
+  their readings in each House give the stages.
 
 Every bill has one tracker card (an item with source "congress.gov" or "European Parliament"), dated at
 its latest stage so it moves up the feed when it advances. The card shows the whole timeline. News
@@ -25,7 +27,7 @@ from datetime import date, datetime, timedelta, timezone
 from . import feeds, store
 
 # Cards made from official records; the keyword rules for news stories never re-sort them.
-OFFICIAL_SOURCES = ("congress.gov", "European Parliament")
+OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -36,6 +38,8 @@ LABELS = {
     "EU": {"introduced": "Proposed", "passed_chamber": "Parliament position", "passed_legislature": "Final vote",
            "signed": "Signed", "in_force": "Published in Official Journal", "vetoed": "Rejected",
            "withdrawn": "Withdrawn"},
+    "GB": {"introduced": "Introduced", "passed_chamber": "Passed first House", "passed_legislature": "Passed both Houses",
+           "signed": "Royal Assent", "in_force": "In force", "vetoed": "Defeated", "withdrawn": "Withdrawn"},
 }
 
 AI_TITLE = re.compile(r"artificial intelligence|\bAI\b|machine learning|algorithm|deepfake|automated decision|"
@@ -162,7 +166,8 @@ def upsert(conn, bill: dict) -> bool:
         (bill["key"], bill["jurisdiction"], bill["number"], bill["title"], bill.get("short_title", ""), bill["url"],
          now["stage"], now["date"], json.dumps(bill["history"]), bill["source"],
          datetime.now(timezone.utc).isoformat(timespec="seconds")))
-    item = {"title": f"{bill['number']}: {bill.get('short_title') or bill['title']}"[:220],
+    name = bill.get("short_title") or bill["title"]
+    item = {"title": (f"{bill['number']}: {name}" if bill["number"] else name)[:220],
             "summary": _summary(bill["jurisdiction"], bill["history"]), "url": bill["url"], "source": bill["source"],
             "category": "regulation", "date": now["date"],
             "action": "law" if now["stage"] in ("signed", "in_force") else "proposal",
@@ -294,6 +299,68 @@ def _eu_short_title(title: str) -> str:
     return m.group(1) if m else ""
 
 
+# --- UK (UK Parliament Bills API) ---
+
+UK_API = "https://bills-api.parliament.uk/api/v1"
+# The API's search matches bill titles; AI_TITLE then keeps only AI bills.
+UK_SEARCHES = ("artificial intelligence", "algorithm", "automated decision", "deepfake", "machine learning", "chatbot")
+
+
+def uk_history(bill: dict, stages: list[dict]) -> list[dict]:
+    """Lifecycle from a bill's stages: first reading, third reading in each House, Royal Assent."""
+    reached: dict[str, dict] = {}
+    third: dict[str, str] = {}
+    for st in stages:
+        dates = sorted(s["date"][:10] for s in st.get("stageSittings") or [] if s.get("date"))
+        if not dates:
+            continue
+        what, house = st.get("description", ""), st.get("house", "")
+        if what == "1st reading":
+            reached.setdefault("introduced", {"date": dates[0], "stage": "introduced", "text": f"1st reading, {house}"})
+        elif what == "3rd reading":
+            third.setdefault(house, dates[-1])
+        elif what == "Royal Assent":
+            reached["signed"] = {"date": dates[0], "stage": "signed", "text": "Royal Assent"}
+    if third:
+        first = min(third.values())
+        reached["passed_chamber"] = {"date": first, "stage": "passed_chamber", "text": "3rd reading"}
+        if len(third) == 2:
+            reached["passed_legislature"] = {"date": max(third.values()), "stage": "passed_legislature",
+                                             "text": "3rd reading in both Houses"}
+    if bill.get("billWithdrawn"):
+        reached["withdrawn"] = {"date": bill["billWithdrawn"][:10], "stage": "withdrawn", "text": "Withdrawn"}
+    elif bill.get("isDefeated"):
+        reached["vetoed"] = {"date": (bill.get("lastUpdate") or "")[:10], "stage": "vetoed", "text": "Defeated"}
+    return sorted(reached.values(), key=lambda h: (h["date"], (STAGES + ENDED).index(h["stage"])))
+
+
+def sync_uk(conn, fetcher=feeds.fetch, log=print) -> int:
+    """AI bills in the UK Parliament (every session the API holds) and their stages."""
+    connect_tables(conn)
+    found: dict[int, dict] = {}
+    for term in UK_SEARCHES:
+        data = _get_json(f"{UK_API}/Bills?SearchTerm={term.replace(' ', '%20')}&SortOrder=DateUpdatedDescending"
+                         f"&Take=100", fetcher)
+        for b in data.get("items", []):
+            if AI_TITLE.search(b.get("shortTitle") or ""):
+                found[b["billId"]] = b
+        time.sleep(0.5)
+    changed = 0
+    for bill_id, b in found.items():
+        stages = _get_json(f"{UK_API}/Bills/{bill_id}/Stages?Take=100", fetcher).get("items", [])
+        history = uk_history(b, stages)
+        # Bills are often reintroduced under the same name in a later session: the year tells them apart.
+        year = next((h["date"][:4] for h in history if h["stage"] == "introduced"), "")
+        short = re.sub(r"\s*\[HL\]$", "", b["shortTitle"])
+        bill = {"key": f"GB-{bill_id}", "jurisdiction": "GB", "number": "", "title": b["shortTitle"],
+                "short_title": f"{short} ({year})" if year else short,
+                "url": f"https://bills.parliament.uk/bills/{bill_id}", "source": "UK Parliament", "history": history}
+        changed += upsert(conn, bill)
+        conn.commit()
+        time.sleep(0.5)
+    return changed
+
+
 # --- Attaching news to bills ---
 
 _BILL_NUMBER = re.compile(r"\b(H\.?\s?R\.?|S\.|H\.?\s?J\.?\s?Res\.?|S\.?\s?J\.?\s?Res\.?)\s?(\d{1,5})\b", re.I)
@@ -307,8 +374,9 @@ def _number_key(prefix: str, number: str) -> str:
 def attach_news(conn) -> int:
     """Put news stories that name a tracked bill (by number or short title) on the bill's card."""
     connect_tables(conn)
+    official = ",".join(f"'{s}'" for s in OFFICIAL_SOURCES)
     bills = conn.execute("SELECT b.key, b.short_title, i.id AS card FROM bills b JOIN items i ON i.bill = b.key"
-                         " AND i.source IN ('congress.gov', 'European Parliament')").fetchall()
+                         f" AND i.source IN ({official})").fetchall()
     if not bills:
         return 0
     by_number = {}
@@ -316,10 +384,11 @@ def attach_news(conn) -> int:
         parts = b["key"].split("-")  # US-119-hr-10538
         if parts[0] == "US":
             by_number[f"{parts[2]}-{parts[3]}"] = b["card"]
-    names = [(b["short_title"].lower(), b["card"]) for b in bills if len(b["short_title"]) >= 8]
+    # News names a bill without the year that tells same-named UK bills apart ("... Bill (2025)").
+    names = [(re.sub(r" \(\d{4}\)$", "", b["short_title"]).lower(), b["card"]) for b in bills if len(b["short_title"]) >= 8]
     moved = 0
     for it in conn.execute("SELECT id, title, cluster FROM items WHERE category IN ('regulation', 'policy')"
-                           " AND source NOT IN ('congress.gov', 'European Parliament')").fetchall():
+                           f" AND source NOT IN ({official})").fetchall():
         card = None
         for m in _BILL_NUMBER.finditer(it["title"]):
             card = by_number.get(_number_key(m.group(1), m.group(2))) or card
@@ -333,10 +402,11 @@ def attach_news(conn) -> int:
 
 
 def sync(conn, fetcher=feeds.fetch, log=print) -> int:
-    """Both sources; each is recorded in source health like any feed."""
+    """Every official source; each is recorded in source health like any feed."""
     total = 0
     for name, url, fn in (("congress.gov API", CONGRESS_API, sync_congress),
-                          ("European Parliament API", EP_API, sync_europarl)):
+                          ("European Parliament API", EP_API, sync_europarl),
+                          ("UK Parliament Bills API", UK_API, sync_uk)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)

@@ -775,3 +775,20 @@ def test_nothing_is_fetched_against_robots_txt(monkeypatch):
     from aipulse.sources import SOURCES
     arxiv = [s for s in SOURCES if "arxiv.org" in s["url"]]
     assert arxiv and all(s.get("pause", 0) >= 3 for s in arxiv)  # arXiv: one request every 3 seconds
+
+
+def test_uk_stages_from_parliament_readings():
+    from aipulse.bills import current, uk_history
+    sit = lambda *d: [{"date": x + "T00:00:00"} for x in d]
+    stages = [{"house": "Lords", "description": "1st reading", "stageSittings": sit("2024-10-23")},
+              {"house": "Lords", "description": "3rd reading", "stageSittings": sit("2025-02-05")},
+              {"house": "Commons", "description": "1st reading", "stageSittings": sit("2025-02-06")},
+              {"house": "Commons", "description": "3rd reading", "stageSittings": sit("2025-05-07")},
+              {"house": "Lords", "description": "Royal Assent", "stageSittings": sit("2025-06-19")}]
+    history = uk_history({"billWithdrawn": None, "isDefeated": False}, stages)
+    assert [(h["stage"], h["date"]) for h in history] == [
+        ("introduced", "2024-10-23"), ("passed_chamber", "2025-02-05"), ("passed_legislature", "2025-05-07"),
+        ("signed", "2025-06-19")]
+    stalled = uk_history({"billWithdrawn": "2024-05-24T00:00:00", "isDefeated": False}, stages[:1])
+    assert current(stalled)["stage"] == "withdrawn"
+
