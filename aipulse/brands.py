@@ -22,13 +22,11 @@ import os
 import re
 import time
 import unicodedata
-import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.robotparser
 from pathlib import Path
 
-from . import classify, jurisdictions
+from . import classify, feeds, jurisdictions
 
 SI_VERSION = "16"  # Simple Icons major version; jsDelivr serves its latest release
 SI_INDEX_URL = f"https://cdn.jsdelivr.net/npm/simple-icons@{SI_VERSION}/data/simple-icons.json"
@@ -74,6 +72,8 @@ def slug(title: str) -> str:
 def _get(url: str, timeout: int = 10) -> bytes:
     if os.environ.get("AIPULSE_OFFLINE"):  # tests: use only what is cached
         raise OSError("offline")
+    if not feeds.allowed(url):  # robots.txt (Wikidata's API is allowed by its terms; see feeds.API_HOSTS)
+        raise feeds.Disallowed(url)
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return resp.read()
@@ -84,18 +84,8 @@ _ICON_TYPES = ((b"\x00\x00\x01\x00", "ico"), (b"\x89PNG", "png"), (b"\xff\xd8\xf
 
 
 def site_icon(host: str) -> tuple[bytes, str]:
-    """(image, extension) of a website's own /favicon.ico, if its robots.txt allows fetching it."""
-    rules = urllib.robotparser.RobotFileParser()
-    try:
-        rules.parse(_get(f"https://{host}/robots.txt").decode("utf-8", "replace").splitlines())
-    except urllib.error.HTTPError as e:
-        if e.code not in (404, 410):  # no robots.txt means no rules; anything else, don't risk it
-            raise
-        rules.parse([])
-    url = f"https://{host}/favicon.ico"
-    if not rules.can_fetch(USER_AGENT, url):
-        raise PermissionError(f"{host} doesn't allow fetching its icon")
-    data = _get(url)
+    """(image, extension) of a website's own /favicon.ico, if its robots.txt allows fetching it (_get checks)."""
+    data = _get(f"https://{host}/favicon.ico")
     ext = next((e for magic, e in _ICON_TYPES if data.startswith(magic)), None)
     if not ext:
         raise ValueError(f"{host}/favicon.ico isn't an image")

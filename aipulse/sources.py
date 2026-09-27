@@ -220,15 +220,17 @@ def arxiv_rss_url(categories) -> str:
     return "https://rss.arxiv.org/rss/" + "+".join(categories)
 
 
+# arXiv's API terms allow one request every 3 seconds, hence "pause" (https://info.arxiv.org/help/api/tou.html).
 # Each day's new arXiv papers in these categories, kept only when a listed person is an author. (arXiv's
 # search API would find them by name, but it refuses requests from cloud servers such as GitHub Actions.)
 # The lists are empty on weekends and holidays, when arXiv announces nothing.
 SOURCES += [
     {"name": "arXiv", "label": f"arXiv new papers: {len(PROFESSORS)} professors", "format": "arxiv_rss",
-     "url": arxiv_rss_url(ARXIV_CATEGORIES), "category": "research", "ai_only": True, "max_age_days": 14,
+     "url": arxiv_rss_url(ARXIV_CATEGORIES), "category": "research", "ai_only": True, "max_age_days": 14, "pause": 3.5,
      "professors": [n for n, _ in PROFESSORS]},
     {"name": "arXiv", "label": f"arXiv new papers: {len(EXPERTS)} scholars", "format": "arxiv_rss",
      "url": arxiv_rss_url(ARXIV_ETHICS_CATEGORIES), "category": "regulation", "ai_only": True, "max_age_days": 14,
+     "pause": 3.5,
      "professors": [n for n, _, _ in EXPERTS], "expert": True},
 ]
 

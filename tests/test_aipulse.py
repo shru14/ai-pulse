@@ -388,6 +388,7 @@ def test_fetch_retries_rate_limits_with_backoff(monkeypatch):
             raise r
         return r
     monkeypatch.setattr(feeds.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(feeds, "allowed", lambda url: True)
     monkeypatch.setattr(feeds.time, "sleep", waits.append)
     assert feeds.fetch("https://x") == b"<rss/>"
     assert waits == [2.0, 7.0]  # our backoff first, then the server's Retry-After
@@ -400,6 +401,7 @@ def test_fetch_does_not_retry_permanent_errors(monkeypatch):
         calls.append(1)
         raise _http_error(404)
     monkeypatch.setattr(feeds.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(feeds, "allowed", lambda url: True)
     monkeypatch.setattr(feeds.time, "sleep", lambda s: None)
     with pytest.raises(urllib.error.HTTPError):
         feeds.fetch("https://x")
@@ -732,3 +734,44 @@ def test_feed_archive_pages_back_to_the_start_date(tmp_path, monkeypatch):
     assert backfill.feed_archives(conn, date(2023, 1, 1), fetch, log=lambda *_: None) == 2
     assert asked == [1, 2, 3]  # page 3 reaches before 2023: stop there (its old story is left out)
     assert backfill.feed_archives(conn, date(2023, 1, 1), fetch, log=lambda *_: None) == 0  # remembered as done
+
+
+def test_feed_archive_skips_a_bad_page_and_keeps_the_source_name(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import backfill
+    import aipulse.collect as col
+    monkeypatch.setattr(col.time, "sleep", lambda s: None)
+    monkeypatch.setattr(backfill.time, "sleep", lambda s: None)
+    good = lambda t, d: (f"<rss><channel><item><title>AI story {t}</title><link>https://e.com/{t}</link>"
+                         f"<description>An AI model story number {t} with enough words.</description>"
+                         f"<pubDate>{d}</pubDate></item></channel></rss>").encode()
+    pages = {1: good("a", "Mon, 01 Sep 2025 10:00:00 GMT"), 2: b"<rss><channel><item>broken",
+             3: good("c", "Mon, 01 Jan 2024 10:00:00 GMT")}
+    def fetch(url):
+        n = int(url.rsplit("paged=", 1)[1]) if "paged=" in url else 1
+        if n not in pages:
+            raise __import__("urllib.error").error.HTTPError(url, 404, "Not Found", {}, None)
+        return pages[n]
+    monkeypatch.setattr(backfill, "SOURCES", [{"name": "Blog", "url": "https://e.com/feed/", "category": "news",
+                                               "ai_only": True, "paged": True}])
+    conn = store.connect(tmp_path / "t.db")
+    assert backfill.feed_archives(conn, date(2023, 1, 1), fetch, log=lambda *_: None) == 2  # page 2 skipped
+    assert {r[0] for r in conn.execute("SELECT source FROM items")} == {"Blog"}  # not "Blog page 3"
+
+
+def test_nothing_is_fetched_against_robots_txt(monkeypatch):
+    import pytest, urllib.robotparser
+    rules = urllib.robotparser.RobotFileParser()
+    rules.parse(["User-agent: *", "Disallow: /private/", "", "User-agent: AIPulse", "Disallow: /feeds/"])
+    monkeypatch.setattr(feeds, "_robots", {"news.example": rules, "export.arxiv.org": None})
+    fetched = []
+    monkeypatch.setattr(feeds.urllib.request, "urlopen", lambda req, timeout: fetched.append(req.full_url))
+    assert not feeds.allowed("https://news.example/feeds/ai.xml")  # a rule for AI Pulse by name
+    assert feeds.allowed("https://news.example/rss/ai.xml")
+    with pytest.raises(feeds.Disallowed):
+        feeds.fetch("https://news.example/feeds/ai.xml")
+    assert fetched == []  # refused before any request
+    assert feeds.allowed("https://export.arxiv.org/api/query?x")  # an API its terms allow (API_HOSTS)
+    from aipulse.sources import SOURCES
+    arxiv = [s for s in SOURCES if "arxiv.org" in s["url"]]
+    assert arxiv and all(s.get("pause", 0) >= 3 for s in arxiv)  # arXiv: one request every 3 seconds

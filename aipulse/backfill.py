@@ -19,6 +19,8 @@ table), so an interrupted run picks up where it stopped. Run it on a PC: arXiv r
 
 from __future__ import annotations
 
+import time
+import urllib.error
 from datetime import date, timedelta
 from urllib.parse import quote
 
@@ -27,6 +29,8 @@ from .collect import collect
 from .sources import EXPERTS, PROFESSORS, SOURCES
 
 MAX_PAGES = 2000  # a feed with 10 posts a page and 10 posts a day reaches back about 5 years
+PAGE_TRIES = 3  # a page that fails (dropped connection, a timeout, a garbled reply) is tried again
+GIVE_UP_AFTER = 5  # pages in a row that fail every try: the host is down; the next run carries on
 
 
 def months(since: date, until: date):
@@ -52,7 +56,7 @@ def official_sources(since: date, until: date) -> list[dict]:
                 url = s["url"].replace("count=50", "count=1000") + f"&filter_public_timestamp=from:{start},to:{last}"
             else:
                 continue
-            out.append({**s, "name": f"{s['name']} {start:%Y-%m}", "url": url, "pause": 1.0})
+            out.append({**s, "label": f"{s['name']} {start:%Y-%m}", "url": url, "pause": 1.0})
     return out
 
 
@@ -62,8 +66,9 @@ def page_url(url: str, n: int) -> str:
 
 def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
     """Each RSS/Atom source's own archive back to `since`: its feed as it stands, then (sources marked
-    "paged") one page after another until a page reaches `since`, repeats the last one, or doesn't exist.
-    The last page read is remembered, so a stopped run carries on from there."""
+    "paged") one page after another until a page reaches `since`, repeats the last one, or doesn't exist
+    (404). A page that keeps failing is skipped; if several in a row do, the source is left unfinished.
+    The last page read is remembered, so a stopped or unfinished run carries on from there."""
     age = (date.today() - since).days + 2
     added = 0
     for src in [s for s in SOURCES if s.get("format", "feed") == "feed"]:
@@ -71,19 +76,37 @@ def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
         row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
         if row and row[0] == "done":
             continue
-        start, n_src, seen = (int(row[0]) + 1 if row else 1), 0, set()
+        start, n_src, seen, failed, finished = (int(row[0]) + 1 if row else 1), 0, set(), 0, True
         for n in range(start, (MAX_PAGES if src.get("paged") else 1) + 1):
-            try:
-                body = fetcher(page_url(src["url"], n))
-                entries = feeds.parse(body)
-            except Exception as e:  # past the last page (404), or the host stopped answering
-                log(f"  {src['name']}: stopped at page {n} ({type(e).__name__})")
+            body, entries, error = None, [], None
+            for attempt in range(PAGE_TRIES):
+                try:
+                    body = fetcher(page_url(src["url"], n))
+                    entries = feeds.parse(body)
+                    error = None
+                    break
+                except urllib.error.HTTPError as e:
+                    error = e
+                    if e.code in (404, 410):  # past the last page
+                        break
+                except Exception as e:
+                    error = e
+                time.sleep(10 * (attempt + 1))
+            if isinstance(error, urllib.error.HTTPError) and error.code in (404, 410):
                 break
+            if error:
+                failed += 1
+                log(f"  {src['name']}: skipped page {n} ({type(error).__name__})")
+                if failed >= GIVE_UP_AFTER:
+                    finished = False
+                    break
+                continue
+            failed = 0
             urls = {e["url"] for e in entries}
             if not entries or urls <= seen:
                 break
             seen |= urls
-            n_src += collect(conn, [{**src, "name": f"{src['name']} page {n}", "pause": 1.0}], max_age_days=age,
+            n_src += collect(conn, [{**src, "label": f"{src['name']} page {n}", "pause": 1.0}], max_age_days=age,
                              fetcher=lambda u, b=body: b, log=lambda m: None, backfill=True)
             conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", (key, str(n)))
             conn.commit()
@@ -92,9 +115,10 @@ def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
                 break
             if n % 50 == 0:
                 log(f"  {src['name']}: page {n}, back to {oldest.date() if oldest else '?'}, {n_src} stories so far")
-        conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, 'done')", (key,))
-        conn.commit()
-        log(f"  {src['name']}: {n_src} stories")
+        if finished:
+            conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, 'done')", (key,))
+            conn.commit()
+        log(f"  {src['name']}: {n_src} stories" + ("" if finished else " (unfinished: its host kept failing)"))
         added += n_src
     return added
 
@@ -102,7 +126,7 @@ def arxiv_sources(since: date, until: date) -> list[dict]:
     """arXiv search per person; only papers where they're really an author are kept (as daily)."""
     span = f"{since:%Y%m%d}0000+TO+{until:%Y%m%d}2359"
     people = [(n, "research", True) for n, _ in PROFESSORS] + [(n, "regulation", False) for n, _, _ in EXPERTS]
-    return [{"name": f"arXiv: {name}", "category": category, "professors": [name], "ai_only": ai_only,
+    return [{"name": "arXiv", "label": f"arXiv: {name}", "category": category, "professors": [name], "ai_only": ai_only,
              "expert": category == "regulation" or None, "pause": 3.5,  # arXiv asks for 3 s between calls
              "expect_entries": True,  # arXiv sometimes answers with an empty list; retry those
              "url": f"http://export.arxiv.org/api/query?search_query=au:{quote(chr(34) + name + chr(34))}"
@@ -114,7 +138,7 @@ def paper_sources(since: date, until: date) -> list[dict]:
     """Hugging Face Daily Papers, one day at a time (its history starts in May 2023)."""
     out, d = [], max(since, date(2023, 5, 1))
     while d <= until:
-        out.append({"name": f"Hugging Face Daily Papers {d}", "format": "hf_daily", "category": "research",
+        out.append({"name": "Hugging Face Daily Papers", "label": f"Hugging Face Daily Papers {d}", "format": "hf_daily", "category": "research",
                     "ai_only": True, "companies": True, "pause": 0.3,
                     "url": f"https://huggingface.co/api/daily_papers?date={d}&limit=100"})
         d += timedelta(days=1)
@@ -135,12 +159,12 @@ def run(conn, since: date = date(2023, 1, 1), only: list[str] | None = None, fet
             log("feeds: every source's own archive")
             added += feed_archives(conn, since, fetcher, log)
             continue
-        todo = [s for s in GROUPS[group](since, until) if f"backfill:{s['name']}" not in done]
+        todo = [s for s in GROUPS[group](since, until) if f"backfill:{s['label']}" not in done]
         log(f"{group}: {len(todo)} searches to run")
         for i, src in enumerate(todo, 1):
             n = collect(conn, [src], max_age_days=age, fetcher=fetcher, log=lambda m: None, backfill=True)
             conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)",
-                         (f"backfill:{src['name']}", str(n)))
+                         (f"backfill:{src['label']}", str(n)))
             conn.commit()
             added += n
             if i % 25 == 0 or i == len(todo):

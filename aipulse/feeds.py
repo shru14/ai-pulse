@@ -6,14 +6,18 @@ import gzip
 import html
 import json
 import re
+import threading
 import time
 import urllib.error
 import urllib.request
+import urllib.robotparser
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from urllib.parse import urlsplit
 
-USER_AGENT = "AIPulse/1.0 (+https://github.com/; personal news reader)"
+USER_AGENT = "AIPulse/1.0 (+https://github.com/shru14/ai-pulse; personal news reader)"
+ROBOT_NAME = "AIPulse"  # the name robots.txt rules are matched against
 ATOM = "{http://www.w3.org/2005/Atom}"
 DC = "{http://purl.org/dc/elements/1.1/}"
 CONTENT = "{http://purl.org/rss/1.0/modules/content/}"
@@ -38,8 +42,63 @@ def _retry_after(err: urllib.error.HTTPError) -> float | None:
         return None  # an HTTP date; fall back to our own backoff
 
 
+# ---------- Only what a site allows ----------
+# Every request first checks the site's robots.txt, and a URL it disallows is never fetched. The only
+# exceptions are official APIs whose published terms allow programmatic use, although their robots.txt
+# (written for search crawlers) disallows everything:
+#   export.arxiv.org  arXiv's API: https://info.arxiv.org/help/api/tou.html (metadata CC0; at most one
+#                     request every 3 seconds, which the arXiv sources' "pause" keeps)
+#   www.wikidata.org  Wikidata's API: https://www.mediawiki.org/wiki/API:Etiquette (serial requests with
+#                     a descriptive User-Agent)
+# and official services with no robots.txt of their own (the request for one is refused):
+#   api.congress.gov  the Library of Congress's API (https://api.congress.gov; US government works)
+#   cdn.jsdelivr.net  the npm package CDN serving Simple Icons (CC0; https://www.jsdelivr.com/terms)
+API_HOSTS = {"export.arxiv.org", "www.wikidata.org", "api.congress.gov", "cdn.jsdelivr.net"}
+
+
+class Disallowed(Exception):
+    """The site's robots.txt doesn't allow fetching this URL."""
+
+
+_robots: dict[str, urllib.robotparser.RobotFileParser] = {}
+_robots_lock = threading.Lock()
+
+
+def _rules(scheme: str, host: str) -> urllib.robotparser.RobotFileParser:
+    rules = urllib.robotparser.RobotFileParser()
+    req = urllib.request.Request(f"{scheme}://{host}/robots.txt", headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            body = resp.read()
+        body = gzip.decompress(body) if body.startswith(GZIP_MAGIC) else body
+        rules.parse(body.decode("utf-8", "replace").splitlines())
+    except urllib.error.HTTPError as e:
+        if e.code in (404, 410):  # no robots.txt: no rules
+            rules.parse([])
+        else:  # 401/403 mean "keep out"; 5xx: can't tell, so don't fetch this time
+            rules.parse(["User-agent: *", "Disallow: /"])
+            if e.code >= 500:
+                return rules  # not remembered: asked again on the next run
+    _robots[host] = rules
+    return rules
+
+
+def allowed(url: str) -> bool:
+    """May AI Pulse fetch this URL? (robots.txt, fetched once per site per run; see API_HOSTS)"""
+    parts = urlsplit(url)
+    host = parts.netloc.lower()
+    if host in API_HOSTS:
+        return True
+    with _robots_lock:
+        rules = _robots.get(host) or _rules(parts.scheme or "https", host)
+    return rules.can_fetch(ROBOT_NAME, url)
+
+
 def fetch(url: str, timeout: int = 20, attempts: int = ATTEMPTS) -> bytes:
-    """GET a URL, retrying rate limits (429), 5xx errors and network timeouts with backoff."""
+    """GET a URL the site allows (see allowed), retrying rate limits (429), 5xx errors and network
+    timeouts with backoff."""
+    if not allowed(url):
+        raise Disallowed(f"robots.txt of {urlsplit(url).netloc} doesn't allow fetching {url}")
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     for attempt in range(attempts):
         try:

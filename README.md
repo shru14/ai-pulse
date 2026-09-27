@@ -83,6 +83,12 @@ Only free, open sources are read, and only ones whose **robots.txt allows automa
 **terms don't restrict** showing a headline with a short description and a link (checked September 2026).
 The full list, with each feed's settings, is in `aipulse/sources.py`.
 
+This is enforced in code: every request first checks the site's robots.txt (`feeds.allowed`) and a URL it
+disallows is never fetched. The only exceptions are official APIs whose published terms allow programmatic
+use (arXiv's API, Wikidata's API, the congress.gov API and the jsDelivr CDN; see `feeds.API_HOSTS`). Requests
+go one at a time with pauses, arXiv at most once every 3 seconds as its terms ask, and identify themselves
+as `AIPulse/1.0` with a link to this repository.
+
 | Stream | Sources |
 |---|---|
 | Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
