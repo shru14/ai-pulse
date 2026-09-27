@@ -545,15 +545,15 @@ function staticPayload(d, params){
   return out;
 }
 
-// Introduced -> passed -> signed -> in force, with the date each stage was reached (official record).
+// The stages a bill has reached so far (introduced -> passed -> signed -> in force), each with its date
+// (official record); the current one is bold. Stages not reached yet aren't shown.
 function lifecycleStrip(life){
   const ol = el("ol","life"); ol.setAttribute("aria-label","Lifecycle of "+life.number);
-  life.steps.forEach(st => {
+  life.steps.filter(st => st.date).forEach(st => {
     const ended = st.stage === "vetoed" || st.stage === "withdrawn";
-    const li = el("li", [st.date ? "done" : "", st.stage === life.current ? "now" : "", ended ? "ended" : ""].filter(Boolean).join(" "));
-    li.append(document.createTextNode((st.date ? "\u2713 " : "\u25cb ") + st.label));
-    if(st.date) li.append(el("span","when",st.date));
-    else li.append(el("span","when","not yet"));
+    const li = el("li", ["done", st.stage === life.current ? "now" : "", ended ? "ended" : ""].filter(Boolean).join(" "));
+    li.append(document.createTextNode("\u2713 " + st.label));
+    li.append(el("span","when",st.date));
     ol.append(li);
   });
   return ol;

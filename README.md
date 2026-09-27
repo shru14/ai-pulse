@@ -27,8 +27,8 @@ Pure Python 3.10+, standard library only: nothing to install.
 - **Cards** show a logo for the company involved (or the country, or a topic symbol), a summary
   (long ones fold behind "Read more"), clickable tags, and the date and source link. The same event
   reported by several outlets is one card with "N sources".
-- **Regulation tracker**: click a country chip on a card to see only that country. US bills and EU procedures show their stage,
-  from introduced to in force.
+- **Regulation tracker**: click a country chip on a card to see only that country. US bills and EU procedures show the stages
+  they have reached so far (introduced, passed, signed, in force), each with its date.
 - **Light / dark** follows your system; the button in the top bar overrides it.
 - Links open a stream directly: `/#policy`, `/#regulation`; `/?q=nvidia` also searches.
 
