@@ -300,8 +300,10 @@ def _crs_summary(congress, kind: str, number, title: str, key: str, fetcher=feed
 def _us_describe_old(conn, key: str, fetcher=feeds.fetch, limit: int = 40) -> None:
     """Look up CRS summaries for stored US bills that don't have one yet, a few per run, each at most weekly."""
     week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).date().isoformat()
-    rows = conn.execute("SELECT * FROM bills WHERE jurisdiction = 'US' AND summary = '' AND key NOT IN"
-                        " (SELECT substr(key, 11) FROM meta WHERE key LIKE 'crs-tried:%' AND value > ?) LIMIT ?",
+    # Bills with no context yet (sponsor, committee) are read at once; the rest at most weekly.
+    rows = conn.execute("SELECT * FROM bills WHERE jurisdiction = 'US' AND summary = '' AND (key NOT IN"
+                        " (SELECT substr(key, 11) FROM meta WHERE key LIKE 'crs-tried:%' AND value > ?) OR key NOT IN"
+                        " (SELECT substr(key, 12) FROM meta WHERE key LIKE 'us-context:%')) LIMIT ?",
                         (week_ago, limit)).fetchall()
     for r in rows:
         _, congress, kind, number = r["key"].split("-")
