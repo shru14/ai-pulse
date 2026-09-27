@@ -93,6 +93,7 @@ out. A ministry release that reports a bill or law reaches the tracker; the rest
 - **Official records** from 14 places plus Russia's parliamentary news, **OECD.AI** for ~60 more, and
   **regional news** from Asia, Africa, the Middle East and Latin America for the rest.
 - The EU counts as one (its rules apply in every member state). Russia belongs to no region.
+- Coverage of any country is only as good as its official sources and the news about it.
 
 ## Limitations we faced, and what we did
 
@@ -124,21 +125,6 @@ out. A ministry release that reports a bill or law reaches the tracker; the rest
 | General news feeds carry non-AI stories; "foreign agents" (a Russian law) read as AI agents | Regional and general feeds keep only items with AI in the headline; "agent" counts only when it isn't a foreign, secret, FBI, nerve or similar agent |
 | Windows' certificate store lacks some certificates official sites use | Fetching uses Mozilla's CA list (certifi): still fully verified, never switched off |
 | "National AI Office" (Malaysia) read as the EU AI Office; names like Jordan or Georgia are also people and US states | Country patterns only match forms that mean the country; tests cover these cases |
-
-## Still not possible (rechecked September 2026)
-
-Each was tried again; these stay out until the site opens automated access or gives permission:
-
-- **Singapore** (Parliament, MDDI, IMDA, Singapore Statutes Online): terms require written permission; the
-  statutes site refuses robots. Covered by OECD.AI and the news.
-- **China's national law database** (flk.npc.gov.cn): robots.txt forbids it. The Cyberspace Administration covers AI rules.
-- **India Code, MeitY and PIB**: refuse automated requests. Parliament of India covers bills.
-- **Korea's pending bills** (National Assembly): its API needs Korean identity verification. Enacted laws are covered.
-- **Russia's bills** (State Duma bill system): search closed to robots, system unreachable. Duma news is covered.
-- **Taiwan's open-data API** (data.ly.gov.tw): robots.txt errors. Laws come from the law system instead.
-- **Council of Europe**: behind Cloudflare. Its AI Convention comes through OECD.AI.
-
-Coverage of any country is only as good as its official sources and the news about it.
 
 ## Run it
 
