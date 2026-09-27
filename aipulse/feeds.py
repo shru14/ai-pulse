@@ -248,5 +248,28 @@ def parse_govuk(json_bytes: bytes) -> list[dict]:
             for r in json.loads(json_bytes).get("results") or [] if r.get("link")]
 
 
-PARSERS = {"feed": parse, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
+# Korea's Ministry of Science and ICT: its English press releases list writes each row's title and date in
+# inline script. A release opens at view.do with the board's number (bbsSeqNo) and the release's (nttSeqNo).
+MSIT_VIEW = "https://www.msit.go.kr/eng/bbs/view.do?sCode=eng&mId=4&mPid=2&bbsSeqNo=42&nttSeqNo="
+_MSIT_ROW = re.compile(r"""\$\('#td_'\+'NTT_SJ'\+'_(\d+)'\)\.html\('<a href="javascript:;" onclick="fn_detail\("(\d+)"\)"[^>]*><span>(.*?)</span>""")
+_MSIT_DATE = re.compile(r"""if\('REG_DT' == 'REG_DT'\)\{\s*\$\('#td_'\+'REG_DT'\+'_(\d+)'\)\.html\('([A-Z][a-z]{2} \d{1,2}, \d{4})'\)""")
+
+
+def parse_msit(html_bytes: bytes) -> list[dict]:
+    """MSIT's English press releases list (see MSIT_VIEW): title, link and date of each release."""
+    text = html_bytes.decode("utf-8", "replace")
+    dates = dict(_MSIT_DATE.findall(text))
+    entries, seen = [], set()
+    for row, nid, title in _MSIT_ROW.findall(text):
+        if nid in seen:
+            continue
+        seen.add(nid)
+        when = dates.get(row)
+        entries.append({"title": clean_text(html.unescape(title), 200), "url": MSIT_VIEW + nid, "summary": "",
+                        "published": datetime.strptime(when, "%b %d, %Y").replace(tzinfo=timezone.utc) if when else None,
+                        "authors": []})
+    return entries
+
+
+PARSERS = {"feed": parse, "msit": parse_msit, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk}

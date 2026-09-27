@@ -94,6 +94,12 @@ SOURCES = [
      "url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bterm%5D=%22artificial+intelligence%22"
             "&order=newest&per_page=50&fields%5B%5D=title&fields%5B%5D=html_url&fields%5B%5D=abstract"
             "&fields%5B%5D=publication_date"},
+    # South Korea: the Ministry of Science and ICT runs the AI Basic Act; its English press releases carry the
+    # country's AI rules as they're announced. (The National Assembly's bill API needs a key only available
+    # with Korean identity verification, so Korean bills aren't tracked.)
+    {"name": "Ministry of Science and ICT (Korea)", "format": "msit", "category": "policy", "jurisdictions": ["KR"],
+     "ai_in_title": True, "paged": True, "page_param": "pageIndex",
+     "url": "https://www.msit.go.kr/eng/bbs/list.do?sCode=eng&mPid=2&mId=4"},
     {"name": "GOV.UK", "format": "govuk", "category": "policy", "jurisdictions": ["GB"], "ai_in_title": True,
      "url": "https://www.gov.uk/api/search.json?q=%22artificial+intelligence%22&order=-public_timestamp&count=50"
             "&fields=title,link,description,public_timestamp"},

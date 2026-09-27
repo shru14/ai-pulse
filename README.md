@@ -94,7 +94,7 @@ as `AIPulse/1.0` with a link to this repository.
 |---|---|
 | Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
 | Industry news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World, South China Morning Post, TechCabal |
-| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, **Federal Register** (US federal records), **GOV.UK** (UK government) |
+| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, **Federal Register** (US federal records), **GOV.UK** (UK government), **Korea's Ministry of Science and ICT** (English press releases) |
 | Regulation tracker | European Data Protection Board, European Commission, US Congress, European Parliament, UK Parliament, Parliament of Canada and Brazil's Chamber of Deputies bill records, Australia's Federal Register of Legislation, the Cyberspace Administration of China, the Parliament of India, arXiv papers by ~40 ethics and law scholars |
 | Research | arXiv (new papers by ~80 professors), Hugging Face Daily Papers, Apple Machine Learning Research |
 
@@ -146,7 +146,9 @@ run with CTranslate2 and SentencePiece. No API is called and nothing is billed; 
 downloaded once (cached on GitHub) and each text is translated once and stored. Cards say the title is a
 machine translation and link the official text. Without the two libraries, records keep their language.
 
-More countries are added one at a time, each from its own official records (next: Japan, South Korea, Singapore). The EU counts as one: its rules apply in every member state. Some of these licences allow only non-commercial use, so the site must stay
+More countries are added one at a time, each from its own official records (next: Japan, Singapore). South Korea's bills can't be tracked: the
+National Assembly's API needs a key that requires Korean identity verification, and its bill site's
+robots.txt blocks automated access; Korea's AI rules come from its science ministry's English press releases. The EU counts as one: its rules apply in every member state. Some of these licences allow only non-commercial use, so the site must stay
 non-commercial.
 
 ## Hosting

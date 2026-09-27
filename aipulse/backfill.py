@@ -60,8 +60,8 @@ def official_sources(since: date, until: date) -> list[dict]:
     return out
 
 
-def page_url(url: str, n: int) -> str:
-    return url if n == 1 else url + ("&" if "?" in url else "?") + f"paged={n}"
+def page_url(url: str, n: int, param: str = "paged") -> str:
+    return url if n == 1 else url + ("&" if "?" in url else "?") + f"{param}={n}"
 
 
 def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
@@ -71,7 +71,8 @@ def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
     The last page read is remembered, so a stopped or unfinished run carries on from there."""
     age = (date.today() - since).days + 2
     added = 0
-    for src in [s for s in SOURCES if s.get("format", "feed") == "feed"]:
+    for src in [s for s in SOURCES if s.get("format", "feed") == "feed" or s.get("page_param")]:
+        parse = feeds.PARSERS[src.get("format", "feed")]
         key = f"backfill-feed:{src['url']}"
         row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
         if row and row[0] == "done":
@@ -81,8 +82,8 @@ def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
             body, entries, error = None, [], None
             for attempt in range(PAGE_TRIES):
                 try:
-                    body = fetcher(page_url(src["url"], n))
-                    entries = feeds.parse(body)
+                    body = fetcher(page_url(src["url"], n, src.get("page_param", "paged")))
+                    entries = parse(body)
                     error = None
                     break
                 except urllib.error.HTTPError as e:

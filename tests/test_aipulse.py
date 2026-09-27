@@ -915,3 +915,14 @@ def test_congress_is_skipped_without_a_personal_key(tmp_path, monkeypatch):
     assert bills.sync_congress(conn, lambda url: asked.append(url), log=lambda *_: None) == 0
     assert asked == []  # the DEMO_KEY is never used
 
+
+def test_msit_press_releases_parse():
+    page = ("""$('#td_'+'NTT_SJ'+'_0').html('<a href="javascript:;" onclick="fn_detail("1290")" class="" data-value="1290">"""
+            """<span>MSIT Announces the Enforcement Decree of the AI Basic Act</span></a></b>');"""
+            """ //$('#td_'+'NTT_SJ'+'_0').html('<a href="javascript:;" onclick="fn_detail("1290")" class="" data-value="1290">"""
+            """<span>MSIT Announces the Enforcement Decree of the AI Basic Act</span>');"""
+            """ if('REG_DT' == 'REG_DT'){ $('#td_'+'REG_DT'+'_0').html('Jan 22, 2026'); }""").encode()
+    [e] = feeds.parse_msit(page)
+    assert e["title"] == "MSIT Announces the Enforcement Decree of the AI Basic Act"
+    assert e["url"].endswith("bbsSeqNo=42&nttSeqNo=1290") and e["published"].date().isoformat() == "2026-01-22"
+
