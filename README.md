@@ -95,37 +95,6 @@ out. A ministry release that reports a bill or law reaches the tracker; the rest
 - The EU counts as one (its rules apply in every member state). Russia belongs to no region.
 - Coverage of any country is only as good as its official sources and the news about it.
 
-## Limitations we faced, and what we did
-
-| Limitation | What we did |
-|---|---|
-| Google News and Bing News don't allow automated access (robots.txt; Bing's terms allow personal readers only) | Removed both. Stories come from publishers' own feeds and official records |
-| Some outlets' terms forbid aggregation, bots or reuse: BBC News, CNA, Korea Herald, MediaNama, Inc42, Rappler, Philstar, SoyaCincau, Techloy. Others' terms couldn't be confirmed: NYT, The Guardian, Wired, The Africa Report | Left out; replaced with outlets whose terms allow it |
-| Some sites refuse automated access: Japan Times, Malay Mail, e27, Techpoint Africa, Mexico News Daily, MyBroadband, BNamericas, The Register; Techzim and Techmoran refuse GitHub's servers | Left out |
-| Some feeds have stopped (Digital News Asia, Disrupt Africa, MENAbytes) or turned into US funding news (Ventureburn, Contxto) | Left out |
-| Most global tech press covers the US and Europe | Regional news for Asia, Africa, the Middle East and Latin America, each checked first |
-| The shared congress.gov DEMO_KEY is only for trying the API | A free personal key, stored as a secret |
-| South Korea's bill API needs Korean identity verification; its bill site's robots.txt blocks bots | Enacted AI laws and decrees come from the national law database (law.go.kr), which allows it; policy from the science ministry's English releases |
-| Korea's offline translation model produces garbage | English names come from a fixed list of the official names, with a one-line description; a new law keeps its Korean name until it's added |
-| Taiwan: the national law database's robots.txt blocks everything; the Legislative Yuan's open-data robots.txt errors | Laws come from the Legislative Yuan's own law system (no robots.txt rules), news from Focus Taiwan. Its result links last one session, so cards link to the law's name on the national database (a link for readers; never fetched) |
-| Malaysia: the Attorney General's Chambers blocks bots and its law portal's robots.txt errors; the Parliament's server doesn't send its full certificate chain | Bills come from the Parliament, using the missing public intermediate certificate (Sectigo, bundled in `aipulse/certs/`), as browsers do; the chain must still end at a trusted root. Policy comes from the Ministry of Digital |
-| Russia's official sites refused foreign connections; now the Duma's bill search is closed to robots and its bill system doesn't answer; its HTTPS port times out | Rechecked in September 2026: the Duma's English news is open, read over plain HTTP (public news). Bills still come only through OECD.AI and the news |
-| Vietnam's National Assembly site serves a bot challenge | The Ministry of Justice's National Legal Database, through its public sitemap |
-| China's national law database (flk.npc.gov.cn) forbids automated access | The Cyberspace Administration's AI regulations (titles, dates and links) |
-| India Code, MeitY and PIB turn away automated requests | Parliament of India's bill data |
-| Singapore's terms require written permission even to reuse or link; the Council of Europe is behind Cloudflare | Not used; they appear through OECD.AI (which carries the Council of Europe AI Convention) and the news |
-| ~150 countries have no usable official source | Every country is recognised in news, and OECD.AI covers ~60 at once |
-| Records in Portuguese, Chinese, Japanese, Vietnamese and German | English titles and summaries translated **offline** with open-source OPUS-MT models; no API. Cards say they are machine translations and link the official text |
-| The translation models get some legal terms wrong (Vietnamese "artificial intelligence" came out as "manic intelligence") | Fixed term rules per language (`translate.py`) |
-| New US bills have no summary for weeks (the Congressional Research Service writes one later), so cards showed only the official title | Until then, the card says what the bill would do (from its official title), who introduced it, cosponsors and the committee it went to, all from the congress.gov API; the CRS summary replaces it when published, and a short title replaces the long one once the text is out |
-| Research cards showed the start of the abstract (usually background or a question), cut mid-sentence, with LaTeX quote marks | A paper's card now shows the abstract's own sentence stating what it does ("We propose X" becomes "Proposes X"), as a full sentence with LaTeX removed. Stored papers were rewritten from their full abstracts via the arXiv API, 3,000 per run |
-| News summaries ran to two sentences and 300 characters, cut mid-thought behind "Read more" | A story's card shows its lede: one full sentence saying what happened (a second only when the first is very short), within about three lines; a long sentence ends at a clause. Stored stories were re-cleaned once |
-| News stories counted as releases just for mentioning "model", "API" or "feature", so a study's findings ("AI agents do more of the work in model development") showed under Releases | A news outlet's story is a release only if something was launched (released, launched, open-sourced, a new model or app, now available...). A study's findings count only when the headline announces a launch; otherwise they go to Industry news, tagged #Study Report (papers themselves stay in Research, tagged #Research). Company blogs keep their own rules. Stored stories were re-checked (about 6% of releases moved) |
-| No AI model may write summaries | Summaries are the publisher's description, an official record's own summary, a release's first paragraph, or the translated sentence stating what a motion asks, plus the government's position |
-| General news feeds carry non-AI stories; "foreign agents" (a Russian law) read as AI agents | Regional and general feeds keep only items with AI in the headline; "agent" counts only when it isn't a foreign, secret, FBI, nerve or similar agent |
-| Windows' certificate store lacks some certificates official sites use | Fetching uses Mozilla's CA list (certifi): still fully verified, never switched off |
-| "National AI Office" (Malaysia) read as the EU AI Office; names like Jordan or Georgia are also people and US states | Country patterns only match forms that mean the country; tests cover these cases |
-
 ## Run it
 
 ```bash
