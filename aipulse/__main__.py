@@ -11,6 +11,11 @@ from . import cluster, store
 from .collect import collect, reclassify, resummarize, retag
 from .server import serve
 
+# `bills --only` keys, in the order `bills.sync()` runs them during collection.
+BILL_SOURCES = [("us", "US"), ("eu", "EU"), ("uk", "UK"), ("ca", "Canada"), ("br", "Brazil"), ("au", "Australia"),
+                ("cn", "China"), ("in", "India"), ("jp", "Japan"), ("vn", "Vietnam"), ("ch", "Switzerland"),
+                ("my", "Malaysia"), ("tw", "Taiwan"), ("kr", "Korea"), ("oecd", "OECD.AI")]
+
 
 def main():
     p = argparse.ArgumentParser(prog="aipulse", description="Track AI releases, news and policy.")
@@ -41,11 +46,12 @@ def main():
     bf.add_argument("--since", default="2023-01-01", help="start date, YYYY-MM-DD")
     bf.add_argument("--only", action="append", choices=["feeds", "official", "research", "papers"],
                     help="run just these groups (repeatable)")
-    bl = sub.add_parser("bills", help="sync AI bills' stages from official records (US, EU, UK, Canada, Brazil, Australia, China, India, Japan)")
+    bl = sub.add_parser("bills", help="sync AI bills' stages from official records (US, EU, UK, Canada, Brazil, Australia, China, India, "
+                                        "Japan, Vietnam, Switzerland, Malaysia, Taiwan, Korea) and OECD.AI")
     bl.add_argument("--eu-since", type=int, help="also discover EU procedures from this year on (one-time backfill)")
     bl.add_argument("--us-days", type=int, help="look at US bills updated in the last N days (default: since last sync)")
     bl.add_argument("--max-pages", type=int, default=8, help="congress.gov pages of 250 updated bills per run")
-    bl.add_argument("--only", choices=["us", "eu", "uk", "ca", "br", "au", "cn", "in", "jp"], help="sync just one source")
+    bl.add_argument("--only", choices=[k for k, _ in BILL_SOURCES], help="sync just one source")
 
     b = sub.add_parser("build", help="write a static copy of the site (for GitHub Pages)")
     b.add_argument("--out", default="site", help="output folder, replaced (default: site)")
@@ -110,25 +116,23 @@ def main():
         since = datetime.now(timezone.utc) - timedelta(days=a.us_days) if a.us_days else None
         years = list(range(a.eu_since, date.today().year + 1)) if a.eu_since else None
         results = {}
-        for name, run in (("us", lambda: bills.sync_congress(conn, since=since, max_pages=a.max_pages)),
-                          ("eu", lambda: bills.sync_europarl(conn, years=years)),
-                          ("uk", lambda: bills.sync_uk(conn)),
-                          ("ca", lambda: bills.sync_canada(conn)),
-                          ("br", lambda: bills.sync_brazil(conn)),
-                          ("au", lambda: bills.sync_australia(conn)),
-                          ("cn", lambda: bills.sync_china(conn)),
-                          ("in", lambda: bills.sync_india(conn)),
-                          ("jp", lambda: bills.sync_japan(conn))):
+        sync_fns = {"uk": bills.sync_uk, "ca": bills.sync_canada, "br": bills.sync_brazil, "au": bills.sync_australia,
+                    "cn": bills.sync_china, "in": bills.sync_india, "jp": bills.sync_japan, "vn": bills.sync_vietnam,
+                    "ch": bills.sync_switzerland, "my": bills.sync_malaysia, "tw": bills.sync_taiwan,
+                    "kr": bills.sync_korea, "oecd": bills._oecd_sync}
+        runs = {"us": lambda: bills.sync_congress(conn, since=since, max_pages=a.max_pages),
+                "eu": lambda: bills.sync_europarl(conn, years=years)}
+        for name, label in BILL_SOURCES:
+            run = runs.get(name) or (lambda fn=sync_fns[name]: fn(conn))
             if a.only and a.only != name:
                 continue
-            try:  # one source failing (e.g. congress.gov's rate limit) doesn't stop the other
+            try:  # one source failing (e.g. congress.gov's rate limit) doesn't stop the others
                 results[name] = run()
             except Exception as exc:
                 results[name] = f"failed ({exc})"
-        us, eu, uk, ca, br, au, cn, ind, jp = (results.get(k, "skipped") for k in ("us", "eu", "uk", "ca", "br", "au", "cn", "in", "jp"))
         cluster.assign(conn, days=None)
         tracked = conn.execute("SELECT jurisdiction, stage, COUNT(*) FROM bills GROUP BY 1, 2 ORDER BY 1, 2").fetchall()
-        print(f"US: {us} bills changed stage; EU: {eu}; UK: {uk}; Canada: {ca}; Brazil: {br}; Australia: {au}; China: {cn}; India: {ind}; Japan: {jp}. Tracking: " + ", ".join(f"{j} {s} {n}" for j, s, n in tracked))
+        print("Bills changed stage: " + "; ".join(f"{label}: {results.get(k, 'skipped')}" for k, label in BILL_SOURCES) + ". Tracking: " + ", ".join(f"{j} {s} {n}" for j, s, n in tracked))
     elif a.cmd == "build":
         from .static import build
         print(f"Wrote {build(store.connect(a.db), a.out)} cards to {a.out}/")

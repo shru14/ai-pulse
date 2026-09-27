@@ -59,6 +59,7 @@ Times' terms allow brief excerpts with credit and a link back).
 | Regional news (AI headlines only) | **Asia:** South China Morning Post, Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, TechCentral, ITWeb, IT News Africa, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news) |
 | Research | arXiv (API), Hugging Face Daily Papers, Apple Machine Learning Research |
+| Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and arXiv papers by ~40 AI ethics and law scholars |
 
 ### Official records for the tracker (`aipulse/bills.py`, `aipulse/oecd.py`)
 
@@ -103,7 +104,7 @@ python -m aipulse serve       # http://127.0.0.1:8000
 ```
 
 Other commands: `run --every-hours 6`, `bills` (sync official records), `backfill --since 2023-01-01`,
-`reclassify`, `regroup`, `evaluate`, `sources`, `build --out site`, `prune`. Tests: `python -m pytest -q`.
+`reclassify`, `resummarize`, `regroup`, `evaluate`, `sources`, `status`, `build --out site`, `prune`. Tests: `python -m pytest -q`.
 
 Optional: `pip install ctranslate2 sentencepiece certifi` for offline English translations and Mozilla's CA list.
 
@@ -128,7 +129,7 @@ tests/                 unit and end-to-end tests
 
 ## Credits and licences
 
-UK Parliament data: Open Parliament Licence v3.0. GOV.UK: Open Government Licence v3.0. Federal Register and
+European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK: Open Government Licence v3.0. Federal Register and
 congress.gov: US public domain. Canada: reproduced with the Speaker's permission for non-commercial use.
 Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. Korean laws: National
 Law Information Center (https://www.law.go.kr), Ministry of Government Legislation. Taiwanese laws:
