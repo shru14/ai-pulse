@@ -34,7 +34,7 @@ python -m aipulse serve       # http://127.0.0.1:8000
 Other commands: `run --every-hours 6`, `bills` (sync official records), `backfill --since 2023-01-01`,
 `reclassify`, `regroup`, `evaluate`, `sources`, `build --out site`, `prune`. Tests: `python -m pytest -q`.
 
-Optional: `pip install ctranslate2 sentencepiece` gives non-English records (Brazil, China, Japan, Vietnam) an
+Optional: `pip install ctranslate2 sentencepiece` gives non-English records (Brazil, China, Japan, Vietnam, Switzerland) an
 English title, translated **offline** with OPUS-MT models (no API).
 
 ## Sources and access rules
@@ -58,6 +58,7 @@ registration we can't lawfully get, rate limit or bot challenge. The full list i
 | China | Cyberspace Administration of China (titles, dates and links only) |
 | India | Parliament of India (sansad.in) |
 | Japan | e-Gov law API |
+| Switzerland | Swiss Parliament open data (free use, source named): motions and bills asking for AI laws go to the tracker, postulates (requests for a government report) to Policy; questions are left out |
 | Vietnam | National Legal Database (vbpl.vn, Ministry of Justice): AI documents found through its sitemap, read weekly. Vietnamese legal documents aren't copyrighted (IP Law, Art. 15) |
 | South Korea | Ministry of Science and ICT English press releases |
 | ~60 more countries and international bodies | OECD.AI Policy Observatory: laws, guidance and AI bodies, read weekly (editors' names and emails never stored). For the countries above, only their guidance and bodies, so nothing appears twice |
@@ -94,7 +95,7 @@ tests/                 unit and end-to-end tests
 ## Credits and licences
 
 Some licences allow only non-commercial use, so the site must stay non-commercial.
-UK Parliament data: Open Parliament Licence v3.0. GOV.UK: Open Government Licence v3.0. Federal Register:
+UK Parliament data: Open Parliament Licence v3.0. Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. GOV.UK: Open Government Licence v3.0. Federal Register:
 US public domain. Canada: reproduced with the Speaker's permission for non-commercial use. OECD.AI Policy
 Observatory (https://oecd.ai): CC BY 4.0. Japanese laws: e-Gov Law Search (https://laws.e-gov.go.jp),
 Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI Pulse. Australian legislation:

@@ -61,7 +61,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: data/translate-models
-          key: translate-models-pt_en-1_9-zh_en-1_9-ja_en-1_1-vi_en-1_9
+          key: translate-models-pt_en-1_9-zh_en-1_9-ja_en-1_1-vi_en-1_9-de_en-1_3
 
       - name: Start from the seed if there is no saved database
         run: "[ -f aipulse.db ] || gunzip -c data/seed.db.gz > aipulse.db"

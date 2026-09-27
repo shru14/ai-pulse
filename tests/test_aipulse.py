@@ -854,7 +854,7 @@ def test_machine_translation_is_tidied_and_used_for_the_card_title(tmp_path):
     bills.connect_tables(conn)
     bills.upsert(conn, bill)
     title, summary = conn.execute("SELECT title, summary FROM items").fetchone()
-    assert title == "PL 1/2026: Provides for the use of AI." and "machine-translated from Portuguese" in summary
+    assert title == "PL 1/2026: Provides for the use of AI." and "Machine-translated from Portuguese" in summary
     assert translate.english(conn, "pt", ["Texto novo sem tradução."]) == {}  # no model in tests: left as is
 
 
@@ -1047,4 +1047,27 @@ def test_reclassify_keeps_the_source_default_place(tmp_path):
     collect.reclassify(conn)
     row = conn.execute("SELECT category, jurisdictions FROM items").fetchone()
     assert tuple(row) == ("regulation", "KR")
+
+
+def test_swiss_motions_go_to_the_tracker_and_postulates_to_policy(tmp_path):
+    import json
+    from aipulse import bills
+    rec = lambda i, kind, title, status: {
+        "ID": i, "BusinessShortNumber": f"26.{i}", "BusinessTypeName": kind, "Title": title,
+        "SubmittedText": "<p>Die Schweiz diskutiert. Der Bundesrat wird beauftragt, Deepfakes zu regeln.</p>",
+        "FederalCouncilProposalText": "Ablehnung", "SubmissionDate": "/Date(1781740800000)/",
+        "SubmissionCouncilName": "Nationalrat", "BusinessStatusText": status, "BusinessStatusDate": "/Date(1782000000000)/"}
+    records = [rec(1, "Motion", "Deepfakes regeln", "Überwiesen an den Bundesrat"),
+               rec(2, "Postulat", "Deepfakes. Bericht", "Stellungnahme zum Vorstoss liegt vor"),
+               rec(3, "Interpellation", "Deepfakes?", "Erledigt")]
+    page = json.dumps({"d": records}).encode()
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_switzerland(conn, lambda u: page, log=lambda *_: None) == 2
+    cards = {r["title"]: dict(r) for r in conn.execute("SELECT title, category, action, summary FROM items")}
+    assert set(cards) == {"Motion 26.1: Deepfakes regeln", "Postulate 26.2: Deepfakes. Bericht"}  # no questions
+    assert cards["Motion 26.1: Deepfakes regeln"]["category"] == "regulation"
+    assert cards["Postulate 26.2: Deepfakes. Bericht"]["category"] == "policy"
+    assert "The Federal Council recommends rejecting it." in cards["Motion 26.1: Deepfakes regeln"]["summary"]
+    assert bills._ch_demand(records[0]["SubmittedText"]) == "Der Bundesrat wird beauftragt, Deepfakes zu regeln."
+    assert [h["stage"] for h in bills.ch_history(records[0])] == ["introduced", "passed_legislature"]
 
