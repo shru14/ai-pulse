@@ -101,9 +101,11 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 continue  # general feeds carry non-AI stories too
             if src.get("ai_in_title") and not classify.is_ai_related(title, ""):
                 continue
-            if e.get("lead") and not summary and not store.exists(conn, e["url"]):
+            if (e.get("lead") or src.get("page_lead")) and not summary and not store.exists(conn, e["url"]):
                 try:  # a list without descriptions: the item's own first paragraph, read once
-                    summary = brief.clean_summary(feeds.lead_paragraph(fetcher(e["url"]), e["title"]), title, source)
+                    page = fetcher(e["url"])
+                    lead = feeds.article_lead(page) if src.get("page_lead") else feeds.lead_paragraph(page, e["title"])
+                    summary = brief.clean_summary(lead, title, source)
                 except Exception:
                     pass
 
@@ -145,6 +147,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     if official_bills if official_bills is not None else sources is SOURCES:
         bills.sync(conn, fetcher, log=log)  # official bill stages (congress.gov, European Parliament)
         resummarize_papers(conn, fetcher, log=log)
+        fill_page_leads(conn, fetcher, log=log)
         if (conn.execute("SELECT value FROM meta WHERE key = 'summaries_version'").fetchone() or [""])[0] != SUMMARIES:
             log(f"  summaries re-cleaned: {resummarize(conn, log=lambda *_: None)}")  # once, after brief.py changes
             conn.execute("INSERT OR REPLACE INTO meta VALUES ('summaries_version', ?)", (SUMMARIES,))
@@ -280,6 +283,31 @@ def retag(conn) -> int:
 SUMMARIES = "2"  # bump when brief.clean_summary changes: stored stories are re-cleaned once on the next run
 ARXIV_API = "http://export.arxiv.org/api/query"
 PAPER_BATCH = 100  # papers per arXiv API request; one request every 3.5 s, as arXiv asks
+
+
+def fill_page_leads(conn, fetcher=feeds.fetch, limit: int = 150, log=print) -> int:
+    """Stored posts from `page_lead` sources that have no summary (or only a draft): read each page's opening
+    paragraph, once, a page a second and `limit` per run, in order until all are done. Returns how many filled."""
+    names = [s["name"] for s in SOURCES if s.get("page_lead")]
+    done = conn.execute("SELECT value FROM meta WHERE key = 'page_leads_filled'").fetchone()
+    rows = conn.execute(f"SELECT rowid, id, url, title, source, summary FROM items WHERE source IN ({','.join('?' * len(names))})"
+                        " AND rowid > ? ORDER BY rowid", (*names, int(done[0]) if done else 0)).fetchall()
+    rows = [r for r in rows if not r["summary"] or brief.is_draft(r["summary"])][:limit]
+    filled = 0
+    for r in rows:
+        try:
+            summary = brief.clean_summary(feeds.article_lead(fetcher(r["url"])), r["title"], r["source"])
+        except Exception:
+            summary = ""
+        if summary:
+            conn.execute("UPDATE items SET summary = ? WHERE id = ?", (summary, r["id"]))
+            filled += 1
+        conn.execute("INSERT OR REPLACE INTO meta VALUES ('page_leads_filled', ?)", (str(r["rowid"]),))
+        conn.commit()
+        time.sleep(1)
+    if rows:
+        log(f"  opening paragraphs: {filled} of {len(rows)} posts summarised")
+    return filled
 
 
 def resummarize_papers(conn, fetcher=feeds.fetch, limit: int = 3000, log=print) -> int:

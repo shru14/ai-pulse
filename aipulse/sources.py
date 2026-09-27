@@ -17,6 +17,8 @@ Optional per-source keys:
   max_age_days  look back further than the run default (for feeds that post weekly or monthly)
   max_items     only take the first N entries of each fetch
   pause         seconds to wait after fetching (arXiv asks for 3)
+  page_lead     the feed has no real description, so each new post's opening paragraph is read from its page
+                (once; robots.txt permitting)
   expect_entries True when the source always lists its latest items, so an empty reply is a glitch:
                 it is retried, and counts as a failed fetch if it stays empty
   label         name shown in source health checks when several sources share a name (arXiv)
@@ -38,8 +40,8 @@ SOURCES = [
     {"name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "category": "tool"},
     {"name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/", "category": "tool"},
     {"name": "Google DeepMind Blog", "url": "https://deepmind.google/blog/rss.xml", "category": "tool"},
-    {"name": "Google Research Blog", "url": "https://research.google/blog/rss/", "category": "tool"},
-    {"name": "Hugging Face Blog", "url": "https://huggingface.co/blog/feed.xml", "category": "tool"},
+    {"name": "Google Research Blog", "url": "https://research.google/blog/rss/", "category": "tool", "page_lead": True},
+    {"name": "Hugging Face Blog", "url": "https://huggingface.co/blog/feed.xml", "category": "tool", "page_lead": True},
     {"name": "Mistral AI", "url": "https://mistral.ai/rss.xml", "category": "tool"},
     {"name": "Microsoft Research", "url": "https://www.microsoft.com/en-us/research/feed/", "category": "tool",
      "ai_only": False, "paged": True},

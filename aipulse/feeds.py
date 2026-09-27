@@ -335,6 +335,24 @@ def lead_paragraph(html_bytes: bytes, title: str = "") -> str:
                 "") if after else ""
 
 
+# A <p> whose attributes may contain ">" (Tailwind classes like "[&>:last-child]:mb-0").
+_P = re.compile(r"""<p\b(?:"[^"]*"|'[^']*'|[^"'>])*>(.*?)</p>""", re.S)
+# Menus, tables of contents, bylines in headers, captions: not the article.
+_CHROME = re.compile(r"<(nav|header|aside|footer|script|style|figure|button)\b.*?</\1>", re.S | re.I)
+
+
+def article_lead(html_bytes: bytes) -> str:
+    """A blog post's opening paragraph: the first full sentence-ending paragraph (12+ words) after the headline,
+    skipping menus, tables of contents and author lines ("Upvote 33 ... Follow")."""
+    page = _CHROME.sub(" ", html_bytes.decode("utf-8", "replace"))
+    start = page.lower().find("</h1>")
+    for raw in _P.findall(page[start:] if start >= 0 else page):
+        text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", raw))).strip()
+        if len(text.split()) >= 12 and text[-1:] in ".!?:\"”)" and not re.search(r"\b(Upvote|Follow)\b", text):
+            return text
+    return ""
+
+
 DUMA = "http://duma.gov.ru"  # its HTTPS port times out from abroad
 _DUMA_LINK = re.compile(r'<a href="(/en/news/\d+/)"')
 _DUMA_TIME = re.compile(r'<time datetime="([\d-]+) ')

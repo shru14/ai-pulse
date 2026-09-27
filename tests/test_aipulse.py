@@ -1251,3 +1251,13 @@ def test_papers_get_research_and_news_about_studies_gets_study_report():
     assert "Study Report" in tags and "Research" not in tags
     assert "Study Report" not in c.tags_for("Another Google DeepMind researcher quits", "He left the lab.")
 
+
+
+def test_article_lead_skips_menus_bylines_and_contents():
+    from aipulse import feeds
+    page = ('<header><p>Research blog home and all the other sections of this site you can visit.</p></header><h1>Title</h1>'
+            '<nav><p>Contents: How it works, Results, Limitations of this approach and how to use the model.</p></nav>'
+            '<p class="[&>:last-child]:mb-0">Upvote 33 +27 Jane Doe Follow Lab and more people who wrote the post.</p>'
+            '<p>Jane Doe, Research Scientist, Google Research</p>'
+            '<p>Today, we release an experimental draft model for our vision-language model, with faster inference.</p>')
+    assert feeds.article_lead(page.encode()).startswith("Today, we release an experimental draft model")
