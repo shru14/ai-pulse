@@ -17,3 +17,4 @@ data/brand-icons/
 __pycache__/
 .pytest_cache/
 .claude/
+data/translate-models/

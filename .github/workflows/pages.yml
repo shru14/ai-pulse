@@ -52,6 +52,17 @@ jobs:
           key: brands-${{ github.run_id }}
           restore-keys: brands-
 
+      # English versions of non-English official records (aipulse/translate.py): an open-source model
+      # (OPUS-MT, CC BY 4.0) run on the runner with two small libraries. No API; the model is cached.
+      - name: Install the offline translator
+        run: pip install --quiet ctranslate2 sentencepiece
+
+      - name: Restore the translation model
+        uses: actions/cache@v4
+        with:
+          path: data/translate-models
+          key: translate-models-pt_en-1_9
+
       - name: Start from the seed if there is no saved database
         run: "[ -f aipulse.db ] || gunzip -c data/seed.db.gz > aipulse.db"
 

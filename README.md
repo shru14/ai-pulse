@@ -6,7 +6,8 @@ links every card to the original reporting.
 
 **Live site:** https://shru14.github.io/ai-pulse/
 
-Pure Python 3.10+, standard library only: nothing to install.
+Pure Python 3.10+, standard library only: nothing to install. Optional: `pip install ctranslate2 sentencepiece`
+gives non-English official records (Brazil's bills) an English title, translated offline (see below).
 
 ## The five streams
 
@@ -130,12 +131,18 @@ for "All time".
 | UK Parliament Bills API | Introduced → passed first House → passed both Houses → Royal Assent (or withdrawn / defeated) | Nothing: Open Parliament Licence |
 | Parliament of Canada (LEGISinfo) | First reading → passed first chamber → passed both chambers → Royal Assent (or died on the Order Paper) | Nothing; the Speaker permits accurate, non-commercial reproduction |
 | Australia: Federal Register of Legislation | Royal Assent or made → in force (or repealed); bills in Parliament aren't in the register | Nothing: CC BY 4.0, credited in the page footer |
-| Brazil: Câmara dos Deputados open data | Introduced → passed first chamber → passed Congress → became law (or vetoed, withdrawn, archived) | Nothing: open data. Only lead bills are shown; bills attached to one move with it. Summaries are the official Portuguese ones |
+| Brazil: Câmara dos Deputados open data | Introduced → passed first chamber → passed Congress → became law (or vetoed, withdrawn, archived) | Nothing: open data. Only lead bills are shown; bills attached to one move with it. Titles are English machine translations of the official Portuguese summary |
 
 Each bill is one card dated at its latest stage, with news that names the bill attached. The key is read
 from `CONGRESS_API_KEY` and never stored in the repository: set it as a repository secret for the public
 site (Settings → Secrets and variables → Actions) and with `setx CONGRESS_API_KEY your-key` on this PC.
 One-time backfill: `python -m aipulse bills --eu-since 2019 --us-days 30` (UK bills: every session the API holds).
+
+**English for non-English records.** `aipulse/translate.py` translates them offline with an open-source
+model: OPUS-MT (Tiedemann & Thottingal, University of Helsinki, CC BY 4.0) as packaged by Argos Translate,
+run with CTranslate2 and SentencePiece. No API is called and nothing is billed; the ~66 MB model is
+downloaded once (cached on GitHub) and each text is translated once and stored. Cards say the title is a
+machine translation and link the official text. Without the two libraries, records keep their language.
 
 More countries are added one at a time, each from its own official records (next: the EU's legal database, India, Japan, South Korea, Singapore). Some of these licences allow only non-commercial use, so the site must stay
 non-commercial.
@@ -186,7 +193,8 @@ aipulse/
   jurisdictions.py  countries, blocs and US states the tracker recognises
   brief.py          headline and summary cleaning
   brands.py         brand logos found in headlines (Simple Icons, Wikidata)
-  bills.py          congress.gov and European Parliament bill stages
+  bills.py          official bill and law records (US, EU, UK, Canada, Brazil, Australia) and their stages
+  translate.py      offline English versions of non-English records (optional)
   backfill.py       one-time history back to 2023 (feed archives, official records, papers)
   cluster.py        grouping the same event into one card
   store.py          SQLite schema, full-text search, queries
@@ -199,6 +207,7 @@ tests/                unit and end-to-end tests with fixture feeds (python -m py
 ```
 
 UK Parliament data: Open Parliament Licence v3.0.
+Machine translations: OPUS-MT models (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT).
 Australian legislation: based on content from the Federal Register of Legislation (CC BY 4.0); for the latest
 information on Australian Government legislation please go to https://www.legislation.gov.au. AI company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub. Other brand
 logos: [Simple Icons](https://simpleicons.org) (CC0) or the brand's own website icon. Federal Register

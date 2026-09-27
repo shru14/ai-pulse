@@ -31,7 +31,7 @@ import re
 import time
 from datetime import date, datetime, timedelta, timezone
 
-from . import feeds, store
+from . import feeds, store, translate
 
 # Cards made from official records; the keyword rules for news stories never re-sort them.
 OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
@@ -182,8 +182,16 @@ def upsert(conn, bill: dict) -> bool:
          now["stage"], now["date"], json.dumps(bill["history"]), bill["source"],
          datetime.now(timezone.utc).isoformat(timespec="seconds")))
     name = bill.get("short_title") or bill["title"]
-    item = {"title": (f"{bill['number']}: {name}" if bill["number"] else name)[:220],
-            "summary": _summary(bill["jurisdiction"], bill["history"]), "url": bill["url"], "source": bill["source"],
+    summary = _summary(bill["jurisdiction"], bill["history"])
+    lang = bill.get("lang")  # an official record in another language: its English version, if made
+    english = lang and translate.cached(conn, lang, bill["title"])
+    if english:
+        name = english
+        summary += f" Title machine-translated from {translate.LANGUAGE_NAMES[lang]}; the official text is linked."
+    title = f"{bill['number']}: {name}" if bill["number"] else name
+    if len(title) > 220:  # long official summaries: cut at a word
+        title = title[:219].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+    item = {"title": title, "summary": summary, "url": bill["url"], "source": bill["source"],
             "category": "regulation", "date": now["date"],
             "action": "law" if now["stage"] in ("signed", "in_force") else "proposal",
             "jurisdictions": [bill["jurisdiction"]], "tags": []}
@@ -491,6 +499,7 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
             break
         page += 1
         time.sleep(0.5)
+    translate.english(conn, "pt", [(p.get("ementa") or "").strip() for p in found])
     changed = 0
     for p in found:
         detail = _get_json(f"{BR_API}/proposicoes/{p['id']}", fetcher)["dados"]
@@ -503,14 +512,29 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
         bill = {"key": f"BR-{p['siglaTipo']}-{p['numero']}-{p['ano']}", "jurisdiction": "BR", "number": number,
                 "title": (p.get("ementa") or "").strip(),
                 "url": f"https://www.camara.leg.br/propostas-legislativas/{p['id']}",
-                "source": "Câmara dos Deputados", "history": history}
+                "source": "Câmara dos Deputados", "history": history, "lang": "pt"}
         if history:
             changed += upsert(conn, bill)
         conn.commit()
         time.sleep(0.5)
     conn.execute("INSERT OR REPLACE INTO meta VALUES ('brazil_sync', ?)", (started,))
     conn.commit()
+    retitle(conn, "BR", "pt")
     return changed
+
+
+def retitle(conn, jurisdiction: str, lang: str) -> int:
+    """Give every card from one jurisdiction the English version of its title (translating the ones not
+    done yet, when the translator is available). Returns how many cards have one."""
+    rows = conn.execute("SELECT * FROM bills WHERE jurisdiction = ?", (jurisdiction,)).fetchall()
+    found = translate.english(conn, lang, [r["title"] for r in rows])
+    for r in rows:
+        if r["title"] in found:
+            upsert(conn, {"key": r["key"], "jurisdiction": jurisdiction, "number": r["number"], "title": r["title"],
+                          "short_title": r["short_title"], "url": r["url"], "source": r["source"],
+                          "history": json.loads(r["history"]), "lang": lang})
+    conn.commit()
+    return len(found)
 
 
 # --- Australia (Federal Register of Legislation) ---

@@ -837,3 +837,21 @@ def test_australia_stages_from_the_register():
                               {"status": "Repealed", "start": "2023-04-01T00:00:00"}]}
     assert current(au_history(gone))["stage"] == "withdrawn"
 
+
+def test_machine_translation_is_tidied_and_used_for_the_card_title(tmp_path):
+    from aipulse import bills, translate
+    assert translate.tidy("It▁amends Law No.▁8,069 and gives other measures.") ==         "Amends Law No. 8,069 and makes other provisions."
+    assert translate.tidy("It has on the use of artificial intelligence.") == "Provides for the use of artificial intelligence."
+    conn = store.connect(tmp_path / "t.db")
+    translate.connect(conn)
+    pt = "Dispõe sobre o uso da inteligência artificial."
+    conn.execute("INSERT INTO translations VALUES (?, 'pt', ?)", (translate._key("pt", pt), "Provides for the use of AI."))
+    bill = {"key": "BR-PL-1-2026", "jurisdiction": "BR", "number": "PL 1/2026", "title": pt, "url": "https://e.br/1",
+            "source": "Câmara dos Deputados", "lang": "pt",
+            "history": [{"date": "2026-01-05", "stage": "introduced", "text": ""}]}
+    bills.connect_tables(conn)
+    bills.upsert(conn, bill)
+    title, summary = conn.execute("SELECT title, summary FROM items").fetchone()
+    assert title == "PL 1/2026: Provides for the use of AI." and "machine-translated from Portuguese" in summary
+    assert translate.english(conn, "pt", ["Texto novo sem tradução."]) == {}  # no model in tests: left as is
+
