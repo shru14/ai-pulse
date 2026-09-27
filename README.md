@@ -38,7 +38,7 @@ Every source was checked before it was added (September 2026), and the checks ar
 4. **Only what's needed.** Headlines, short descriptions, dates and links. Official records keep their title,
    number, stages and a one- or two-sentence summary. Personal data in records (e.g. editors' emails) is
    never stored.
-5. **Credit and non-commercial use.** Every licence that asks for credit is credited on the page and below.
+5. **Credit and non-commercial use.** Every licence that asks for credit is credited below, in "Credits and licences"; every page of the site links there ("Sources and licences").
    Some licences allow only non-commercial use, so the site must stay non-commercial.
 
 Requests go one at a time with pauses (arXiv at most every 3 seconds, as its terms ask) and identify
