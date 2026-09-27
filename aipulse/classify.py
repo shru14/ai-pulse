@@ -31,7 +31,7 @@ POLICY_TERMS = [
     r"policy", r"governance", r"lawmakers", r"minister", r"president",
     # regulators, investigations and the executive branch
     r"investigat", r"\bprobes?\b", r"scrutin", r"regulators?\b", r"watchdog", r"\bgovernor\b", r"\bgov\.",
-    r"\bMPs?\b", r"\bcabinet\b", r"attorneys? general", r"administration\b", r"\badmin\b",
+    r"\bMPs?\b", r"\bcabinet\b", r"attorneys? general", r"administration\b", r"\badmin\b(?! (?:plugin|console|panel|tools?|controls?|settings|dashboard|roles?|access|users?|api)\b)",
 ]
 
 TOOL_TERMS = [
@@ -68,11 +68,34 @@ def is_ai_related(title: str, summary: str) -> bool:
     return bool(_ai.search(f"{title} {summary}"))
 
 
+# A launch in the past is history, not news: "since Cloudflare launched back on September 27, 2010".
+_HISTORY = re.compile(r"\b(?:since|when)\b[^.,;]{0,40}\blaunch\w*|\blaunch\w* (?:back )?(?:in|on) [^.,;]{0,25}(?:19|20)\d\d\b", re.I)
+# Company blogs post much besides launches. Their launch phrasing: a product with a version ("Nemotron 3.5",
+# "OCR 4", "Multilingual R2"), open licences, updates and new capabilities, "Access X through Y".
+_BLOG_LAUNCH = re.compile(r"\b[A-Z][\w.-]*[ -](?:v|R)?\d+(?:\.\d+)*\b(?<!\b(?:19|20)\d\d)|\b[A-Z][A-Za-z]+-?\d+\.\d+|"
+                          r"Apache 2\.0|open[- ]weights?|(?i:\brolling out\b)|"
+                          r"\bexperimental\b|\bupgrades?\b|\bnext evolution\b|\bnew capabilities\b|\bbring(?:s|ing)\b|"
+                          r"(?i:^access\b|\bupdates? (?:the )?[\w -]{0,40}\bwith\b|\bnow (?:supports?|available|lets)\b)")
+# ...and posts that aren't launches even when they "announce" or "introduce": deals, people, programmes,
+# customer stories and guides ("How Ramp engineers ..."), podcasts.
+_NOT_RELEASE = re.compile(r"^how\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat|\bacquir|\bjoins?\b|\binitiative\b|\bprogram(?:me)?s?\b|"
+                          r"\bpodcast\b|\btrailer\b|\bepisode\b|\bfor (?:countries|governments|nonprofits)\b|"
+                          r"\bletter\b|\bstate of\b|\broundup\b|\bweek\b|\bcourses?\b", re.I)
+
+
 def launched(title: str, summary: str) -> bool:
     """Does a news story report something being released? It needs launch language, and a study's findings
     count only when the headline itself announces a launch ("Researchers release ...")."""
-    text = f"{title} {summary}"
+    text = _HISTORY.sub(" ", f"{title} {summary}")
     return bool(_LAUNCH.search(text)) and not (_STUDY.search(text) and not _LAUNCH.search(title))
+
+
+def released(title: str, summary: str) -> bool:
+    """Does a company blog post launch something? Launch language as for news, or the blog phrasing above,
+    unless the headline is a deal, a person, a programme, a guide or a podcast."""
+    if _NOT_RELEASE.search(title):
+        return False
+    return launched(title, summary) or bool(_BLOG_LAUNCH.search(title)) or bool(_BLOG_LAUNCH.search(_HISTORY.sub(" ", summary)))
 
 
 def categorize(title: str, summary: str, default: str = "news") -> str:
@@ -93,7 +116,9 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
         return "policy"
     if default == "tool" and _news.search(title):
         return "news"
-    if tool >= 3 and tool > policy and (default == "tool" or launched(title, summary)):
+    if default == "tool":  # a company blog: a release only when something is launched
+        return "tool" if released(title, summary) else "news"
+    if tool >= 3 and tool > policy and launched(title, summary):
         return "tool"
     if default == "policy" and policy == 0 and regulatory_action(title) is None and not jurisdictions.acting(title):
         return "news"  # a policy search picked up a story with nothing about government in it

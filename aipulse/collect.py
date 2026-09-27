@@ -353,8 +353,17 @@ def reclassify(conn) -> int:
             # A news outlet's "release" that launched nothing (e.g. a study's findings) moves to industry news.
             # Only that check is re-run: summaries are shorter now, so re-scoring would drop real releases.
             text = "" if brief.is_draft(it["summary"]) else it["summary"]
+            now = it["category"]
             if it["category"] == "tool" and streams.get(it["source"]) == "news" and not classify.launched(it["title"], text):
-                store.set_regulation(conn, it["id"], "news", it["jurisdictions"], it["action"] or None)
+                now = "news"
+            # A company blog's post is a release only when it launches something (classify.released), either way:
+            # a post whose opening paragraph arrives later (fill_page_leads) can turn out to be a launch.
+            elif streams.get(it["source"]) == "tool" and classify.categorize(it["title"], text, "tool") in ("news", "tool"):
+                now = classify.categorize(it["title"], text, "tool")
+            if now != it["category"]:
+                store.set_regulation(conn, it["id"], now, it["jurisdictions"], it["action"] or None)
+                if brief.is_draft(it["summary"]):  # "A release, involving Mistral." names the old stream
+                    store.update_text(conn, it["id"], it["title"], brief.draft({**it, "category": now}, PLACE_NAMES))
                 changed += 1
             continue
         if it["category"] not in ("policy", "regulation") or it["action"] == EXPERT:

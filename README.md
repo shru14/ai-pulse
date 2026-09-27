@@ -14,7 +14,7 @@ summaries are the publishers' own text (or an official record's own words), and 
 
 | Stream | What's in it |
 |---|---|
-| **Releases** | New models, products and open-source launches from AI labs and companies |
+| **Releases** | New models, products and open-source launches from AI labs and companies. A company's own post counts only when it launches something; its deals, customer stories, guides and opinion go to Industry news |
 | **Industry news** | Funding, deals, company moves and analysis, from global and regional tech press. News reporting a study's findings is tagged **#Study Report**. Filter by region, from the countries each story names |
 | **Policy** | Government, court and political action on AI: investigations, lawsuits, guidance, strategies, requests for government reports |
 | **Research** | arXiv papers by ~80 leading AI professors, and big-lab papers via Hugging Face Daily Papers. Every paper (and every scholar's paper in the tracker) is tagged **#Research** |

@@ -1261,3 +1261,19 @@ def test_article_lead_skips_menus_bylines_and_contents():
             '<p>Jane Doe, Research Scientist, Google Research</p>'
             '<p>Today, we release an experimental draft model for our vision-language model, with faster inference.</p>')
     assert feeds.article_lead(page.encode()).startswith("Today, we release an experimental draft model")
+
+
+def test_company_blog_posts_are_releases_only_when_something_launches():
+    # 140 random 2026 posts from the labs' and companies' own blogs, labelled by hand: a release is something
+    # new people can use (a model, product, feature, API, open release). Deals, customer stories, guides,
+    # opinion, research explainers, programmes and events aren't. The old default (every post a release)
+    # scored 35-46% here.
+    import csv
+    from aipulse import classify
+    rows = list(csv.DictReader((FIX / "blog_releases.csv").open(encoding="utf-8", newline="")))
+    right = sum((classify.categorize(r["title"], r["text"], "tool") == "tool") == (r["release"] == "1") for r in rows)
+    assert right / len(rows) >= 0.9, right
+    letter = ("Cloudflare’s 2026 Annual Founders’ Letter",
+              "The Internet is changing more today than at any point since Cloudflare launched back on September 27, 2010.")
+    assert classify.categorize(*letter, "tool") == "news"
+    assert not classify.launched(*letter)  # a launch in 2010 is history
