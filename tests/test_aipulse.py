@@ -889,3 +889,17 @@ def test_india_bills_from_parliament(tmp_path, monkeypatch):
     assert title == "The Artificial Intelligence (Ethics and Accountability) Bill, 2025" and " " not in url
     assert summary.startswith("Passed one House on 2026-03-02")
 
+
+
+def test_bills_with_similar_titles_keep_their_own_cards(tmp_path):
+    from aipulse import bills, cluster
+    conn = store.connect(tmp_path / "t.db")
+    bills.connect_tables(conn)
+    for key, n, title in (("US-119-s-1", "S. 1", "A bill to establish the Department of Artificial Intelligence"),
+                          ("US-119-hr-2", "H.R. 2", "To establish the Department of Artificial Intelligence and for other purposes")):
+        bills.upsert(conn, {"key": key, "jurisdiction": "US", "number": n, "title": title,
+                            "url": f"https://congress.gov/{key}", "source": "congress.gov",
+                            "history": [{"date": "2026-09-01", "stage": "introduced", "text": ""}]})
+    conn.commit()
+    cluster.assign(conn, days=None)
+    assert conn.execute("SELECT COUNT(DISTINCT cluster) FROM items").fetchone()[0] == 2

@@ -201,11 +201,15 @@ def score(items: list[dict] | None = None) -> dict:
             "events_on_one_card": one_card, "events": len(events), "cards": len(groups), "stories": len(items)}
 
 
+def _alone(it: dict) -> bool:
+    """Papers and official bill records are never grouped: two bills with similar titles are two bills."""
+    return it["category"] == "research" or bool(it.get("bill"))
+
+
 def collapse(items: list[dict]) -> list[dict]:
     """One entry per event: the lead story, with the others under "also" (title, source, url, date).
-    Papers are never grouped. Order follows the input."""
-    papers = [it for it in items if it["category"] == "research"]
-    rest = [it for it in items if it["category"] != "research"]
+    Papers and bills are never grouped. Order follows the input."""
+    rest = [it for it in items if not _alone(it)]
     lead_of = {}
     for g in group(rest):
         lead = {**g[0], "also": [{k: it.get(k, "") for k in ("title", "source", "url", "date")} for it in g[1:]]}
@@ -213,7 +217,7 @@ def collapse(items: list[dict]) -> list[dict]:
             lead_of[id(it)] = lead
     out, seen = [], set()
     for it in items:
-        lead = it if it["category"] == "research" else lead_of[id(it)]
+        lead = it if _alone(it) else lead_of[id(it)]
         if id(lead) not in seen:
             seen.add(id(lead))
             out.append(lead)
@@ -225,14 +229,16 @@ REGROUP_DAYS = 14  # after each collection, stories from this many recent days a
 
 def assign(conn, days: int | None = REGROUP_DAYS) -> int:
     """Store each story's card (the lead's id) so the server can page through cards in SQL.
-    days=None regroups everything. Papers always stand alone. Returns how many stories changed card."""
+    days=None regroups everything. Papers and official bill records always stand alone (every bill, however
+    old, is checked each time). Returns how many stories changed card."""
     from . import store
     items = store.query(conn, None, None, days, limit=10**7)
-    lead_of = {it["id"]: it["id"] for it in items if it["category"] == "research"}
-    for g in group([it for it in items if it["category"] != "research"]):
+    lead_of = {it["id"]: it["id"] for it in items if _alone(it)}
+    for g in group([it for it in items if not _alone(it)]):
         for it in g:
             lead_of[it["id"]] = g[0]["id"]
     changed = store.set_clusters(conn, lead_of)
+    changed += conn.execute("UPDATE items SET cluster = id WHERE bill != '' AND cluster != id").rowcount
     conn.commit()
     from .bills import attach_news  # news naming a tracked bill joins the bill's card
     return changed + attach_news(conn)
