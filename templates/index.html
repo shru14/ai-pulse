@@ -301,9 +301,9 @@ function render(){
     its.forEach(it => {
       const art = el("article","item "+it.category);
       const life = it.lifecycle;
-      const nowStep = life && life.steps.find(st => st.stage === life.current);
       const side = el("div","side");
-      side.append(cardIcon(it), el("span","cat "+it.category, (nowStep && nowStep.label) || (it.category==="regulation" && ACTION_LABEL[it.action]) || CAT_LABEL[it.category] || it.category));
+      // The badge says what kind of item it is; a bill's stages are on its timeline, not repeated here.
+      side.append(cardIcon(it), el("span","cat "+it.category, (it.category==="regulation" && ACTION_LABEL[it.action]) || CAT_LABEL[it.category] || it.category));
       art.append(side);
       const body = el("div","body"); art.append(body);
       const h = el("h3"); const a = el("a",null,it.title); a.href = it.url; a.target="_blank"; a.rel="noopener"; h.append(a); body.append(h);

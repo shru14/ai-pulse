@@ -103,6 +103,8 @@ CREATE TABLE IF NOT EXISTS eu_procedures (   -- every procedure checked once, so
 
 def connect_tables(conn) -> None:
     conn.executescript(SCHEMA)
+    if "summary" not in {r[1] for r in conn.execute("PRAGMA table_info(bills)")}:
+        conn.execute("ALTER TABLE bills ADD COLUMN summary TEXT NOT NULL DEFAULT ''")
 
 
 # --- Stages from official records ---
@@ -177,14 +179,18 @@ def current(history: list[dict]) -> dict | None:
 
 # --- Storing bills and their tracker cards ---
 
-def _summary(jur: str, history: list[dict]) -> str:
-    labels = LABELS[jur]
-    now = current(history)
-    parts = [f"{labels[now['stage']]} on {now['date']}."]
-    earlier = [h for h in history if h is not now]
-    if earlier:
-        parts.append("Earlier: " + "; ".join(f"{labels[h['stage']].lower()} {h['date']}" for h in earlier[-3:]) + ".")
-    return " ".join(parts)
+_TAGS = re.compile(r"<[^>]+>")
+_HEADING = re.compile(r"^\s*(<p>)?\s*<(strong|b)>.*?</(strong|b)>\s*(</p>)?", re.S | re.I)
+
+
+def describe(text: str, title: str = "") -> str:
+    """An official description (a CRS summary, a long title) as one or two plain sentences, or ""."""
+    from . import brief
+    text = _HEADING.sub("", text or "")  # CRS summaries open with the bill's name in bold
+    text = re.sub(r"\s+", " ", _TAGS.sub(" ", text)).strip()
+    if title and text.lower().startswith(title.lower()):
+        text = text[len(title):].lstrip(" .:-")
+    return brief.clean_summary(text, title) if text else ""
 
 
 def upsert(conn, bill: dict) -> bool:
@@ -194,19 +200,24 @@ def upsert(conn, bill: dict) -> bool:
         return False
     prev = conn.execute("SELECT stage, stage_date FROM bills WHERE key = ?", (bill["key"],)).fetchone()
     changed = not prev or (prev[0], prev[1]) != (now["stage"], now["date"])
+    if not bill.get("summary") and prev:  # a sync without a description keeps the one found before
+        kept = conn.execute("SELECT summary FROM bills WHERE key = ?", (bill["key"],)).fetchone()
+        bill = {**bill, "summary": kept[0] if kept else ""}
     conn.execute(
         "INSERT OR REPLACE INTO bills (key, jurisdiction, number, title, short_title, url, stage, stage_date, history,"
-        " source, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        " source, updated_at, summary) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
         (bill["key"], bill["jurisdiction"], bill["number"], bill["title"], bill.get("short_title", ""), bill["url"],
          now["stage"], now["date"], json.dumps(bill["history"]), bill["source"],
-         datetime.now(timezone.utc).isoformat(timespec="seconds")))
+         datetime.now(timezone.utc).isoformat(timespec="seconds"), bill.get("summary", "")))
     name = bill.get("short_title") or bill["title"]
-    summary = _summary(bill["jurisdiction"], bill["history"])
+    # What the bill does, not its stages: those are on the card's timeline.
+    summary = bill.get("summary", "")
     lang = bill.get("lang")  # an official record in another language: its English version, if made
     english = lang and translate.cached(conn, lang, bill["title"])
     if english:
         name = english
-        summary += f" Title machine-translated from {translate.LANGUAGE_NAMES[lang]}; the official text is linked."
+        summary = (summary + " " if summary else "") + \
+            f"Title machine-translated from {translate.LANGUAGE_NAMES[lang]}; the official text is linked."
     title = f"{bill['number']}: {name}" if bill["number"] else name
     if len(title) > 220:  # long official summaries: cut at a word
         title = title[:219].rsplit(" ", 1)[0].rstrip(",;:") + "…"
@@ -255,6 +266,36 @@ def _get_json(url: str, fetcher=feeds.fetch) -> dict:
     return json.loads(fetcher(url))
 
 
+def _crs_summary(congress, kind: str, number, title: str, key: str, fetcher=feeds.fetch) -> str:
+    """The Congressional Research Service's latest summary of a bill (a US government work), or "" (CRS
+    writes one some weeks after a bill is introduced)."""
+    try:
+        data = _get_json(f"{CONGRESS_API}/bill/{congress}/{kind.lower()}/{number}/summaries?format=json&api_key={key}",
+                         fetcher)
+    except Exception:
+        return ""
+    found = sorted(data.get("summaries") or [], key=lambda s: s.get("updateDate") or "")
+    return describe(found[-1].get("text", ""), title) if found else ""
+
+
+def _us_describe_old(conn, key: str, fetcher=feeds.fetch, limit: int = 40) -> None:
+    """Look up CRS summaries for stored US bills that don't have one yet, a few per run, each at most weekly."""
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).date().isoformat()
+    rows = conn.execute("SELECT * FROM bills WHERE jurisdiction = 'US' AND summary = '' AND key NOT IN"
+                        " (SELECT substr(key, 11) FROM meta WHERE key LIKE 'crs-tried:%' AND value > ?) LIMIT ?",
+                        (week_ago, limit)).fetchall()
+    for r in rows:
+        _, congress, kind, number = r["key"].split("-")
+        text = _crs_summary(congress, kind, number, r["title"], key, fetcher)
+        conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (f"crs-tried:{r['key']}", date.today().isoformat()))
+        if text:
+            upsert(conn, {"key": r["key"], "jurisdiction": "US", "number": r["number"], "title": r["title"],
+                          "short_title": r["short_title"], "url": r["url"], "source": r["source"],
+                          "history": json.loads(r["history"]), "summary": text})
+        conn.commit()
+        time.sleep(0.2)
+
+
 def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_pages: int = 8,
                   log=print) -> int:
     """Check bills updated since the last sync (or `since`); returns how many AI bills changed stage."""
@@ -281,13 +322,15 @@ def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_
             bill = {"key": f"US-{b['congress']}-{b['type'].lower()}-{b['number']}", "jurisdiction": "US",
                     "number": f"{label} {b['number']}", "title": b["title"],
                     "url": f"https://www.congress.gov/bill/{b['congress']}th-congress/{path}/{b['number']}",
-                    "source": "congress.gov", "history": us_history(acts.get("actions", []))}
+                    "source": "congress.gov", "history": us_history(acts.get("actions", [])),
+                    "summary": _crs_summary(b["congress"], b["type"], b["number"], b["title"], key, fetcher)}
             changed += upsert(conn, bill)
             conn.commit()  # keep progress if a later request fails (e.g. the rate limit)
             time.sleep(0.2)
         nxt = (data.get("pagination") or {}).get("next")
         # congress.gov's next-page link contains a raw space ("sort=updateDate desc").
         url = f"{nxt.replace(' ', '+')}&api_key={key}" if nxt else None
+    _us_describe_old(conn, key, fetcher)
     if url is None:  # read everything: next time, start from here
         conn.execute("INSERT OR REPLACE INTO meta VALUES ('congress_sync', ?)", (started.isoformat(),))
     else:
@@ -393,13 +436,15 @@ def sync_uk(conn, fetcher=feeds.fetch, log=print) -> int:
     changed = 0
     for bill_id, b in found.items():
         stages = _get_json(f"{UK_API}/Bills/{bill_id}/Stages?Take=100", fetcher).get("items", [])
+        long_title = (_get_json(f"{UK_API}/Bills/{bill_id}", fetcher) or {}).get("longTitle") or ""
         history = uk_history(b, stages)
         # Bills are often reintroduced under the same name in a later session: the year tells them apart.
         year = next((h["date"][:4] for h in history if h["stage"] == "introduced"), "")
         short = re.sub(r"\s*\[HL\]$", "", b["shortTitle"])
         bill = {"key": f"GB-{bill_id}", "jurisdiction": "GB", "number": "", "title": b["shortTitle"],
                 "short_title": f"{short} ({year})" if year else short,
-                "url": f"https://bills.parliament.uk/bills/{bill_id}", "source": "UK Parliament", "history": history}
+                "url": f"https://bills.parliament.uk/bills/{bill_id}", "source": "UK Parliament", "history": history,
+                "summary": describe(long_title, b["shortTitle"])}
         changed += upsert(conn, bill)
         conn.commit()
         time.sleep(0.5)
@@ -438,8 +483,7 @@ def ca_history(b: dict, session_end: str = "") -> list[dict]:
 def sync_canada(conn, fetcher=feeds.fetch, log=print) -> int:
     """AI bills in the Parliament of Canada: the current session every time, past sessions once."""
     connect_tables(conn)
-    done = conn.execute("SELECT value FROM meta WHERE key = 'canada_sessions'").fetchone()
-    past = [s for s in CA_PAST_SESSIONS if not done or s not in done[0].split(",")]
+    past = list(CA_PAST_SESSIONS)  # one request each: re-read so their cards stay current
     changed = 0
     for session in [None, *past]:
         url = CA_API + (f"?parlsession={session}" if session else "")
@@ -451,14 +495,12 @@ def sync_canada(conn, fetcher=feeds.fetch, log=print) -> int:
             bill = {"key": f"CA-{s}-{b['NumberCode']}", "jurisdiction": "CA", "number": b["NumberCode"],
                     "title": b.get("LongTitleEn") or title, "short_title": b.get("ShortTitleEn") or "",
                     "url": f"https://www.parl.ca/legisinfo/en/bill/{s}/{b['NumberCode'].lower()}",
-                    "source": "Parliament of Canada", "history": ca_history(b, CA_PAST_SESSIONS.get(s, ""))}
+                    "source": "Parliament of Canada", "history": ca_history(b, CA_PAST_SESSIONS.get(s, "")),
+                    "summary": describe(b.get("LongTitleEn") or "", title) if b.get("ShortTitleEn") else ""}
             if bill["history"]:
                 changed += upsert(conn, bill)
         conn.commit()
         time.sleep(1)
-    if past:
-        conn.execute("INSERT OR REPLACE INTO meta VALUES ('canada_sessions', ?)", (",".join(CA_PAST_SESSIONS),))
-        conn.commit()
     return changed
 
 
@@ -545,6 +587,22 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+_LANGS = {"BR": "pt", "CN": "zh", "JP": "ja"}  # records whose titles are translated
+
+
+def refresh_cards(conn) -> int:
+    """Rebuild every bill's card from its stored record (title, description, stages), so a change to how
+    cards look reaches old bills too. Returns how many cards."""
+    rows = conn.execute("SELECT * FROM bills").fetchall()
+    for r in rows:
+        upsert(conn, {"key": r["key"], "jurisdiction": r["jurisdiction"], "number": r["number"], "title": r["title"],
+                      "short_title": r["short_title"], "url": r["url"], "source": r["source"],
+                      "history": json.loads(r["history"]), "summary": r["summary"],
+                      "lang": _LANGS.get(r["jurisdiction"])})
+    conn.commit()
+    return len(rows)
+
+
 def retitle(conn, jurisdiction: str, lang: str) -> int:
     """Give every card from one jurisdiction the English version of its title (translating the ones not
     done yet, when the translator is available). Returns how many cards have one."""
@@ -554,7 +612,7 @@ def retitle(conn, jurisdiction: str, lang: str) -> int:
         if r["title"] in found:
             upsert(conn, {"key": r["key"], "jurisdiction": jurisdiction, "number": r["number"], "title": r["title"],
                           "short_title": r["short_title"], "url": r["url"], "source": r["source"],
-                          "history": json.loads(r["history"]), "lang": lang})
+                          "history": json.loads(r["history"]), "lang": lang, "summary": r["summary"]})
     conn.commit()
     return len(found)
 
@@ -805,4 +863,5 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
             store.record_source(conn, name, url, ok=False, error=str(exc) or type(exc).__name__)
             log(f"  ! {name}: {exc}")
         conn.commit()
+    refresh_cards(conn)
     return total

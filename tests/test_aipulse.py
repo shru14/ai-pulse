@@ -539,7 +539,7 @@ def test_bill_card_moves_up_when_it_advances_and_collects_news(tmp_path):
     cluster.assign(conn, days=None)
     [card], _ = store.cards(conn, "regulation")
     assert card["date"] == "2026-10-02" and card["lifecycle"]["current"] == "passed_chamber"
-    assert "Passed one chamber on 2026-10-02" in card["summary"]
+    assert card["summary"] == ""  # stages are on the timeline, not repeated in the summary
     assert sorted(o["source"] for o in card["also"]) == ["AP", "Vox"]  # by number and by short title
 
 
@@ -889,7 +889,7 @@ def test_india_bills_from_parliament(tmp_path, monkeypatch):
     assert bills.sync_india(conn, fetcher=fetch, log=lambda *_: None) == 1
     title, url, summary = conn.execute("SELECT title, url, summary FROM items").fetchone()
     assert title == "The Artificial Intelligence (Ethics and Accountability) Bill, 2025" and " " not in url
-    assert summary.startswith("Passed one House on 2026-03-02")
+    assert summary == ""  # no official description: nothing, rather than the stages again
 
 
 
@@ -935,4 +935,21 @@ def test_japan_laws_from_e_gov():
     h = jp_history(law)
     assert [(x["stage"], x["date"]) for x in h] == [("signed", "2025-06-04"), ("in_force", "2025-09-01")]
     assert current(h)["stage"] == "in_force"
+
+
+def test_bill_summary_explains_the_bill_not_its_stages(tmp_path):
+    from aipulse import bills
+    crs = ("<p><strong>Stop Rogue AI Act</strong></p><p>This bill requires developers of frontier AI models to "
+           "report safety incidents to the Department of Commerce within 72 hours.</p>")
+    assert bills.describe(crs, "Stop Rogue AI Act") == ("This bill requires developers of frontier AI models to "
+                                                        "report safety incidents to the Department of Commerce within 72 hours.")
+    conn = store.connect(tmp_path / "t.db")
+    bills.connect_tables(conn)
+    bill = {"key": "US-119-hr-9", "jurisdiction": "US", "number": "H.R. 9", "title": "Stop Rogue AI Act",
+            "url": "https://congress.gov/9", "source": "congress.gov", "summary": bills.describe(crs, "Stop Rogue AI Act"),
+            "history": [{"date": "2026-09-01", "stage": "introduced", "text": ""}]}
+    bills.upsert(conn, bill)
+    bills.upsert(conn, {**bill, "summary": "", "history": bill["history"] + [
+        {"date": "2026-09-20", "stage": "passed_chamber", "text": ""}]})  # a later sync without the text keeps it
+    assert conn.execute("SELECT summary FROM items").fetchone()[0].startswith("This bill requires developers")
 
