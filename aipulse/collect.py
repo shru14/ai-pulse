@@ -145,6 +145,10 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     if official_bills if official_bills is not None else sources is SOURCES:
         bills.sync(conn, fetcher, log=log)  # official bill stages (congress.gov, European Parliament)
         resummarize_papers(conn, fetcher, log=log)
+        if (conn.execute("SELECT value FROM meta WHERE key = 'summaries_version'").fetchone() or [""])[0] != SUMMARIES:
+            log(f"  summaries re-cleaned: {resummarize(conn, log=lambda *_: None)}")  # once, after brief.py changes
+            conn.execute("INSERT OR REPLACE INTO meta VALUES ('summaries_version', ?)", (SUMMARIES,))
+            conn.commit()
     if backfill:
         return added  # the backfill regroups and looks up logos once, at the end
     cluster.assign(conn)  # put new stories on the same card as other outlets' versions, and on bills' cards
@@ -206,6 +210,8 @@ def resummarize(conn, log=print) -> int:
     """Re-clean stored headlines and summaries and fill in headline-only stories. Returns how many changed."""
     changed = 0
     for it in store.query(conn, None, None, None, limit=100000):
+        if it.get("bill") or "arxiv.org/abs/" in it["url"]:
+            continue  # official records and papers have summaries of their own (bills.py, paper_summary)
         title = brief.clean_title(it["title"], it["source"])
         # Drafts are rebuilt from scratch so they reflect the story's current sorting.
         summary = "" if brief.is_draft(it["summary"]) else brief.clean_summary(it["summary"], title, it["source"])
@@ -261,6 +267,7 @@ def retag(conn) -> int:
     return changed
 
 
+SUMMARIES = "2"  # bump when brief.clean_summary changes: stored stories are re-cleaned once on the next run
 ARXIV_API = "http://export.arxiv.org/api/query"
 PAPER_BATCH = 100  # papers per arXiv API request; one request every 3.5 s, as arXiv asks
 

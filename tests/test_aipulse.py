@@ -1200,3 +1200,16 @@ def test_stored_papers_are_resummarized_from_arxiv(tmp_path):
     assert conn.execute("SELECT summary FROM items").fetchone()[0].startswith("Presents RAPID, which writes")
     assert collect.resummarize_papers(conn, lambda u: atom, log=lambda *_: None) == 0  # done once
 
+
+def test_news_summary_is_the_lede_in_full():
+    from aipulse import brief
+    lede = ("Copado Inc., a low-code DevOps solution provider for Salesforce, today announced it's extending its "
+            "Agentia platform with Headless, bringing it directly into developer tools and operational workflows.")
+    text = lede + " Agentia is Copado's AI-powered AgentOps platform that allows developers to build agents."
+    assert brief.clean_summary(text, "Copado extends Agentia", "SiliconANGLE") == lede  # one full sentence
+    short = "OpenAI paused training its models. The company cited safety incidents involving its agents."
+    assert brief.clean_summary(short, "OpenAI pauses", "X") == short  # a very short lede gets the next sentence
+    long = "Word " * 30 + "and then, " + "more " * 40 + "end."
+    out = brief.clean_summary(long, "t", "X")
+    assert len(out) <= brief.MAX_CHARS + 1 and out.endswith("…") and not out.endswith(" …")
+

@@ -16,7 +16,8 @@ import re
 
 from . import classify, jurisdictions
 
-MAX_CHARS = 300
+MAX_CHARS = 240  # about three lines on the page
+SHORT_LEDE = 110  # a first sentence shorter than this gets the next one too
 _LABEL = re.compile(r"^(watch|video|exclusive|breaking|update[d]?|live|eurobites|podcast|listen|photos?|"
                     r"general|business|world|politics|sports?|technology)\s*[:|\-–—]\s*",  # Bernama: "General : ..."
                     re.I)
@@ -84,18 +85,22 @@ def clean_summary(text: str, title: str, source: str = "") -> str:
         # What's left is the publisher or a subtitle ("— Measured, Not Claimed"), not a summary.
         if not rest or len(rest.strip(" —–-:|").split()) <= 8:
             return ""
+    # The lede: one full sentence says what happened. A second only when the first is very short and both fit.
     out = []
     for s in _sentences(text):
         s = s.strip()
         if not s or _BOILERPLATE.search(s) or similarity(s, title) > 0.7 or len(s.split()) < 4:
             continue
+        if out and len(out[0]) + len(s) + 1 > MAX_CHARS:
+            break
         out.append(s)
-        if len(out) == 2 or sum(len(x) for x in out) > MAX_CHARS * 0.7:
+        if len(out) == 2 or len(out[0]) >= SHORT_LEDE:
             break
     summary = " ".join(out)
-    if len(summary) > MAX_CHARS:
-        cut = summary[:MAX_CHARS].rsplit(" ", 1)[0].rstrip(",;:")
-        summary = cut + "…"
+    if len(summary) > MAX_CHARS:  # one long sentence: end at a clause, not mid-phrase
+        cut = summary[:MAX_CHARS]
+        end = max(cut.rfind(", "), cut.rfind("; "), cut.rfind(" — "), cut.rfind(" – "))
+        summary = (cut[:end] if end > MAX_CHARS * 0.5 else cut.rsplit(" ", 1)[0]).rstrip(",;:—– ") + "…"
     return re.sub(r"\s*(\.\.\.|…)+$", "…", summary)
 
 
