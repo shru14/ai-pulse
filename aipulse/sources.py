@@ -109,6 +109,10 @@ SOURCES = [
     {"name": "Ministry of Science and ICT (Korea)", "format": "msit", "category": "policy", "jurisdictions": ["KR"],
      "ai_in_title": True, "paged": True, "page_param": "pageIndex",
      "url": "https://www.msit.go.kr/eng/bbs/list.do?sCode=eng&mPid=2&mId=4"},
+    # Malaysia: the Ministry of Digital (its National AI Office drafts the AI Governance Bill). Its English
+    # media releases; no robots.txt or terms restrict them. The list is short, so older releases are kept.
+    {"name": "Ministry of Digital (Malaysia)", "format": "digital_my", "category": "policy", "jurisdictions": ["MY"],
+     "ai_in_title": True, "max_age_days": 400, "url": "https://www.digital.gov.my/en-GB/siaran"},
     {"name": "GOV.UK", "format": "govuk", "category": "policy", "jurisdictions": ["GB"], "ai_in_title": True,
      "url": "https://www.gov.uk/api/search.json?q=%22artificial+intelligence%22&order=-public_timestamp&count=50"
             "&fields=title,link,description,public_timestamp"},

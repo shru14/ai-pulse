@@ -6,6 +6,7 @@ import gzip
 import html
 import json
 import re
+import ssl
 import threading
 import time
 import urllib.error
@@ -68,7 +69,7 @@ def _rules(scheme: str, host: str) -> urllib.robotparser.RobotFileParser:
     rules = urllib.robotparser.RobotFileParser()
     req = urllib.request.Request(f"{scheme}://{host}/robots.txt", headers={"User-Agent": USER_AGENT})
     try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
+        with urllib.request.urlopen(req, timeout=20, context=TLS) as resp:
             body = resp.read()
         body = gzip.decompress(body) if body.startswith(GZIP_MAGIC) else body
         rules.parse(body.decode("utf-8", "replace").splitlines())
@@ -94,6 +95,19 @@ def allowed(url: str) -> bool:
     return rules.can_fetch(ROBOT_NAME, url)
 
 
+def _tls() -> ssl.SSLContext:
+    """Certificates are always verified. Mozilla's CA list (certifi) is used when installed: Windows' store
+    lacks some roots and intermediates that official sites rely on (e.g. digital.gov.my)."""
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        return ssl.create_default_context()
+
+
+TLS = _tls()
+
+
 def fetch(url: str, timeout: int = 20, attempts: int = ATTEMPTS) -> bytes:
     """GET a URL the site allows (see allowed), retrying rate limits (429), 5xx errors and network
     timeouts with backoff."""
@@ -102,7 +116,7 @@ def fetch(url: str, timeout: int = 20, attempts: int = ATTEMPTS) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     for attempt in range(attempts):
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
+            with urllib.request.urlopen(req, timeout=timeout, context=TLS) as resp:
                 body = resp.read()
             # Some hosts (e.g. deepmind.google) send gzip even when it wasn't requested.
             return gzip.decompress(body) if body.startswith(GZIP_MAGIC) else body
@@ -271,5 +285,45 @@ def parse_msit(html_bytes: bytes) -> list[dict]:
     return entries
 
 
-PARSERS = {"feed": parse, "msit": parse_msit, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
+DIGITAL_MY = "https://www.digital.gov.my"
+_DIGITAL_MY_ITEM = re.compile(r'href="(/en-GB/siaran/[^"#?]+)".*?<p class="line-clamp-2[^"]*">(.*?)</p>.*?'
+                              r'<time[^>]*>(\d{1,2} \w{3} \d{4})</time>', re.S)
+_DATELINE = re.compile(r"^[A-Z][A-Z .'-]+,\s*(\d{1,2} \w+|\w+ \d{1,2},?) \d{4}\s*[–—-]\s*")
+
+
+def parse_digital_my(html_bytes: bytes) -> list[dict]:
+    """Malaysia's Ministry of Digital: its English list of media releases and speeches (title, link, date).
+    The list repeats each title as its description, so the release's first paragraph is read later (see
+    `lead` and collect.py), once per new release."""
+    entries, seen = [], set()
+    for path, title, day in _DIGITAL_MY_ITEM.findall(html_bytes.decode("utf-8", "replace")):
+        if path in seen:
+            continue
+        seen.add(path)
+        entries.append({"title": clean_text(html.unescape(title), 200), "url": DIGITAL_MY + html.unescape(path),
+                        "summary": "", "published": datetime.strptime(day, "%d %b %Y").replace(tzinfo=timezone.utc),
+                        "authors": [], "lead": True})
+    return entries
+
+
+# A speech's opening courtesies say nothing about its subject.
+_COURTESY = re.compile(r"^(\d+\.\s*)?(first of all|thank|i would like to (thank|begin)|good (morning|afternoon|evening)|ladies and|"
+                       r"salam|assalam|bismillah|yang (amat )?berhormat|distinguished|honourable|dear|it is (a|my) "
+                       r"(great )?(pleasure|honour))", re.I)
+
+
+def lead_paragraph(html_bytes: bytes, title: str = "") -> str:
+    """A release's first paragraph ("PUTRAJAYA, 10 July 2026 – The Ministry ..."), without the dateline;
+    for a speech (no dateline), the first paragraph after its title."""
+    paragraphs = [re.sub(r"^\d+\.\s+", "", re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", raw))).strip())
+                  for raw in re.findall(r"<p[^>]*>(.*?)</p>", html_bytes.decode("utf-8", "replace"), re.S)]
+    for text in paragraphs:
+        if _DATELINE.match(text):
+            return _DATELINE.sub("", text)
+    after = [i for i, text in enumerate(paragraphs) if title and text.lower() == title.lower()]
+    return next((text for text in paragraphs[after[-1] + 1:] if len(text) > 80 and not _COURTESY.match(text)),
+                "") if after else ""
+
+
+PARSERS = {"feed": parse, "msit": parse_msit, "digital_my": parse_digital_my, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk}

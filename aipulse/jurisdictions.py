@@ -16,7 +16,7 @@ JURISDICTIONS: dict[str, tuple] = {
                                       r"Council of Europe", r"UNESCO", r"Bletchley", r"AI Safety Summit",
                                       r"AI Action Summit", r"AI Impact Summit"]),
     "EU": ("European Union", [r"\bEU\b", r"European Union", r"European Commission", r"European Parliament",
-                              r"\bEDPB\b", r"European Data Protection", r"EU AI Act", r"AI Office", r"Brussels",
+                              r"\bEDPB\b", r"European Data Protection", r"EU AI Act", r"(?<!National )AI Office", r"Brussels",
                               r"Council of the EU", r"\bMEPs?\b"]),
     "US": ("United States", [r"\bU\.S\.(?!\w)", r"\bUS\b", r"\bUSA\b", r"United States",
                              r"(?<!Latin )(?<!South )(?<!Central )(?<!Lake )(?<!Captain )(?<!Bank of )\bAmerica(ns?)?\b", r"\bCongress",

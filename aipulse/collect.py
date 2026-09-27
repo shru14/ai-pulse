@@ -98,6 +98,11 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 continue  # general feeds carry non-AI stories too
             if src.get("ai_in_title") and not classify.is_ai_related(title, ""):
                 continue
+            if e.get("lead") and not summary and not store.exists(conn, e["url"]):
+                try:  # a list without descriptions: the item's own first paragraph, read once
+                    summary = brief.clean_summary(feeds.lead_paragraph(fetcher(e["url"]), e["title"]), title, source)
+                except Exception:
+                    pass
 
             item = {
                 "title": title.strip(),

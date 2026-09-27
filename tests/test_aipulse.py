@@ -382,7 +382,7 @@ def _http_error(code, retry_after=None):
 
 def test_fetch_retries_rate_limits_with_backoff(monkeypatch):
     waits, replies = [], [_http_error(429), _http_error(503, retry_after="7"), _Resp(b"<rss/>")]
-    def urlopen(req, timeout):
+    def urlopen(req, timeout, **kw):
         r = replies.pop(0)
         if isinstance(r, Exception):
             raise r
@@ -397,7 +397,7 @@ def test_fetch_retries_rate_limits_with_backoff(monkeypatch):
 def test_fetch_does_not_retry_permanent_errors(monkeypatch):
     import pytest, urllib.error
     calls = []
-    def urlopen(req, timeout):
+    def urlopen(req, timeout, **kw):
         calls.append(1)
         raise _http_error(404)
     monkeypatch.setattr(feeds.urllib.request, "urlopen", urlopen)
@@ -1070,4 +1070,19 @@ def test_swiss_motions_go_to_the_tracker_and_postulates_to_policy(tmp_path):
     assert "The Federal Council recommends rejecting it." in cards["Motion 26.1: Deepfakes regeln"]["summary"]
     assert bills._ch_demand(records[0]["SubmittedText"]) == "Der Bundesrat wird beauftragt, Deepfakes zu regeln."
     assert [h["stage"] for h in bills.ch_history(records[0])] == ["introduced", "passed_legislature"]
+
+
+def test_malaysia_ministry_releases_and_their_lead_paragraph():
+    from aipulse import feeds, jurisdictions
+    listing = (b'<a class="group" href="/en-GB/siaran/Rang-Undang-Undang-AI"><p class="font-semibold">Media Release</p>'
+               b'<p class="line-clamp-2 font-semibold">Ministry Of Digital Initiates Engagement On Proposed AI Governance Bill</p>'
+               b'<p class="line-clamp-3 text-sm">same</p><time class="text-dim-500">10 Jul 2026</time></a>')
+    [e] = feeds.parse_digital_my(listing)
+    assert (e["url"], e["published"].date().isoformat()) == ("https://www.digital.gov.my/en-GB/siaran/Rang-Undang-Undang-AI", "2026-07-10")
+    release = "<p>Title</p><p>PUTRAJAYA, 10 July 2026 – The Ministry of Digital, through the National AI Office, began talks.</p>".encode()
+    assert feeds.lead_paragraph(release) == "The Ministry of Digital, through the National AI Office, began talks."
+    speech = (b"<p>AI Takeover</p><p>1. First of all, I would like to thank the organisers for inviting me today, truly.</p>"
+              b"<p>2. Malaysia will set up an AI sandbox so that companies can test new systems safely before launch.</p>")
+    assert feeds.lead_paragraph(speech, "AI Takeover").startswith("Malaysia will set up an AI sandbox")
+    assert "EU" not in jurisdictions.detect("The National AI Office (NAIO) began talks")  # not the EU AI Office
 

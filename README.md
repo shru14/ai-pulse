@@ -58,6 +58,7 @@ registration we can't lawfully get, rate limit or bot challenge. The full list i
 | China | Cyberspace Administration of China (titles, dates and links only) |
 | India | Parliament of India (sansad.in) |
 | Japan | e-Gov law API |
+| Malaysia | Ministry of Digital English media releases (its National AI Office drafts the AI Governance Bill); a release about a bill reaches the tracker, the rest go to Policy. The Attorney General's Chambers and the law portal refuse automated access |
 | Switzerland | Swiss Parliament open data (free use, source named): motions and bills asking for AI laws go to the tracker, postulates (requests for a government report) to Policy; questions are left out |
 | Vietnam | National Legal Database (vbpl.vn, Ministry of Justice): AI documents found through its sitemap, read weekly. Vietnamese legal documents aren't copyrighted (IP Law, Art. 15) |
 | South Korea | Ministry of Science and ICT English press releases |
