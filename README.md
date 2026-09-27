@@ -133,6 +133,7 @@ for "All time".
 | China: Cyberspace Administration of China | Draft for comment → issued | Nothing. Only each AI regulation's title (machine-translated to English), date and link; no page text is copied. Official regulations aren't copyrighted in China (Copyright Law, Art. 5). The national law database (flk.npc.gov.cn) forbids automated access, so it isn't used |
 | India: Parliament of India (sansad.in) | Introduced → passed one House → passed both Houses → assent | Nothing: the public API behind its bill pages (no published API terms, and nothing prohibiting it). Title, dates and a link to the official bill text only. India Code, MeitY and PIB turn away automated requests, so they aren't used |
 | Japan: e-Gov law API (Digital Agency) | Promulgated → in force (or repealed) | Nothing: Government of Japan Standard Terms of Use 2.0 (source credited in the footer; titles marked as machine-translated) |
+| **OECD.AI Policy Observatory** (many countries at once) | Laws, regulations and guidance from ~60 countries, and international frameworks (Council of Europe AI Convention, UNESCO, G7, African Union, ASEAN, UN). EU member states' own records are left out (the EU counts as one), and for countries above only their guidance, so nothing appears twice. Records have a year only | Nothing: CC BY 4.0, credited in the footer. Read weekly; the editors' names and emails in the records are never kept |
 | Australia: Federal Register of Legislation | Royal Assent or made → in force (or repealed); bills in Parliament aren't in the register | Nothing: CC BY 4.0, credited in the page footer |
 | Brazil: Câmara dos Deputados open data | Introduced → passed first chamber → passed Congress → became law (or vetoed, withdrawn, archived) | Nothing: open data. Only lead bills are shown; bills attached to one move with it. Titles are English machine translations of the official Portuguese summary |
 
@@ -147,7 +148,8 @@ run with CTranslate2 and SentencePiece. No API is called and nothing is billed; 
 downloaded once (cached on GitHub) and each text is translated once and stored. Cards say the title is a
 machine translation and link the official text. Without the two libraries, records keep their language.
 
-More countries are added one at a time, each from its own official records (next: Singapore). South Korea's bills can't be tracked: the
+More countries are added one at a time, each from its own official records Singapore's and Russia's official sites aren't used (Singapore's terms require permission even to link;
+Russia's sites refuse connections from abroad); both appear through OECD.AI and the news. South Korea's bills can't be tracked: the
 National Assembly's API needs a key that requires Korean identity verification, and its bill site's
 robots.txt blocks automated access; Korea's AI rules come from its science ministry's English press releases. The EU counts as one: its rules apply in every member state. Some of these licences allow only non-commercial use, so the site must stay
 non-commercial.
@@ -200,6 +202,7 @@ aipulse/
   brands.py         brand logos found in headlines (Simple Icons, Wikidata)
   bills.py          official bill and law records (US, EU, UK, Canada, Brazil, Australia) and their stages
   translate.py      offline English versions of non-English records (optional)
+  oecd.py           OECD.AI policy database: many countries and international bodies at once
   backfill.py       one-time history back to 2023 (feed archives, official records, papers)
   cluster.py        grouping the same event into one card
   store.py          SQLite schema, full-text search, queries
@@ -213,6 +216,7 @@ tests/                unit and end-to-end tests with fixture feeds (python -m py
 
 UK Parliament data: Open Parliament Licence v3.0.
 Machine translations: OPUS-MT models (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT).
+Country and international AI policy records: OECD.AI Policy Observatory (https://oecd.ai), CC BY 4.0.
 Japanese laws: source e-Gov Law Search (https://laws.e-gov.go.jp), Government of Japan Standard Terms of Use 2.0;
 titles machine-translated by AI Pulse.
 Australian legislation: based on content from the Federal Register of Legislation (CC BY 4.0); for the latest

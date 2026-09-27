@@ -953,3 +953,32 @@ def test_bill_summary_explains_the_bill_not_its_stages(tmp_path):
         {"date": "2026-09-20", "stage": "passed_chamber", "text": ""}]})  # a later sync without the text keeps it
     assert conn.execute("SELECT summary FROM items").fetchone()[0].startswith("This bill requires developers")
 
+
+def test_oecd_records_follow_the_rules(tmp_path):
+    import json
+    from aipulse import oecd
+    base = {"category": "Regulations, guidelines and standards", "startYear": 2024, "description": "<p>Sets rules.</p>",
+            "createdByEmail": "editor@example.org", "intergovernmentalOrganisation": None, "extentBinding": None}
+    law = lambda code, name, kind="Law/legislation/act (by legislative body)": {
+        **base, "id": hash(name) % 10**6, "englishName": name, "slug": name.lower().replace(" ", "-"),
+        "initiativeType": {"name": kind}, "gaiinCountry": {"code": code}}
+    records = [law("SGP", "Singapore AI Act"),                        # taken: a law, Singapore has no own source
+               law("FRA", "French AI Act"),                           # EU member: the EU counts as one
+               law("USA", "US AI Act"),                               # US law: already from congress.gov
+               law("USA", "US AI Guidance", "Guidance document (instructions on how to implement a law, regulation, policy or other rule)"),
+               {**base, "id": 9, "englishName": "Council of Europe Framework Convention on AI", "slug": "coe-convention",
+                "category": "AI Policy Frameworks and Initiatives (intergovernmental or supranational)", "gaiinCountry": None,
+                "initiativeType": {"name": "Treaty"}, "extentBinding": "Binding",
+                "intergovernmentalOrganisation": {"name": "Council of Europe"}}]
+    cards = {c["title"]: c for c in map(oecd.card, records) if c}
+    assert set(cards) == {"Singapore AI Act", "US AI Guidance", "Council of Europe Framework Convention on AI"}
+    assert (cards["Singapore AI Act"]["category"], cards["Singapore AI Act"]["jurisdictions"]) == ("regulation", ["SG"])
+    assert cards["US AI Guidance"]["category"] == "policy"
+    assert cards["Council of Europe Framework Convention on AI"]["jurisdictions"] == ["INTL"]
+    assert all(c["date"] == "2024-01-01" and "editor@" not in json.dumps(c) for c in cards.values())
+    conn = store.connect(tmp_path / "t.db")
+    page = json.dumps({"data": records, "lastPage": 1}).encode()
+    assert oecd.sync(conn, fetcher=lambda u: page, log=lambda *_: None, force=True) == 3
+    assert conn.execute("SELECT COUNT(*) FROM items WHERE bill LIKE 'OECD-%'").fetchone()[0] == 3
+    assert oecd.sync(conn, fetcher=lambda u: page, log=lambda *_: None) == 0  # read at most weekly
+

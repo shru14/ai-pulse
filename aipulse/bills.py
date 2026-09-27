@@ -48,7 +48,7 @@ from . import feeds, store, translate
 # Cards made from official records; the keyword rules for news stories never re-sort them.
 OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
                     "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China",
-                    "Parliament of India", "e-Gov (Japan)")
+                    "Parliament of India", "e-Gov (Japan)", "OECD.AI")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -549,6 +549,8 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
     """AI bills in Brazil's Chamber of Deputies: since 2023 on the first run, then those with any activity
     since the last run."""
     connect_tables(conn)
+    if fetcher is feeds.fetch:  # the Chamber's API is slow to answer from abroad
+        fetcher = lambda u: feeds.fetch(u, timeout=90)
     last = conn.execute("SELECT value FROM meta WHERE key = 'brazil_sync'").fetchone()
     started = date.today().isoformat()
     window = (f"dataInicio={(date.fromisoformat(last[0]) - timedelta(days=2)).isoformat()}" if last
@@ -842,6 +844,16 @@ def attach_news(conn) -> int:
     return moved
 
 
+def _oecd_api() -> str:
+    from . import oecd
+    return oecd.API
+
+
+def _oecd_sync(conn, fetcher=feeds.fetch, log=print) -> int:
+    from . import oecd  # oecd.py imports this module
+    return oecd.sync(conn, fetcher, log=log)
+
+
 def sync(conn, fetcher=feeds.fetch, log=print) -> int:
     """Every official source; each is recorded in source health like any feed."""
     total = 0
@@ -853,7 +865,8 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("Federal Register of Legislation API", AU_API, sync_australia),
                           ("Cyberspace Administration of China", CN_SITE, sync_china),
                           ("Parliament of India API", IN_API, sync_india),
-                          ("e-Gov law API (Japan)", JP_API, sync_japan)):
+                          ("e-Gov law API (Japan)", JP_API, sync_japan),
+                          ("OECD.AI policy database", _oecd_api(), _oecd_sync)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)
