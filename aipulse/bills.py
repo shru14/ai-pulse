@@ -12,6 +12,8 @@
 - Brazil: the Chamber of Deputies' open data API (no key; published for reuse in apps). AI bills are found by
   keyword and their Portuguese summary; bills attached to a lead bill ("tramitando em conjunto") move with it
   and aren't shown separately. Their procedural events give the stages.
+- Australia: the Federal Register of Legislation API (no key; CC BY 4.0, credited on the page). It holds Acts
+  and instruments once made (bills in Parliament aren't there), so these cards start at assent.
 
 Every bill has one tracker card (an item with source "congress.gov" or "European Parliament"), dated at
 its latest stage so it moves up the feed when it advances. The card shows the whole timeline. News
@@ -33,7 +35,7 @@ from . import feeds, store
 
 # Cards made from official records; the keyword rules for news stories never re-sort them.
 OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
-                    "Câmara dos Deputados")
+                    "Câmara dos Deputados", "legislation.gov.au")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -51,6 +53,8 @@ LABELS = {
            "vetoed": "Defeated", "withdrawn": "Died on the Order Paper"},
     "BR": {"introduced": "Introduced", "passed_chamber": "Passed first chamber", "passed_legislature": "Passed Congress",
            "signed": "Became law", "in_force": "In force", "vetoed": "Vetoed", "withdrawn": "Withdrawn or archived"},
+    "AU": {"introduced": "Introduced", "passed_chamber": "Passed first House", "passed_legislature": "Passed Parliament",
+           "signed": "Assented or made", "in_force": "In force", "vetoed": "Disallowed", "withdrawn": "Repealed"},
 }
 
 AI_TITLE = re.compile(r"artificial intelligence|\bAI\b|machine learning|algorithm|deepfake|automated decision|"
@@ -509,6 +513,50 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+# --- Australia (Federal Register of Legislation) ---
+
+AU_API = "https://api.prod.legislation.gov.au/v1/titles"
+AU_SEARCHES = ("artificial intelligence", "deepfake", "automated decision", "algorithm", "machine learning")
+
+
+def au_history(t: dict) -> list[dict]:
+    """Assent (an Act) or making (an instrument), the day it came into force, and repeal."""
+    history = []
+    made = (t.get("makingDate") or "")[:10]
+    if made:
+        history.append({"date": made, "stage": "signed", "text": "Royal Assent" if t.get("collection") == "Act" else "Made"})
+    for s in t.get("statusHistory") or []:
+        start = (s.get("start") or "")[:10]
+        if s.get("status") == "InForce" and start and not any(h["stage"] == "in_force" for h in history):
+            history.append({"date": start, "stage": "in_force", "text": "In force"})
+        elif s.get("status") == "Repealed" and start:
+            history.append({"date": start, "stage": "withdrawn", "text": "Repealed"})
+    return sorted(history, key=lambda h: (h["date"], (STAGES + ENDED).index(h["stage"])))
+
+
+def sync_australia(conn, fetcher=feeds.fetch, log=print) -> int:
+    """Australian Acts and legislative instruments with AI in their name."""
+    connect_tables(conn)
+    found: dict[str, dict] = {}
+    for term in AU_SEARCHES:
+        data = _get_json(f"{AU_API}?$filter=contains(name,'{term.replace(' ', '%20')}')&$top=100", fetcher)
+        for t in data.get("value", []):
+            if AI_TITLE.search(t.get("name") or ""):
+                found[t["id"]] = t
+        time.sleep(0.5)
+    changed = 0
+    for tid, t in found.items():
+        full = _get_json(f"{AU_API}('{tid}')", fetcher)  # the listing leaves out the status history
+        bill = {"key": f"AU-{tid}", "jurisdiction": "AU", "number": "", "title": t["name"],
+                "url": f"https://www.legislation.gov.au/{tid}/latest/text", "source": "legislation.gov.au",
+                "history": au_history(full)}
+        if bill["history"]:
+            changed += upsert(conn, bill)
+        conn.commit()
+        time.sleep(0.5)
+    return changed
+
+
 # --- Attaching news to bills ---
 
 _CA_BILL = re.compile(r"\bBill ([CS])-(\d{1,4})\b")
@@ -561,7 +609,8 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("European Parliament API", EP_API, sync_europarl),
                           ("UK Parliament Bills API", UK_API, sync_uk),
                           ("Parliament of Canada LEGISinfo", CA_API, sync_canada),
-                          ("Câmara dos Deputados API", BR_API, sync_brazil)):
+                          ("Câmara dos Deputados API", BR_API, sync_brazil),
+                          ("Federal Register of Legislation API", AU_API, sync_australia)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)

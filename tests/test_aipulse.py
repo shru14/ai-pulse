@@ -826,3 +826,14 @@ def test_brazil_stages_from_chamber_events():
     stamped = [ev("2024-02-27", "Despacho de Apensação", "Transformado em Norma Jurídica", "Apense-se à(ao) PL-5695/2023.")]
     assert [x["stage"] for x in br_history("2024-02-21T09:00", stamped)] == ["introduced"]
 
+
+def test_australia_stages_from_the_register():
+    from aipulse.bills import au_history, current
+    act = {"makingDate": "2024-09-02T00:00:00", "collection": "Act",
+           "statusHistory": [{"status": "InForce", "start": "2024-09-02T00:00:00"}]}
+    assert [(h["stage"], h["date"]) for h in au_history(act)] == [("signed", "2024-09-02"), ("in_force", "2024-09-02")]
+    gone = {"makingDate": "2019-01-10T00:00:00", "collection": "LegislativeInstrument",
+            "statusHistory": [{"status": "InForce", "start": "2019-01-11T00:00:00"},
+                              {"status": "Repealed", "start": "2023-04-01T00:00:00"}]}
+    assert current(au_history(gone))["stage"] == "withdrawn"
+
