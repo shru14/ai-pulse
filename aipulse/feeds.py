@@ -141,8 +141,9 @@ def fetch(url: str, timeout: int = 20, attempts: int = ATTEMPTS) -> bytes:
     raise AssertionError("unreachable")
 
 
-def clean_text(raw: str | None, limit: int = 400) -> str:
-    """Strip HTML, unescape entities, collapse whitespace, trim to a sentence."""
+def clean_text(raw: str | None, limit: int = 3000) -> str:
+    """Strip HTML, unescape entities, collapse whitespace, trim to a sentence. (Summaries are shortened later,
+    by brief.py; a paper's whole abstract is kept so its contribution sentence can be found.)"""
     if not raw:
         return ""
     text = html.unescape(_TAG_RE.sub(" ", raw))

@@ -91,8 +91,6 @@ SOURCES = [
     {"name": "LatinAmerica Reports", "url": "https://latinamericareports.com/feed/", "category": "news", "ai_in_title": True},
     # Africa
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
-    {"name": "Techzim", "url": "https://www.techzim.co.zw/feed/", "category": "news", "ai_in_title": True},
-    {"name": "Techmoran", "url": "https://techmoran.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
 
     # --- Policy and politics ---

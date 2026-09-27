@@ -91,7 +91,10 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                     continue
             source = src["name"]
             title = brief.clean_title(e["title"], source)
-            summary = brief.clean_summary(e["summary"], title, source)
+            if "arxiv.org/abs/" in e["url"]:  # a paper: what it covers, from its abstract
+                summary = brief.paper_summary(e["summary"], title)
+            else:
+                summary = brief.clean_summary(e["summary"], title, source)
 
             ai_only = src.get("ai_only", src["category"] == "tool")
             if not ai_only and not classify.is_ai_related(title, e["summary"]):
@@ -141,6 +144,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
 
     if official_bills if official_bills is not None else sources is SOURCES:
         bills.sync(conn, fetcher, log=log)  # official bill stages (congress.gov, European Parliament)
+        resummarize_papers(conn, fetcher, log=log)
     if backfill:
         return added  # the backfill regroups and looks up logos once, at the end
     cluster.assign(conn)  # put new stories on the same card as other outlets' versions, and on bills' cards
@@ -254,6 +258,41 @@ def retag(conn) -> int:
             store.set_tags(conn, it["id"], tags)
             changed += 1
     conn.commit()
+    return changed
+
+
+ARXIV_API = "http://export.arxiv.org/api/query"
+PAPER_BATCH = 100  # papers per arXiv API request; one request every 3.5 s, as arXiv asks
+
+
+def resummarize_papers(conn, fetcher=feeds.fetch, limit: int = 3000, log=print) -> int:
+    """Rewrite stored papers' summaries with brief.paper_summary, reading their full abstracts again from the
+    arXiv API (earlier summaries were the abstract's first lines, cut short). A few thousand per run, in order,
+    until all are done. Returns how many were updated."""
+    done = conn.execute("SELECT value FROM meta WHERE key = 'papers_resummarized'").fetchone()
+    after = int(done[0]) if done else 0
+    rows = conn.execute("SELECT rowid, id, url, title FROM items WHERE url LIKE 'https://arxiv.org/abs/%' AND rowid > ?"
+                        " ORDER BY rowid LIMIT ?", (after, limit)).fetchall()
+    changed = 0
+    for i in range(0, len(rows), PAPER_BATCH):
+        batch = rows[i:i + PAPER_BATCH]
+        ids = {re.sub(r"v\d+$", "", r["url"].rsplit("/abs/", 1)[1]): r for r in batch}
+        try:
+            entries = feeds.parse(fetcher(f"{ARXIV_API}?id_list={','.join(ids)}&max_results={len(ids)}"))
+        except Exception as exc:
+            log(f"  ! arXiv abstracts: {exc}")
+            break
+        for e in entries:
+            r = ids.get(re.sub(r"v\d+$", "", e["url"].rsplit("/abs/", 1)[-1]))
+            summary = brief.paper_summary(e["summary"], r["title"]) if r else ""
+            if summary:
+                conn.execute("UPDATE items SET summary = ? WHERE id = ?", (summary, r["id"]))
+                changed += 1
+        conn.execute("INSERT OR REPLACE INTO meta VALUES ('papers_resummarized', ?)", (str(batch[-1]["rowid"]),))
+        conn.commit()
+        time.sleep(3.5)
+    if rows:
+        log(f"  arXiv abstracts: {changed} paper summaries rewritten")
     return changed
 
 

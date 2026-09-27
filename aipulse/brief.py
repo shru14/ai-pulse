@@ -99,6 +99,58 @@ def clean_summary(text: str, title: str, source: str = "") -> str:
     return re.sub(r"\s*(\.\.\.|…)+$", "…", summary)
 
 
+# Papers: the abstract's own sentence saying what the paper does, not its opening background.
+_LATEX = [(re.compile(p), r) for p, r in (
+    (r"``|''", '"'), (r"\\(?:emph|textit|textbf|texttt|mathrm|mathbf|mathcal|text)\{([^{}]*)\}", r"\1"),
+    (r"\$([^$]{1,40})\$", r"\1"), (r"\$[^$]*\$", ""), (r"\\[a-zA-Z]+", ""), (r"[{}]", ""), (r"(?<!\w)~(?!\w)|(?<=\w)~(?=\w)", " "),
+    (r"\s+([,.;:])", r"\1"), (r"\s{2,}", " "))]
+_VERBS = ("propose", "introduce", "present", "develop", "study", "show", "investigate", "examine", "analyze",
+          "analyse", "argue", "describe", "design", "build", "release", "report", "find", "demonstrate", "explore",
+          "offer", "provide", "evaluate", "formalize", "formalise", "survey", "review", "critique", "identify",
+          "construct", "establish", "address", "tackle", "characterize", "quantify", "measure", "benchmark", "train",
+          "leverage", "extend", "revisit", "consider", "examine", "compare", "outline", "discuss", "assess")
+# "We propose X", "In this paper, we introduce X", "To leverage ..., this work introduces X".
+_CONTRIBUTION = re.compile(
+    r"(?:^|,\s+|^(?:In|Here|Thus|Therefore)\b[^,]*?\s)"
+    r"(?:we|this (?:paper|work|study|article|position paper|essay|note|report)|our (?:paper|work|study)|the (?:paper|article))"
+    r"\s+(?:(?:first|also|further|then|thus|therefore|here|now|\w+ly)\s+)?(" + "|".join(_VERBS) + r")(?:e?s)?\b\s*(.*)$",
+    re.I | re.S)
+_THIRD_PERSON = {"study": "Studies", "analyse": "Analyses", "formalise": "Formalises"}
+
+
+def _as_post(sentence: str) -> str:
+    """ "In this paper, we propose X." -> "Proposes X." (other sentences unchanged)"""
+    m = _CONTRIBUTION.search(sentence)
+    if not m or not m.group(2):
+        return sentence
+    verb = m.group(1).lower()
+    verb = _THIRD_PERSON.get(verb) or (verb[:-1] + "ies" if verb.endswith("y") and verb[-2] not in "aeiou" else
+                                       verb + ("es" if verb.endswith(("sh", "ss", "ch", "x")) else "s")).capitalize()
+    return f"{verb} {m.group(2)}"
+
+
+def paper_summary(abstract: str, title: str = "") -> str:
+    """What a paper covers, in a sentence or two of its own abstract: the sentence stating its contribution
+    ("We propose ...", "This paper introduces ..."), phrased like a post ("Proposes ..."), with LaTeX
+    markup removed. Background and questions ("What is an agent?") are skipped; full sentences, no cut-offs."""
+    text = re.sub(r"\s+", " ", abstract or "").strip()
+    for pattern, repl in _LATEX:
+        text = pattern.sub(repl, text)
+    sentences = [s.strip() for s in _sentences(text) if len(s.split()) >= 5 and not s.strip().endswith("?")]
+    if not sentences:
+        return ""
+    start = next((i for i, s in enumerate(sentences) if _CONTRIBUTION.search(s)), None)
+    picked = [_as_post(sentences[start])] if start is not None else [sentences[0]]
+    if start is not None and len(picked[0]) < 140 and start + 1 < len(sentences):
+        picked.append(sentences[start + 1])  # a short contribution line: add what follows
+    summary = " ".join(picked)
+    if len(summary) > 420:  # one long sentence: end at a clause
+        cut = summary[:420]
+        end = max(cut.rfind("; "), cut.rfind(", "), cut.rfind(" — "))
+        summary = (cut[:end] if end > 200 else cut.rsplit(" ", 1)[0]).rstrip(",;: ") + "…"
+    return summary
+
+
 _KIND = {"tool": "A release", "news": "Industry news", "policy": "Policy news", "research": "A paper",
          ("regulation", "proposal"): "A proposal", ("regulation", "law"): "A law adopted",
          ("regulation", "expert"): "Commentary"}

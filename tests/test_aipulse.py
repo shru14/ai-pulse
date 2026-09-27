@@ -1169,3 +1169,34 @@ def test_new_us_bills_get_an_interim_summary_until_crs_writes_one(tmp_path):
     bills.upsert(conn, {**bill, "summary": "This bill establishes a fund for AI research."})  # CRS arrives
     assert conn.execute("SELECT summary FROM items").fetchone()[0] == "This bill establishes a fund for AI research."
 
+
+def test_paper_summaries_say_what_the_paper_covers():
+    from aipulse import brief
+    abstract = ("What is an agent? What constitutes agency? With the rise of LLM systems marketed as ``coding agents'', "
+                "it has become essential to clarify where automation ends. In this paper, we survey the current "
+                "landscape of AI agents and analyze their architectures along five dimensions. We find that none are agentive.")
+    assert brief.paper_summary(abstract) == ("Surveys the current landscape of AI agents and analyze their architectures "
+                                             "along five dimensions. We find that none are agentive.")
+    assert brief.paper_summary("To leverage agents for robots, this work introduces RAPID, which writes robot programs "
+                               "from one demonstration.").startswith("Introduces RAPID, which writes")
+    assert brief.paper_summary("Models are trained with $\\mathcal{L}_2$ loss. The method is fast and simple.") == \
+        "Models are trained with L_2 loss."  # no contribution sentence: the first, with LaTeX removed
+
+
+def test_stored_papers_are_resummarized_from_arxiv(tmp_path):
+    from aipulse import collect
+    conn = store.connect(tmp_path / "t.db")
+    store.insert(conn, {"title": "RAPID", "summary": "Coding agents have demonstrated enormous success.",
+                        "url": "https://arxiv.org/abs/2609.00001v1", "source": "arXiv", "category": "research",
+                        "date": "2026-09-01", "tags": [], "authors": []})
+    conn.commit()
+    atom = (b'<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/2609.00001v2</id>'
+            b'<link href="http://arxiv.org/abs/2609.00001v2"/><title>RAPID</title><summary>Coding agents have '
+            b'demonstrated enormous success. We present RAPID, which writes robot programs from one video.</summary>'
+            b'<updated>2026-09-01T00:00:00Z</updated></entry></feed>')
+    asked = []
+    assert collect.resummarize_papers(conn, lambda u: (asked.append(u), atom)[1], log=lambda *_: None) == 1
+    assert "id_list=2609.00001" in asked[0]
+    assert conn.execute("SELECT summary FROM items").fetchone()[0].startswith("Presents RAPID, which writes")
+    assert collect.resummarize_papers(conn, lambda u: atom, log=lambda *_: None) == 0  # done once
+

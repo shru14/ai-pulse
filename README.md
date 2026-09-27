@@ -56,7 +56,7 @@ Times' terms allow brief excerpts with credit and a link back).
 |---|---|
 | Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
 | Global news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World |
-| Regional news (AI headlines only) | **Asia:** South China Morning Post, Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, TechCentral, ITWeb, IT News Africa, Techzim, Techmoran, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
+| Regional news (AI headlines only) | **Asia:** South China Morning Post, Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, TechCentral, ITWeb, IT News Africa, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news) |
 | Research | arXiv (API), Hugging Face Daily Papers, Apple Machine Learning Research |
 
@@ -100,7 +100,7 @@ out. A ministry release that reports a bill or law reaches the tracker; the rest
 |---|---|
 | Google News and Bing News don't allow automated access (robots.txt; Bing's terms allow personal readers only) | Removed both. Stories come from publishers' own feeds and official records |
 | Some outlets' terms forbid aggregation, bots or reuse: BBC News, CNA, Korea Herald, MediaNama, Inc42, Rappler, Philstar, SoyaCincau, Techloy. Others' terms couldn't be confirmed: NYT, The Guardian, Wired, The Africa Report | Left out; replaced with outlets whose terms allow it |
-| Some sites refuse automated access: Japan Times, Malay Mail, e27, Techpoint Africa, Mexico News Daily, MyBroadband, BNamericas, The Register | Left out |
+| Some sites refuse automated access: Japan Times, Malay Mail, e27, Techpoint Africa, Mexico News Daily, MyBroadband, BNamericas, The Register; Techzim and Techmoran refuse GitHub's servers | Left out |
 | Some feeds have stopped (Digital News Asia, Disrupt Africa, MENAbytes) or turned into US funding news (Ventureburn, Contxto) | Left out |
 | Most global tech press covers the US and Europe | Regional news for Asia, Africa, the Middle East and Latin America, each checked first |
 | The shared congress.gov DEMO_KEY is only for trying the API | A free personal key, stored as a secret |
@@ -117,6 +117,7 @@ out. A ministry release that reports a bill or law reaches the tracker; the rest
 | Records in Portuguese, Chinese, Japanese, Vietnamese and German | English titles and summaries translated **offline** with open-source OPUS-MT models; no API. Cards say they are machine translations and link the official text |
 | The translation models get some legal terms wrong (Vietnamese "artificial intelligence" came out as "manic intelligence") | Fixed term rules per language (`translate.py`) |
 | New US bills have no summary for weeks (the Congressional Research Service writes one later), so cards showed only the official title | Until then, the card says what the bill would do (from its official title), who introduced it, cosponsors and the committee it went to, all from the congress.gov API; the CRS summary replaces it when published, and a short title replaces the long one once the text is out |
+| Research cards showed the start of the abstract (usually background or a question), cut mid-sentence, with LaTeX quote marks | A paper's card now shows the abstract's own sentence stating what it does ("We propose X" becomes "Proposes X"), as a full sentence with LaTeX removed. Stored papers were rewritten from their full abstracts via the arXiv API, 3,000 per run |
 | No AI model may write summaries | Summaries are the publisher's description, an official record's own summary, a release's first paragraph, or the translated sentence stating what a motion asks, plus the government's position |
 | General news feeds carry non-AI stories; "foreign agents" (a Russian law) read as AI agents | Regional and general feeds keep only items with AI in the headline; "agent" counts only when it isn't a foreign, secret, FBI, nerve or similar agent |
 | Windows' certificate store lacks some certificates official sites use | Fetching uses Mozilla's CA list (certifi): still fully verified, never switched off |
