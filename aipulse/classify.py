@@ -49,11 +49,30 @@ NEWS_SIGNALS = [r"\bpartner", r"\bprogramm?e\b", r"\bcustomers?\b", r"case study
 _ai = re.compile("|".join(AI_TERMS), re.I)
 _policy = [re.compile(p, re.I) for p in POLICY_TERMS]
 _tool = [re.compile(p, re.I) for p in TOOL_TERMS]
+# A news outlet's story is a release only if something was actually launched: words like "model", "API" or
+# "feature" appear in studies, deals and opinion too ("AI agents do more of the work in model development").
+_LAUNCH = re.compile(r"launch|releas|introduc|unveil|announc|rolls? out|available|open[- ]?sourc|\bmeet\b|"
+                     r"\bcomes? to\b|\barrives?\b|\baccess to\b|\bnow (?:supports?|offers?|works)\b|"
+                     r"\b(?:new|newest|latest) (?:\w+ ){0,3}(?:models?|apps?|tools?|features?|versions?|agents?|assistants?|chatbots?|API|"
+                     r"platforms?|services?|devices?|chips?|products?|glasses|browsers?|modes?)\b|"
+                     r"\bbeta\b|preview|version \d|\bv\d|\bcan now\b|\bships?\b|\bdebuts?\b|\bdrops\b|"
+                     r"\blets\b|\bbrings\b|\badds?\b|\bgives\b|\bexpands\b", re.I)
+# A story reporting a study's findings ("A research team analyzed 769 task logs...") is news about research,
+# not a release, unless its headline announces a launch.
+_STUDY = re.compile(r"\b(stud(y|ies)|researchers?|research team|analy[sz]ed|surveyed|paper|preprint|findings|"
+                    r"found that|finds that|report(s)? finds?|according to (a|new) (study|report|survey))\b", re.I)
 _news = re.compile("|".join(NEWS_SIGNALS), re.I)
 
 
 def is_ai_related(title: str, summary: str) -> bool:
     return bool(_ai.search(f"{title} {summary}"))
+
+
+def launched(title: str, summary: str) -> bool:
+    """Does a news story report something being released? It needs launch language, and a study's findings
+    count only when the headline itself announces a launch ("Researchers release ...")."""
+    text = f"{title} {summary}"
+    return bool(_LAUNCH.search(text)) and not (_STUDY.search(text) and not _LAUNCH.search(title))
 
 
 def categorize(title: str, summary: str, default: str = "news") -> str:
@@ -74,7 +93,7 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
         return "policy"
     if default == "tool" and _news.search(title):
         return "news"
-    if tool >= 3 and tool > policy:
+    if tool >= 3 and tool > policy and (default == "tool" or launched(title, summary)):
         return "tool"
     if default == "policy" and policy == 0 and regulatory_action(title) is None and not jurisdictions.acting(title):
         return "news"  # a policy search picked up a story with nothing about government in it

@@ -309,7 +309,16 @@ def reclassify(conn) -> int:
     changed = 0
     # The same fallback places collection uses (e.g. Korea's ministry: "KR" when a story names none).
     defaults = {s["name"]: s.get("jurisdictions", []) for s in SOURCES}
+    streams = {s["name"]: s["category"] for s in SOURCES}
     for it in store.query(conn, None, None, None, limit=100000):
+        if it["category"] in ("news", "tool"):
+            # A news outlet's "release" that launched nothing (e.g. a study's findings) moves to industry news.
+            # Only that check is re-run: summaries are shorter now, so re-scoring would drop real releases.
+            text = "" if brief.is_draft(it["summary"]) else it["summary"]
+            if it["category"] == "tool" and streams.get(it["source"]) == "news" and not classify.launched(it["title"], text):
+                store.set_regulation(conn, it["id"], "news", it["jurisdictions"], it["action"] or None)
+                changed += 1
+            continue
         if it["category"] not in ("policy", "regulation") or it["action"] == EXPERT:
             continue
         before = (it["category"], it["jurisdictions"], it["action"] or None)

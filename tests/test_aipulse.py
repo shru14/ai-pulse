@@ -1213,3 +1213,17 @@ def test_news_summary_is_the_lede_in_full():
     out = brief.clean_summary(long, "t", "X")
     assert len(out) <= brief.MAX_CHARS + 1 and out.endswith("…") and not out.endswith(" …")
 
+
+def test_a_study_reported_by_the_news_is_not_a_release():
+    from aipulse import classify as c
+    study = ("AI agents do more of the work in model development, but humans still make the decisions",
+             "A research team analyzed 769 task logs from building its own AI model. AI agents supplied up to 55 percent "
+             "of method proposals, but humans made more than 85 percent of final decisions.")
+    assert c.categorize(*study, "news") == "news" and not c.launched(*study)
+    assert c.categorize("Nvidia drops a free 100M-parameter model that identifies up to eight speakers in real time",
+                        "Nvidia released Nemotron 3 Diarization, an AI model that identifies which speaker is talking.",
+                        "news") == "tool"
+    assert c.launched("Researchers release open-source model for protein design", "A team at MIT released it.")
+    assert c.launched("Robbyant Open Sources LingBot World: a Real Time World Model", "")
+    assert not c.launched("Financial AI startup Model ML nabs $75M investment", "The startup raised money for its model.")
+
