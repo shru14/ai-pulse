@@ -792,3 +792,16 @@ def test_uk_stages_from_parliament_readings():
     stalled = uk_history({"billWithdrawn": "2024-05-24T00:00:00", "isDefeated": False}, stages[:1])
     assert current(stalled)["stage"] == "withdrawn"
 
+
+def test_canada_stages_from_legisinfo():
+    from aipulse.bills import ca_history, current
+    died = {"PassedHouseFirstReadingDateTime": "2022-06-16T10:00:00", "PassedHouseSecondReadingDateTime": "2023-04-24",
+            "IsSessionOngoing": False, "LatestBillEventDateTime": "0001-01-01T00:00:00"}  # LEGISinfo's "no date"
+    assert [(h["stage"], h["date"]) for h in ca_history(died, "2025-01-06")] == [
+        ("introduced", "2022-06-16"), ("withdrawn", "2025-01-06")]
+    law = {"PassedSenateFirstReadingDateTime": "2024-02-01", "PassedSenateThirdReadingDateTime": "2024-03-01",
+           "PassedHouseFirstReadingDateTime": "2024-03-05", "PassedHouseThirdReadingDateTime": "2024-05-01",
+           "ReceivedRoyalAssentDateTime": "2024-06-20", "IsSessionOngoing": False}
+    assert current(ca_history(law))["stage"] == "signed"
+    assert [h["stage"] for h in ca_history(law)] == ["introduced", "passed_chamber", "passed_legislature", "signed"]
+

@@ -7,6 +7,8 @@
   their events give the stages.
 - UK: the UK Parliament Bills API (no key; Open Parliament Licence). AI bills are found by title searches;
   their readings in each House give the stages.
+- Canada: LEGISinfo (Parliament of Canada; no key). Each session's bills with their reading dates. The
+  Speaker permits accurate, non-commercial reproduction that isn't presented as official.
 
 Every bill has one tracker card (an item with source "congress.gov" or "European Parliament"), dated at
 its latest stage so it moves up the feed when it advances. The card shows the whole timeline. News
@@ -27,7 +29,7 @@ from datetime import date, datetime, timedelta, timezone
 from . import feeds, store
 
 # Cards made from official records; the keyword rules for news stories never re-sort them.
-OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament")
+OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -40,6 +42,9 @@ LABELS = {
            "withdrawn": "Withdrawn"},
     "GB": {"introduced": "Introduced", "passed_chamber": "Passed first House", "passed_legislature": "Passed both Houses",
            "signed": "Royal Assent", "in_force": "In force", "vetoed": "Defeated", "withdrawn": "Withdrawn"},
+    "CA": {"introduced": "First reading", "passed_chamber": "Passed first chamber",
+           "passed_legislature": "Passed both chambers", "signed": "Royal Assent", "in_force": "In force",
+           "vetoed": "Defeated", "withdrawn": "Died on the Order Paper"},
 }
 
 AI_TITLE = re.compile(r"artificial intelligence|\bAI\b|machine learning|algorithm|deepfake|automated decision|"
@@ -361,8 +366,65 @@ def sync_uk(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+# --- Canada (LEGISinfo) ---
+
+CA_API = "https://www.parl.ca/legisinfo/en/bills/json"
+# Past sessions, read once for the history since 2023, with the day each ended (bills not passed by then
+# died on the Order Paper; LEGISinfo leaves that date blank). The current session is read every time.
+CA_PAST_SESSIONS = {"44-1": "2025-01-06"}  # 44th Parliament, 1st session: prorogued 6 January 2025
+
+
+def ca_history(b: dict, session_end: str = "") -> list[dict]:
+    """Lifecycle from a LEGISinfo bill: first and third readings in each chamber, Royal Assent, and the end of
+    the session for a bill that didn't pass (it "dies on the Order Paper")."""
+    day = lambda k: d if (d := (b.get(k) or "")[:10]) > "1900" else ""  # "0001-01-01" means no date
+    first = [d for d in (day("PassedHouseFirstReadingDateTime"), day("PassedSenateFirstReadingDateTime")) if d]
+    third = [d for d in (day("PassedHouseThirdReadingDateTime"), day("PassedSenateThirdReadingDateTime")) if d]
+    history = []
+    if first:
+        history.append({"date": min(first), "stage": "introduced", "text": "First reading"})
+    if third:
+        history.append({"date": min(third), "stage": "passed_chamber", "text": "Third reading"})
+    if len(third) == 2:
+        history.append({"date": max(third), "stage": "passed_legislature", "text": "Third reading in both chambers"})
+    if day("ReceivedRoyalAssentDateTime"):
+        history.append({"date": day("ReceivedRoyalAssentDateTime"), "stage": "signed", "text": "Royal Assent"})
+    elif b.get("IsSessionOngoing") is False and history:
+        ended = session_end or day("LatestBillEventDateTime") or history[-1]["date"]
+        history.append({"date": ended, "stage": "withdrawn", "text": "Died on the Order Paper"})
+    return history
+
+
+def sync_canada(conn, fetcher=feeds.fetch, log=print) -> int:
+    """AI bills in the Parliament of Canada: the current session every time, past sessions once."""
+    connect_tables(conn)
+    done = conn.execute("SELECT value FROM meta WHERE key = 'canada_sessions'").fetchone()
+    past = [s for s in CA_PAST_SESSIONS if not done or s not in done[0].split(",")]
+    changed = 0
+    for session in [None, *past]:
+        url = CA_API + (f"?parlsession={session}" if session else "")
+        for b in _get_json(url, fetcher):
+            title = b.get("ShortTitleEn") or b.get("LongTitleEn") or ""
+            if not AI_TITLE.search(f"{b.get('LongTitleEn') or ''} {b.get('ShortTitleEn') or ''}"):
+                continue
+            s = f"{b['ParliamentNumber']}-{b['SessionNumber']}"
+            bill = {"key": f"CA-{s}-{b['NumberCode']}", "jurisdiction": "CA", "number": b["NumberCode"],
+                    "title": b.get("LongTitleEn") or title, "short_title": b.get("ShortTitleEn") or "",
+                    "url": f"https://www.parl.ca/legisinfo/en/bill/{s}/{b['NumberCode'].lower()}",
+                    "source": "Parliament of Canada", "history": ca_history(b, CA_PAST_SESSIONS.get(s, ""))}
+            if bill["history"]:
+                changed += upsert(conn, bill)
+        conn.commit()
+        time.sleep(1)
+    if past:
+        conn.execute("INSERT OR REPLACE INTO meta VALUES ('canada_sessions', ?)", (",".join(CA_PAST_SESSIONS),))
+        conn.commit()
+    return changed
+
+
 # --- Attaching news to bills ---
 
+_CA_BILL = re.compile(r"\bBill ([CS])-(\d{1,4})\b")
 _BILL_NUMBER = re.compile(r"\b(H\.?\s?R\.?|S\.|H\.?\s?J\.?\s?Res\.?|S\.?\s?J\.?\s?Res\.?)\s?(\d{1,5})\b", re.I)
 
 
@@ -380,10 +442,12 @@ def attach_news(conn) -> int:
     if not bills:
         return 0
     by_number = {}
-    for b in bills:
-        parts = b["key"].split("-")  # US-119-hr-10538
+    for b in sorted(bills, key=lambda b: b["key"]):  # a later session's bill with the same number wins
+        parts = b["key"].split("-")  # US-119-hr-10538, CA-44-1-C-27
         if parts[0] == "US":
             by_number[f"{parts[2]}-{parts[3]}"] = b["card"]
+        elif parts[0] == "CA":
+            by_number[f"ca-{parts[3].lower()}-{parts[4]}"] = b["card"]
     # News names a bill without the year that tells same-named UK bills apart ("... Bill (2025)").
     names = [(re.sub(r" \(\d{4}\)$", "", b["short_title"]).lower(), b["card"]) for b in bills if len(b["short_title"]) >= 8]
     moved = 0
@@ -392,6 +456,8 @@ def attach_news(conn) -> int:
         card = None
         for m in _BILL_NUMBER.finditer(it["title"]):
             card = by_number.get(_number_key(m.group(1), m.group(2))) or card
+        for m in _CA_BILL.finditer(it["title"]):  # "Bill C-27"
+            card = by_number.get(f"ca-{m.group(1).lower()}-{m.group(2)}") or card
         low = it["title"].lower()
         card = card or next((c for name, c in names if name in low), None)
         if card and it["cluster"] != card:
@@ -406,7 +472,8 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
     total = 0
     for name, url, fn in (("congress.gov API", CONGRESS_API, sync_congress),
                           ("European Parliament API", EP_API, sync_europarl),
-                          ("UK Parliament Bills API", UK_API, sync_uk)):
+                          ("UK Parliament Bills API", UK_API, sync_uk),
+                          ("Parliament of Canada LEGISinfo", CA_API, sync_canada)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)

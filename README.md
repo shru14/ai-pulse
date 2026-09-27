@@ -94,7 +94,7 @@ as `AIPulse/1.0` with a link to this repository.
 | Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
 | Industry news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World, South China Morning Post, TechCabal |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, **Federal Register** (US federal records), **GOV.UK** (UK government) |
-| Regulation tracker | European Data Protection Board, European Commission, US Congress, European Parliament and UK Parliament bill records, arXiv papers by ~40 ethics and law scholars |
+| Regulation tracker | European Data Protection Board, European Commission, US Congress, European Parliament, UK Parliament and Parliament of Canada bill records, arXiv papers by ~40 ethics and law scholars |
 | Research | arXiv (new papers by ~80 professors), Hugging Face Daily Papers, Apple Machine Learning Research |
 
 **Left out on purpose:** Google News (its robots.txt disallows automated access) and Bing News (its feed
@@ -128,13 +128,15 @@ for "All time".
 | congress.gov API | Introduced → passed one chamber → passed Congress → signed → became law (or vetoed) | A free API key ([sign up](https://api.congress.gov/sign-up/)) |
 | European Parliament open data | Proposed → Parliament position → final vote → signed → Official Journal | Nothing: open data, no sign-up |
 | UK Parliament Bills API | Introduced → passed first House → passed both Houses → Royal Assent (or withdrawn / defeated) | Nothing: Open Parliament Licence |
+| Parliament of Canada (LEGISinfo) | First reading → passed first chamber → passed both chambers → Royal Assent (or died on the Order Paper) | Nothing; the Speaker permits accurate, non-commercial reproduction |
 
 Each bill is one card dated at its latest stage, with news that names the bill attached. The key is read
 from `CONGRESS_API_KEY` and never stored in the repository: set it as a repository secret for the public
 site (Settings → Secrets and variables → Actions) and with `setx CONGRESS_API_KEY your-key` on this PC.
 One-time backfill: `python -m aipulse bills --eu-since 2019 --us-days 30` (UK bills: every session the API holds).
 
-More countries are added one at a time, each from its own official records (next: Canada, Brazil, Australia).
+More countries are added one at a time, each from its own official records (next: Brazil, Australia). Some of these licences allow only non-commercial use, so the site must stay
+non-commercial.
 
 ## Hosting
 
