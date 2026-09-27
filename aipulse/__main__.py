@@ -50,7 +50,7 @@ def main():
                                         "Japan, Vietnam, Switzerland, Malaysia, Taiwan, Korea) and OECD.AI")
     bl.add_argument("--eu-since", type=int, help="also discover EU procedures from this year on (one-time backfill)")
     bl.add_argument("--us-days", type=int, help="look at US bills updated in the last N days (default: since last sync)")
-    bl.add_argument("--max-pages", type=int, default=8, help="congress.gov pages of 250 updated bills per run")
+    bl.add_argument("--max-pages", type=int, default=40, help="congress.gov pages of 250 updated bills per run")
     bl.add_argument("--only", choices=[k for k, _ in BILL_SOURCES], help="sync just one source")
 
     b = sub.add_parser("build", help="write a static copy of the site (for GitHub Pages)")

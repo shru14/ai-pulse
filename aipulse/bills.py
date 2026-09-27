@@ -2,7 +2,7 @@
 
 - US Congress: the congress.gov API, with a free personal key (https://api.congress.gov/sign-up/, name and
   email only; set CONGRESS_API_KEY). Without one it's skipped: api.data.gov's DEMO_KEY is only for trying the
-  API before signing up, not for a site that runs every 6 hours. Each collection asks for
+  API before signing up, not for a site that runs every 6 hours. Each collection reads the current Congress's
   bills updated since the last sync, keeps those with AI in the title, and reads their official actions.
 - EU: the European Parliament's open data API (no key). AI procedures are found by their English title;
   their events give the stages.
@@ -370,24 +370,42 @@ def _us_remember_context(conn, bill_key: str, congress, kind, number, key, fetch
     return ctx["short_title"]
 
 
-def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_pages: int = 8,
+def _current_congress(today: date) -> int:
+    """The 119th Congress runs 2025-2026; a new one starts every odd year."""
+    return (today.year - 1789) // 2 + 1
+
+
+def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_pages: int = 40,
                   log=print) -> int:
-    """Check bills updated since the last sync (or `since`); returns how many AI bills changed stage."""
+    """Read the current Congress's bills updated since the last sync, oldest update first, and keep those with
+    AI in the title; returns how many AI bills changed stage.
+
+    The place reached is saved after every page, so a run that stops at `max_pages` (or on the rate limit)
+    carries on from there next time. A newest-first read restarted from the top each run and never got past
+    the latest few thousand updates. The list gives update dates without times and one day can update
+    thousands of bills, so the place is a page offset, not a date; a resumed run re-reads one page in case
+    bills moved while it was away."""
     connect_tables(conn)
     key = _congress_key()
     if not key:
         log("  congress.gov: skipped, no CONGRESS_API_KEY (the DEMO_KEY is only for trying the API)")
         return 0
-    last = conn.execute("SELECT value FROM meta WHERE key = 'congress_sync'").fetchone()
-    start = since or (datetime.fromisoformat(last[0]) if last else datetime.now(timezone.utc) - timedelta(days=30))
     started = datetime.now(timezone.utc)
-    url = (f"{CONGRESS_API}/bill?format=json&limit=250&sort=updateDate+desc"
-           f"&fromDateTime={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&api_key={key}")
+    congress = _current_congress(started.date())
+    saved = conn.execute("SELECT value FROM meta WHERE key = 'congress_cursor'").fetchone()
+    cursor = json.loads(saved[0]) if saved else {}
+    if since:
+        cursor = {"congress": congress, "from": since.strftime("%Y-%m-%dT%H:%M:%SZ"), "offset": 0}
+    elif cursor.get("congress") != congress:  # first run, or a new Congress: read it from its first day
+        cursor = {"congress": congress, "from": f"{2 * congress + 1787}-01-03T00:00:00Z", "offset": 0}
+    offset = max(0, cursor["offset"] - 250)
     changed = pages = 0
-    while url and pages < max_pages:
-        data = _get_json(url, fetcher)
+    while pages < max_pages:
+        data = _get_json(f"{CONGRESS_API}/bill/{congress}?format=json&limit=250&offset={offset}"
+                         f"&sort=updateDate+asc&fromDateTime={cursor['from']}&api_key={key}", fetcher)
         pages += 1
-        for b in data.get("bills", []):
+        listed = data.get("bills", [])
+        for b in listed:
             if b.get("type") not in _US_TYPES or not AI_TITLE.search(b.get("title", "")):
                 continue
             acts = _get_json(f"{CONGRESS_API}/bill/{b['congress']}/{b['type'].lower()}/{b['number']}/actions"
@@ -404,15 +422,17 @@ def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_
             changed += upsert(conn, bill)
             conn.commit()  # keep progress if a later request fails (e.g. the rate limit)
             time.sleep(0.2)
-        nxt = (data.get("pagination") or {}).get("next")
-        # congress.gov's next-page link contains a raw space ("sort=updateDate desc").
-        url = f"{nxt.replace(' ', '+')}&api_key={key}" if nxt else None
-    _us_describe_old(conn, key, fetcher)
-    if url is None:  # read everything: next time, start from here
-        conn.execute("INSERT OR REPLACE INTO meta VALUES ('congress_sync', ?)", (started.isoformat(),))
+        offset += len(listed)
+        done = len(listed) < 250 or not (data.get("pagination") or {}).get("next")
+        # Done: next time, read what's updated from now on. Otherwise carry on from this page.
+        cursor.update({"from": started.strftime("%Y-%m-%dT%H:%M:%SZ"), "offset": 0} if done else {"offset": offset})
+        conn.execute("INSERT OR REPLACE INTO meta VALUES ('congress_cursor', ?)", (json.dumps(cursor),))
+        conn.commit()
+        if done:
+            break
     else:
-        log(f"  congress.gov: more updates than {max_pages} pages; the rest next run")
-        # keep the old start so the next run continues; nothing is lost
+        log(f"  congress.gov: {offset} bills read so far; the rest next run")
+    _us_describe_old(conn, key, fetcher)
     conn.commit()
     return changed
 

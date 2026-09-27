@@ -544,7 +544,7 @@ def test_bill_card_moves_up_when_it_advances_and_collects_news(tmp_path):
     assert sorted(o["source"] for o in card["also"]) == ["AP", "Vox"]  # by number and by short title
 
 
-def test_congress_next_page_link_is_made_requestable(tmp_path, monkeypatch):
+def test_congress_sync_carries_on_where_it_stopped(tmp_path, monkeypatch):
     monkeypatch.setenv("CONGRESS_API_KEY", "test-key")
     import json
     from aipulse import bills
@@ -552,13 +552,19 @@ def test_congress_next_page_link_is_made_requestable(tmp_path, monkeypatch):
     seen = []
     def fetch(url):
         seen.append(url)
-        assert " " not in url
-        if len(seen) == 1:
-            return json.dumps({"bills": [], "pagination": {
-                "next": "https://api.congress.gov/v3/bill?sort=updateDate desc&offset=250&limit=250&format=json"}}).encode()
-        return json.dumps({"bills": [], "pagination": {}}).encode()
-    bills.sync_congress(store.connect(tmp_path / "t.db"), fetch, log=lambda *_: None)
-    assert len(seen) == 2 and "updateDate+desc" in seen[1]
+        full = "offset=0&" in url or "offset=250&" in url
+        page = [{"congress": 119, "type": "SRES", "number": str(i), "title": "A resolution"} for i in range(250 if full else 10)]
+        return json.dumps({"bills": page, "pagination": {"next": "more"} if full else {}}).encode()
+    conn = store.connect(tmp_path / "t.db")
+    bills.sync_congress(conn, fetch, max_pages=1, log=lambda *_: None)
+    assert "/bill/119?" in seen[0] and "sort=updateDate+asc" in seen[0] and "fromDateTime=2025-01-03" in seen[0]
+    cursor = json.loads(conn.execute("SELECT value FROM meta WHERE key = 'congress_cursor'").fetchone()[0])
+    assert cursor["offset"] == 250 and cursor["from"].startswith("2025-01-03")
+    seen.clear()
+    bills.sync_congress(conn, fetch, log=lambda *_: None)  # re-reads one page, then reads on to the end
+    assert ["offset=0&" in seen[0], "offset=250&" in seen[1], "offset=500&" in seen[2], len(seen)] == [True] * 3 + [3]
+    cursor = json.loads(conn.execute("SELECT value FROM meta WHERE key = 'congress_cursor'").fetchone()[0])
+    assert cursor["offset"] == 0 and not cursor["from"].startswith("2025-01-03")  # done: from now on
 
 
 def test_reclassify_leaves_official_bill_cards_alone(tmp_path):
@@ -1007,6 +1013,17 @@ def test_oecd_ai_bodies_become_body_cards():
     c = oecd.card(body)
     assert (c["category"], c["action"], c["jurisdictions"], c["tags"][0]) == ("regulation", "body", ["JP"], "Oversight body")
     assert oecd.card({**body, "gaiinCountry": {"code": "FRA"}}) is None  # EU member: the EU counts as one
+
+
+def test_oecd_start_year_typo_is_corrected_from_the_records_own_text():
+    from aipulse import oecd
+    office = {"englishName": "EU AI Office", "startYear": 2004,
+              "overview": "<p>The EU AI Office was established by European Commission Decision on 24 January 2024.</p>"}
+    assert oecd._start_year(office) == 2024
+    # Years that aren't the record's own start, or only a year or two off, are left alone.
+    assert oecd._start_year({"englishName": "Fund", "startYear": 2018, "overview": "Created under Project Ireland 2040."}) == 2018
+    assert oecd._start_year({"englishName": "NAIIO", "startYear": 2021,
+                             "overview": "The NAIIO was established under the National AI Initiative Act of 2020."}) == 2021
 
 
 def test_vietnam_ai_laws_from_the_sitemap(tmp_path):

@@ -21,6 +21,7 @@ only: its card is dated 1 January of that year and the page shows just the year.
 from __future__ import annotations
 
 import json
+import re
 import time
 from datetime import date, timedelta
 
@@ -30,7 +31,7 @@ API = "https://api.oecdai.org/policy-initiatives"
 SITE = "https://oecd.ai/en/dashboards/policy-initiatives/"
 SOURCE = "OECD.AI"
 REFRESH_DAYS = 7
-SYNC_KEY = "oecd_sync_v2"  # a new key makes the next run read everything again after the rules change
+SYNC_KEY = "oecd_sync_v3"  # a new key makes the next run read everything again after the rules change
 MARK = "OECD-"  # items.bill for these cards: each record stands alone (see cluster.py) and isn't re-sorted
 
 # Countries with official records of their own in bills.py.
@@ -92,8 +93,22 @@ def card(r: dict) -> dict | None:
         return None
     return {"title": title[:220], "summary": summary, "url": SITE + r["slug"], "source": SOURCE,
             "category": "regulation" if binding else "policy", "action": "law" if binding else None,
-            "date": f"{int(year):04d}-01-01", "jurisdictions": [code], "authors": [],
+            "date": f"{_start_year(r):04d}-01-01", "jurisdictions": [code], "authors": [],
             "tags": classify.tags_for(title, summary), "_id": r["id"]}
+
+
+# A record's own text saying when it began: "The EU AI Office was established by ... 24 January 2024".
+_BEGAN = r"\s+(?:\([^)]*\)\s+)?(?:was|has been)\s+(?:officially\s+|formally\s+)?(?:established|created|founded|launched|set up)\b[^.]{0,80}?\b((?:19|20)\d{2})\b"
+
+
+def _start_year(r: dict) -> int:
+    """The record's start year, unless its own text names the record as established in a year 5 or more
+    years away: a typo in the data (OECD.AI dates the EU AI Office 2004; its text says January 2024).
+    Nearer years are left alone, since the text may date a stage or a related act instead."""
+    year, title = int(r["startYear"]), (r.get("englishName") or "").strip()
+    text = re.sub(r"<[^>]+>", " ", f"{r.get('overview') or ''} {r.get('description') or ''}")
+    m = re.search(re.escape(title) + _BEGAN, text, re.I) if title else None
+    return int(m.group(1)) if m and abs(int(m.group(1)) - year) >= 5 else year
 
 
 def _body_card(r: dict, kind: str, country: dict, body: dict) -> dict | None:
@@ -111,7 +126,7 @@ def _body_card(r: dict, kind: str, country: dict, body: dict) -> dict | None:
     if not classify.is_ai_related(title, summary):
         return None
     return {"title": title[:220], "summary": summary, "url": SITE + r["slug"], "source": SOURCE,
-            "category": "regulation", "action": "body", "date": f"{int(r['startYear']):04d}-01-01",
+            "category": "regulation", "action": "body", "date": f"{_start_year(r):04d}-01-01",
             "jurisdictions": [code], "authors": [], "tags": [label, *classify.tags_for(title, summary)][:4],
             "_id": r["id"]}
 
