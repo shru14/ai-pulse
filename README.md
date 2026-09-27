@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial briefing on what's happening in AI. It reads ~45 open sources every 6 hours, keeps
+A free, non-commercial briefing on what's happening in AI. It reads ~50 open sources every 6 hours, keeps
 only AI stories, sorts them into five streams and links every card to the original.
 
 **Live site:** https://shru14.github.io/ai-pulse/
@@ -62,8 +62,13 @@ registration we can't lawfully get, rate limit or bot challenge. The full list i
 | South Korea | Ministry of Science and ICT English press releases |
 | ~60 more countries and international bodies | OECD.AI Policy Observatory: laws, guidance and AI bodies, read weekly (editors' names and emails never stored). For the countries above, only their guidance and bodies, so nothing appears twice |
 
+**Regional news** (AI headlines only): Focus Taiwan, Bernama (Malaysia), VnExpress International,
+TechCentral and ITWeb (South Africa), Wamda (Middle East & North Africa), MercoPress (Latin America).
+
 **Left out on purpose:** Google News and Bing News (robots.txt or terms), BBC News, NYT, Guardian, Wired
-and The Register (terms or robots.txt). Not reachable lawfully: Singapore's official sites (permission
+and The Register (terms or robots.txt); CNA, Korea Herald, MediaNama, Inc42, Rappler, Philstar and
+SoyaCincau (terms forbid aggregation, bots or reuse); Japan Times, Malay Mail, e27 and Techpoint Africa
+(refuse automated access); The Africa Report (terms can't be read). Not reachable lawfully: Singapore's official sites (permission
 needed even to link), Korea's National Assembly API (Korean ID verification), Vietnam's National Assembly site (bot challenge), Russia's official sites
 (refuse foreign connections), China's NPC law database and India Code/MeitY/PIB (block automated access).
 These places still appear through OECD.AI and the news. Russia is in no region.

@@ -17,7 +17,8 @@ import re
 from . import classify, jurisdictions
 
 MAX_CHARS = 300
-_LABEL = re.compile(r"^(watch|video|exclusive|breaking|update[d]?|live|eurobites|podcast|listen|photos?)\s*[:|\-–—]\s*",
+_LABEL = re.compile(r"^(watch|video|exclusive|breaking|update[d]?|live|eurobites|podcast|listen|photos?|"
+                    r"general|business|world|politics|sports?|technology)\s*[:|\-–—]\s*",  # Bernama: "General : ..."
                     re.I)
 _SITE_SUFFIX = re.compile(r"\s+[|\-–—]\s+([^|\-–—]{2,40})$")
 _FUNCTION_WORDS = re.compile(r"\b(and|or|but|the|a|to|of|in|on|for|with|as|is|are|was|says?|after|over)\b")

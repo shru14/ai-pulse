@@ -76,6 +76,15 @@ SOURCES = [
     {"name": "Rest of World", "url": "https://restofworld.org/feed/latest", "category": "news"},
     {"name": "South China Morning Post", "url": "https://www.scmp.com/rss/320663/feed", "category": "news"},
     {"name": "TechCabal", "url": "https://techcabal.com/feed/", "category": "news", "paged": True},
+    # Regional news, so countries without an official source still show up. None has terms restricting
+    # its feed; VnExpress's feed terms allow free use by individuals and non-profits with the source named.
+    {"name": "Focus Taiwan", "url": "https://feeds.feedburner.com/rsscna/engnews/", "category": "news", "ai_in_title": True},
+    {"name": "Bernama", "url": "https://www.bernama.com/en/rssfeed.php", "category": "news", "ai_in_title": True},
+    {"name": "VnExpress International", "url": "https://e.vnexpress.net/rss/news.rss", "category": "news", "ai_in_title": True},
+    {"name": "TechCentral", "url": "https://techcentral.co.za/feed/", "category": "news", "ai_in_title": True},
+    {"name": "ITWeb", "url": "https://www.itweb.co.za/rss", "category": "news", "ai_in_title": True},
+    {"name": "Wamda", "url": "https://www.wamda.com/feed", "category": "news", "ai_in_title": True},
+    {"name": "MercoPress", "url": "https://en.mercopress.com/rss/", "category": "news", "ai_in_title": True},
 
     # --- Policy and politics ---
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
