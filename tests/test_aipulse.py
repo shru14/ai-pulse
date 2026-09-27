@@ -1086,3 +1086,62 @@ def test_malaysia_ministry_releases_and_their_lead_paragraph():
     assert feeds.lead_paragraph(speech, "AI Takeover").startswith("Malaysia will set up an AI sandbox")
     assert "EU" not in jurisdictions.detect("The National AI Office (NAIO) began talks")  # not the EU AI Office
 
+
+def test_duma_english_news_and_non_ai_agents():
+    from aipulse import feeds, classify
+    page = ('<ul><li class="article-list__item "><a href="/en/news/1/"><time datetime="2026-09-22 13:01:00">x</time>'
+            '<h6 class="t" itemprop="headline">State Duma adopts AI law</h6><p class="l" itemprop="description">It sets rules.</p></a></li>'
+            '<li class="article-list__item "><a href="/en/news/2/"><h6 itemprop="headline">New law on foreign agents</h6></a></li></ul>').encode()
+    first, second = feeds.parse_duma_en(page)
+    assert (first["url"], first["summary"], first["published"].date().isoformat()) ==         ("http://duma.gov.ru/en/news/1/", "It sets rules.", "2026-09-22")
+    assert second["published"] is None and second["title"] == "New law on foreign agents"  # no date listed
+    assert not classify.is_ai_related(second["title"], "") and classify.is_ai_related("OpenAI ships agents", "")
+
+
+def test_malaysian_ai_bills_from_parliament(tmp_path):
+    from aipulse import bills
+    row = lambda num, title, first, passed="": (
+        '<tr class="maintable"><td class="maintd"><a onclick="loadResult(\'/files/billindex/pdf/2027/DR/' + title +
+        '.pdf\',\'x\');">' + num + '</a></td><td class="maintd">2027</td><td class="maintd">' + title + '</td>'
+        '<td class="maintd"><div class="parent ruustatus3" id="r">Passed</div><table>'
+        '<tr><td>First reading</td><td>:</td><td>' + first + '</td></tr>' +
+        ('<tr><td>Passed At</td><td>:</td><td>' + passed + '</td></tr>' if passed else '') + '</table></td></tr>')
+    page = ("<table>" + row("D.R.5/2027", "Artificial Intelligence Governance Bill 2027", "03/03/2027", "10/03/2027")
+            + row("D.R.6/2027", "National Trust Fund Bill 2027", "04/03/2027") + "</table>").encode()
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_malaysia(conn, lambda u: page, log=lambda *_: None) == 1
+    r = conn.execute("SELECT number, stage, stage_date, url FROM bills WHERE jurisdiction = 'MY'").fetchone()
+    assert (r["number"], r["stage"], r["stage_date"]) == ("D.R.5/2027", "passed_chamber", "2027-03-10")
+    assert r["url"].endswith("/Artificial%20Intelligence%20Governance%20Bill%202027.pdf")
+
+
+def test_fetch_trusts_bundled_intermediates_only_up_to_a_root():
+    from aipulse import feeds
+    assert feeds.INTERMEDIATES.exists() and feeds.TLS.verify_mode == __import__("ssl").CERT_REQUIRED
+
+
+def test_taiwan_laws_from_the_legislative_yuan():
+    from aipulse import bills
+    page = ('<table><tr><td>序號</td><td>法名稱</td><td>附帶決議</td><td>通過日期</td><td>公布日期</td></tr>'
+            '<tr><td>1</td><td><a href=x><font class=hl>人工智慧</font>基本法</a></td><td></td>'
+            '<td>1141223</td><td>1150114</td></tr></table>')
+    assert bills.tw_laws(page) == [("人工智慧基本法", "2025-12-23", "2026-01-14")]
+
+
+def test_korean_ai_laws_from_the_law_database(tmp_path):
+    from aipulse import bills
+    item = lambda name, eff, typ, no, prom, kind: f'<a title="{name}[시행 {eff}] [{typ} 제{no}호, {prom}, {kind}]">'
+    page = (item("인공지능 발전과 신뢰 기반 조성 등에 관한 기본법", "2026. 1. 22.", "법률", "20676", "2025. 1. 21.", "제정")
+            + item("인공지능 발전과 신뢰 기반 조성 등에 관한 기본법", "2026. 7. 21.", "법률", "21311", "2026. 1. 20.", "일부개정")
+            + item("국가인공지능위원회의 설치 및 운영에 관한 규정", "2024. 8. 6.", "대통령령", "34787", "2024. 8. 6.", "제정")
+            + item("국가인공지능위원회의 설치 및 운영에 관한 규정", "2025. 9. 4.", "대통령령", "35735", "2025. 9. 4.", "타법폐지"))
+    laws = bills.kr_laws(page)
+    act = laws["인공지능 발전과 신뢰 기반 조성 등에 관한 기본법"]
+    assert act["number"] == "Act No. 20676"
+    assert [(h["stage"], h["date"]) for h in act["history"]] == [("signed", "2025-01-21"), ("in_force", "2026-01-22")]
+    assert laws["국가인공지능위원회의 설치 및 운영에 관한 규정"]["history"][-1] == \
+        {"date": "2025-09-04", "stage": "withdrawn", "text": "폐지"}
+    assert bills.kr_english("인공지능 발전과 신뢰 기반 조성 등에 관한 기본법 시행령")[0].startswith(
+        "Enforcement Decree of the Framework Act on the Development of AI")
+    assert bills.kr_english("새로운 인공지능 법") == ("", "")  # unknown: keeps its Korean name
+

@@ -15,6 +15,7 @@ import urllib.robotparser
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from pathlib import Path
 from urllib.parse import urlsplit
 
 USER_AGENT = "AIPulse/1.0 (+https://github.com/shru14/ai-pulse; personal news reader)"
@@ -95,14 +96,22 @@ def allowed(url: str) -> bool:
     return rules.can_fetch(ROBOT_NAME, url)
 
 
+INTERMEDIATES = Path(__file__).resolve().parent / "certs" / "intermediates.pem"
+
+
 def _tls() -> ssl.SSLContext:
     """Certificates are always verified. Mozilla's CA list (certifi) is used when installed: Windows' store
-    lacks some roots and intermediates that official sites rely on (e.g. digital.gov.my)."""
+    lacks some roots and intermediates that official sites rely on (e.g. digital.gov.my). certs/ holds public
+    intermediate certificates that some servers forget to send (parlimen.gov.my), as browsers fetch them;
+    a chain must still end at a trusted root."""
     try:
         import certifi
-        return ssl.create_default_context(cafile=certifi.where())
+        context = ssl.create_default_context(cafile=certifi.where())
     except ImportError:
-        return ssl.create_default_context()
+        context = ssl.create_default_context()
+    if INTERMEDIATES.exists():
+        context.load_verify_locations(cafile=str(INTERMEDIATES))
+    return context
 
 
 TLS = _tls()
@@ -325,5 +334,28 @@ def lead_paragraph(html_bytes: bytes, title: str = "") -> str:
                 "") if after else ""
 
 
-PARSERS = {"feed": parse, "msit": parse_msit, "digital_my": parse_digital_my, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
+DUMA = "http://duma.gov.ru"  # its HTTPS port times out from abroad
+_DUMA_LINK = re.compile(r'<a href="(/en/news/\d+/)"')
+_DUMA_TIME = re.compile(r'<time datetime="([\d-]+) ')
+_DUMA_TITLE = re.compile(r'itemprop="headline">(.*?)</h6>', re.S)
+_DUMA_LEAD = re.compile(r'itemprop="description">(.*?)</p>', re.S)
+
+
+def parse_duma_en(html_bytes: bytes) -> list[dict]:
+    """Russia's State Duma: its English news list (headline, lead paragraph and date of each item; items
+    listed without a date get the day they're first seen)."""
+    entries = []
+    for chunk in html_bytes.decode("utf-8", "replace").split('<li class="article-list__item')[1:]:
+        link, title = _DUMA_LINK.search(chunk), _DUMA_TITLE.search(chunk)
+        if not (link and title):
+            continue
+        day, lead = _DUMA_TIME.search(chunk), _DUMA_LEAD.search(chunk)
+        entries.append({"title": clean_text(html.unescape(title.group(1)), 220), "url": DUMA + link.group(1),
+                        "summary": clean_text(html.unescape(lead.group(1))) if lead else "",
+                        "published": datetime.fromisoformat(day.group(1)).replace(tzinfo=timezone.utc) if day else None,
+                        "authors": []})
+    return entries
+
+
+PARSERS = {"feed": parse, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk}

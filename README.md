@@ -1,7 +1,7 @@
 # AI Pulse
 
 A free, non-commercial, worldwide briefing on AI: new models and products, industry news, research,
-government policy and AI laws in every country. It reads ~65 open sources every 6 hours, keeps only AI
+government policy and AI laws in every country. It reads ~75 open sources every 6 hours, keeps only AI
 stories, sorts them into five streams and links every card to the original.
 
 **Live site:** https://shru14.github.io/ai-pulse/
@@ -49,14 +49,15 @@ themselves as `AIPulse/1.0` with a link to this repository.
 ### News, releases and research (`aipulse/sources.py`)
 
 Each feed below allows automated access in its robots.txt, and its terms don't restrict headline + short
-description + link (VnExpress's feed terms explicitly allow free use by non-profits that name the source).
+description + link (VnExpress's feed terms allow free use by non-profits that name the source; The Rio
+Times' terms allow brief excerpts with credit and a link back).
 
 | Stream | Sources |
 |---|---|
 | Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
 | Global news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World |
-| Regional news (AI headlines only) | Asia: South China Morning Post, Focus Taiwan, Bernama (Malaysia), VnExpress International · Africa: TechCabal, TechCentral, ITWeb · Middle East & North Africa: Wamda · Latin America: MercoPress |
-| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital |
+| Regional news (AI headlines only) | **Asia:** South China Morning Post, Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, TechCentral, ITWeb, IT News Africa, Techzim, Techmoran, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
+| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news) |
 | Research | arXiv (API), Hugging Face Daily Papers, Apple Machine Learning Research |
 
 ### Official records for the tracker (`aipulse/bills.py`, `aipulse/oecd.py`)
@@ -72,22 +73,25 @@ description + link (VnExpress's feed terms explicitly allow free use by non-prof
 | China | Cyberspace Administration of China | Title, date and link only; official regulations aren't copyrighted (Copyright Law, Art. 5) |
 | India | Parliament of India (sansad.in) | The public API behind its bill pages; nothing prohibits automated use |
 | Japan | e-Gov law API (Digital Agency) | Government of Japan Standard Terms of Use 2.0 |
+| South Korea | National Law Information Center (law.go.kr, Ministry of Government Legislation): AI laws and decrees, read weekly. Also the Ministry of Science and ICT's English press releases | robots.txt allows everything; laws aren't copyrighted (Copyright Act, Art. 7) |
+| Taiwan | Legislative Yuan law system (lis.ly.gov.tw): laws with AI in their name, e.g. the AI Basic Act | No robots.txt rules; laws aren't copyrighted (Copyright Act, Art. 9) |
+| Malaysia | Parliament of Malaysia (Dewan Rakyat bill list) for AI bills when tabled, and the Ministry of Digital's English media releases | No robots.txt rules or terms restrict them |
 | Vietnam | National Legal Database (vbpl.vn, Ministry of Justice), via its sitemap | robots.txt allows it; legal documents aren't copyrighted (IP Law, Art. 15) |
 | Switzerland | Swiss Parliament open data (ws.parlament.ch) | opendata.swiss: "Open use. Must provide the source." |
-| South Korea | Ministry of Science and ICT English press releases | robots.txt allows; no terms restrict them |
-| Malaysia | Ministry of Digital English media releases | No robots.txt or terms restrict them |
+| Russia | State Duma English news (AI headlines only) | robots.txt allows the news; no terms restrict it |
 | ~60 more countries and international bodies (UN, UNESCO, G7, Council of Europe, African Union, ASEAN, ...) | OECD.AI Policy Observatory | CC BY 4.0; read weekly. For the countries above only guidance and AI bodies, so nothing appears twice |
 
 How records are sorted: bills and laws go to the tracker with their stages (introduced → passed → signed
-→ in force). Switzerland's motions (demands for a law) go to the tracker and its postulates (requests for a
-government report) to Policy; parliamentary questions are left out. A ministry release that reports a bill
-or law reaches the tracker; the rest go to Policy.
+→ in force); a law stays a law after it's repealed. Switzerland's motions (demands for a law) go to the
+tracker and its postulates (requests for a government report) to Policy; parliamentary questions are left
+out. A ministry release that reports a bill or law reaches the tracker; the rest go to Policy.
 
 ### Worldwide coverage
 
 - **Every country is recognised** (193 places): a news story about any of them is tagged with that country
   and its region, and news of a law or bill there reaches the tracker even where no official record can be read.
-- **Official records** from 13 places, **OECD.AI** for ~60 more, and **news** for the rest.
+- **Official records** from 14 places plus Russia's parliamentary news, **OECD.AI** for ~60 more, and
+  **regional news** from Asia, Africa, the Middle East and Latin America for the rest.
 - The EU counts as one (its rules apply in every member state). Russia belongs to no region.
 
 ## Limitations we faced, and what we did
@@ -95,30 +99,42 @@ or law reaches the tracker; the rest go to Policy.
 | Limitation | What we did |
 |---|---|
 | Google News and Bing News don't allow automated access (robots.txt; Bing's terms allow personal readers only) | Removed both. Stories come from publishers' own feeds and official records |
-| Some well-known outlets' terms forbid aggregation, bots or reuse (BBC News, CNA, Korea Herald, MediaNama, Inc42, Rappler, Philstar, SoyaCincau) or couldn't be confirmed (NYT, The Guardian, Wired, The Africa Report) | Left out. Replaced with outlets whose terms allow it |
-| Some sites refuse automated access (Japan Times, Malay Mail, e27, Techpoint Africa, The Register) | Left out |
-| Most global tech press covers the US and Europe | Added regional news for Asia, Africa, the Middle East and Latin America, after checking each one |
-| The shared congress.gov DEMO_KEY is only for trying the API | Uses a free personal key, stored as a secret |
-| South Korea's bill API needs Korean identity verification; its bill site's robots.txt blocks bots | Korea's AI rules come from its science ministry's English press releases |
-| China's national law database (flk.npc.gov.cn) forbids automated access | Uses the Cyberspace Administration's AI regulations (titles, dates and links) |
-| India Code, MeitY and PIB turn away automated requests (Akamai) | Uses Parliament of India's bill data |
-| Taiwan: the national law database's robots.txt blocks everything; the Legislative Yuan's open-data robots.txt errors | Taiwan comes through Focus Taiwan (its national news agency) and the news |
-| Malaysia: the Attorney General's Chambers blocks bots, its law portal's robots.txt errors, the Parliament's certificate is broken | Uses the Ministry of Digital, whose National AI Office drafts the AI Governance Bill |
-| Vietnam's National Assembly site serves a bot challenge | Uses the Ministry of Justice's National Legal Database through its public sitemap |
-| Singapore's terms require permission even to link; Russia's official sites refuse foreign connections; the Council of Europe is behind Cloudflare | Not used. They appear through OECD.AI (which carries the Council of Europe AI Convention) and the news |
+| Some outlets' terms forbid aggregation, bots or reuse: BBC News, CNA, Korea Herald, MediaNama, Inc42, Rappler, Philstar, SoyaCincau, Techloy. Others' terms couldn't be confirmed: NYT, The Guardian, Wired, The Africa Report | Left out; replaced with outlets whose terms allow it |
+| Some sites refuse automated access: Japan Times, Malay Mail, e27, Techpoint Africa, Mexico News Daily, MyBroadband, BNamericas, The Register | Left out |
+| Some feeds have stopped (Digital News Asia, Disrupt Africa, MENAbytes) or turned into US funding news (Ventureburn, Contxto) | Left out |
+| Most global tech press covers the US and Europe | Regional news for Asia, Africa, the Middle East and Latin America, each checked first |
+| The shared congress.gov DEMO_KEY is only for trying the API | A free personal key, stored as a secret |
+| South Korea's bill API needs Korean identity verification; its bill site's robots.txt blocks bots | Enacted AI laws and decrees come from the national law database (law.go.kr), which allows it; policy from the science ministry's English releases |
+| Korea's offline translation model produces garbage | English names come from a fixed list of the official names, with a one-line description; a new law keeps its Korean name until it's added |
+| Taiwan: the national law database's robots.txt blocks everything; the Legislative Yuan's open-data robots.txt errors | Laws come from the Legislative Yuan's own law system (no robots.txt rules), news from Focus Taiwan. Its result links last one session, so cards link to the law's name on the national database (a link for readers; never fetched) |
+| Malaysia: the Attorney General's Chambers blocks bots and its law portal's robots.txt errors; the Parliament's server doesn't send its full certificate chain | Bills come from the Parliament, using the missing public intermediate certificate (Sectigo, bundled in `aipulse/certs/`), as browsers do; the chain must still end at a trusted root. Policy comes from the Ministry of Digital |
+| Russia's official sites refused foreign connections; now the Duma's bill search is closed to robots and its bill system doesn't answer; its HTTPS port times out | Rechecked in September 2026: the Duma's English news is open, read over plain HTTP (public news). Bills still come only through OECD.AI and the news |
+| Vietnam's National Assembly site serves a bot challenge | The Ministry of Justice's National Legal Database, through its public sitemap |
+| China's national law database (flk.npc.gov.cn) forbids automated access | The Cyberspace Administration's AI regulations (titles, dates and links) |
+| India Code, MeitY and PIB turn away automated requests | Parliament of India's bill data |
+| Singapore's terms require written permission even to reuse or link; the Council of Europe is behind Cloudflare | Not used; they appear through OECD.AI (which carries the Council of Europe AI Convention) and the news |
 | ~150 countries have no usable official source | Every country is recognised in news, and OECD.AI covers ~60 at once |
 | Records in Portuguese, Chinese, Japanese, Vietnamese and German | English titles and summaries translated **offline** with open-source OPUS-MT models; no API. Cards say they are machine translations and link the official text |
-| The translation models get some legal terms wrong (Vietnamese "artificial intelligence" came out as "manic intelligence"; Chinese "办法" as "method") | Fixed term rules per language (`translate.py`). The Korean model was unusable, so Korean items come from English releases |
-| No AI model may write summaries | Summaries are the publisher's description, an official record's own summary, the first paragraph of a release, or the translated sentence stating what a motion asks, plus the government's position |
-| Some lists repeat the title as the description (Malaysia's releases) | The release's own first paragraph is read, once per new release |
-| OECD.AI records have a start year only | Cards show "Since YYYY" |
-| General news feeds carry non-AI stories | Regional and general feeds keep only items with AI in the headline |
+| The translation models get some legal terms wrong (Vietnamese "artificial intelligence" came out as "manic intelligence") | Fixed term rules per language (`translate.py`) |
+| No AI model may write summaries | Summaries are the publisher's description, an official record's own summary, a release's first paragraph, or the translated sentence stating what a motion asks, plus the government's position |
+| General news feeds carry non-AI stories; "foreign agents" (a Russian law) read as AI agents | Regional and general feeds keep only items with AI in the headline; "agent" counts only when it isn't a foreign, secret, FBI, nerve or similar agent |
 | Windows' certificate store lacks some certificates official sites use | Fetching uses Mozilla's CA list (certifi): still fully verified, never switched off |
 | "National AI Office" (Malaysia) read as the EU AI Office; names like Jordan or Georgia are also people and US states | Country patterns only match forms that mean the country; tests cover these cases |
 
-**Still open:** Taiwan's and Malaysia's legislatures, Singapore, Russia, Korea's National Assembly and
-China's and India's law databases, until they open automated access or give permission. Latin America and
-Africa have fewer regional sources than Asia. Coverage of any country is only as good as the news about it.
+## Still not possible (rechecked September 2026)
+
+Each was tried again; these stay out until the site opens automated access or gives permission:
+
+- **Singapore** (Parliament, MDDI, IMDA, Singapore Statutes Online): terms require written permission; the
+  statutes site refuses robots. Covered by OECD.AI and the news.
+- **China's national law database** (flk.npc.gov.cn): robots.txt forbids it. The Cyberspace Administration covers AI rules.
+- **India Code, MeitY and PIB**: refuse automated requests. Parliament of India covers bills.
+- **Korea's pending bills** (National Assembly): its API needs Korean identity verification. Enacted laws are covered.
+- **Russia's bills** (State Duma bill system): search closed to robots, system unreachable. Duma news is covered.
+- **Taiwan's open-data API** (data.ly.gov.tw): robots.txt errors. Laws come from the law system instead.
+- **Council of Europe**: behind Cloudflare. Its AI Convention comes through OECD.AI.
+
+Coverage of any country is only as good as its official sources and the news about it.
 
 ## Run it
 
@@ -143,9 +159,10 @@ Optional: `pip install ctranslate2 sentencepiece certifi` for offline English tr
 ## Layout
 
 ```
-aipulse/  sources (every feed) · feeds (fetching, robots.txt) · classify · jurisdictions (193 places, regions)
+aipulse/  sources (every feed) · feeds (fetching, robots.txt, TLS) · classify · jurisdictions (193 places, regions)
           bills (official records) · oecd · translate (offline) · brief · brands · backfill · cluster
           store · collect · server · static · evaluate
+aipulse/certs/         public intermediate certificates some servers don't send
 templates/index.html   the page
 tests/                 unit and end-to-end tests
 ```
@@ -154,7 +171,10 @@ tests/                 unit and end-to-end tests
 
 UK Parliament data: Open Parliament Licence v3.0. GOV.UK: Open Government Licence v3.0. Federal Register and
 congress.gov: US public domain. Canada: reproduced with the Speaker's permission for non-commercial use.
-Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. OECD.AI Policy
+Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. Korean laws: National
+Law Information Center (https://www.law.go.kr), Ministry of Government Legislation. Taiwanese laws:
+Legislative Yuan law system (https://lis.ly.gov.tw). Malaysian bills: Parliament of Malaysia
+(https://www.parlimen.gov.my). Russian parliamentary news: State Duma (http://duma.gov.ru). OECD.AI Policy
 Observatory (https://oecd.ai): CC BY 4.0. Japanese laws: e-Gov Law Search (https://laws.e-gov.go.jp),
 Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI Pulse. Vietnamese legal
 documents: National Legal Database (https://vbpl.vn). Australian legislation: based on content from the

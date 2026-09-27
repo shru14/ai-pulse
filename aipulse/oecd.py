@@ -34,7 +34,7 @@ SYNC_KEY = "oecd_sync_v2"  # a new key makes the next run read everything again 
 MARK = "OECD-"  # items.bill for these cards: each record stands alone (see cluster.py) and isn't re-sorted
 
 # Countries with official records of their own in bills.py.
-OWN_RECORDS = {"US", "GB", "CA", "BR", "AU", "CN", "IN", "JP", "VN", "CH"}
+OWN_RECORDS = {"US", "GB", "CA", "BR", "AU", "CN", "IN", "JP", "VN", "CH", "MY", "TW", "KR"}
 BINDING_TYPES = {"Law/legislation/act (by legislative body)", "Regulation (by government authority)",
                  "Amendment to/repeal of existing legislation", "Regulation", "Directive", "Treaty"}
 # From international bodies, the frameworks themselves, not their projects, programmes or offices.

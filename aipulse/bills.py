@@ -49,7 +49,8 @@ from . import feeds, store, translate
 # Cards made from official records; the keyword rules for news stories never re-sort them.
 OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
                     "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China",
-                    "Parliament of India", "e-Gov (Japan)", "National Legal Database (Vietnam)", "Swiss Parliament",
+                    "Parliament of India", "e-Gov (Japan)", "National Legal Database (Vietnam)", "Swiss Parliament", "Parliament of Malaysia",
+                    "Legislative Yuan (Taiwan)", "National Law Information Center (Korea)",
                     "OECD.AI")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
@@ -79,6 +80,13 @@ LABELS = {
     "CH": {"introduced": "Submitted", "passed_chamber": "Adopted by one council",
            "passed_legislature": "Adopted by Parliament", "signed": "Enacted", "in_force": "In force",
            "vetoed": "Rejected", "withdrawn": "Closed"},
+    "MY": {"introduced": "First reading", "passed_chamber": "Passed Dewan Rakyat",
+           "passed_legislature": "Passed Dewan Negara", "signed": "Royal Assent", "in_force": "In force",
+           "vetoed": "Rejected", "withdrawn": "Withdrawn"},
+    "TW": {"introduced": "Introduced", "passed_chamber": "Passed", "passed_legislature": "Passed the Legislative Yuan",
+           "signed": "Promulgated", "in_force": "In force", "vetoed": "Rejected", "withdrawn": "Repealed"},
+    "KR": {"introduced": "Introduced", "passed_chamber": "Passed", "passed_legislature": "Passed the National Assembly",
+           "signed": "Promulgated", "in_force": "In force", "vetoed": "Rejected", "withdrawn": "Repealed"},
     "AU": {"introduced": "Introduced", "passed_chamber": "Passed first House", "passed_legislature": "Passed Parliament",
            "signed": "Assented or made", "in_force": "In force", "vetoed": "Disallowed", "withdrawn": "Repealed"},
 }
@@ -230,7 +238,8 @@ def upsert(conn, bill: dict) -> bool:
         title = title[:219].rsplit(" ", 1)[0].rstrip(",;:") + "…"
     item = {"title": title, "summary": summary, "url": bill["url"], "source": bill["source"],
             "category": "regulation", "date": now["date"],
-            "action": "law" if now["stage"] in ("signed", "in_force") else "proposal",
+            # A law stays a law once enacted, even if later repealed.
+            "action": "law" if any(h["stage"] in ("signed", "in_force") for h in bill["history"]) else "proposal",
             "jurisdictions": [bill["jurisdiction"]], "tags": []}
     if store.exists(conn, item["url"]):
         conn.execute("UPDATE items SET title = ?, summary = ?, date = ?, category = 'regulation', action = ?,"
@@ -596,7 +605,7 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
-_LANGS = {"BR": "pt", "CN": "zh", "JP": "ja", "VN": "vi", "CH": "de"}  # records whose titles are translated
+_LANGS = {"BR": "pt", "CN": "zh", "JP": "ja", "VN": "vi", "CH": "de", "TW": "zh"}  # records whose titles are translated
 
 
 def refresh_cards(conn) -> int:
@@ -913,6 +922,208 @@ def sync_switzerland(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+# --- Malaysia (Parliament of Malaysia, Dewan Rakyat bills) ---
+
+MY_BILLS = "https://www.parlimen.gov.my/bills-dewan-rakyat.html?uweb=dr&lang=en"
+MY_AI = re.compile(AI_TITLE.pattern + r"|kecerdasan buatan", re.I)
+_MY_FIELD = r'>{}</td>\s*<td[^>]*>:</td>\s*<td[^>]*>(\d{{2}}/\d{{2}}/\d{{4}})</td>'
+
+
+def _my_date(chunk: str, label: str) -> str:
+    m = re.search(_MY_FIELD.format(label), chunk)
+    return datetime.strptime(m.group(1), "%d/%m/%Y").date().isoformat() if m else ""
+
+
+def sync_malaysia(conn, fetcher=feeds.fetch, log=print) -> int:
+    """AI bills in Malaysia's House of Representatives: number, title, readings and a link to the bill.
+    (No AI bill has been tabled yet; the AI Governance Bill is in consultation, see the ministry's releases.)"""
+    connect_tables(conn)
+    page = fetcher(MY_BILLS).decode("utf-8", "replace")
+    changed = 0
+    for chunk in page.split('<tr class="maintable">')[1:]:
+        cells = re.findall(r'<td[^>]*class="maintd"[^>]*>(.*?)</td>', chunk, re.S)
+        if len(cells) < 3:
+            continue
+        number = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", cells[0])).strip()
+        title = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", cells[2]))).strip()
+        if not MY_AI.search(title):
+            continue
+        pdf = re.search(r"loadResult\('([^']+\.pdf)'", chunk)
+        status = re.search(r'<div class="parent[^"]*"[^>]*>(.*?)</div>', chunk, re.S)
+        history = [h for h in (
+            {"date": _my_date(chunk, "First reading"), "stage": "introduced", "text": "First reading"},
+            {"date": _my_date(chunk, "Passed At"), "stage": "passed_chamber", "text": "Passed Dewan Rakyat"}) if h["date"]]
+        if status and "withdraw" in status.group(1).lower() and history:
+            history.append({"date": history[-1]["date"], "stage": "withdrawn", "text": "Withdrawn"})
+        if not history:
+            continue
+        from urllib.parse import quote
+        url = "https://www.parlimen.gov.my" + quote(pdf.group(1)) if pdf else MY_BILLS
+        changed += upsert(conn, {"key": "MY-" + number.replace("/", "-"), "jurisdiction": "MY", "number": number,
+                                 "title": title, "url": url, "source": "Parliament of Malaysia", "history": history})
+    conn.commit()
+    return changed
+
+
+# --- Taiwan (Legislative Yuan law system, lis.ly.gov.tw) ---
+
+TW_LAWS = "https://lis.ly.gov.tw/lglawc/lglawkm"
+TW_SEARCHES = ("人工智慧",)  # "artificial intelligence", in law names
+# The system's result links last one session, so a card links to the law's name on the national law database
+# (a link for readers; that site's robots.txt closes it to automated reading, so it's never fetched).
+TW_LINK = "https://law.moj.gov.tw/Law/LawSearchResult.aspx?ty=ONEBAR&kw="
+_TW_ROW = re.compile(r"<tr[^>]*>((?:(?!</tr>).)*?\b(\d{7})\b(?:(?!</tr>).)*?\b(\d{7})\b(?:(?!</tr>).)*)</tr>", re.S)
+
+
+def _roc(day: str) -> str:
+    """Taiwan's calendar: "1141223" is 2025-12-23 (year 114 + 1911)."""
+    return f"{int(day[:3]) + 1911:04d}-{day[3:5]}-{day[5:7]}"
+
+
+def tw_laws(page: str) -> list[tuple[str, str, str]]:
+    """(law name, passed, promulgated) for each law in a result page."""
+    out = []
+    for row, passed, promulgated in _TW_ROW.findall(page):
+        cells = [re.sub(r"\s+", "", html.unescape(re.sub(r"<[^>]+>", "", c)))
+                 for c in re.findall(r"<td[^>]*>(.*?)</td>", row, re.S)]
+        name = next((c for c in cells if re.search(r"[\u4e00-\u9fff]{2,}(法|條例|通則|規程|辦法)$", c)), "")
+        if name:
+            out.append((name, _roc(passed), _roc(promulgated)))
+    return out
+
+
+def sync_taiwan(conn, fetcher=None, log=print, opener=None) -> int:
+    """Taiwan's laws with AI in their name, from the Legislative Yuan's law system: passage and promulgation.
+    The system is a search form (robots.txt sets no rules); one search per term, then nothing else."""
+    connect_tables(conn)
+    import http.cookiejar
+    import urllib.parse
+    import urllib.request
+    if not feeds.allowed(TW_LAWS):
+        raise feeds.Disallowed(TW_LAWS)
+    if opener is None:
+        opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=feeds.TLS),
+                                             urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+        opener.addheaders = [("User-Agent", feeds.USER_AGENT)]
+    found = {}
+    for term in TW_SEARCHES:
+        form = opener.open(TW_LAWS, timeout=30).read().decode("utf-8", "replace")
+        action = re.search(r'<form[^>]*action="([^"]+)"', form).group(1)
+        fields = dict(re.findall(r"<input type=hidden name=([^ >]+) value=[\"']?([^\"'>]*)", form))
+        fields.update({"_1_6_T": term, "_IMG_檢索.x": "10", "_IMG_檢索.y": "10"})
+        page = opener.open("https://lis.ly.gov.tw" + action, data=urllib.parse.urlencode(fields).encode(),
+                           timeout=30).read().decode("utf-8", "replace")
+        for name, passed, promulgated in tw_laws(page):
+            found[name] = (passed, promulgated)
+        time.sleep(1)
+    from urllib.parse import quote
+    translate.english(conn, "zh", list(found))
+    changed = 0
+    for name, (passed, promulgated) in found.items():
+        changed += upsert(conn, {"key": "TW-" + name, "jurisdiction": "TW", "number": "", "title": name,
+                                 "url": TW_LINK + quote(name), "source": "Legislative Yuan (Taiwan)", "lang": "zh",
+                                 "history": [{"date": passed, "stage": "passed_legislature", "text": "三讀通過"},
+                                             {"date": promulgated, "stage": "signed", "text": "公布"}]})
+    conn.commit()
+    retitle(conn, "TW", "zh")
+    return changed
+
+
+# --- South Korea (National Law Information Center, law.go.kr, Ministry of Government Legislation) ---
+
+KR_SEARCH = "https://www.law.go.kr/LSW/lsScListR.do"
+KR_LINK = "https://www.law.go.kr/법령/"  # the centre's permanent address for a law, by name
+KR_REFRESH_DAYS = 7
+# Each version of a law is listed as "NAME[시행 2026. 1. 22.] [법률 제20676호, 2025. 1. 21., 제정]".
+_KR_ITEM = re.compile(r'title="([^"\[]*인공지능[^"\[]*)\[시행 (\d{4})\. ?(\d{1,2})\. ?(\d{1,2})\.\] '
+                      r'\[([^\]]*?) 제(\d+)호, (\d{4})\. ?(\d{1,2})\. ?(\d{1,2})\., ([^\]]+)\]"')
+_KR_TYPES = {"법률": "Act", "대통령령": "Presidential Decree", "총리령": "Prime Minister's Decree"}
+# English names (as the government translates them) and what each does. Korea's offline translation model
+# is unusable, so names come from this list; a new law keeps its Korean name until it's added here.
+KR_NAMES = {
+    "인공지능 발전과 신뢰 기반 조성 등에 관한 기본법": (
+        "Framework Act on the Development of AI and the Establishment of a Foundation for Trust (AI Basic Act)",
+        "Korea's comprehensive AI law: national AI policy and industry support, and duties for high-impact and "
+        "generative AI such as risk management, transparency and labelling of AI-generated content."),
+    "인공지능 데이터센터 산업 진흥에 관한 특별법": (
+        "Special Act on Promoting the AI Data Center Industry", "Support for building and running AI data centres."),
+    "산업 디지털 전환 및 인공지능 활용 촉진법": (
+        "Act on Promoting Industrial Digital Transformation and the Use of AI",
+        "Promotes digital transformation and the use of AI across industry."),
+    "인공지능 및 데이터 기반 행정 활성화에 관한 법률": (
+        "Act on Promoting AI- and Data-Based Public Administration",
+        "Promotes the use of AI and data in government administration."),
+    "국가인공지능위원회의 설치 및 운영에 관한 규정": (
+        "Regulation on the National AI Committee", "Set up the presidential committee that coordinated national AI policy."),
+    "국가인공지능전략위원회의 설치 및 운영에 관한 규정": (
+        "Regulation on the National AI Strategy Committee",
+        "Set up the presidential committee that coordinates national AI strategy."),
+}
+
+
+def kr_english(name: str) -> tuple[str, str]:
+    """(English name, what it does) for a Korean AI law, its enforcement decree or rule; ("", "") if unknown."""
+    for suffix, kind, what in ((" 시행령", "Enforcement Decree of the ", "Sets out how the {} is applied."),
+                               (" 시행규칙", "Enforcement Rule of the ", "Detailed rules for applying the {}.")):
+        if name.endswith(suffix):
+            base = KR_NAMES.get(name[: -len(suffix)])
+            return (kind + base[0], what.format(base[0].split(" (")[0])) if base else ("", "")
+    return KR_NAMES.get(name, ("", ""))
+
+
+def kr_laws(page: str) -> dict[str, dict]:
+    """Each law's first enactment, first entry into force and (if its latest version repeals it) repeal."""
+    laws = {}
+    for m in _KR_ITEM.finditer(page):
+        name, kind = m.group(1).strip(), m.group(10).strip()
+        effective = f"{m.group(2)}-{int(m.group(3)):02d}-{int(m.group(4)):02d}"
+        promulgated = f"{m.group(7)}-{int(m.group(8)):02d}-{int(m.group(9)):02d}"
+        law = laws.setdefault(name, {"versions": []})
+        law["versions"].append({"type": m.group(5).strip(), "no": m.group(6), "effective": effective,
+                                "promulgated": promulgated, "kind": kind})
+    for law in laws.values():
+        versions = sorted(law["versions"], key=lambda v: (v["promulgated"], v["effective"]))
+        first, last = versions[0], versions[-1]
+        kind = _KR_TYPES.get(first["type"], "Ministerial Decree" if first["type"].endswith("부령") else first["type"])
+        law["number"] = f"{kind} No. {first['no']}"
+        history = [{"date": first["promulgated"], "stage": "signed", "text": "공포"}]
+        if first["effective"] <= date.today().isoformat():
+            history.append({"date": max(first["effective"], first["promulgated"]), "stage": "in_force", "text": "시행"})
+        if "폐지" in last["kind"]:
+            history.append({"date": last["promulgated"], "stage": "withdrawn", "text": "폐지"})
+        law["history"] = history
+    return laws
+
+
+def sync_korea(conn, fetcher=None, log=print) -> int:
+    """Korea's laws and decrees with AI in their name, from the official law database (robots.txt allows it;
+    laws aren't protected by copyright in Korea, Copyright Act Art. 7). Read about once a week."""
+    connect_tables(conn)
+    last = conn.execute("SELECT value FROM meta WHERE key = 'kr_sync'").fetchone()
+    if last and last[0] > (date.today() - timedelta(days=KR_REFRESH_DAYS)).isoformat():
+        return 0
+    import urllib.parse
+    import urllib.request
+    if not feeds.allowed(KR_SEARCH):
+        raise feeds.Disallowed(KR_SEARCH)
+    form = urllib.parse.urlencode({"q": "인공지능", "query": "인공지능", "section": "lawNm", "outmax": "100",
+                                   "pg": "1"}).encode()
+    req = urllib.request.Request(KR_SEARCH, data=form, headers={"User-Agent": feeds.USER_AGENT})
+    with urllib.request.urlopen(req, timeout=40, context=feeds.TLS) as resp:
+        page = resp.read().decode("utf-8", "replace")
+    from urllib.parse import quote
+    changed = 0
+    for name, law in kr_laws(page).items():
+        english, what = kr_english(name)
+        changed += upsert(conn, {"key": "KR-" + name, "jurisdiction": "KR", "number": law["number"],
+                                 "title": name, "short_title": english, "url": KR_LINK + quote(name),
+                                 "source": "National Law Information Center (Korea)", "summary": what,
+                                 "history": law["history"]})
+    conn.execute("INSERT OR REPLACE INTO meta VALUES ('kr_sync', ?)", (date.today().isoformat(),))
+    conn.commit()
+    return changed
+
+
 # --- Australia (Federal Register of Legislation) ---
 
 AU_API = "https://api.prod.legislation.gov.au/v1/titles"
@@ -1026,6 +1237,9 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("e-Gov law API (Japan)", JP_API, sync_japan),
                           ("National Legal Database (Vietnam)", VN_SITE, sync_vietnam),
                           ("Swiss Parliament open data", CH_API, sync_switzerland),
+                          ("Parliament of Malaysia", MY_BILLS, sync_malaysia),
+                          ("Legislative Yuan law system (Taiwan)", TW_LAWS, sync_taiwan),
+                          ("National Law Information Center (Korea)", KR_SEARCH, sync_korea),
                           ("OECD.AI policy database", _oecd_api(), _oecd_sync)):
         try:
             n = fn(conn, fetcher, log=log)

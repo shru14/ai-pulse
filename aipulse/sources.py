@@ -85,6 +85,15 @@ SOURCES = [
     {"name": "ITWeb", "url": "https://www.itweb.co.za/rss", "category": "news", "ai_in_title": True},
     {"name": "Wamda", "url": "https://www.wamda.com/feed", "category": "news", "ai_in_title": True},
     {"name": "MercoPress", "url": "https://en.mercopress.com/rss/", "category": "news", "ai_in_title": True},
+    # Latin America (The Rio Times' terms allow brief excerpts with credit and a link back)
+    {"name": "The Rio Times", "url": "https://www.riotimesonline.com/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Buenos Aires Times", "url": "https://www.batimes.com.ar/feed", "category": "news", "ai_in_title": True},
+    {"name": "LatinAmerica Reports", "url": "https://latinamericareports.com/feed/", "category": "news", "ai_in_title": True},
+    # Africa
+    {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Techzim", "url": "https://www.techzim.co.zw/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Techmoran", "url": "https://techmoran.com/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
 
     # --- Policy and politics ---
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
@@ -113,6 +122,10 @@ SOURCES = [
     # media releases; no robots.txt or terms restrict them. The list is short, so older releases are kept.
     {"name": "Ministry of Digital (Malaysia)", "format": "digital_my", "category": "policy", "jurisdictions": ["MY"],
      "ai_in_title": True, "max_age_days": 400, "url": "https://www.digital.gov.my/en-GB/siaran"},
+    # Russia: the State Duma's English news (its bill search is closed to robots, and the Duma API needs
+    # tokens). No terms restrict the news list; only items with AI in the headline are kept.
+    {"name": "State Duma (Russia)", "format": "duma_en", "category": "policy", "jurisdictions": ["RU"],
+     "ai_in_title": True, "max_age_days": 400, "url": "http://duma.gov.ru/en/news/"},
     {"name": "GOV.UK", "format": "govuk", "category": "policy", "jurisdictions": ["GB"], "ai_in_title": True,
      "url": "https://www.gov.uk/api/search.json?q=%22artificial+intelligence%22&order=-public_timestamp&count=50"
             "&fields=title,link,description,public_timestamp"},

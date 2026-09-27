@@ -10,9 +10,13 @@ import unicodedata
 
 from . import jurisdictions
 
+# "Agent" is AI unless it's another kind: "foreign agents" (a Russian law), "FBI agents", "nerve agent".
+_AGENT = (r"(?<!foreign )(?<!secret )(?<!federal )(?<!FBI )(?<!border )(?<!customs )(?<!travel )(?<!estate )"
+          r"(?<!free )(?<!nerve )(?<!chemical )\bagents?\b")
+
 AI_TERMS = [
     r"\bAI\b", r"artificial intelligence", r"machine learning", r"\bLLMs?\b", r"large language model",
-    r"generative", r"chatbot", r"neural", r"deep learning", r"\bagents?\b", r"\bagentic\b",
+    r"generative", r"chatbot", r"neural", r"deep learning", _AGENT, r"\bagentic\b",
     r"OpenAI", r"Anthropic", r"Claude", r"Gemini", r"ChatGPT", r"\bGPT-?\d", r"DeepMind", r"Mistral",
     r"DeepSeek", r"Qwen", r"Llama", r"Copilot", r"Hugging Face", r"Nvidia", r"diffusion model",
     r"foundation model", r"frontier model", r"superintelligence", r"\bAGI\b",
@@ -86,7 +90,7 @@ COMPANY_TERMS = {
 
 TOPIC_TERMS = {
     # Tech & capabilities
-    "Agents": r"\bagents?\b|agentic",
+    "Agents": _AGENT + r"|agentic",
     "Open Models": r"open-?source|open-?weight",
     "Reasoning": r"reasoning|chain[- ]of[- ]thought",
     "Multimodal": r"multimodal|vision[- ]language",
