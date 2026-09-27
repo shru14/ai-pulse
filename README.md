@@ -118,7 +118,7 @@ to 1 January 2023 (`--since` for another date, `--only feeds|official|research|p
 
 It takes a few hours and must run on a PC (arXiv refuses cloud servers); pages read and searches done
 are remembered, so it can be stopped and resumed. To publish the result, gzip the database to
-`data/seed.db.gz`, bump the version (now `v3`) in the workflow's database cache key, and push: the next run starts
+`data/seed.db.gz`, bump the version (now `v4`) in the workflow's database cache key, and push: the next run starts
 from the new seed. The site loads the last 90 days at once and older cards (one file per year) only
 for "All time".
 
