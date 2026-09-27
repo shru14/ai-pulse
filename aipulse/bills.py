@@ -1,7 +1,8 @@
 """Follow AI bills through their lifecycle from official sources.
 
-- US Congress: the congress.gov API (free key from https://api.congress.gov/sign-up/, set CONGRESS_API_KEY;
-  without one the public DEMO_KEY is used, which allows only ~30 requests an hour). Each collection asks for
+- US Congress: the congress.gov API, with a free personal key (https://api.congress.gov/sign-up/, name and
+  email only; set CONGRESS_API_KEY). Without one it's skipped: api.data.gov's DEMO_KEY is only for trying the
+  API before signing up, not for a site that runs every 6 hours. Each collection asks for
   bills updated since the last sync, keeps those with AI in the title, and reads their official actions.
 - EU: the European Parliament's open data API (no key). AI procedures are found by their English title;
   their events give the stages.
@@ -242,7 +243,7 @@ CONGRESS_API = "https://api.congress.gov/v3"
 
 
 def _congress_key() -> str:
-    return os.environ.get("CONGRESS_API_KEY") or "DEMO_KEY"
+    return os.environ.get("CONGRESS_API_KEY", "")
 
 
 def _get_json(url: str, fetcher=feeds.fetch) -> dict:
@@ -254,6 +255,9 @@ def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_
     """Check bills updated since the last sync (or `since`); returns how many AI bills changed stage."""
     connect_tables(conn)
     key = _congress_key()
+    if not key:
+        log("  congress.gov: skipped, no CONGRESS_API_KEY (the DEMO_KEY is only for trying the API)")
+        return 0
     last = conn.execute("SELECT value FROM meta WHERE key = 'congress_sync'").fetchone()
     start = since or (datetime.fromisoformat(last[0]) if last else datetime.now(timezone.utc) - timedelta(days=30))
     started = datetime.now(timezone.utc)

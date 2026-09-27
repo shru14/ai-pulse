@@ -126,12 +126,12 @@ for "All time".
 
 | Source | Stages | What you need |
 |---|---|---|
-| congress.gov API | Introduced → passed one chamber → passed Congress → signed → became law (or vetoed) | A free API key ([sign up](https://api.congress.gov/sign-up/)) |
+| congress.gov API | Introduced → passed one chamber → passed Congress → signed → became law (or vetoed) | A free personal API key ([sign up](https://api.congress.gov/sign-up/): name and email). Without one, US bills aren't updated: the shared DEMO_KEY is only for trying the API |
 | European Parliament open data | Proposed → Parliament position → final vote → signed → Official Journal | Nothing: open data, no sign-up |
 | UK Parliament Bills API | Introduced → passed first House → passed both Houses → Royal Assent (or withdrawn / defeated) | Nothing: Open Parliament Licence |
 | Parliament of Canada (LEGISinfo) | First reading → passed first chamber → passed both chambers → Royal Assent (or died on the Order Paper) | Nothing; the Speaker permits accurate, non-commercial reproduction |
 | China: Cyberspace Administration of China | Draft for comment → issued | Nothing. Only each AI regulation's title (machine-translated to English), date and link; no page text is copied. Official regulations aren't copyrighted in China (Copyright Law, Art. 5). The national law database (flk.npc.gov.cn) forbids automated access, so it isn't used |
-| India: Parliament of India (sansad.in) | Introduced → passed one House → passed both Houses → assent | Nothing: the public API behind its bill pages. Title, dates and a link to the official bill text. India Code, MeitY and PIB turn away automated requests, so they aren't used |
+| India: Parliament of India (sansad.in) | Introduced → passed one House → passed both Houses → assent | Nothing: the public API behind its bill pages (no published API terms, and nothing prohibiting it). Title, dates and a link to the official bill text only. India Code, MeitY and PIB turn away automated requests, so they aren't used |
 | Australia: Federal Register of Legislation | Royal Assent or made → in force (or repealed); bills in Parliament aren't in the register | Nothing: CC BY 4.0, credited in the page footer |
 | Brazil: Câmara dos Deputados open data | Introduced → passed first chamber → passed Congress → became law (or vetoed, withdrawn, archived) | Nothing: open data. Only lead bills are shown; bills attached to one move with it. Titles are English machine translations of the official Portuguese summary |
 

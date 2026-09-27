@@ -502,6 +502,7 @@ def test_us_stages_from_congress_actions():
 
 
 def test_congress_sync_keeps_ai_bills_and_builds_cards(tmp_path, monkeypatch):
+    monkeypatch.setenv("CONGRESS_API_KEY", "test-key")
     import json
     from aipulse import bills
     monkeypatch.setattr(bills.time, "sleep", lambda s: None)
@@ -543,6 +544,7 @@ def test_bill_card_moves_up_when_it_advances_and_collects_news(tmp_path):
 
 
 def test_congress_next_page_link_is_made_requestable(tmp_path, monkeypatch):
+    monkeypatch.setenv("CONGRESS_API_KEY", "test-key")
     import json
     from aipulse import bills
     monkeypatch.setattr(bills.time, "sleep", lambda s: None)
@@ -903,3 +905,13 @@ def test_bills_with_similar_titles_keep_their_own_cards(tmp_path):
     conn.commit()
     cluster.assign(conn, days=None)
     assert conn.execute("SELECT COUNT(DISTINCT cluster) FROM items").fetchone()[0] == 2
+
+
+def test_congress_is_skipped_without_a_personal_key(tmp_path, monkeypatch):
+    from aipulse import bills
+    monkeypatch.delenv("CONGRESS_API_KEY", raising=False)
+    asked = []
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_congress(conn, lambda url: asked.append(url), log=lambda *_: None) == 0
+    assert asked == []  # the DEMO_KEY is never used
+
