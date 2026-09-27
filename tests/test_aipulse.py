@@ -1026,3 +1026,25 @@ def test_vietnam_ai_laws_from_the_sitemap(tmp_path):
     assert tuple(row) == ("Law No. 134/2025/QH15", "Luật trí tuệ nhân tạo", "signed", "2025-12-10")
     assert bills.sync_vietnam(conn, fetch, log=lambda *_: None) == 0  # read at most weekly
 
+
+def test_every_country_is_recognised_but_names_of_people_and_states_are_not():
+    from aipulse import jurisdictions as J
+    assert len(J.JURISDICTIONS) > 180
+    assert J.detect("Jordanian parliament approves AI bill") == ["JO"] and J.detect("Iran bans chatbot") == ["IR"]
+    assert J.detect("Papua New Guinea adopts AI policy") == ["PG"]  # not Guinea
+    assert J.detect("South Sudan and Sudan sign AI pact") == ["SS", "SD"]
+    for headline in ("Jim Jordan grills AI firms", "Georgia lawmakers pass deepfake bill", "Chad Smith on AI"):
+        assert J.detect(headline) == []
+
+
+def test_reclassify_keeps_the_source_default_place(tmp_path):
+    from aipulse import collect
+    conn = store.connect(tmp_path / "t.db")
+    store.insert(conn, {"title": "Basic Act on AI passed at the National Assembly", "summary": "", "url": "https://k.kr/1",
+                        "source": "Ministry of Science and ICT (Korea)", "category": "regulation", "action": "law",
+                        "date": "2024-12-26", "jurisdictions": ["KR"], "tags": [], "authors": []})
+    conn.commit()
+    collect.reclassify(conn)
+    row = conn.execute("SELECT category, jurisdictions FROM items").fetchone()
+    assert tuple(row) == ("regulation", "KR")
+

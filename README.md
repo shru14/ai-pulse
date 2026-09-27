@@ -21,6 +21,9 @@ publishers' own text and sorting is keyword rules.
 Search matches word stems across headlines, summaries, tags and authors; the time range goes back to
 January 2023. The same event reported by several outlets is one card.
 
+Every country is recognised in news (EU members count as the EU), so a story about any of them gets its
+country tag, and news of a law or bill there reaches the tracker even where no official record can be read.
+
 ## Run it
 
 ```bash

@@ -256,6 +256,8 @@ def reclassify(conn) -> int:
     """Re-run the sorting and regulation rules over stored policy and regulation stories.
     Returns how many changed."""
     changed = 0
+    # The same fallback places collection uses (e.g. Korea's ministry: "KR" when a story names none).
+    defaults = {s["name"]: s.get("jurisdictions", []) for s in SOURCES}
     for it in store.query(conn, None, None, None, limit=100000):
         if it["category"] not in ("policy", "regulation") or it["action"] == EXPERT:
             continue
@@ -269,7 +271,7 @@ def reclassify(conn) -> int:
                 store.set_regulation(conn, it["id"], it["category"], [], None)
                 changed += 1
                 continue
-        apply_regulation(it)
+        apply_regulation(it, defaults.get(it["source"], []))
         if (it["category"], it["jurisdictions"], it["action"]) != before:
             store.set_regulation(conn, it["id"], it["category"], it["jurisdictions"], it["action"])
             changed += 1
