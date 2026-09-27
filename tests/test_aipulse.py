@@ -539,7 +539,8 @@ def test_bill_card_moves_up_when_it_advances_and_collects_news(tmp_path):
     cluster.assign(conn, days=None)
     [card], _ = store.cards(conn, "regulation")
     assert card["date"] == "2026-10-02" and card["lifecycle"]["current"] == "passed_chamber"
-    assert card["summary"] == ""  # stages are on the timeline, not repeated in the summary
+    # What the bill would do (until CRS summarises it); stages are on the timeline, not repeated here.
+    assert card["summary"] == "Would establish the Department of Artificial Intelligence."
     assert sorted(o["source"] for o in card["also"]) == ["AP", "Vox"]  # by number and by short title
 
 
@@ -1144,4 +1145,27 @@ def test_korean_ai_laws_from_the_law_database(tmp_path):
     assert bills.kr_english("인공지능 발전과 신뢰 기반 조성 등에 관한 기본법 시행령")[0].startswith(
         "Enforcement Decree of the Framework Act on the Development of AI")
     assert bills.kr_english("새로운 인공지능 법") == ("", "")  # unknown: keeps its Korean name
+
+
+def test_new_us_bills_get_an_interim_summary_until_crs_writes_one(tmp_path):
+    import json
+    from aipulse import bills
+    assert bills.us_purpose("A bill to establish the Artificial Intelligence Horizon Fund, and for other purposes.") == \
+        "Would establish the Artificial Intelligence Horizon Fund."
+    assert bills.us_purpose("To amend title 18 to prohibit AI deepfakes.") == "Would amend title 18 to prohibit AI deepfakes."
+    assert bills.us_purpose("To establish the Department of AI and to provide for its regulation.") ==         "Would establish the Department of AI and provide for its regulation."
+    conn = store.connect(tmp_path / "t.db")
+    bills.connect_tables(conn)
+    ctx = {"sponsor": "Sen. Mark Kelly (D-AZ)", "cosponsors": 2, "committees": ["Senate Finance Committee"], "short_title": ""}
+    conn.execute("INSERT INTO meta VALUES ('us-context:US-119-s-5518', ?)", (json.dumps(ctx),))
+    bill = {"key": "US-119-s-5518", "jurisdiction": "US", "number": "S. 5518", "url": "https://c.gov/s5518",
+            "title": "A bill to establish the Artificial Intelligence Horizon Fund, and for other purposes.",
+            "source": "congress.gov", "history": [{"date": "2026-09-24", "stage": "introduced", "text": "Introduced"}]}
+    bills.upsert(conn, bill)
+    title, summary = conn.execute("SELECT title, summary FROM items").fetchone()
+    assert title == "S. 5518: A bill to establish the Artificial Intelligence Horizon Fund"
+    assert summary == ("Would establish the Artificial Intelligence Horizon Fund. Introduced by Sen. Mark Kelly (D-AZ) "
+                       "with 2 cosponsors; referred to the Senate Finance Committee.")
+    bills.upsert(conn, {**bill, "summary": "This bill establishes a fund for AI research."})  # CRS arrives
+    assert conn.execute("SELECT summary FROM items").fetchone()[0] == "This bill establishes a fund for AI research."
 

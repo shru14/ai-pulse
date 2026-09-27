@@ -227,6 +227,9 @@ def upsert(conn, bill: dict) -> bool:
     name = bill.get("short_title") or bill["title"]
     # What the bill does, not its stages: those are on the card's timeline.
     summary = bill.get("summary", "")
+    if bill["jurisdiction"] == "US":
+        name = _US_OTHER.sub("", name)
+        summary = summary or us_interim(conn, bill)
     lang = bill.get("lang")  # an official record in another language: its English version, if made
     english = lang and translate.cached(conn, lang, bill["title"])
     if english:
@@ -304,12 +307,65 @@ def _us_describe_old(conn, key: str, fetcher=feeds.fetch, limit: int = 40) -> No
         _, congress, kind, number = r["key"].split("-")
         text = _crs_summary(congress, kind, number, r["title"], key, fetcher)
         conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (f"crs-tried:{r['key']}", date.today().isoformat()))
-        if text:
-            upsert(conn, {"key": r["key"], "jurisdiction": "US", "number": r["number"], "title": r["title"],
-                          "short_title": r["short_title"], "url": r["url"], "source": r["source"],
-                          "history": json.loads(r["history"]), "summary": text})
+        short = r["short_title"] if text else (_us_remember_context(conn, r["key"], congress, kind, number, key, fetcher)
+                                               or r["short_title"])
+        upsert(conn, {"key": r["key"], "jurisdiction": "US", "number": r["number"], "title": r["title"],
+                      "short_title": short, "url": r["url"], "source": r["source"],
+                      "history": json.loads(r["history"]), "summary": text})
         conn.commit()
         time.sleep(0.2)
+
+
+_US_OTHER = re.compile(r",? and for other purposes\.?$|\.$")
+_US_PURPOSE = re.compile(r"^(?:A (?:bill|joint resolution|concurrent resolution|resolution) )?to (.+?)(?:,? and for other purposes)?\.?$",
+                         re.I)
+
+
+def us_purpose(title: str) -> str:
+    """What a bill would do, from its official title: "A bill to establish X, and for other purposes." ->
+    "Would establish X." (Resolutions titled "Expressing ..." etc. give "".)"""
+    m = _US_PURPOSE.match(title.strip())
+    return f"Would {re.sub(r',? and to ', ' and ', m.group(1))}." if m else ""
+
+
+def _us_context(congress, kind: str, number, key: str, fetcher=feeds.fetch) -> dict:
+    """From congress.gov, for a bill CRS hasn't summarised yet: its sponsor, cosponsors, committees and short
+    title (a short title appears once the text is published)."""
+    base = f"{CONGRESS_API}/bill/{congress}/{kind.lower()}/{number}"
+    bill = _get_json(f"{base}?format=json&api_key={key}", fetcher).get("bill") or {}
+    committees = _get_json(f"{base}/committees?format=json&api_key={key}", fetcher).get("committees") or []
+    titles = _get_json(f"{base}/titles?format=json&api_key={key}", fetcher).get("titles") or []
+    sponsor = (bill.get("sponsors") or [{}])[0]
+    who = ""
+    if sponsor.get("lastName"):
+        role = "Sen." if kind.upper().startswith("S") else "Rep."
+        who = f"{role} {sponsor.get('firstName', '')} {sponsor['lastName']} ({sponsor.get('party', '')}-{sponsor.get('state', '')})"
+    short = next((t["title"] for t in titles if "Short Title" in (t.get("titleType") or "")), "")
+    return {"sponsor": re.sub(r"\s+", " ", who).strip(), "cosponsors": (bill.get("cosponsors") or {}).get("count", 0),
+            "committees": [f"{c['chamber']} {c['name']}" for c in committees if c.get("chamber") and c.get("name")],
+            "short_title": short}
+
+
+def us_interim(conn, bill: dict) -> str:
+    """Until CRS publishes a summary: what the bill would do, who introduced it and where it was sent."""
+    row = conn.execute("SELECT value FROM meta WHERE key = ?", (f"us-context:{bill['key']}",)).fetchone()
+    ctx = json.loads(row[0]) if row else {}
+    parts = [us_purpose(bill["title"])]
+    if ctx.get("sponsor"):
+        with_co = f" with {ctx['cosponsors']} cosponsor{'s' if ctx['cosponsors'] != 1 else ''}" if ctx.get("cosponsors") else ""
+        sent = f"; referred to the {' and the '.join(ctx['committees'])}" if ctx.get("committees") else ""
+        parts.append(f"Introduced by {ctx['sponsor']}{with_co}{sent}.")
+    return " ".join(p for p in parts if p)
+
+
+def _us_remember_context(conn, bill_key: str, congress, kind, number, key, fetcher) -> str:
+    """Store a bill's context for its interim summary; returns its short title, if it has one yet."""
+    try:
+        ctx = _us_context(congress, kind, number, key, fetcher)
+    except Exception:
+        return ""
+    conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (f"us-context:{bill_key}", json.dumps(ctx)))
+    return ctx["short_title"]
 
 
 def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_pages: int = 8,
@@ -340,6 +396,9 @@ def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_
                     "url": f"https://www.congress.gov/bill/{b['congress']}th-congress/{path}/{b['number']}",
                     "source": "congress.gov", "history": us_history(acts.get("actions", [])),
                     "summary": _crs_summary(b["congress"], b["type"], b["number"], b["title"], key, fetcher)}
+            if not bill["summary"]:
+                bill["short_title"] = _us_remember_context(conn, bill["key"], b["congress"], b["type"], b["number"],
+                                                           key, fetcher)
             changed += upsert(conn, bill)
             conn.commit()  # keep progress if a later request fails (e.g. the rate limit)
             time.sleep(0.2)
