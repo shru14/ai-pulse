@@ -12,6 +12,7 @@ records keep their original language and everything else works as before.
 from __future__ import annotations
 
 import hashlib
+import json
 import io
 import os
 import re
@@ -61,6 +62,18 @@ def _key(lang: str, text: str) -> str:
     return f"{lang}:{VERSION}:{hashlib.sha1(text.encode('utf-8')).hexdigest()}"
 
 
+def _installed(lang: str) -> Path | None:
+    """The unpacked model for `lang` -> English (packages name their folder differently, so go by metadata)."""
+    for meta in MODEL_DIR.glob("*/metadata.json"):
+        try:
+            m = json.loads(meta.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if m.get("from_code") == lang and m.get("to_code") == "en" and (meta.parent / "model" / "model.bin").exists():
+            return meta.parent
+    return None
+
+
 def _model(lang: str):
     """(translator, tokenizer) for `lang` -> English, downloading the model once; None if unavailable."""
     if lang in _loaded:
@@ -77,9 +90,8 @@ def _model(lang: str):
     if not url:
         _loaded[lang] = None
         return None
-    name = url.rsplit("/", 1)[1].removesuffix(".argosmodel")
-    folder = MODEL_DIR / name
-    if not (folder / "model" / "model.bin").exists():
+    folder = _installed(lang)
+    if not folder:
         try:
             data = feeds.fetch(url, timeout=300)
         except Exception:
@@ -87,6 +99,10 @@ def _model(lang: str):
             return None
         MODEL_DIR.mkdir(parents=True, exist_ok=True)
         zipfile.ZipFile(io.BytesIO(data)).extractall(MODEL_DIR)
+        folder = _installed(lang)
+        if not folder:
+            _loaded[lang] = None
+            return None
     _loaded[lang] = (ctranslate2.Translator(str(folder / "model"), device="cpu"),
                      sentencepiece.SentencePieceProcessor(model_file=str(folder / "sentencepiece.model")))
     return _loaded[lang]
