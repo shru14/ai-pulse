@@ -31,7 +31,7 @@ python -m aipulse serve       # http://127.0.0.1:8000
 Other commands: `run --every-hours 6`, `bills` (sync official records), `backfill --since 2023-01-01`,
 `reclassify`, `regroup`, `evaluate`, `sources`, `build --out site`, `prune`. Tests: `python -m pytest -q`.
 
-Optional: `pip install ctranslate2 sentencepiece` gives non-English records (Brazil, China, Japan) an
+Optional: `pip install ctranslate2 sentencepiece` gives non-English records (Brazil, China, Japan, Vietnam) an
 English title, translated **offline** with OPUS-MT models (no API).
 
 ## Sources and access rules
@@ -55,12 +55,13 @@ registration we can't lawfully get, rate limit or bot challenge. The full list i
 | China | Cyberspace Administration of China (titles, dates and links only) |
 | India | Parliament of India (sansad.in) |
 | Japan | e-Gov law API |
+| Vietnam | National Legal Database (vbpl.vn, Ministry of Justice): AI documents found through its sitemap, read weekly. Vietnamese legal documents aren't copyrighted (IP Law, Art. 15) |
 | South Korea | Ministry of Science and ICT English press releases |
 | ~60 more countries and international bodies | OECD.AI Policy Observatory: laws, guidance and AI bodies, read weekly (editors' names and emails never stored). For the countries above, only their guidance and bodies, so nothing appears twice |
 
 **Left out on purpose:** Google News and Bing News (robots.txt or terms), BBC News, NYT, Guardian, Wired
 and The Register (terms or robots.txt). Not reachable lawfully: Singapore's official sites (permission
-needed even to link), Korea's National Assembly API (Korean ID verification), Russia's official sites
+needed even to link), Korea's National Assembly API (Korean ID verification), Vietnam's National Assembly site (bot challenge), Russia's official sites
 (refuse foreign connections), China's NPC law database and India Code/MeitY/PIB (block automated access).
 These places still appear through OECD.AI and the news. Russia is in no region.
 

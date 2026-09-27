@@ -1007,3 +1007,22 @@ def test_oecd_ai_bodies_become_body_cards():
     assert (c["category"], c["action"], c["jurisdictions"], c["tags"][0]) == ("regulation", "body", ["JP"], "Oversight body")
     assert oecd.card({**body, "gaiinCountry": {"code": "FRA"}}) is None  # EU member: the EU counts as one
 
+
+def test_vietnam_ai_laws_from_the_sitemap(tmp_path):
+    from aipulse import bills
+    law = "https://vbpl.vn/van-ban/chi-tiet/luat-tri-tue-nhan-tao-so-134-2025-qh15--69ba65c0"
+    pages = {
+        "https://vbpl.vn/sitemap.xml": "<loc>https://vbpl.vn/sitemap/0.xml</loc><!-- Trung ương --><loc>https://vbpl.vn/sitemap/1.xml</loc>"
+                                       "<!-- Địa phương --><loc>https://vbpl.vn/sitemap/2.xml</loc>",
+        "https://vbpl.vn/sitemap/1.xml": f"<loc>{law}</loc><loc>https://vbpl.vn/van-ban/chi-tiet/luat-dat-dai--1</loc>",
+        law: '<meta name="description" content="Tra cứu Luật 134/2025/QH15, LUẬT TRÍ TUỆ NHÂN TẠO SỐ 134/2025/QH15. Xem toàn văn và hiệu lực."/>'
+             '<meta property="article:published_time" content="2025-12-09T17:00:00.000Z"/>'}
+    seen = []
+    fetch = lambda u: (seen.append(u), pages[u].encode())[1]
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_vietnam(conn, fetch, log=lambda *_: None) == 1
+    assert "https://vbpl.vn/sitemap/2.xml" not in seen  # provincial documents aren't read
+    row = conn.execute("SELECT number, title, stage, stage_date FROM bills WHERE jurisdiction = 'VN'").fetchone()
+    assert tuple(row) == ("Law No. 134/2025/QH15", "Luật trí tuệ nhân tạo", "signed", "2025-12-10")
+    assert bills.sync_vietnam(conn, fetch, log=lambda *_: None) == 0  # read at most weekly
+

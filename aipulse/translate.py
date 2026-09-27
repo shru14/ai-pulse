@@ -23,14 +23,16 @@ from . import feeds
 
 MODELS = {"pt": "https://argos-net.com/v1/translate-pt_en-1_9.argosmodel",
           "zh": "https://argos-net.com/v1/translate-zh_en-1_9.argosmodel",
-          "ja": "https://argos-net.com/v1/translate-ja_en-1_1.argosmodel"}
-LANGUAGE_NAMES = {"pt": "Portuguese", "zh": "Chinese", "ja": "Japanese"}
+          "ja": "https://argos-net.com/v1/translate-ja_en-1_1.argosmodel",
+          "vi": "https://argos-net.com/v1/translate-vi_en-1_9.argosmodel"}
+LANGUAGE_NAMES = {"pt": "Portuguese", "zh": "Chinese", "ja": "Japanese", "vi": "Vietnamese"}
 VERSION = "2"  # part of each stored translation's key: bump it when the term fixes below change
 
 # Fixed terms, per language. BEFORE replaces a phrase in the original that the model mistranslates (only
 # where mixing in English doesn't confuse it); AFTER corrects the model's English to the standard term in
 # the English versions governments use ("办法" is "Measures", "意见" is "Opinions", "智能体" is "AI agents").
-BEFORE = {"zh": [("“人工智能+”", "“AI+”"), ("人工智能+", "AI+")]}
+BEFORE = {"zh": [("“人工智能+”", "“AI+”"), ("人工智能+", "AI+")],
+          "vi": [("Trí tuệ nhân tạo", "AI"), ("trí tuệ nhân tạo", "AI")]}  # else "manic intelligence"
 AFTER = {"zh": [(re.compile(p), r) for p, r in (
     (r"^Circular on the issuance of (the )?", "Notice on issuing the "),
     (r"\b[Ii]nterim (approach|method)(es|s)? (to|for) (the )?management of\b", "Interim Measures for the Administration of"),
@@ -39,7 +41,12 @@ AFTER = {"zh": [(re.compile(p), r) for p, r in (
     (r"^Views of\b", "Opinions of"), (r"\b[Ii]mplementation (advice|views)\b", "Implementing Opinions"),
     (r"\bgenerated artificial intelligence\b", "generative artificial intelligence"),
     (r"\b(smart|intelligent) bodies\b", "AI agents"), (r"\bhumanized\b", "human-like"),
-    (r"“AI\+” (operation|initiative|campaign)", "“AI+” Action"), (r"\bMarking of\b", "Labelling of"))]}
+    (r"“AI\+” (operation|initiative|campaign)", "“AI+” Action"), (r"\bMarking of\b", "Labelling of"))],
+         "vi": [(re.compile(p), r) for p, r in (
+    (r"^(The )?AI (Law|Act)\.?$", "Law on Artificial Intelligence"),
+    (r"\b(the )?AI's laws?\b|\b(the )?AI (Law|Act)\b", "the Law on Artificial Intelligence"),
+    (r"^The (resolution|decree) (stipulates|regulations) detail(s|ed)? (of )?(a number of |some of )(things |articles )?(of )?",
+     "Decree detailing some articles of "), (r"\b(Application|Use) AI\b", r"\1 of AI"))]}
 MODEL_DIR = Path(__file__).resolve().parent.parent / "data" / "translate-models"
 
 SCHEMA = """

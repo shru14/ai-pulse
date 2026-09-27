@@ -37,6 +37,7 @@ has no public API.
 
 from __future__ import annotations
 
+import html
 import json
 import os
 import re
@@ -48,7 +49,7 @@ from . import feeds, store, translate
 # Cards made from official records; the keyword rules for news stories never re-sort them.
 OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
                     "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China",
-                    "Parliament of India", "e-Gov (Japan)", "OECD.AI")
+                    "Parliament of India", "e-Gov (Japan)", "National Legal Database (Vietnam)", "OECD.AI")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -72,6 +73,8 @@ LABELS = {
            "signed": "Assent", "in_force": "In force", "vetoed": "Negatived", "withdrawn": "Withdrawn"},
     "JP": {"introduced": "Submitted", "passed_chamber": "Passed one House", "passed_legislature": "Passed the Diet",
            "signed": "Promulgated", "in_force": "In force", "vetoed": "Rejected", "withdrawn": "Repealed"},
+    "VN": {"introduced": "Draft", "passed_chamber": "Passed", "passed_legislature": "Adopted",
+           "signed": "Issued", "in_force": "In force", "vetoed": "Rejected", "withdrawn": "Repealed"},
     "AU": {"introduced": "Introduced", "passed_chamber": "Passed first House", "passed_legislature": "Passed Parliament",
            "signed": "Assented or made", "in_force": "In force", "vetoed": "Disallowed", "withdrawn": "Repealed"},
 }
@@ -589,7 +592,7 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
-_LANGS = {"BR": "pt", "CN": "zh", "JP": "ja"}  # records whose titles are translated
+_LANGS = {"BR": "pt", "CN": "zh", "JP": "ja", "VN": "vi"}  # records whose titles are translated
 
 
 def refresh_cards(conn) -> int:
@@ -755,6 +758,65 @@ def sync_japan(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+# --- Vietnam (National Legal Database, vbpl.vn, Ministry of Justice) ---
+
+VN_SITE = "https://vbpl.vn"
+# The database's sitemap lists every document with its title in the URL; "tri-tue-nhan-tao" is
+# "artificial intelligence". Only national documents (the sitemaps before the provincial ones) are read.
+VN_AI = re.compile(r"tri-tue-nhan-tao")
+_VN_TYPES = {"luat": "Law", "nghi-dinh": "Decree", "nghi-quyet": "Resolution", "thong-tu": "Circular",
+             "quyet-dinh": "Decision", "chi-thi": "Directive", "phap-lenh": "Ordinance"}
+VN_REFRESH_DAYS = 7
+
+
+def _vn_meta(page: str, prop: str) -> str:
+    m = re.search(rf'<meta (?:property|name)="{prop}" content="([^"]*)"', page)
+    return html.unescape(m.group(1)) if m else ""
+
+
+def sync_vietnam(conn, fetcher=feeds.fetch, log=print) -> int:
+    """Vietnamese laws, decrees and decisions about AI: title (in English), number, date and link.
+    Legal documents aren't protected by copyright in Vietnam (Law on Intellectual Property, Art. 15)."""
+    connect_tables(conn)
+    last = conn.execute("SELECT value FROM meta WHERE key = 'vn_sync'").fetchone()
+    if last and last[0] > (date.today() - timedelta(days=VN_REFRESH_DAYS)).isoformat():
+        return 0
+    index = fetcher(f"{VN_SITE}/sitemap.xml").decode("utf-8", "replace")
+    national = index.split("Địa phương")[0]  # the provincial sitemaps follow this comment
+    urls = []
+    for sitemap in re.findall(r"<loc>(.*?)</loc>", national)[1:]:  # the first lists the site's own pages
+        urls += [u for u in re.findall(r"<loc>(.*?)</loc>", fetcher(sitemap).decode("utf-8", "replace"))
+                 if "/van-ban/chi-tiet/" in u and VN_AI.search(u)]
+        time.sleep(1)
+    known = {r[0] for r in conn.execute("SELECT url FROM bills WHERE jurisdiction = 'VN'")}
+    records = []
+    for url in urls:
+        key = "VN-" + url.rsplit("--", 1)[-1]
+        if url in known:
+            continue
+        page = fetcher(url).decode("utf-8", "replace")
+        time.sleep(1)
+        # "Tra cứu Luật 134/2025/QH15, LUẬT TRÍ TUỆ NHÂN TẠO SỐ 134/2025/QH15. Xem toàn văn và hiệu lực."
+        m = re.match(r"Tra cứu \S+ (\S+), (.*?)(?: SỐ \S+)?\. Xem", _vn_meta(page, "description"))
+        issued = _vn_meta(page, "article:published_time")
+        if not (m and issued):
+            continue
+        day = (datetime.fromisoformat(issued.replace("Z", "+00:00")) + timedelta(hours=7)).date().isoformat()
+        slug = url.rsplit("/", 1)[1]
+        kind = next((v for k, v in _VN_TYPES.items() if slug.startswith(k + "-")), "")
+        title = m.group(2).strip()
+        title = title[0] + title[1:].lower() if title.isupper() else title
+        records.append({"key": key, "jurisdiction": "VN", "number": f"{kind} No. {m.group(1)}" if kind else m.group(1),
+                        "title": title, "url": url, "source": "National Legal Database (Vietnam)", "lang": "vi",
+                        "history": [{"date": day, "stage": "signed", "text": "Ban hành"}]})
+    translate.english(conn, "vi", [r["title"] for r in records])
+    changed = sum(upsert(conn, r) for r in records)
+    conn.execute("INSERT OR REPLACE INTO meta VALUES ('vn_sync', ?)", (date.today().isoformat(),))
+    conn.commit()
+    retitle(conn, "VN", "vi")
+    return changed
+
+
 # --- Australia (Federal Register of Legislation) ---
 
 AU_API = "https://api.prod.legislation.gov.au/v1/titles"
@@ -866,6 +928,7 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("Cyberspace Administration of China", CN_SITE, sync_china),
                           ("Parliament of India API", IN_API, sync_india),
                           ("e-Gov law API (Japan)", JP_API, sync_japan),
+                          ("National Legal Database (Vietnam)", VN_SITE, sync_vietnam),
                           ("OECD.AI policy database", _oecd_api(), _oecd_sync)):
         try:
             n = fn(conn, fetcher, log=log)
