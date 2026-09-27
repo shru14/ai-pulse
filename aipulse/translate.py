@@ -22,8 +22,9 @@ from pathlib import Path
 from . import feeds
 
 MODELS = {"pt": "https://argos-net.com/v1/translate-pt_en-1_9.argosmodel",
-          "zh": "https://argos-net.com/v1/translate-zh_en-1_9.argosmodel"}
-LANGUAGE_NAMES = {"pt": "Portuguese", "zh": "Chinese"}
+          "zh": "https://argos-net.com/v1/translate-zh_en-1_9.argosmodel",
+          "ja": "https://argos-net.com/v1/translate-ja_en-1_1.argosmodel"}
+LANGUAGE_NAMES = {"pt": "Portuguese", "zh": "Chinese", "ja": "Japanese"}
 VERSION = "2"  # part of each stored translation's key: bump it when the term fixes below change
 
 # Fixed terms, per language. BEFORE replaces a phrase in the original that the model mistranslates (only

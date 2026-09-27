@@ -7,7 +7,7 @@ links every card to the original reporting.
 **Live site:** https://shru14.github.io/ai-pulse/
 
 Pure Python 3.10+, standard library only: nothing to install. Optional: `pip install ctranslate2 sentencepiece`
-gives non-English official records (Brazil's bills, China's regulations) an English title, translated offline (see below).
+gives non-English official records (Brazil's bills, China's regulations, Japan's laws) an English title, translated offline (see below).
 
 ## The five streams
 
@@ -95,7 +95,7 @@ as `AIPulse/1.0` with a link to this repository.
 | Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
 | Industry news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World, South China Morning Post, TechCabal |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, **Federal Register** (US federal records), **GOV.UK** (UK government), **Korea's Ministry of Science and ICT** (English press releases) |
-| Regulation tracker | European Data Protection Board, European Commission, US Congress, European Parliament, UK Parliament, Parliament of Canada and Brazil's Chamber of Deputies bill records, Australia's Federal Register of Legislation, the Cyberspace Administration of China, the Parliament of India, arXiv papers by ~40 ethics and law scholars |
+| Regulation tracker | European Data Protection Board, European Commission, US Congress, European Parliament, UK Parliament, Parliament of Canada and Brazil's Chamber of Deputies bill records, Australia's Federal Register of Legislation, the Cyberspace Administration of China, the Parliament of India, Japan's e-Gov law database, arXiv papers by ~40 ethics and law scholars |
 | Research | arXiv (new papers by ~80 professors), Hugging Face Daily Papers, Apple Machine Learning Research |
 
 **Left out on purpose:** Google News (its robots.txt disallows automated access) and Bing News (its feed
@@ -132,6 +132,7 @@ for "All time".
 | Parliament of Canada (LEGISinfo) | First reading → passed first chamber → passed both chambers → Royal Assent (or died on the Order Paper) | Nothing; the Speaker permits accurate, non-commercial reproduction |
 | China: Cyberspace Administration of China | Draft for comment → issued | Nothing. Only each AI regulation's title (machine-translated to English), date and link; no page text is copied. Official regulations aren't copyrighted in China (Copyright Law, Art. 5). The national law database (flk.npc.gov.cn) forbids automated access, so it isn't used |
 | India: Parliament of India (sansad.in) | Introduced → passed one House → passed both Houses → assent | Nothing: the public API behind its bill pages (no published API terms, and nothing prohibiting it). Title, dates and a link to the official bill text only. India Code, MeitY and PIB turn away automated requests, so they aren't used |
+| Japan: e-Gov law API (Digital Agency) | Promulgated → in force (or repealed) | Nothing: Government of Japan Standard Terms of Use 2.0 (source credited in the footer; titles marked as machine-translated) |
 | Australia: Federal Register of Legislation | Royal Assent or made → in force (or repealed); bills in Parliament aren't in the register | Nothing: CC BY 4.0, credited in the page footer |
 | Brazil: Câmara dos Deputados open data | Introduced → passed first chamber → passed Congress → became law (or vetoed, withdrawn, archived) | Nothing: open data. Only lead bills are shown; bills attached to one move with it. Titles are English machine translations of the official Portuguese summary |
 
@@ -146,7 +147,7 @@ run with CTranslate2 and SentencePiece. No API is called and nothing is billed; 
 downloaded once (cached on GitHub) and each text is translated once and stored. Cards say the title is a
 machine translation and link the official text. Without the two libraries, records keep their language.
 
-More countries are added one at a time, each from its own official records (next: Japan, Singapore). South Korea's bills can't be tracked: the
+More countries are added one at a time, each from its own official records (next: Singapore). South Korea's bills can't be tracked: the
 National Assembly's API needs a key that requires Korean identity verification, and its bill site's
 robots.txt blocks automated access; Korea's AI rules come from its science ministry's English press releases. The EU counts as one: its rules apply in every member state. Some of these licences allow only non-commercial use, so the site must stay
 non-commercial.
@@ -212,6 +213,8 @@ tests/                unit and end-to-end tests with fixture feeds (python -m py
 
 UK Parliament data: Open Parliament Licence v3.0.
 Machine translations: OPUS-MT models (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT).
+Japanese laws: source e-Gov Law Search (https://laws.e-gov.go.jp), Government of Japan Standard Terms of Use 2.0;
+titles machine-translated by AI Pulse.
 Australian legislation: based on content from the Federal Register of Legislation (CC BY 4.0); for the latest
 information on Australian Government legislation please go to https://www.legislation.gov.au. AI company logos: [Lobe Icons](https://github.com/lobehub/lobe-icons), MIT License, © 2023 LobeHub. Other brand
 logos: [Simple Icons](https://simpleicons.org) (CC0) or the brand's own website icon. Federal Register

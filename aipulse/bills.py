@@ -21,6 +21,9 @@
 - India: the Parliament of India's legislation API (sansad.in, the one its own bill pages use; no key).
   Bills in both Houses with their introduction, passing and assent dates. India Code, MeitY and PIB turn
   away automated requests, so they aren't used.
+- Japan: the e-Gov law API (Digital Agency; no key). Laws and cabinet orders with 人工知能 (AI) in the
+  title, with promulgation and enforcement dates. Government of Japan Standard Terms of Use 2.0: the source
+  is credited on the page, and the titles are marked as machine-translated (an edit).
 - Australia: the Federal Register of Legislation API (no key; CC BY 4.0, credited on the page). It holds Acts
   and instruments once made (bills in Parliament aren't there), so these cards start at assent.
 
@@ -45,7 +48,7 @@ from . import feeds, store, translate
 # Cards made from official records; the keyword rules for news stories never re-sort them.
 OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
                     "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China",
-                    "Parliament of India")
+                    "Parliament of India", "e-Gov (Japan)")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -67,6 +70,8 @@ LABELS = {
            "signed": "Issued", "in_force": "In force", "vetoed": "Withdrawn", "withdrawn": "Repealed"},
     "IN": {"introduced": "Introduced", "passed_chamber": "Passed one House", "passed_legislature": "Passed both Houses",
            "signed": "Assent", "in_force": "In force", "vetoed": "Negatived", "withdrawn": "Withdrawn"},
+    "JP": {"introduced": "Submitted", "passed_chamber": "Passed one House", "passed_legislature": "Passed the Diet",
+           "signed": "Promulgated", "in_force": "In force", "vetoed": "Rejected", "withdrawn": "Repealed"},
     "AU": {"introduced": "Introduced", "passed_chamber": "Passed first House", "passed_legislature": "Passed Parliament",
            "signed": "Assented or made", "in_force": "In force", "vetoed": "Disallowed", "withdrawn": "Repealed"},
 }
@@ -639,6 +644,57 @@ def sync_india(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+# --- Japan (e-Gov law API) ---
+
+JP_API = "https://laws.e-gov.go.jp/api/2/laws"
+JP_SEARCHES = ("人工知能", "生成ＡＩ", "ディープフェイク")
+# e-Gov's law number types, as Japan's official English translations name them.
+_JP_TYPES = {"Act": "Act", "CabinetOrder": "Cabinet Order", "ImperialOrder": "Imperial Order",
+             "MinisterialOrdinance": "Ministerial Ordinance", "Rule": "Rule"}
+
+
+def jp_history(law: dict) -> list[dict]:
+    """Promulgation, entry into force and repeal of a law from its e-Gov record."""
+    info, rev = law.get("law_info") or {}, law.get("current_revision_info") or law.get("revision_info") or {}
+    history = []
+    if info.get("promulgation_date"):
+        history.append({"date": info["promulgation_date"][:10], "stage": "signed", "text": "Promulgated"})
+    first = [r for r in (law.get("revision_info") or {},) if r.get("amendment_enforcement_date")]
+    if first and first[0]["amendment_enforcement_date"] <= date.today().isoformat():
+        history.append({"date": first[0]["amendment_enforcement_date"][:10], "stage": "in_force", "text": "In force"})
+    if rev.get("repeal_date"):
+        history.append({"date": rev["repeal_date"][:10], "stage": "withdrawn", "text": "Repealed"})
+    return sorted(history, key=lambda h: (h["date"], (STAGES + ENDED).index(h["stage"])))
+
+
+def sync_japan(conn, fetcher=feeds.fetch, log=print) -> int:
+    """Japanese laws and cabinet orders about AI, from the official e-Gov law database."""
+    connect_tables(conn)
+    from urllib.parse import quote
+    found = {}
+    for term in JP_SEARCHES:
+        for law in _get_json(f"{JP_API}?law_title={quote(term)}", fetcher).get("laws") or []:
+            found[law["law_info"]["law_id"]] = law
+        time.sleep(1)
+    titles = {lid: ((law.get("current_revision_info") or law.get("revision_info") or {}).get("law_title") or "")
+              for lid, law in found.items()}
+    translate.english(conn, "ja", list(titles.values()))
+    changed = 0
+    for lid, law in found.items():
+        info = law["law_info"]
+        kind = _JP_TYPES.get(info.get("law_num_type") or info.get("law_type"), "")
+        year = (info.get("promulgation_date") or "")[:4]
+        number = f"{kind} No. {int(info['law_num_num'])} of {year}" if kind and info.get("law_num_num") and year else ""
+        bill = {"key": f"JP-{lid}", "jurisdiction": "JP", "number": number, "title": titles[lid],
+                "url": f"https://laws.e-gov.go.jp/law/{lid}", "source": "e-Gov (Japan)", "lang": "ja",
+                "history": jp_history(law)}
+        if bill["history"] and bill["title"]:
+            changed += upsert(conn, bill)
+    conn.commit()
+    retitle(conn, "JP", "ja")
+    return changed
+
+
 # --- Australia (Federal Register of Legislation) ---
 
 AU_API = "https://api.prod.legislation.gov.au/v1/titles"
@@ -738,7 +794,8 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("Câmara dos Deputados API", BR_API, sync_brazil),
                           ("Federal Register of Legislation API", AU_API, sync_australia),
                           ("Cyberspace Administration of China", CN_SITE, sync_china),
-                          ("Parliament of India API", IN_API, sync_india)):
+                          ("Parliament of India API", IN_API, sync_india),
+                          ("e-Gov law API (Japan)", JP_API, sync_japan)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)

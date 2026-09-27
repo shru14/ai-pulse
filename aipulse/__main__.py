@@ -41,11 +41,11 @@ def main():
     bf.add_argument("--since", default="2023-01-01", help="start date, YYYY-MM-DD")
     bf.add_argument("--only", action="append", choices=["feeds", "official", "research", "papers"],
                     help="run just these groups (repeatable)")
-    bl = sub.add_parser("bills", help="sync AI bills' stages from official records (US, EU, UK, Canada, Brazil, Australia, China, India)")
+    bl = sub.add_parser("bills", help="sync AI bills' stages from official records (US, EU, UK, Canada, Brazil, Australia, China, India, Japan)")
     bl.add_argument("--eu-since", type=int, help="also discover EU procedures from this year on (one-time backfill)")
     bl.add_argument("--us-days", type=int, help="look at US bills updated in the last N days (default: since last sync)")
     bl.add_argument("--max-pages", type=int, default=8, help="congress.gov pages of 250 updated bills per run")
-    bl.add_argument("--only", choices=["us", "eu", "uk", "ca", "br", "au", "cn", "in"], help="sync just one source")
+    bl.add_argument("--only", choices=["us", "eu", "uk", "ca", "br", "au", "cn", "in", "jp"], help="sync just one source")
 
     b = sub.add_parser("build", help="write a static copy of the site (for GitHub Pages)")
     b.add_argument("--out", default="site", help="output folder, replaced (default: site)")
@@ -117,17 +117,18 @@ def main():
                           ("br", lambda: bills.sync_brazil(conn)),
                           ("au", lambda: bills.sync_australia(conn)),
                           ("cn", lambda: bills.sync_china(conn)),
-                          ("in", lambda: bills.sync_india(conn))):
+                          ("in", lambda: bills.sync_india(conn)),
+                          ("jp", lambda: bills.sync_japan(conn))):
             if a.only and a.only != name:
                 continue
             try:  # one source failing (e.g. congress.gov's rate limit) doesn't stop the other
                 results[name] = run()
             except Exception as exc:
                 results[name] = f"failed ({exc})"
-        us, eu, uk, ca, br, au, cn, ind = (results.get(k, "skipped") for k in ("us", "eu", "uk", "ca", "br", "au", "cn", "in"))
+        us, eu, uk, ca, br, au, cn, ind, jp = (results.get(k, "skipped") for k in ("us", "eu", "uk", "ca", "br", "au", "cn", "in", "jp"))
         cluster.assign(conn, days=None)
         tracked = conn.execute("SELECT jurisdiction, stage, COUNT(*) FROM bills GROUP BY 1, 2 ORDER BY 1, 2").fetchall()
-        print(f"US: {us} bills changed stage; EU: {eu}; UK: {uk}; Canada: {ca}; Brazil: {br}; Australia: {au}; China: {cn}; India: {ind}. Tracking: " + ", ".join(f"{j} {s} {n}" for j, s, n in tracked))
+        print(f"US: {us} bills changed stage; EU: {eu}; UK: {uk}; Canada: {ca}; Brazil: {br}; Australia: {au}; China: {cn}; India: {ind}; Japan: {jp}. Tracking: " + ", ".join(f"{j} {s} {n}" for j, s, n in tracked))
     elif a.cmd == "build":
         from .static import build
         print(f"Wrote {build(store.connect(a.db), a.out)} cards to {a.out}/")

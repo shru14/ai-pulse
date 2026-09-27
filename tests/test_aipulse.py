@@ -926,3 +926,13 @@ def test_msit_press_releases_parse():
     assert e["title"] == "MSIT Announces the Enforcement Decree of the AI Basic Act"
     assert e["url"].endswith("bbsSeqNo=42&nttSeqNo=1290") and e["published"].date().isoformat() == "2026-01-22"
 
+
+def test_japan_laws_from_e_gov():
+    from aipulse.bills import current, jp_history
+    law = {"law_info": {"law_id": "507AC0000000053", "promulgation_date": "2025-06-04"},
+           "revision_info": {"law_title": "人工知能関連技術の研究開発及び活用の推進に関する法律",
+                             "amendment_enforcement_date": "2025-09-01", "repeal_date": None}}
+    h = jp_history(law)
+    assert [(x["stage"], x["date"]) for x in h] == [("signed", "2025-06-04"), ("in_force", "2025-09-01")]
+    assert current(h)["stage"] == "in_force"
+
