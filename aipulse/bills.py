@@ -17,6 +17,9 @@
   (machine translation) and nothing else is copied. Official regulations aren't copyrighted in China
   (Copyright Law, Article 5). The national law database (flk.npc.gov.cn) forbids automated access and
   gov.cn's search is closed to it, so neither is used.
+- India: the Parliament of India's legislation API (sansad.in, the one its own bill pages use; no key).
+  Bills in both Houses with their introduction, passing and assent dates. India Code, MeitY and PIB turn
+  away automated requests, so they aren't used.
 - Australia: the Federal Register of Legislation API (no key; CC BY 4.0, credited on the page). It holds Acts
   and instruments once made (bills in Parliament aren't there), so these cards start at assent.
 
@@ -40,7 +43,8 @@ from . import feeds, store, translate
 
 # Cards made from official records; the keyword rules for news stories never re-sort them.
 OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
-                    "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China")
+                    "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China",
+                    "Parliament of India")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -60,6 +64,8 @@ LABELS = {
            "signed": "Became law", "in_force": "In force", "vetoed": "Vetoed", "withdrawn": "Withdrawn or archived"},
     "CN": {"introduced": "Draft for comment", "passed_chamber": "Revised draft", "passed_legislature": "Adopted",
            "signed": "Issued", "in_force": "In force", "vetoed": "Withdrawn", "withdrawn": "Repealed"},
+    "IN": {"introduced": "Introduced", "passed_chamber": "Passed one House", "passed_legislature": "Passed both Houses",
+           "signed": "Assent", "in_force": "In force", "vetoed": "Negatived", "withdrawn": "Withdrawn"},
     "AU": {"introduced": "Introduced", "passed_chamber": "Passed first House", "passed_legislature": "Passed Parliament",
            "signed": "Assented or made", "in_force": "In force", "vetoed": "Disallowed", "withdrawn": "Repealed"},
 }
@@ -579,6 +585,56 @@ def sync_china(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+# --- India (Parliament of India, sansad.in) ---
+
+IN_API = "https://sansad.in/api_rs/legislation/getBills"
+IN_SEARCHES = ("artificial intelligence", "deepfake", "algorithm", "machine learning", "automated decision")
+_IN_QUERY = ("loksabha=&sessionNo=&house=&ministryName=&billType=&billCategory=&billStatus=&introductionDateFrom="
+             "&introductionDateTo=&passedInLsDateFrom=&passedInLsDateTo=&passedInRsDateFrom=&passedInRsDateTo="
+             "&page=1&size=50&locale=en&sortOn=billIntroducedDate&sortBy=desc")
+
+
+def in_history(b: dict) -> list[dict]:
+    """Introduction, passing in each House and assent. (Lapsed or withdrawn bills have no date for it, so
+    they stay at their last dated stage.)"""
+    day = lambda k: (b.get(k) or "")[:10]
+    history = []
+    if day("billIntroducedDate"):
+        history.append({"date": day("billIntroducedDate"), "stage": "introduced",
+                        "text": f"Introduced in {b.get('billIntroducedInHouse') or 'Parliament'}"})
+    passed = sorted(d for d in (day("billPassedInLSDate"), day("billPassedInRSDate")) if d)
+    if passed:
+        history.append({"date": passed[0], "stage": "passed_chamber", "text": "Passed one House"})
+    if len(passed) == 2:
+        history.append({"date": passed[1], "stage": "passed_legislature", "text": "Passed both Houses"})
+    if day("billAssentedDate"):
+        history.append({"date": day("billAssentedDate"), "stage": "signed", "text": "Assent"})
+    return history
+
+
+def sync_india(conn, fetcher=feeds.fetch, log=print) -> int:
+    """AI bills in the Lok Sabha and Rajya Sabha (the API answers slowly, hence the long timeout)."""
+    connect_tables(conn)
+    get = (lambda u: feeds.fetch(u, timeout=120)) if fetcher is feeds.fetch else fetcher
+    found = {}
+    for term in IN_SEARCHES:
+        data = _get_json(f"{IN_API}?billName={term.replace(' ', '%20')}&{_IN_QUERY}", get)
+        for b in data.get("records") or []:
+            if AI_TITLE.search(b.get("billName") or ""):
+                house = "LS" if (b.get("billIntroducedInHouse") or "").startswith("Lok") else "RS"
+                found[f"IN-{house}-{b.get('billYear')}-{b.get('billNumber')}"] = b
+        time.sleep(1)
+    changed = 0
+    for key, b in found.items():
+        url = (b.get("billIntroducedFile") or "https://sansad.in/ls/legislation/bills").replace(" ", "%20")
+        bill = {"key": key, "jurisdiction": "IN", "number": "", "title": (b["billName"] or "").strip().rstrip("."),
+                "url": url, "source": "Parliament of India", "history": in_history(b)}
+        if bill["history"]:
+            changed += upsert(conn, bill)
+    conn.commit()
+    return changed
+
+
 # --- Australia (Federal Register of Legislation) ---
 
 AU_API = "https://api.prod.legislation.gov.au/v1/titles"
@@ -677,7 +733,8 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("Parliament of Canada LEGISinfo", CA_API, sync_canada),
                           ("Câmara dos Deputados API", BR_API, sync_brazil),
                           ("Federal Register of Legislation API", AU_API, sync_australia),
-                          ("Cyberspace Administration of China", CN_SITE, sync_china)):
+                          ("Cyberspace Administration of China", CN_SITE, sync_china),
+                          ("Parliament of India API", IN_API, sync_india)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)

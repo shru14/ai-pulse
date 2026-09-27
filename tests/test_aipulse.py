@@ -872,3 +872,20 @@ def test_china_regulations_from_the_cac_list(tmp_path, monkeypatch):
     assert translate._after("zh", "Interim approach to the management of generated artificial intelligence services") == \
         "Interim Measures for the Administration of generative artificial intelligence services"
 
+
+def test_india_bills_from_parliament(tmp_path, monkeypatch):
+    import json
+    from aipulse import bills
+    record = {"billNumber": "59", "billName": "The Artificial Intelligence (Ethics and Accountability) Bill, 2025.",
+              "billYear": 2025, "billIntroducedInHouse": "Lok Sabha", "billIntroducedDate": "2025-12-05 00:00:00.0",
+              "billIntroducedFile": "https://sansad.in/getFile/BillsTexts/LSBillTexts/Asintroduced/59 of 2025.pdf",
+              "billPassedInLSDate": "2026-03-02 00:00:00.0", "billPassedInRSDate": None, "billAssentedDate": None}
+    other = {**record, "billNumber": "60", "billName": "The Seeds Bill, 2025"}
+    monkeypatch.setattr(bills.time, "sleep", lambda s: None)
+    conn = store.connect(tmp_path / "t.db")
+    fetch = lambda url: json.dumps({"records": [record, other]}).encode()
+    assert bills.sync_india(conn, fetcher=fetch, log=lambda *_: None) == 1
+    title, url, summary = conn.execute("SELECT title, url, summary FROM items").fetchone()
+    assert title == "The Artificial Intelligence (Ethics and Accountability) Bill, 2025" and " " not in url
+    assert summary.startswith("Passed one House on 2026-03-02")
+
