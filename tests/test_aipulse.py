@@ -855,3 +855,20 @@ def test_machine_translation_is_tidied_and_used_for_the_card_title(tmp_path):
     assert title == "PL 1/2026: Provides for the use of AI." and "machine-translated from Portuguese" in summary
     assert translate.english(conn, "pt", ["Texto novo sem tradução."]) == {}  # no model in tests: left as is
 
+
+def test_china_regulations_from_the_cac_list(tmp_path, monkeypatch):
+    from aipulse import bills, translate
+    page = ('<li><h5><a href=//www.cac.gov.cn/2023-07/13/c_1690898327029107.htm target=_blank '
+            'title="生成式人工智能服务管理暂行办法">生成式人工智能服务管理暂行办法</a></h5><div class="times">2023-07-13</div></li>'
+            '<li><h5><a href=//www.cac.gov.cn/2023-01/01/c_1.htm target=_blank title="网络安全审查办法">网络安全审查办法</a></h5>'
+            '<div class="times">2023-01-01</div></li>'
+            '<li><h5><a href=//www.cac.gov.cn/2026-09/01/c_2.htm target=_blank title="人工智能安全管理办法（征求意见稿）">x</a></h5>'
+            '<div class="times">2026-09-01</div></li>').encode()
+    monkeypatch.setattr(bills.time, "sleep", lambda s: None)
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_china(conn, fetcher=lambda url: page, log=lambda *_: None) == 2  # the non-AI one is left out
+    rows = dict(conn.execute("SELECT key, stage FROM bills").fetchall())
+    assert rows == {"CN-c_1690898327029107": "signed", "CN-c_2": "introduced"}  # a draft for comment is a proposal
+    assert translate._after("zh", "Interim approach to the management of generated artificial intelligence services") == \
+        "Interim Measures for the Administration of generative artificial intelligence services"
+

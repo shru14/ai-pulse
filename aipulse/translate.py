@@ -1,4 +1,4 @@
-"""English versions of non-English official records (Brazil's Portuguese bill summaries), made offline.
+"""English versions of non-English official records (Brazil's bill summaries, China's regulation titles), made offline.
 
 The translation runs on this machine (or the GitHub runner): an OPUS-MT model (Tiedemann & Thottingal,
 University of Helsinki, CC BY 4.0) as packaged by Argos Translate, loaded with CTranslate2 and
@@ -20,8 +20,24 @@ from pathlib import Path
 
 from . import feeds
 
-MODELS = {"pt": "https://argos-net.com/v1/translate-pt_en-1_9.argosmodel"}
-LANGUAGE_NAMES = {"pt": "Portuguese"}
+MODELS = {"pt": "https://argos-net.com/v1/translate-pt_en-1_9.argosmodel",
+          "zh": "https://argos-net.com/v1/translate-zh_en-1_9.argosmodel"}
+LANGUAGE_NAMES = {"pt": "Portuguese", "zh": "Chinese"}
+VERSION = "2"  # part of each stored translation's key: bump it when the term fixes below change
+
+# Fixed terms, per language. BEFORE replaces a phrase in the original that the model mistranslates (only
+# where mixing in English doesn't confuse it); AFTER corrects the model's English to the standard term in
+# the English versions governments use ("办法" is "Measures", "意见" is "Opinions", "智能体" is "AI agents").
+BEFORE = {"zh": [("“人工智能+”", "“AI+”"), ("人工智能+", "AI+")]}
+AFTER = {"zh": [(re.compile(p), r) for p, r in (
+    (r"^Circular on the issuance of (the )?", "Notice on issuing the "),
+    (r"\b[Ii]nterim (approach|method)(es|s)? (to|for) (the )?management of\b", "Interim Measures for the Administration of"),
+    (r"\b[Ii]nterim (approach|method)(es|s)?\b", "Interim Measures"),
+    (r"\b(approach|method)(es|s)?(?=[”\"]?$)", "Measures"), (r"\bManual for\b", "Measures for"),
+    (r"^Views of\b", "Opinions of"), (r"\b[Ii]mplementation (advice|views)\b", "Implementing Opinions"),
+    (r"\bgenerated artificial intelligence\b", "generative artificial intelligence"),
+    (r"\b(smart|intelligent) bodies\b", "AI agents"), (r"\bhumanized\b", "human-like"),
+    (r"“AI\+” (operation|initiative|campaign)", "“AI+” Action"), (r"\bMarking of\b", "Labelling of"))]}
 MODEL_DIR = Path(__file__).resolve().parent.parent / "data" / "translate-models"
 
 SCHEMA = """
@@ -42,7 +58,7 @@ _loaded: dict[str, tuple] = {}
 
 
 def _key(lang: str, text: str) -> str:
-    return f"{lang}:{hashlib.sha1(text.encode('utf-8')).hexdigest()}"
+    return f"{lang}:{VERSION}:{hashlib.sha1(text.encode('utf-8')).hexdigest()}"
 
 
 def _model(lang: str):
@@ -89,6 +105,18 @@ def tidy(text: str) -> str:
     return text[:1].upper() + text[1:]
 
 
+def _before(lang: str, text: str) -> str:
+    for old, new in BEFORE.get(lang, []):
+        text = text.replace(old, new)
+    return text
+
+
+def _after(lang: str, text: str) -> str:
+    for pattern, repl in AFTER.get(lang, []):
+        text = pattern.sub(repl, text)
+    return text
+
+
 def connect(conn) -> None:
     conn.executescript(SCHEMA)
 
@@ -109,10 +137,10 @@ def english(conn, lang: str, texts: list[str]) -> dict[str, str]:
         translator, sp = model
         for i in range(0, len(todo), 16):
             batch = todo[i:i + 16]
-            results = translator.translate_batch([sp.encode(t, out_type=str) for t in batch],
+            results = translator.translate_batch([sp.encode(_before(lang, t), out_type=str) for t in batch],
                                                  beam_size=2, max_decoding_length=400)
             for src, r in zip(batch, results):
-                out[src] = tidy("".join(r.hypotheses[0]))
+                out[src] = _after(lang, tidy("".join(r.hypotheses[0])))
                 conn.execute("INSERT OR REPLACE INTO translations VALUES (?, ?, ?)", (_key(lang, src), lang, out[src]))
             conn.commit()
     return out
