@@ -56,9 +56,9 @@ def test_professor_papers_need_an_exact_author_match(tmp_path):
     assert "Antichiral hinge states in a photonic lattice" not in items
     paper = items["Long-Horizon Reinforcement Learning for Language Agents"]
     assert paper["category"] == "research"
-    assert paper["tags"] == ["Sergey Levine"]  # papers are tagged only by professor or company
+    assert paper["tags"] == ["Sergey Levine", "Research"]  # papers: professor or company, and #Research
     assert paper["authors"] == ["Jane Doe", "Sergey Levine"]
-    assert items["Visual world models for robots"]["tags"] == ["Fei-Fei Li"]
+    assert items["Visual world models for robots"]["tags"] == ["Fei-Fei Li", "Research"]
     assert store.counts(conn)["research"] == 2
 
 
@@ -188,7 +188,7 @@ def test_hugging_face_collect(tmp_path):
     assert collect(conn, sources, max_age_days=100000, fetcher=lambda u: json.dumps(data).encode(),
                    log=lambda *_: None) == 1
     [paper] = store.query(conn, "research")
-    assert paper["tags"] == ["Google"]
+    assert paper["tags"] == ["Google", "Research"]
 
 
 def test_expert_feed_items_are_tagged_by_person(tmp_path):
@@ -622,7 +622,7 @@ def test_arxiv_rss_splits_authors_and_skips_revisions(tmp_path):
             "professors": ["Sergey Levine", "Fei-Fei Li"]}]
     collect(conn, src, max_age_days=100000, fetcher=lambda u: (FIX / "sample_arxiv_rss.xml").read_bytes(),
             log=lambda *_: None)
-    assert [(i["title"], i["tags"]) for i in store.query(conn)] == [("Robot Learning from Play at Scale", ["Sergey Levine"])]
+    assert [(i["title"], i["tags"]) for i in store.query(conn)] == [("Robot Learning from Play at Scale", ["Sergey Levine", "Research"])]
 
 
 def test_sources_avoid_hosts_that_block_cloud_servers():
@@ -1226,4 +1226,11 @@ def test_a_study_reported_by_the_news_is_not_a_release():
     assert c.launched("Researchers release open-source model for protein design", "A team at MIT released it.")
     assert c.launched("Robbyant Open Sources LingBot World: a Real Time World Model", "")
     assert not c.launched("Financial AI startup Model ML nabs $75M investment", "The startup raised money for its model.")
+
+
+def test_papers_get_research_and_news_about_studies_gets_study_report():
+    from aipulse import classify as c
+    tags = c.tags_for("AI access makes people unwilling to say I don't know, study finds", "A new study found that...")
+    assert "Study Report" in tags and "Research" not in tags
+    assert "Study Report" not in c.tags_for("Another Google DeepMind researcher quits", "He left the lab.")
 

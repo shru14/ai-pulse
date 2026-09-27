@@ -119,12 +119,12 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             }
             if src["category"] == "research":
                 # Papers are tagged only with the professors and companies behind them.
-                item["tags"] = list(dict.fromkeys([*matched, *companies, *filter(None, [src.get("org")])]))
+                item["tags"] = list(dict.fromkeys([*matched, *companies, *filter(None, [src.get("org")]), RESEARCH_TAG]))
             elif expert:
                 people = [expert] if isinstance(expert, str) else matched
                 fields = [EXPERT_FIELDS[p] for p in people if p in EXPERT_FIELDS]
                 item.update(category="regulation", action=EXPERT, jurisdictions=[],
-                            tags=list(dict.fromkeys(people + fields)))
+                            tags=list(dict.fromkeys(people + fields + ([RESEARCH_TAG] if _is_paper(item) else []))))
 
             if not expert:
                 apply_regulation(item, src.get("jurisdictions", []))
@@ -251,12 +251,22 @@ def apply_regulation(item: dict, default_jurisdictions: list[str] = ()) -> None:
         item.update(category="policy", action=None, jurisdictions=[])
 
 
+RESEARCH_TAG = "Research"  # every academic paper (news about a study gets "Study Report" instead)
+
+
+def _is_paper(it: dict) -> bool:
+    return it["category"] == "research" or "arxiv.org/abs/" in it["url"]
+
+
 def retag(conn) -> int:
     """Recompute keyword tags (companies, places, topics) for stored stories. Papers and expert pieces
-    keep their person / company tags. Returns how many changed."""
+    keep their person / company tags, and every paper carries "Research". Returns how many changed."""
     changed = 0
     for it in store.query(conn, None, None, None, limit=100000):
         if it["category"] == "research" or it["action"] == EXPERT:
+            if _is_paper(it) and RESEARCH_TAG not in it["tags"]:
+                store.set_tags(conn, it["id"], [*it["tags"], RESEARCH_TAG])
+                changed += 1
             continue
         text = "" if brief.is_draft(it["summary"]) else it["summary"]
         tags = classify.tags_for(it["title"], text)

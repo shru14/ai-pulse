@@ -118,7 +118,10 @@ TOPIC_TERMS = {
     "Coding Tools": r"coding|code assistant|copilot|\bIDE\b|developer tool",
     "Robotics": r"robot|humanoid|embodied",
     "Benchmarks": r"benchmark|leaderboard|\beval(uation)?s?\b",
-    "Research": r"\bpaper\b|preprint|arXiv|researchers",
+    # News reporting a study's findings (papers themselves are in the Research stream, tagged by author)
+    "Study Report": r"\bstud(y|ies)\b|research team|\banaly[sz]ed\b|\bsurveyed\b|\bpaper\b|preprint|arXiv|"
+                    r"\bfindings\b|\bfound that\b|\bfinds that\b|\breports? finds?\b|"
+                    r"researchers (found|find|say|show|showed|discover|discovered|report|reported|tested|analy[sz]ed)",
     "Training Data": r"training data|dataset|scrap(e|ing)",
     # Infrastructure
     "Chips": r"\bchips?\b|GPU|semiconductor|TSMC|\bTPU\b",
