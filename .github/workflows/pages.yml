@@ -38,8 +38,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: aipulse.db
-          key: aipulse-db-v2-${{ github.run_id }}
-          restore-keys: aipulse-db-v2-
+          key: aipulse-db-v3-${{ github.run_id }}
+          restore-keys: aipulse-db-v3-
 
       # Brand logo lookups (aipulse/brands.py), kept apart so the database's cache never changes shape.
       - name: Restore brand logos
@@ -73,7 +73,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: aipulse.db
-          key: aipulse-db-v2-${{ github.run_id }}
+          key: aipulse-db-v3-${{ github.run_id }}
 
       - name: Build the site
         run: python -m aipulse --db aipulse.db build --out site
