@@ -11,7 +11,9 @@ What's taken:
 - EU member states' own records are left out: the EU counts as one. EU-level binding acts are already
   tracked from the European Parliament, so only its non-binding ones come from here;
 - for countries tracked from their own official records (bills.py) only non-binding items (guidance),
-  so no law appears twice.
+  so no law appears twice;
+- AI governance bodies (safety institutes, regulators, advisory and coordination offices) for every
+  country, as "AI body" cards tagged with their kind.
 Binding items go to the regulation tracker as adopted rules, the rest to Policy. A record has a start year
 only: its card is dated 1 January of that year and the page shows just the year.
 """
@@ -28,6 +30,7 @@ API = "https://api.oecdai.org/policy-initiatives"
 SITE = "https://oecd.ai/en/dashboards/policy-initiatives/"
 SOURCE = "OECD.AI"
 REFRESH_DAYS = 7
+SYNC_KEY = "oecd_sync_v2"  # a new key makes the next run read everything again after the rules change
 MARK = "OECD-"  # items.bill for these cards: each record stands alone (see cluster.py) and isn't re-sorted
 
 # Countries with official records of their own in bills.py.
@@ -39,6 +42,11 @@ BINDING_TYPES = {"Law/legislation/act (by legislative body)", "Regulation (by go
 BODY_TYPES = {"Declaration, opinion, or outcome document", "Guidance/guidelines", "Policy", "Regulation",
               "Recommendation", "Directive", "Treaty"}
 COUNTRY_CATEGORY = "Regulations, guidelines and standards"
+# AI governance bodies (regulators, safety institutes, advisory and coordination offices), shown with their kind.
+BODY_CATEGORIES = {"National – AI governance bodies or mechanisms",
+                   "AI Governance Bodies and Mechanisms (intergovernmental or supranational)"}
+BODY_KINDS = {"Oversight": "Oversight body", "Monitoring": "Monitoring body", "Advisory": "Advisory body",
+              "Coordination": "Coordination body", "Other national AI governance": "AI body"}
 
 ISO3 = {"ARE": "AE", "ARG": "AR", "ARM": "AM", "AUS": "AU", "AUT": "AT", "BEL": "BE", "BEN": "BJ", "BGR": "BG",
         "BRA": "BR", "BRN": "BN", "CAN": "CA", "CHE": "CH", "CHL": "CL", "CHN": "CN", "CIV": "CI", "CMR": "CM",
@@ -59,6 +67,8 @@ def card(r: dict) -> dict | None:
     kind = (r.get("initiativeType") or {}).get("name") or ""
     binding = r.get("extentBinding") == "Binding" or kind in BINDING_TYPES
     country, body = r.get("gaiinCountry") or {}, r.get("intergovernmentalOrganisation") or {}
+    if r.get("category") in BODY_CATEGORIES:
+        return _body_card(r, kind, country, body)
     if country:
         code = ISO3.get(country.get("code") or "")
         if (r.get("category") != COUNTRY_CATEGORY or not code or code in jurisdictions.EU_MEMBERS
@@ -86,9 +96,29 @@ def card(r: dict) -> dict | None:
             "tags": classify.tags_for(title, summary), "_id": r["id"]}
 
 
+def _body_card(r: dict, kind: str, country: dict, body: dict) -> dict | None:
+    """An AI governance body (e.g. an AI safety institute) as a tracker card with its kind as a tag. Bodies are
+    taken for every country, including those with official records (a body isn't a law, so nothing repeats)."""
+    label = next((v for k, v in BODY_KINDS.items() if kind.startswith(k)), None)
+    code = ISO3.get(country.get("code") or "") if country else ("EU" if body.get("name") == "European Union" else "INTL")
+    if not label or not code or code in jurisdictions.EU_MEMBERS or (country and code not in jurisdictions.JURISDICTIONS):
+        return None
+    if not (r.get("startYear") and r.get("englishName") and r.get("slug")):
+        return None
+    from .bills import describe
+    title = r["englishName"].strip()
+    summary = describe(r.get("description") or "", title)
+    if not classify.is_ai_related(title, summary):
+        return None
+    return {"title": title[:220], "summary": summary, "url": SITE + r["slug"], "source": SOURCE,
+            "category": "regulation", "action": "body", "date": f"{int(r['startYear']):04d}-01-01",
+            "jurisdictions": [code], "authors": [], "tags": [label, *classify.tags_for(title, summary)][:4],
+            "_id": r["id"]}
+
+
 def sync(conn, fetcher=feeds.fetch, log=print, force: bool = False) -> int:
     """Read the whole database about once a week and store its cards. Returns how many are new."""
-    last = conn.execute("SELECT value FROM meta WHERE key = 'oecd_sync'").fetchone()
+    last = conn.execute("SELECT value FROM meta WHERE key = ?", (SYNC_KEY,)).fetchone()
     if last and not force and last[0] > (date.today() - timedelta(days=REFRESH_DAYS)).isoformat():
         return 0
     cards, page, pages = [], 1, 1
@@ -108,7 +138,7 @@ def sync(conn, fetcher=feeds.fetch, log=print, force: bool = False) -> int:
         elif store.insert(conn, c):
             conn.execute("UPDATE items SET bill = ? WHERE id = ?", (mark, store.item_id(c["url"])))
             added += 1
-    conn.execute("INSERT OR REPLACE INTO meta VALUES ('oecd_sync', ?)", (date.today().isoformat(),))
+    conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (SYNC_KEY, date.today().isoformat()))
     conn.commit()
     log(f"  OECD.AI: {len(cards)} records, {added} new")
     return added

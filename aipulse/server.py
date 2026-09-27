@@ -26,15 +26,18 @@ def items_payload(conn, qs: dict) -> dict:
     days = _int(qs.get("days"), 0, 0, 36500) or None
     category = qs.get("category") if qs.get("category") in store.CATEGORIES else None
     q, place = (qs.get("q") or "").strip() or None, qs.get("place") or None
+    region = qs.get("region") if qs.get("region") in jurisdictions.REGIONS else None
     per_page = _int(qs.get("per_page"), PER_PAGE, 1, MAX_PER_PAGE)
     page = _int(qs.get("page"), 1, 1, 10**6)
-    items, total = store.cards(conn, category, q, days, place, per_page, (page - 1) * per_page, EU_MEMBERS)
+    items, total = store.cards(conn, category, q, days, place, per_page, (page - 1) * per_page, EU_MEMBERS,
+                               jurisdictions.region_codes(region) if region else None)
     brands.add_logos(conn, items, lookups=10)  # collection looks names up ahead; this only catches stragglers
     health = store.source_health(conn, [s["url"] for s in SOURCES])
     payload = {"items": items, "page": page, "perPage": per_page, "total": total,
                "hasMore": page * per_page < total, "counts": store.card_counts(conn, q, days),
                "stories": store.story_count(conn), "lastRun": store.last_run(conn),
-               "jurisdictions": jurisdictions.meta(), "failingSources": [h for h in health if h["failing"]]}
+               "jurisdictions": jurisdictions.meta(), "failingSources": [h for h in health if h["failing"]],
+               "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()}}
     if category == "regulation":
         payload["map"] = store.regulation_tally(conn, q, days)
     return payload

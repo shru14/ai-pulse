@@ -256,7 +256,7 @@ def fts_query(q: str) -> str | None:
     return " ".join('"' + w.replace('"', "") + '"*' for w in words) or None
 
 
-def _card_where(category=None, q=None, days=None, place=None, eu_members=()) -> tuple[str, list]:
+def _card_where(category=None, q=None, days=None, place=None, eu_members=(), codes=None) -> tuple[str, list]:
     where, args = ["i.id = i.cluster"], []  # leads only; members come with them
     if category in CATEGORIES:
         where.append("i.category = ?"); args.append(category)
@@ -268,6 +268,9 @@ def _card_where(category=None, q=None, days=None, place=None, eu_members=()) -> 
         if place in eu_members:
             cond = f"({cond} OR (',' || i.jurisdictions || ',') LIKE '%,EU,%')"
         where.append(cond)
+    if codes:  # a region: any of its places
+        where.append("(" + " OR ".join("(',' || i.jurisdictions || ',') LIKE ?" for _ in codes) + ")")
+        args += [f"%,{c},%" for c in codes]
     match = fts_query(q)
     if match:
         # A card matches if any outlet's version of the story matches.
@@ -278,9 +281,9 @@ def _card_where(category=None, q=None, days=None, place=None, eu_members=()) -> 
 
 
 def cards(conn: sqlite3.Connection, category=None, q=None, days=None, place=None, limit=40, offset=0,
-          eu_members=()) -> tuple[list[dict], int]:
-    """One page of cards, newest first, and how many cards match in total."""
-    where, args = _card_where(category, q, days, place, eu_members)
+          eu_members=(), codes=None) -> tuple[list[dict], int]:
+    """One page of cards, newest first, and how many cards match in total. `codes`: a region's places."""
+    where, args = _card_where(category, q, days, place, eu_members, codes)
     total = conn.execute(f"SELECT COUNT(*) FROM items i WHERE {where}", args).fetchone()[0]
     leads = [_row(r) for r in conn.execute(
         f"SELECT * FROM items i WHERE {where} ORDER BY i.date DESC, i.added_at DESC LIMIT ? OFFSET ?",

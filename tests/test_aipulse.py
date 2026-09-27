@@ -982,3 +982,28 @@ def test_oecd_records_follow_the_rules(tmp_path):
     assert conn.execute("SELECT COUNT(*) FROM items WHERE bill LIKE 'OECD-%'").fetchone()[0] == 3
     assert oecd.sync(conn, fetcher=lambda u: page, log=lambda *_: None) == 0  # read at most weekly
 
+
+def test_every_place_has_a_region_and_the_filter_uses_it(tmp_path):
+    from aipulse import jurisdictions as J
+    assert not [c for c in J.JURISDICTIONS if c not in J.REGION_OF and c not in J.NO_REGION]  # none forgotten
+    assert "RU" not in J.REGION_OF
+    conn = store.connect(tmp_path / "t.db")
+    base = {"summary": "", "source": "E", "category": "regulation", "date": "2026-01-01", "tags": [], "authors": []}
+    for code, url in (("JP", "https://e.jp/1"), ("FR", "https://e.fr/1"), ("EU", "https://e.eu/1"), ("US-CA", "https://e.us/1")):
+        store.insert(conn, {**base, "title": f"AI rule {code}", "url": url, "jurisdictions": [code]})
+    conn.commit()
+    pick = lambda region: sorted(c["title"] for c in store.cards(conn, "regulation", codes=J.region_codes(region))[0])
+    assert pick("europe") == ["AI rule EU", "AI rule FR"]
+    assert pick("americas") == ["AI rule US-CA"] and pick("asia") == ["AI rule JP"]
+
+
+def test_oecd_ai_bodies_become_body_cards():
+    from aipulse import oecd
+    body = {"id": 7, "englishName": "Japan AI Safety Institute (AISI Japan)", "slug": "aisi-japan", "startYear": 2024,
+            "category": "National – AI governance bodies or mechanisms", "description": "Evaluates AI safety.",
+            "initiativeType": {"name": "Oversight bodies, offices or processes"}, "gaiinCountry": {"code": "JPN"},
+            "intergovernmentalOrganisation": None, "extentBinding": None}
+    c = oecd.card(body)
+    assert (c["category"], c["action"], c["jurisdictions"], c["tags"][0]) == ("regulation", "body", ["JP"], "Oversight body")
+    assert oecd.card({**body, "gaiinCountry": {"code": "FRA"}}) is None  # EU member: the EU counts as one
+

@@ -173,11 +173,34 @@ def detect(title: str, summary: str = "", limit: int = 4, actors_only: bool = Fa
     return found[:limit]
 
 
+# The tracker's regions (a filter, nothing more). The EU and its members are Europe; "INTL" (the UN, OECD,
+# Council of Europe, G7, ...) is its own region. Russia belongs to none (the user's choice); it keeps its
+# own country chip.
+NO_REGION = {"RU"}
+REGIONS = {
+    "europe": ("Europe", ["EU", *EU_MEMBERS, "GB", "CH", "NO", "IS", "UA", "RS", "TR", "VA", "AM"]),
+    "americas": ("Americas", ["US", "CA", "MX", "BR", "AR", "CL", "CO", "PE", "EC", "UY", "CR", "CU", "DO"]),
+    "asia": ("Asia-Pacific", ["CN", "IN", "JP", "KR", "AU", "NZ", "SG", "ID", "MY", "PH", "TH", "VN", "HK", "TW",
+                              "BD", "PK", "KH", "BN", "KZ", "UZ"]),
+    "mea": ("Middle East & Africa", ["AE", "SA", "QA", "IL", "EG", "NG", "KE", "GH", "RW", "ZA", "MA", "TN", "DZ",
+                                     "LY", "MR", "SN", "CI", "CM", "BJ", "ET", "UG", "ZM", "ZW", "LS", "MU"]),
+    "intl": ("International", ["INTL"]),
+}
+REGION_OF = {code: region for region, (_, codes) in REGIONS.items() for code in codes}
+
+
+def region_codes(region: str) -> list[str]:
+    """Every code in a region, US states included with the Americas."""
+    codes = list(REGIONS.get(region, ("", []))[1])
+    return codes + ([f"US-{s}" for s in US_STATES] if region == "americas" else [])
+
+
 def meta() -> dict:
-    """Display names for the page, plus which codes are EU members and which are US states."""
-    out = {code: {"name": v[0], "eu": code in EU_MEMBERS} for code, v in JURISDICTIONS.items()}
+    """Display names for the page, plus which codes are EU members, which are US states and each one's region."""
+    out = {code: {"name": v[0], "eu": code in EU_MEMBERS, "region": REGION_OF.get(code, "")}
+           for code, v in JURISDICTIONS.items()}
     for code, name in US_STATES.items():
-        out[f"US-{code}"] = {"name": name, "eu": False, "state": code}
+        out[f"US-{code}"] = {"name": name, "eu": False, "state": code, "region": "americas"}
     return out
 
 

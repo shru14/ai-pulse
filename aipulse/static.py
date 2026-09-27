@@ -74,6 +74,7 @@ def build(conn, out: str | Path) -> int:
     data = {"built": datetime.now(timezone.utc).isoformat(timespec="seconds"), "cards": recent, "archive": archive,
             "stories": store.story_count(conn), "lastRun": store.last_run(conn),
             "jurisdictions": jurisdictions.meta(), "euMembers": sorted(EU_MEMBERS),
+            "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()},
             "failingSources": [h for h in health if h["failing"]]}
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
 

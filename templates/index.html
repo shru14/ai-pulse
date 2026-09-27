@@ -246,10 +246,10 @@ const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Resea
 const CATS = ["tool","news","policy","research","regulation"];
 const STREAM_NAME = {tool:"Releases", news:"Industry news", policy:"Policy", research:"Research", regulation:"Regulation tracker"};
 // Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
-const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", expert:"Expert view"};
+const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", expert:"Expert view", body:"AI body"};
 // items: the cards loaded so far for the current tab / search / range / country (the server filters and
 // pages them); counts: cards per tab; mapTally: proposals and laws per country for the tracker's map.
-const state = {cat:"all", place:null, q:"", range:30, items:[], page:0, total:0, hasMore:false, loading:false,
+const state = {cat:"all", place:null, region:null, regions:{}, q:"", range:30, items:[], page:0, total:0, hasMore:false, loading:false,
                error:false, counts:{}, mapTally:null, stories:0, status:null, places:{}, failing:[]};
 const PER_PAGE = 40;
 try{ const s = JSON.parse(localStorage.getItem("aipulse-ui")||"{}"); if(s.cat) state.cat=s.cat; if(s.range!=null) state.range=s.range; }catch(e){}
@@ -475,13 +475,14 @@ async function load(reset){
   if(state.q.trim()) params.set("q", state.q.trim());
   if(state.range) params.set("days", state.range);
   if(state.cat === "regulation" && state.place) params.set("place", state.place);
+  if(state.cat === "regulation" && state.region) params.set("region", state.region);
   state.loading = true; render();
   try{
     const data = await fetchItems(params);
     if(seq !== requestSeq) return;
     state.items = reset ? data.items : state.items.concat(data.items);
     Object.assign(state, {page: data.page, total: data.total, hasMore: data.hasMore, counts: data.counts,
-      mapTally: data.map || null, stories: data.stories, places: data.jurisdictions || state.places,
+      mapTally: data.map || null, stories: data.stories, places: data.jurisdictions || state.places, regions: data.regions || state.regions,
       failing: data.failingSources || [], status: data.lastRun ? {lastRun: data.lastRun.ran_at} : null, error: false});
   }catch(e){
     if(seq !== requestSeq) return;
@@ -534,9 +535,11 @@ function staticPayload(d, params){
   const eu = new Set(d.euMembers);
   let list = cat ? base.filter(c => c.category === cat) : base;
   if(place) list = list.filter(c => c.jurisdictions.includes(place) || (eu.has(place) && c.jurisdictions.includes("EU")));
+  const region = params.get("region");
+  if(region) list = list.filter(c => c.jurisdictions.some(j => (d.jurisdictions[j] || {}).region === region));
   const out = {items: list.slice((page-1)*perPage, page*perPage), page, perPage, total: list.length,
     hasMore: page*perPage < list.length, counts, stories: d.stories, lastRun: d.lastRun,
-    jurisdictions: d.jurisdictions, failingSources: d.failingSources};
+    jurisdictions: d.jurisdictions, failingSources: d.failingSources, regions: d.regions};
   if(cat === "regulation"){
     const national = {}, laws = {}; let n = 0;
     base.filter(c => c.category === "regulation" && c.action !== "expert").forEach(c => {
@@ -564,16 +567,25 @@ function lifecycleStrip(life){
 
 function placeName(code){ return (state.places[code]||{}).name || code; }
 
-// Shown only while a country picked on a card filters the tracker.
+// In the tracker: a region filter, and the country picked on a card (with a way to clear it).
 function renderPlaceBar(tracker){
   const box = $("placebar");
-  box.hidden = !(tracker && state.place);
+  box.hidden = !tracker;
   box.replaceChildren();
   if(box.hidden) return;
-  const c = el("button","group place-filter", "Showing "+placeName(state.place)+" ✕"); c.type="button";
-  c.setAttribute("aria-label", "Clear country filter "+placeName(state.place));
-  c.addEventListener("click", () => { state.place=null; load(true); });
-  box.append(c);
+  if(state.place){
+    const c = el("button","group place-filter", "Showing "+placeName(state.place)+" ✕"); c.type="button";
+    c.setAttribute("aria-label", "Clear country filter "+placeName(state.place));
+    c.addEventListener("click", () => { state.place=null; load(true); });
+    box.append(c);
+    return;
+  }
+  [[null, "All regions"], ...Object.entries(state.regions)].forEach(([key, name]) => {
+    const b = el("button","group", name); b.type="button";
+    b.setAttribute("aria-pressed", String(state.region === key));
+    b.addEventListener("click", () => { state.region = key; load(true); });
+    box.append(b);
+  });
 }
 
 function renderStatus(){

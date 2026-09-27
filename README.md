@@ -28,7 +28,9 @@ gives non-English official records (Brazil's bills, China's regulations, Japan's
 - **Cards** show a logo for the company involved (or the country, or a topic symbol), a summary
   (long ones fold behind "Read more"), clickable tags, and the date and source link. The same event
   reported by several outlets is one card with "N sources".
-- **Regulation tracker**: click a country chip on a card to see only that country. US bills and EU procedures show the stages
+- **Regulation tracker**: filter by region (Europe, Americas, Asia-Pacific, Middle East & Africa,
+  International) or click a country chip on a card to see only that country. Cards are laws, proposals,
+  expert views or **AI bodies** (safety institutes, regulators, advisory and coordination offices). US bills and EU procedures show the stages
   they have reached so far (introduced, passed, signed, in force), each with its date.
 - **Light / dark** follows your system; the button in the top bar overrides it.
 - Links open a stream directly: `/#policy`, `/#regulation`; `/?q=nvidia` also searches.
