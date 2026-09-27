@@ -249,6 +249,7 @@ const STREAM_NAME = {tool:"Releases", news:"Industry news", policy:"Policy", res
 const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", expert:"Expert view", body:"AI body"};
 // items: the cards loaded so far for the current tab / search / range / country (the server filters and
 // pages them); counts: cards per tab; mapTally: proposals and laws per country for the tracker's map.
+const REGION_TABS = new Set(["regulation", "news"]);  // tabs with the region filter
 const state = {cat:"all", place:null, region:null, regions:{}, q:"", range:30, items:[], page:0, total:0, hasMore:false, loading:false,
                error:false, counts:{}, mapTally:null, stories:0, status:null, places:{}, failing:[]};
 const PER_PAGE = 40;
@@ -287,7 +288,7 @@ function render(){
   $("range").value = String(state.range);
   CATS.forEach(c => $("n-"+c).textContent = state.counts[c] ?? 0);
   const tracker = state.cat==="regulation";
-  renderPlaceBar(tracker);
+  renderPlaceBar(REGION_TABS.has(state.cat));
   const list = state.items;  // already filtered, grouped and sorted by the server
 
   const feed = $("feed"); feed.replaceChildren();
@@ -475,7 +476,7 @@ async function load(reset){
   if(state.q.trim()) params.set("q", state.q.trim());
   if(state.range) params.set("days", state.range);
   if(state.cat === "regulation" && state.place) params.set("place", state.place);
-  if(state.cat === "regulation" && state.region) params.set("region", state.region);
+  if(REGION_TABS.has(state.cat) && state.region) params.set("region", state.region);
   state.loading = true; render();
   try{
     const data = await fetchItems(params);
@@ -536,7 +537,10 @@ function staticPayload(d, params){
   let list = cat ? base.filter(c => c.category === cat) : base;
   if(place) list = list.filter(c => c.jurisdictions.includes(place) || (eu.has(place) && c.jurisdictions.includes("EU")));
   const region = params.get("region");
-  if(region) list = list.filter(c => c.jurisdictions.some(j => (d.jurisdictions[j] || {}).region === region));
+  if(region){  // a tracker code, or a news story's country tag ("India")
+    const inRegion = new Set(Object.entries(d.jurisdictions).filter(([, v]) => v.region === region).flatMap(([k, v]) => [k, v.name]));
+    list = list.filter(c => c.jurisdictions.some(j => inRegion.has(j)) || (c.tags || []).some(t => inRegion.has(t)));
+  }
   const out = {items: list.slice((page-1)*perPage, page*perPage), page, perPage, total: list.length,
     hasMore: page*perPage < list.length, counts, stories: d.stories, lastRun: d.lastRun,
     jurisdictions: d.jurisdictions, failingSources: d.failingSources, regions: d.regions};
@@ -567,13 +571,13 @@ function lifecycleStrip(life){
 
 function placeName(code){ return (state.places[code]||{}).name || code; }
 
-// In the tracker: a region filter, and the country picked on a card (with a way to clear it).
-function renderPlaceBar(tracker){
+// In the tracker and News: a region filter; in the tracker, also the country picked on a card (with a way to clear it).
+function renderPlaceBar(show){
   const box = $("placebar");
-  box.hidden = !tracker;
+  box.hidden = !show;
   box.replaceChildren();
   if(box.hidden) return;
-  if(state.place){
+  if(state.place && state.cat === "regulation"){
     const c = el("button","group place-filter", "Showing "+placeName(state.place)+" ✕"); c.type="button";
     c.setAttribute("aria-label", "Clear country filter "+placeName(state.place));
     c.addEventListener("click", () => { state.place=null; load(true); });
