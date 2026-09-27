@@ -9,6 +9,9 @@
   their readings in each House give the stages.
 - Canada: LEGISinfo (Parliament of Canada; no key). Each session's bills with their reading dates. The
   Speaker permits accurate, non-commercial reproduction that isn't presented as official.
+- Brazil: the Chamber of Deputies' open data API (no key; published for reuse in apps). AI bills are found by
+  keyword and their Portuguese summary; bills attached to a lead bill ("tramitando em conjunto") move with it
+  and aren't shown separately. Their procedural events give the stages.
 
 Every bill has one tracker card (an item with source "congress.gov" or "European Parliament"), dated at
 its latest stage so it moves up the feed when it advances. The card shows the whole timeline. News
@@ -29,7 +32,8 @@ from datetime import date, datetime, timedelta, timezone
 from . import feeds, store
 
 # Cards made from official records; the keyword rules for news stories never re-sort them.
-OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada")
+OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
+                    "Câmara dos Deputados")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -45,6 +49,8 @@ LABELS = {
     "CA": {"introduced": "First reading", "passed_chamber": "Passed first chamber",
            "passed_legislature": "Passed both chambers", "signed": "Royal Assent", "in_force": "In force",
            "vetoed": "Defeated", "withdrawn": "Died on the Order Paper"},
+    "BR": {"introduced": "Introduced", "passed_chamber": "Passed first chamber", "passed_legislature": "Passed Congress",
+           "signed": "Became law", "in_force": "In force", "vetoed": "Vetoed", "withdrawn": "Withdrawn or archived"},
 }
 
 AI_TITLE = re.compile(r"artificial intelligence|\bAI\b|machine learning|algorithm|deepfake|automated decision|"
@@ -422,6 +428,87 @@ def sync_canada(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+# --- Brazil (Câmara dos Deputados) ---
+
+BR_API = "https://dadosabertos.camara.leg.br/api/v2"
+BR_KEYWORD = "intelig%C3%AAncia%20artificial"
+BR_AI = re.compile(r"intelig[êe]ncia artificial|\bIA\b|algor[íi]tm|deep ?fakes?|aprendizado de m[áa]quina|"
+                   r"decis[õo]es automatizadas", re.I)
+BR_ATTACHED = ("Tramitando em Conjunto", "Aguardando Apensação")
+# Stages from an event's own description and dispatch. (The API stamps every event's "situation" with the
+# bill's current status, so it says nothing about when a stage was reached.) First match wins.
+_BR_RULES = [
+    ("signed", re.compile(r"Transforma(do|ção) (em Norma Jurídica|na Lei)", re.I)),
+    ("vetoed", re.compile(r"Vetad[oa] totalmente|Veto Total", re.I)),
+    ("passed_legislature", re.compile(r"remessa à sanção|Remessa à Sanção|enviad[oa] à sanção", re.I)),
+    ("passed_chamber", re.compile(r"Remessa ao Senado Federal|vai ao Senado Federal|"
+                                  r"Recebido o Of[íi]cio .{0,40}do Senado Federal que submete à revisão", re.I)),
+    ("withdrawn", re.compile(r"^(Retirada pel[oa]|Arquivamento)", re.I)),  # matched on the description only
+]
+
+
+def br_history(presented: str, events: list[dict]) -> list[dict]:
+    """Lifecycle from a proposal's procedural events (tramitações). A bill that reached the Chamber from the
+    Senate starts at "passed first chamber" (the day it arrived)."""
+    reached: dict[str, dict] = {}
+    from_senate = False
+    for e in sorted(events, key=lambda e: e.get("dataHora") or ""):
+        when = (e.get("dataHora") or "")[:10]
+        what = e.get("descricaoTramitacao") or ""
+        text = f"{what} | {e.get('despacho') or ''}"
+        for stage, rule in _BR_RULES:
+            if when and rule.search(what if stage == "withdrawn" else text):
+                if stage == "passed_chamber" and "submete à revisão" in text and "introduced" not in reached:
+                    from_senate = True
+                reached.setdefault(stage, {"date": when, "stage": stage, "text": what[:200]})
+                break
+    if presented and not from_senate:
+        reached.setdefault("introduced", {"date": presented[:10], "stage": "introduced", "text": "Apresentação"})
+    if "withdrawn" in reached and any(s in reached for s in ("signed", "vetoed")):
+        del reached["withdrawn"]  # a law is archived as a matter of course afterwards
+    return sorted(reached.values(), key=lambda h: (h["date"], (STAGES + ENDED).index(h["stage"])))
+
+
+def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
+    """AI bills in Brazil's Chamber of Deputies: since 2023 on the first run, then those with any activity
+    since the last run."""
+    connect_tables(conn)
+    last = conn.execute("SELECT value FROM meta WHERE key = 'brazil_sync'").fetchone()
+    started = date.today().isoformat()
+    window = (f"dataInicio={(date.fromisoformat(last[0]) - timedelta(days=2)).isoformat()}" if last
+              else "dataApresentacaoInicio=2023-01-01")
+    found, page = [], 1
+    while True:
+        data = _get_json(f"{BR_API}/proposicoes?keywords={BR_KEYWORD}&{window}&itens=100&pagina={page}"
+                         "&ordem=DESC&ordenarPor=id", fetcher)
+        found += [p for p in data.get("dados", []) if p.get("siglaTipo") in ("PL", "PLP", "PEC")
+                  and BR_AI.search(p.get("ementa") or "")]
+        if not any(l.get("rel") == "next" for l in data.get("links", [])):
+            break
+        page += 1
+        time.sleep(0.5)
+    changed = 0
+    for p in found:
+        detail = _get_json(f"{BR_API}/proposicoes/{p['id']}", fetcher)["dados"]
+        status = (detail.get("statusProposicao") or {}).get("descricaoSituacao") or ""
+        if status in BR_ATTACHED:
+            continue
+        events = _get_json(f"{BR_API}/proposicoes/{p['id']}/tramitacoes", fetcher).get("dados", [])
+        history = br_history(detail.get("dataApresentacao") or "", events)
+        number = f"{p['siglaTipo']} {p['numero']}/{p['ano']}"
+        bill = {"key": f"BR-{p['siglaTipo']}-{p['numero']}-{p['ano']}", "jurisdiction": "BR", "number": number,
+                "title": (p.get("ementa") or "").strip(),
+                "url": f"https://www.camara.leg.br/propostas-legislativas/{p['id']}",
+                "source": "Câmara dos Deputados", "history": history}
+        if history:
+            changed += upsert(conn, bill)
+        conn.commit()
+        time.sleep(0.5)
+    conn.execute("INSERT OR REPLACE INTO meta VALUES ('brazil_sync', ?)", (started,))
+    conn.commit()
+    return changed
+
+
 # --- Attaching news to bills ---
 
 _CA_BILL = re.compile(r"\bBill ([CS])-(\d{1,4})\b")
@@ -473,7 +560,8 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
     for name, url, fn in (("congress.gov API", CONGRESS_API, sync_congress),
                           ("European Parliament API", EP_API, sync_europarl),
                           ("UK Parliament Bills API", UK_API, sync_uk),
-                          ("Parliament of Canada LEGISinfo", CA_API, sync_canada)):
+                          ("Parliament of Canada LEGISinfo", CA_API, sync_canada),
+                          ("Câmara dos Deputados API", BR_API, sync_brazil)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)

@@ -805,3 +805,24 @@ def test_canada_stages_from_legisinfo():
     assert current(ca_history(law))["stage"] == "signed"
     assert [h["stage"] for h in ca_history(law)] == ["introduced", "passed_chamber", "passed_legislature", "signed"]
 
+
+def test_brazil_stages_from_chamber_events():
+    from aipulse.bills import br_history, current
+    ev = lambda d, what, situ="", desp="": {"dataHora": d + "T10:00", "descricaoTramitacao": what,
+                                            "descricaoSituacao": situ, "despacho": desp}
+    law = [ev("2023-03-01", "Apresentação de Proposição"), ev("2024-05-02", "Remessa ao Senado Federal"),
+           ev("2024-11-10", "Apresentação de Proposição", "", "Recebido Ofício n° 262/2025-SF que comunica remessa à sanção"),
+           ev("2024-12-01", "Transformação em Norma Jurídica", "", "Transformado na Lei Ordinária 15123/2025."),
+           ev("2024-12-05", "Arquivamento")]
+    h = br_history("2023-03-01T09:00", law)
+    assert [x["stage"] for x in h] == ["introduced", "passed_chamber", "passed_legislature", "signed"]
+    from_senate = [ev("2025-03-17", "Recebimento", "Aguardando Parecer",
+                      "Recebido o Ofício nº 235/ 2025 do Senado Federal que submete à revisão da Câmara")]
+    h = br_history("2025-03-17T17:21", from_senate)
+    assert [(x["stage"], x["date"]) for x in h] == [("passed_chamber", "2025-03-17")]
+    withdrawn = [ev("2026-03-16", "Retirada pelo(a) Autor(a)", "Transformado em Norma Jurídica")]
+    assert current(br_history("2024-01-10T09:00", withdrawn))["stage"] == "withdrawn"
+    # The API stamps every event with the bill's current situation; that must not count as a stage.
+    stamped = [ev("2024-02-27", "Despacho de Apensação", "Transformado em Norma Jurídica", "Apense-se à(ao) PL-5695/2023.")]
+    assert [x["stage"] for x in br_history("2024-02-21T09:00", stamped)] == ["introduced"]
+
