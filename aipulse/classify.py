@@ -249,8 +249,14 @@ def lead_company(title: str) -> str | None:
     return min(found)[1] if found else None
 
 
+# Our own note on translated official records ("Machine-translated from Portuguese; ...") names a language,
+# not a place: a Brazilian bill isn't about Portugal, a Swiss one isn't about Germany.
+_TRANSLATED = re.compile(r"\s*Machine-translated from \w+; the official text is linked\.")
+
+
 def tags_for(title: str, summary: str, limit: int = 5) -> list[str]:
     """Companies first, then places, then topics (see TOPIC_TERMS)."""
+    summary = _TRANSLATED.sub("", summary)
     text = f"{title} {summary}"
     topics = [k for k, p in _topics.items() if p.search(text)]
     return (company_tags(title, summary) + place_tags(title, summary) + topics)[:limit]

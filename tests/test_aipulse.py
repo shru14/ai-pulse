@@ -1392,3 +1392,11 @@ def test_standards_news_is_never_a_release():
     assert categorize("NIST releases a tool for testing AI model risk", "", "news") == "policy"
     assert categorize("Acme achieves ISO/IEC 42001 certification for its AI platform", "", "tool") == "news"
     assert categorize("OpenAI launches GPT-6 with new API features", "", "news") == "tool"  # releases unaffected
+
+
+def test_translation_note_is_not_a_place():
+    from aipulse.classify import tags_for
+    note = " Machine-translated from Portuguese; the official text is linked."
+    assert "Portugal" not in tags_for("PL 3392/2026: Establishes minimum standards for AI in judicial procedures", note)
+    assert "Germany" not in tags_for("Motion: AI in the federal administration", note.replace("Portuguese", "German"))
+    assert "Portugal" in tags_for("Portugal adopts an AI strategy", "")
