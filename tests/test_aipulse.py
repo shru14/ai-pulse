@@ -1360,6 +1360,37 @@ def test_industry_news_is_labelled_not_moved(monkeypatch):
     assert order == sorted(order) and "[Tutorial]" not in text
 
 
+def test_digest_is_checked_before_it_is_sent(monkeypatch):
+    from datetime import date
+    from aipulse import digest, quality
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    day = date(2026, 9, 27)
+    card = lambda i, cat, **k: {"id": f"q{i}", "title": f"OpenAI story number {i}", "summary": "About AI.", "url": f"https://ex.com/{i}",
+                                "source": "MarkTechPost", "category": cat, "kind": "news" if cat == "news" else None,
+                                "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00", **k}
+    good = [card(i, "news") for i in range(6)]
+    streams = ["news", "policy"]
+    assert quality.problems(digest.by_streams(good, streams, day), good, day) == []
+    bad = [card(1, "news", source="GOV.UK"), card(2, "news", title="No title"), card(3, "regulation", url="https://arxiv.org/abs/1"),
+           card(4, "tool", title="NIST publishes new AI standards profile"), card(5, "policy", action="incident"),
+           card(6, "news", summary="Donâ€™t miss it"), card(7, "news", url="https://ex.com/1"), card(8, "news", kind="gossip")]
+    found = "\n".join(quality.problems(digest.by_streams(bad, ["releases", *streams, "regulation"], day), bad, day))
+    for p in ("government's own publication (GOV.UK) in Industry", "no real headline", "research paper in Regulation tracker",
+              "standards story in Releases", "AI-incident in Policy", "garbled characters in the summary", "shown twice",
+              "no label in Industry"):
+        assert p in found, p
+    assert "No stories at all" in "".join(quality.problems(digest.by_streams([], streams, day), [], day))
+    # A general outlet's story that doesn't name AI is left out of the email, not a reason to hold it.
+    off = card(9, "news", source="South China Morning Post", title="Alibaba Cloud opens data centres in Europe", summary="")
+    assert off not in digest.by_streams([*good, off], streams, day)["news"] and digest.left_out([*good, off], streams, day) == [off]
+    # A thin day is sent, saying so.
+    _, text, _ = digest.build(good[:2], streams, day)
+    assert "A quiet day for AI: only 2 stories" in text and "Weekends are usually slow" in text
+    assert "quiet day" not in digest.build(good, streams, day)[1]
+    subject, text, _ = quality.alert(day, ["x"], streams)
+    assert "HELD" in subject and "was not sent to anyone" in text
+
+
 def test_standards_are_tracker_cards_that_survive_reclassify(tmp_path):
     from datetime import date
     from aipulse import bills, standards

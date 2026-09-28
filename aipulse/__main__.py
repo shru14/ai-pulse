@@ -156,19 +156,35 @@ def main():
         streams = [x.strip() for x in a.streams.split(",") if x.strip()]
         if not streams or any(x not in rss.FEEDS for x in streams):
             sys.exit(f"streams must be among: {', '.join(rss.FEEDS)}")
+        from . import quality
         day = date.fromisoformat(a.day) if a.day else digest.yesterday()
         conn = store.connect(a.db)
-        cards, _ = store.cards(conn, days=(date.today() - day).days + 2, limit=10**6)
+        # The day, and the two weeks before it (what a usual day looks like).
+        cards, _ = store.cards(conn, days=(date.today() - day).days + quality.HISTORY_DAYS + 2, limit=10**6)
+        by_stream = digest.by_streams(cards, streams, day)
+        counts = {x: len(v) for x, v in by_stream.items()}
+        for c in digest.left_out(cards, streams, day):
+            print(f"Left out (doesn't name AI): {c['title']!r} ({c['source']})")
+        found = quality.problems(by_stream, cards, day)
+        if found:
+            # Held for everyone: nothing is sent to readers; the project inbox gets what's wrong (a dry run
+            # only writes it). The run fails, so GitHub shows it red.
+            note = quality.alert(day, found, streams)
+            print(f"HELD: {len(found)} problem(s) in the {day} digest {counts}:", *(f"  - {p}" for p in found), sep="\n")
+            if a.dry_run:
+                open(a.dry_run, "w", encoding="utf-8").write(note[2])
+                print(f"alert -> wrote {a.dry_run}")
+            else:
+                digest.send(digest.sender(), *note)
+                print(f"Alert sent to the project inbox: {note[0]}")
+            sys.exit(1)
         email = digest.build(cards, streams, day)
-        if not email:
-            print(f"Nothing in {', '.join(streams)} on {day}; no email.")
-        elif a.dry_run:
+        if a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(email[2])
-            print(f"{email[0]} -> wrote {a.dry_run}")
+            print(f"Checked, no problems: {email[0]} {counts} -> wrote {a.dry_run}")
         else:
             digest.send(a.to, *email)
-            counts = {x: len(rss.daily(cards, rss.FEEDS[x][0], today=day + timedelta(days=1), days=1).get(day, [])) for x in streams}
-            print(f"Sent: {email[0]} {counts}")
+            print(f"Checked, no problems. Sent: {email[0]} {counts}")
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

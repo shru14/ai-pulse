@@ -20,7 +20,7 @@ from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
 
-from . import brief, jurisdictions, rss
+from . import brief, jurisdictions, quality, rss
 
 # Industry is shown in groups, each saying what it holds (classify.news_kind; AI-incidents come from the AI
 # Incident Database). Order, heading and a line on what the group is.
@@ -68,9 +68,32 @@ def _day_cards(cards: list[dict], category: str, day: date) -> list[dict]:
     return rss.daily(cards, category, today=day + timedelta(days=1), days=1).get(day, [])
 
 
-def _kpis(by_stream: dict[str, list[dict]], streams: list[str]) -> tuple[list[str], str]:
+def by_streams(cards: list[dict], streams: list[str], day: date) -> dict[str, list[dict]]:
+    """What the email shows: each chosen stream's stories that day, less any that don't name AI (quality.on_topic)."""
+    return {n: [c for c in _day_cards(cards, rss.FEEDS[n][0], day) if quality.on_topic(c)] for n in streams}
+
+
+def left_out(cards: list[dict], streams: list[str], day: date) -> list[dict]:
+    """The day's stories kept out of the email for not naming AI."""
+    return [c for n in streams for c in _day_cards(cards, rss.FEEDS[n][0], day) if not quality.on_topic(c)]
+
+
+def _quiet(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date) -> str:
+    """On a thin day, a line saying so and how it compares with a usual day; "" otherwise."""
+    n = quality.total(by_stream)
+    if n >= quality.THIN:
+        return ""
+    usual = round(sum(quality.usual(cards, rss.FEEDS[s][0], day) for s in streams))
+    line = f"A quiet day for AI: only {n} {'story' if n == 1 else 'stories'} across your streams"
+    line += f", where a usual day brings about {usual}." if usual > n else "."
+    if day.weekday() >= 5:
+        line += " Weekends are usually slow: fewer launches, and arXiv doesn't publish new papers."
+    return line
+
+
+def _kpis(by_stream: dict[str, list[dict]], streams: list[str], quiet: str = "") -> tuple[list[str], str]:
     """The top of the email: how many stories and outlets, each chosen stream's count (a tile linking to its
-    section), and who was mentioned most. Returns (plain-text lines, HTML)."""
+    section), and who was mentioned most; on a thin day, a line saying so. Returns (plain-text lines, HTML)."""
     todays = [c for n in streams for c in by_stream[n]]
     outlets = {o["source"] for c in todays for o in [c, *(c.get("also") or [])] if o.get("source")}
     stories = sum(1 + len(c.get("also") or []) for c in todays)
@@ -84,8 +107,10 @@ def _kpis(by_stream: dict[str, list[dict]], streams: list[str]) -> tuple[list[st
                      f'padding:7px 5px;vertical-align:top"><a href="#{n}" style="text-decoration:none;color:#1a1a1a">'
                      f'<div style="font-size:22px;font-weight:bold;line-height:1.2">{len(by_stream[n]):,}</div>'
                      f'<div style="font-size:11px;line-height:1.3;color:{GREY}">{escape(name)}</div></a></td>')
-    lines = [intro, " · ".join(f"{rss.FEEDS[n][1]} {len(by_stream[n])}" for n in streams)]
+    lines = [intro, *([quiet] if quiet else []), " · ".join(f"{rss.FEEDS[n][1]} {len(by_stream[n])}" for n in streams)]
     html = (f'<p style="margin:0 0 10px;font-size:15px">{escape(intro)}</p>'
+            + (f'<p style="margin:0 0 10px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>'
+               if quiet else "") +
             '<table role="presentation" width="100%" cellspacing="4" cellpadding="0" style="border-collapse:separate;'
             'table-layout:fixed;margin:0 0 6px"><tr>' + "".join(tiles) + "</tr></table>")
     top = _mentioned(todays)
@@ -140,7 +165,7 @@ def _empty_note(name: str, day: date) -> str:
 def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, str] | None:
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day."""
     label = f"{day:%a} {day.day} {day:%b %Y}"
-    by_stream = {n: _day_cards(cards, rss.FEEDS[n][0], day) for n in streams}
+    by_stream = by_streams(cards, streams, day)
     if not any(by_stream.values()):
         return None
     subject = f"AI Pulse daily · {label}"
@@ -149,7 +174,7 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
     stop = _mailto("UNSUBSCRIBE")
 
     # The subject and sender already say "AI Pulse daily" and the day, so the email opens with the numbers.
-    kpi_text, kpi_html = _kpis(by_stream, streams)
+    kpi_text, kpi_html = _kpis(by_stream, streams, _quiet(by_stream, cards, streams, day))
     text = [*kpi_text, ""]
     html = ['<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             '</head><body style="margin:0;padding:12px;background:#ffffff">'
