@@ -27,7 +27,7 @@ POLICY_TERMS = [
     r"\bAI Act\b", r"European Commission", r"\bEU\b", r"executive order", r"white house", r"ministry",
     r"government", r"lawsuit", r"\bsue[sd]?\b", r"court", r"ruling", r"antitrust", r"\bFTC\b", r"\bDOJ\b",
     r"copyright", r"export control", r"sanction", r"privacy regulator", r"\bGDPR\b", r"data protection",
-    r"\bban\b", r"\bbans\b", r"safety institute", r"\bAISI\b", r"summit", r"treaty", r"election",
+    r"(?<!Ray-)\bban\b", r"\bbans\b", r"safety institute",  # not "Ray-Ban Meta" glasses r"\bAISI\b", r"summit", r"treaty", r"election",
     # "governance", but not enterprise products' "identity / data / runtime governance" (Collibra, Vanderbilt's IAM)
     r"policy", r"(?<!identity )(?<!data )(?<!runtime )(?<!access )(?<!cloud )(?<!security )(?<!model )governance",
     r"lawmakers", r"minister", r"president",
