@@ -29,6 +29,21 @@ jobs:
           key: aipulse-db-v4-${{ github.run_id }}
           restore-keys: aipulse-db-v4-
 
+      - name: Diagnose (temporary)
+        run: |
+          python - <<'EOF'
+          import collections
+          from datetime import date, timedelta
+          from aipulse import store, rss
+          conn = store.connect("aipulse.db")
+          cards, _ = store.cards(conn, days=40, limit=10**6)
+          for d in (date(2026, 9, 25), date(2026, 9, 26), date(2026, 9, 27)):
+              for cat in ("news", "research"):
+                  got = rss.daily(cards, cat, today=d + timedelta(days=1), days=1).get(d, [])
+                  late = [c for c in got if date.fromisoformat(c["date"]) < d - timedelta(days=3)]
+                  print(d, cat, len(got), "late:", len(late), collections.Counter(c["source"] for c in late).most_common(6))
+          EOF
+
       - name: Send the test digest to the project inbox
         env:
           DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
