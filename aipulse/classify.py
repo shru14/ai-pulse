@@ -31,7 +31,7 @@ POLICY_TERMS = [
     r"policy", r"governance", r"lawmakers", r"minister", r"president",
     # regulators, investigations and the executive branch
     r"investigat", r"\bprobes?\b", r"scrutin", r"regulators?\b", r"watchdog", r"\bgovernor\b", r"\bgov\.",
-    r"\bMPs?\b", r"\bcabinet\b", r"attorneys? general", r"administration\b", r"\badmin\b(?! (?:plugin|console|panel|tools?|controls?|settings|dashboard|roles?|access|users?|api)\b)",
+    r"\bMPs?\b", r"\bcabinet\b", r"\bNIST\b", r"attorneys? general", r"administration\b", r"\badmin\b(?! (?:plugin|console|panel|tools?|controls?|settings|dashboard|roles?|access|users?|api)\b)",
 ]
 
 TOOL_TERMS = [
@@ -62,6 +62,11 @@ _LAUNCH = re.compile(r"launch|releas|introduc|unveil|announc|rolls? out|availabl
 _STUDY = re.compile(r"\b(stud(y|ies)|researchers?|research team|analy[sz]ed|surveyed|paper|preprint|findings|"
                     r"found that|finds that|report(s)? finds?|according to (a|new) (study|report|survey))\b", re.I)
 _news = re.compile("|".join(NEWS_SIGNALS), re.I)
+# Standards bodies and standards (ISO/IEC 42001, IEEE 7000, NIST's frameworks, EU harmonised standards). What they
+# publish or start is policy (NIST is a government agency) or industry news, never a product release.
+_STANDARDS = re.compile(r"\bNIST\b|\bISO/IEC\b|\bISO \d{4,5}\b|\bIEEE (?:SA\b|Standards?\b|P?\d{4})|\bCEN-CENELEC\b|\bETSI\b|"
+                        r"\bstandards? (?:body|bodies|organi[sz]ations?|institutes?)\b|\bharmoni[sz]ed standards?\b|"
+                        r"\b(?:AI|artificial intelligence) standards\b", re.I)
 
 
 def is_ai_related(title: str, summary: str) -> bool:
@@ -125,6 +130,11 @@ def released(title: str, summary: str) -> bool:
     return launched(title, summary) or bool(_BLOG_LAUNCH.search(title)) or bool(_BLOG_LAUNCH.search(_HISTORY.sub(" ", summary)))
 
 
+def about_standards(title: str) -> bool:
+    """Does a headline name a standards body or a standard (never a release; see _STANDARDS)?"""
+    return bool(_STANDARDS.search(title))
+
+
 def categorize(title: str, summary: str, default: str = "news") -> str:
     """Title matches count double; policy wins ties because it's the rarer signal.
 
@@ -141,6 +151,8 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
     policy, tool = score(_policy), score(_tool)
     if policy >= 3 or (policy >= 2 and policy >= tool):
         return "policy"
+    if _STANDARDS.search(title) and default in ("tool", "news"):
+        return "policy" if policy >= 2 else "news"
     if default == "tool" and _news.search(title):
         return "news"
     if default == "tool":  # a company blog: a release only when something is launched
@@ -185,6 +197,7 @@ TOPIC_TERMS = {
     "IPO": r"\bIPO\b|going public|listing",
     "Jobs & Labor": r"\bjobs?\b|layoffs?|workforce|employment|labou?r",
     # Law & governance
+    "Standards": _STANDARDS.pattern + r"|\bAI RMF\b|risk management framework|\b42001\b",
     "Law": r"\blaws?\b|legislat|\bbill\b|lawsuit|\bsue[sd]?\b|court|ruling|judge",
     "Regulation": r"regulat|compliance|enforcement|regulator",
     "Governance": r"governance|oversight|standards?\b|treaty|summit|safety institute|\bAISI\b",

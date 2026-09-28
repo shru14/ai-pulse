@@ -1354,3 +1354,41 @@ def test_industry_news_is_labelled_not_moved(monkeypatch):
     _, text, html = digest.build([card(1, "tutorial"), card(2, "news"), card(3, "blog")], ["news"], date(2026, 9, 27))
     order = [text.index(t) for t in ("Story 2", digest.OTHER_HEADING, "[Tutorial] Story 1", "[Company blog] Story 3")]
     assert order == sorted(order)  # the news first, then the labelled rest under their heading
+
+
+def test_standards_are_tracker_cards_that_survive_reclassify(tmp_path):
+    from datetime import date
+    from aipulse import bills, standards
+    conn = store.connect(tmp_path / "t.db")
+    urls = [s[4] for s in standards.STANDARDS]
+    assert len(set(urls)) == len(urls) and all(u.startswith("https://") for u in urls)
+    assert all(date.fromisoformat(s[3]) <= date.today() for s in standards.STANDARDS)
+    assert set(standards.SOURCES) <= set(bills.OFFICIAL_SOURCES)  # never re-sorted into Policy
+    store.insert(conn, {"title": "Information technology — Artificial intelligence — Management system (ISO/IEC 42001)",
+                        "summary": "", "url": "https://oecd.ai/x", "source": "OECD.AI", "category": "policy", "date": "2023-01-01"})
+    assert standards.sync(conn) == len(urls)
+    assert standards.sync(conn) == 0  # idempotent
+    reclassify(conn)
+    tracker = store.query(conn, "regulation", limit=100)
+    assert len(tracker) == len(urls) and all(i["action"] == "standard" and i["jurisdictions"] == ["INTL"] for i in tracker)
+    assert not store.query(conn, "policy")  # OECD.AI's copy of ISO/IEC 42001 is replaced by the official page
+
+
+def test_standard_names_from_oecd():
+    from aipulse.oecd import is_standard
+    for t in ["Voluntary AI Safety Standard", "AI Technical Standard", "Algorithmic Transparency Recording Standard",
+              "Standards for the Implementation of Inclusive AI Systems"]:
+        assert is_standard(t), t
+    for t in ["National Occupational Standard Framework for Data and Artificial Intelligence (NOSF)",
+              "Plan for Federal Engagement in Developing Technical Standards and Related Tools",
+              "Mechanism for the Implementation of Principles and International Standards in AI",
+              "AI Standardisation Committee", "National Data Strategy"]:
+        assert not is_standard(t), t
+
+
+def test_standards_news_is_never_a_release():
+    from aipulse.classify import categorize
+    assert categorize("NIST launches AI Agent Standards Initiative as autonomous AI moves into production", "", "news") == "policy"
+    assert categorize("NIST releases a tool for testing AI model risk", "", "news") == "policy"
+    assert categorize("Acme achieves ISO/IEC 42001 certification for its AI platform", "", "tool") == "news"
+    assert categorize("OpenAI launches GPT-6 with new API features", "", "news") == "tool"  # releases unaffected

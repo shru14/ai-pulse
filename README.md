@@ -12,13 +12,17 @@ summaries are the publishers' own text (or an official record's own words), and 
 
 ## Streams
 
-| Stream | What's in it |
-|---|---|
-| **Releases** | New models, products and open-source launches from AI labs and companies. A company's own post counts only when it launches something; its deals, customer stories, guides and opinion go to Industry |
-| **Industry** | Company news, funding, deals, market moves and analysis, from global and regional tech press. Cards that aren't news reporting are labelled: **Company blog** (a lab's or company's own post that isn't a launch), **Tutorial** (guides and how-tos) and **Event** (previews, recaps, podcasts). News reporting a study's findings is tagged **#Study Report**. Filter by region, from the countries each story names |
-| **Policy** | Government, court and political action on AI: investigations, lawsuits, guidance, strategies, requests for government reports |
-| **Research** | arXiv papers by ~80 leading AI professors and ~40 AI ethics, philosophy and law scholars (tagged with their field), and big-lab papers via Hugging Face Daily Papers. Every paper is tagged **#Research** |
-| **Regulation tracker** | AI **proposals** and **adopted laws** by country, and **AI bodies** (safety institutes, regulators, advisory offices). Filter by region (Europe, Americas, Asia-Pacific, Middle East & Africa, International) or by country |
+Every stream is updated every 6 hours (00:00, 06:00, 12:00 and 18:00 UTC) unless the table says otherwise.
+
+| Stream | What's in it | Updated |
+|---|---|---|
+| **Releases** | New models, products and open-source launches from AI labs and companies. A company's own post counts only when it launches something; its deals, customer stories, guides and opinion go to Industry. Nothing a standards body publishes is a release | Every 6 hours |
+| **Industry** | Company news, funding, deals, market moves and analysis, from global and regional tech press, including news about AI standards and certification. Cards that aren't news reporting are labelled: **Company blog** (a lab's or company's own post that isn't a launch), **Tutorial** (guides and how-tos) and **Event** (previews, recaps, podcasts). News reporting a study's findings is tagged **#Study Report**. Filter by region, from the countries each story names | Every 6 hours |
+| **Policy** | Government, court and political action on AI: investigations, lawsuits, guidance, strategies, requests for government reports, and government standards work (e.g. NIST's frameworks, tools and initiatives) | Every 6 hours; OECD.AI records weekly |
+| **Research** | Research papers only: arXiv papers by ~80 leading AI professors and ~40 AI ethics, philosophy and law scholars (tagged with their field), and big-lab papers via Hugging Face Daily Papers. Every paper is tagged **#Research** | Every 6 hours (arXiv announces new papers on weekdays) |
+| **Regulation tracker** | AI **proposals** and **adopted laws** by country, **AI bodies** (safety institutes, regulators, advisory offices) and published **AI standards**: international ones from ISO/IEC and IEEE (e.g. ISO/IEC 42001), and countries' own (e.g. Australia's Voluntary AI Safety Standard). Filter by region (Europe, Americas, Asia-Pacific, Middle East & Africa, International) or by country | Bills and laws every 6 hours (Korea, Vietnam and OECD.AI weekly); standards from a hand-kept list |
+
+Stories that mention standards in any stream are tagged **#Standards**.
 
 **RSS feeds**, one per stream, with a daily digest (one post a day): [Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml),
 [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml),
@@ -62,8 +66,8 @@ Times' terms allow brief excerpts with credit and a link back).
 | Global news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World |
 | Regional news (AI headlines only) | **Asia:** South China Morning Post, Pandaily and TechNode (China's AI labs and launches), Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news) |
-| Research | arXiv (API), Hugging Face Daily Papers, Apple Machine Learning Research |
-| Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and arXiv papers by ~40 AI ethics and law scholars |
+| Research | arXiv (API and daily listings: ~80 AI professors, ~40 AI ethics and law scholars), Hugging Face Daily Papers, Apple Machine Learning Research |
+| Regulation tracker | European Data Protection Board, European Commission (Digital Strategy) |
 
 ### Official records for the tracker (`aipulse/bills.py`, `aipulse/oecd.py`)
 
@@ -84,12 +88,13 @@ Times' terms allow brief excerpts with credit and a link back).
 | Vietnam | National Legal Database (vbpl.vn, Ministry of Justice), via its sitemap | robots.txt allows it; legal documents aren't copyrighted (IP Law, Art. 15) |
 | Switzerland | Swiss Parliament open data (ws.parlament.ch) | opendata.swiss: "Open use. Must provide the source." |
 | Russia | State Duma English news (AI headlines only) | robots.txt allows the news; no terms restrict it |
-| ~60 more countries and international bodies (UN, UNESCO, G7, Council of Europe, African Union, ASEAN, ...) | OECD.AI Policy Observatory | CC BY 4.0; read weekly. For the countries above only guidance and AI bodies, so nothing appears twice |
+| ~60 more countries and international bodies (UN, UNESCO, G7, Council of Europe, African Union, ASEAN, ...) | OECD.AI Policy Observatory | CC BY 4.0; read weekly. For the countries above only guidance and AI bodies, so nothing appears twice. A record whose name is a standard ("Voluntary AI Safety Standard") is shown as a Standard; OECD.AI's ISO and IEEE records are left to the list below |
+| International AI standards | ISO/IEC (JTC 1/SC 42, the joint AI committee) and IEEE: a hand-kept list in `aipulse/standards.py` of 18 published standards (ISO/IEC 42001, 42005, 42006, 23894, 22989, IEEE 7000, 7001, 7003, ...) | Facts only (number, title, publication date, link to the official page), each checked against that page; no standard text is copied. iso.org blocks automated readers and IEEE's robots.txt disallows its feeds, so nothing is fetched: new standards are added by hand |
 
 How records are sorted: bills and laws go to the tracker with their stages (introduced → passed → signed
 → in force); a law stays a law after it's repealed. Switzerland's motions (demands for a law) go to the
 tracker and its postulates (requests for a government report) to Policy; parliamentary questions are left
-out. A ministry release that reports a bill or law reaches the tracker; the rest go to Policy.
+out. Standards are shown with their publication date (ISO gives the month only, so ISO cards show the month). A ministry release that reports a bill or law reaches the tracker; the rest go to Policy.
 
 ### Worldwide coverage
 
@@ -124,7 +129,7 @@ Optional: `pip install ctranslate2 sentencepiece certifi` for offline English tr
 
 ```
 aipulse/  sources (every feed) · feeds (fetching, robots.txt, TLS) · classify · jurisdictions (193 places, regions)
-          bills (official records) · oecd · translate (offline) · brief · brands · backfill · cluster
+          bills (official records) · oecd · standards (hand-kept AI standards) · translate (offline) · brief · brands · backfill · cluster
           store · collect · server · static · evaluate
 aipulse/certs/         public intermediate certificates some servers don't send
 templates/index.html   the page

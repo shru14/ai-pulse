@@ -352,7 +352,10 @@ def reclassify(conn) -> int:
             # Only that check is re-run: summaries are shorter now, so re-scoring would drop real releases.
             text = "" if brief.is_draft(it["summary"]) else it["summary"]
             now = it["category"]
-            if it["category"] == "tool" and streams.get(it["source"]) == "news" and not classify.launched(it["title"], text):
+            if it["category"] == "tool" and classify.about_standards(it["title"]):
+                # What a standards body publishes or starts is policy or industry news, not a release.
+                now = classify.categorize(it["title"], text, "news")
+            elif it["category"] == "tool" and streams.get(it["source"]) == "news" and not classify.launched(it["title"], text):
                 now = "news"
             # A company blog's post is a release only when it launches something (classify.released), either way:
             # a post whose opening paragraph arrives later (fill_page_leads) can turn out to be a launch.

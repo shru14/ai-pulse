@@ -14,7 +14,8 @@ from .server import serve
 # `bills --only` keys, in the order `bills.sync()` runs them during collection.
 BILL_SOURCES = [("us", "US"), ("eu", "EU"), ("uk", "UK"), ("ca", "Canada"), ("br", "Brazil"), ("au", "Australia"),
                 ("cn", "China"), ("in", "India"), ("jp", "Japan"), ("vn", "Vietnam"), ("ch", "Switzerland"),
-                ("my", "Malaysia"), ("tw", "Taiwan"), ("kr", "Korea"), ("oecd", "OECD.AI")]
+                ("my", "Malaysia"), ("tw", "Taiwan"), ("kr", "Korea"), ("oecd", "OECD.AI"),
+                ("std", "AI standards")]
 
 
 def main():
@@ -124,7 +125,8 @@ def main():
         sync_fns = {"uk": bills.sync_uk, "ca": bills.sync_canada, "br": bills.sync_brazil, "au": bills.sync_australia,
                     "cn": bills.sync_china, "in": bills.sync_india, "jp": bills.sync_japan, "vn": bills.sync_vietnam,
                     "ch": bills.sync_switzerland, "my": bills.sync_malaysia, "tw": bills.sync_taiwan,
-                    "kr": bills.sync_korea, "oecd": bills._oecd_sync}
+                    "kr": bills.sync_korea, "oecd": bills._oecd_sync,
+                    "std": bills._standards_sync}
         runs = {"us": lambda: bills.sync_congress(conn, since=since, max_pages=a.max_pages),
                 "eu": lambda: bills.sync_europarl(conn, years=years)}
         for name, label in BILL_SOURCES:

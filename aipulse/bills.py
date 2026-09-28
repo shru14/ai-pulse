@@ -51,7 +51,7 @@ OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Par
                     "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China",
                     "Parliament of India", "e-Gov (Japan)", "National Legal Database (Vietnam)", "Swiss Parliament", "Parliament of Malaysia",
                     "Legislative Yuan (Taiwan)", "National Law Information Center (Korea)",
-                    "OECD.AI")
+                    "OECD.AI", "ISO/IEC", "IEEE SA")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -1304,6 +1304,11 @@ def _oecd_sync(conn, fetcher=feeds.fetch, log=print) -> int:
     return oecd.sync(conn, fetcher, log=log)
 
 
+def _standards_sync(conn, fetcher=feeds.fetch, log=print) -> int:
+    from . import standards
+    return standards.sync(conn, fetcher, log=log)
+
+
 def sync(conn, fetcher=feeds.fetch, log=print) -> int:
     """Every official source; each is recorded in source health like any feed."""
     total = 0
@@ -1321,7 +1326,9 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("Parliament of Malaysia", MY_BILLS, sync_malaysia),
                           ("Legislative Yuan law system (Taiwan)", TW_LAWS, sync_taiwan),
                           ("National Law Information Center (Korea)", KR_SEARCH, sync_korea),
-                          ("OECD.AI policy database", _oecd_api(), _oecd_sync)):
+                          ("OECD.AI policy database", _oecd_api(), _oecd_sync),
+                          ("AI standards (ISO/IEC, IEEE; hand-kept list)", "https://www.iso.org/committee/6794475.html",
+                           _standards_sync)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)

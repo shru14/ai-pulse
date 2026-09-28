@@ -223,7 +223,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
     <button type="button" class="stream news" id="tab-news" data-cat="news" aria-pressed="false"><span class="shead"><span class="n" id="n-news">0</span></span><b>Industry</b><span class="desc">Company news, deals and market moves, plus company blogs, tutorials and events</span></button>
     <button type="button" class="stream policy" id="tab-policy" data-cat="policy" aria-pressed="false"><span class="shead"><span class="n" id="n-policy">0</span></span><b>Policy</b><span class="desc">What governments, courts and politicians are doing about AI</span></button>
     <button type="button" class="stream research" id="tab-research" data-cat="research" aria-pressed="false"><span class="shead"><span class="n" id="n-research">0</span></span><b>Research</b><span class="desc">New papers from arXiv, top labs and leading scholars</span></button>
-    <button type="button" class="stream regulation" id="tab-regulation" data-cat="regulation" aria-pressed="false"><span class="shead"><span class="n" id="n-regulation">0</span></span><b>Regulation tracker</b><span class="desc">Bills and laws followed from proposal to force, by country</span></button>
+    <button type="button" class="stream regulation" id="tab-regulation" data-cat="regulation" aria-pressed="false"><span class="shead"><span class="n" id="n-regulation">0</span></span><b>Regulation tracker</b><span class="desc">Bills and laws from proposal to force, AI bodies and standards, by country</span></button>
   </div>
 
   <div class="controls">
@@ -253,7 +253,9 @@ const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Resea
 const CATS = ["tool","news","policy","research","regulation"];
 const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research:"Research", regulation:"Regulation tracker"};
 // Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
-const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", expert:"Expert view", body:"AI body"};
+const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", body:"AI body", standard:"Standard"};
+// ISO gives a standard's month of publication only (aipulse/standards.py dates it the 1st): show the month.
+const monthOf = d => new Date(d+"T00:00:00").toLocaleDateString(undefined,{month:"short", year:"numeric"});
 // items: the cards loaded so far for the current tab / search / range / country (the server filters and
 // pages them); counts: cards per tab; mapTally: proposals and laws per country for the tracker's map.
 const REGION_TABS = new Set(["regulation", "news"]);  // tabs with the region filter
@@ -303,8 +305,8 @@ function render(){
   list.forEach(it => { if(!byDay.has(it.date)) byDay.set(it.date, []); byDay.get(it.date).push(it); });
   for(const [day, its] of byDay){
     // OECD.AI records have a year only (dated 1 January): their group shows just the year.
-    const yearOnly = its.every(x => x.source === "OECD.AI");
-    const sec = el("section","day"); const h2 = el("h2",null, yearOnly ? day.slice(0,4) : fmtDay(day));
+    const yearOnly = its.every(x => x.source === "OECD.AI"), monthOnly = its.every(x => x.source === "ISO/IEC");
+    const sec = el("section","day"); const h2 = el("h2",null, yearOnly ? day.slice(0,4) : monthOnly ? monthOf(day) : fmtDay(day));
     if(tracker) h2.append(el("span","count", its.length+(its.length===1?" item":" items")));
     sec.append(h2);
     const wrap = el("div","items");
@@ -348,6 +350,8 @@ function render(){
       // Footer: when it happened on the left, the source link on the right.
       const foot = el("div","foot");
       foot.append(el("span","when", it.source === "OECD.AI" ? "Since "+it.date.slice(0,4)
+        : it.source === "ISO/IEC" ? "Published "+monthOf(it.date)
+        : it.action === "standard" ? "Published "+it.date
         : ({research:"Published ", regulation:"Reported "}[it.category]||"Released ")+it.date));
       const src = el("a","src", it.source || domainOf(it.url)); src.href = it.url; src.target="_blank"; src.rel="noopener";
       src.append(el("span","arr","→")); src.lastChild.setAttribute("aria-hidden","true");
