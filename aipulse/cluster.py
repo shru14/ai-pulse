@@ -163,6 +163,7 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
     # Pair similarities; 0 across tabs, outside the time window, or when specifics conflict.
     # Only stories in the same tab within WINDOW_DAYS of each other are compared (sorted sweep).
     sim: dict[tuple[int, int], float] = {}
+    anchored: list[tuple[int, int]] = []  # pairs the headline-name rule says are one event
     days = [date.fromisoformat(it["date"]).toordinal() for it in items]
     family = [FAMILY.get(it["category"], it["category"]) for it in items]
     order = sorted(range(len(items)), key=lambda k: (family[k], days[k]))
@@ -173,8 +174,9 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
             if _conflict(specs[i], specs[j]) or _same_outlet(items[i], items[j]):
                 continue
             s = similarity(toks[i], toks[j], idf)
-            if s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and _anchored(items[i], items[j], idf):
-                s = THRESHOLD
+            if days[j] - days[i] <= ANCHOR_DAYS and _anchored(items[i], items[j], idf):
+                anchored.append((i, j))
+                s = max(s, THRESHOLD)
             if s > 0:
                 sim[min(i, j), max(i, j)] = s
 
@@ -203,6 +205,16 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
             if k != g:
                 nbr[g][k] = nbr[g].get(k, 0.0) + total
                 nbr[k][g] = nbr[g][k]
+
+    # One event split across groups (four outlets on Microsoft's Copilot app, two groups of two): a pair the
+    # headline-name rule links joins its two groups.
+    group_of = {i: g for g, members in groups.items() for i in members}
+    for i, j in anchored:
+        g, h = group_of[i], group_of[j]
+        if g != h:
+            for k in groups[h]:
+                group_of[k] = g
+            groups[g] += groups.pop(h)
 
     def lead_key(i):
         s = items[i].get("summary") or ""
