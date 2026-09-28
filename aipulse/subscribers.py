@@ -17,8 +17,8 @@ import urllib.request
 
 from . import rss
 
-# The web app's address (public: the site's form posts to it). Empty until it's deployed.
-SIGNUP_URL = ""
+# The web app's address (public: the site's form posts to it).
+SIGNUP_URL = "https://script.google.com/macros/s/AKfycbyObWEN9UuUnfWYWUp-dTLhCHoG75_0PLI7rpCjLMrP4u5PXRhjGsie2F8q22kmP1YzPA/exec"
 ADDRESS = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$")
 TOKEN = re.compile(r"^[0-9a-f-]{36}$")
 
