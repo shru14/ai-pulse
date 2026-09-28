@@ -1,0 +1,36 @@
+# Temporary, branch only (removed before merging): read the project inbox and check yesterday's digest without
+# sending or deleting anything.
+name: Subscribe test
+
+on:
+  push:
+    branches: [subscribe]
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore the database (read only)
+        uses: actions/cache/restore@v4
+        with:
+          path: aipulse.db
+          key: aipulse-db-v4-${{ github.run_id }}
+          restore-keys: aipulse-db-v4-
+      - name: Read the inbox (dry run, nothing sent or deleted)
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: python -m aipulse subscribers --dry-run
+      - name: Check yesterday's digest for subscribers (dry run, nothing sent)
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: python -m aipulse --db aipulse.db digest --subscribers --dry-run check.html
