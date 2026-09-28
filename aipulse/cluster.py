@@ -129,6 +129,11 @@ def _names(title: str) -> set[str]:
     return {_norm(w.lower().rstrip(".")) for w in _NAME.findall(title)} - _STOP
 
 
+def _same_outlet(a: dict, b: dict) -> bool:
+    """One outlet's two posts are two stories, never "also reported by" each other (AWS's two SageMaker posts)."""
+    return bool(a.get("source")) and a.get("source") == b.get("source")
+
+
 def _anchored(a: dict, b: dict, idf: dict[str, float]) -> bool:
     """Both headlines are about the same company (the first one each names) and share a rare name that isn't the
     company's own ("Muse"). A story naming the product only in passing ("...a wide gap to Claude and GPT-6") is
@@ -165,13 +170,10 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
         for j in order[pos + 1 :]:
             if family[j] != family[i] or days[j] - days[i] > WINDOW_DAYS:
                 break
-            if _conflict(specs[i], specs[j]):
+            if _conflict(specs[i], specs[j]) or _same_outlet(items[i], items[j]):
                 continue
             s = similarity(toks[i], toks[j], idf)
-            # Different outlets only: one company blog posting twice about a product ("Better prompt caching for
-            # GPT-6", "Introducing GPT-6 Sol and Luna") is two stories, not one.
-            if (s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and items[i].get("source") != items[j].get("source")
-                    and _anchored(items[i], items[j], idf)):
+            if s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and _anchored(items[i], items[j], idf):
                 s = THRESHOLD
             if s > 0:
                 sim[min(i, j), max(i, j)] = s

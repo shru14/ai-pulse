@@ -98,7 +98,8 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
         html.append(f'<h3 style="margin:24px 0 8px;border-bottom:1px solid #ddd;padding-bottom:4px">{escape(stream)}</h3><ul style="padding-left:18px">')
         for c in shown:
             summary = c.get("summary") or ""
-            also = c.get("also") or []  # other outlets' versions of the same story, grouped under this one
+            # Other outlets' versions of the same story, grouped under this one (never the story's own outlet).
+            also = list({o["source"]: o for o in c.get("also") or [] if o["source"] != c["source"]}.values())
             text.append(f"• {c['title']}\n  {summary + ' ' if summary else ''}({c['source']})\n  {c['url']}"
                         + (f"\n  Also reported by {', '.join(o['source'] for o in also)}" if also else ""))
             others = ", ".join(f'<a href="{escape(o["url"])}" style="color:#5f6368">{escape(o["source"])}</a>' for o in also)
@@ -114,9 +115,12 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
             text.append(f"…and {rest} more: {more}")
             html.append(f'<p><a href="{escape(more)}">…and {rest} more on AI Pulse</a></p>')
         text.append("")
-    text += [f"You chose: {chose}.", f"Change streams: {change}", f"Unsubscribe: {stop}",
+    feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
+    text += [f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
+             f"Change streams: {change}", f"Unsubscribe: {stop}",
              f"AI Pulse is free and non-commercial: {rss.SITE}"]
     html.append(f'<p style="margin-top:28px;color:#666;font-size:13px">You chose: {escape(chose)}. '
+                f'RSS: ' + " · ".join(f'<a href="{escape(url)}">{escape(name)}</a>' for name, url in feeds) + '<br>'
                 f'<a href="{escape(change)}">Change streams</a> · <a href="{escape(stop)}">Unsubscribe</a><br>'
                 f'AI Pulse is free and non-commercial · <a href="{rss.SITE}">{rss.SITE}</a></p></div></body></html>')
     return subject, "\n".join(text), "".join(html)

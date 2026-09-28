@@ -1,5 +1,5 @@
-# Test only, on the "digest" branch: email yesterday's digest (all five streams) to the project's own inbox,
-# from the live site's saved database. Nothing is published and the database isn't saved back.
+# Test only, on the "digest" branch: build test digests (all five streams) from the live site's saved database
+# as HTML files to inspect. No email is sent, nothing is published and the database isn't saved back.
 # Delete this file before merging the branch.
 name: Digest test
 
@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  send-test-digest:
+  build-test-digest:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -46,10 +46,17 @@ jobs:
                       print(f"   {it['date']} {it['category']:6} {it['source'][:16]:16} {it['title'][:80]}")
           EOF
 
-      - name: Send the test digest to the project inbox
+      # No email is sent: the digests are built as HTML files and kept as a run artifact to inspect.
+      - name: Build the test digests (dry run, nothing sent)
         env:
           DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
-          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
         run: |
-          python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL" --day 2026-09-27
-          python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL" --day 2026-09-25
+          mkdir -p out
+          python -m aipulse --db aipulse.db digest --to nobody --day 2026-09-27 --dry-run out/digest-2026-09-27.html
+          python -m aipulse --db aipulse.db digest --to nobody --day 2026-09-25 --dry-run out/digest-2026-09-25.html
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digests
+          path: out/
+          retention-days: 3

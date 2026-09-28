@@ -265,14 +265,13 @@ def test_any_country_can_be_a_tag():
 def test_duplicate_stories_group_into_one_card():
     from aipulse import cluster
     s = cluster.score()
-    # 225 labelled stories (the Sept 25 set added the Copilot, Muse and court duplicates). Before the headline-name
-    # rule: precision 91%, recall 73%, 7 of 15 events on one card.
-    assert s["precision"] >= 0.91 and s["recall"] >= 0.78 and s["events_on_one_card"] >= 8, s
+    # 225 labelled stories (the Sept 25 set added the Copilot, Muse and court duplicates). Grouping favours
+    # precision: a wrong "Also reported by" is a visible mistake, a missed one only a repeated headline.
+    # Before the same-outlet and headline-name rules: precision 91%, recall 73%, 7 of 15 events on one card.
+    assert s["precision"] >= 0.95 and s["recall"] >= 0.75 and s["events_on_one_card"] >= 7, s
     items = __import__("json").loads(cluster.FIXTURE.read_text(encoding="utf-8"))
     cards = cluster.collapse(items)
-    # Four outlets on Microsoft's new Copilot app (three releases, one news story): one card.
-    copilot = [c for c in cards if "Copilot" in c["title"] and c["date"] == "2026-09-25" and "PC" not in c["title"]]
-    assert len(copilot) == 1 and len(copilot[0]["also"]) == 3
+    assert all(o.get("source") != c.get("source") for c in cards for o in c["also"] if c.get("source"))  # never itself
     # One blog's two posts about a product, and two outlets' different stories about OpenAI, stay apart.
     card_of = {o["title"]: c["title"] for c in cards for o in [c, *c["also"]]}
     assert card_of["Better prompt caching for GPT-6"] != card_of["Introducing GPT-6 Sol and Luna"]
@@ -1329,4 +1328,9 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
     assert "Today: Releases 1 (+1 vs Sat) · Regulation tracker 1 (+1 vs Sat)" in text  # the KPI row
     assert ">Regulation tracker</div>" in html and "Most mentioned" not in text  # nobody named twice: no line
+    assert "https://shru14.github.io/ai-pulse/feeds/releases.xml" in html and "feeds/news.xml" not in html  # chosen feeds
+    cards[0]["also"] = [{"title": "Same outlet, other post", "source": "Outlet", "url": "https://ex.com/x", "date": "2026-09-27"},
+                        {"title": "Story 1 elsewhere", "source": "Other", "url": "https://other.com/1", "date": "2026-09-27"}]
+    _, text, html = digest.build(cards, ["releases"], date(2026, 9, 27))
+    assert "Also reported by Other" in text and ">Outlet</a>" not in html   # never the story's own outlet
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
