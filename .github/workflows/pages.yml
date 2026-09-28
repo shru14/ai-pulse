@@ -1,4 +1,6 @@
-# Every 6 hours: collect new stories, then publish the static site to GitHub Pages.
+# Every 6 hours: collect new stories from every source, then publish the static site to GitHub Pages.
+# In between, every 30 minutes, a quick run reads only the labs' and companies' own blogs (where launches appear
+# first: "Introducing Claude Sonnet 5.5") and republishes; it skips the re-sort, which the full run does.
 # The database is carried from run to run in the Actions cache; the first run (or one after the cache
 # was evicted) starts from data/seed.db.gz. The "v2" in the cache key marks the seed with history back to
 # 2023 (python -m aipulse backfill); bump it whenever a new seed should replace the saved database.
@@ -6,7 +8,8 @@ name: Collect and publish
 
 on:
   schedule:
-    - cron: "0 */6 * * *"  # 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: "0 */6 * * *"  # 00:00, 06:00, 12:00, 18:00 UTC: everything
+    - cron: "25,55 * * * *"  # the quick run (off the hour, when GitHub starts scheduled runs late)
   workflow_dispatch:
   push:
     branches: [main]
@@ -69,10 +72,11 @@ jobs:
       - name: Collect
         env:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
-        run: python -m aipulse --db aipulse.db collect
+        run: python -m aipulse --db aipulse.db collect ${{ github.event.schedule == '25,55 * * * *' && '--labs' || '' }}
 
       # Stored stories keep the category they got when collected; this applies rule fixes to them too.
       - name: Re-sort stored stories with the current rules
+        if: github.event.schedule != '25,55 * * * *'
         run: python -m aipulse --db aipulse.db reclassify
 
       - name: Fold the write-ahead log into the database file

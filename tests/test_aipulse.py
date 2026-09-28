@@ -1577,3 +1577,40 @@ def test_signup_page_and_web_app_agree():
     # Emails link to the site, which handles the confirm and unsubscribe links; the web app sends only site links.
     assert "#(confirm|unsubscribe)=" in page and 'SITE + "#confirm="' in script
     assert not re.search(r"getUrl\(\) \+ \"\?action=confirm", script)
+
+
+def test_anthropic_news_page_and_its_launches():
+    from aipulse import collect as col
+    from aipulse.sources import SOURCES
+    page = b'''<a href="/claude-sonnet-5-5" class="x"><h2 class="t">Introducing Claude Sonnet 5.5</h2><div><div>
+      <span>Announcements</span><time class="d">Sep 28, 2026</time></div><p class="[&>:last-child]:mb-0">A clear upgrade
+      over Sonnet 5.</p></div></a>
+      <a href="/news/claude-discovers-novel-enzyme-system"><div><time>Sep 23, 2026</time><span>Science</span></div>
+      <span> Claude discovers a novel enzyme system</span></a>
+      <a href="/news/improving-alignment-security-efforts"><div><time>Aug 31, 2026</time><span>Announcements</span></div>
+      <span>Improving our alignment and security efforts</span></a>
+      <a href="/claude-corps">Claude Corps</a><a href="/claude-sonnet-5-5">Try it</a>'''
+    posts = feeds.parse_anthropic(page)
+    assert [(p["title"], p["url"][25:], p["published"].date().isoformat()) for p in posts] == [
+        ("Introducing Claude Sonnet 5.5", "/claude-sonnet-5-5", "2026-09-28"),
+        ("Claude discovers a novel enzyme system", "/news/claude-discovers-novel-enzyme-system", "2026-09-23"),
+        ("Improving our alignment and security efforts", "/news/improving-alignment-security-efforts", "2026-08-31")]
+    assert posts[0]["summary"] == "A clear upgrade over Sonnet 5." and posts[1]["summary"] == ""  # undated links skipped
+    src = next(s for s in SOURCES if s["name"] == "Anthropic News")
+    # A launch has its own page; other posts are judged by the headline, not by launch words in their description.
+    assert col.blog_category(src, posts[0]["title"], posts[0]["summary"], posts[0]["url"]) == "tool"
+    assert col.blog_category(src, posts[1]["title"], "We're introducing a new life sciences research group", posts[1]["url"]) == "news"
+    assert col.blog_category(src, posts[2]["title"], "Claude models gained unauthorized access to systems", posts[2]["url"]) == "news"
+    other = {"name": "Blog", "category": "tool"}
+    assert col.blog_category(other, "Introducing Gemma 4", "", "https://ex.com/gemma-4") == "tool"  # other blogs unchanged
+
+
+def test_quick_run_reads_only_lab_blogs(tmp_path, monkeypatch):
+    import sys
+    from aipulse import __main__ as cli
+    seen = {}
+    monkeypatch.setattr(cli, "collect", lambda conn, sources, max_age_days: seen.setdefault("sources", sources) and 0)
+    monkeypatch.setattr(sys, "argv", ["aipulse", "--db", str(tmp_path / "t.db"), "collect", "--labs"])
+    cli.main()
+    assert seen["sources"] and {s["category"] for s in seen["sources"]} == {"tool"}
+    assert "Anthropic News" in {s["name"] for s in seen["sources"]}
