@@ -17,11 +17,17 @@ from datetime import date, datetime, time, timedelta, timezone
 from email.utils import format_datetime
 from xml.sax.saxutils import escape
 
+from .sources import SOURCES
+
 SITE = "https://shru14.github.io/ai-pulse/"
 DAYS = 14
-# A card dated more than this before its collection day came from a history backfill: left out. 30 days is the
-# longest a source normally looks back (papers often reach arXiv searches a week or more after submission).
-STALE_DAYS = 30
+# How far back each source's normal collection reaches (collect: 3 days, or the source's max_age_days, e.g. 14
+# for arXiv, where papers turn up a week or more after submission). A card dated further back than its source
+# reaches came from a history backfill, not a regular update, so it isn't in a daily digest.
+REACH: dict[str, int] = {}
+for _s in SOURCES:
+    REACH[_s["name"]] = max(REACH.get(_s["name"], 3), _s.get("max_age_days", 3))
+STALE_DAYS = max(REACH.values())  # the furthest any source reaches (how many days of cards to read)
 # File name -> (category, stream name, what it carries); the names match the page's streams.
 FEEDS = {
     "releases": ("tool", "Releases", "New models, products and open-source launches from AI labs and companies."),
@@ -43,7 +49,8 @@ def collected_day(card: dict) -> date | None:
         added = datetime.fromisoformat(card.get("added_at") or "").astimezone(timezone.utc).date()
     except ValueError:
         return None
-    return added if date.fromisoformat(card["date"]) >= added - timedelta(days=STALE_DAYS) else None
+    reach = REACH.get(card.get("source"), 3) + 1  # a day's slack for time zones
+    return added if date.fromisoformat(card["date"]) >= added - timedelta(days=reach) else None
 
 
 def daily(cards: list[dict], category: str, today: date | None = None, days: int = DAYS) -> dict[date, list[dict]]:
