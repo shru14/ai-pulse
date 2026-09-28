@@ -406,6 +406,42 @@ def parse_anthropic(html_bytes: bytes) -> list[dict]:
     return entries
 
 
+# Developer release notes (labs whose own news pages block automated readers): one page of entries grouped by
+# month, with no day. Each entry's address is the page plus an anchor, and "?entry=" so each is its own story
+# (store.item_id ignores anchors); collect.page_list_entries dates it.
+def _plain(fragment: str) -> str:
+    return clean_text(html.unescape(re.sub(r"<[^>]+>", " ", fragment)))
+
+
+def parse_xai_notes(html_bytes: bytes, base: str = "https://docs.x.ai/developers/release-notes") -> list[dict]:
+    """docs.x.ai release notes: each entry is an <h3 id=...> title followed by a paragraph."""
+    page = html_bytes.decode("utf-8", "replace")
+    out = []
+    for m in re.finditer(r'<h3\b[^>]*\bid="([^"]+)"[^>]*>(.*?)</h3>', page, re.S):
+        para = _P.search(page, m.end())
+        nxt = re.search(r"<h[1-3]\b", page[m.end():])
+        text = _plain(para.group(1)) if para and (not nxt or para.start() < m.end() + nxt.start()) else ""
+        out.append({"title": _plain(m.group(2)), "url": f"{base}?entry={m.group(1)}#{m.group(1)}", "summary": text, "published": None,
+                    "authors": []})
+    return out
+
+
+def parse_perplexity_notes(html_bytes: bytes, base: str = "https://docs.perplexity.ai/changelog") -> list[dict]:
+    """docs.perplexity.ai changelog: each entry is a bold line followed by a line describing it."""
+    page = html_bytes.decode("utf-8", "replace")
+    out, seen = [], set()
+    for m in re.finditer(r'<span data-as="p"><strong>(.*?)</strong></span>\s*<span data-as="p">(.*?)</span>', page, re.S):
+        title = _plain(m.group(1))
+        slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+        if len(title) > 80 or ":" in title:  # a bold line inside an entry's list ("Options: ..."), not an entry
+            continue
+        if title and slug not in seen:
+            seen.add(slug)
+            out.append({"title": title, "url": f"{base}?entry={slug}#{slug}", "summary": _plain(m.group(2)), "published": None,
+                        "authors": []})
+    return out
+
+
 def listed_links(page: bytes, base: str, pattern: str) -> list[str]:
     """The post addresses a news page (or a sitemap) lists, in order: links and <loc> entries matching `pattern`,
     made absolute against `base`."""
@@ -442,5 +478,5 @@ def page_meta(page_bytes: bytes) -> dict:
     return {"title": clean_text(title, 200), "summary": clean_text(summary), "published": parse_date(when) if when else None}
 
 
-PARSERS = {"feed": parse, "anthropic": parse_anthropic, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
+PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk}

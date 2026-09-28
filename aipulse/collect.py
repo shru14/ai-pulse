@@ -56,15 +56,26 @@ def page_list_entries(conn, src: dict, fetcher=feeds.fetch) -> list[dict]:
     """A lab with no feed ("format": "page_list"): its news page (or sitemap) lists its posts ("link": the pattern
     of a post's address). A post not seen before is read once for its title, description and date; a page that
     states no date gets the day it's first seen (the quick run checks every 30 minutes). The first time a news
-    page is read, the posts it lists are only remembered, so old posts don't show up as new."""
+    page is read, the posts it lists are only remembered, so old posts don't show up as new. With "notes", the
+    page is a lab's developer release notes and its entries are read from it directly."""
     key = f"page_list:{src['name']}"
     row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
-    links = feeds.listed_links(fetcher(src["url"]), src["url"], src["link"])
+    notes = src.get("notes")  # a page of release notes: the entries are on it (feeds.parse_xai_notes, ...)
+    listed = feeds.PARSERS[notes](fetcher(src["url"])) if notes else None
+    links = [e["url"] for e in listed] if notes else feeds.listed_links(fetcher(src["url"]), src["url"], src["link"])
     if not links:
         raise EmptyFeed("no posts listed")
     seen = json.loads(row[0]) if row else []
     entries = []
-    if row:
+    if row and notes:
+        # Only launches of the lab's own products ("keep"): not retirements, API parameters or other labs' models
+        # it now offers ("The Agent API now supports anthropic/claude-opus-5-5").
+        for e in listed:
+            if (e["url"] not in seen and re.search(src["keep"], e["title"])
+                    and not re.search(r"retire|deprecat|sunset|end of life", f"{e['title']} {e['summary']}", re.I)
+                    and classify.categorize(e["title"], e["summary"], "tool") == "tool"):
+                entries.append({**e, "published": datetime.now(timezone.utc)})
+    elif row:
         for url in [u for u in links if u not in seen][: src.get("max_new", 10)]:
             if store.exists(conn, url):
                 continue
