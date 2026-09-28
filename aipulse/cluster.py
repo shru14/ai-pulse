@@ -25,6 +25,7 @@ MIN_SHARED = 2  # distinctive words in common, so two short headlines can't matc
 # launch of Muse AI"), but name the same company and the same rare name. Two stories dated the same day whose
 # headlines both name the same company and the same word this rare (in at most ~3% of stories) are the same event.
 ANCHOR_IDF = 3.2
+ANCHOR_EXTRA_IDF = 1.5  # the other shared word: not a common one ("new", "launch" are stop words or common)
 ANCHOR_DAYS = 0
 # Releases and industry news are compared with each other: a launch is often reported as news too.
 FAMILY = {"tool": "tool+news", "news": "tool+news"}
@@ -135,8 +136,13 @@ def _anchored(a: dict, b: dict, idf: dict[str, float]) -> bool:
     company = classify.lead_company(a["title"])
     if not company or company != classify.lead_company(b["title"]):
         return False
-    shared = _names(a["title"]) & _names(b["title"])
-    return any(idf.get(t, 0.0) >= ANCHOR_IDF and t != _norm(company.lower()) for t in shared)
+    own = _norm(company.lower())
+    anchors = {t for t in _names(a["title"]) & _names(b["title"]) if idf.get(t, 0.0) >= ANCHOR_IDF and t != own}
+    if not anchors:
+        return False
+    # ...and something else the two say alike: a product that fills the news for days ("Muse") is in many
+    # different stories, so the name alone isn't enough.
+    return any(idf.get(t, 0.0) >= ANCHOR_EXTRA_IDF for t in (tokens(a) & tokens(b)) - anchors - {own})
 
 
 def _days(a: str, b: str) -> int:
