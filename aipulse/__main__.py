@@ -15,7 +15,7 @@ from .server import serve
 BILL_SOURCES = [("us", "US"), ("eu", "EU"), ("uk", "UK"), ("ca", "Canada"), ("br", "Brazil"), ("au", "Australia"),
                 ("cn", "China"), ("in", "India"), ("jp", "Japan"), ("vn", "Vietnam"), ("ch", "Switzerland"),
                 ("my", "Malaysia"), ("tw", "Taiwan"), ("kr", "Korea"), ("oecd", "OECD.AI"),
-                ("std", "AI standards")]
+                ("std", "AI standards"), ("aiid", "AI Incident Database")]
 
 
 def main():
@@ -59,7 +59,7 @@ def main():
 
     dg = sub.add_parser("digest", help="email one day's digest (the four 6-hour updates) to an address")
     dg.add_argument("--to", required=True, help="recipient address")
-    dg.add_argument("--streams", default="releases,news,policy,research,regulation", help="comma-separated streams")
+    dg.add_argument("--streams", default="releases,news,research,regulation,policy", help="comma-separated streams")
     dg.add_argument("--day", help="UTC day, YYYY-MM-DD (default: yesterday)")
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     pr = sub.add_parser("prune", help="delete stories older than N days")
@@ -126,7 +126,7 @@ def main():
                     "cn": bills.sync_china, "in": bills.sync_india, "jp": bills.sync_japan, "vn": bills.sync_vietnam,
                     "ch": bills.sync_switzerland, "my": bills.sync_malaysia, "tw": bills.sync_taiwan,
                     "kr": bills.sync_korea, "oecd": bills._oecd_sync,
-                    "std": bills._standards_sync}
+                    "std": bills._standards_sync, "aiid": bills._incidents_sync}
         runs = {"us": lambda: bills.sync_congress(conn, since=since, max_pages=a.max_pages),
                 "eu": lambda: bills.sync_europarl(conn, years=years)}
         for name, label in BILL_SOURCES:

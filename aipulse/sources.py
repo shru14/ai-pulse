@@ -10,8 +10,6 @@ Optional per-source keys:
   org           a company tag for every item (e.g. Apple's own paper feed)
   professors    arXiv author searches: names that must appear among a paper's authors
   companies     True when items are kept only if a big-tech company is matched (see COMPANIES)
-  expert        regulation tracker: the ethics / philosophy / law scholar a source follows
-                (True for arXiv searches covering several of them)
   ai_only       True when every item is about AI (skips the AI keyword filter)
   ai_in_title   True for general feeds where only items with AI in the title count
   max_age_days  look back further than the run default (for feeds that post weekly or monthly)

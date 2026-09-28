@@ -1400,3 +1400,80 @@ def test_translation_note_is_not_a_place():
     assert "Portugal" not in tags_for("PL 3392/2026: Establishes minimum standards for AI in judicial procedures", note)
     assert "Germany" not in tags_for("Motion: AI in the federal administration", note.replace("Portuguese", "German"))
     assert "Portugal" in tags_for("Portugal adopts an AI strategy", "")
+
+
+def _xlsx(sheets: dict[str, list[list[str]]]) -> bytes:
+    """A minimal .xlsx (inline strings) with the given sheets' rows, first row the header."""
+    import io, zipfile
+    from xml.sax.saxutils import escape
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        names = list(sheets)
+        z.writestr("xl/workbook.xml", '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+                   'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'
+                   + "".join(f'<sheet name="{n}" sheetId="{i}" r:id="rId{i}"/>' for i, n in enumerate(names, 1)) + "</sheets></workbook>")
+        z.writestr("xl/_rels/workbook.xml.rels", '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                   + "".join(f'<Relationship Id="rId{i}" Target="worksheets/sheet{i}.xml"/>' for i in range(1, len(names) + 1)) + "</Relationships>")
+        for i, n in enumerate(names, 1):
+            rows = "".join(f'<row r="{r}">' + "".join(f'<c r="{chr(65 + k)}{r}" t="inlineStr"><is><t>{escape(v)}</t></is></c>'
+                                                      for k, v in enumerate(row)) + "</row>" for r, row in enumerate(sheets[n], 1))
+            z.writestr(f"xl/worksheets/sheet{i}.xml", '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                       f"<sheetData>{rows}</sheetData></worksheet>")
+    return buf.getvalue()
+
+
+def test_ai_incidents_one_card_each_under_industry(tmp_path):
+    # One card per incident since 2023 from the AI Incident Database (its editors' title, description and date),
+    # labelled AI-incident, always under Industry. Our stories are labelled only when the database lists that
+    # very article; reports it hasn't assigned to an incident are ignored.
+    from aipulse import cluster, incidents
+    export = "https://pub-x.r2.dev/AIID_Excel_Export-20260921.xlsx"
+    xlsx = _xlsx({
+        "Incidents": [["AI Incident Database - Incidents"], ["INCIDENT IDENTITY", "COVERAGE", "RISK CLASSIFICATION"], ["Incident ID", "date", "title", "description", "Country Code"],
+                      ["1714", "46283", "Z.ai's ZCode Uploaded Developers' Code to Alibaba Cloud", "Developers reported uploads.", ""],
+                      ["1600", "2026-05-02", "Deepfake scam in Mumbai costs retiree savings", "A retiree in India lost money.", "IN"],
+                      ["12", "2019-03-01", "Old incident before 2023", "Too old.", "US"]],
+        "Reports": [["Report Number", "Title", "URL", "Is Incident Report"],
+                    ["9001", "Mumbai deepfake scam", "https://example-news.com/mumbai-scam", "1"],
+                    ["9002", "Some issue", "https://example-news.com/issue", "0"]]})
+    feed = b"""<?xml version="1.0"?><rss version="2.0"><channel><title>AIID</title>
+<item><title>China's Z.ai disables features</title><description>Text (https://incidentdatabase.ai/cite/1714#8006)</description>
+<link>https://www.reuters.com/zai</link><pubDate>Sun, 27 Sep 2026 00:00:00 GMT</pubDate></item>
+<item><title>New rogue agent attack</title><description>Text (https://incidentdatabase.ai/cite/1720#8010)</description>
+<link>https://www.nytimes.com/rogue</link><pubDate>Sun, 27 Sep 2026 00:00:00 GMT</pubDate></item>
+<item><title>Unassigned report</title><description>Text (report_number: 7999)</description>
+<link>https://example-news.com/unassigned</link><pubDate>Sun, 27 Sep 2026 00:00:00 GMT</pubDate></item>
+</channel></rss>"""
+    page = ('<meta property="og:title" content="Incident 1720: OpenAI Agents Reportedly Attacked Websites"/>'
+            '<meta property="og:description" content="Agents attacked sites."/><div>Incident Date</div><div>2026-09-24</div>').encode()
+    pages = {incidents.SNAPSHOTS: f'<a href="{export}">x</a>'.encode(), export: xlsx, incidents.FEED: feed,
+             incidents.incident_url("1720") + "/": page}
+    conn = store.connect(tmp_path / "t.db")
+    for url, title, cat in [("https://example-news.com/mumbai-scam", "Mumbai deepfake scam hits retiree", "policy"),
+                            ("https://reuters.com/zai", "Z.ai disables coding assistant uploads", "tool"),
+                            ("https://example-news.com/issue", "An issue report", "news"),
+                            ("https://example-news.com/unassigned", "Unassigned report", "news")]:
+        store.insert(conn, {"title": title, "summary": "", "url": url, "source": "Outlet " + url[-4:], "category": cat, "date": "2026-09-27"})
+    assert incidents.sync(conn, fetcher=lambda u: pages[u], log=lambda *_: None) == 3  # 1714, 1600, 1720; not 12
+    assert incidents.sync(conn, fetcher=lambda u: pages[u], log=lambda *_: None) == 0  # the export is read once
+    cards = {i["url"]: i for i in store.query(conn, None, limit=100)}
+    zai = cards[incidents.incident_url("1714")]
+    assert (zai["category"], zai["action"], zai["date"], zai["source"]) == ("news", "incident", "2026-09-18", "AI Incident Database")
+    assert zai["summary"] == "Developers reported uploads."
+    assert "India" in cards[incidents.incident_url("1600")]["tags"]
+    assert cards[incidents.incident_url("1720")]["title"] == "OpenAI Agents Reportedly Attacked Websites"
+    assert incidents.incident_url("12") not in cards
+    # Our stories: labelled only when listed as reports of an incident, and then under Industry.
+    assert [cards[u]["action"] for u in ("https://example-news.com/mumbai-scam", "https://reuters.com/zai",
+                                         "https://example-news.com/issue", "https://example-news.com/unassigned")] == ["incident", "incident", "", ""]
+    assert cards["https://example-news.com/mumbai-scam"]["category"] == "news" and cards["https://reuters.com/zai"]["category"] == "news"
+    assert reclassify(conn) == 0  # never re-sorted out of Industry
+    cluster.assign(conn, days=None)
+    news, _ = store.cards(conn, "news", limit=100)
+    zcard = next(c for c in news if c["url"] == incidents.incident_url("1714"))
+    assert zcard["kind"] == "incident" and [o["url"] for o in zcard["also"]] == ["https://reuters.com/zai"]  # same incident
+    assert {c["kind"] for c in news if c["url"].startswith("https://incidentdatabase.ai")} == {"incident"}
+    assert next(c for c in news if c["url"] == "https://example-news.com/mumbai-scam")["kind"] == "incident"
+    assert next(c for c in news if c["url"] == "https://example-news.com/issue")["kind"] != "incident"
+    rel = {"category": "tool", "action": ""}
+    assert cluster._release_and_incident(rel, {"category": "news", "action": "incident"})

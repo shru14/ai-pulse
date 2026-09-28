@@ -13,6 +13,8 @@ from .sources import COMPANIES, EXPERT_FIELDS, PROFESSORS, SOURCES
 TRACKED_ACTIONS = ("proposal", "law")
 # Papers by the ethics and law scholars used to go to the tracker with this action; reclassify moves them to Research.
 EXPERT = "expert"
+# AI incidents and stories the AI Incident Database lists as their reports: always under Industry (incidents.py).
+INCIDENT = "incident"
 
 _professor_keys = {classify.name_key(n): n for n, _ in PROFESSORS}
 _companies = {name: re.compile(p, re.I) for name, p in COMPANIES.items()}
@@ -346,6 +348,11 @@ def reclassify(conn) -> int:
         if it["action"] == EXPERT:  # a scholar's paper is research, not a regulatory action
             store.set_regulation(conn, it["id"], "research", [], None)
             changed += 1
+            continue
+        if it["action"] == INCIDENT:  # a confirmed AI incident stays under Industry
+            if it["category"] != "news":
+                store.set_regulation(conn, it["id"], "news", [], INCIDENT)
+                changed += 1
             continue
         if it["category"] in ("news", "tool"):
             # A news outlet's "release" that launched nothing (e.g. a study's findings) moves to industry news.

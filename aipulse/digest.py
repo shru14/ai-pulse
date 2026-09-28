@@ -23,7 +23,8 @@ from html import escape
 from . import brief, rss
 
 # Industry cards that aren't reporting, labelled (classify.news_kind), listed after the news.
-KIND_LABEL = {"tutorial": "Tutorial", "event": "Event", "blog": "Company blog"}
+KIND_LABEL = {"incident": "AI-incident", "tutorial": "Tutorial", "event": "Event", "blog": "Company blog"}
+OTHER_KINDS = {"tutorial", "event", "blog"}  # AI-incidents are reporting: they stay with the news, badged
 OTHER_HEADING = "Company blogs, tutorials & events"
 PER_STREAM = 25
 PER_LABELLED = 8  # Industry's company blogs, tutorials and events, after its news  # a long day's stream ends with a link to the rest (the RSS feed and the page have them all)
@@ -128,8 +129,8 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
         text.append(stream.upper())
         html.append(f'<h3 style="margin:24px 0 8px;border-bottom:1px solid #ddd;padding-bottom:4px">{escape(stream)}</h3>')
         # Industry: the news first, then the labelled rest (company blogs, tutorials, events), each list with its own limit.
-        news = [c for c in day_cards if KIND_LABEL.get(c.get("kind", "")) is None]
-        labelled = [c for c in day_cards if KIND_LABEL.get(c.get("kind", ""))]
+        news = [c for c in day_cards if c.get("kind") not in OTHER_KINDS]
+        labelled = [c for c in day_cards if c.get("kind") in OTHER_KINDS]
         more = f"{rss.SITE}#{category}"
         _story_list(news, PER_STREAM, more, text, html)
         if labelled:

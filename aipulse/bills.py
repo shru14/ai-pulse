@@ -1304,6 +1304,11 @@ def _oecd_sync(conn, fetcher=feeds.fetch, log=print) -> int:
     return oecd.sync(conn, fetcher, log=log)
 
 
+def _incidents_sync(conn, fetcher=feeds.fetch, log=print) -> int:
+    from . import incidents
+    return incidents.sync(conn, fetcher, log=log)
+
+
 def _standards_sync(conn, fetcher=feeds.fetch, log=print) -> int:
     from . import standards
     return standards.sync(conn, fetcher, log=log)
@@ -1328,7 +1333,8 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("National Law Information Center (Korea)", KR_SEARCH, sync_korea),
                           ("OECD.AI policy database", _oecd_api(), _oecd_sync),
                           ("AI standards (ISO/IEC, IEEE; hand-kept list)", "https://www.iso.org/committee/6794475.html",
-                           _standards_sync)):
+                           _standards_sync),
+                          ("AI Incident Database", "https://incidentdatabase.ai/rss.xml", _incidents_sync)):
         try:
             n = fn(conn, fetcher, log=log)
             store.record_source(conn, name, url, ok=True, added=n)

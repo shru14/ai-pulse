@@ -17,16 +17,16 @@ Every stream is updated every 6 hours (00:00, 06:00, 12:00 and 18:00 UTC) unless
 | Stream | What's in it | Updated |
 |---|---|---|
 | **Releases** | New models, products and open-source launches from AI labs and companies. A company's own post counts only when it launches something; its deals, customer stories, guides and opinion go to Industry. Nothing a standards body publishes is a release | Every 6 hours |
-| **Industry** | Company news, funding, deals, market moves and analysis, from global and regional tech press, including news about AI standards and certification. Cards that aren't news reporting are labelled: **Company blog** (a lab's or company's own post that isn't a launch), **Tutorial** (guides and how-tos) and **Event** (previews, recaps, podcasts). News reporting a study's findings is tagged **#Study Report**. Filter by region, from the countries each story names | Every 6 hours |
-| **Policy** | Government, court and political action on AI: investigations, lawsuits, guidance, strategies, requests for government reports, and government standards work (e.g. NIST's frameworks, tools and initiatives) | Every 6 hours; OECD.AI records weekly |
+| **Industry** | Company news, funding, deals, market moves and analysis, from global and regional tech press, including news about AI standards and certification, and **AI-incident** cards: every harm from an AI system that the AI Incident Database's editors confirmed since 1 January 2023, one card per incident with the editors' title and description, dated when it happened and linked to the incident's page. A story from our other feeds is labelled AI-incident only when the database lists that very article as a report of an incident (it then sits under Industry, and joins the incident's card when the database says which incident). Other cards that aren't news reporting are labelled: **Company blog** (a lab's or company's own post that isn't a launch), **Tutorial** (guides and how-tos) and **Event** (previews, recaps, podcasts). News reporting a study's findings is tagged **#Study Report**. Filter by region, from the countries each story names | Every 6 hours; AI incidents: new ones every 6 hours, the full list weekly |
 | **Research** | Research papers only: arXiv papers by ~80 leading AI professors and ~40 AI ethics, philosophy and law scholars (tagged with their field), and big-lab papers via Hugging Face Daily Papers. Every paper is tagged **#Research** | Every 6 hours (arXiv announces new papers on weekdays) |
 | **Regulation tracker** | AI **proposals** and **adopted laws** by country, **AI bodies** (safety institutes, regulators, advisory offices) and published **AI standards**: international ones from ISO/IEC and IEEE (e.g. ISO/IEC 42001), and countries' own (e.g. Australia's Voluntary AI Safety Standard). Filter by region (Europe, Americas, Asia-Pacific, Middle East & Africa, International) or by country | Bills and laws every 6 hours (Korea, Vietnam and OECD.AI weekly); standards from a hand-kept list |
+| **Policy** | Government, court and political action on AI: investigations, lawsuits, guidance, strategies, requests for government reports, and government standards work (e.g. NIST's frameworks, tools and initiatives) | Every 6 hours; OECD.AI records weekly |
 
 Stories that mention standards in any stream are tagged **#Standards**.
 
 **RSS feeds**, one per stream, with a daily digest (one post a day): [Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml),
-[Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml),
-[Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml).
+[Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml),
+[Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml).
 
 Search matches word stems across headlines, summaries, tags and authors, back to January 2023. The same
 event reported by several outlets is one card.
@@ -58,11 +58,15 @@ themselves as `AIPulse/1.0` with a link to this repository.
 
 Each feed below allows automated access in its robots.txt, and its terms don't restrict headline + short
 description + link (VnExpress's feed terms allow free use by non-profits that name the source; The Rio
-Times' terms allow brief excerpts with credit and a link back).
+Times' terms allow brief excerpts with credit and a link back). The AI Incident Database has no robots.txt;
+its terms bar only high-volume automated access and commercial use. Incident titles and descriptions are
+CC BY-SA 4.0: they're credited and stay under that licence here. A report's own text isn't under the licence,
+so of the articles only their links are used.
 
 | Stream | Sources |
 |---|---|
 | Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
+| AI incidents (Industry) | AI Incident Database (incidentdatabase.ai): its weekly Excel export (every incident since 2023, and the links of the articles attached to them) and its RSS feed of new reports, every 6 hours; a new incident's page is read once (`aipulse/incidents.py`) |
 | Global news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World |
 | Regional news (AI headlines only) | **Asia:** South China Morning Post, Pandaily and TechNode (China's AI labs and launches), Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news) |
@@ -129,7 +133,7 @@ Optional: `pip install ctranslate2 sentencepiece certifi` for offline English tr
 
 ```
 aipulse/  sources (every feed) · feeds (fetching, robots.txt, TLS) · classify · jurisdictions (193 places, regions)
-          bills (official records) · oecd · standards (hand-kept AI standards) · translate (offline) · brief · brands · backfill · cluster
+          bills (official records) · oecd · standards (hand-kept AI standards) · incidents (AI Incident Database) · translate (offline) · brief · brands · backfill · cluster
           store · collect · server · static · evaluate
 aipulse/certs/         public intermediate certificates some servers don't send
 templates/index.html   the page
@@ -148,5 +152,5 @@ Observatory (https://oecd.ai): CC BY 4.0. Japanese laws: e-Gov Law Search (https
 Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI Pulse. Vietnamese legal
 documents: National Legal Database (https://vbpl.vn). Australian legislation: based on content from the
 Federal Register of Legislation (CC BY 4.0); for the latest information go to https://www.legislation.gov.au.
-Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
+AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
 (MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon.

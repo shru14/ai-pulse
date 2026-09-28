@@ -134,6 +134,11 @@ def _same_outlet(a: dict, b: dict) -> bool:
     return bool(a.get("source")) and a.get("source") == b.get("source")
 
 
+def _release_and_incident(a: dict, b: dict) -> bool:
+    """A confirmed AI incident is always under Industry, so it never joins a release's card (which is under Releases)."""
+    return {a["category"], b["category"]} == {"tool", "news"} and "incident" in (a.get("action"), b.get("action"))
+
+
 def _anchored(a: dict, b: dict, idf: dict[str, float]) -> bool:
     """Both headlines are about the same company (the first one each names) and share a rare name that isn't the
     company's own ("Muse"). A story naming the product only in passing ("...a wide gap to Claude and GPT-6") is
@@ -170,7 +175,7 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
         for j in order[pos + 1 :]:
             if family[j] != family[i] or days[j] - days[i] > WINDOW_DAYS:
                 break
-            if _conflict(specs[i], specs[j]) or _same_outlet(items[i], items[j]):
+            if _conflict(specs[i], specs[j]) or _same_outlet(items[i], items[j]) or _release_and_incident(items[i], items[j]):
                 continue
             s = similarity(toks[i], toks[j], idf)
             if s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and _anchored(items[i], items[j], idf):
@@ -290,7 +295,13 @@ def assign(conn, days: int | None = REGROUP_DAYS) -> int:
         for it in g:
             lead_of[it["id"]] = g[0]["id"]
     changed = store.set_clusters(conn, lead_of)
-    changed += conn.execute("UPDATE items SET cluster = id WHERE bill != '' AND cluster != id").rowcount
+    changed += conn.execute("UPDATE items SET cluster = id WHERE bill != '' AND bill NOT LIKE 'AIID-%'"
+                            " AND cluster != id").rowcount
+    # An AI incident's card (incidents.py) and our stories the AI Incident Database lists as its reports share one
+    # card, led by the incident: its editors say they're the same incident. Never grouped by wording.
+    first = ("(SELECT f.id FROM items f WHERE f.bill = items.bill"
+             " ORDER BY f.source = 'AI Incident Database' DESC, f.date, f.id LIMIT 1)")
+    changed += conn.execute(f"UPDATE items SET cluster = {first} WHERE bill LIKE 'AIID-%' AND cluster != {first}").rowcount
     conn.commit()
     from .bills import attach_news  # news naming a tracked bill joins the bill's card
     return changed + attach_news(conn)

@@ -4,9 +4,9 @@
 <script>try{ const t = localStorage.getItem("aipulse-theme"); if(t==="light"||t==="dark") document.documentElement.dataset.theme = t; }catch(e){}</script>
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Releases" href="feeds/releases.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Industry" href="feeds/news.xml">
-<link rel="alternate" type="application/rss+xml" title="AI Pulse · Policy" href="feeds/policy.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Research" href="feeds/research.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Regulation tracker" href="feeds/regulation.xml">
+<link rel="alternate" type="application/rss+xml" title="AI Pulse · Policy" href="feeds/policy.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
@@ -220,10 +220,10 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   </div>
   <div class="streams" id="streams" role="group" aria-label="Streams: pick one to show only its stories">
     <button type="button" class="stream tool" id="tab-tool" data-cat="tool" aria-pressed="false"><span class="shead"><span class="n" id="n-tool">0</span></span><b>Releases</b><span class="desc">New models, product features and open-source launches</span></button>
-    <button type="button" class="stream news" id="tab-news" data-cat="news" aria-pressed="false"><span class="shead"><span class="n" id="n-news">0</span></span><b>Industry</b><span class="desc">Company news, deals and market moves, plus company blogs, tutorials and events</span></button>
-    <button type="button" class="stream policy" id="tab-policy" data-cat="policy" aria-pressed="false"><span class="shead"><span class="n" id="n-policy">0</span></span><b>Policy</b><span class="desc">What governments, courts and politicians are doing about AI</span></button>
+    <button type="button" class="stream news" id="tab-news" data-cat="news" aria-pressed="false"><span class="shead"><span class="n" id="n-news">0</span></span><b>Industry</b><span class="desc">Company news, deals, market moves and AI incidents, plus company blogs, tutorials and events</span></button>
     <button type="button" class="stream research" id="tab-research" data-cat="research" aria-pressed="false"><span class="shead"><span class="n" id="n-research">0</span></span><b>Research</b><span class="desc">New papers from arXiv, top labs and leading scholars</span></button>
     <button type="button" class="stream regulation" id="tab-regulation" data-cat="regulation" aria-pressed="false"><span class="shead"><span class="n" id="n-regulation">0</span></span><b>Regulation tracker</b><span class="desc">Bills and laws from proposal to force, AI bodies and standards, by country</span></button>
+    <button type="button" class="stream policy" id="tab-policy" data-cat="policy" aria-pressed="false"><span class="shead"><span class="n" id="n-policy">0</span></span><b>Policy</b><span class="desc">What governments, courts and politicians are doing about AI</span></button>
   </div>
 
   <div class="controls">
@@ -243,14 +243,14 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
-  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/policy.xml">Policy</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a></footer>
+  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a> · <a href="feeds/policy.xml">Policy</a></footer>
 </div>
 
 <script>
 // Industry cards that aren't reporting are labelled on the card (classify.news_kind).
-const KIND_LABEL = {tutorial:"Tutorial", event:"Event", blog:"Company blog"};
+const KIND_LABEL = {incident:"AI-incident", tutorial:"Tutorial", event:"Event", blog:"Company blog"};
 const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation"};
-const CATS = ["tool","news","policy","research","regulation"];
+const CATS = ["tool","news","research","regulation","policy"];
 const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research:"Research", regulation:"Regulation tracker"};
 // Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
 const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", body:"AI body", standard:"Standard"};
@@ -352,6 +352,7 @@ function render(){
       foot.append(el("span","when", it.source === "OECD.AI" ? "Since "+it.date.slice(0,4)
         : it.source === "ISO/IEC" ? "Published "+monthOf(it.date)
         : it.action === "standard" ? "Published "+it.date
+        : it.source === "AI Incident Database" ? "Incident date "+it.date
         : ({research:"Published ", regulation:"Reported "}[it.category]||"Released ")+it.date));
       const src = el("a","src", it.source || domainOf(it.url)); src.href = it.url; src.target="_blank"; src.rel="noopener";
       src.append(el("span","arr","→")); src.lastChild.setAttribute("aria-hidden","true");

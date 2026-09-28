@@ -20,11 +20,11 @@ DAYS = 14
 # File name -> (category, stream name, what it carries); the names match the page's streams.
 FEEDS = {
     "releases": ("tool", "Releases", "New models, products and open-source launches from AI labs and companies."),
-    "news": ("news", "Industry", "Company news, funding, deals and market moves in AI, plus company blog posts, "
-                              "tutorials and events (labelled)."),
-    "policy": ("policy", "Policy", "What governments, courts and politicians are doing about AI."),
+    "news": ("news", "Industry", "Company news, funding, deals and market moves in AI, and AI incidents, plus company "
+                              "blog posts, tutorials and events (labelled)."),
     "research": ("research", "Research", "New AI papers from arXiv, top labs and leading scholars."),
     "regulation": ("regulation", "Regulation tracker", "AI bills and laws from proposal to force, AI bodies and AI standards, by country."),
+    "policy": ("policy", "Policy", "What governments, courts and politicians are doing about AI."),
 }
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")  # not allowed in XML
 
