@@ -28,7 +28,8 @@ Stories that mention standards in any stream are tagged **#Standards**.
 [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml),
 [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml).
 
-**Daily email** (being tested, not sent to subscribers yet): the previous UTC day in one table, with the chosen
+**Daily email**, free: the **Daily digest** button next to the theme switch opens a panel to pick streams and
+subscribe. Every morning at about 05:00 UTC (7:00 in Germany in summer) it brings the previous UTC day in one table, with the chosen
 streams' stories tagged by type (Industry's labels above; Release, Research paper, Proposal or Law adopted with
 its country, Policy), a line of summary and the source. It's sent from the project's Gmail account, with no tracking
 pixels or tracked links. Before sending, every story is checked, and any problem holds the email for everyone and
@@ -37,6 +38,16 @@ standards story in Releases, an AI-incident outside Industry, an unlabelled Indu
 headline, leftover HTML or garbled characters, a link that isn't a plain web address, the same story twice, a
 stream with over three times its usual number of stories, or no stories at all. A story from a general outlet that
 doesn't name AI is left out. A thin day (fewer than five stories) is still sent, and says it was a quiet day.
+
+**Subscriptions** (`aipulse/subscribers.py`): the site has no server, so a reader subscribes by emailing the
+project inbox (projectaipulse@gmail.com) from their own address; the panel writes the email for them, with the
+subject `SUBSCRIBE` and their streams (`CHANGE` to switch streams, `UNSUBSCRIBE` to stop; the same links are at the
+foot of every email). Every 30 minutes a workflow reads the inbox over IMAP and answers each new subscription with
+one confirmation. Only commands Gmail verified as really coming from the sender's address (SPF, DKIM or DMARC)
+count, so nobody can subscribe someone else; auto-replies are ignored. The list is the inbox itself: each address's
+newest command. Addresses are kept only in the project's Gmail account, never in this (public) repository or its
+logs, which show counts only. Unsubscribing deletes every email to and from that address for good. Each reader gets
+their own email (nobody sees other addresses); the list stops at 400 readers, under Gmail's daily sending limit.
 
 Search matches word stems across headlines, summaries, tags and authors, back to January 2023. The same
 event reported by several outlets is one card.
@@ -127,7 +138,8 @@ python -m aipulse serve       # http://127.0.0.1:8000
 ```
 
 Other commands: `run --every-hours 6`, `bills` (sync official records), `backfill --since 2023-01-01`,
-`reclassify`, `resummarize`, `regroup`, `evaluate`, `sources`, `status`, `build --out site`, `prune`. Tests: `python -m pytest -q`.
+`reclassify`, `resummarize`, `regroup`, `evaluate`, `sources`, `status`, `build --out site`, `prune`,
+`digest --to ADDRESS | --subscribers [--dry-run FILE]`, `subscribers [--dry-run]`. Tests: `python -m pytest -q`.
 
 Optional: `pip install ctranslate2 sentencepiece certifi` for offline English translations and Mozilla's CA list.
 
@@ -136,6 +148,10 @@ Optional: `pip install ctranslate2 sentencepiece certifi` for offline English tr
 - **GitHub Pages:** `.github/workflows/pages.yml` runs every 6 hours and on every push to `main`: it
   collects, builds the static site and deploys it (~10–15 min). The database is carried in the Actions
   cache, starting from `data/seed.db.gz` (bump the `v4` cache key when replacing the seed).
+- **Subscriptions:** `.github/workflows/subscriptions.yml` reads the project inbox every 30 minutes
+  (at :15 and :45); `.github/workflows/digest.yml` sends the daily email at 05:00 UTC from the database the
+  00:00 run saved. Both use the `DIGEST_EMAIL` and `DIGEST_APP_PASSWORD` secrets (a Gmail app password); started
+  by hand they default to a dry run.
 - **This PC:** Task Scheduler runs `AI Pulse server` (`serve --port 8080`, at logon) and `AI Pulse collect`
   (every 6 hours).
 
@@ -144,7 +160,7 @@ Optional: `pip install ctranslate2 sentencepiece certifi` for offline English tr
 ```
 aipulse/  sources (every feed) · feeds (fetching, robots.txt, TLS) · classify · jurisdictions (193 places, regions)
           bills (official records) · oecd · standards (hand-kept AI standards) · incidents (AI Incident Database) · translate (offline) · brief · brands · backfill · cluster
-          store · collect · server · static · evaluate
+          store · collect · server · static · evaluate · rss · digest (daily email) · quality (checks before sending) · subscribers
 aipulse/certs/         public intermediate certificates some servers don't send
 templates/index.html   the page
 tests/                 unit and end-to-end tests

@@ -1,0 +1,54 @@
+# Every morning at 05:00 UTC (7:00 in Germany in summer): the day before's digest to every confirmed subscriber,
+# each with their own streams. The database is the one the site's 00:00 run saved (read only, never saved back).
+# Before anything is sent the whole day is checked (aipulse/quality.py): any problem holds it for everyone and
+# alerts the project inbox, and the run fails. The log shows counts, never addresses.
+name: Daily digest
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Check and build only (nothing sent)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: subscriptions  # never at the same time as the inbox run
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore the database (read only)
+        uses: actions/cache/restore@v4
+        with:
+          path: aipulse.db
+          key: aipulse-db-v4-${{ github.run_id }}
+          restore-keys: aipulse-db-v4-
+          fail-on-cache-miss: true
+
+      - name: Answer new subscriptions first
+        if: ${{ !inputs.dry_run }}
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: python -m aipulse subscribers
+
+      - name: Check the day, then send it to every subscriber
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: python -m aipulse --db aipulse.db digest --subscribers ${{ inputs.dry_run && '--dry-run check.html' || '' }}

@@ -251,21 +251,39 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
     return subject, "\n".join(text), html
 
 
-def send(to: str, subject: str, text: str, html: str) -> None:
-    """Send one email through the project's Gmail account."""
-    address, password = sender(), os.environ.get("DIGEST_APP_PASSWORD", "").replace(" ", "")
-    if not (address and password):
-        raise RuntimeError("DIGEST_EMAIL and DIGEST_APP_PASSWORD must be set")
+def _message(to: str, subject: str, text: str, html: str) -> EmailMessage:
     msg = EmailMessage()
-    msg["From"] = formataddr(("AI Pulse", address))
-    msg["To"] = to
+    msg["From"] = formataddr(("AI Pulse", sender()))
+    msg["To"] = to  # one reader per email: nobody sees anyone else's address
     msg["Subject"] = subject
     msg["List-Unsubscribe"] = f"<{_mailto('UNSUBSCRIBE')}>"
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
+    return msg
+
+
+def send_all(emails: list[tuple[str, str, str, str]]) -> int:
+    """Send (to, subject, text, HTML) emails through the project's Gmail account over one connection.
+    Returns how many were sent; one failed address doesn't stop the rest."""
+    address, password = sender(), os.environ.get("DIGEST_APP_PASSWORD", "").replace(" ", "")
+    if not (address and password):
+        raise RuntimeError("DIGEST_EMAIL and DIGEST_APP_PASSWORD must be set")
+    sent = 0
     with smtplib.SMTP_SSL(SMTP_HOST, 465, context=ssl.create_default_context(), timeout=30) as smtp:
         smtp.login(address, password)
-        smtp.send_message(msg)
+        for email in emails:
+            try:
+                smtp.send_message(_message(*email))
+                sent += 1
+            except smtplib.SMTPRecipientsRefused:
+                pass  # a bad address; counted as not sent (never printed: the logs are public)
+    return sent
+
+
+def send(to: str, subject: str, text: str, html: str) -> None:
+    """Send one email through the project's Gmail account."""
+    if not send_all([(to, subject, text, html)]):
+        raise RuntimeError("the email was refused")
 
 
 def yesterday() -> date:
