@@ -28,7 +28,8 @@ Stories that mention standards in any stream are tagged **#Standards**.
 [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml),
 [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml).
 
-**Daily email** (being tested, not sent to subscribers yet): the previous UTC day in one table, with the chosen
+**Daily email**, free: the **Daily digest** button next to the theme switch opens a panel to pick streams and
+subscribe. Every morning at about 05:00 UTC (7:00 in Germany in summer) it brings the previous UTC day in one table, with the chosen
 streams' stories tagged by type (Industry's labels above; Release, Research paper, Proposal or Law adopted with
 its country, Policy), a line of summary and the source. It's sent from the project's Gmail account, with no tracking
 pixels or tracked links. Before sending, every story is checked, and any problem holds the email for everyone and
@@ -37,6 +38,18 @@ standards story in Releases, an AI-incident outside Industry, an unlabelled Indu
 headline, leftover HTML or garbled characters, a link that isn't a plain web address, the same story twice, a
 stream with over three times its usual number of stories, or no stories at all. A story from a general outlet that
 doesn't name AI is left out. A thin day (fewer than five stories) is still sent, and says it was a quiet day.
+
+**Subscriptions** (`apps-script/Code.gs`, `aipulse/subscribers.py`): the reader types their email and picks
+streams in the panel. The form posts to a Google Apps Script web app in the project's own Google account (free,
+nothing billed), which keeps the list there and emails a short, plain confirm note; nothing is sent until the reader
+clicks its link (link scanners can't confirm: the link opens a page with a button). Links in our emails go only to
+the site, which talks to the web app (a script.google.com link in an email looks like phishing to spam filters). Entering the same address with other streams
+asks to confirm the change. Every digest has the reader's own one-click unsubscribe link (also the mail apps'
+Unsubscribe button), which deletes their address at once and moves our emails with them to the Trash. A hidden
+field stops bots; each address gets at most three confirm emails a day, and all addresses together at most 80;
+unconfirmed sign-ups are forgotten after a week; the list stops at 400 readers, under Gmail's daily sending
+limit. Addresses are never in this (public) repository or its logs, which show counts only; each reader gets
+their own email, so nobody sees another address.
 
 Search matches word stems across headlines, summaries, tags and authors, back to January 2023. The same
 event reported by several outlets is one card.
@@ -127,7 +140,8 @@ python -m aipulse serve       # http://127.0.0.1:8000
 ```
 
 Other commands: `run --every-hours 6`, `bills` (sync official records), `backfill --since 2023-01-01`,
-`reclassify`, `resummarize`, `regroup`, `evaluate`, `sources`, `status`, `build --out site`, `prune`. Tests: `python -m pytest -q`.
+`reclassify`, `resummarize`, `regroup`, `evaluate`, `sources`, `status`, `build --out site`, `prune`,
+`digest --to ADDRESS | --subscribers [--dry-run FILE]`. Tests: `python -m pytest -q`.
 
 Optional: `pip install ctranslate2 sentencepiece certifi` for offline English translations and Mozilla's CA list.
 
@@ -136,6 +150,12 @@ Optional: `pip install ctranslate2 sentencepiece certifi` for offline English tr
 - **GitHub Pages:** `.github/workflows/pages.yml` runs every 6 hours and on every push to `main`: it
   collects, builds the static site and deploys it (~10–15 min). The database is carried in the Actions
   cache, starting from `data/seed.db.gz` (bump the `v4` cache key when replacing the seed).
+- **Daily email:** `.github/workflows/digest.yml` sends it at 05:00 UTC from the database the 00:00 run saved,
+  to the confirmed readers it reads from the sign-up web app. Secrets: `DIGEST_EMAIL`, `DIGEST_APP_PASSWORD`
+  (a Gmail app password) and `DIGEST_LIST_KEY` (the web app's `LIST_KEY`). Started by hand it defaults to a dry run.
+- **Sign-up web app:** `apps-script/Code.gs`, deployed from the project's Google account (script.google.com >
+  New project, paste the file, set the `LIST_KEY` script property, Deploy > Web app, execute as me, anyone can
+  access); its address goes in `SIGNUP_URL` in `aipulse/subscribers.py`.
 - **This PC:** Task Scheduler runs `AI Pulse server` (`serve --port 8080`, at logon) and `AI Pulse collect`
   (every 6 hours).
 
@@ -144,7 +164,8 @@ Optional: `pip install ctranslate2 sentencepiece certifi` for offline English tr
 ```
 aipulse/  sources (every feed) · feeds (fetching, robots.txt, TLS) · classify · jurisdictions (193 places, regions)
           bills (official records) · oecd · standards (hand-kept AI standards) · incidents (AI Incident Database) · translate (offline) · brief · brands · backfill · cluster
-          store · collect · server · static · evaluate
+          store · collect · server · static · evaluate · rss · digest (daily email) · quality (checks before sending) · subscribers
+apps-script/Code.gs    the sign-up web app (runs in the project's Google account)
 aipulse/certs/         public intermediate certificates some servers don't send
 templates/index.html   the page
 tests/                 unit and end-to-end tests

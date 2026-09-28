@@ -1330,7 +1330,8 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert "6-hour" not in text + html and "Daily update" not in html  # the subject already names the day
     assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
-    assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
+    assert "https://shru14.github.io/ai-pulse/#subscribe" in html and "You chose: Releases, Regulation tracker" in html
+    assert "mailto:" not in html  # changing streams and unsubscribing never need an email
     assert "Releases: 1 (" in text and "Regulation tracker: 1 (" in text and "vs Sat" not in text + html  # the day at a glance
     assert ">Regulation tracker</a>" in html and "came up most" not in text  # nobody named twice: no line
     assert "[Release] Story 1" in text and "Type</th>" in html  # one table: type | story | source
@@ -1518,3 +1519,61 @@ def test_ai_incidents_one_card_each_under_industry(tmp_path):
     assert next(c for c in news if c["url"] == "https://example-news.com/issue")["kind"] != "incident"
     rel = {"category": "tool", "action": ""}
     assert cluster._release_and_incident(rel, {"category": "news", "action": "incident"})
+
+
+
+def test_subscribers_come_from_the_signup_web_app(monkeypatch):
+    import io
+    import json as _json
+    from datetime import date
+    from aipulse import digest, subscribers as sb
+    token = "0b7c3a52-6f7e-4f53-9d38-1f2a3b4c5d6e"
+    data = {"ok": True, "unsubscribe": "https://script.google.com/macros/s/X/exec?action=unsubscribe&t=",
+            "subscribers": [{"email": "Ana@Example.org", "streams": ["policy", "news", "bogus"], "token": token},
+                            {"email": "not an address", "streams": ["news"], "token": token},
+                            {"email": "bob@example.org", "streams": ["news"], "token": "../../etc"},
+                            {"email": "cy@example.org", "streams": ["bogus"], "token": token}]}
+    got = sb.readers(data)
+    site_link = "https://shru14.github.io/ai-pulse/#unsubscribe=" + token
+    assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token, site_link)}  # malformed dropped
+    try:
+        sb.readers({"ok": False})
+        raise AssertionError("a refused list must stop the send")
+    except RuntimeError:
+        pass
+    seen = []
+    monkeypatch.setattr(sb.urllib.request, "urlopen", lambda url, timeout: (seen.append(url), io.BytesIO(_json.dumps(data).encode()))[1])
+    assert sb.current("k" * 32, "https://script.google.com/macros/s/X/exec") == got
+    assert seen == ["https://script.google.com/macros/s/X/exec?action=list&key=" + "k" * 32]
+    monkeypatch.setattr(sb, "SIGNUP_URL", "https://script.google.com/macros/s/X/exec")
+    assert sb.fill('const SIGNUP_URL = "__SIGNUP_URL__";') == 'const SIGNUP_URL = "https://script.google.com/macros/s/X/exec";'
+    # Each reader's email has their own one-click unsubscribe, in the footer and as the mail apps' button.
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = {"id": "p1", "title": "OpenAI sued over AI training data", "summary": "", "url": "https://ex.com/1", "source": "S",
+            "category": "policy", "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
+    _, one_click, link = got["ana@example.org"]
+    subject, text, html = digest.build([card], ["policy"], date(2026, 9, 27), link)
+    assert f"Unsubscribe: {link}" in text and "Change streams: https://shru14.github.io/ai-pulse/#subscribe" in text
+    assert "script.google.com" not in text + html  # links in the email only go to the site (spam filters)
+    msg = digest._message("ana@example.org", subject, text, html, one_click)
+    assert msg["List-Unsubscribe"] == f"<{one_click}>" and msg["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
+    assert "List-Unsubscribe" not in digest._message("digest@example.com", subject, text, html)  # a test send has none
+
+
+def test_signup_page_and_web_app_agree():
+    import re
+    from pathlib import Path
+    from aipulse import rss
+    root = Path(__file__).resolve().parent.parent
+    page = (root / "templates" / "index.html").read_text(encoding="utf-8")
+    script = (root / "apps-script" / "Code.gs").read_text(encoding="utf-8")
+    # The form's streams are the web app's streams, and the fields it posts are the ones the web app reads.
+    assert re.findall(r'type="checkbox" value="(\w+)"', page) == list(rss.FEEDS)
+    assert all(f"{n}:" in script for n in rss.FEEDS)
+    assert 'action: "subscribe", email, streams: streams.join(","), website' in page
+    assert all(f"p.{f}" in script for f in ("email", "streams", "website"))
+    assert "LIST_KEY" in script and not re.search(r"LIST_KEY\s*=\s*['\"]", script)  # the key is never in the code
+    assert 'type="email"' in page and "mailto:" not in page.split('id="subscribe"')[1].split("</dialog>")[0]
+    # Emails link to the site, which handles the confirm and unsubscribe links; the web app sends only site links.
+    assert "#(confirm|unsubscribe)=" in page and 'SITE + "#confirm="' in script
+    assert not re.search(r"getUrl\(\) \+ \"\?action=confirm", script)

@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from . import brands, jurisdictions, rss, store
+from . import brands, jurisdictions, rss, store, subscribers
 from .sources import SOURCES
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
@@ -63,7 +63,8 @@ def make_handler(db_path: str):
             conn = store.connect(db_path)
             try:
                 if url.path == "/":
-                    self._send(TEMPLATE.read_bytes(), "text/html; charset=utf-8")
+                    self._send(subscribers.fill(TEMPLATE.read_text(encoding="utf-8")).encode("utf-8"),
+                               "text/html; charset=utf-8")
                 elif url.path == "/api/items":
                     if qs.get("grouped") == "0":  # every story separately, for other tools
                         payload = {"items": store.query(conn, qs.get("category"), qs.get("q"), days,

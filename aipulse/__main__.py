@@ -1,6 +1,7 @@
 """Command line: python -m aipulse {collect,serve,run,build,prune}"""
 
 import argparse
+import os
 import sys
 import threading
 import time
@@ -58,7 +59,10 @@ def main():
     b.add_argument("--out", default="site", help="output folder, replaced (default: site)")
 
     dg = sub.add_parser("digest", help="email one day's digest (the four 6-hour updates) to an address")
-    dg.add_argument("--to", required=True, help="recipient address")
+    who = dg.add_mutually_exclusive_group(required=True)
+    who.add_argument("--to", help="recipient address")
+    who.add_argument("--subscribers", action="store_true",
+                     help="every confirmed subscriber, each with their streams (from the sign-up web app)")
     dg.add_argument("--streams", default="releases,news,research,regulation,policy", help="comma-separated streams")
     dg.add_argument("--day", help="UTC day, YYYY-MM-DD (default: yesterday)")
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
@@ -157,6 +161,8 @@ def main():
         if not streams or any(x not in rss.FEEDS for x in streams):
             sys.exit(f"streams must be among: {', '.join(rss.FEEDS)}")
         from . import quality
+        if a.subscribers:
+            streams = list(rss.FEEDS)  # the check covers every stream, whoever chose what
         day = date.fromisoformat(a.day) if a.day else digest.yesterday()
         conn = store.connect(a.db)
         # The day, and the two weeks before it (what a usual day looks like).
@@ -178,6 +184,18 @@ def main():
                 digest.send(digest.sender(), *note)
                 print(f"Alert sent to the project inbox: {note[0]}")
             sys.exit(1)
+        if a.subscribers:
+            from . import subscribers
+            # Each confirmed reader gets their own streams; nothing on a day their streams were empty.
+            # Only counts are printed: addresses never appear in the (public) logs.
+            readers = subscribers.current(os.environ.get("DIGEST_LIST_KEY", ""), os.environ.get("DIGEST_SIGNUP_URL", ""))
+            emails = [(to, *e, one_click) for to, (chosen, one_click, link) in readers.items()
+                      if (e := digest.build(cards, chosen, day, link))]
+            if a.dry_run:
+                print(f"Checked, no problems: {len(emails)} of {len(readers)} subscribers would get the {day} digest {counts}")
+            else:
+                print(f"Checked, no problems. Sent the {day} digest to {digest.send_all(emails)} of {len(readers)} subscribers {counts}")
+            return
         email = digest.build(cards, streams, day)
         if a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(email[2])
