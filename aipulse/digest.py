@@ -44,20 +44,18 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
             parts.append((name, stream, category, day_cards))
     if not parts:
         return None
-    total = sum(len(p[3]) for p in parts)
-    subject = f"AI Pulse · {label}: {total} {'story' if total == 1 else 'stories'}"
+    subject = f"AI Pulse daily · {label}"
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
     change = _mailto("CHANGE " + " ".join(streams))
     stop = _mailto("UNSUBSCRIBE")
 
-    text = [f"AI Pulse daily digest · {label} (UTC) · the day's four 6-hour updates", ""]
+    text = [f"AI Pulse · Daily update · {label}", ""]
     html = [f'<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#1a1a1a">'
-            f'<h2 style="margin:0 0 4px">AI Pulse</h2><p style="margin:0 0 20px;color:#666">Daily digest · {label} (UTC) · '
-            f"the day's four 6-hour updates</p>"]
+            f'<h2 style="margin:0 0 4px">AI Pulse</h2><p style="margin:0 0 20px;color:#666">Daily update · {label}</p>']
     for name, stream, category, day_cards in parts:
         shown, rest = day_cards[:PER_STREAM], len(day_cards) - PER_STREAM
-        text.append(f"{stream.upper()} ({len(day_cards)})")
-        html.append(f'<h3 style="margin:24px 0 8px;border-bottom:1px solid #ddd;padding-bottom:4px">{escape(stream)} ({len(day_cards)})</h3><ul style="padding-left:18px">')
+        text.append(stream.upper())
+        html.append(f'<h3 style="margin:24px 0 8px;border-bottom:1px solid #ddd;padding-bottom:4px">{escape(stream)}</h3><ul style="padding-left:18px">')
         for c in shown:
             summary = c.get("summary") or ""
             text.append(f"• {c['title']}\n  {summary + ' ' if summary else ''}({c['source']})\n  {c['url']}")

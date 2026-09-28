@@ -165,7 +165,8 @@ def main():
             print(f"{email[0]} -> wrote {a.dry_run}")
         else:
             digest.send(a.to, *email)
-            print(f"Sent: {email[0]}")
+            counts = {x: len(rss.daily(cards, rss.FEEDS[x][0], today=day + timedelta(days=1), days=1).get(day, [])) for x in streams}
+            print(f"Sent: {email[0]} {counts}")
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

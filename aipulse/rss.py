@@ -19,7 +19,9 @@ from xml.sax.saxutils import escape
 
 SITE = "https://shru14.github.io/ai-pulse/"
 DAYS = 14
-STALE_DAYS = 3  # a card dated more than this before its collection day came from a history backfill: left out
+# A card dated more than this before its collection day came from a history backfill: left out. 30 days is the
+# longest a source normally looks back (papers often reach arXiv searches a week or more after submission).
+STALE_DAYS = 30
 # File name -> (category, stream name, what it carries); the names match the page's streams.
 FEEDS = {
     "releases": ("tool", "Releases", "New models, products and open-source launches from AI labs and companies."),
@@ -69,18 +71,17 @@ def feed_xml(name: str, cards: list[dict], today: date | None = None, site: str 
     category, stream, about = FEEDS[name]
     items = []
     for day, day_cards in daily(cards, category, today).items():
-        n = len(day_cards)
         label = f"{day:%a} {day.day} {day:%b %Y}"
-        body = f"<p>{n} {'story' if n == 1 else 'stories'} collected {label} (UTC).</p><ul>" + "".join(map(_item_html, day_cards)) + "</ul>"
+        body = "<ul>" + "".join(map(_item_html, day_cards)) + "</ul>"
         published = format_datetime(datetime.combine(day + timedelta(days=1), time(), timezone.utc))
-        items.append(f"<item><title>{_text(stream)} · {label} ({n})</title><link>{_text(site + '#' + category)}</link>"
+        items.append(f"<item><title>{_text(stream)} · {label}</title><link>{_text(site + '#' + category)}</link>"
                      f"<description>{_text(_CONTROL.sub('', body))}</description><pubDate>{published}</pubDate>"
                      f'<guid isPermaLink="false">aipulse-{name}-{day.isoformat()}</guid></item>')
     now = format_datetime(datetime.now(timezone.utc))
     return ('<?xml version="1.0" encoding="utf-8"?>\n'
             '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>'
             f"<title>AI Pulse · {_text(stream)} (daily)</title><link>{_text(site + '#' + category)}</link>"
-            f"<description>{_text(about)} One post a day: the last 24 hours' four updates together.</description>"
+            f"<description>{_text(about)} One post a day.</description>"
             f"<language>en</language><lastBuildDate>{now}</lastBuildDate>"
             f'<atom:link href="{_text(site + "feeds/" + name + ".xml")}" rel="self" type="application/rss+xml"/>'
             + "".join(items) + "</channel></rss>\n").encode("utf-8")

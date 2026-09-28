@@ -249,6 +249,9 @@ def upsert(conn, bill: dict) -> bool:
                      " jurisdictions = ?, bill = ? WHERE id = ?",
                      (item["title"], item["summary"], item["date"], item["action"],
                       ",".join(item["jurisdictions"]), bill["key"], store.item_id(item["url"])))
+        if changed:  # a new stage is news: the card counts as collected today (the daily digest, rss.daily)
+            conn.execute("UPDATE items SET added_at = ? WHERE id = ?",
+                         (datetime.now(timezone.utc).isoformat(timespec="seconds"), store.item_id(item["url"])))
     else:
         store.insert(conn, item)
         conn.execute("UPDATE items SET bill = ? WHERE id = ?", (bill["key"], store.item_id(item["url"])))
