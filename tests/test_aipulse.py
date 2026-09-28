@@ -594,7 +594,8 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll", "feeds"}
+    assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
 
 
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
@@ -1277,3 +1278,21 @@ def test_company_blog_posts_are_releases_only_when_something_launches():
               "The Internet is changing more today than at any point since Cloudflare launched back on September 27, 2010.")
     assert classify.categorize(*letter, "tool") == "news"
     assert not classify.launched(*letter)  # a launch in 2010 is history
+
+
+def test_rss_feeds_one_per_stream(tmp_path):
+    import xml.etree.ElementTree as ET
+    from aipulse import rss
+    cards = [{"id": f"c{i}", "title": f"Story {i} & more", "summary": "What happened.", "url": f"https://ex.com/{i}",
+              "source": "Outlet", "category": cat, "date": "2026-09-2" + str(i % 9), "tags": ["Agents"],
+              "added_at": "2026-09-21T10:00:00+00:00"} for i, cat in enumerate(["tool", "news", "tool", "research"] * 20)]
+    feeds = rss.by_stream(cards)
+    assert set(feeds) == {"releases", "news", "policy", "research", "regulation"}
+    assert len(feeds["releases"]) == 40 and not feeds["policy"]
+    dates = [c["date"] for c in feeds["releases"]]
+    assert dates == sorted(dates, reverse=True)  # newest first
+    root = ET.fromstring(rss.feed_xml("releases", feeds["releases"]))  # well-formed, "&" escaped
+    first = root.find("channel/item")
+    assert first.findtext("link").startswith("https://ex.com/") and first.findtext("description") == "What happened. (Outlet)"
+    assert root.findtext("channel/title") == "AI Pulse · Releases"
+    ET.fromstring(rss.feed_xml("policy", []))  # an empty stream is still a valid feed
