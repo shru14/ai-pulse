@@ -41,8 +41,9 @@ doesn't name AI is left out. A thin day (fewer than five stories) is still sent,
 
 **Subscriptions** (`apps-script/Code.gs`, `aipulse/subscribers.py`): the reader types their email and picks
 streams in the panel. The form posts to a Google Apps Script web app in the project's own Google account (free,
-nothing billed), which keeps the list there and emails a confirm link; nothing is sent until the reader clicks it
-(link scanners can't confirm: the link opens a page with a button). Entering the same address with other streams
+nothing billed), which keeps the list there and emails a short, plain confirm note; nothing is sent until the reader
+clicks its link (link scanners can't confirm: the link opens a page with a button). Links in our emails go only to
+the site, which talks to the web app (a script.google.com link in an email looks like phishing to spam filters). Entering the same address with other streams
 asks to confirm the change. Every digest has the reader's own one-click unsubscribe link (also the mail apps'
 Unsubscribe button), which deletes their address at once and moves our emails with them to the Trash. A hidden
 field stops bots; each address gets at most three confirm emails a day, and all addresses together at most 80;

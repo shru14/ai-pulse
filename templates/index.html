@@ -272,6 +272,12 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
         to send you the digest. Nothing is shared, tracked or sold. Unsubscribing deletes your address.</p>
     </form>
   </dialog>
+  <dialog class="subscribe" id="sub-action" aria-labelledby="sub-action-title">
+    <form method="dialog" class="sub-close-form"><button class="sub-close" aria-label="Close">×</button></form>
+    <h2 id="sub-action-title"></h2>
+    <p class="sub-lede" id="sub-action-text"></p>
+    <button class="sub-go" id="sub-action-go" type="button"></button>
+  </dialog>
   <div class="intro">
     <p class="lede"><strong>Your briefing on what's happening in AI.</strong><br>AI Pulse reads company blogs,
       newsrooms, research archives and government sites, sorts every story into one of five streams and links
@@ -757,6 +763,7 @@ renderTheme();
 // Daily digest: the form posts the address and streams to the sign-up web app in the project's Google account
 // (apps-script/Code.gs), which emails a confirm link; nothing is sent until the reader clicks it.
 const SIGNUP_URL = "__SIGNUP_URL__";
+const DIGEST_SENDER = "projectaipulse@gmail.com";
 const subDialog = $("subscribe");
 const chosenStreams = () => [...subDialog.querySelectorAll(".sub-streams input:checked")].map(i => i.value);
 function subMessage(text, kind){ $("sub-msg").textContent = text; $("sub-msg").dataset.kind = kind || ""; }
@@ -765,6 +772,33 @@ subDialog.addEventListener("change", () => { $("subscribe-go").disabled = !chose
 $("subscribe-open").addEventListener("click", openSubscribe);
 subDialog.addEventListener("click", e => { if(e.target === subDialog) subDialog.close(); });  // a click outside closes it
 if(location.hash === "#subscribe") openSubscribe();  // the "Change streams" link in every digest
+// Links in our emails come here, not to the web app (a script.google.com link looks like phishing to spam
+// filters): #confirm=TOKEN from the confirm email, #unsubscribe=TOKEN from every digest. One button, so an email
+// scanner opening the link doesn't act on it.
+const subLink = location.hash.match(/^#(confirm|unsubscribe)=([0-9a-f-]{36})$/);
+if(subLink){
+  const [, action, t] = subLink, box = $("sub-action");
+  const show = (title, text, button) => {
+    $("sub-action-title").textContent = title; $("sub-action-text").textContent = text;
+    $("sub-action-go").textContent = button || ""; $("sub-action-go").hidden = !button;
+  };
+  show(action === "confirm" ? "One more click" : "Unsubscribe from AI Pulse daily",
+       action === "confirm" ? "Confirm your subscription to AI Pulse daily." : "You'll stop getting the daily email, and your address is deleted.",
+       action === "confirm" ? "Confirm my subscription" : "Unsubscribe");
+  $("sub-action-go").addEventListener("click", async () => {
+    $("sub-action-go").disabled = true;
+    try{
+      const r = await (await fetch(SIGNUP_URL, {method: "POST", body: new URLSearchParams({action, t, format: "json"})})).json();
+      show(r.title || "Something went wrong", r.text || "Please try again.");
+    }catch(err){
+      show("Couldn't reach the sign-up service", "Please try again in a moment.", action === "confirm" ? "Confirm my subscription" : "Unsubscribe");
+    }finally{
+      $("sub-action-go").disabled = false;
+    }
+  });
+  box.addEventListener("close", () => history.replaceState(null, "", location.pathname + location.search));
+  box.showModal();
+}
 $("sub-form").addEventListener("submit", async e => {
   e.preventDefault();
   const email = $("sub-email").value.trim(), streams = chosenStreams();
@@ -779,7 +813,8 @@ $("sub-form").addEventListener("submit", async e => {
     if(r.ok){
       subMessage((r.change ? "Almost done: " : "Almost there: ") + "we've emailed a confirm link to " + email
         + ". Click it" + (r.change ? " and your streams change." : " and you're subscribed.")
-        + " (Not there? Look in spam or promotions.)", "ok");
+        + " Not in your inbox? Look in Spam or Promotions and mark it “Not spam”, and add " + DIGEST_SENDER
+        + " to your contacts so the daily email lands in your inbox.", "ok");
       $("sub-email").value = "";
     } else {
       subMessage({email: "Please enter a valid email address.", streams: "Pick at least one stream.",

@@ -1534,7 +1534,8 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
                             {"email": "bob@example.org", "streams": ["news"], "token": "../../etc"},
                             {"email": "cy@example.org", "streams": ["bogus"], "token": token}]}
     got = sb.readers(data)
-    assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token)}  # malformed entries dropped
+    site_link = "https://shru14.github.io/ai-pulse/#unsubscribe=" + token
+    assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token, site_link)}  # malformed dropped
     try:
         sb.readers({"ok": False})
         raise AssertionError("a refused list must stop the send")
@@ -1550,11 +1551,12 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
     monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
     card = {"id": "p1", "title": "OpenAI sued over AI training data", "summary": "", "url": "https://ex.com/1", "source": "S",
             "category": "policy", "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
-    stop = got["ana@example.org"][1]
-    subject, text, html = digest.build([card], ["policy"], date(2026, 9, 27), stop)
-    assert f"Unsubscribe: {stop}" in text and "Change streams: https://shru14.github.io/ai-pulse/#subscribe" in text
-    msg = digest._message("ana@example.org", subject, text, html, stop)
-    assert msg["List-Unsubscribe"] == f"<{stop}>" and msg["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
+    _, one_click, link = got["ana@example.org"]
+    subject, text, html = digest.build([card], ["policy"], date(2026, 9, 27), link)
+    assert f"Unsubscribe: {link}" in text and "Change streams: https://shru14.github.io/ai-pulse/#subscribe" in text
+    assert "script.google.com" not in text + html  # links in the email only go to the site (spam filters)
+    msg = digest._message("ana@example.org", subject, text, html, one_click)
+    assert msg["List-Unsubscribe"] == f"<{one_click}>" and msg["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
     assert "List-Unsubscribe" not in digest._message("digest@example.com", subject, text, html)  # a test send has none
 
 
@@ -1572,3 +1574,6 @@ def test_signup_page_and_web_app_agree():
     assert all(f"p.{f}" in script for f in ("email", "streams", "website"))
     assert "LIST_KEY" in script and not re.search(r"LIST_KEY\s*=\s*['\"]", script)  # the key is never in the code
     assert 'type="email"' in page and "mailto:" not in page.split('id="subscribe"')[1].split("</dialog>")[0]
+    # Emails link to the site, which handles the confirm and unsubscribe links; the web app sends only site links.
+    assert "#(confirm|unsubscribe)=" in page and 'SITE + "#confirm="' in script
+    assert not re.search(r"getUrl\(\) \+ \"\?action=confirm", script)

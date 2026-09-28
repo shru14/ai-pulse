@@ -189,7 +189,8 @@ def main():
             # Each confirmed reader gets their own streams; nothing on a day their streams were empty.
             # Only counts are printed: addresses never appear in the (public) logs.
             readers = subscribers.current(os.environ.get("DIGEST_LIST_KEY", ""), os.environ.get("DIGEST_SIGNUP_URL", ""))
-            emails = [(to, *e, stop) for to, (chosen, stop) in readers.items() if (e := digest.build(cards, chosen, day, stop))]
+            emails = [(to, *e, one_click) for to, (chosen, one_click, link) in readers.items()
+                      if (e := digest.build(cards, chosen, day, link))]
             if a.dry_run:
                 print(f"Checked, no problems: {len(emails)} of {len(readers)} subscribers would get the {day} digest {counts}")
             else:
