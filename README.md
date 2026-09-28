@@ -14,14 +14,14 @@ summaries are the publishers' own text (or an official record's own words), and 
 
 | Stream | What's in it |
 |---|---|
-| **Releases** | New models, products and open-source launches from AI labs and companies. A company's own post counts only when it launches something; its deals, customer stories, guides and opinion go to Industry news |
-| **Industry news** | Funding, deals, company moves and analysis, from global and regional tech press. News reporting a study's findings is tagged **#Study Report**. Filter by region, from the countries each story names |
+| **Releases** | New models, products and open-source launches from AI labs and companies. A company's own post counts only when it launches something; its deals, customer stories, guides and opinion go to Industry |
+| **Industry** | Company news, funding, deals, market moves and analysis, from global and regional tech press. Cards that aren't news reporting are labelled: **Company blog** (a lab's or company's own post that isn't a launch), **Tutorial** (guides and how-tos) and **Event** (previews, recaps, podcasts). News reporting a study's findings is tagged **#Study Report**. Filter by region, from the countries each story names |
 | **Policy** | Government, court and political action on AI: investigations, lawsuits, guidance, strategies, requests for government reports |
 | **Research** | arXiv papers by ~80 leading AI professors, and big-lab papers via Hugging Face Daily Papers. Every paper (and every scholar's paper in the tracker) is tagged **#Research** |
 | **Regulation tracker** | AI **proposals** and **adopted laws** by country, **AI bodies** (safety institutes, regulators, advisory offices) and **expert views** from ~40 ethics and law scholars. Filter by region (Europe, Americas, Asia-Pacific, Middle East & Africa, International) or by country |
 
 **RSS feeds**, one per stream, with a daily digest (one post a day): [Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml),
-[Industry news](https://shru14.github.io/ai-pulse/feeds/news.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml),
+[Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml),
 [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml).
 
 Search matches word stems across headlines, summaries, tags and authors, back to January 2023. The same

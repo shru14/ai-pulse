@@ -301,8 +301,13 @@ def cards(conn: sqlite3.Connection, category=None, q=None, days=None, place=None
             for r in conn.execute(f"SELECT title, source, url, date, cluster FROM items WHERE cluster IN ({marks})"
                                   f" AND id != cluster ORDER BY date, added_at", batch):
                 also.setdefault(r["cluster"], []).append({k: r[k] for k in ("title", "source", "url", "date")})
+        from .classify import news_kind
+        from .sources import SOURCES
+        blogs = {s["name"] for s in SOURCES if s["category"] == "tool"}  # labs' and companies' own blogs
         for c in leads:
             c["also"] = also.get(c["id"], [])
+            if c["category"] == "news":  # a label within the stream: news, tutorial, event or company blog
+                c["kind"] = news_kind(c["title"], c.get("summary") or "", c["source"] in blogs)
             if c.get("bill"):  # a tracked bill: its lifecycle timeline
                 from .bills import lifecycle
                 c["lifecycle"] = lifecycle(conn, c["bill"])

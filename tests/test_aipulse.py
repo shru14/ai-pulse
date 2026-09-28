@@ -1334,3 +1334,19 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     _, text, html = digest.build(cards, ["releases"], date(2026, 9, 27))
     assert "Also reported by Other" in text and ">Outlet</a>" not in html   # never the story's own outlet
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
+
+
+def test_industry_news_is_labelled_not_moved(monkeypatch):
+    from datetime import date
+    from aipulse import classify, digest
+    assert classify.news_kind("A Coding Guide to Google Research's MSEB: Writing Sound Encoders", "", False) == "tutorial"
+    assert classify.news_kind("Inside cuDNN's Graph API", "Learn how to build custom kernel fusions", False) == "tutorial"
+    assert classify.news_kind("What to expect at NetApp INSIGHT: Join theCUBE Sept. 30", "", False) == "event"
+    assert classify.news_kind("How Trane gets building insights 60x faster with Amazon Bedrock", "", True) == "blog"
+    assert classify.news_kind("Anthropic signs $11.6 billion cloud deal with Akamai", "", False) == "news"
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = lambda i, kind: {"id": f"n{i}", "title": f"Story {i}", "summary": "", "url": f"https://ex.com/{i}", "source": f"S{i}",
+                            "category": "news", "kind": kind, "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
+    _, text, html = digest.build([card(1, "tutorial"), card(2, "news"), card(3, "blog")], ["news"], date(2026, 9, 27))
+    order = [text.index(t) for t in ("Story 2", digest.OTHER_HEADING, "[Tutorial] Story 1", "[Company blog] Story 3")]
+    assert order == sorted(order)  # the news first, then the labelled rest under their heading

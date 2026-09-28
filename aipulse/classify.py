@@ -83,6 +83,27 @@ _NOT_RELEASE = re.compile(r"^how\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat
                           r"\bletter\b|\bstate of\b|\broundup\b|\bweek\b|\bcourses?\b", re.I)
 
 
+# Industry news that isn't reporting gets a label on its card (it stays in the stream): tutorials and guides,
+# event previews and podcasts, and a company's own blog posts that aren't launches.
+_TUTORIAL = re.compile(r"^(a |an )?(coding |step[- ]by[- ]step |hands[- ]on |practical |complete |beginner'?s? )?"
+                       r"(guide|tutorial|walkthrough)\b|^how to\b|\bcoding guide\b|\bfor beginners\b|\btutorial\b|"
+                       r"\bstep[- ]by[- ]step\b|^build(ing)? (a|an|your)\b", re.I)
+_TUTORIAL_LEAD = re.compile(r"\btutorial\b|\bstep[- ]by[- ]step\b|\blearn how to\b|"
+                            r"\bin this (post|tutorial|guide),? (we|you)('ll| will)? (show|walk|build|learn)", re.I)
+_EVENT = re.compile(r"\bwhat to expect (at|during)\b|\btheCUBE\b|\bwebinar\b|\blivestream\b|\bpodcast\b|"
+                    r"\bepisode\b|\binsights from\b|^ITWeb TV\b|\bTechCrunch Disrupt\b", re.I)
+
+
+def news_kind(title: str, summary: str, company_blog: bool) -> str:
+    """What an industry-news card is: "tutorial", "event", "blog" (a company's own post that isn't a
+    launch) or "news" (reporting)."""
+    if _TUTORIAL.search(title) or _TUTORIAL_LEAD.search(summary or ""):
+        return "tutorial"
+    if _EVENT.search(title):
+        return "event"
+    return "blog" if company_blog else "news"
+
+
 def launched(title: str, summary: str) -> bool:
     """Does a news story report something being released? It needs launch language, and a study's findings
     count only when the headline itself announces a launch ("Researchers release ...")."""
