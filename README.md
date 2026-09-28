@@ -16,7 +16,7 @@ Every stream is updated every 6 hours (00:00, 06:00, 12:00 and 18:00 UTC) unless
 
 | Stream | What's in it | Updated |
 |---|---|---|
-| **Releases** | New models, products and open-source launches from AI labs and companies. A company's own post counts only when it launches something; its deals, customer stories, guides and opinion go to Industry. Nothing a standards body publishes is a release | Every 6 hours |
+| **Releases** | New models, products and open-source launches from AI labs and companies. A company's own post counts only when it launches something; its deals, customer stories, guides and opinion go to Industry. Nothing a standards body publishes is a release | Labs' and companies' own blogs every 30 minutes; everything else every 6 hours |
 | **Industry** | Company news, funding, deals, market moves and analysis, from global and regional tech press, including news about AI standards and certification, and **AI-incident** cards: every harm from an AI system that the AI Incident Database's editors confirmed since 1 January 2023, one card per incident with the editors' title and description, dated when it happened and linked to the incident's page. A story from our other feeds is labelled AI-incident only when the database lists that very article as a report of an incident (it then sits under Industry, and joins the incident's card when the database says which incident). Every other card is labelled: **News** (reporting on companies, products, deals and people), **Study** (news about research findings), **Opinion & analysis** (commentary, explainers, comparisons), **Company blog** (a lab's or company's own post that isn't a launch), **Tutorial** (guides and how-tos) or **Event** (previews, recaps, podcasts). Government publications are never Industry: they're Policy or the tracker. Filter by region, from the countries each story names | Every 6 hours; AI incidents: new ones every 6 hours, the full list weekly |
 | **Research** | Research papers only: arXiv papers by ~80 leading AI professors and ~40 AI ethics, philosophy and law scholars (tagged with their field), and big-lab papers via Hugging Face Daily Papers. Every paper is tagged **#Research** | Every 6 hours (arXiv announces new papers on weekdays) |
 | **Regulation tracker** | AI **proposals** and **adopted laws** by country, **AI bodies** (safety institutes, regulators, advisory offices) and published **AI standards**: international ones from ISO/IEC and IEEE (e.g. ISO/IEC 42001), and countries' own (e.g. Australia's Voluntary AI Safety Standard). Filter by region (Europe, Americas, Asia-Pacific, Middle East & Africa, International) or by country | Bills and laws every 6 hours (Korea, Vietnam and OECD.AI weekly); standards from a hand-kept list |
@@ -88,7 +88,7 @@ so of the articles only their links are used.
 
 | Stream | Sources |
 |---|---|
-| Releases | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
+| Releases | OpenAI, Anthropic (its news page, which has no feed; robots.txt allows all: a launch has its own page, other posts count by their headline), Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama |
 | AI incidents (Industry) | AI Incident Database (incidentdatabase.ai): its weekly Excel export (every incident since 2023, and the links of the articles attached to them) and its RSS feed of new reports, every 6 hours; a new incident's page is read once (`aipulse/incidents.py`) |
 | Global news | TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World |
 | Regional news (AI headlines only) | **Asia:** South China Morning Post, Pandaily and TechNode (China's AI labs and launches), Focus Taiwan, Bernama (Malaysia), VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **Middle East & North Africa:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
@@ -148,8 +148,10 @@ Optional: `pip install ctranslate2 sentencepiece certifi` for offline English tr
 ## Hosting
 
 - **GitHub Pages:** `.github/workflows/pages.yml` runs every 6 hours and on every push to `main`: it
-  collects, builds the static site and deploys it (~10–15 min). The database is carried in the Actions
+  collects from every source, re-sorts, builds the static site and deploys it (~10–15 min). The database is carried in the Actions
   cache, starting from `data/seed.db.gz` (bump the `v4` cache key when replacing the seed).
+  In between, at :25 and :55 every hour, a quick run (`collect --labs`, ~3 min) reads only the labs' and
+  companies' own blogs, where launches appear first, and republishes. GitHub may start scheduled runs late.
 - **Daily email:** `.github/workflows/digest.yml` sends it at 05:00 UTC from the database the 00:00 run saved,
   to the confirmed readers it reads from the sign-up web app. Secrets: `DIGEST_EMAIL`, `DIGEST_APP_PASSWORD`
   (a Gmail app password) and `DIGEST_LIST_KEY` (the web app's `LIST_KEY`). Started by hand it defaults to a dry run.

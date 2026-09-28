@@ -48,6 +48,19 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
     raise EmptyFeed(f"no entries after {EMPTY_RETRIES} tries")
 
 
+def blog_category(src: dict, title: str, summary: str, url: str) -> str:
+    """A lab's or company's own post: a release only when it launches something. A site that gives each launch
+    its own page ("launch_pages", e.g. anthropic.com/claude-sonnet-5-5) says so by the address; its other posts
+    are judged by the headline alone, since their descriptions use launch words for anything ("We're introducing
+    a new research group", "gained unauthorized access to")."""
+    launch = src.get("launch_pages")
+    if not launch:
+        return classify.categorize(title, summary, "tool")
+    if classify.about_standards(title):
+        return classify.categorize(title, "", "news")
+    return "tool" if re.search(launch, url) else classify.categorize(title, "", "tool")
+
+
 def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, log=print,
             official_bills: bool | None = None, backfill: bool = False) -> int:
     """official_bills: also sync bill stages from congress.gov and the European Parliament
@@ -115,7 +128,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 "summary": summary,
                 "url": e["url"],
                 "source": source.strip(),
-                "category": classify.categorize(title, summary, src["category"]),
+                "category": blog_category(src, title, summary, e["url"]) if src["category"] == "tool"
+                            else classify.categorize(title, summary, src["category"]),
                 "date": published.date().isoformat(),
                 "tags": classify.tags_for(title, summary),
                 "authors": authors[:30],
@@ -356,6 +370,7 @@ def reclassify(conn) -> int:
     # The same fallback places collection uses (e.g. Korea's ministry: "KR" when a story names none).
     defaults = {s["name"]: s.get("jurisdictions", []) for s in SOURCES}
     streams = {s["name"]: s["category"] for s in SOURCES}
+    by_name = {s["name"]: s for s in SOURCES}
     government = {s["name"] for s in SOURCES if s.get("government")}
     for it in store.query(conn, None, None, None, limit=100000):
         if it["source"] in government and it["action"] != INCIDENT and it["category"] in ("news", "tool"):
@@ -389,8 +404,8 @@ def reclassify(conn) -> int:
                 now = "news"
             # A company blog's post is a release only when it launches something (classify.released), either way:
             # a post whose opening paragraph arrives later (fill_page_leads) can turn out to be a launch.
-            elif streams.get(it["source"]) == "tool" and classify.categorize(it["title"], text, "tool") in ("news", "tool"):
-                now = classify.categorize(it["title"], text, "tool")
+            elif streams.get(it["source"]) == "tool" and blog_category(by_name[it["source"]], it["title"], text, it["url"]) in ("news", "tool"):
+                now = blog_category(by_name[it["source"]], it["title"], text, it["url"])
             if now != it["category"]:
                 store.set_regulation(conn, it["id"], now, it["jurisdictions"], it["action"] or None)
                 if brief.is_draft(it["summary"]):  # "A release, involving Mistral." names the old stream

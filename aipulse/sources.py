@@ -38,6 +38,10 @@ access (its robots.txt and terms): Google News and Bing News don't, so neither i
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
     {"name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "category": "tool"},
+    # No feed: its news page (robots.txt allows all); posts without a description get their opening paragraph.
+    # Launches have their own page (/claude-sonnet-5-5), other posts are under /news/.
+    {"name": "Anthropic News", "url": "https://www.anthropic.com/news", "format": "anthropic", "category": "tool",
+     "page_lead": True, "max_age_days": 90, "launch_pages": r"^https://www\.anthropic\.com/(?!news/)"},
     {"name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/", "category": "tool"},
     {"name": "Google DeepMind Blog", "url": "https://deepmind.google/blog/rss.xml", "category": "tool"},
     {"name": "Google Research Blog", "url": "https://research.google/blog/rss/", "category": "tool", "page_lead": True},

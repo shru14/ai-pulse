@@ -376,5 +376,34 @@ def parse_duma_en(html_bytes: bytes) -> list[dict]:
     return entries
 
 
-PARSERS = {"feed": parse, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
+ANTHROPIC = "https://www.anthropic.com"
+# Each post on anthropic.com/news is a link holding its date (<time>), a category, a title (a heading, or the text
+# after the date line) and sometimes a one-line description (<p>). Launches link to their own page
+# ("/claude-sonnet-5-5"); other posts to /news/...
+_ANTHROPIC_POST = re.compile(r'<a\b[^>]*href="(/(?:news/)?[a-z0-9][a-z0-9-]*)"[^>]*>(.*?)</a>', re.S)
+_ANTHROPIC_DATE_LINE = re.compile(r"<div\b[^>]*>(?:\s*<(?:span|time)\b[^>]*>[^<]*</(?:span|time)>\s*)+</div>")
+_HEADING = re.compile(r"<h[1-6]\b[^>]*>(.*?)</h[1-6]>", re.S)
+
+
+def parse_anthropic(html_bytes: bytes) -> list[dict]:
+    """Anthropic's news page (it has no feed): title, link, date and one-line description of each dated post."""
+    entries, seen = [], set()
+    for path, inner in _ANTHROPIC_POST.findall(html_bytes.decode("utf-8", "replace")):
+        day = re.search(r"<time\b[^>]*>\s*([A-Z][a-z]{2} \d{1,2}, \d{4})\s*</time>", inner)
+        if not day or path in seen:
+            continue
+        seen.add(path)
+        heading = _HEADING.search(inner)
+        rest = _P.sub(" ", _ANTHROPIC_DATE_LINE.sub(" ", inner))  # the title, when it isn't a heading
+        title = clean_text(html.unescape(re.sub(r"<[^>]+>", " ", heading.group(1) if heading else rest)), 200)
+        lead = _P.search(inner)
+        if title:
+            entries.append({"title": title, "url": ANTHROPIC + path,
+                            "summary": clean_text(html.unescape(re.sub(r"<[^>]+>", " ", lead.group(1)))) if lead else "",
+                            "published": datetime.strptime(day.group(1), "%b %d, %Y").replace(tzinfo=timezone.utc),
+                            "authors": []})
+    return entries
+
+
+PARSERS = {"feed": parse, "anthropic": parse_anthropic, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk}
