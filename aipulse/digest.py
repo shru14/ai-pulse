@@ -14,13 +14,15 @@ from __future__ import annotations
 import os
 import smtplib
 import ssl
+from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
 
-from . import rss
+from . import brief, rss
 
+TILE = {"regulation": "Tracker"}  # "Regulation tracker" doesn't fit a phone-width tile
 PER_STREAM = 25  # a long day's stream ends with a link to the rest (the RSS feed and the page have them all)
 SMTP_HOST = "smtp.gmail.com"
 
@@ -31,6 +33,42 @@ def sender() -> str:
 
 def _mailto(subject: str) -> str:
     return f"mailto:{sender()}?subject={subject.replace(' ', '%20')}"
+
+
+def _mentioned(cards: list[dict], n: int = 5) -> list[tuple[str, int]]:
+    """The companies and people named most across the day's stories (tags that aren't places or topics)."""
+    skip = brief._PLACE_TAGS | brief._TOPIC_TAGS | {"Research", "Study Report"}
+    counts = Counter(t for c in cards for t in set(c.get("tags") or []) if t not in skip)
+    return [(t, k) for t, k in counts.most_common(n) if k >= 2]
+
+
+def _kpis(cards: list[dict], streams: list[str], day: date) -> tuple[list[str], str]:
+    """The top of the email: each chosen stream's count for the day against the day before, and who was
+    mentioned most. Returns (plain-text lines, HTML)."""
+    before = day - timedelta(days=1)
+    tiles, text, todays = [], [], []
+    for name in streams:
+        category, stream, _ = rss.FEEDS[name]
+        by_day = rss.daily(cards, category, today=day + timedelta(days=1), days=2)
+        now, prev = len(by_day.get(day, [])), len(by_day.get(before, []))
+        todays += by_day.get(day, [])
+        change = now - prev
+        vs = f"{'+' if change > 0 else '−' if change < 0 else ''}{abs(change) if change else 'same as'} {'vs ' if change else ''}{before:%a}"
+        text.append(f"{stream} {now} ({vs})")
+        tiles.append(f'<td width="{100 // len(streams)}%" style="background:#f6f7f9;border:1px solid #e3e5e8;padding:8px 6px;'
+                     f'text-align:left;vertical-align:top">'
+                     f'<div style="font-size:11px;line-height:1.25;color:#5f6368">{escape(TILE.get(name, stream))}</div>'
+                     f'<div style="font-size:24px;font-weight:bold;color:#1a1a1a;line-height:1.2">{now:,}</div>'
+                     f'<div style="font-size:10px;color:#5f6368">{escape(vs)}</div></td>')
+    top = _mentioned(todays)
+    lines = ["Today: " + " · ".join(text)]
+    html = ('<table role="presentation" width="100%" cellspacing="4" cellpadding="0" style="border-collapse:separate;'
+            'table-layout:fixed;margin:0 0 8px"><tr>' + "".join(tiles) + "</tr></table>")
+    if top:
+        who = " · ".join(f"{t} ({k})" for t, k in top)
+        lines.append(f"Most mentioned: {who}")
+        html += f'<p style="margin:0 0 8px;font-size:13px;color:#5f6368">Most mentioned: <span style="color:#1a1a1a">{escape(who)}</span></p>'
+    return lines, html
 
 
 def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, str] | None:
@@ -49,9 +87,12 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
     change = _mailto("CHANGE " + " ".join(streams))
     stop = _mailto("UNSUBSCRIBE")
 
-    text = [f"AI Pulse · Daily update · {label}", ""]
-    html = [f'<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#1a1a1a">'
-            f'<h2 style="margin:0 0 4px">AI Pulse</h2><p style="margin:0 0 20px;color:#666">Daily update · {label}</p>']
+    kpi_text, kpi_html = _kpis(cards, streams, day)
+    text = [f"AI Pulse · Daily update · {label}", "", *kpi_text, ""]
+    html = ['<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            '</head><body style="margin:0;padding:12px;background:#ffffff">'
+            f'<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#1a1a1a">'
+            f'<h2 style="margin:0 0 4px">AI Pulse</h2><p style="margin:0 0 14px;color:#666">Daily update · {label}</p>' + kpi_html]
     for name, stream, category, day_cards in parts:
         shown, rest = day_cards[:PER_STREAM], len(day_cards) - PER_STREAM
         text.append(stream.upper())
@@ -73,7 +114,7 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
              f"AI Pulse is free and non-commercial: {rss.SITE}"]
     html.append(f'<p style="margin-top:28px;color:#666;font-size:13px">You chose: {escape(chose)}. '
                 f'<a href="{escape(change)}">Change streams</a> · <a href="{escape(stop)}">Unsubscribe</a><br>'
-                f'AI Pulse is free and non-commercial · <a href="{rss.SITE}">{rss.SITE}</a></p></div>')
+                f'AI Pulse is free and non-commercial · <a href="{rss.SITE}">{rss.SITE}</a></p></div></body></html>')
     return subject, "\n".join(text), "".join(html)
 
 

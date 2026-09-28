@@ -1318,4 +1318,6 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
     assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
+    assert "Today: Releases 1 (+1 vs Sat) · Regulation tracker 1 (+1 vs Sat)" in text  # the KPI row
+    assert ">Tracker</div>" in html and "Most mentioned" not in text      # nobody named twice: no line
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
