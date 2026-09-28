@@ -74,6 +74,12 @@ SOURCES = [
      "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
     {"name": "Moonshot AI (Kimi)", "url": "https://www.moonshot.ai/news", "format": "page_list",
      "link": r"^https://www\.kimi\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    # Labs whose news pages block automated readers: their developer release notes (robots.txt allows them),
+    # keeping only launches of their own products ("keep").
+    {"name": "xAI", "url": "https://docs.x.ai/developers/release-notes", "format": "page_list", "notes": "xai_notes",
+     "keep": r"^(?:Grok|SpaceXAI|xAI)\b", "category": "tool"},
+    {"name": "Perplexity", "url": "https://docs.perplexity.ai/changelog", "format": "page_list",
+     "notes": "perplexity_notes", "keep": r"\b(?:Perplexity|Sonar|Comet)\b", "category": "tool"},
     # Company-wide newsrooms: only their stories that name AI in the headline.
     {"name": "Microsoft", "url": "https://blogs.microsoft.com/feed/", "category": "tool", "ai_only": False,
      "ai_in_title": True},

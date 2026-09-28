@@ -1648,3 +1648,29 @@ def test_labs_without_a_feed_are_read_from_their_news_page(tmp_path):
     assert meta["title"] == "Kimi K3" and meta["published"].isoformat() == "2026-09-27T08:00:00+00:00"
     assert feeds.listed_links(b"<loc>https://lab.test/blog/a</loc><loc> https://lab.test/c </loc>", "https://lab.test/",
                               r"/blog/") == ["https://lab.test/blog/a"]
+
+
+def test_release_notes_keep_only_the_labs_own_launches(tmp_path):
+    from aipulse import collect as col
+    from aipulse.sources import SOURCES
+    xai = (b'<h2 id="september">September</h2><h3 id="grok-47"><a href="#grok-47">Grok 4.7</a></h3><p>Grok 4.7, the '
+           b'frontier model, is now available on the xAI API.</p><h3 id="safety-field">safety_identifier request field</h3>'
+           b'<p>You can now send safety_identifier.</p><h3 id="old-retire">grok-imagine retirement on November 2</h3><p>Retired.</p>')
+    pplx = (b'<span data-as="p"><strong>Claude Opus 5.5</strong></span><span data-as="p">The Agent API now supports '
+            b'anthropic/claude-opus-5-5.</span><span data-as="p"><strong>Introducing New and Improved Sonar Models</strong>'
+            b'</span><span data-as="p">We are excited to announce the launch of our latest Sonar models.</span>'
+            b'<span data-as="p"><strong>Options: "low" : Faster</strong></span><span data-as="p">x</span>')
+    entries = feeds.parse_xai_notes(xai)
+    assert [e["title"] for e in entries] == ["Grok 4.7", "safety_identifier request field", "grok-imagine retirement on November 2"]
+    assert entries[0]["url"] == "https://docs.x.ai/developers/release-notes?entry=grok-47#grok-47"
+    assert len({store.item_id(e["url"]) for e in entries}) == 3  # each entry is its own story
+    assert [e["title"] for e in feeds.parse_perplexity_notes(pplx)] == ["Claude Opus 5.5", "Introducing New and Improved Sonar Models"]
+    conn = store.connect(tmp_path / "t.db")
+    pages = {"https://docs.x.ai/developers/release-notes": xai, "https://docs.perplexity.ai/changelog": pplx}
+    labs = [s for s in SOURCES if s["name"] in ("xAI", "Perplexity")]
+    for src in labs:
+        assert col.page_list_entries(conn, src, pages.get) == []  # first read: remembered only
+        conn.execute("INSERT OR REPLACE INTO meta VALUES (?, '[]')", (f"page_list:{src['name']}",))  # as if all were new
+    kept = {src["name"]: [e["title"] for e in col.page_list_entries(conn, src, pages.get)] for src in labs}
+    # Only their own products' launches: not an API field, a retirement, or another lab's model Perplexity now offers.
+    assert kept == {"xAI": ["Grok 4.7"], "Perplexity": ["Introducing New and Improved Sonar Models"]}
