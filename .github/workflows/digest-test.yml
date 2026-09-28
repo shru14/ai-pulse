@@ -33,12 +33,17 @@ jobs:
         run: |
           python -m aipulse --db aipulse.db regroup
           python - <<'EOF'
-          from aipulse import store
+          from aipulse import store, cluster
           conn = store.connect("aipulse.db")
-          cards, _ = store.cards(conn, days=5, limit=10**6)
-          for c in cards:
-              if c["date"] == "2026-09-25" and c.get("also"):
-                  print(f"{c['category']:8} {c['source'][:14]:14} {c['title'][:70]} | also: {', '.join(o['source'] for o in c['also'])}")
+          items = [it for it in store.query(conn, None, None, 14, limit=10**7) if not cluster._alone(it)]
+          new = cluster.group(items)
+          cluster.ANCHOR_IDF = 99
+          old = {frozenset(it["id"] for it in g) for g in cluster.group(items)}
+          for g in new:
+              if len(g) > 1 and frozenset(it["id"] for it in g) not in old:
+                  print("NEW GROUP:")
+                  for it in g:
+                      print(f"   {it['date']} {it['category']:6} {it['source'][:16]:16} {it['title'][:80]}")
           EOF
 
       - name: Send the test digest to the project inbox
