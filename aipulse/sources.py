@@ -11,6 +11,8 @@ Optional per-source keys:
   professors    arXiv author searches: names that must appear among a paper's authors
   companies     True when items are kept only if a big-tech company is matched (see COMPANIES)
   ai_only       True when every item is about AI (skips the AI keyword filter)
+  format        "page_list": a lab with no feed; "link" is the pattern of its posts' addresses on the page
+  english_only  skip posts whose headline is in Japanese, Chinese or Korean (a blog posting both languages)
   ai_in_title   True for general feeds where only items with AI in the title count
   max_age_days  look back further than the run default (for feeds that post weekly or monthly)
   max_items     only take the first N entries of each fetch
@@ -58,6 +60,29 @@ SOURCES = [
     {"name": "Databricks Blog", "url": "https://www.databricks.com/feed", "category": "tool", "ai_only": False},
     {"name": "Cloudflare Blog", "url": "https://blog.cloudflare.com/tag/ai/rss/", "category": "tool"},
     {"name": "Ollama Blog", "url": "https://ollama.com/blog/rss.xml", "category": "tool"},
+    {"name": "Sakana AI", "url": "https://sakana.ai/feed.xml", "category": "tool", "english_only": True},
+    {"name": "Character.AI", "url": "https://blog.character.ai/rss/", "category": "tool"},
+    {"name": "Stability AI", "url": "https://stability.ai/news-updates?format=rss", "category": "tool"},
+    # Labs with no feed: their news page lists posts; each new post's page is read once (collect.page_list_entries).
+    {"name": "DeepSeek", "url": "https://api-docs.deepseek.com/sitemap.xml", "format": "page_list",
+     "link": r"^https://api-docs\.deepseek\.com/news/news\d+$", "category": "tool"},
+    {"name": "Meta AI", "url": "https://ai.meta.com/blog/", "format": "page_list",
+     "link": r"^https://ai\.meta\.com/blog/[a-z0-9-]+/$", "category": "tool"},
+    {"name": "Cohere", "url": "https://cohere.com/blog", "format": "page_list",
+     "link": r"^https://cohere\.com/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "MiniMax", "url": "https://www.minimax.io/news", "format": "page_list",
+     "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Moonshot AI (Kimi)", "url": "https://www.moonshot.ai/news", "format": "page_list",
+     "link": r"^https://www\.kimi\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    # Company-wide newsrooms: only their stories that name AI in the headline.
+    {"name": "Microsoft", "url": "https://blogs.microsoft.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
+    {"name": "Meta Newsroom", "url": "https://about.fb.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
+    {"name": "Apple Newsroom", "url": "https://www.apple.com/newsroom/rss-feed.rss", "category": "tool",
+     "ai_only": False, "ai_in_title": True},
+    {"name": "Amazon", "url": "https://www.aboutamazon.com/rss/news.xml", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
 
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",

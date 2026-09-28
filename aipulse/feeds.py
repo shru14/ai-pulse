@@ -10,6 +10,7 @@ import ssl
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import urllib.robotparser
 import xml.etree.ElementTree as ET
@@ -403,6 +404,42 @@ def parse_anthropic(html_bytes: bytes) -> list[dict]:
                             "published": datetime.strptime(day.group(1), "%b %d, %Y").replace(tzinfo=timezone.utc),
                             "authors": []})
     return entries
+
+
+def listed_links(page: bytes, base: str, pattern: str) -> list[str]:
+    """The post addresses a news page (or a sitemap) lists, in order: links and <loc> entries matching `pattern`,
+    made absolute against `base`."""
+    out = []
+    for raw in re.findall(r'href="([^"#?]+)"|<loc>\s*([^<\s]+)\s*</loc>', page.decode("utf-8", "replace")):
+        url = urllib.parse.urljoin(base, html.unescape(raw[0] or raw[1]))
+        if re.search(pattern, url) and url not in out:
+            out.append(url)
+    return out
+
+
+def _meta(page: str, *names: str) -> str:
+    for name in names:
+        for pattern in (rf'<meta[^>]+(?:property|name|itemprop)=["\']{re.escape(name)}["\'][^>]*content=["\']([^"\']*)',
+                        rf'<meta[^>]+content=["\']([^"\']*)["\'][^>]+(?:property|name|itemprop)=["\']{re.escape(name)}["\']'):
+            m = re.search(pattern, page)
+            if m and m.group(1).strip():
+                return html.unescape(m.group(1)).strip()
+    return ""
+
+
+def page_meta(page_bytes: bytes) -> dict:
+    """A post's own page: its title and description as link previews show them (og:title, og:description,
+    without a trailing " | Site name"), and its publication time when the page states one."""
+    page = page_bytes.decode("utf-8", "replace")
+    title = _meta(page, "og:title", "twitter:title")
+    if not title:  # the browser tab's title, which often ends " - Site name"
+        title = html.unescape(re.sub(r"\s+", " ", (re.search(r"<title[^>]*>(.*?)</title>", page, re.S) or [None, ""])[1]))
+        title = re.sub(r"\s+-\s+[^-]{1,25}$", "", title.strip())
+    title = re.sub(r"\s+[|–—]\s+[^|–—]{1,40}$", "", title.strip())
+    when = _meta(page, "article:published_time", "datePublished", "date") or (
+        re.search(r'"datePublished"\s*:\s*"([^"]+)"', page) or [None, ""])[1]
+    summary = _meta(page, "og:description", "description", "twitter:description") or article_lead(page_bytes)
+    return {"title": clean_text(title, 200), "summary": clean_text(summary), "published": parse_date(when) if when else None}
 
 
 PARSERS = {"feed": parse, "anthropic": parse_anthropic, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,

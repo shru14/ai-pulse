@@ -1614,3 +1614,37 @@ def test_quick_run_reads_only_lab_blogs(tmp_path, monkeypatch):
     cli.main()
     assert seen["sources"] and {s["category"] for s in seen["sources"]} == {"tool"}
     assert "Anthropic News" in {s["name"] for s in seen["sources"]}
+
+
+def test_labs_without_a_feed_are_read_from_their_news_page(tmp_path):
+    from datetime import datetime, timezone
+    from aipulse import collect as col
+    conn = store.connect(tmp_path / "t.db")
+    listing = {"v": b'<a href="/blog/kimi-k3">K3</a><a href="/blog/perception-bench">PB</a><a href="/about">x</a>'}
+    pages = {"https://lab.test/blog/kimi-k3": b'<meta property="og:title" content="Kimi K3 | Moonshot AI">'
+                                              b'<meta property="og:description" content="Kimi K3 is an open 3T-class model.">'
+                                              b'<meta property="article:published_time" content="2026-09-27T08:00:00Z">',
+             "https://lab.test/blog/new-agent": b"<title>Introducing Kimi Agent 2 - Moonshot</title>"
+                                                b'<meta name="description" content="Today we launch Kimi Agent 2.">'}
+    fetched = []
+    def fetch(url):
+        fetched.append(url)
+        if url == "https://lab.test/news":
+            return listing["v"]
+        if url not in pages:
+            raise OSError("HTTP Error 400")
+        return pages[url]
+    src = {"name": "Lab", "url": "https://lab.test/news", "format": "page_list", "link": r"^https://lab\.test/blog/[a-z0-9-]+$",
+           "category": "tool", "pause": 0}
+    assert col.page_list_entries(conn, src, fetch) == [] and fetched == ["https://lab.test/news"]  # first read: remembered only
+    listing["v"] = b'<a href="/blog/new-agent">N</a><a href="/blog/gone">G</a>' + listing["v"]
+    got = col.page_list_entries(conn, src, fetch)
+    assert [(e["title"], e["summary"]) for e in got] == [("Introducing Kimi Agent 2", "Today we launch Kimi Agent 2.")]
+    assert got[0]["published"].date() == datetime.now(timezone.utc).date()  # no date on the page: the day it's first seen
+    assert "https://lab.test/blog/kimi-k3" not in fetched  # an already-listed post isn't read
+    fetched.clear()
+    assert col.page_list_entries(conn, src, fetch) == [] and fetched == ["https://lab.test/news"]  # nothing read twice
+    meta = feeds.page_meta(pages["https://lab.test/blog/kimi-k3"])
+    assert meta["title"] == "Kimi K3" and meta["published"].isoformat() == "2026-09-27T08:00:00+00:00"
+    assert feeds.listed_links(b"<loc>https://lab.test/blog/a</loc><loc> https://lab.test/c </loc>", "https://lab.test/",
+                              r"/blog/") == ["https://lab.test/blog/a"]

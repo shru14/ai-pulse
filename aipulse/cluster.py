@@ -6,8 +6,8 @@ other, and share enough *distinctive* words. Words are weighted by rarity across
 common words like "rules" or "new". Similarity is the weight of the shared words divided by the weight
 of the shorter story's words, so a short headline fully contained in a longer one scores high.
 
-Each group's lead is the story with the most informative summary (then the earliest); the others are
-listed on the lead's card as "Also covered by".
+Each group's lead is the story with the most informative summary, then a company's own post about its own
+product, then the earliest; the others are listed on the lead's card as "Also covered by".
 """
 
 from __future__ import annotations
@@ -221,9 +221,15 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
                 members.remove(i)
                 groups[i] = [i]
 
+    def own(it):
+        """A company's own post about its own product ("Introducing Claude Sonnet 5.5" on Anthropic News), which
+        leads its card over a partner's ("... on AWS") or the press's."""
+        company = classify.lead_company(it["title"])
+        return bool(company) and it.get("source", "").lower().startswith(company.lower())
+
     def lead_key(i):
         s = items[i].get("summary") or ""
-        return (brief.is_draft(s) or not s, items[i]["date"], items[i].get("added_at", ""))
+        return (brief.is_draft(s) or not s, not own(items[i]), items[i]["date"], items[i].get("added_at", ""))
 
     out = []
     for members in sorted(groups.values(), key=min):

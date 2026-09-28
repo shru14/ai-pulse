@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import time
 from datetime import datetime, timedelta, timezone
@@ -48,6 +49,39 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
     raise EmptyFeed(f"no entries after {EMPTY_RETRIES} tries")
 
 
+PAGE_LIST_MEMORY = 400  # post addresses remembered per news page
+
+
+def page_list_entries(conn, src: dict, fetcher=feeds.fetch) -> list[dict]:
+    """A lab with no feed ("format": "page_list"): its news page (or sitemap) lists its posts ("link": the pattern
+    of a post's address). A post not seen before is read once for its title, description and date; a page that
+    states no date gets the day it's first seen (the quick run checks every 30 minutes). The first time a news
+    page is read, the posts it lists are only remembered, so old posts don't show up as new."""
+    key = f"page_list:{src['name']}"
+    row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
+    links = feeds.listed_links(fetcher(src["url"]), src["url"], src["link"])
+    if not links:
+        raise EmptyFeed("no posts listed")
+    seen = json.loads(row[0]) if row else []
+    entries = []
+    if row:
+        for url in [u for u in links if u not in seen][: src.get("max_new", 10)]:
+            if store.exists(conn, url):
+                continue
+            try:
+                post = feeds.page_meta(fetcher(url))
+            except Exception:  # a listed page that's gone (a stale sitemap entry): skipped, and remembered
+                continue
+            if post["title"]:
+                entries.append({**post, "url": url, "authors": [],
+                                "published": post["published"] or datetime.now(timezone.utc)})
+            time.sleep(src.get("pause", 0.5))
+    remembered = links + [u for u in seen if u not in links]
+    conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (key, json.dumps(remembered[:PAGE_LIST_MEMORY])))
+    conn.commit()
+    return entries
+
+
 def blog_category(src: dict, title: str, summary: str, url: str) -> str:
     """A lab's or company's own post: a release only when it launches something. A site that gives each launch
     its own page ("launch_pages", e.g. anthropic.com/claude-sonnet-5-5) says so by the address; its other posts
@@ -72,7 +106,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
 
     for src in sources:
         try:
-            entries = fetch_entries(src, fetcher)
+            entries = (page_list_entries(conn, src, fetcher) if src.get("format") == "page_list"
+                       else fetch_entries(src, fetcher))
         except Exception as exc:  # one broken feed shouldn't stop the run
             errors.append(f"{src['name']}: {exc}")
             log(f"  ! {src['name']}: {exc}")
@@ -115,6 +150,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 continue  # general feeds carry non-AI stories too
             if src.get("ai_in_title") and not classify.is_ai_related(title, ""):
                 continue
+            if src.get("english_only") and re.search(r"[぀-ヿ㐀-鿿가-힯]", title):
+                continue  # the same post in Japanese, Chinese or Korean (the English one is kept)
             if (e.get("lead") or src.get("page_lead")) and not summary and not store.exists(conn, e["url"]):
                 try:  # a list without descriptions: the item's own first paragraph, read once
                     page = fetcher(e["url"])
