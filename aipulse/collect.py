@@ -125,6 +125,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 fields = [EXPERT_FIELDS[p] for p in matched if p in EXPERT_FIELDS]
                 item["tags"] = list(dict.fromkeys([*matched, *fields, *companies, *filter(None, [src.get("org")]), RESEARCH_TAG]))
 
+            if src.get("government"):
+                item["category"] = "policy"  # a government's own publication (sources.py)
             apply_regulation(item, src.get("jurisdictions", []))
             if src["category"] == "regulation" and item["category"] != "regulation":
                 continue  # the tracker's searches are broad; keep only proposals and laws from them
@@ -337,14 +339,35 @@ def resummarize_papers(conn, fetcher=feeds.fetch, limit: int = 3000, log=print) 
     return changed
 
 
+# Feeds once taken whole as AI-only whose AI sections turned out to carry other science too (quantum computing,
+# physics): their stored stories must name AI, like everything they send from now on (sources.py).
+AI_RECHECKED = ("ScienceDaily", "Tech Xplore")
+
+
 def reclassify(conn) -> int:
     """Re-run the sorting and regulation rules over stored policy and regulation stories.
     Returns how many changed."""
     changed = 0
+    for it in conn.execute(f"SELECT id, title, summary FROM items WHERE source IN ({','.join('?' * len(AI_RECHECKED))})",
+                           AI_RECHECKED).fetchall():
+        if not classify.is_ai_related(it["title"], "" if brief.is_draft(it["summary"]) else it["summary"]):
+            conn.execute("DELETE FROM items WHERE id = ?", (it["id"],))
+            changed += 1
     # The same fallback places collection uses (e.g. Korea's ministry: "KR" when a story names none).
     defaults = {s["name"]: s.get("jurisdictions", []) for s in SOURCES}
     streams = {s["name"]: s["category"] for s in SOURCES}
+    government = {s["name"] for s in SOURCES if s.get("government")}
     for it in store.query(conn, None, None, None, limit=100000):
+        if it["source"] in government and it["action"] != INCIDENT and it["category"] in ("news", "tool"):
+            # A government's own publication is Policy (or the tracker, for a bill or law), never Industry.
+            before = (it["category"], it["jurisdictions"], it["action"] or None)
+            it["category"] = "policy"
+            apply_regulation(it, defaults.get(it["source"], []))
+            store.set_regulation(conn, it["id"], it["category"], it["jurisdictions"], it["action"])
+            if brief.is_draft(it["summary"]):  # "Industry news about ..." names the old stream
+                store.update_text(conn, it["id"], it["title"], brief.draft(it, PLACE_NAMES))
+            changed += (it["category"], it["jurisdictions"], it["action"]) != before
+            continue
         if it["action"] == EXPERT:  # a scholar's paper is research, not a regulatory action
             store.set_regulation(conn, it["id"], "research", [], None)
             changed += 1
@@ -377,7 +400,7 @@ def reclassify(conn) -> int:
         if it["category"] not in ("policy", "regulation"):
             continue
         before = (it["category"], it["jurisdictions"], it["action"] or None)
-        if it["category"] == "policy" and it["source"] not in bills.OFFICIAL_SOURCES:
+        if it["category"] == "policy" and it["source"] not in bills.OFFICIAL_SOURCES and it["source"] not in government:
             # A story only reaches "policy" from a policy feed or by scoring as policy, so re-sorting
             # with "policy" as the default drops the ones a policy search picked up by mistake.
             text = "" if brief.is_draft(it["summary"]) else it["summary"]

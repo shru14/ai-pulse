@@ -21,6 +21,8 @@ Optional per-source keys:
                 it is retried, and counts as a failed fetch if it stays empty
   label         name shown in source health checks when several sources share a name (arXiv)
   jurisdictions regulation sources: codes to use when a story doesn't name a place (e.g. ["EU"])
+  government    a government's own publications: always Policy (or the tracker for a bill or law), never
+                Industry or Releases, however little the text sounds like government
   paged         the feed pages back in time (WordPress: ?paged=2, 3, ...); the history run reads it back to 2023
 
 Policy stories from any source move to the regulation tracker when they report a proposal or an
@@ -68,10 +70,10 @@ SOURCES = [
     {"name": "Engadget", "url": "https://www.engadget.com/rss.xml", "category": "news", "ai_in_title": True},
     {"name": "MIT News", "url": "https://news.mit.edu/topic/mitartificial-intelligence2-rss.xml", "category": "news",
      "ai_only": True},
-    {"name": "Tech Xplore", "url": "https://techxplore.com/rss-feed/machine-learning-ai-news/", "category": "news",
-     "ai_only": True},
+    # Their AI sections also carry quantum computing, robotics and other science: each story must name AI.
+    {"name": "Tech Xplore", "url": "https://techxplore.com/rss-feed/machine-learning-ai-news/", "category": "news"},
     {"name": "ScienceDaily", "url": "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml",
-     "category": "news", "ai_only": True},
+     "category": "news"},
     # Beyond the US: Asia, Africa and the rest of the world.
     {"name": "Rest of World", "url": "https://restofworld.org/feed/latest", "category": "news"},
     {"name": "South China Morning Post", "url": "https://www.scmp.com/rss/320663/feed", "category": "news"},
@@ -109,9 +111,10 @@ SOURCES = [
     {"name": "EFF", "url": "https://www.eff.org/rss/updates.xml", "category": "policy", "ai_in_title": True},
     {"name": "EPIC", "url": "https://epic.org/feed/", "category": "policy", "paged": True},
     # Governments' own publications (US federal records and GOV.UK are public-domain / Open Government Licence).
-    {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"]},
+    {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"],
+     "government": True},
     {"name": "Federal Register", "format": "federal_register", "category": "policy", "jurisdictions": ["US"],
-     "ai_in_title": True,
+     "ai_in_title": True, "government": True,
      "url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bterm%5D=%22artificial+intelligence%22"
             "&order=newest&per_page=50&fields%5B%5D=title&fields%5B%5D=html_url&fields%5B%5D=abstract"
             "&fields%5B%5D=publication_date"},
@@ -119,17 +122,18 @@ SOURCES = [
     # country's AI rules as they're announced. (The National Assembly's bill API needs a key only available
     # with Korean identity verification, so Korean bills aren't tracked.)
     {"name": "Ministry of Science and ICT (Korea)", "format": "msit", "category": "policy", "jurisdictions": ["KR"],
-     "ai_in_title": True, "paged": True, "page_param": "pageIndex",
+     "ai_in_title": True, "government": True, "paged": True, "page_param": "pageIndex",
      "url": "https://www.msit.go.kr/eng/bbs/list.do?sCode=eng&mPid=2&mId=4"},
     # Malaysia: the Ministry of Digital (its National AI Office drafts the AI Governance Bill). Its English
     # media releases; no robots.txt or terms restrict them. The list is short, so older releases are kept.
     {"name": "Ministry of Digital (Malaysia)", "format": "digital_my", "category": "policy", "jurisdictions": ["MY"],
-     "ai_in_title": True, "max_age_days": 400, "url": "https://www.digital.gov.my/en-GB/siaran"},
+     "ai_in_title": True, "government": True, "max_age_days": 400, "url": "https://www.digital.gov.my/en-GB/siaran"},
     # Russia: the State Duma's English news (its bill search is closed to robots, and the Duma API needs
     # tokens). No terms restrict the news list; only items with AI in the headline are kept.
     {"name": "State Duma (Russia)", "format": "duma_en", "category": "policy", "jurisdictions": ["RU"],
-     "ai_in_title": True, "max_age_days": 400, "url": "http://duma.gov.ru/en/news/"},
+     "ai_in_title": True, "government": True, "max_age_days": 400, "url": "http://duma.gov.ru/en/news/"},
     {"name": "GOV.UK", "format": "govuk", "category": "policy", "jurisdictions": ["GB"], "ai_in_title": True,
+     "government": True,
      "url": "https://www.gov.uk/api/search.json?q=%22artificial+intelligence%22&order=-public_timestamp&count=50"
             "&fields=title,link,description,public_timestamp"},
 ]

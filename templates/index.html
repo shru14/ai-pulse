@@ -214,7 +214,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   </header>
   <div class="intro">
     <p class="lede"><strong>Your briefing on what's happening in AI.</strong><br>AI Pulse reads company blogs,
-      newsrooms, government sites and research archives, sorts every story into one of five streams and links
+      newsrooms, research archives and government sites, sorts every story into one of five streams and links
       each card to the original reporting.</p>
     <div class="status" id="status">Loading feed…</div>
   </div>
@@ -248,7 +248,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 
 <script>
 // Industry cards that aren't reporting are labelled on the card (classify.news_kind).
-const KIND_LABEL = {incident:"AI-incident", tutorial:"Tutorial", event:"Event", blog:"Company blog"};
+const KIND_LABEL = {incident:"AI-incident", study:"Study", analysis:"Opinion & analysis", tutorial:"Tutorial", event:"Event", blog:"Company blog"};
 const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation"};
 const CATS = ["tool","news","research","regulation","policy"];
 const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research:"Research", regulation:"Regulation tracker"};

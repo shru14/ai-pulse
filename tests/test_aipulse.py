@@ -1325,13 +1325,15 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     cards = [card(1, "tool", "2026-09-27T06:00:00+00:00"), card(2, "regulation", "2026-09-27T18:00:00+00:00"),
              card(3, "news", "2026-09-27T12:00:00+00:00"), card(4, "tool", "2026-09-28T00:30:00+00:00")]
     subject, text, html = digest.build(cards, ["releases", "regulation"], date(2026, 9, 27))
-    assert subject == "AI Pulse daily · Sun 27 Sep 2026"
-    assert "6-hour" not in text + html and "update · Sun 27 Sep 2026" in html
+    assert subject == "AI Pulse daily · Sunday, 27 September 2026"  # no short forms
+    assert "Let's explore what happened in AI on Sunday, 27 September 2026." in text
+    assert "6-hour" not in text + html and "Daily update" not in html  # the subject already names the day
     assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
     assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
-    assert "Today: Releases 1 (+1 vs Sat) · Regulation tracker 1 (+1 vs Sat)" in text  # the KPI row
-    assert ">Regulation tracker</div>" in html and "Most mentioned" not in text  # nobody named twice: no line
+    assert "Releases: 1 (" in text and "Regulation tracker: 1 (" in text and "vs Sat" not in text + html  # the day at a glance
+    assert ">Regulation tracker</a>" in html and "came up most" not in text  # nobody named twice: no line
+    assert "[Release] Story 1" in text and "Type</th>" in html  # one table: type | story | source
     assert "https://shru14.github.io/ai-pulse/feeds/releases.xml" in html and "feeds/news.xml" not in html  # chosen feeds
     cards[0]["also"] = [{"title": "Same outlet, other post", "source": "Outlet", "url": "https://ex.com/x", "date": "2026-09-27"},
                         {"title": "Story 1 elsewhere", "source": "Other", "url": "https://other.com/1", "date": "2026-09-27"}]
@@ -1352,8 +1354,47 @@ def test_industry_news_is_labelled_not_moved(monkeypatch):
     card = lambda i, kind: {"id": f"n{i}", "title": f"Story {i}", "summary": "", "url": f"https://ex.com/{i}", "source": f"S{i}",
                             "category": "news", "kind": kind, "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
     _, text, html = digest.build([card(1, "tutorial"), card(2, "news"), card(3, "blog")], ["news"], date(2026, 9, 27))
-    order = [text.index(t) for t in ("Story 2", digest.OTHER_HEADING, "[Tutorial] Story 1", "[Company blog] Story 3")]
-    assert order == sorted(order)  # the news first, then the labelled rest under their heading
+    assert classify.news_kind("Can Muse overcome Meta's trust issues?", "", False) == "analysis"
+    assert classify.news_kind("AI access makes people unwilling to say I don't know, study finds", "", False) == "study"
+    assert classify.news_kind("Anthropic researcher quits, warns against self-improving AI", "", False) == "news"
+    assert classify.news_kind("AI agents do more of the work in model development, but humans still make the decisions",
+                              "A research team analyzed 769 task logs from building its own AI model.", False) == "study"
+    # Industry in groups, each headed once with what it holds: News first, then company blogs, tutorials...
+    # One table, Industry ordered by tag and every story tagged with its sub-category, never just "Industry".
+    order = [text.index(t) for t in ("[News] Story 2", "[Company blog] Story 3", "[Tutorial] Story 1")]
+    assert order == sorted(order) and "Industry: 3 (1 news · 1 company blog · 1 tutorial)" in text
+    assert ">Opinion &amp; analysis<" not in html and ">Company blog<" in html and "[Industry]" not in text
+
+
+def test_digest_is_checked_before_it_is_sent(monkeypatch):
+    from datetime import date
+    from aipulse import digest, quality
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    day = date(2026, 9, 27)
+    card = lambda i, cat, **k: {"id": f"q{i}", "title": f"OpenAI story number {i}", "summary": "About AI.", "url": f"https://ex.com/{i}",
+                                "source": "MarkTechPost", "category": cat, "kind": "news" if cat == "news" else None,
+                                "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00", **k}
+    good = [card(i, "news") for i in range(6)]
+    streams = ["news", "policy"]
+    assert quality.problems(digest.by_streams(good, streams, day), good, day) == []
+    bad = [card(1, "news", source="GOV.UK"), card(2, "news", title="No title"), card(3, "regulation", url="https://arxiv.org/abs/1"),
+           card(4, "tool", title="NIST publishes new AI standards profile"), card(5, "policy", action="incident"),
+           card(6, "news", summary="Donâ€™t miss it"), card(7, "news", url="https://ex.com/1"), card(8, "news", kind="gossip")]
+    found = "\n".join(quality.problems(digest.by_streams(bad, ["releases", *streams, "regulation"], day), bad, day))
+    for p in ("government's own publication (GOV.UK) in Industry", "no real headline", "research paper in Regulation tracker",
+              "standards story in Releases", "AI-incident in Policy", "garbled characters in the summary", "shown twice",
+              "no label in Industry"):
+        assert p in found, p
+    assert "No stories at all" in "".join(quality.problems(digest.by_streams([], streams, day), [], day))
+    # A general outlet's story that doesn't name AI is left out of the email, not a reason to hold it.
+    off = card(9, "news", source="South China Morning Post", title="Alibaba Cloud opens data centres in Europe", summary="")
+    assert off not in digest.by_streams([*good, off], streams, day)["news"] and digest.left_out([*good, off], streams, day) == [off]
+    # A thin day is sent, saying so.
+    _, text, _ = digest.build(good[:2], streams, day)
+    assert "A quiet day for AI: only 2 stories" in text and "Weekends are usually slow" in text
+    assert "quiet day" not in digest.build(good, streams, day)[1]
+    subject, text, _ = quality.alert(day, ["x"], streams)
+    assert "HELD" in subject and "was not sent to anyone" in text
 
 
 def test_standards_are_tracker_cards_that_survive_reclassify(tmp_path):
