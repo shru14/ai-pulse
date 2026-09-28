@@ -85,25 +85,36 @@ function subscribe(p) {
     props.setProperty("t:" + rec.ctoken, email);
     props.setProperty("s:" + email, JSON.stringify(rec));
     props.setProperty("sent:" + day, String(sentToday + 1));
-    // A short, plain note with one ordinary link to the site: no button, nothing that reads like a campaign.
+    // A short, friendly, plain note with one ordinary link to the site: no button, nothing that reads like a campaign.
     const link = SITE + "#confirm=" + rec.ctoken;
     const change = rec.confirmed;
-    const lines = [
-      "Hello,",
-      change ? `You asked to change your AI Pulse daily streams to: ${names(streams)}.`
-             : `You signed up for AI Pulse daily on ${SITE} with this address, for: ${names(streams)}.`,
-      `To ${change ? "make the change" : "start getting it"}, open this link and press Confirm:`,
+    const lines = change ? [
+      "Hi again,",
+      `You asked to change your AI Pulse daily streams to: ${names(streams)}.`,
+      "Open this link and press Confirm, and the change starts with the next morning's email:",
       link,
-      `If this wasn't you, ignore this email: nothing will be sent, and the request is deleted within a week.`,
-      CONTACTS,
-      "AI Pulse",
+      "Didn't ask for this? No worries, just ignore this email and nothing changes.",
+      "Cheers,\nTeam AI Pulse",
+    ] : [
+      "Hi there,",
+      "Thanks for signing up for AI Pulse daily!",
+      "AI Pulse is a free, non-commercial briefing on what's happening in AI. Every morning we read company blogs, " +
+        "newsrooms, research archives and government sites, and sort the day's stories into clear streams, each " +
+        "linked to the original reporting.",
+      `You picked: ${names(streams)}.`,
+      "One last step: open this link and press Confirm, and your first digest arrives the next morning:",
+      link,
+      "Didn't sign up? No worries, just ignore this email: nothing will be sent, and the request disappears within a week.",
+      `Tip: ${CONTACTS.charAt(0).toLowerCase()}${CONTACTS.slice(1)}`,
+      "Cheers,\nTeam AI Pulse",
     ];
     MailApp.sendEmail({
       to: email, name: "AI Pulse", replyTo: SENDER,
-      subject: change ? "Please confirm your new AI Pulse daily streams" : "Please confirm your AI Pulse daily sign-up",
+      subject: change ? "Please confirm your new AI Pulse daily streams" : "Welcome to AI Pulse daily: please confirm",
       body: lines.join("\n\n"),
       htmlBody: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.55;color:#1a1a1a">` +
-                lines.map(l => l === link ? `<p><a href="${esc(link)}">${esc(link)}</a></p>` : `<p>${esc(l)}</p>`).join("") +
+                lines.map(l => l === link ? `<p><a href="${esc(link)}">${esc(link)}</a></p>`
+                                          : `<p>${esc(l).replace(/\n/g, "<br>")}</p>`).join("") +
                 "</div>"
     });
     return {ok: true, change};
@@ -132,9 +143,10 @@ function confirm(t) {
     notify(changed ? `AI Pulse: a subscriber changed streams (${count()} subscribers)`
                    : `AI Pulse: new subscriber (${count()} subscribers)`,
            `${email} ${changed ? "now gets" : "subscribed to"}: ${names(rec.streams)}.`);
-    return {ok: true, title: changed ? "Your streams are changed" : "You're subscribed",
-            text: `Every morning you'll get the day before in AI: ${names(rec.streams)}. It's sent at about 05:00 UTC ` +
-                  `(7:00 in Germany in summer), and every email has a one-click unsubscribe link. ${CONTACTS}`};
+    return {ok: true, title: changed ? "Your streams are changed" : "Welcome aboard, you're subscribed!",
+            text: `${changed ? "From tomorrow" : "Every morning"} you'll get the day before in AI: ${names(rec.streams)}. ` +
+                  "It's sent at about 05:00 UTC (7:00 in Germany in summer), and every email has a one-click " +
+                  `unsubscribe link. ${CONTACTS}`};
   } finally {
     lock.releaseLock();
   }
