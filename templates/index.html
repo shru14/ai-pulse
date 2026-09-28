@@ -2,6 +2,11 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI Pulse</title>
 <script>try{ const t = localStorage.getItem("aipulse-theme"); if(t==="light"||t==="dark") document.documentElement.dataset.theme = t; }catch(e){}</script>
+<link rel="alternate" type="application/rss+xml" title="AI Pulse · Releases" href="feeds/releases.xml">
+<link rel="alternate" type="application/rss+xml" title="AI Pulse · Industry" href="feeds/news.xml">
+<link rel="alternate" type="application/rss+xml" title="AI Pulse · Research" href="feeds/research.xml">
+<link rel="alternate" type="application/rss+xml" title="AI Pulse · Regulation tracker" href="feeds/regulation.xml">
+<link rel="alternate" type="application/rss+xml" title="AI Pulse · Policy" href="feeds/policy.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
@@ -215,10 +220,10 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   </div>
   <div class="streams" id="streams" role="group" aria-label="Streams: pick one to show only its stories">
     <button type="button" class="stream tool" id="tab-tool" data-cat="tool" aria-pressed="false"><span class="shead"><span class="n" id="n-tool">0</span></span><b>Releases</b><span class="desc">New models, product features and open-source launches</span></button>
-    <button type="button" class="stream news" id="tab-news" data-cat="news" aria-pressed="false"><span class="shead"><span class="n" id="n-news">0</span></span><b>Industry news</b><span class="desc">Funding, deals, partnerships and company moves</span></button>
-    <button type="button" class="stream policy" id="tab-policy" data-cat="policy" aria-pressed="false"><span class="shead"><span class="n" id="n-policy">0</span></span><b>Policy</b><span class="desc">What governments, courts and politicians are doing about AI</span></button>
+    <button type="button" class="stream news" id="tab-news" data-cat="news" aria-pressed="false"><span class="shead"><span class="n" id="n-news">0</span></span><b>Industry</b><span class="desc">Company news, deals, market moves and AI incidents, plus company blogs, tutorials and events</span></button>
     <button type="button" class="stream research" id="tab-research" data-cat="research" aria-pressed="false"><span class="shead"><span class="n" id="n-research">0</span></span><b>Research</b><span class="desc">New papers from arXiv, top labs and leading scholars</span></button>
-    <button type="button" class="stream regulation" id="tab-regulation" data-cat="regulation" aria-pressed="false"><span class="shead"><span class="n" id="n-regulation">0</span></span><b>Regulation tracker</b><span class="desc">Bills and laws followed from proposal to force, by country</span></button>
+    <button type="button" class="stream regulation" id="tab-regulation" data-cat="regulation" aria-pressed="false"><span class="shead"><span class="n" id="n-regulation">0</span></span><b>Regulation tracker</b><span class="desc">Bills and laws from proposal to force, AI bodies and standards, by country</span></button>
+    <button type="button" class="stream policy" id="tab-policy" data-cat="policy" aria-pressed="false"><span class="shead"><span class="n" id="n-policy">0</span></span><b>Policy</b><span class="desc">What governments, courts and politicians are doing about AI</span></button>
   </div>
 
   <div class="controls">
@@ -238,15 +243,19 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
-  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a></footer>
+  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a> · <a href="feeds/policy.xml">Policy</a></footer>
 </div>
 
 <script>
+// Industry cards that aren't reporting are labelled on the card (classify.news_kind).
+const KIND_LABEL = {incident:"AI-incident", tutorial:"Tutorial", event:"Event", blog:"Company blog"};
 const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation"};
-const CATS = ["tool","news","policy","research","regulation"];
-const STREAM_NAME = {tool:"Releases", news:"Industry news", policy:"Policy", research:"Research", regulation:"Regulation tracker"};
+const CATS = ["tool","news","research","regulation","policy"];
+const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research:"Research", regulation:"Regulation tracker"};
 // Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
-const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", expert:"Expert view", body:"AI body"};
+const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", body:"AI body", standard:"Standard"};
+// ISO gives a standard's month of publication only (aipulse/standards.py dates it the 1st): show the month.
+const monthOf = d => new Date(d+"T00:00:00").toLocaleDateString(undefined,{month:"short", year:"numeric"});
 // items: the cards loaded so far for the current tab / search / range / country (the server filters and
 // pages them); counts: cards per tab; mapTally: proposals and laws per country for the tracker's map.
 const REGION_TABS = new Set(["regulation", "news"]);  // tabs with the region filter
@@ -296,8 +305,8 @@ function render(){
   list.forEach(it => { if(!byDay.has(it.date)) byDay.set(it.date, []); byDay.get(it.date).push(it); });
   for(const [day, its] of byDay){
     // OECD.AI records have a year only (dated 1 January): their group shows just the year.
-    const yearOnly = its.every(x => x.source === "OECD.AI");
-    const sec = el("section","day"); const h2 = el("h2",null, yearOnly ? day.slice(0,4) : fmtDay(day));
+    const yearOnly = its.every(x => x.source === "OECD.AI"), monthOnly = its.every(x => x.source === "ISO/IEC");
+    const sec = el("section","day"); const h2 = el("h2",null, yearOnly ? day.slice(0,4) : monthOnly ? monthOf(day) : fmtDay(day));
     if(tracker) h2.append(el("span","count", its.length+(its.length===1?" item":" items")));
     sec.append(h2);
     const wrap = el("div","items");
@@ -306,7 +315,7 @@ function render(){
       const life = it.lifecycle;
       const side = el("div","side");
       // The badge says what kind of item it is; a bill's stages are on its timeline, not repeated here.
-      side.append(cardIcon(it), el("span","cat "+it.category, (it.category==="regulation" && ACTION_LABEL[it.action]) || CAT_LABEL[it.category] || it.category));
+      side.append(cardIcon(it), el("span","cat "+it.category, (it.category==="regulation" && ACTION_LABEL[it.action]) || KIND_LABEL[it.kind] || CAT_LABEL[it.category] || it.category));
       art.append(side);
       const body = el("div","body"); art.append(body);
       const h = el("h3"); const a = el("a",null,it.title); a.href = it.url; a.target="_blank"; a.rel="noopener"; h.append(a); body.append(h);
@@ -341,6 +350,9 @@ function render(){
       // Footer: when it happened on the left, the source link on the right.
       const foot = el("div","foot");
       foot.append(el("span","when", it.source === "OECD.AI" ? "Since "+it.date.slice(0,4)
+        : it.source === "ISO/IEC" ? "Published "+monthOf(it.date)
+        : it.action === "standard" ? "Published "+it.date
+        : it.source === "AI Incident Database" ? "Incident date "+it.date
         : ({research:"Published ", regulation:"Reported "}[it.category]||"Released ")+it.date));
       const src = el("a","src", it.source || domainOf(it.url)); src.href = it.url; src.target="_blank"; src.rel="noopener";
       src.append(el("span","arr","→")); src.lastChild.setAttribute("aria-hidden","true");

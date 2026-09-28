@@ -7,14 +7,15 @@ import time
 import traceback
 from datetime import date, datetime, timedelta, timezone
 
-from . import cluster, store
+from . import cluster, rss, store
 from .collect import collect, reclassify, resummarize, retag
 from .server import serve
 
 # `bills --only` keys, in the order `bills.sync()` runs them during collection.
 BILL_SOURCES = [("us", "US"), ("eu", "EU"), ("uk", "UK"), ("ca", "Canada"), ("br", "Brazil"), ("au", "Australia"),
                 ("cn", "China"), ("in", "India"), ("jp", "Japan"), ("vn", "Vietnam"), ("ch", "Switzerland"),
-                ("my", "Malaysia"), ("tw", "Taiwan"), ("kr", "Korea"), ("oecd", "OECD.AI")]
+                ("my", "Malaysia"), ("tw", "Taiwan"), ("kr", "Korea"), ("oecd", "OECD.AI"),
+                ("std", "AI standards"), ("aiid", "AI Incident Database")]
 
 
 def main():
@@ -56,6 +57,11 @@ def main():
     b = sub.add_parser("build", help="write a static copy of the site (for GitHub Pages)")
     b.add_argument("--out", default="site", help="output folder, replaced (default: site)")
 
+    dg = sub.add_parser("digest", help="email one day's digest (the four 6-hour updates) to an address")
+    dg.add_argument("--to", required=True, help="recipient address")
+    dg.add_argument("--streams", default="releases,news,research,regulation,policy", help="comma-separated streams")
+    dg.add_argument("--day", help="UTC day, YYYY-MM-DD (default: yesterday)")
+    dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
 
@@ -119,7 +125,8 @@ def main():
         sync_fns = {"uk": bills.sync_uk, "ca": bills.sync_canada, "br": bills.sync_brazil, "au": bills.sync_australia,
                     "cn": bills.sync_china, "in": bills.sync_india, "jp": bills.sync_japan, "vn": bills.sync_vietnam,
                     "ch": bills.sync_switzerland, "my": bills.sync_malaysia, "tw": bills.sync_taiwan,
-                    "kr": bills.sync_korea, "oecd": bills._oecd_sync}
+                    "kr": bills.sync_korea, "oecd": bills._oecd_sync,
+                    "std": bills._standards_sync, "aiid": bills._incidents_sync}
         runs = {"us": lambda: bills.sync_congress(conn, since=since, max_pages=a.max_pages),
                 "eu": lambda: bills.sync_europarl(conn, years=years)}
         for name, label in BILL_SOURCES:
@@ -144,6 +151,24 @@ def main():
         from .backfill import run as backfill
         conn = store.connect(a.db)
         print(f"Added {backfill(conn, _date.fromisoformat(a.since), a.only)} stories.")
+    elif a.cmd == "digest":
+        from . import digest
+        streams = [x.strip() for x in a.streams.split(",") if x.strip()]
+        if not streams or any(x not in rss.FEEDS for x in streams):
+            sys.exit(f"streams must be among: {', '.join(rss.FEEDS)}")
+        day = date.fromisoformat(a.day) if a.day else digest.yesterday()
+        conn = store.connect(a.db)
+        cards, _ = store.cards(conn, days=(date.today() - day).days + 2, limit=10**6)
+        email = digest.build(cards, streams, day)
+        if not email:
+            print(f"Nothing in {', '.join(streams)} on {day}; no email.")
+        elif a.dry_run:
+            open(a.dry_run, "w", encoding="utf-8").write(email[2])
+            print(f"{email[0]} -> wrote {a.dry_run}")
+        else:
+            digest.send(a.to, *email)
+            counts = {x: len(rss.daily(cards, rss.FEEDS[x][0], today=day + timedelta(days=1), days=1).get(day, [])) for x in streams}
+            print(f"Sent: {email[0]} {counts}")
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

@@ -21,6 +21,14 @@ from . import brief, classify, jurisdictions
 WINDOW_DAYS = 3
 THRESHOLD = 0.25
 MIN_SHARED = 2  # distinctive words in common, so two short headlines can't match on one name
+# Outlets word one launch very differently ("Meta's Muse just stole the AI spotlight", "Meta shares soar after
+# launch of Muse AI"), but name the same company and the same rare name. Two stories dated the same day whose
+# headlines both name the same company and the same word this rare (in at most ~3% of stories) are the same event.
+ANCHOR_IDF = 3.2
+ANCHOR_EXTRA_IDF = 1.5  # the other shared word: not a common one ("new", "launch" are stop words or common)
+ANCHOR_DAYS = 0
+# Releases and industry news are compared with each other: a launch is often reported as news too.
+FAMILY = {"tool": "tool+news", "news": "tool+news"}
 
 _STOP = set("""
 a an the and or but of to in on for with as at by from into over under about after before amid than that this
@@ -113,6 +121,40 @@ def similarity(a: set[str], b: set[str], idf: dict[str, float]) -> float:
     return w(shared) / min(w(a), w(b)) if a and b else 0.0
 
 
+_NAME = re.compile(r"(?<=\s)[A-Z][\w'\-+.]*")
+
+
+def _names(title: str) -> set[str]:
+    """Names in a headline: capitalized words after its first ("Meta's Muse just stole" -> meta, muse)."""
+    return {_norm(w.lower().rstrip(".")) for w in _NAME.findall(title)} - _STOP
+
+
+def _same_outlet(a: dict, b: dict) -> bool:
+    """One outlet's two posts are two stories, never "also reported by" each other (AWS's two SageMaker posts)."""
+    return bool(a.get("source")) and a.get("source") == b.get("source")
+
+
+def _release_and_incident(a: dict, b: dict) -> bool:
+    """A confirmed AI incident is always under Industry, so it never joins a release's card (which is under Releases)."""
+    return {a["category"], b["category"]} == {"tool", "news"} and "incident" in (a.get("action"), b.get("action"))
+
+
+def _anchored(a: dict, b: dict, idf: dict[str, float]) -> bool:
+    """Both headlines are about the same company (the first one each names) and share a rare name that isn't the
+    company's own ("Muse"). A story naming the product only in passing ("...a wide gap to Claude and GPT-6") is
+    about another company, so it doesn't count."""
+    company = classify.lead_company(a["title"])
+    if not company or company != classify.lead_company(b["title"]):
+        return False
+    own = _norm(company.lower())
+    anchors = {t for t in _names(a["title"]) & _names(b["title"]) if idf.get(t, 0.0) >= ANCHOR_IDF and t != own}
+    if not anchors:
+        return False
+    # ...and something else the two say alike: a product that fills the news for days ("Muse") is in many
+    # different stories, so the name alone isn't enough.
+    return any(idf.get(t, 0.0) >= ANCHOR_EXTRA_IDF for t in (tokens(a) & tokens(b)) - anchors - {own})
+
+
 def _days(a: str, b: str) -> int:
     return abs((date.fromisoformat(a) - date.fromisoformat(b)).days)
 
@@ -127,14 +169,17 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
     # Only stories in the same tab within WINDOW_DAYS of each other are compared (sorted sweep).
     sim: dict[tuple[int, int], float] = {}
     days = [date.fromisoformat(it["date"]).toordinal() for it in items]
-    order = sorted(range(len(items)), key=lambda k: (items[k]["category"], days[k]))
+    family = [FAMILY.get(it["category"], it["category"]) for it in items]
+    order = sorted(range(len(items)), key=lambda k: (family[k], days[k]))
     for pos, i in enumerate(order):
         for j in order[pos + 1 :]:
-            if items[j]["category"] != items[i]["category"] or days[j] - days[i] > WINDOW_DAYS:
+            if family[j] != family[i] or days[j] - days[i] > WINDOW_DAYS:
                 break
-            if _conflict(specs[i], specs[j]):
+            if _conflict(specs[i], specs[j]) or _same_outlet(items[i], items[j]) or _release_and_incident(items[i], items[j]):
                 continue
             s = similarity(toks[i], toks[j], idf)
+            if s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and _anchored(items[i], items[j], idf):
+                s = THRESHOLD
             if s > 0:
                 sim[min(i, j), max(i, j)] = s
 
@@ -163,6 +208,18 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
             if k != g:
                 nbr[g][k] = nbr[g].get(k, 0.0) + total
                 nbr[k][g] = nbr[g][k]
+
+    # Every story must be like at least one other story in its group directly, not only through a third one
+    # (Ars's "Copilot+ PC" story and GitHub's Copilot tutorial, joined by a story like each): otherwise it
+    # stands alone.
+    for g in list(groups):
+        members = groups[g]
+        if len(members) < 3:
+            continue
+        for i in list(members):
+            if not any(sim.get((min(i, j), max(i, j)), 0.0) >= THRESHOLD for j in members if j != i):
+                members.remove(i)
+                groups[i] = [i]
 
     def lead_key(i):
         s = items[i].get("summary") or ""
@@ -238,7 +295,13 @@ def assign(conn, days: int | None = REGROUP_DAYS) -> int:
         for it in g:
             lead_of[it["id"]] = g[0]["id"]
     changed = store.set_clusters(conn, lead_of)
-    changed += conn.execute("UPDATE items SET cluster = id WHERE bill != '' AND cluster != id").rowcount
+    changed += conn.execute("UPDATE items SET cluster = id WHERE bill != '' AND bill NOT LIKE 'AIID-%'"
+                            " AND cluster != id").rowcount
+    # An AI incident's card (incidents.py) and our stories the AI Incident Database lists as its reports share one
+    # card, led by the incident: its editors say they're the same incident. Never grouped by wording.
+    first = ("(SELECT f.id FROM items f WHERE f.bill = items.bill"
+             " ORDER BY f.source = 'AI Incident Database' DESC, f.date, f.id LIMIT 1)")
+    changed += conn.execute(f"UPDATE items SET cluster = {first} WHERE bill LIKE 'AIID-%' AND cluster != {first}").rowcount
     conn.commit()
     from .bills import attach_news  # news naming a tracked bill joins the bill's card
     return changed + attach_news(conn)

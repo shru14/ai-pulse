@@ -191,15 +191,19 @@ def test_hugging_face_collect(tmp_path):
     assert paper["tags"] == ["Google", "Research"]
 
 
-def test_expert_feed_items_are_tagged_by_person(tmp_path):
+def test_scholar_papers_are_research_not_regulation(tmp_path):
+    # A paper by an ethics or law scholar is research, tagged with the scholar and field; the tracker is for
+    # proposals and laws. Papers the tracker stored as "expert views" move to Research on reclassify.
     conn = store.connect(tmp_path / "t.db")
-    sources = [{"name": "Scholar: Shannon Vallor", "url": "rss", "category": "regulation",
-                "expert": "Shannon Vallor"}]
-    collect(conn, sources, max_age_days=100000, fetcher=lambda u: (FIX / "sample_rss.xml").read_bytes(),
-            log=lambda *_: None)
-    items = store.query(conn, "regulation")
-    assert items and all(i["action"] == "expert" and i["tags"] == ["Shannon Vallor", "Philosophy"] for i in items)
-    assert reclassify(conn) == 0  # expert items are never re-sorted into policy
+    store.insert(conn, {"title": "Agentic Economies for Autonomous Scientific Discovery", "summary": "",
+                        "url": "https://arxiv.org/abs/2609.00001", "source": "arXiv", "category": "regulation",
+                        "action": "expert", "date": "2026-09-28", "tags": ["Atoosa Kasirzadeh", "Philosophy", "Research"]})
+    assert reclassify(conn) == 1
+    [paper] = store.query(conn, "research")
+    assert paper["action"] in ("", None) and paper["tags"] == ["Atoosa Kasirzadeh", "Philosophy", "Research"]
+    assert not store.query(conn, "regulation")
+    from aipulse.sources import SOURCES
+    assert all(s["category"] == "research" for s in SOURCES if s.get("format") == "arxiv_rss")
 
 
 def test_clean_title():
@@ -265,9 +269,17 @@ def test_any_country_can_be_a_tag():
 def test_duplicate_stories_group_into_one_card():
     from aipulse import cluster
     s = cluster.score()
-    assert s["precision"] >= 0.92 and s["recall"] >= 0.82 and s["events_on_one_card"] >= 7, s
+    # 225 labelled stories (the Sept 25 set added the Copilot, Muse and court duplicates). Grouping favours
+    # precision: a wrong "Also reported by" is a visible mistake, a missed one only a repeated headline.
+    # Before the same-outlet and headline-name rules: precision 91%, recall 73%, 7 of 15 events on one card.
+    assert s["precision"] >= 0.95 and s["recall"] >= 0.75 and s["events_on_one_card"] >= 7, s
     items = __import__("json").loads(cluster.FIXTURE.read_text(encoding="utf-8"))
     cards = cluster.collapse(items)
+    assert all(o.get("source") != c.get("source") for c in cards for o in c["also"] if c.get("source"))  # never itself
+    # One blog's two posts about a product, and two outlets' different stories about OpenAI, stay apart.
+    card_of = {o["title"]: c["title"] for c in cards for o in [c, *c["also"]]}
+    assert card_of["Better prompt caching for GPT-6"] != card_of["Introducing GPT-6 Sol and Luna"]
+    assert card_of["OpenAI Admits AI is Killing the Internet"] != next(t for t in card_of if t.startswith("Unsecured OpenAI agents"))
     ma = [c for c in cards if c["title"].startswith("Massachusetts") and c["also"]]
     assert len(ma) == 1 and len(ma[0]["also"]) == 7  # all 8 outlets on one card
     # Different governors' orders stay apart even though the wording is similar.
@@ -594,7 +606,8 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll", "feeds"}
+    assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
 
 
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
@@ -1277,3 +1290,190 @@ def test_company_blog_posts_are_releases_only_when_something_launches():
               "The Internet is changing more today than at any point since Cloudflare launched back on September 27, 2010.")
     assert classify.categorize(*letter, "tool") == "news"
     assert not classify.launched(*letter)  # a launch in 2010 is history
+
+
+def test_rss_daily_digest_per_stream():
+    import xml.etree.ElementTree as ET
+    from datetime import date
+    from aipulse import rss
+    card = lambda i, cat, added, dated=None: {"id": f"c{i}", "title": f"Story {i} & more", "summary": "What happened.",
+                                              "url": f"https://ex.com/{i}", "source": "Outlet", "category": cat,
+                                              "date": dated or added[:10], "added_at": added, "tags": []}
+    cards = [card(1, "tool", "2026-09-27T00:20:00+00:00"), card(2, "tool", "2026-09-27T18:25:00+00:00"),
+             card(3, "news", "2026-09-27T06:10:00+00:00"), card(4, "tool", "2026-09-26T12:00:00+00:00"),
+             card(5, "tool", "2026-09-28T06:00:00+00:00"),                 # today: not over yet
+             card(6, "tool", "2026-09-27T12:00:00+00:00", "2026-09-22")]   # collected on the 27th, but happened on the 22nd
+    days = rss.daily(cards, "tool", today=date(2026, 9, 28))
+    assert list(days) == [date(2026, 9, 27), date(2026, 9, 26), date(2026, 9, 22)]  # by the day it happened
+    assert [c["id"] for c in days[date(2026, 9, 27)]] == ["c2", "c1"]     # only what's dated the 27th, newest first
+    root = ET.fromstring(rss.feed_xml("releases", cards, today=date(2026, 9, 28)))  # well-formed, "&" escaped
+    posts = root.findall("channel/item")
+    assert [p.findtext("title") for p in posts] == ["Releases · Sun 27 Sep 2026", "Releases · Sat 26 Sep 2026",
+                                                    "Releases · Tue 22 Sep 2026"]
+    assert 'href="https://ex.com/2"' in posts[0].findtext("description") and "Story 2 &amp; more" in posts[0].findtext("description")
+    assert posts[0].findtext("pubDate") == "Mon, 28 Sep 2026 00:00:00 +0000"   # published once the day is over
+    assert not ET.fromstring(rss.feed_xml("policy", cards, today=date(2026, 9, 28))).findall("channel/item")
+
+
+
+def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = lambda i, cat, added: {"id": f"c{i}", "title": f"Story {i} <b>", "summary": "What happened.", "url": f"https://ex.com/{i}",
+                                  "source": "Outlet", "category": cat, "date": added[:10], "added_at": added}
+    cards = [card(1, "tool", "2026-09-27T06:00:00+00:00"), card(2, "regulation", "2026-09-27T18:00:00+00:00"),
+             card(3, "news", "2026-09-27T12:00:00+00:00"), card(4, "tool", "2026-09-28T00:30:00+00:00")]
+    subject, text, html = digest.build(cards, ["releases", "regulation"], date(2026, 9, 27))
+    assert subject == "AI Pulse daily · Sun 27 Sep 2026"
+    assert "6-hour" not in text + html and "update · Sun 27 Sep 2026" in html
+    assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
+    assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
+    assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
+    assert "Today: Releases 1 (+1 vs Sat) · Regulation tracker 1 (+1 vs Sat)" in text  # the KPI row
+    assert ">Regulation tracker</div>" in html and "Most mentioned" not in text  # nobody named twice: no line
+    assert "https://shru14.github.io/ai-pulse/feeds/releases.xml" in html and "feeds/news.xml" not in html  # chosen feeds
+    cards[0]["also"] = [{"title": "Same outlet, other post", "source": "Outlet", "url": "https://ex.com/x", "date": "2026-09-27"},
+                        {"title": "Story 1 elsewhere", "source": "Other", "url": "https://other.com/1", "date": "2026-09-27"}]
+    _, text, html = digest.build(cards, ["releases"], date(2026, 9, 27))
+    assert "Also reported by Other" in text and ">Outlet</a>" not in html   # never the story's own outlet
+    assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
+
+
+def test_industry_news_is_labelled_not_moved(monkeypatch):
+    from datetime import date
+    from aipulse import classify, digest
+    assert classify.news_kind("A Coding Guide to Google Research's MSEB: Writing Sound Encoders", "", False) == "tutorial"
+    assert classify.news_kind("Inside cuDNN's Graph API", "Learn how to build custom kernel fusions", False) == "tutorial"
+    assert classify.news_kind("What to expect at NetApp INSIGHT: Join theCUBE Sept. 30", "", False) == "event"
+    assert classify.news_kind("How Trane gets building insights 60x faster with Amazon Bedrock", "", True) == "blog"
+    assert classify.news_kind("Anthropic signs $11.6 billion cloud deal with Akamai", "", False) == "news"
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = lambda i, kind: {"id": f"n{i}", "title": f"Story {i}", "summary": "", "url": f"https://ex.com/{i}", "source": f"S{i}",
+                            "category": "news", "kind": kind, "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
+    _, text, html = digest.build([card(1, "tutorial"), card(2, "news"), card(3, "blog")], ["news"], date(2026, 9, 27))
+    order = [text.index(t) for t in ("Story 2", digest.OTHER_HEADING, "[Tutorial] Story 1", "[Company blog] Story 3")]
+    assert order == sorted(order)  # the news first, then the labelled rest under their heading
+
+
+def test_standards_are_tracker_cards_that_survive_reclassify(tmp_path):
+    from datetime import date
+    from aipulse import bills, standards
+    conn = store.connect(tmp_path / "t.db")
+    urls = [s[4] for s in standards.STANDARDS]
+    assert len(set(urls)) == len(urls) and all(u.startswith("https://") for u in urls)
+    assert all(date.fromisoformat(s[3]) <= date.today() for s in standards.STANDARDS)
+    assert set(standards.SOURCES) <= set(bills.OFFICIAL_SOURCES)  # never re-sorted into Policy
+    store.insert(conn, {"title": "Information technology — Artificial intelligence — Management system (ISO/IEC 42001)",
+                        "summary": "", "url": "https://oecd.ai/x", "source": "OECD.AI", "category": "policy", "date": "2023-01-01"})
+    assert standards.sync(conn) == len(urls)
+    assert standards.sync(conn) == 0  # idempotent
+    reclassify(conn)
+    tracker = store.query(conn, "regulation", limit=100)
+    assert len(tracker) == len(urls) and all(i["action"] == "standard" and i["jurisdictions"] == ["INTL"] for i in tracker)
+    assert not store.query(conn, "policy")  # OECD.AI's copy of ISO/IEC 42001 is replaced by the official page
+
+
+def test_standard_names_from_oecd():
+    from aipulse.oecd import is_standard
+    for t in ["Voluntary AI Safety Standard", "AI Technical Standard", "Algorithmic Transparency Recording Standard",
+              "Standards for the Implementation of Inclusive AI Systems"]:
+        assert is_standard(t), t
+    for t in ["National Occupational Standard Framework for Data and Artificial Intelligence (NOSF)",
+              "Plan for Federal Engagement in Developing Technical Standards and Related Tools",
+              "Mechanism for the Implementation of Principles and International Standards in AI",
+              "AI Standardisation Committee", "National Data Strategy"]:
+        assert not is_standard(t), t
+
+
+def test_standards_news_is_never_a_release():
+    from aipulse.classify import categorize
+    assert categorize("NIST launches AI Agent Standards Initiative as autonomous AI moves into production", "", "news") == "policy"
+    assert categorize("NIST releases a tool for testing AI model risk", "", "news") == "policy"
+    assert categorize("Acme achieves ISO/IEC 42001 certification for its AI platform", "", "tool") == "news"
+    assert categorize("OpenAI launches GPT-6 with new API features", "", "news") == "tool"  # releases unaffected
+
+
+def test_translation_note_is_not_a_place():
+    from aipulse.classify import tags_for
+    note = " Machine-translated from Portuguese; the official text is linked."
+    assert "Portugal" not in tags_for("PL 3392/2026: Establishes minimum standards for AI in judicial procedures", note)
+    assert "Germany" not in tags_for("Motion: AI in the federal administration", note.replace("Portuguese", "German"))
+    assert "Portugal" in tags_for("Portugal adopts an AI strategy", "")
+
+
+def _xlsx(sheets: dict[str, list[list[str]]]) -> bytes:
+    """A minimal .xlsx (inline strings) with the given sheets' rows, first row the header."""
+    import io, zipfile
+    from xml.sax.saxutils import escape
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        names = list(sheets)
+        z.writestr("xl/workbook.xml", '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+                   'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'
+                   + "".join(f'<sheet name="{n}" sheetId="{i}" r:id="rId{i}"/>' for i, n in enumerate(names, 1)) + "</sheets></workbook>")
+        z.writestr("xl/_rels/workbook.xml.rels", '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                   + "".join(f'<Relationship Id="rId{i}" Target="worksheets/sheet{i}.xml"/>' for i in range(1, len(names) + 1)) + "</Relationships>")
+        for i, n in enumerate(names, 1):
+            rows = "".join(f'<row r="{r}">' + "".join(f'<c r="{chr(65 + k)}{r}" t="inlineStr"><is><t>{escape(v)}</t></is></c>'
+                                                      for k, v in enumerate(row)) + "</row>" for r, row in enumerate(sheets[n], 1))
+            z.writestr(f"xl/worksheets/sheet{i}.xml", '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                       f"<sheetData>{rows}</sheetData></worksheet>")
+    return buf.getvalue()
+
+
+def test_ai_incidents_one_card_each_under_industry(tmp_path):
+    # One card per incident since 2023 from the AI Incident Database (its editors' title, description and date),
+    # labelled AI-incident, always under Industry. Our stories are labelled only when the database lists that
+    # very article; reports it hasn't assigned to an incident are ignored.
+    from aipulse import cluster, incidents
+    export = "https://pub-x.r2.dev/AIID_Excel_Export-20260921.xlsx"
+    xlsx = _xlsx({
+        "Incidents": [["AI Incident Database - Incidents"], ["INCIDENT IDENTITY", "COVERAGE", "RISK CLASSIFICATION"], ["Incident ID", "date", "title", "description", "Country Code"],
+                      ["1714", "46283", "Z.ai's ZCode Uploaded Developers' Code to Alibaba Cloud", "Developers reported uploads.", ""],
+                      ["1600", "2026-05-02", "Deepfake scam in Mumbai costs retiree savings", "A retiree in India lost money.", "IN"],
+                      ["12", "2019-03-01", "Old incident before 2023", "Too old.", "US"]],
+        "Reports": [["Report Number", "Title", "URL", "Is Incident Report"],
+                    ["9001", "Mumbai deepfake scam", "https://example-news.com/mumbai-scam", "1"],
+                    ["9002", "Some issue", "https://example-news.com/issue", "0"]]})
+    feed = b"""<?xml version="1.0"?><rss version="2.0"><channel><title>AIID</title>
+<item><title>China's Z.ai disables features</title><description>Text (https://incidentdatabase.ai/cite/1714#8006)</description>
+<link>https://www.reuters.com/zai</link><pubDate>Sun, 27 Sep 2026 00:00:00 GMT</pubDate></item>
+<item><title>New rogue agent attack</title><description>Text (https://incidentdatabase.ai/cite/1720#8010)</description>
+<link>https://www.nytimes.com/rogue</link><pubDate>Sun, 27 Sep 2026 00:00:00 GMT</pubDate></item>
+<item><title>Unassigned report</title><description>Text (report_number: 7999)</description>
+<link>https://example-news.com/unassigned</link><pubDate>Sun, 27 Sep 2026 00:00:00 GMT</pubDate></item>
+</channel></rss>"""
+    page = ('<meta property="og:title" content="Incident 1720: OpenAI Agents Reportedly Attacked Websites"/>'
+            '<meta property="og:description" content="Agents attacked sites."/><div>Incident Date</div><div>2026-09-24</div>').encode()
+    pages = {incidents.SNAPSHOTS: f'<a href="{export}">x</a>'.encode(), export: xlsx, incidents.FEED: feed,
+             incidents.incident_url("1720") + "/": page}
+    conn = store.connect(tmp_path / "t.db")
+    for url, title, cat in [("https://example-news.com/mumbai-scam", "Mumbai deepfake scam hits retiree", "policy"),
+                            ("https://reuters.com/zai", "Z.ai disables coding assistant uploads", "tool"),
+                            ("https://example-news.com/issue", "An issue report", "news"),
+                            ("https://example-news.com/unassigned", "Unassigned report", "news")]:
+        store.insert(conn, {"title": title, "summary": "", "url": url, "source": "Outlet " + url[-4:], "category": cat, "date": "2026-09-27"})
+    assert incidents.sync(conn, fetcher=lambda u: pages[u], log=lambda *_: None) == 3  # 1714, 1600, 1720; not 12
+    assert incidents.sync(conn, fetcher=lambda u: pages[u], log=lambda *_: None) == 0  # the export is read once
+    cards = {i["url"]: i for i in store.query(conn, None, limit=100)}
+    zai = cards[incidents.incident_url("1714")]
+    assert (zai["category"], zai["action"], zai["date"], zai["source"]) == ("news", "incident", "2026-09-18", "AI Incident Database")
+    assert zai["summary"] == "Developers reported uploads."
+    assert "India" in cards[incidents.incident_url("1600")]["tags"]
+    assert cards[incidents.incident_url("1720")]["title"] == "OpenAI Agents Reportedly Attacked Websites"
+    assert incidents.incident_url("12") not in cards
+    # Our stories: labelled only when listed as reports of an incident, and then under Industry.
+    assert [cards[u]["action"] for u in ("https://example-news.com/mumbai-scam", "https://reuters.com/zai",
+                                         "https://example-news.com/issue", "https://example-news.com/unassigned")] == ["incident", "incident", "", ""]
+    assert cards["https://example-news.com/mumbai-scam"]["category"] == "news" and cards["https://reuters.com/zai"]["category"] == "news"
+    assert reclassify(conn) == 0  # never re-sorted out of Industry
+    cluster.assign(conn, days=None)
+    news, _ = store.cards(conn, "news", limit=100)
+    zcard = next(c for c in news if c["url"] == incidents.incident_url("1714"))
+    assert zcard["kind"] == "incident" and [o["url"] for o in zcard["also"]] == ["https://reuters.com/zai"]  # same incident
+    assert {c["kind"] for c in news if c["url"].startswith("https://incidentdatabase.ai")} == {"incident"}
+    assert next(c for c in news if c["url"] == "https://example-news.com/mumbai-scam")["kind"] == "incident"
+    assert next(c for c in news if c["url"] == "https://example-news.com/issue")["kind"] != "incident"
+    rel = {"category": "tool", "action": ""}
+    assert cluster._release_and_incident(rel, {"category": "news", "action": "incident"})

@@ -31,7 +31,7 @@ API = "https://api.oecdai.org/policy-initiatives"
 SITE = "https://oecd.ai/en/dashboards/policy-initiatives/"
 SOURCE = "OECD.AI"
 REFRESH_DAYS = 7
-SYNC_KEY = "oecd_sync_v3"  # a new key makes the next run read everything again after the rules change
+SYNC_KEY = "oecd_sync_v4"  # a new key makes the next run read everything again after the rules change
 MARK = "OECD-"  # items.bill for these cards: each record stands alone (see cluster.py) and isn't re-sorted
 
 # Countries with official records of their own in bills.py.
@@ -63,6 +63,18 @@ ISO3 = {"ARE": "AE", "ARG": "AR", "ARM": "AM", "AUS": "AU", "AUT": "AT", "BEL": 
         "ZMB": "ZM", "ZWE": "ZW"}
 
 
+# A country's own AI standard, going by its name ("Voluntary AI Safety Standard", "Standards for the
+# Implementation of Inclusive AI Systems"). OECD.AI's own "National Standard" type is not used: it also covers
+# strategies, glossaries and programmes. ISO and IEEE records are left out: standards.py lists those.
+_STANDARD_NAME = re.compile(r"\bstandards?$|^(?:national )?standards for\b", re.I)
+STANDARD_BODIES = {"International Organization for Standardization (ISO)",
+                   "Institute of Electrical and Electronics Engineers (IEEE)"}
+
+
+def is_standard(title: str) -> bool:
+    return bool(_STANDARD_NAME.search(re.sub(r"\s*\([^)]*\)\s*$", "", title.strip())))
+
+
 def card(r: dict) -> dict | None:
     """The card for one OECD record under the rules above, or None if it isn't taken."""
     kind = (r.get("initiativeType") or {}).get("name") or ""
@@ -76,7 +88,7 @@ def card(r: dict) -> dict | None:
                 or code not in jurisdictions.JURISDICTIONS or (binding and code in OWN_RECORDS)):
             return None
     elif body:
-        if kind not in BODY_TYPES:
+        if kind not in BODY_TYPES or body.get("name") in STANDARD_BODIES:
             return None
         code = "EU" if body.get("name") == "European Union" else "INTL"
         if code == "EU" and binding:
@@ -91,8 +103,10 @@ def card(r: dict) -> dict | None:
     summary = describe(r.get("description") or "", title)
     if not classify.is_ai_related(title, summary):  # general data, privacy or open-data rules
         return None
+    standard = not binding and is_standard(title)
     return {"title": title[:220], "summary": summary, "url": SITE + r["slug"], "source": SOURCE,
-            "category": "regulation" if binding else "policy", "action": "law" if binding else None,
+            "category": "regulation" if binding or standard else "policy",
+            "action": "law" if binding else "standard" if standard else None,
             "date": f"{_start_year(r):04d}-01-01", "jurisdictions": [code], "authors": [],
             "tags": classify.tags_for(title, summary), "_id": r["id"]}
 

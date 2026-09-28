@@ -10,8 +10,6 @@ Optional per-source keys:
   org           a company tag for every item (e.g. Apple's own paper feed)
   professors    arXiv author searches: names that must appear among a paper's authors
   companies     True when items are kept only if a big-tech company is matched (see COMPANIES)
-  expert        regulation tracker: the ethics / philosophy / law scholar a source follows
-                (True for arXiv searches covering several of them)
   ai_only       True when every item is about AI (skips the AI keyword filter)
   ai_in_title   True for general feeds where only items with AI in the title count
   max_age_days  look back further than the run default (for feeds that post weekly or monthly)
@@ -145,8 +143,9 @@ SOURCES += [
      "jurisdictions": ["EU"]},
 ]
 
-# --- Regulation tracker: AI ethics, philosophy and law scholars, followed daily ---
-# Their arXiv papers are picked up by the author matching further down.
+# --- Research: AI ethics, philosophy and law scholars, followed daily ---
+# Their arXiv papers are picked up by the author matching further down, and filed under Research (a paper
+# isn't a bill or a law), tagged with the scholar and their field.
 EXPERTS = [
     # Philosophy and ethics
     ("Luciano Floridi", "Philosophy", "Yale"),
@@ -266,9 +265,9 @@ SOURCES += [
      "url": arxiv_rss_url(ARXIV_CATEGORIES), "category": "research", "ai_only": True, "max_age_days": 14, "pause": 3.5,
      "professors": [n for n, _ in PROFESSORS]},
     {"name": "arXiv", "label": f"arXiv new papers: {len(EXPERTS)} scholars", "format": "arxiv_rss",
-     "url": arxiv_rss_url(ARXIV_ETHICS_CATEGORIES), "category": "regulation", "ai_only": True, "max_age_days": 14,
+     "url": arxiv_rss_url(ARXIV_ETHICS_CATEGORIES), "category": "research", "ai_only": True, "max_age_days": 14,
      "pause": 3.5,
-     "professors": [n for n, _, _ in EXPERTS], "expert": True},
+     "professors": [n for n, _, _ in EXPERTS]},
 ]
 
 SOURCES += [

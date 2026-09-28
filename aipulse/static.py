@@ -1,6 +1,6 @@
 """A static copy of the site for hosts without Python (GitHub Pages).
 
-build() writes the page, the two maps and data.json: every card with its other outlets' versions and bill
+build() writes the page, the two maps, a daily-digest RSS feed per stream (rss.py) and data.json: every card with its other outlets' versions and bill
 lifecycle, plus the header's status. The page sees data-static="1" and filters, searches and pages
 data.json in the browser instead of calling /api/items.
 """
@@ -14,7 +14,7 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, jurisdictions, store
+from . import brands, jurisdictions, rss, store
 from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
 
@@ -52,6 +52,9 @@ def build(conn, out: str | Path) -> int:
         (out / "brand-icons").mkdir()
         for src in icons:
             shutil.copy(brands.ICON_DIR / Path(src).name, out / src)
+    (out / "feeds").mkdir()
+    for name in rss.FEEDS:
+        (out / "feeds" / f"{name}.xml").write_bytes(rss.feed_xml(name, cards))
     for c in cards:
         c["s"] = text.get(c["id"], "")
         for k in ("added_at", "cluster"):

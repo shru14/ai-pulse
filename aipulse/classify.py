@@ -31,7 +31,7 @@ POLICY_TERMS = [
     r"policy", r"governance", r"lawmakers", r"minister", r"president",
     # regulators, investigations and the executive branch
     r"investigat", r"\bprobes?\b", r"scrutin", r"regulators?\b", r"watchdog", r"\bgovernor\b", r"\bgov\.",
-    r"\bMPs?\b", r"\bcabinet\b", r"attorneys? general", r"administration\b", r"\badmin\b(?! (?:plugin|console|panel|tools?|controls?|settings|dashboard|roles?|access|users?|api)\b)",
+    r"\bMPs?\b", r"\bcabinet\b", r"\bNIST\b", r"attorneys? general", r"administration\b", r"\badmin\b(?! (?:plugin|console|panel|tools?|controls?|settings|dashboard|roles?|access|users?|api)\b)",
 ]
 
 TOOL_TERMS = [
@@ -62,6 +62,11 @@ _LAUNCH = re.compile(r"launch|releas|introduc|unveil|announc|rolls? out|availabl
 _STUDY = re.compile(r"\b(stud(y|ies)|researchers?|research team|analy[sz]ed|surveyed|paper|preprint|findings|"
                     r"found that|finds that|report(s)? finds?|according to (a|new) (study|report|survey))\b", re.I)
 _news = re.compile("|".join(NEWS_SIGNALS), re.I)
+# Standards bodies and standards (ISO/IEC 42001, IEEE 7000, NIST's frameworks, EU harmonised standards). What they
+# publish or start is policy (NIST is a government agency) or industry news, never a product release.
+_STANDARDS = re.compile(r"\bNIST\b|\bISO/IEC\b|\bISO \d{4,5}\b|\bIEEE (?:SA\b|Standards?\b|P?\d{4})|\bCEN-CENELEC\b|\bETSI\b|"
+                        r"\bstandards? (?:body|bodies|organi[sz]ations?|institutes?)\b|\bharmoni[sz]ed standards?\b|"
+                        r"\b(?:AI|artificial intelligence) standards\b", re.I)
 
 
 def is_ai_related(title: str, summary: str) -> bool:
@@ -83,6 +88,32 @@ _NOT_RELEASE = re.compile(r"^how\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat
                           r"\bletter\b|\bstate of\b|\broundup\b|\bweek\b|\bcourses?\b", re.I)
 
 
+# Industry news that isn't reporting gets a label on its card (it stays in the stream): tutorials and guides,
+# event previews and podcasts, and a company's own blog posts that aren't launches.
+_TUTORIAL = re.compile(r"^(a |an )?(coding |step[- ]by[- ]step |hands[- ]on |practical |complete |beginner'?s? )?"
+                       r"(guide|tutorial|walkthrough)\b|^how to\b|\bcoding guide\b|\bfor beginners\b|\btutorial\b|"
+                       r"\bstep[- ]by[- ]step\b|^build(ing)? (a|an|your)\b", re.I)
+_TUTORIAL_LEAD = re.compile(r"\btutorial\b|\bstep[- ]by[- ]step\b|\blearn how to\b|"
+                            r"\bin this (post|tutorial|guide),? (we|you)('ll| will)? (show|walk|build|learn)", re.I)
+_EVENT = re.compile(r"\bwhat to expect (at|during)\b|\btheCUBE\b|\bwebinar\b|\blivestream\b|\bpodcast\b|"
+                    r"\bepisode\b|\binsights from\b|^ITWeb TV\b|\bTechCrunch Disrupt\b", re.I)
+
+
+# A customer's results with a product: "Proaction boosts sales 60% and saves 75+ hours with Codex".
+_CUSTOMER = re.compile(r"\b(boosts?|cuts?|saves?|reduces?|doubles?|triples?|speeds? up|turns?|scales?|resolves?)\b"
+                       r"[^.]{0,60}\b(with|using)\b", re.I)
+
+
+def news_kind(title: str, summary: str, company_blog: bool) -> str:
+    """What an industry-news card is: "tutorial", "event", "blog" (a company's own post that isn't a
+    launch) or "news" (reporting)."""
+    if _TUTORIAL.search(title) or _TUTORIAL_LEAD.search(summary or ""):
+        return "tutorial"
+    if _EVENT.search(title):
+        return "event"
+    return "blog" if company_blog else "news"
+
+
 def launched(title: str, summary: str) -> bool:
     """Does a news story report something being released? It needs launch language, and a study's findings
     count only when the headline itself announces a launch ("Researchers release ...")."""
@@ -92,10 +123,16 @@ def launched(title: str, summary: str) -> bool:
 
 def released(title: str, summary: str) -> bool:
     """Does a company blog post launch something? Launch language as for news, or the blog phrasing above,
-    unless the headline is a deal, a person, a programme, a guide or a podcast."""
-    if _NOT_RELEASE.search(title):
+    unless the headline is a deal, a person, a programme, a guide or a podcast, or the post is a tutorial ("Learn how
+    to run SkyRL, an open-source framework...") or a customer story ("Proaction boosts sales 60% ... with Codex")."""
+    if _NOT_RELEASE.search(title) or _CUSTOMER.search(title) or news_kind(title, summary, False) == "tutorial":
         return False
     return launched(title, summary) or bool(_BLOG_LAUNCH.search(title)) or bool(_BLOG_LAUNCH.search(_HISTORY.sub(" ", summary)))
+
+
+def about_standards(title: str) -> bool:
+    """Does a headline name a standards body or a standard (never a release; see _STANDARDS)?"""
+    return bool(_STANDARDS.search(title))
 
 
 def categorize(title: str, summary: str, default: str = "news") -> str:
@@ -114,6 +151,8 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
     policy, tool = score(_policy), score(_tool)
     if policy >= 3 or (policy >= 2 and policy >= tool):
         return "policy"
+    if _STANDARDS.search(title) and default in ("tool", "news"):
+        return "policy" if policy >= 2 else "news"
     if default == "tool" and _news.search(title):
         return "news"
     if default == "tool":  # a company blog: a release only when something is launched
@@ -127,7 +166,7 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
 
 COMPANY_TERMS = {
     "OpenAI": r"OpenAI|ChatGPT|\bGPT-?\d", "Anthropic": r"Anthropic|Claude", "Google": r"Google|Gemini|DeepMind",
-    "Meta": r"\bMeta\b|Llama", "Microsoft": r"Microsoft|Copilot", "Nvidia": r"Nvidia", "Apple": r"\bApple\b",
+    "Meta": r"\bMeta\b|Llama", "Microsoft": r"Microsoft|(?<!GitHub )Copilot", "Nvidia": r"Nvidia", "Apple": r"\bApple\b",
     "Amazon": r"Amazon|AWS", "xAI": r"\bxAI\b|Grok", "Mistral": r"Mistral", "DeepSeek": r"DeepSeek",
     "Alibaba": r"Alibaba|Qwen",
 }
@@ -158,6 +197,7 @@ TOPIC_TERMS = {
     "IPO": r"\bIPO\b|going public|listing",
     "Jobs & Labor": r"\bjobs?\b|layoffs?|workforce|employment|labou?r",
     # Law & governance
+    "Standards": _STANDARDS.pattern + r"|\bAI RMF\b|risk management framework|\b42001\b",
     "Law": r"\blaws?\b|legislat|\bbill\b|lawsuit|\bsue[sd]?\b|court|ruling|judge",
     "Regulation": r"regulat|compliance|enforcement|regulator",
     "Governance": r"governance|oversight|standards?\b|treaty|summit|safety institute|\bAISI\b",
@@ -203,8 +243,20 @@ def company_tags(title: str, summary: str = "") -> list[str]:
     return [k for k, p in _companies.items() if p.search(text)]
 
 
+def lead_company(title: str) -> str | None:
+    """The company a headline is about: the first one it names ("xAI launches Grok 4.7 ... Claude and GPT-6" -> xAI)."""
+    found = [(m.start(), k) for k, p in _companies.items() if (m := p.search(title))]
+    return min(found)[1] if found else None
+
+
+# Our own note on translated official records ("Machine-translated from Portuguese; ...") names a language,
+# not a place: a Brazilian bill isn't about Portugal, a Swiss one isn't about Germany.
+_TRANSLATED = re.compile(r"\s*Machine-translated from \w+; the official text is linked\.")
+
+
 def tags_for(title: str, summary: str, limit: int = 5) -> list[str]:
     """Companies first, then places, then topics (see TOPIC_TERMS)."""
+    summary = _TRANSLATED.sub("", summary)
     text = f"{title} {summary}"
     topics = [k for k, p in _topics.items() if p.search(text)]
     return (company_tags(title, summary) + place_tags(title, summary) + topics)[:limit]

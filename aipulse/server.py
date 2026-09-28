@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from . import brands, jurisdictions, store
+from . import brands, jurisdictions, rss, store
 from .sources import SOURCES
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
@@ -79,6 +79,11 @@ def make_handler(db_path: str):
                         self._send(f.read_bytes(), kind)
                     else:
                         self._send(b"Not found", "text/plain", 404)
+                elif url.path.startswith("/feeds/") and url.path.endswith(".xml") and url.path[7:-4] in rss.FEEDS:
+                    name = url.path[7:-4]
+                    feed_cards, _ = store.cards(conn, rss.FEEDS[name][0], days=rss.DAYS + 1,
+                                                limit=10**6, eu_members=EU_MEMBERS)
+                    self._send(rss.feed_xml(name, feed_cards), "application/rss+xml; charset=utf-8")
                 elif url.path == "/api/sources":
                     self._send(json.dumps(store.source_health(conn, [s["url"] for s in SOURCES])).encode(),
                                "application/json")

@@ -206,6 +206,17 @@ def set_regulation(conn: sqlite3.Connection, item_id_: str, category: str, juris
                  (category, ",".join(jurisdictions), action or "", item_id_))
 
 
+def mark_incident(conn: sqlite3.Connection, url: str, title: str, incident: str = "") -> bool:
+    """Label a stored story (same URL or headline) as a report of a confirmed AI incident, under Industry, and
+    with the incident's mark (incidents.MARK + number) when known, so it joins that incident's card. Never
+    the database's own incident cards or official records. True if found."""
+    return conn.execute("UPDATE items SET category = 'news', action = 'incident', jurisdictions = '',"
+                        " bill = CASE WHEN ? != '' THEN ? ELSE bill END"
+                        " WHERE (id = ? OR lower(title) = lower(?)) AND category IN ('news', 'tool', 'policy')"
+                        " AND source != 'AI Incident Database' AND (bill = '' OR bill LIKE 'AIID-%')",
+                        (incident, incident, item_id(url), title or "\0")).rowcount > 0
+
+
 def exists(conn: sqlite3.Connection, url: str) -> bool:
     return conn.execute("SELECT 1 FROM items WHERE id = ?", (item_id(url),)).fetchone() is not None
 
@@ -294,15 +305,24 @@ def cards(conn: sqlite3.Connection, category=None, q=None, days=None, place=None
     if leads:
         ids = [c["id"] for c in leads]
         also: dict[str, list[dict]] = {}
+        incidents = {c["id"] for c in leads if c.get("action") == "incident"}  # and cards with one grouped under them
         # In batches: SQLite caps the values one query can take, and the static build asks for every card.
         for i in range(0, len(ids), 900):
             batch = ids[i:i + 900]
             marks = ",".join("?" * len(batch))
-            for r in conn.execute(f"SELECT title, source, url, date, cluster FROM items WHERE cluster IN ({marks})"
+            for r in conn.execute(f"SELECT title, source, url, date, cluster, action FROM items WHERE cluster IN ({marks})"
                                   f" AND id != cluster ORDER BY date, added_at", batch):
                 also.setdefault(r["cluster"], []).append({k: r[k] for k in ("title", "source", "url", "date")})
+                if r["action"] == "incident":
+                    incidents.add(r["cluster"])
+        from .classify import news_kind
+        from .sources import SOURCES
+        blogs = {s["name"] for s in SOURCES if s["category"] == "tool"}  # labs' and companies' own blogs
         for c in leads:
             c["also"] = also.get(c["id"], [])
+            if c["category"] == "news":  # a label within the stream: AI-incident, news, tutorial, event or company blog
+                c["kind"] = "incident" if c["id"] in incidents else news_kind(c["title"], c.get("summary") or "",
+                                                                             c["source"] in blogs)
             if c.get("bill"):  # a tracked bill: its lifecycle timeline
                 from .bills import lifecycle
                 c["lifecycle"] = lifecycle(conn, c["bill"])
