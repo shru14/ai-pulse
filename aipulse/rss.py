@@ -1,11 +1,9 @@
 """Daily digests, one RSS feed per stream: feeds/releases.xml, feeds/news.xml, feeds/policy.xml,
 feeds/research.xml and feeds/regulation.xml.
 
-A digest is one day's four 6-hour collections together: every card collected that UTC day (runs at 00:00,
-06:00, 12:00 and 18:00 UTC), newest first, with its headline, one-line summary, source and link. A day's
-digest appears once the day is over, so the first run of the next day publishes it (~05:30 India time).
-Each feed keeps the last DAYS digests; a day with nothing in a stream gets no post. The email digest
-(same days, same cards) is built from daily() too.
+A day's digest is what happened that day: the stream's cards dated that day (UTC), newest first, with
+headline, one-line summary, source and link. It appears once the day is over. Each feed keeps the last DAYS
+digests; a day with nothing in a stream gets no post. The email digest is built from daily() too.
 
 The static build writes the feeds next to data.json; the local server answers /feeds/<name>.xml the same way.
 """
@@ -17,17 +15,8 @@ from datetime import date, datetime, time, timedelta, timezone
 from email.utils import format_datetime
 from xml.sax.saxutils import escape
 
-from .sources import SOURCES
-
 SITE = "https://shru14.github.io/ai-pulse/"
 DAYS = 14
-# How far back each source's normal collection reaches (collect: 3 days, or the source's max_age_days, e.g. 14
-# for arXiv, where papers turn up a week or more after submission). A card dated further back than its source
-# reaches came from a history backfill, not a regular update, so it isn't in a daily digest.
-REACH: dict[str, int] = {}
-for _s in SOURCES:
-    REACH[_s["name"]] = max(REACH.get(_s["name"], 3), _s.get("max_age_days", 3))
-STALE_DAYS = max(REACH.values())  # the furthest any source reaches (how many days of cards to read)
 # File name -> (category, stream name, what it carries); the names match the page's streams.
 FEEDS = {
     "releases": ("tool", "Releases", "New models, products and open-source launches from AI labs and companies."),
@@ -43,26 +32,15 @@ def _text(value: str) -> str:
     return escape(_CONTROL.sub("", value or ""))
 
 
-def collected_day(card: dict) -> date | None:
-    """The UTC day AI Pulse collected the card, or None for a backfilled old story."""
-    try:
-        added = datetime.fromisoformat(card.get("added_at") or "").astimezone(timezone.utc).date()
-    except ValueError:
-        return None
-    reach = REACH.get(card.get("source"), 3) + 1  # a day's slack for time zones
-    return added if date.fromisoformat(card["date"]) >= added - timedelta(days=reach) else None
-
-
 def daily(cards: list[dict], category: str, today: date | None = None, days: int = DAYS) -> dict[date, list[dict]]:
-    """A stream's cards by collection day, for the last `days` complete days (newest day first, newest card
-    first within a day). Today isn't over, so it isn't included."""
+    """A stream's cards by the day they're dated, for the last `days` complete days (newest day first, newest
+    card first within a day). Today isn't over, so it isn't included."""
     today = today or datetime.now(timezone.utc).date()
-    first = today - timedelta(days=days)
+    first = (today - timedelta(days=days)).isoformat()
     out: dict[date, list[dict]] = {}
     for c in cards:
-        day = collected_day(c) if c["category"] == category else None
-        if day and first <= day < today:
-            out.setdefault(day, []).append(c)
+        if c["category"] == category and first <= c["date"] < today.isoformat():
+            out.setdefault(date.fromisoformat(c["date"]), []).append(c)
     for day_cards in out.values():
         day_cards.sort(key=lambda c: c.get("added_at") or "", reverse=True)
     return dict(sorted(out.items(), reverse=True))

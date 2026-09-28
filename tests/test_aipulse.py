@@ -1290,13 +1290,14 @@ def test_rss_daily_digest_per_stream():
     cards = [card(1, "tool", "2026-09-27T00:20:00+00:00"), card(2, "tool", "2026-09-27T18:25:00+00:00"),
              card(3, "news", "2026-09-27T06:10:00+00:00"), card(4, "tool", "2026-09-26T12:00:00+00:00"),
              card(5, "tool", "2026-09-28T06:00:00+00:00"),                 # today: not over yet
-             card(6, "tool", "2026-09-27T12:00:00+00:00", "2024-03-01")]   # a backfilled old story
+             card(6, "tool", "2026-09-27T12:00:00+00:00", "2026-09-22")]   # collected on the 27th, but happened on the 22nd
     days = rss.daily(cards, "tool", today=date(2026, 9, 28))
-    assert list(days) == [date(2026, 9, 27), date(2026, 9, 26)]            # newest day first
-    assert [c["id"] for c in days[date(2026, 9, 27)]] == ["c2", "c1"]     # all four runs of the day, newest first
+    assert list(days) == [date(2026, 9, 27), date(2026, 9, 26), date(2026, 9, 22)]  # by the day it happened
+    assert [c["id"] for c in days[date(2026, 9, 27)]] == ["c2", "c1"]     # only what's dated the 27th, newest first
     root = ET.fromstring(rss.feed_xml("releases", cards, today=date(2026, 9, 28)))  # well-formed, "&" escaped
     posts = root.findall("channel/item")
-    assert [p.findtext("title") for p in posts] == ["Releases · Sun 27 Sep 2026", "Releases · Sat 26 Sep 2026"]
+    assert [p.findtext("title") for p in posts] == ["Releases · Sun 27 Sep 2026", "Releases · Sat 26 Sep 2026",
+                                                    "Releases · Tue 22 Sep 2026"]
     assert 'href="https://ex.com/2"' in posts[0].findtext("description") and "Story 2 &amp; more" in posts[0].findtext("description")
     assert posts[0].findtext("pubDate") == "Mon, 28 Sep 2026 00:00:00 +0000"   # published once the day is over
     assert not ET.fromstring(rss.feed_xml("policy", cards, today=date(2026, 9, 28))).findall("channel/item")
@@ -1318,18 +1319,3 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
     assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
-
-
-def test_a_bill_moving_stage_is_in_that_days_digest(tmp_path):
-    from datetime import datetime, timezone
-    from aipulse import bills, rss
-    conn = store.connect(tmp_path / "t.db")
-    bill = {"key": "US-119-hr-1", "jurisdiction": "US", "number": "H.R. 1", "title": "To regulate artificial intelligence",
-            "url": "https://www.congress.gov/bill/119th-congress/house-bill/1", "source": "congress.gov",
-            "history": [{"date": "2026-09-01", "stage": "introduced", "text": "Introduced in House"}]}
-    bills.upsert(conn, bill)
-    conn.execute("UPDATE items SET added_at = '2026-09-01T12:00:00+00:00'")  # first seen weeks ago
-    bill["history"].append({"date": datetime.now(timezone.utc).date().isoformat(), "stage": "passed_chamber", "text": "Passed House"})
-    assert bills.upsert(conn, bill)
-    cards, _ = store.cards(conn, "regulation", limit=10)
-    assert rss.collected_day(cards[0]) == datetime.now(timezone.utc).date()  # the advance is today's news

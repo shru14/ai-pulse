@@ -156,7 +156,7 @@ def main():
             sys.exit(f"streams must be among: {', '.join(rss.FEEDS)}")
         day = date.fromisoformat(a.day) if a.day else digest.yesterday()
         conn = store.connect(a.db)
-        cards, _ = store.cards(conn, days=(date.today() - day).days + rss.STALE_DAYS + 2, limit=10**6)
+        cards, _ = store.cards(conn, days=(date.today() - day).days + 2, limit=10**6)
         email = digest.build(cards, streams, day)
         if not email:
             print(f"Nothing in {', '.join(streams)} on {day}; no email.")

@@ -81,7 +81,7 @@ def make_handler(db_path: str):
                         self._send(b"Not found", "text/plain", 404)
                 elif url.path.startswith("/feeds/") and url.path.endswith(".xml") and url.path[7:-4] in rss.FEEDS:
                     name = url.path[7:-4]
-                    feed_cards, _ = store.cards(conn, rss.FEEDS[name][0], days=rss.DAYS + rss.STALE_DAYS + 1,
+                    feed_cards, _ = store.cards(conn, rss.FEEDS[name][0], days=rss.DAYS + 1,
                                                 limit=10**6, eu_members=EU_MEMBERS)
                     self._send(rss.feed_xml(name, feed_cards), "application/rss+xml; charset=utf-8")
                 elif url.path == "/api/sources":

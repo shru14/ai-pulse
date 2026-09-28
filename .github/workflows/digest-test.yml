@@ -32,20 +32,23 @@ jobs:
       - name: Diagnose (temporary)
         run: |
           python - <<'EOF'
-          import collections
           from datetime import date, timedelta
           from aipulse import store, rss
           conn = store.connect("aipulse.db")
-          cards, _ = store.cards(conn, days=40, limit=10**6)
-          for d in (date(2026, 9, 25), date(2026, 9, 26), date(2026, 9, 27)):
-              for cat in ("news", "research"):
+          cards, _ = store.cards(conn, days=20, limit=10**6)
+          for d in (date(2026, 9, 24) + timedelta(days=i) for i in range(4)):
+              row = []
+              for name, (cat, _, _) in rss.FEEDS.items():
                   got = rss.daily(cards, cat, today=d + timedelta(days=1), days=1).get(d, [])
-                  late = [c for c in got if date.fromisoformat(c["date"]) < d - timedelta(days=3)]
-                  print(d, cat, len(got), "late:", len(late), collections.Counter(c["source"] for c in late).most_common(6))
+                  late = [c for c in got if (c.get("added_at") or "") > f"{d + timedelta(days=1)}T06:00"]
+                  row.append(f"{name} {len(got)} (found after next morning: {len(late)})")
+              print(d, " | ".join(row))
           EOF
 
       - name: Send the test digest to the project inbox
         env:
           DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
           DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
-        run: python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL"
+        run: |
+          python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL" --day 2026-09-27
+          python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL" --day 2026-09-25
