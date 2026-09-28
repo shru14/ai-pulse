@@ -111,14 +111,49 @@ _CUSTOMER = re.compile(r"\b(boosts?|cuts?|saves?|reduces?|doubles?|triples?|spee
                        r"[^.]{0,60}\b(with|using)\b", re.I)
 
 
+# Reporting of a study's or researchers' findings: "AI models show a willingness to harm humans ...", told by
+# its headline, or by a summary that says a study, paper or survey found it.
+# A researcher who quits or is accused is news about a person, not a finding, so the headline must say what
+# the research found or produced.
+_STUDY_TITLE = re.compile(r"\bstud(y|ies)\b|\bsurvey (finds|found|shows|says)\b|\bpreprint\b|\b(new|a) paper\b|"
+                          r"\b(researchers?|scientists) (find|finds|found|show|shows|showed|say|says|discover|discovered|"
+                          r"warn|used|use|plug|build|built|develop|developed|create|created|propose|proposes|introduce|"
+                          r"introduces|release|releases|test|tested|train|trained)\b|"
+                          r"\b(finds|found|reveals?|shows?) that\b|\breport finds\b", re.I)
+_STUDY_LEAD = re.compile(r"\b(a|the|new|recent) (study|paper|preprint|survey|experiment)\b|\bresearchers (at|from)\b|"
+                         r"\b(study|paper|survey|researchers|scientists) (found|find|finds|show|shows|showed|suggests?|"
+                         r"report|reported|tested|analy[sz]ed)\b|\baccording to (a|new) (study|report|survey)\b", re.I)
+# Analysis and opinion: questions, "why", explainers, comparisons, interviews ("Can Muse overcome Meta's trust
+# issues?", "Why letting Claude clean your TV's bloatware isn't the best idea").
+_ANALYSIS = re.compile(r"\?\s*$|^(why|what|who|can|could|should|is|are|will|would|does|do)\b|^how\b(?! to\b)|"
+                       r"\b(opinion|(?<!artificial )analysis|explained|explainer|compared|comparison|interview|q&a|deep dive|"
+                       r"lessons from|the case for|the case against|column|a look at)\b|\bvs\.?\b|"
+                       r"\bhere'?s (what|why|how)\b|\bwhat'?s at stake\b|^\d+ (ways|tips|things|reasons|safeguards|lessons)\b|"
+                       # opinion: first person and argument ("I tried ...", "It's time to ...", "The problem with ...")
+                       r"^(I|my|we)\b|\bI('m| am| was| tried| put| asked| used| spent| think)\b|\bit'?s time (to|for)\b|"
+                       r"\bthe (problem|trouble) with\b|\bin defen[cs]e of\b|\bthe myth of\b|\bwe need to\b|\bstop (calling|pretending)\b|"
+                       r":\s*(why|how|what)\b|\bshould\b",  # "Larry Yon: Why Africa's tech ecosystem should be building ..."
+                       re.I)
+# A first-person summary is a column or a diary, not reporting ("I headed back to Amsterdam for ...").
+_OPINION_LEAD = re.compile(r"(^|[.!?]\s+)I('m| am| was| think| believe| headed| went| tried| spent| wrote| asked| put)\b|"
+                           r"\bin my (view|opinion)\b")
+
+
 def news_kind(title: str, summary: str, company_blog: bool) -> str:
-    """What an industry-news card is: "tutorial", "event", "blog" (a company's own post that isn't a
-    launch) or "news" (reporting)."""
+    """What an industry card is: "tutorial", "event", "blog" (a company's own post that isn't a launch),
+    "study" (reporting findings), "analysis" (opinion, explainers, comparisons) or "news" (reporting of an
+    event). AI-incidents are told apart by the AI Incident Database, not here (store.cards)."""
     if _TUTORIAL.search(title) or _TUTORIAL_LEAD.search(summary or ""):
         return "tutorial"
     if _EVENT.search(title):
         return "event"
-    return "blog" if company_blog else "news"
+    if company_blog:
+        return "blog"
+    if _ANALYSIS.search(title) or _OPINION_LEAD.search(summary or "") or re.match(r"(four|five|six|seven|eight|nine|ten|three) (ways|tips|things|reasons|safeguards)\b", title, re.I):
+        return "analysis"
+    if _STUDY_TITLE.search(title) or _STUDY_LEAD.search(summary or ""):
+        return "study"
+    return "news"
 
 
 def launched(title: str, summary: str) -> bool:
@@ -158,8 +193,8 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
     policy, tool = score(_policy), score(_tool)
     if policy >= 3 or (policy >= 2 and policy >= tool):
         return "policy"
-    if _STANDARDS.search(title) and default in ("tool", "news"):
-        return "policy" if policy >= 2 else "news"
+    if _STANDARDS.search(title):  # whatever the feed (a policy one included, or re-sorting would flip it back)
+        return "policy" if policy >= 2 or default == "policy" else "news"
     if default == "tool" and _news.search(title):
         return "news"
     if default == "tool":  # a company blog: a release only when something is launched

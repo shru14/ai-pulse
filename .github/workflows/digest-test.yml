@@ -15,7 +15,7 @@ permissions:
 jobs:
   build-test-digest:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -29,6 +29,9 @@ jobs:
           path: aipulse.db
           key: aipulse-db-v4-${{ github.run_id }}
           restore-keys: aipulse-db-v4-
+
+      - name: Re-sort with this branch's rules (the copy only; nothing is saved)
+        run: python -m aipulse --db aipulse.db reclassify
 
       # No email is sent: the digests are built as HTML files and kept as a run artifact to inspect.
       - name: Build the test digests (dry run, nothing sent)

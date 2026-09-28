@@ -1326,17 +1326,17 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
              card(3, "news", "2026-09-27T12:00:00+00:00"), card(4, "tool", "2026-09-28T00:30:00+00:00")]
     subject, text, html = digest.build(cards, ["releases", "regulation"], date(2026, 9, 27))
     assert subject == "AI Pulse daily · Sun 27 Sep 2026"
-    assert "6-hour" not in text + html and "update · Sun 27 Sep 2026" in html
+    assert "6-hour" not in text + html and "Daily update" not in html  # the subject already names the day
     assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
     assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
-    assert "Today: Releases 1 (+1 vs Sat) · Regulation tracker 1 (+1 vs Sat)" in text  # the KPI row
+    assert "Releases 1 · Regulation tracker 1" in text and "vs Sat" not in text + html  # the KPI row
     assert ">Regulation tracker</div>" in html and "Most mentioned" not in text  # nobody named twice: no line
     assert "https://shru14.github.io/ai-pulse/feeds/releases.xml" in html and "feeds/news.xml" not in html  # chosen feeds
     cards[0]["also"] = [{"title": "Same outlet, other post", "source": "Outlet", "url": "https://ex.com/x", "date": "2026-09-27"},
                         {"title": "Story 1 elsewhere", "source": "Other", "url": "https://other.com/1", "date": "2026-09-27"}]
     _, text, html = digest.build(cards, ["releases"], date(2026, 9, 27))
-    assert "Also reported by Other" in text and ">Outlet</a>" not in html   # never the story's own outlet
+    assert "also reported by Other" in text and ">Outlet</a>" not in html   # never the story's own outlet
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
 
 
@@ -1352,8 +1352,12 @@ def test_industry_news_is_labelled_not_moved(monkeypatch):
     card = lambda i, kind: {"id": f"n{i}", "title": f"Story {i}", "summary": "", "url": f"https://ex.com/{i}", "source": f"S{i}",
                             "category": "news", "kind": kind, "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
     _, text, html = digest.build([card(1, "tutorial"), card(2, "news"), card(3, "blog")], ["news"], date(2026, 9, 27))
-    order = [text.index(t) for t in ("Story 2", digest.OTHER_HEADING, "[Tutorial] Story 1", "[Company blog] Story 3")]
-    assert order == sorted(order)  # the news first, then the labelled rest under their heading
+    assert classify.news_kind("Can Muse overcome Meta's trust issues?", "", False) == "analysis"
+    assert classify.news_kind("AI access makes people unwilling to say I don't know, study finds", "", False) == "study"
+    assert classify.news_kind("Anthropic researcher quits, warns against self-improving AI", "", False) == "news"
+    # Industry in groups, each headed once with what it holds: News first, then company blogs, tutorials...
+    order = [text.index(t) for t in ("News (1)", "Story 2", "Company blogs (1)", "Story 3", "Tutorials (1)", "Story 1")]
+    assert order == sorted(order) and "[Tutorial]" not in text
 
 
 def test_standards_are_tracker_cards_that_survive_reclassify(tmp_path):
