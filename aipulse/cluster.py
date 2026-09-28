@@ -21,6 +21,13 @@ from . import brief, classify, jurisdictions
 WINDOW_DAYS = 3
 THRESHOLD = 0.25
 MIN_SHARED = 2  # distinctive words in common, so two short headlines can't match on one name
+# Outlets word one launch very differently ("Meta's Muse just stole the AI spotlight", "Meta shares soar after
+# launch of Muse AI"), but name the same company and the same rare name. Two stories dated the same day whose
+# headlines both name the same company and the same word this rare (in at most ~3% of stories) are the same event.
+ANCHOR_IDF = 3.2
+ANCHOR_DAYS = 0
+# Releases and industry news are compared with each other: a launch is often reported as news too.
+FAMILY = {"tool": "tool+news", "news": "tool+news"}
 
 _STOP = set("""
 a an the and or but of to in on for with as at by from into over under about after before amid than that this
@@ -113,6 +120,25 @@ def similarity(a: set[str], b: set[str], idf: dict[str, float]) -> float:
     return w(shared) / min(w(a), w(b)) if a and b else 0.0
 
 
+_NAME = re.compile(r"(?<=\s)[A-Z][\w'\-+.]*")
+
+
+def _names(title: str) -> set[str]:
+    """Names in a headline: capitalized words after its first ("Meta's Muse just stole" -> meta, muse)."""
+    return {_norm(w.lower().rstrip(".")) for w in _NAME.findall(title)} - _STOP
+
+
+def _anchored(a: dict, b: dict, idf: dict[str, float]) -> bool:
+    """Both headlines are about the same company (the first one each names) and share a rare name that isn't the
+    company's own ("Muse"). A story naming the product only in passing ("...a wide gap to Claude and GPT-6") is
+    about another company, so it doesn't count."""
+    company = classify.lead_company(a["title"])
+    if not company or company != classify.lead_company(b["title"]):
+        return False
+    shared = _names(a["title"]) & _names(b["title"])
+    return any(idf.get(t, 0.0) >= ANCHOR_IDF and t != _norm(company.lower()) for t in shared)
+
+
 def _days(a: str, b: str) -> int:
     return abs((date.fromisoformat(a) - date.fromisoformat(b)).days)
 
@@ -127,14 +153,20 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
     # Only stories in the same tab within WINDOW_DAYS of each other are compared (sorted sweep).
     sim: dict[tuple[int, int], float] = {}
     days = [date.fromisoformat(it["date"]).toordinal() for it in items]
-    order = sorted(range(len(items)), key=lambda k: (items[k]["category"], days[k]))
+    family = [FAMILY.get(it["category"], it["category"]) for it in items]
+    order = sorted(range(len(items)), key=lambda k: (family[k], days[k]))
     for pos, i in enumerate(order):
         for j in order[pos + 1 :]:
-            if items[j]["category"] != items[i]["category"] or days[j] - days[i] > WINDOW_DAYS:
+            if family[j] != family[i] or days[j] - days[i] > WINDOW_DAYS:
                 break
             if _conflict(specs[i], specs[j]):
                 continue
             s = similarity(toks[i], toks[j], idf)
+            # Different outlets only: one company blog posting twice about a product ("Better prompt caching for
+            # GPT-6", "Introducing GPT-6 Sol and Luna") is two stories, not one.
+            if (s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and items[i].get("source") != items[j].get("source")
+                    and _anchored(items[i], items[j], idf)):
+                s = THRESHOLD
             if s > 0:
                 sim[min(i, j), max(i, j)] = s
 

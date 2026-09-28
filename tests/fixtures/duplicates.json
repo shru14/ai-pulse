@@ -11,21 +11,24 @@
   "summary": "In July, OpenAI revealed that its AI agents had attacked Hugging Face without permission, sparking widespread concerns about AI safety. Since then, a string of similar incidents involving agents from Meta, Anthropic, Google, and other companies has fueled further fears about rogue AI.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Verge AI"
  },
  {
   "title": "For months, OpenAI’s agent swarms have been attacking online databases to find obscure facts",
   "summary": "The latest unauthorized agent swarms were discovered by researchers.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Anthropic’s founders seek voting control ahead of IPO",
   "summary": "Anthropic is asking its shareholders to approve a structure that would give its seven co-founders a combined 50.1% of the vote on most corporate matters.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Address concerns over potential AI threats",
@@ -81,7 +84,8 @@
   "summary": "At TechCrunch Disrupt 2026, Ricursive Intelligence co-founders Anna Goldie and Azalia Mirhoseini will take the Disrupt Stage to discuss closing the loop between AI and chip development Save up to $200 on your pass before today ends.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Massachusetts Scrutiny Of Sports Betting AI Expands After DraftKings Questions Emerge",
@@ -228,77 +232,88 @@
   "summary": "Meta gives every Muse user a free cloud computer running Ubuntu Linux where they can install software, write code, and browse the web. A \"Sentinel\" process monitors sensitive actions outside the user's workspace, while users can inspect every file in the system.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "meta-muse-0925",
+  "source": "The Decoder"
  },
  {
   "title": "Intelligence doesn't come cheap as AI drives up costs for the NSA, hospitals, and insurers",
   "summary": "The NSA is already spending billions of dollars to test advanced AI models, mostly on computing power, according to The Washington Sun. Lawmakers expect full-scale AI oversight to cost tens of billions of dollars a year, while earlier estimates from the Congressional Budget Office put the figure at…",
   "date": "2026-09-25",
   "category": "policy",
-  "event": ""
+  "event": "",
+  "source": "The Decoder"
  },
  {
   "title": "Google's \"Call for Me\" lets Gemini phone businesses for you",
   "summary": "Google is testing \"Call for Me,\" a feature that lets Gemini call businesses on a user's behalf.",
   "date": "2026-09-25",
   "category": "news",
-  "event": "gemini-call-for-me"
+  "event": "gemini-call-for-me",
+  "source": "The Decoder"
  },
  {
   "title": "Anthropic signs $11.6 billion cloud deal with Akamai, pushing its compute spending past $500 billion in under a year",
   "summary": "Anthropic has reportedly signed a seven-year, $11.6 billion cloud deal with Akamai Technologies and will receive a warrant for up to 5 percent of Akamai's shares. Its compute deals have reportedly totaled $517 billion in 11 months.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Decoder"
  },
  {
   "title": "Ruby on Rails creator DHH says he's done writing code by hand",
   "summary": "David Heinemeier Hansson, creator of Ruby on Rails, has quit writing code by hand after 25 years. He says he hasn't typed a single line since March 2026.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Decoder"
  },
  {
   "title": "White House tells OpenAI and Anthropic to let U.S. review new models before sharing them with British testers",
   "summary": "The White House wants OpenAI and Anthropic to hold back new AI models from the U.K.'s AI Safety Institute until U.S. agencies get to review them first.",
   "date": "2026-09-25",
   "category": "policy",
-  "event": ""
+  "event": "",
+  "source": "The Decoder"
  },
  {
   "title": "The Pentagon wants $30 million to build an AI-powered lie detector",
   "summary": "The US government wants to spend $30.3 million over the next five years on an improved form of lie detector, according to a Department of Defense budget request. The program, called Polygraph+ or Polygraph Next, will focus on scoring algorithms that use artificial intelligence and machine learning…",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "MIT Technology Review AI"
  },
  {
   "title": "Trump admin using AI to deny medical care for seniors in disastrous experiment",
   "summary": "Vendors rolling out AI have an \"incentive to deny as many claims as possible.\"",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "Ars Technica AI"
  },
  {
   "title": "Can Apple Home’s AI camera features outsmart Amazon’s and Google’s? I put them to the test",
   "summary": "A few years back, I was at a beachside Easter egg hunt, watching my kids dash through sand dunes searching for sweet treats. My phone buzzed in my pocket; I ignored it.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Verge AI"
  },
  {
   "title": "Microsoft thinks its new Copilot ‘super app’ will be as influential as Office",
   "summary": "After teasing its new Copilot \"super app\" last month, Microsoft is officially unveiling it today. The redesigned Copilot app bundles three AI capabilities into a single interface of chat, coding, and agents.",
   "date": "2026-09-25",
   "category": "tool",
-  "event": ""
+  "event": "msft-copilot-app-0925",
+  "source": "The Verge AI"
  },
  {
   "title": "Lightspeed targets $250M for new India fund, focusing on early-stage AI",
   "summary": "The venture firm is aligning its India fundraising cycle with its global funds for the first time, as it shifts to a shorter investment period.",
   "date": "2026-09-25",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "How China Thinks About AI",
@@ -340,7 +355,8 @@
   "summary": "A proposal in the United States.",
   "date": "2026-09-24",
   "category": "regulation",
-  "event": "sanders-superintelligence-bill"
+  "event": "sanders-superintelligence-bill",
+  "source": "The Decoder"
  },
  {
   "title": "UK regulator proposes adding AI assistants to Google choice screens",
@@ -515,175 +531,200 @@
   "summary": "Leading AI experts have consistently underestimated how fast AI is advancing, according to the Forecasting Research Institute. AI reached gold-medal level at the International Mathematical Olympiad five years ahead of the median expert forecast, and Anthropic's annualized revenue is about five…",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Decoder"
  },
  {
   "title": "Sakana AI hires Jürgen Schmidhuber, inventor of deep learning, world models, and your next ChatGPT update",
   "summary": "Tokyo-based Sakana AI has hired Jürgen Schmidhuber as Chief Scientific Advisor. Sakana calls him the \"father of modern AI.\" He'll help lead the company's new RSI Lab, which works on recursive self-improvement, meaning AI that keeps developing itself.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Decoder"
  },
  {
   "title": "Google's Suncatcher project aims to put AI data centers in orbit powered by solar energy",
   "summary": "Google's \"Suncatcher\" project aims to run AI infrastructure in orbit on solar power. A fridge-sized experimental satellite is set to launch on a SpaceX Falcon 9 on October 1.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Decoder"
  },
  {
   "title": "Black Forest Labs launches FLUX 3 Action, an open robotics AI model",
   "summary": "Black Forest Labs is entering robotics with FLUX 3 Action. The open-world-action model uses camera feeds to predict what action a robot should take next.",
   "date": "2026-09-24",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "The Decoder"
  },
  {
   "title": "OpenAI agent “didn’t accept no for an answer” in Australian government breach",
   "summary": "\"There will obviously be legal consequences,\" prime minister promises.",
   "date": "2026-09-24",
   "category": "policy",
-  "event": "australia-openai-breach"
+  "event": "australia-openai-breach",
+  "source": "Ars Technica AI"
  },
  {
   "title": "Meta puts its AI assistant on a keychain",
   "summary": "Meta says the keychain-sized Muse Charm will ship in December.",
   "date": "2026-09-24",
   "category": "news",
-  "event": "meta-muse-charm"
+  "event": "meta-muse-charm",
+  "source": "Ars Technica AI"
  },
  {
   "title": "Gemini 3.8 Live with Live Avatar gives Google’s AI a face",
   "summary": "Google's new Gemini 3.8 Live update lets users have conversations with the model while watching an animated AI persona respond in real time. The \"Live Avatar\" will lip-sync and show different facial expressions during conversations, but it's currently only available to Gemini Enterprise customers.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Verge AI"
  },
  {
   "title": "Jensen Huang talks about AI and climate change like a supervillain",
   "summary": "As Jensen Huang puts it, AI can help fight climate change - but only if it inflicts \"an enormous amount of pain and suffering\" first. The Nvidia CEO discussed the future of energy and AI's impact on our planet in the latest episode of The Ezra Klein Show.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Verge AI"
  },
  {
   "title": "Meta is going to let you build games with AI right on your phone",
   "summary": "Meta has a new plan to get people to make games for its Horizon social platform. The company today announced two new development tools that will let you create games with AI prompts: Horizon Create, a mobile app, and Horizon Studio, a browser app that offers more granular controls.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Verge AI"
  },
  {
   "title": "Muse sure looks a lot like OpenClaw",
   "summary": "We seem to be entering into an AI agent renaissance. Meta's new consumer-facing AI agent, Muse, topped the App Store charts soon after its release and has 600,000 daily active users in the US, by an Apptopia estimate.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Verge AI"
  },
  {
   "title": "It’s sinister that Meta’s Muse AI mascot is so cute",
   "summary": "Opt in for Optimizer here. Last night, I asked Blorbo - what I named my Muse AI agent - to help me set some health […]",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Verge AI"
  },
  {
   "title": "Gemini can now call businesses for you so you don’t have to wait on hold",
   "summary": "Google's launching an \"early experiment\" feature on Pixel 11 that lets users delegate local business calls to Gemini, like making a reservation, checking if a product is in stock, or rescheduling an appointment.",
   "date": "2026-09-24",
   "category": "news",
-  "event": "gemini-call-for-me"
+  "event": "gemini-call-for-me",
+  "source": "The Verge AI"
  },
  {
   "title": "Why can’t we just keep rogue AIs off the internet?",
   "summary": "AI agents keep getting loose, escaping supposedly secure tests to attack real-world targets, commandeer obscure wikis, and leave instructions for other agents to follow. Researchers are testing these systems precisely because they might behave in unpredictable, even dangerous, ways.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "The Verge AI"
  },
  {
   "title": "PrismML brings its tiny LLMs to Qualcomm-powered smart glasses",
   "summary": "Prism's larger goal is open-weight AI that runs on devices and makes better use of the computing power they already have.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Meta’s Muse Charm looks like a Tamagotchi, but it’s tapping into a much newer trend",
   "summary": "Meta’s new AI gadget may look like a Tamagotchi, but its dangling form factor taps into a much broader Gen Z trend around bag charms, retro tech, and turning gadgets into fashion accessories.",
   "date": "2026-09-24",
   "category": "news",
-  "event": "meta-muse-charm"
+  "event": "meta-muse-charm",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Google Photos ‘Clueless’-inspired virtual closet is now available on Android and iOS",
   "summary": "The AI-powered feature builds a virtual wardrobe from your photos, and is now broadly available after first rolling out to Android users in June.",
   "date": "2026-09-24",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "ElevenLabs’ CEO on margins, IPO timing, and telling customers they’re talking to a bot",
   "summary": "ElevenLabs powers the AI voice on the other end of a lot of customer service calls, and its CEO told me this week that businesses should probably tell you that — at least until getting a machine is what everyone expects anyway.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Google tests letting Gemini call businesses for you",
   "summary": "Google says the AI-calling feature will first be available to Pixel 11 owners in the U.S. who pay for a Gemini subscription.",
   "date": "2026-09-24",
   "category": "news",
-  "event": "gemini-call-for-me"
+  "event": "gemini-call-for-me",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Shield AI, Waabi, and General Motors on building AI when failure is not an option at TechCrunch Disrupt 2026",
   "summary": "Leaders from Waabi, Shield AI, and General Motors join the Real World AI Stage at TechCrunch Disrupt 2026 to talk building AI. Save up to $200 by September 25 at 11:59 p.m.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Ando wants to take on Slack with a team messaging app that lets humans and agents work together",
   "summary": "The app gives agents their own identities and inboxes and lets them partake in conversations as naturally as people can.",
   "date": "2026-09-24",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "TechCrunch Disrupt 2026: Cal AI’s Zach Yadegari on how to create viral growth and capitalize on it",
   "summary": "Zach Yadegari joins the Builders Stage at TechCrunch Disrupt 2026 to share how he capitalized on viral growth. Save up to $200 before September 25.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Australia to investigate if OpenAI hack of government health website broke the law",
   "summary": "The incident is the first known breach to affect a government agency, and Australia's prime minister has vowed to hold OpenAI accountable.",
   "date": "2026-09-24",
   "category": "policy",
-  "event": "australia-openai-breach"
+  "event": "australia-openai-breach",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Everything new coming to Meta’s AI agent Muse",
   "summary": "CEO Mark Zuckerberg kicked off the company’s annual Connect event in Menlo Park on Wednesday with a keynote that made one thing clear: Meta is going all-in on Muse. It's even coming to Meta's AI glasses.",
   "date": "2026-09-24",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Meta made a Tamagotchi-like wearable for its Muse AI agent",
   "summary": "The tiny hardware device creates another mobile home for its AI agent Muse.",
   "date": "2026-09-24",
   "category": "news",
-  "event": "meta-muse-charm"
+  "event": "meta-muse-charm",
+  "source": "TechCrunch AI"
  },
  {
   "title": "Accelerating vision-language models with LFM2.5-VL-DSpark",
   "summary": "",
   "date": "2026-09-24",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "Hugging Face Blog"
  },
  {
   "title": "Watch Toner: There’s a Lot of Upside To AI if We Do It Right",
@@ -900,112 +941,128 @@
   "summary": "Von der Leyen puts frontier AI risk at the centre of her State of the Union address, while the AI Office confirms OpenAI did not file a report on the RubyGems incident.",
   "date": "2026-09-23",
   "category": "policy",
-  "event": ""
+  "event": "",
+  "source": "EU AI Act Newsletter"
  },
  {
   "title": "The AI Hype Index: AI loves cheating",
   "summary": "Brace yourself: It turns out AI is being optimized for cheating. OpenAI’s agents hacked into Hugging Face to get the answers to a cybersecurity test.",
   "date": "2026-09-23",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "MIT Technology Review AI"
  },
  {
   "title": "Trump’s China rivalry and “AI race” delusion may endanger US, experts say",
   "summary": "Trump focus on winning “AI race” may deter China from sharing safety intel.",
   "date": "2026-09-23",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "Ars Technica AI"
  },
  {
   "title": "YouTube promises custom feeds and a lot more AI later this year",
   "summary": "YouTube's next year could change the content you see with a big focus on AI and livestreams.",
   "date": "2026-09-23",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "Ars Technica AI"
  },
  {
   "title": "How to Use NVIDIA Warp and MjWarp to Accelerate Robotics Simulation and Learning Workflows",
   "summary": "A release, involving Nvidia.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "Hugging Face Blog"
  },
  {
   "title": "Google Beam expands with new regions, partners, and customers",
   "summary": "We’re expanding Google Beam to five new countries, and partnering with Industrious for an extended network.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "Google AI Blog"
  },
  {
   "title": "Two years of OpenAI Academy",
   "summary": "Marking two years of OpenAI Academy and bringing AI skills to even more communities.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "OpenAI extends cyber access to Ukraine for civilian defense",
   "summary": "OpenAI is extending access to its Daybreak program to the Government of Ukraine to support the cyber defense of civilian infrastructure.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Sam Altman’s remarks at the United Nations Security Council",
   "summary": "OpenAI CEO Sam Altman discusses AI safety, human control, and international cooperation in remarks to the United Nations Security Council.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Harvey turns legal context into stronger drafts with GPT-6 Astra",
   "summary": "GPT-6 Astra produces more structured, context-aware legal documents, freeing lawyers to focus on strategy.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "How invideo improves color grading 3x with GPT‑6 Astra",
   "summary": "With GPT‑6 Astra, invideo plans edits with greater precision, improves color correction and grading threefold, and produces 50 custom effects in one day.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Ringg’s AI agents resolve up to 65% of customer calls with OpenAI",
   "summary": "Using GPT-5.6, Ringg powers multilingual agents across voice, chat, WhatsApp, and web for 90% less cost vs. GPT-4.1.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Introducing MentalHealthBench",
   "summary": "MentalHealthBench is an expert-informed benchmark for evaluating helpful and safe AI responses across realistic mental health conversations.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "ChatGPT Ads expands to Southeast Asia and Taiwan",
   "summary": "ChatGPT Ads is expanding to Southeast Asia and Taiwan, giving eligible businesses new ways to reach people across more than 60 countries.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Airbnb widens access to GPT-6 Astra and OpenAI frontier models",
   "summary": "Learn how Airbnb is expanding access to GPT-6 Astra and OpenAI frontier models to help engineering teams solve bugs, design systems, and ship faster.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Grab and OpenAI bring practical AI skills to Southeast Asia",
   "summary": "OpenAI and Grab launch GO Forward with AI, a regional programme helping 30,000 partners build practical AI skills across Southeast Asia.",
   "date": "2026-09-23",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Exemption is Not Authorisation: State Use of AI and Surveillance, and the Case for a Constitutional Floor",
@@ -1026,14 +1083,16 @@
   "summary": "Commentary about the United States and China, featuring Rumman Chowdhury.",
   "date": "2026-09-22",
   "category": "regulation",
-  "event": ""
+  "event": "",
+  "source": "Rest of World"
  },
  {
   "title": "Don’t be fooled by this summer of AI hype",
   "summary": "It’s been a busy few months for AI hype. At the end of April, Anthropic claimed that its model Claude Mythos is better at finding software vulnerabilities than most security experts.",
   "date": "2026-09-22",
   "category": "regulation",
-  "event": ""
+  "event": "",
+  "source": "MIT Technology Review AI"
  },
  {
   "title": "Can AI Help Us Discover The Origin Of Consciousness?",
@@ -1068,35 +1127,40 @@
   "summary": "The frontier AI model race has entered its comparison shopping phase.",
   "date": "2026-09-22",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "Ars Technica AI"
  },
  {
   "title": "Microsoft disrupts AI-assisted platform that compromised 12,000 accounts",
   "summary": "EvilTokens provided an end-to-end platform that makes mass compromises faster and easier.",
   "date": "2026-09-22",
   "category": "news",
-  "event": ""
+  "event": "",
+  "source": "Ars Technica AI"
  },
  {
   "title": "Lawsuit demands OpenAI pay for new school after ChatGPT used in shooting",
   "summary": "British Columbia sues OpenAI, demands Tumbler Ridge shooter’s ChatGPT logs.",
   "date": "2026-09-22",
   "category": "policy",
-  "event": ""
+  "event": "",
+  "source": "Ars Technica AI"
  },
  {
   "title": "Better prompt caching for GPT-6",
   "summary": "Learn how GPT-6 improves prompt caching with higher cache hit rates, new diagnostics, explicit breakpoints, and controls that reduce latency and costs.",
   "date": "2026-09-22",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Introducing GPT-6 Sol and Luna",
   "summary": "Meet GPT-6 Sol and Luna, two models that bring frontier intelligence to everyday work with different balances of capability and cost.",
   "date": "2026-09-22",
   "category": "tool",
-  "event": ""
+  "event": "",
+  "source": "OpenAI News"
  },
  {
   "title": "Who Puts Guardrails on AI?",
@@ -1194,20 +1258,439 @@
   "summary": "Conferences, journals, funders, schools, and universities are struggling with a surge of potentially AI-generated submissions from ostensibly human authors, who may not have exercised sufficient human oversight for their manuscripts.",
   "date": "2026-09-17",
   "category": "regulation",
-  "event": ""
+  "event": "",
+  "source": "arXiv"
  },
  {
   "title": "Tailored to you: longitudinal effects of personalising language models",
   "summary": "Interest in developing personalised language models is rapidly growing. While personalisation is often viewed as a mechanism to better serve diverse user needs, the effects of sustained interactions with personalised models on people's perception of and behaviour toward AI remain poorly understood.",
   "date": "2026-09-17",
   "category": "regulation",
-  "event": ""
+  "event": "",
+  "source": "arXiv"
  },
  {
   "title": "AI in Science: Early Insights",
   "summary": "Scientific progress is a key driver of economic growth and prosperity. There is great excitement - but also concerns - about the impacts of AI on science, but so far little data.",
   "date": "2026-09-15",
   "category": "regulation",
-  "event": ""
+  "event": "",
+  "source": "arXiv"
+ },
+ {
+  "title": "ITWeb TV: FNB moves past AI hype to measurable business value",
+  "summary": "The bank goes beyond AI experimentation by tracking and assessing how deployments affect revenue, costs, fraud losses and employee workflows.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "ITWeb"
+ },
+ {
+  "title": "The AI will see you now",
+  "summary": "AI is rewriting the HR rulebook, changing everything from recruitment through to exit. But this innovation is not without its risks.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "ITWeb"
+ },
+ {
+  "title": "NetApp Announces Intent to Acquire PEAK:AIO to Advance Scalable AI Infrastructure Architecture",
+  "summary": "NetApp® (NASDAQ: NTAP), the intelligent data infrastructure company, today announced its intent to acquire PEAK:AIO, a pioneer in next-generation metadata architecture and high-performance parallel file systems.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "ITWeb"
+ },
+ {
+  "title": "Your SOC cannot outrun AI",
+  "summary": "If attackers can automate the attack, defenders need to automate the response, says Kurt Goodall, technical director of Troye.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "ITWeb"
+ },
+ {
+  "title": "Larry Yon: Why Africa’s tech ecosystem should be building the next NVIDIA",
+  "summary": "From a failed venture in South Africa to co-founding an AI cybersecurity powerhouse, CyberAlliance president Larry Yon II sits down with PHATHISANI MOYO for Coffee With… to explain why digital trust and diaspora capital are key to…",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "TechCabal"
+ },
+ {
+  "title": "Xi at White House, trade-war truce extension, Golden Week travel",
+  "summary": "Chinese President Xi Jinping and US President Donald Trump discussed artificial intelligence (AI) and Taiwan at the White House on Thursday as part of a state visit dominated by pageantry.",
+  "date": "2026-09-25",
+  "category": "policy",
+  "event": "",
+  "source": "South China Morning Post"
+ },
+ {
+  "title": "Quantum computing’s “dark horse” just proved it can go universal",
+  "summary": "Researchers have shown that exotic quantum particles called non-Abelian anyons can perform the full range of operations needed for universal quantum computing.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "ScienceDaily"
+ },
+ {
+  "title": "AI hardware design could filter out irrelevant visual data to reduce energy use",
+  "summary": "When we read a car's license plate, we tend to focus on the numbers and letters, paying little attention to the surrounding buildings or sky.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "Tech Xplore"
+ },
+ {
+  "title": "AI is creating jobs as well as erasing them—but how rewarding are they?",
+  "summary": "Don't believe the hype about AI taking over all forms of work. Most of the evidence to date suggests large-scale job losses are limited.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "Tech Xplore"
+ },
+ {
+  "title": "AI and urban design for health: Are large language models ethical advisers?",
+  "summary": "Large language models (LLMs) are increasingly being used to generate text-based advice across urban design, planning and public health.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "Tech Xplore"
+ },
+ {
+  "title": "How tech companies can bake responsible innovation into AI development",
+  "summary": "Multiple AI companies have recently disclosed that their own AI agents broke into real organizations without being directed to…",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "Tech Xplore"
+ },
+ {
+  "title": "Mkcheck2: A highly efficient and accurate approach for build dependency verification",
+  "summary": "Before users can interact with computer software, its source code must be converted into executable binaries and software packages, a task handled by specialized tools known as build systems.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "Tech Xplore"
+ },
+ {
+  "title": "Meta shares soar after launch of Muse AI",
+  "summary": "Meta shares bounced back to their summer 2025 highs this week, riding a wave of investor excitement about Muse, the social media giant's AI agent, which presents an opportunity to generate revenue beyond advertising.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "meta-muse-0925",
+  "source": "Tech Xplore"
+ },
+ {
+  "title": "MIT students gain a humanist lens on technical innovation in Tulsa, Oklahoma",
+  "summary": "The PKG Center for Social Impact expands Code.Tulsa experiential learning program.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "MIT News"
+ },
+ {
+  "title": "AI Love Song for Mistress Played at Murder Trial Is Most Excruciating Watch in Recent Memory",
+  "summary": "\"One’s like a happy or upbeat sad song if that makes any sense, and one’s a sad, sad song. I think one’s in a minor key, one’s in a major key, but I’m not a music professional.\"",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "404 Media"
+ },
+ {
+  "title": "Behind the Blog: Did you notice?",
+  "summary": "This week, we discuss some small changes, an AI song, and internet soup.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "404 Media"
+ },
+ {
+  "title": "OpenAI Admits AI is Killing the Internet",
+  "summary": "Microsoft and OpenAI admit it; how we got AI slop onto a real band's Spotify page; and AI agent spam is here.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "404 Media"
+ },
+ {
+  "title": "Microsoft’s new Copilot app puts everything in one place – but the price is ‘evolving’",
+  "summary": "Microsoft says Copilot has gotten ‘actually really good.’ The new app has AI agents and can write code. So how much is all this going to cost?",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "msft-copilot-app-0925",
+  "source": "ZDNET AI"
+ },
+ {
+  "title": "Aikido Security Releases Altar-1: An Open-Weight Security Model Pruned From GLM-5.3 to 328 GB",
+  "summary": "Aikido Security has released Altar-1, its first open-weight security model. It is a compressed version of Z.AI’s GLM-5.3, built to run inside infrastructure the customer controls.",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "",
+  "source": "MarkTechPost"
+ },
+ {
+  "title": "Perplexity Trains Its Computer Agent on Real Mistakes With Hint-Guided Self-Distillation",
+  "summary": "Perplexity Research published a new post-training study. It trains a model inside Perplexity Computer on real user sessions, including failed ones.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "MarkTechPost"
+ },
+ {
+  "title": "Fastino Releases GLiNER2.5-Decide: A 340M Open-Weight Decision Model That Runs on CPU",
+  "summary": "Fastino Labs has released GLiNER2.5-Decide, a 340M-parameter open-weight decision model. It takes text and a schema of typed questions and returns structured answers.",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "",
+  "source": "MarkTechPost"
+ },
+ {
+  "title": "Microsoft overhauls Copilot with new coding, document editing features",
+  "summary": "Microsoft Corp. today launched a new version of Copilot, the artificial intelligence assistant included in its Microsoft 365 productivity suite.",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "msft-copilot-app-0925",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "Vanderbilt University extends identity governance to AI agents",
+  "summary": "Identity governance must accommodate changing relationships among people, institutions and technology. Vanderbilt University sees that complexity deepening as artificial intelligence agents enter institutional workflows.",
+  "date": "2026-09-25",
+  "category": "policy",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "Closing the gap between your AI eyes and stomach at HumanX",
+  "summary": "Fresh off my jaunt to AGNTCon + MCPCon Europe last week, I headed back to Amsterdam for the first European installment of the artificial intelligence-focused HumanX conference so I could meet with another round of AI startups.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "Collibra brings runtime governance to enterprise AI agents",
+  "summary": "Runtime governance is becoming critical as autonomous agents move from answering questions to taking action across enterprise systems.",
+  "date": "2026-09-25",
+  "category": "policy",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "CoreWeave expands full-stack AI cloud push as inference demand grows",
+  "summary": "The rise of AI-native cloud provider CoreWeave Inc. is part of the greater story emerging around operationalizing AI.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "Warp adds programmable agents to its AI-native HR platform",
+  "summary": "Warp today launched an artificial intelligence agent designed to automate routine human resources work, extending its AI-native employee management platform with customizable workflows that can act without continual human prompting.",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "More agents go rogue — but AI companies aren’t slowing down yet",
+  "summary": "It’s becoming more apparent every day that artificial intelligence agents are escaping our control — but it’s not yet apparent who or what is going to rein them in.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "Agents expose the limitations of trust",
+  "summary": "Enterprise computing has long depended on chains of trust. Organizations trust their cloud providers, software vendors, identity systems and administrators to operate as designed.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "What to expect at NetApp INSIGHT: Join theCUBE Sept. 30",
+  "summary": "As artificial intelligence goes into production, unified storage could be the glue that keeps everything together.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "4 insights from Dreamforce: AI agents move from demos to measurable outcomes",
+  "summary": "At Dreamforce 2026, AI agents are being judged less on what they can say and more on what they get done.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "SiliconANGLE AI"
+ },
+ {
+  "title": "Agents can now set up your website’s security with Turnstile Spin",
+  "summary": "Misconfiguring Turnstile by skipping backend validation leaves sites exposed to bots. Turnstile Spin fixes incomplete setups by using your preferred AI coding agent to wire up server-side verification.",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "",
+  "source": "Cloudflare Blog"
+ },
+ {
+  "title": "From Data to Dialogue: How S&P Global Energy Made Its Structured Data Estate Conversational with Databricks Genie Agents and MCP",
+  "summary": "S&P Global's goal was to fundamentally improve how customers discover and consume…",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "Databricks Blog"
+ },
+ {
+  "title": "Scaling MoE reinforcement learning on Amazon EKS with EFA and DeepEP with 40% more throughput",
+  "summary": "Learn how to scale Mixture-of-Experts (MoE) reinforcement learning on Amazon EKS using Elastic Fabric Adapter (EFA) and DeepEP.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "AWS Machine Learning Blog"
+ },
+ {
+  "title": "Accelerate multimodal RL training with SkyRL on Amazon SageMaker HyperPod",
+  "summary": "Learn how to run SkyRL, an open-source reinforcement learning framework, on Amazon SageMaker HyperPod to post-train a Qwen3-VL-8B vision-language model with GRPO.",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "",
+  "source": "AWS Machine Learning Blog"
+ },
+ {
+  "title": "NarrateAI: production-ready LLM quality assurance on Amazon Bedrock",
+  "summary": "This post details five techniques—adaptive pipeline orchestration, cross-account multi-model failover, real-time streaming evaluation, composite evaluation…",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "AWS Machine Learning Blog"
+ },
+ {
+  "title": "Deploying real-time personalized speech with Qwen3-TTS on Amazon SageMaker AI",
+  "summary": "Deploy the publicly available Qwen3-TTS-12Hz-1.7B-Base text-to-speech model from Amazon SageMaker JumpStart to a fully managed, real-time endpoint, and clone a voice from a short reference clip.",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "",
+  "source": "AWS Machine Learning Blog"
+ },
+ {
+  "title": "How Datacor built self-service rental analytics with Amazon Quick Sight",
+  "summary": "Learn how Datacor built a self-service rental analytics experience for gas and welding distributors by embedding Amazon Quick Sight dashboards and natural language querying into its TrackAbout platform…",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "AWS Machine Learning Blog"
+ },
+ {
+  "title": "Multi-Region training with Amazon SageMaker HyperPod and Qumulo",
+  "summary": "Amazon SageMaker HyperPod and Cloud Native Qumulo let you place training compute in one AWS Region while keeping your dataset in another.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "AWS Machine Learning Blog"
+ },
+ {
+  "title": "Crusoe abandons $1.25B plan to use Boom turbines at AI data centers",
+  "summary": "Boom Supersonic CEO Blake Scholl said the company's new stationary power plants were no longer in Crusoe's near-term plans.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "TechCrunch AI"
+ },
+ {
+  "title": "Unsecured OpenAI agents posted 53 user images on the internet without the lab’s knowledge",
+  "summary": "AI agents operating in OpenAI's research environment posted user images on public image-hosting sites without the lab's knowledge.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "TechCrunch AI"
+ },
+ {
+  "title": "Court rules Trump can blacklist Anthropic for refusing to enable Claude features",
+  "summary": "\"Overly constrained AI models\" could cause military operations to fail, judges say.",
+  "date": "2026-09-25",
+  "category": "policy",
+  "event": "anthropic-court-0925",
+  "source": "Ars Technica AI"
+ },
+ {
+  "title": "Pentagon was right to slap Anthropic with a security supply chain risk label, federal court says",
+  "summary": "A federal appeals court has upheld the Pentagon's decision to bar Anthropic from military contracts. Defense Secretary Hegseth argues the company's safety restrictions could jeopardize military operations.",
+  "date": "2026-09-25",
+  "category": "policy",
+  "event": "anthropic-court-0925",
+  "source": "The Decoder"
+ },
+ {
+  "title": "Another Google Deepmind researcher quits, says building superintelligent AI soon is \"inherently irresponsible\"",
+  "summary": "Google Deepmind researcher Robert O'Callahan has quit, saying AI's \"current rate of change is far too high.\" He worked on chip design tools that helped make AI cheaper and faster, a contribution he can no longer justify.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "The Decoder"
+ },
+ {
+  "title": "Microsoft gives Copilot another makeover, adding an Autopilot agent and usage-based billing",
+  "summary": "Microsoft is splitting its Copilot app into three sections: Home, Code, and a new agent called \"Autopilot.\" Built on OpenClaw, the agent runs continuously in the cloud, where it can monitor Teams channels and complete tasks on its own…",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "msft-copilot-app-0925",
+  "source": "The Decoder"
+ },
+ {
+  "title": "AI was supposed to hit new grads hard. So far, unemployment data says otherwise.",
+  "summary": "\"There is no evidence of any significant, widespread displacement or reduction in hiring.”",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "Ars Technica AI"
+ },
+ {
+  "title": "Microsoft stops insisting you need a \"Copilot+ PC\"",
+  "summary": "Microsoft's new Surface laptops forgo Copilot+ PC branding.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "Ars Technica AI"
+ },
+ {
+  "title": "Meta makes the Muse filesystem even more accessible",
+  "summary": "Yesterday, with a little prodding, it was discovered that Meta's Muse would expose its filesystem to curious users.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "meta-muse-0925",
+  "source": "The Verge AI"
+ },
+ {
+  "title": "Meta’s Muse just stole the AI spotlight from OpenAI and Anthropic",
+  "summary": "When AI leaders at OpenAI and Anthropic started talking about “pacing the frontier,” maybe someone should have asked: what pace?",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "meta-muse-0925",
+  "source": "TechCrunch AI"
+ },
+ {
+  "title": "Some Supabase customers are publicly exposing reams of people’s data to the web",
+  "summary": "The findings highlight how AI-generated and vibe-coded apps can spill and expose users' data when not configured or secured properly.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "TechCrunch AI"
+ },
+ {
+  "title": "Astra and Opus just passed Turing’s other test",
+  "summary": "Frontier AI models are finishing Alan Turing's World War II codebreaking work.",
+  "date": "2026-09-25",
+  "category": "news",
+  "event": "",
+  "source": "TechCrunch AI"
+ },
+ {
+  "title": "Proaction boosts sales 60% and saves 75+ hours with Codex",
+  "summary": "With Codex, GPT-Live-1, and GPT-6 Astra, Proaction builds, operates, and sells modern fleet management faster.",
+  "date": "2026-09-25",
+  "category": "tool",
+  "event": "",
+  "source": "OpenAI News"
  }
 ]

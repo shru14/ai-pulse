@@ -22,7 +22,6 @@ from html import escape
 
 from . import brief, rss
 
-TILE = {"regulation": "Tracker"}  # "Regulation tracker" doesn't fit a phone-width tile
 PER_STREAM = 25  # a long day's stream ends with a link to the rest (the RSS feed and the page have them all)
 SMTP_HOST = "smtp.gmail.com"
 
@@ -55,9 +54,9 @@ def _kpis(cards: list[dict], streams: list[str], day: date) -> tuple[list[str], 
         change = now - prev
         vs = f"{'+' if change > 0 else '−' if change < 0 else ''}{abs(change) if change else 'same as'} {'vs ' if change else ''}{before:%a}"
         text.append(f"{stream} {now} ({vs})")
-        tiles.append(f'<td width="{100 // len(streams)}%" style="background:#f6f7f9;border:1px solid #e3e5e8;padding:8px 6px;'
+        tiles.append(f'<td width="{100 // len(streams)}%" style="background:#f6f7f9;border:1px solid #e3e5e8;padding:7px 4px;'
                      f'text-align:left;vertical-align:top">'
-                     f'<div style="font-size:11px;line-height:1.25;color:#5f6368">{escape(TILE.get(name, stream))}</div>'
+                     f'<div style="font-size:10px;line-height:1.25;color:#5f6368">{escape(stream)}</div>'
                      f'<div style="font-size:24px;font-weight:bold;color:#1a1a1a;line-height:1.2">{now:,}</div>'
                      f'<div style="font-size:10px;color:#5f6368">{escape(vs)}</div></td>')
     top = _mentioned(todays)
@@ -99,11 +98,16 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
         html.append(f'<h3 style="margin:24px 0 8px;border-bottom:1px solid #ddd;padding-bottom:4px">{escape(stream)}</h3><ul style="padding-left:18px">')
         for c in shown:
             summary = c.get("summary") or ""
-            text.append(f"• {c['title']}\n  {summary + ' ' if summary else ''}({c['source']})\n  {c['url']}")
+            also = c.get("also") or []  # other outlets' versions of the same story, grouped under this one
+            text.append(f"• {c['title']}\n  {summary + ' ' if summary else ''}({c['source']})\n  {c['url']}"
+                        + (f"\n  Also reported by {', '.join(o['source'] for o in also)}" if also else ""))
+            others = ", ".join(f'<a href="{escape(o["url"])}" style="color:#5f6368">{escape(o["source"])}</a>' for o in also)
             html.append(f'<li style="margin-bottom:10px"><a href="{escape(c["url"])}" style="color:#1a4fd6;font-weight:bold;'
                         f'text-decoration:none">{escape(c["title"])}</a>'
                         + (f'<br><span>{escape(summary)}</span>' if summary else "")
-                        + f' <span style="color:#888">({escape(c["source"])})</span></li>')
+                        + f' <span style="color:#888">({escape(c["source"])})</span>'
+                        + (f'<br><span style="font-size:13px;color:#5f6368">Also reported by {others}</span>' if also else "")
+                        + "</li>")
         html.append("</ul>")
         if rest > 0:
             more = f"{rss.SITE}#{category}"

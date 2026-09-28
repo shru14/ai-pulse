@@ -265,9 +265,18 @@ def test_any_country_can_be_a_tag():
 def test_duplicate_stories_group_into_one_card():
     from aipulse import cluster
     s = cluster.score()
-    assert s["precision"] >= 0.92 and s["recall"] >= 0.82 and s["events_on_one_card"] >= 7, s
+    # 225 labelled stories (the Sept 25 set added the Copilot, Muse and court duplicates). Before the headline-name
+    # rule: precision 91%, recall 73%, 7 of 15 events on one card.
+    assert s["precision"] >= 0.91 and s["recall"] >= 0.78 and s["events_on_one_card"] >= 8, s
     items = __import__("json").loads(cluster.FIXTURE.read_text(encoding="utf-8"))
     cards = cluster.collapse(items)
+    # Four outlets on Microsoft's new Copilot app (three releases, one news story): one card.
+    copilot = [c for c in cards if "Copilot" in c["title"] and c["date"] == "2026-09-25" and "PC" not in c["title"]]
+    assert len(copilot) == 1 and len(copilot[0]["also"]) == 3
+    # One blog's two posts about a product, and two outlets' different stories about OpenAI, stay apart.
+    card_of = {o["title"]: c["title"] for c in cards for o in [c, *c["also"]]}
+    assert card_of["Better prompt caching for GPT-6"] != card_of["Introducing GPT-6 Sol and Luna"]
+    assert card_of["OpenAI Admits AI is Killing the Internet"] != next(t for t in card_of if t.startswith("Unsecured OpenAI agents"))
     ma = [c for c in cards if c["title"].startswith("Massachusetts") and c["also"]]
     assert len(ma) == 1 and len(ma[0]["also"]) == 7  # all 8 outlets on one card
     # Different governors' orders stay apart even though the wording is similar.
@@ -1319,5 +1328,5 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
     assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
     assert "Today: Releases 1 (+1 vs Sat) · Regulation tracker 1 (+1 vs Sat)" in text  # the KPI row
-    assert ">Tracker</div>" in html and "Most mentioned" not in text      # nobody named twice: no line
+    assert ">Regulation tracker</div>" in html and "Most mentioned" not in text  # nobody named twice: no line
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email

@@ -203,6 +203,12 @@ def company_tags(title: str, summary: str = "") -> list[str]:
     return [k for k, p in _companies.items() if p.search(text)]
 
 
+def lead_company(title: str) -> str | None:
+    """The company a headline is about: the first one it names ("xAI launches Grok 4.7 ... Claude and GPT-6" -> xAI)."""
+    found = [(m.start(), k) for k, p in _companies.items() if (m := p.search(title))]
+    return min(found)[1] if found else None
+
+
 def tags_for(title: str, summary: str, limit: int = 5) -> list[str]:
     """Companies first, then places, then topics (see TOPIC_TERMS)."""
     text = f"{title} {summary}"
