@@ -191,15 +191,19 @@ def test_hugging_face_collect(tmp_path):
     assert paper["tags"] == ["Google", "Research"]
 
 
-def test_expert_feed_items_are_tagged_by_person(tmp_path):
+def test_scholar_papers_are_research_not_regulation(tmp_path):
+    # A paper by an ethics or law scholar is research, tagged with the scholar and field; the tracker is for
+    # proposals and laws. Papers the tracker stored as "expert views" move to Research on reclassify.
     conn = store.connect(tmp_path / "t.db")
-    sources = [{"name": "Scholar: Shannon Vallor", "url": "rss", "category": "regulation",
-                "expert": "Shannon Vallor"}]
-    collect(conn, sources, max_age_days=100000, fetcher=lambda u: (FIX / "sample_rss.xml").read_bytes(),
-            log=lambda *_: None)
-    items = store.query(conn, "regulation")
-    assert items and all(i["action"] == "expert" and i["tags"] == ["Shannon Vallor", "Philosophy"] for i in items)
-    assert reclassify(conn) == 0  # expert items are never re-sorted into policy
+    store.insert(conn, {"title": "Agentic Economies for Autonomous Scientific Discovery", "summary": "",
+                        "url": "https://arxiv.org/abs/2609.00001", "source": "arXiv", "category": "regulation",
+                        "action": "expert", "date": "2026-09-28", "tags": ["Atoosa Kasirzadeh", "Philosophy", "Research"]})
+    assert reclassify(conn) == 1
+    [paper] = store.query(conn, "research")
+    assert paper["action"] in ("", None) and paper["tags"] == ["Atoosa Kasirzadeh", "Philosophy", "Research"]
+    assert not store.query(conn, "regulation")
+    from aipulse.sources import SOURCES
+    assert all(s["category"] == "research" for s in SOURCES if s.get("format") == "arxiv_rss")
 
 
 def test_clean_title():

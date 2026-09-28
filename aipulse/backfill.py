@@ -126,13 +126,13 @@ def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
 def arxiv_sources(since: date, until: date) -> list[dict]:
     """arXiv search per person; only papers where they're really an author are kept (as daily)."""
     span = f"{since:%Y%m%d}0000+TO+{until:%Y%m%d}2359"
-    people = [(n, "research", True) for n, _ in PROFESSORS] + [(n, "regulation", False) for n, _, _ in EXPERTS]
-    return [{"name": "arXiv", "label": f"arXiv: {name}", "category": category, "professors": [name], "ai_only": ai_only,
-             "expert": category == "regulation" or None, "pause": 3.5,  # arXiv asks for 3 s between calls
+    people = [(n, True) for n, _ in PROFESSORS] + [(n, False) for n, _, _ in EXPERTS]
+    return [{"name": "arXiv", "label": f"arXiv: {name}", "category": "research", "professors": [name], "ai_only": ai_only,
+             "pause": 3.5,  # arXiv asks for 3 s between calls
              "expect_entries": True,  # arXiv sometimes answers with an empty list; retry those
              "url": f"http://export.arxiv.org/api/query?search_query=au:{quote(chr(34) + name + chr(34))}"
                     f"+AND+submittedDate:[{span}]&sortBy=submittedDate&sortOrder=descending&max_results=1000"}
-            for name, category, ai_only in people]
+            for name, ai_only in people]
 
 
 def paper_sources(since: date, until: date) -> list[dict]:

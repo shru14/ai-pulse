@@ -11,7 +11,7 @@ from .sources import COMPANIES, EXPERT_FIELDS, PROFESSORS, SOURCES
 
 # The regulation tracker follows proposals and adopted laws; other actions stay under "policy".
 TRACKED_ACTIONS = ("proposal", "law")
-# Items from the scholars the tracker follows carry this action instead of a regulatory one.
+# Papers by the ethics and law scholars used to go to the tracker with this action; reclassify moves them to Research.
 EXPERT = "expert"
 
 _professor_keys = {classify.name_key(n): n for n, _ in PROFESSORS}
@@ -69,7 +69,6 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
         new_here = 0
         src_cutoff = min(cutoff, datetime.now(timezone.utc) - timedelta(days=src.get("max_age_days", 0)))
         professors = {classify.name_key(n): n for n in src.get("professors", [])}
-        expert = src.get("expert")
         for e in entries[: src.get("max_items")]:
             if not e["title"] or not e["url"]:
                 continue
@@ -120,18 +119,13 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 "authors": authors[:30],
             }
             if src["category"] == "research":
-                # Papers are tagged only with the professors and companies behind them.
-                item["tags"] = list(dict.fromkeys([*matched, *companies, *filter(None, [src.get("org")]), RESEARCH_TAG]))
-            elif expert:
-                people = [expert] if isinstance(expert, str) else matched
-                fields = [EXPERT_FIELDS[p] for p in people if p in EXPERT_FIELDS]
-                item.update(category="regulation", action=EXPERT, jurisdictions=[],
-                            tags=list(dict.fromkeys(people + fields + ([RESEARCH_TAG] if _is_paper(item) else []))))
+                # Papers are tagged only with the people (and a scholar's field) and companies behind them.
+                fields = [EXPERT_FIELDS[p] for p in matched if p in EXPERT_FIELDS]
+                item["tags"] = list(dict.fromkeys([*matched, *fields, *companies, *filter(None, [src.get("org")]), RESEARCH_TAG]))
 
-            if not expert:
-                apply_regulation(item, src.get("jurisdictions", []))
-                if src["category"] == "regulation" and item["category"] != "regulation":
-                    continue  # the tracker's searches are broad; keep only proposals and laws from them
+            apply_regulation(item, src.get("jurisdictions", []))
+            if src["category"] == "regulation" and item["category"] != "regulation":
+                continue  # the tracker's searches are broad; keep only proposals and laws from them
 
             if not store.exists(conn, item["url"]):
                 fill_summary(item)
@@ -349,6 +343,10 @@ def reclassify(conn) -> int:
     defaults = {s["name"]: s.get("jurisdictions", []) for s in SOURCES}
     streams = {s["name"]: s["category"] for s in SOURCES}
     for it in store.query(conn, None, None, None, limit=100000):
+        if it["action"] == EXPERT:  # a scholar's paper is research, not a regulatory action
+            store.set_regulation(conn, it["id"], "research", [], None)
+            changed += 1
+            continue
         if it["category"] in ("news", "tool"):
             # A news outlet's "release" that launched nothing (e.g. a study's findings) moves to industry news.
             # Only that check is re-run: summaries are shorter now, so re-scoring would drop real releases.
@@ -366,7 +364,7 @@ def reclassify(conn) -> int:
                     store.update_text(conn, it["id"], it["title"], brief.draft({**it, "category": now}, PLACE_NAMES))
                 changed += 1
             continue
-        if it["category"] not in ("policy", "regulation") or it["action"] == EXPERT:
+        if it["category"] not in ("policy", "regulation"):
             continue
         before = (it["category"], it["jurisdictions"], it["action"] or None)
         if it["category"] == "policy" and it["source"] not in bills.OFFICIAL_SOURCES:

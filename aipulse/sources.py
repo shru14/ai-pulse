@@ -145,8 +145,9 @@ SOURCES += [
      "jurisdictions": ["EU"]},
 ]
 
-# --- Regulation tracker: AI ethics, philosophy and law scholars, followed daily ---
-# Their arXiv papers are picked up by the author matching further down.
+# --- Research: AI ethics, philosophy and law scholars, followed daily ---
+# Their arXiv papers are picked up by the author matching further down, and filed under Research (a paper
+# isn't a bill or a law), tagged with the scholar and their field.
 EXPERTS = [
     # Philosophy and ethics
     ("Luciano Floridi", "Philosophy", "Yale"),
@@ -266,9 +267,9 @@ SOURCES += [
      "url": arxiv_rss_url(ARXIV_CATEGORIES), "category": "research", "ai_only": True, "max_age_days": 14, "pause": 3.5,
      "professors": [n for n, _ in PROFESSORS]},
     {"name": "arXiv", "label": f"arXiv new papers: {len(EXPERTS)} scholars", "format": "arxiv_rss",
-     "url": arxiv_rss_url(ARXIV_ETHICS_CATEGORIES), "category": "regulation", "ai_only": True, "max_age_days": 14,
+     "url": arxiv_rss_url(ARXIV_ETHICS_CATEGORIES), "category": "research", "ai_only": True, "max_age_days": 14,
      "pause": 3.5,
-     "professors": [n for n, _, _ in EXPERTS], "expert": True},
+     "professors": [n for n, _, _ in EXPERTS]},
 ]
 
 SOURCES += [
