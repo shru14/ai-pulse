@@ -431,8 +431,10 @@ def page_meta(page_bytes: bytes) -> dict:
     """A post's own page: its title and description as link previews show them (og:title, og:description,
     without a trailing " | Site name"), and its publication time when the page states one."""
     page = page_bytes.decode("utf-8", "replace")
-    title = _meta(page, "og:title", "twitter:title") or html.unescape(
-        re.sub(r"\s+", " ", (re.search(r"<title[^>]*>(.*?)</title>", page, re.S) or [None, ""])[1]))
+    title = _meta(page, "og:title", "twitter:title")
+    if not title:  # the browser tab's title, which often ends " - Site name"
+        title = html.unescape(re.sub(r"\s+", " ", (re.search(r"<title[^>]*>(.*?)</title>", page, re.S) or [None, ""])[1]))
+        title = re.sub(r"\s+-\s+[^-]{1,25}$", "", title.strip())
     title = re.sub(r"\s+[|–—]\s+[^|–—]{1,40}$", "", title.strip())
     when = _meta(page, "article:published_time", "datePublished", "date") or (
         re.search(r'"datePublished"\s*:\s*"([^"]+)"', page) or [None, ""])[1]
