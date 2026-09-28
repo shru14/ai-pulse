@@ -14,6 +14,7 @@
  *                                            with it moved to the Trash
  *   GET  action=list        key             the confirmed readers, for the daily send (key = LIST_KEY)
  * With format=json the site gets {ok, title, text}; without it (an old link opened here) a small page.
+ * The project inbox gets a short note when someone subscribes, changes streams or unsubscribes.
  *
  * Script property LIST_KEY: a long random secret, also saved as the GitHub secret DIGEST_LIST_KEY. It's
  * set in Project Settings > Script properties, never in this file (the repository is public).
@@ -128,6 +129,9 @@ function confirm(t) {
     props.deleteProperty("t:" + t);
     props.setProperty("u:" + rec.token, email);
     props.setProperty("s:" + email, JSON.stringify(rec));
+    notify(changed ? `AI Pulse: a subscriber changed streams (${count()} subscribers)`
+                   : `AI Pulse: new subscriber (${count()} subscribers)`,
+           `${email} ${changed ? "now gets" : "subscribed to"}: ${names(rec.streams)}.`);
     return {ok: true, title: changed ? "Your streams are changed" : "You're subscribed",
             text: `Every morning you'll get the day before in AI: ${names(rec.streams)}. It's sent at about 05:00 UTC ` +
                   `(7:00 in Germany in summer), and every email has a one-click unsubscribe link. ${CONTACTS}`};
@@ -151,12 +155,25 @@ function unsubscribe(t) {
   } finally {
     lock.releaseLock();
   }
-  // Our emails with this reader go to the Trash (Gmail deletes it for good after 30 days).
+  // Our emails with this reader, and our notes naming them, go to the Trash (Gmail deletes it for good after 30 days).
   let threads;
-  while ((threads = GmailApp.search(`to:${email} OR from:${email}`, 0, 100)).length) GmailApp.moveThreadsToTrash(threads);
+  while ((threads = GmailApp.search(`to:${email} OR from:${email} OR "${email}"`, 0, 100)).length)
+    GmailApp.moveThreadsToTrash(threads);
+  notify(`AI Pulse: someone unsubscribed (${count()} subscribers)`,
+         "A reader unsubscribed; their address is deleted, so it isn't named here.");
   return {ok: true, title: "You're unsubscribed",
           text: "Your address is deleted from AI Pulse daily, and our emails with you are deleted within 30 days. " +
                 "You won't hear from us again."};
+}
+
+// A note to the project inbox when someone subscribes, changes streams or unsubscribes. It never stops the
+// reader's own step if it fails.
+function notify(subject, text) {
+  try {
+    MailApp.sendEmail({to: SENDER, name: "AI Pulse", subject, body: text});
+  } catch (e) {
+    console.log("notice not sent: " + e);
+  }
 }
 
 function count() {
