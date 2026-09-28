@@ -4,8 +4,7 @@
 
 Each row has a headline, the story's lead text (blank when only a headline is known), the category
 its feed starts it with, and the correct answer: category (tool / news / policy / regulation), and for
-regulation the action (proposal / law) and jurisdictions. Labelling rules are in the file's header
-comment in README.md ("Measuring the rules").
+regulation the action (proposal / law) and jurisdictions, with a note on why when it isn't obvious.
 """
 
 from __future__ import annotations
