@@ -1280,19 +1280,24 @@ def test_company_blog_posts_are_releases_only_when_something_launches():
     assert not classify.launched(*letter)  # a launch in 2010 is history
 
 
-def test_rss_feeds_one_per_stream(tmp_path):
+def test_rss_daily_digest_per_stream():
     import xml.etree.ElementTree as ET
+    from datetime import date
     from aipulse import rss
-    cards = [{"id": f"c{i}", "title": f"Story {i} & more", "summary": "What happened.", "url": f"https://ex.com/{i}",
-              "source": "Outlet", "category": cat, "date": "2026-09-2" + str(i % 9), "tags": ["Agents"],
-              "added_at": "2026-09-21T10:00:00+00:00"} for i, cat in enumerate(["tool", "news", "tool", "research"] * 20)]
-    feeds = rss.by_stream(cards)
-    assert set(feeds) == {"releases", "news", "policy", "research", "regulation"}
-    assert len(feeds["releases"]) == 40 and not feeds["policy"]
-    dates = [c["date"] for c in feeds["releases"]]
-    assert dates == sorted(dates, reverse=True)  # newest first
-    root = ET.fromstring(rss.feed_xml("releases", feeds["releases"]))  # well-formed, "&" escaped
-    first = root.find("channel/item")
-    assert first.findtext("link").startswith("https://ex.com/") and first.findtext("description") == "What happened. (Outlet)"
-    assert root.findtext("channel/title") == "AI Pulse · Releases"
-    ET.fromstring(rss.feed_xml("policy", []))  # an empty stream is still a valid feed
+    card = lambda i, cat, added, dated=None: {"id": f"c{i}", "title": f"Story {i} & more", "summary": "What happened.",
+                                              "url": f"https://ex.com/{i}", "source": "Outlet", "category": cat,
+                                              "date": dated or added[:10], "added_at": added, "tags": []}
+    cards = [card(1, "tool", "2026-09-27T00:20:00+00:00"), card(2, "tool", "2026-09-27T18:25:00+00:00"),
+             card(3, "news", "2026-09-27T06:10:00+00:00"), card(4, "tool", "2026-09-26T12:00:00+00:00"),
+             card(5, "tool", "2026-09-28T06:00:00+00:00"),                 # today: not over yet
+             card(6, "tool", "2026-09-27T12:00:00+00:00", "2024-03-01")]   # a backfilled old story
+    days = rss.daily(cards, "tool", today=date(2026, 9, 28))
+    assert list(days) == [date(2026, 9, 27), date(2026, 9, 26)]            # newest day first
+    assert [c["id"] for c in days[date(2026, 9, 27)]] == ["c2", "c1"]     # all four runs of the day, newest first
+    root = ET.fromstring(rss.feed_xml("releases", cards, today=date(2026, 9, 28)))  # well-formed, "&" escaped
+    posts = root.findall("channel/item")
+    assert [p.findtext("title") for p in posts] == ["Releases · Sun 27 Sep 2026 (2)", "Releases · Sat 26 Sep 2026 (1)"]
+    assert 'href="https://ex.com/2"' in posts[0].findtext("description") and "Story 2 &amp; more" in posts[0].findtext("description")
+    assert posts[0].findtext("pubDate") == "Mon, 28 Sep 2026 00:00:00 +0000"   # published once the day is over
+    assert not ET.fromstring(rss.feed_xml("policy", cards, today=date(2026, 9, 28))).findall("channel/item")
+
