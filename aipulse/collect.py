@@ -337,10 +337,20 @@ def resummarize_papers(conn, fetcher=feeds.fetch, limit: int = 3000, log=print) 
     return changed
 
 
+# Feeds once taken whole as AI-only whose AI sections turned out to carry other science too (quantum computing,
+# physics): their stored stories must name AI, like everything they send from now on (sources.py).
+AI_RECHECKED = ("ScienceDaily", "Tech Xplore")
+
+
 def reclassify(conn) -> int:
     """Re-run the sorting and regulation rules over stored policy and regulation stories.
     Returns how many changed."""
     changed = 0
+    for it in conn.execute(f"SELECT id, title, summary FROM items WHERE source IN ({','.join('?' * len(AI_RECHECKED))})",
+                           AI_RECHECKED).fetchall():
+        if not classify.is_ai_related(it["title"], "" if brief.is_draft(it["summary"]) else it["summary"]):
+            conn.execute("DELETE FROM items WHERE id = ?", (it["id"],))
+            changed += 1
     # The same fallback places collection uses (e.g. Korea's ministry: "KR" when a story names none).
     defaults = {s["name"]: s.get("jurisdictions", []) for s in SOURCES}
     streams = {s["name"]: s["category"] for s in SOURCES}

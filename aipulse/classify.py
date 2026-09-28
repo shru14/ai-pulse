@@ -28,7 +28,9 @@ POLICY_TERMS = [
     r"government", r"lawsuit", r"\bsue[sd]?\b", r"court", r"ruling", r"antitrust", r"\bFTC\b", r"\bDOJ\b",
     r"copyright", r"export control", r"sanction", r"privacy regulator", r"\bGDPR\b", r"data protection",
     r"\bban\b", r"\bbans\b", r"safety institute", r"\bAISI\b", r"summit", r"treaty", r"election",
-    r"policy", r"governance", r"lawmakers", r"minister", r"president",
+    # "governance", but not enterprise products' "identity / data / runtime governance" (Collibra, Vanderbilt's IAM)
+    r"policy", r"(?<!identity )(?<!data )(?<!runtime )(?<!access )(?<!cloud )(?<!security )(?<!model )governance",
+    r"lawmakers", r"minister", r"president",
     # regulators, investigations and the executive branch
     r"investigat", r"\bprobes?\b", r"scrutin", r"regulators?\b", r"watchdog", r"\bgovernor\b", r"\bgov\.",
     r"\bMPs?\b", r"\bcabinet\b", r"\bNIST\b", r"attorneys? general", r"administration\b", r"\badmin\b(?! (?:plugin|console|panel|tools?|controls?|settings|dashboard|roles?|access|users?|api)\b)",
@@ -92,7 +94,12 @@ _NOT_RELEASE = re.compile(r"^how\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat
 # event previews and podcasts, and a company's own blog posts that aren't launches.
 _TUTORIAL = re.compile(r"^(a |an )?(coding |step[- ]by[- ]step |hands[- ]on |practical |complete |beginner'?s? )?"
                        r"(guide|tutorial|walkthrough)\b|^how to\b|\bcoding guide\b|\bfor beginners\b|\btutorial\b|"
-                       r"\bstep[- ]by[- ]step\b|^build(ing)? (a|an|your)\b", re.I)
+                       r"\bstep[- ]by[- ]step\b|^build(ing)? (a|an|your)\b|"
+                       # Cloud how-tos: "Deploying real-time speech with Qwen3-TTS on Amazon SageMaker AI"
+                       r"^(deploying|running|fine-?tuning|scaling|optimizing|accelerating|implementing|automating|"
+                       r"serving|hosting|migrating|orchestrating|evaluating|monitoring|securing)\b.{0,120}\b"
+                       r"(on|with|using|in|from|to) (amazon|aws|azure|microsoft foundry|google cloud|vertex ai|"
+                       r"databricks|snowflake)\b", re.I)
 _TUTORIAL_LEAD = re.compile(r"\btutorial\b|\bstep[- ]by[- ]step\b|\blearn how to\b|"
                             r"\bin this (post|tutorial|guide),? (we|you)('ll| will)? (show|walk|build|learn)", re.I)
 _EVENT = re.compile(r"\bwhat to expect (at|during)\b|\btheCUBE\b|\bwebinar\b|\blivestream\b|\bpodcast\b|"

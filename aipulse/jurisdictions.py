@@ -71,7 +71,7 @@ JURISDICTIONS: dict[str, tuple] = {
     "FI": ("Finland", [r"\bFinland\b", r"\bFinnish\b"]),
     "PL": ("Poland", [r"\bPoland\b", r"\bPolish government"]),
     "AT": ("Austria", [r"\bAustria"]),
-    "PT": ("Portugal", [r"\bPortugal", r"\bPortuguese\b"]),
+    "PT": ("Portugal", [r"\bPortugal", r"(?<!Brazilian )\bPortuguese\b"]),  # the language of Brazil too
     "GR": ("Greece", [r"\bGreece\b", r"\bGreek\b"]),
     "CZ": ("Czechia", [r"\bCzech"]),
     "HU": ("Hungary", [r"\bHungar"]),

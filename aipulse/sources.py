@@ -68,10 +68,10 @@ SOURCES = [
     {"name": "Engadget", "url": "https://www.engadget.com/rss.xml", "category": "news", "ai_in_title": True},
     {"name": "MIT News", "url": "https://news.mit.edu/topic/mitartificial-intelligence2-rss.xml", "category": "news",
      "ai_only": True},
-    {"name": "Tech Xplore", "url": "https://techxplore.com/rss-feed/machine-learning-ai-news/", "category": "news",
-     "ai_only": True},
+    # Their AI sections also carry quantum computing, robotics and other science: each story must name AI.
+    {"name": "Tech Xplore", "url": "https://techxplore.com/rss-feed/machine-learning-ai-news/", "category": "news"},
     {"name": "ScienceDaily", "url": "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml",
-     "category": "news", "ai_only": True},
+     "category": "news"},
     # Beyond the US: Asia, Africa and the rest of the world.
     {"name": "Rest of World", "url": "https://restofworld.org/feed/latest", "category": "news"},
     {"name": "South China Morning Post", "url": "https://www.scmp.com/rss/320663/feed", "category": "news"},
