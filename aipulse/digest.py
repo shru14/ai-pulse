@@ -22,18 +22,18 @@ from html import escape
 
 from . import brief, jurisdictions, quality, rss
 
-# Industry is shown in groups, each saying what it holds (classify.news_kind; AI-incidents come from the AI
-# Incident Database). Order, heading and a line on what the group is.
-KIND_GROUPS = [
-    ("news", "News", "Reporting on companies, products, deals and people."),
-    ("incident", "AI incidents", "Harms from AI systems, confirmed by the AI Incident Database."),
-    ("study", "Studies", "News about research findings."),
-    ("analysis", "Opinion & analysis", "Commentary, explainers and comparisons."),
-    ("blog", "Company blogs", "Companies' own posts that aren't launches."),
-    ("tutorial", "Tutorials", "Guides and how-tos."),
-    ("event", "Events", "Previews, recaps and podcasts."),
-]
-KIND_LABEL = {k: label for k, label, _ in KIND_GROUPS}  # plain-text labels, and the page's badges
+# Every story wears a tag saying what it is. Industry's are its sub-categories (classify.news_kind; AI-incidents
+# come from the AI Incident Database), in this order: label, tag background, tag text colour.
+KIND = {
+    "news": ("News", "#e8eaf6", "#3949ab"),
+    "incident": ("AI-incident", "#fde7e9", "#c5221f"),
+    "study": ("Study", "#e6f4ea", "#137333"),
+    "analysis": ("Opinion & analysis", "#fef7e0", "#8a5a00"),
+    "blog": ("Company blog", "#e8f0fe", "#1967d2"),
+    "tutorial": ("Tutorial", "#f3e8fd", "#7b1fa2"),
+    "event": ("Event", "#e0f7fa", "#00737a"),
+}
+STREAM_TAG = {"releases": "Release", "research": "Research paper", "regulation": "Tracker", "policy": "Policy"}
 # What each stream holds, in a line under its heading, and its colour on the site.
 SECTION_NOTE = {
     "releases": "New models, products and open-source launches.",
@@ -44,8 +44,9 @@ SECTION_NOTE = {
 }
 COLOR = {"releases": "#0f9d76", "news": "#5b5fd6", "research": "#9153d9", "regulation": "#d6457e", "policy": "#d9822b"}
 ACTION_LABEL = {"proposal": "Proposal", "law": "Law adopted", "body": "AI body", "standard": "Standard"}
-PER_GROUP = 12  # a long group ends with a link to the rest (the RSS feed and the page have them all)
-GREY = "#5f6368"
+PER_STREAM = 25  # a longer stream ends with a link to the rest (the RSS feed and the page have them all)
+SUMMARY = 160    # characters of summary in the table; the story's page has the rest
+GREY, INK, LINK, RULE = "#5f6368", "#1a1a1a", "#1a4fd6", "#eceef1"
 SMTP_HOST = "smtp.gmail.com"
 
 
@@ -69,13 +70,21 @@ def _day_cards(cards: list[dict], category: str, day: date) -> list[dict]:
 
 
 def by_streams(cards: list[dict], streams: list[str], day: date) -> dict[str, list[dict]]:
-    """What the email shows: each chosen stream's stories that day, less any that don't name AI (quality.on_topic)."""
-    return {n: [c for c in _day_cards(cards, rss.FEEDS[n][0], day) if quality.on_topic(c)] for n in streams}
+    """What the email shows: each chosen stream's stories that day, less any that don't name AI (quality.on_topic).
+    Industry is ordered by its tags (news first, then AI-incidents, studies, opinion...)."""
+    out = {n: [c for c in _day_cards(cards, rss.FEEDS[n][0], day) if quality.on_topic(c)] for n in streams}
+    if "news" in out:
+        out["news"].sort(key=lambda c: list(KIND).index(c.get("kind") if c.get("kind") in KIND else "news"))
+    return out
 
 
 def left_out(cards: list[dict], streams: list[str], day: date) -> list[dict]:
     """The day's stories kept out of the email for not naming AI."""
     return [c for n in streams for c in _day_cards(cards, rss.FEEDS[n][0], day) if not quality.on_topic(c)]
+
+
+def long_day(day: date) -> str:
+    return f"{day:%A}, {day.day} {day:%B %Y}"  # "Sunday, 27 September 2026": no short forms
 
 
 def _quiet(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date) -> str:
@@ -91,69 +100,118 @@ def _quiet(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     return line
 
 
-def _kpis(by_stream: dict[str, list[dict]], streams: list[str], quiet: str = "") -> tuple[list[str], str]:
-    """The top of the email: how many stories and outlets, each chosen stream's count (a tile linking to its
-    section), and who was mentioned most; on a thin day, a line saying so. Returns (plain-text lines, HTML)."""
+def tag(c: dict, stream: str) -> tuple[str, str, str]:
+    """(label, background, text colour) of a story's tag: Industry's sub-category, a tracker card's kind and
+    places ("Proposal · Brazil"), or the stream's kind of story."""
+    if stream == "news":
+        return KIND.get(c.get("kind") or "news", KIND["news"])
+    if stream == "regulation":
+        places = ["International" if j == "INTL" else jurisdictions.JURISDICTIONS.get(j, (j,))[0]
+                  for j in c.get("jurisdictions") or []]
+        label = " · ".join(filter(None, [ACTION_LABEL.get(c.get("action") or "", ""), ", ".join(places[:3])]))
+        return label or STREAM_TAG[stream], "#fce4ec", "#ad1457"
+    return STREAM_TAG[stream], "#f1f3f4", COLOR[stream]
+
+
+def breakdown(day_cards: list[dict], stream: str) -> str:
+    """Industry's count by tag ("12 news · 1 study · 3 opinion & analysis"); other streams say what they hold."""
+    if stream != "news":
+        return SECTION_NOTE[stream]
+    counts = Counter(c.get("kind") or "news" for c in day_cards)
+    return " · ".join(f"{counts[k]} {label if label.startswith('AI') else label.lower()}"
+                      for k, (label, _, _) in KIND.items() if counts[k]) or SECTION_NOTE[stream]
+
+
+def _short(summary: str) -> str:
+    return summary if len(summary) <= SUMMARY else summary[:SUMMARY - 3].rsplit(" ", 1)[0] + "…"
+
+
+def _others(c: dict) -> list[dict]:
+    """Other outlets' versions of the same story (never the story's own outlet)."""
+    return list({o["source"]: o for o in c.get("also") or [] if o["source"] != c["source"]}.values())
+
+
+def _opening(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date) -> tuple[list[str], str]:
+    """The top of the email: a line inviting the reader in, what was read and how it's sorted, who came up most,
+    a quiet-day line when there was little, and the day at a glance (a row per stream, linking to its part of
+    the table). Returns (plain-text lines, HTML)."""
     todays = [c for n in streams for c in by_stream[n]]
     outlets = {o["source"] for c in todays for o in [c, *(c.get("also") or [])] if o.get("source")}
     stories = sum(1 + len(c.get("also") or []) for c in todays)
-    intro = (f"{stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
-             f"{'source' if len(outlets) == 1 else 'sources'}, sorted into your {len(streams)} "
-             f"{'stream' if len(streams) == 1 else 'streams'}.")
-    tiles = []
-    for n in streams:
-        name = rss.FEEDS[n][1]
-        tiles.append(f'<td width="{100 // len(streams)}%" style="border-top:3px solid {COLOR[n]};background:#f6f7f9;'
-                     f'padding:7px 5px;vertical-align:top"><a href="#{n}" style="text-decoration:none;color:#1a1a1a">'
-                     f'<div style="font-size:22px;font-weight:bold;line-height:1.2">{len(by_stream[n]):,}</div>'
-                     f'<div style="font-size:11px;line-height:1.3;color:{GREY}">{escape(name)}</div></a></td>')
-    lines = [intro, *([quiet] if quiet else []), " · ".join(f"{rss.FEEDS[n][1]} {len(by_stream[n])}" for n in streams)]
-    html = (f'<p style="margin:0 0 10px;font-size:15px">{escape(intro)}</p>'
-            + (f'<p style="margin:0 0 10px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>'
-               if quiet else "") +
-            '<table role="presentation" width="100%" cellspacing="4" cellpadding="0" style="border-collapse:separate;'
-            'table-layout:fixed;margin:0 0 6px"><tr>' + "".join(tiles) + "</tr></table>")
+    hello = f"Let's explore what happened in AI on {long_day(day)}."
+    what = {"releases": "launches", "news": "the business of AI", "research": "new research",
+            "regulation": "laws in the making", "policy": "what governments did"}
+    kinds = [what[n] for n in streams]
+    sorted_into = (f"your {['two', 'three', 'four', 'five'][len(streams) - 2]} streams: {', '.join(kinds[:-1])} and {kinds[-1]}" if len(streams) > 1
+                   else f"your stream, {kinds[0]}")
+    intro = (f"We read {stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
+             f"{'source' if len(outlets) == 1 else 'sources'} and sorted them into {sorted_into}.")
     top = _mentioned(todays)
-    if top:
-        who = " · ".join(f"{t} ({k})" for t, k in top)
-        lines.append(f"Most mentioned: {who}")
-        html += (f'<p style="margin:0 0 4px;font-size:13px;color:{GREY}">Most mentioned: '
-                 f'<span style="color:#1a1a1a">{escape(who)}</span></p>')
+    names = ("The names that came up most: " + ", ".join(f"{t} ({k} stories)" for t, k in top) + ".") if top else ""
+    quiet = _quiet(by_stream, cards, streams, day)
+    lines = [hello, "", intro, *([names] if names else []), *([quiet] if quiet else []), "", "THE DAY AT A GLANCE"]
+    lines += [f"{rss.FEEDS[n][1]}: {len(by_stream[n])} ({breakdown(by_stream[n], n)})" for n in streams]
+    rows = "".join(
+        f'<tr><td style="padding:8px 10px;border-bottom:1px solid {RULE};border-left:4px solid {COLOR[n]}">'
+        f'<a href="#{n}" style="color:{INK};text-decoration:none;font-weight:bold">{escape(rss.FEEDS[n][1])}</a>'
+        f'<div style="font-size:12px;color:{GREY}">{escape(breakdown(by_stream[n], n))}</div></td>'
+        f'<td align="right" style="padding:8px 10px;border-bottom:1px solid {RULE};font-size:20px;font-weight:bold">'
+        f'{len(by_stream[n]):,}</td></tr>' for n in streams)
+    html = (f'<div style="font-size:22px;font-weight:bold;line-height:1.3;margin:0 0 8px">{escape(hello)}</div>'
+            f'<p style="margin:0 0 8px;font-size:15px;line-height:1.5">{escape(intro)}</p>'
+            + (f'<p style="margin:0 0 10px;font-size:14px;color:{GREY}">{escape(names)}</p>' if names else "")
+            + (f'<p style="margin:0 0 10px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
+            + f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
+              f'margin:6px 0 8px;background:#f8f9fb">{rows}</table>')
     return lines, html
 
 
-def _tag(c: dict) -> str:
-    """A tracker card's kind and places ("Proposal · Brazil"); nothing for other streams."""
-    if c.get("category") != "regulation":
-        return ""
-    places = ["International" if j == "INTL" else jurisdictions.JURISDICTIONS.get(j, (j,))[0]
-              for j in c.get("jurisdictions") or []]
-    return " · ".join(filter(None, [ACTION_LABEL.get(c.get("action") or "", ""), ", ".join(places[:3])]))
+def _pill(label: str, bg: str, fg: str) -> str:
+    return (f'<span style="display:inline-block;background:{bg};color:{fg};font-size:11px;font-weight:bold;'
+            f'padding:3px 8px;border-radius:10px;white-space:nowrap">{escape(label)}</span>')
 
 
-def _story_list(cards: list[dict], limit: int, more: str, text: list[str], html: list[str]) -> None:
-    """Up to `limit` stories: headline, summary, then outlet and other outlets' versions; then a link to the rest."""
-    for c in cards[:limit]:
-        summary = c.get("summary") or ""
-        tag = _tag(c)
-        # Other outlets' versions of the same story, grouped under this one (never the story's own outlet).
-        also = list({o["source"]: o for o in c.get("also") or [] if o["source"] != c["source"]}.values())
-        meta_text = c["source"] + (" · also reported by " + ", ".join(o["source"] for o in also) if also else "")
-        text.append(f"• {'[' + tag + '] ' if tag else ''}{c['title']}"
-                    + (f"\n  {summary}" if summary else "") + f"\n  {meta_text}\n  {c['url']}")
-        meta = escape(c["source"]) + (" · also reported by " + ", ".join(
-            f'<a href="{escape(o["url"])}" style="color:{GREY}">{escape(o["source"])}</a>' for o in also) if also else "")
-        html.append('<div style="margin:0 0 14px">'
-                    + (f'<div style="font-size:11px;font-weight:bold;color:{GREY};text-transform:uppercase;'
-                       f'letter-spacing:.3px">{escape(tag)}</div>' if tag else "")
-                    + f'<a href="{escape(c["url"])}" style="color:#1a4fd6;font-weight:bold;font-size:15px;line-height:1.35;'
-                      f'text-decoration:none">{escape(c["title"])}</a>'
-                    + (f'<div style="font-size:14px;line-height:1.45;margin-top:3px">{escape(summary)}</div>' if summary else "")
-                    + f'<div style="font-size:12px;color:{GREY};margin-top:3px">{meta}</div></div>')
-    rest = len(cards) - limit
-    if rest > 0:
-        text.append(f"…and {rest} more: {more}")
-        html.append(f'<p style="margin:0 0 14px;font-size:13px"><a href="{escape(more)}">…and {rest} more on AI Pulse</a></p>')
+def _ledger(by_stream: dict[str, list[dict]], streams: list[str], day: date) -> tuple[list[str], str]:
+    """The day as one table (type | story and a line of summary | source), a part per stream. Returns
+    (plain-text lines, HTML)."""
+    cell = f"padding:8px;border-bottom:1px solid {RULE}"
+    rows = ["<tr>" + "".join(f'<th align="left" style="padding:6px 8px;font-size:11px;color:{GREY};text-transform:uppercase;'
+                             f'letter-spacing:.4px;border-bottom:2px solid #d9dce1">{h}</th>' for h in ("Type", "Story", "Source"))
+            + "</tr>"]
+    text = []
+    for n in streams:
+        category, stream, _ = rss.FEEDS[n]
+        day_cards, more = by_stream[n], f"{rss.SITE}#{category}"
+        text += ["", f"{stream.upper()} ({len(day_cards)}): {SECTION_NOTE[n]}"]
+        rows.append(f'<tr id="{n}"><td colspan="3" style="padding:18px 8px 6px;font-size:15px;font-weight:bold;'
+                    f'border-bottom:2px solid {COLOR[n]}">{escape(stream)} <span style="font-weight:normal;color:{GREY};'
+                    f'font-size:13px">· {len(day_cards)} · {escape(SECTION_NOTE[n])}</span></td></tr>')
+        if not day_cards:
+            note = _empty_note(n, day)
+            text.append(note)
+            rows.append(f'<tr><td colspan="3" style="padding:8px;font-size:13px;color:{GREY}">{escape(note)}</td></tr>')
+        for i, c in enumerate(day_cards[:PER_STREAM]):
+            label, bg, fg = tag(c, n)
+            summary, others = _short(c.get("summary") or ""), _others(c)
+            text.append(f"• [{label}] {c['title']} ({c['source']})" + (f"\n  {summary}" if summary else "")
+                        + (f"\n  Also reported by {', '.join(o['source'] for o in others)}" if others else "")
+                        + f"\n  {c['url']}")
+            also = ", ".join(f'<a href="{escape(o["url"])}" style="color:{GREY}">{escape(o["source"])}</a>' for o in others)
+            rows.append(f'<tr style="background:{"#fafbfc" if i % 2 else "#ffffff"}">'
+                        f'<td valign="top" style="{cell}">{_pill(label, bg, fg)}</td>'
+                        f'<td valign="top" style="{cell}"><a href="{escape(c["url"])}" style="color:{LINK};font-weight:bold;'
+                        f'font-size:14px;line-height:1.35;text-decoration:none">{escape(c["title"])}</a>'
+                        + (f'<div style="font-size:13px;color:#3c4043;margin-top:2px;line-height:1.4">{escape(summary)}</div>'
+                           if summary else "")
+                        + f'</td><td valign="top" style="{cell};font-size:12px;color:{GREY}">{escape(c["source"])}'
+                        + (f'<div style="margin-top:3px">also reported by {also}</div>' if others else "") + "</td></tr>")
+        rest = len(day_cards) - PER_STREAM
+        if rest > 0:
+            text.append(f"…and {rest} more: {more}")
+            rows.append(f'<tr><td colspan="3" style="padding:8px;font-size:13px"><a href="{escape(more)}" style="color:{LINK}">'
+                        f'…and {rest} more {escape(stream)} stories on AI Pulse</a></td></tr>')
+    return text, (f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
+                  f'margin-top:14px">{"".join(rows)}</table>')
 
 
 def _empty_note(name: str, day: date) -> str:
@@ -164,57 +222,33 @@ def _empty_note(name: str, day: date) -> str:
 
 def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, str] | None:
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day."""
-    label = f"{day:%a} {day.day} {day:%b %Y}"
     by_stream = by_streams(cards, streams, day)
     if not any(by_stream.values()):
         return None
-    subject = f"AI Pulse daily · {label}"
+    subject = f"AI Pulse daily · {long_day(day)}"
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
     change = _mailto("CHANGE " + " ".join(streams))
     stop = _mailto("UNSUBSCRIBE")
-
-    # The subject and sender already say "AI Pulse daily" and the day, so the email opens with the numbers.
-    kpi_text, kpi_html = _kpis(by_stream, streams, _quiet(by_stream, cards, streams, day))
-    text = [*kpi_text, ""]
-    html = ['<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '</head><body style="margin:0;padding:12px;background:#ffffff">'
-            '<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#1a1a1a">' + kpi_html]
-    for n in streams:
-        category, stream, _ = rss.FEEDS[n]
-        day_cards, more = by_stream[n], f"{rss.SITE}#{category}"
-        text += [f"{stream.upper()} ({len(day_cards)})", SECTION_NOTE[n]]
-        html.append(f'<div id="{n}" style="margin:28px 0 12px;border-left:4px solid {COLOR[n]};padding:2px 0 2px 10px">'
-                    f'<div style="font-size:19px;font-weight:bold">{escape(stream)} '
-                    f'<span style="font-weight:normal;color:{GREY};font-size:15px">{len(day_cards)}</span></div>'
-                    f'<div style="font-size:13px;color:{GREY}">{escape(SECTION_NOTE[n])}</div></div>')
-        if not day_cards:
-            text.append(_empty_note(n, day))
-            html.append(f'<p style="margin:0 0 8px;font-size:14px;color:{GREY}">{escape(_empty_note(n, day))}</p>')
-        elif category == "news":
-            # Industry in groups, each saying what it holds; the label is said once, in the group's heading.
-            for kind, heading, note in KIND_GROUPS:
-                group = [c for c in day_cards if (c.get("kind") or "news") == kind]
-                if not group:
-                    continue
-                text += ["", f"  {heading} ({len(group)}): {note}"]
-                html.append(f'<div style="margin:16px 0 8px;font-size:14px"><b>{escape(heading)}</b> '
-                            f'<span style="color:{GREY}">({len(group)}) · {escape(note)}</span></div>')
-                _story_list(group, PER_GROUP, more, text, html)
-        else:
-            _story_list(day_cards, PER_GROUP * 2, more, text, html)
-        text.append("")
+    open_text, open_html = _opening(by_stream, cards, streams, day)
+    table_text, table_html = _ledger(by_stream, streams, day)
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
-    text += [f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
-             f"Change streams: {change}", f"Unsubscribe: {stop}",
-             f"AI Pulse is free and non-commercial: {rss.SITE}"]
-    html.append(f'<p style="margin-top:28px;padding-top:12px;border-top:1px solid #e3e5e8;color:{GREY};font-size:13px;'
-                f'line-height:1.6">You chose: {escape(chose)}.<br>RSS: '
-                + " · ".join(f'<a href="{escape(url)}" style="color:{GREY}">{escape(name)}</a>' for name, url in feeds)
-                + f'<br><a href="{escape(change)}" style="color:{GREY}">Change streams</a> · '
-                  f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a><br>'
-                  f'AI Pulse is free and non-commercial · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'
-                  '</div></body></html>')
-    return subject, "\n".join(text), "".join(html)
+    text = [*open_text, *table_text, "", f"You chose: {chose}.",
+            "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
+            f"Change streams: {change}", f"Unsubscribe: {stop}", f"AI Pulse is free and non-commercial: {rss.SITE}"]
+    html = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            '</head><body style="margin:0;padding:0;background:#eef0f3">'
+            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:12px 8px 24px">'
+            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;'
+            f'border-radius:6px;font-family:Arial,sans-serif;color:{INK}"><tr><td style="padding:22px 20px 10px">'
+            + open_html + table_html
+            + f'<p style="margin-top:28px;padding-top:12px;border-top:1px solid #e3e5e8;color:{GREY};font-size:13px;'
+              f'line-height:1.6">You chose: {escape(chose)}.<br>RSS: '
+            + " · ".join(f'<a href="{escape(url)}" style="color:{GREY}">{escape(name)}</a>' for name, url in feeds)
+            + f'<br><a href="{escape(change)}" style="color:{GREY}">Change streams</a> · '
+              f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a><br>'
+              f'AI Pulse is free and non-commercial · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'
+              '</td></tr></table></td></tr></table></body></html>')
+    return subject, "\n".join(text), html
 
 
 def send(to: str, subject: str, text: str, html: str) -> None:

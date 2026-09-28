@@ -1325,18 +1325,20 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     cards = [card(1, "tool", "2026-09-27T06:00:00+00:00"), card(2, "regulation", "2026-09-27T18:00:00+00:00"),
              card(3, "news", "2026-09-27T12:00:00+00:00"), card(4, "tool", "2026-09-28T00:30:00+00:00")]
     subject, text, html = digest.build(cards, ["releases", "regulation"], date(2026, 9, 27))
-    assert subject == "AI Pulse daily · Sun 27 Sep 2026"
+    assert subject == "AI Pulse daily · Sunday, 27 September 2026"  # no short forms
+    assert "Let's explore what happened in AI on Sunday, 27 September 2026." in text
     assert "6-hour" not in text + html and "Daily update" not in html  # the subject already names the day
     assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
     assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
-    assert "Releases 1 · Regulation tracker 1" in text and "vs Sat" not in text + html  # the KPI row
-    assert ">Regulation tracker</div>" in html and "Most mentioned" not in text  # nobody named twice: no line
+    assert "Releases: 1 (" in text and "Regulation tracker: 1 (" in text and "vs Sat" not in text + html  # the day at a glance
+    assert ">Regulation tracker</a>" in html and "came up most" not in text  # nobody named twice: no line
+    assert "[Release] Story 1" in text and "Type</th>" in html  # one table: type | story | source
     assert "https://shru14.github.io/ai-pulse/feeds/releases.xml" in html and "feeds/news.xml" not in html  # chosen feeds
     cards[0]["also"] = [{"title": "Same outlet, other post", "source": "Outlet", "url": "https://ex.com/x", "date": "2026-09-27"},
                         {"title": "Story 1 elsewhere", "source": "Other", "url": "https://other.com/1", "date": "2026-09-27"}]
     _, text, html = digest.build(cards, ["releases"], date(2026, 9, 27))
-    assert "also reported by Other" in text and ">Outlet</a>" not in html   # never the story's own outlet
+    assert "Also reported by Other" in text and ">Outlet</a>" not in html   # never the story's own outlet
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
 
 
@@ -1355,9 +1357,13 @@ def test_industry_news_is_labelled_not_moved(monkeypatch):
     assert classify.news_kind("Can Muse overcome Meta's trust issues?", "", False) == "analysis"
     assert classify.news_kind("AI access makes people unwilling to say I don't know, study finds", "", False) == "study"
     assert classify.news_kind("Anthropic researcher quits, warns against self-improving AI", "", False) == "news"
+    assert classify.news_kind("AI agents do more of the work in model development, but humans still make the decisions",
+                              "A research team analyzed 769 task logs from building its own AI model.", False) == "study"
     # Industry in groups, each headed once with what it holds: News first, then company blogs, tutorials...
-    order = [text.index(t) for t in ("News (1)", "Story 2", "Company blogs (1)", "Story 3", "Tutorials (1)", "Story 1")]
-    assert order == sorted(order) and "[Tutorial]" not in text
+    # One table, Industry ordered by tag and every story tagged with its sub-category, never just "Industry".
+    order = [text.index(t) for t in ("[News] Story 2", "[Company blog] Story 3", "[Tutorial] Story 1")]
+    assert order == sorted(order) and "Industry: 3 (1 news · 1 company blog · 1 tutorial)" in text
+    assert ">Opinion &amp; analysis<" not in html and ">Company blog<" in html and "[Industry]" not in text
 
 
 def test_digest_is_checked_before_it_is_sent(monkeypatch):

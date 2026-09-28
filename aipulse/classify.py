@@ -121,7 +121,7 @@ _STUDY_TITLE = re.compile(r"\bstud(y|ies)\b|\bsurvey (finds|found|shows|says)\b|
                           r"introduces|release|releases|test|tested|train|trained)\b|"
                           r"\b(finds|found|reveals?|shows?) that\b|\breport finds\b", re.I)
 _STUDY_LEAD = re.compile(r"\b(a|the|new|recent) (study|paper|preprint|survey|experiment)\b|\bresearchers (at|from)\b|"
-                         r"\b(study|paper|survey|researchers|scientists) (found|find|finds|show|shows|showed|suggests?|"
+                         r"\b(study|paper|survey|researchers|scientists|research team) (found|find|finds|show|shows|showed|suggests?|"
                          r"report|reported|tested|analy[sz]ed)\b|\baccording to (a|new) (study|report|survey)\b", re.I)
 # Analysis and opinion: questions, "why", explainers, comparisons, interviews ("Can Muse overcome Meta's trust
 # issues?", "Why letting Claude clean your TV's bloatware isn't the best idea").

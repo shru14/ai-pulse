@@ -26,7 +26,7 @@ GOVERNMENT = {s["name"] for s in SOURCES if s.get("government")}
 # General feeds whose stories are kept only when they name AI (as collect.py filters them), plus the two science
 # feeds that are re-checked; AI-only feeds (labs' blogs, MarkTechPost, arXiv) are about AI by definition.
 MUST_NAME_AI = {s["name"] for s in SOURCES if not s.get("ai_only", s["category"] == "tool")} | {"ScienceDaily", "Tech Xplore"}
-LABELS = {"news", "incident", "study", "analysis", "blog", "tutorial", "event"}  # digest.KIND_GROUPS
+LABELS = {"news", "incident", "study", "analysis", "blog", "tutorial", "event"}  # digest.KIND
 PLACEHOLDER = re.compile(r"^\s*(?:no title|untitled|none|null|undefined|n/?a|title|\[?removed\]?|-+)\s*$", re.I)
 HTML_LEFTOVER = re.compile(r"</?[a-z][a-z0-9]*(?:\s[^<>]*)?/?>|&(?:[a-z]+|#\d+|#x[0-9a-f]+);", re.I)
 # Mojibake (UTF-8 read as Latin-1: "â€™", "Ã©"), the replacement character and control characters.
