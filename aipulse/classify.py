@@ -94,6 +94,11 @@ _EVENT = re.compile(r"\bwhat to expect (at|during)\b|\btheCUBE\b|\bwebinar\b|\bl
                     r"\bepisode\b|\binsights from\b|^ITWeb TV\b|\bTechCrunch Disrupt\b", re.I)
 
 
+# A customer's results with a product: "Proaction boosts sales 60% and saves 75+ hours with Codex".
+_CUSTOMER = re.compile(r"\b(boosts?|cuts?|saves?|reduces?|doubles?|triples?|speeds? up|turns?|scales?|resolves?)\b"
+                       r"[^.]{0,60}\b(with|using)\b", re.I)
+
+
 def news_kind(title: str, summary: str, company_blog: bool) -> str:
     """What an industry-news card is: "tutorial", "event", "blog" (a company's own post that isn't a
     launch) or "news" (reporting)."""
@@ -113,8 +118,9 @@ def launched(title: str, summary: str) -> bool:
 
 def released(title: str, summary: str) -> bool:
     """Does a company blog post launch something? Launch language as for news, or the blog phrasing above,
-    unless the headline is a deal, a person, a programme, a guide or a podcast."""
-    if _NOT_RELEASE.search(title):
+    unless the headline is a deal, a person, a programme, a guide or a podcast, or the post is a tutorial ("Learn how
+    to run SkyRL, an open-source framework...") or a customer story ("Proaction boosts sales 60% ... with Codex")."""
+    if _NOT_RELEASE.search(title) or _CUSTOMER.search(title) or news_kind(title, summary, False) == "tutorial":
         return False
     return launched(title, summary) or bool(_BLOG_LAUNCH.search(title)) or bool(_BLOG_LAUNCH.search(_HISTORY.sub(" ", summary)))
 
@@ -148,7 +154,7 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
 
 COMPANY_TERMS = {
     "OpenAI": r"OpenAI|ChatGPT|\bGPT-?\d", "Anthropic": r"Anthropic|Claude", "Google": r"Google|Gemini|DeepMind",
-    "Meta": r"\bMeta\b|Llama", "Microsoft": r"Microsoft|Copilot", "Nvidia": r"Nvidia", "Apple": r"\bApple\b",
+    "Meta": r"\bMeta\b|Llama", "Microsoft": r"Microsoft|(?<!GitHub )Copilot", "Nvidia": r"Nvidia", "Apple": r"\bApple\b",
     "Amazon": r"Amazon|AWS", "xAI": r"\bxAI\b|Grok", "Mistral": r"Mistral", "DeepSeek": r"DeepSeek",
     "Alibaba": r"Alibaba|Qwen",
 }

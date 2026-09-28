@@ -134,7 +134,7 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
         _story_list(news, PER_STREAM, more, text, html)
         if labelled:
             text.append(f"  {OTHER_HEADING}:")
-            html.append(f'<p style="margin:14px 0 6px;font-size:13px;font-weight:bold;color:#5f6368">{OTHER_HEADING}</p>')
+            html.append(f'<p style="margin:14px 0 6px;font-size:13px;font-weight:bold;color:#5f6368">{escape(OTHER_HEADING)}</p>')
             _story_list(labelled, PER_LABELLED, more, text, html)
         text.append("")
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]

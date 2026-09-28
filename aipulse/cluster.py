@@ -204,6 +204,18 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
                 nbr[g][k] = nbr[g].get(k, 0.0) + total
                 nbr[k][g] = nbr[g][k]
 
+    # Every story must be like at least one other story in its group directly, not only through a third one
+    # (Ars's "Copilot+ PC" story and GitHub's Copilot tutorial, joined by a story like each): otherwise it
+    # stands alone.
+    for g in list(groups):
+        members = groups[g]
+        if len(members) < 3:
+            continue
+        for i in list(members):
+            if not any(sim.get((min(i, j), max(i, j)), 0.0) >= THRESHOLD for j in members if j != i):
+                members.remove(i)
+                groups[i] = [i]
+
     def lead_key(i):
         s = items[i].get("summary") or ""
         return (brief.is_draft(s) or not s, items[i]["date"], items[i].get("added_at", ""))
