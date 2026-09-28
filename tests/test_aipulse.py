@@ -1330,7 +1330,8 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert "6-hour" not in text + html and "Daily update" not in html  # the subject already names the day
     assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
-    assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
+    assert "https://shru14.github.io/ai-pulse/#subscribe" in html and "You chose: Releases, Regulation tracker" in html
+    assert "mailto:" not in html  # changing streams and unsubscribing never need an email
     assert "Releases: 1 (" in text and "Regulation tracker: 1 (" in text and "vs Sat" not in text + html  # the day at a glance
     assert ">Regulation tracker</a>" in html and "came up most" not in text  # nobody named twice: no line
     assert "[Release] Story 1" in text and "Type</th>" in html  # one table: type | story | source
@@ -1520,80 +1521,54 @@ def test_ai_incidents_one_card_each_under_industry(tmp_path):
     assert cluster._release_and_incident(rel, {"category": "news", "action": "incident"})
 
 
-def test_subscriptions_come_from_the_readers_own_address():
-    from datetime import datetime
-    from email import message_from_string, policy
-    from aipulse import subscribers as sb
-    assert sb.parse_subject("SUBSCRIBE releases, Regulation industry") == ("SUBSCRIBE", ["releases", "news", "regulation"])
-    assert sb.parse_subject("subscribe") == ("SUBSCRIBE", ["releases", "news", "research", "regulation", "policy"])
-    assert sb.parse_subject("CHANGE nonsense") == ("CHANGE", ["releases", "news", "research", "regulation", "policy"])
-    assert sb.parse_subject("UNSUBSCRIBE") == ("UNSUBSCRIBE", [])
-    assert sb.parse_subject("You're subscribed to AI Pulse daily") is None and sb.parse_subject("Re: SUBSCRIBE") is None
-    msg = lambda auth, extra="": message_from_string(f"{auth}{extra}From: Ana <ana@example.org>\nSubject: SUBSCRIBE\n\n",
-                                                     policy=policy.default)
-    gmail = "Authentication-Results: mx.google.com;\n       dkim=pass header.i=@example.org;\n       spf=pass smtp.mailfrom=ana@example.org\n"
-    assert sb.authenticated(msg(gmail), "ana@example.org")
-    assert sb.authenticated(msg("Authentication-Results: mx.google.com; dmarc=pass (p=NONE) header.from=gmail.com\n"), "x@gmail.com")
-    assert not sb.authenticated(msg("Authentication-Results: mx.google.com; spf=fail smtp.mailfrom=ana@example.org\n"),
-                                "ana@example.org")
-    # A forged "pass" added by the sender sits below Gmail's own header, which failed: not trusted.
-    forged = "Authentication-Results: mx.google.com; spf=softfail smtp.mailfrom=evil.test\nAuthentication-Results: mx.google.com; dmarc=pass\n"
-    assert not sb.authenticated(msg(forged), "ana@example.org")
-    assert not sb.authenticated(msg("Authentication-Results: mx.google.com; dkim=pass header.i=@evil.test\n"), "ana@example.org")
-    assert sb.automatic(msg(gmail, "Auto-Submitted: auto-replied\n")) and not sb.automatic(msg(gmail))
 
-    c = lambda uid, who, cmd, streams, day, answered=False: sb.Command(uid, who, cmd, streams, datetime(2026, 9, day), answered)
-    commands = [c(b"1", "a@x.org", "SUBSCRIBE", ["news"], 1, True), c(b"2", "a@x.org", "CHANGE", ["policy"], 3),
-                c(b"3", "b@x.org", "SUBSCRIBE", ["news"], 1, True), c(b"4", "b@x.org", "UNSUBSCRIBE", [], 2),
-                c(b"5", "d@x.org", "SUBSCRIBE", ["research"], 4)]
-    subs, replies, delete, erase = sb.plan(commands)
-    assert subs == {"a@x.org": ["policy"], "d@x.org": ["research"]} and erase == {"b@x.org"}
-    assert [(r.uid, kind) for r, kind in replies] == [(b"2", "changed"), (b"5", "welcome")] and delete == [b"1", b"3"]
-    assert sb.confirmed(commands) == {}  # both still waiting for their confirmation: no digest yet
-    old_cap, sb.MAX_SUBSCRIBERS = sb.MAX_SUBSCRIBERS, 1
+def test_subscribers_come_from_the_signup_web_app(monkeypatch):
+    import io
+    import json as _json
+    from datetime import date
+    from aipulse import digest, subscribers as sb
+    token = "0b7c3a52-6f7e-4f53-9d38-1f2a3b4c5d6e"
+    data = {"ok": True, "unsubscribe": "https://script.google.com/macros/s/X/exec?action=unsubscribe&t=",
+            "subscribers": [{"email": "Ana@Example.org", "streams": ["policy", "news", "bogus"], "token": token},
+                            {"email": "not an address", "streams": ["news"], "token": token},
+                            {"email": "bob@example.org", "streams": ["news"], "token": "../../etc"},
+                            {"email": "cy@example.org", "streams": ["bogus"], "token": token}]}
+    got = sb.readers(data)
+    assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token)}  # malformed entries dropped
     try:
-        _, replies, delete, _ = sb.plan([c(b"1", "a@x.org", "SUBSCRIBE", ["news"], 1, True), commands[4]])
-        assert [kind for _, kind in replies] == ["full"] and delete == [b"5"]
-    finally:
-        sb.MAX_SUBSCRIBERS = old_cap
-    subject, text, _ = sb.reply("welcome", ["news", "policy"])
-    assert "subscribed" in subject and "Industry, Policy" in text and "Nothing is shared" in text and "UNSUBSCRIBE" in text
+        sb.readers({"ok": False})
+        raise AssertionError("a refused list must stop the send")
+    except RuntimeError:
+        pass
+    seen = []
+    monkeypatch.setattr(sb.urllib.request, "urlopen", lambda url, timeout: (seen.append(url), io.BytesIO(_json.dumps(data).encode()))[1])
+    assert sb.current("k" * 32, "https://script.google.com/macros/s/X/exec") == got
+    assert seen == ["https://script.google.com/macros/s/X/exec?action=list&key=" + "k" * 32]
+    monkeypatch.setattr(sb, "SIGNUP_URL", "https://script.google.com/macros/s/X/exec")
+    assert sb.fill('const SIGNUP_URL = "__SIGNUP_URL__";') == 'const SIGNUP_URL = "https://script.google.com/macros/s/X/exec";'
+    # Each reader's email has their own one-click unsubscribe, in the footer and as the mail apps' button.
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = {"id": "p1", "title": "OpenAI sued over AI training data", "summary": "", "url": "https://ex.com/1", "source": "S",
+            "category": "policy", "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
+    stop = got["ana@example.org"][1]
+    subject, text, html = digest.build([card], ["policy"], date(2026, 9, 27), stop)
+    assert f"Unsubscribe: {stop}" in text and "Change streams: https://shru14.github.io/ai-pulse/#subscribe" in text
+    msg = digest._message("ana@example.org", subject, text, html, stop)
+    assert msg["List-Unsubscribe"] == f"<{stop}>" and msg["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
+    assert "List-Unsubscribe" not in digest._message("digest@example.com", subject, text, html)  # a test send has none
 
 
-def test_mailbox_reads_commands_and_deletes_for_good(monkeypatch):
-    from aipulse import subscribers as sb
-    auth = b"Authentication-Results: mx.google.com; dmarc=pass header.from=gmail.com\r\n"
-    mail = {b"7": (rb"(\Seen)", auth + b"From: Ana <Ana@gmail.com>\r\nSubject: SUBSCRIBE news\r\n\r\n", b"11"),
-            b"8": (rb"(\Seen \Answered)", auth + b"From: AI Pulse <me@gmail.com>\r\nSubject: SUBSCRIBE\r\n\r\n", b"12"),
-            b"9": (b"()", b"From: Bob <bob@gmail.com>\r\nSubject: SUBSCRIBE\r\n\r\n", b"13")}  # not verified by Gmail
-    calls = []
-
-    class FakeIMAP:
-        def __init__(self, *a, **k): self.folder = None
-        def login(self, *a): pass
-        def list(self): return "OK", [rb'(\HasNoChildren \All) "/" "[Gmail]/All Mail"', rb'(\HasNoChildren \Trash) "/" "[Gmail]/Bin"']
-        def select(self, folder): self.folder = folder; calls.append(("select", folder))
-        def expunge(self): calls.append(("expunge", self.folder))
-        def logout(self): pass
-        def uid(self, cmd, *args):
-            calls.append((cmd, *args))
-            if cmd in ("STORE", "COPY"):
-                return "OK", [None]
-            if cmd == "SEARCH" and self.folder == '"[Gmail]/Bin"':
-                return "OK", [b"501"]
-            if cmd == "SEARCH":
-                return "OK", [b" ".join(mail)]
-            if cmd == "FETCH" and args[1] == "(X-GM-MSGID)":
-                return "OK", [b"1 (X-GM-MSGID 11 UID 7)"]
-            flags, header, _ = mail[args[0]]
-            return "OK", [(b"1 (UID " + args[0] + b' INTERNALDATE "28-Sep-2026 10:00:00 +0000" BODY[HEADER] {9}', header),
-                          b" FLAGS " + flags + b")"]
-
-    monkeypatch.setattr(sb.imaplib, "IMAP4_SSL", FakeIMAP)
-    box = sb.Mailbox("me@gmail.com", "pw")
-    found = box.commands()
-    assert [(c.uid, c.address, c.streams, c.answered) for c in found] == [(b"7", "ana@gmail.com", ["news"], False)]
-    box.delete([b"7"])
-    assert ("COPY", b"7", '"[Gmail]/Bin"') in calls and ("SEARCH", None, "X-GM-MSGID", "11") in calls
-    assert ("STORE", b"501", "+FLAGS", r"(\Deleted)") in calls and calls[-1] == ("expunge", '"[Gmail]/Bin"')
-    assert box.erase('x" OR ALL "') == 0  # never builds a search from a malformed address
+def test_signup_page_and_web_app_agree():
+    import re
+    from pathlib import Path
+    from aipulse import rss
+    root = Path(__file__).resolve().parent.parent
+    page = (root / "templates" / "index.html").read_text(encoding="utf-8")
+    script = (root / "apps-script" / "Code.gs").read_text(encoding="utf-8")
+    # The form's streams are the web app's streams, and the fields it posts are the ones the web app reads.
+    assert re.findall(r'type="checkbox" value="(\w+)"', page) == list(rss.FEEDS)
+    assert all(f"{n}:" in script for n in rss.FEEDS)
+    assert 'action: "subscribe", email, streams: streams.join(","), website' in page
+    assert all(f"p.{f}" in script for f in ("email", "streams", "website"))
+    assert "LIST_KEY" in script and not re.search(r"LIST_KEY\s*=\s*['\"]", script)  # the key is never in the code
+    assert 'type="email"' in page and "mailto:" not in page.split('id="subscribe"')[1].split("</dialog>")[0]

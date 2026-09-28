@@ -1,5 +1,6 @@
 # Every morning at 05:00 UTC (7:00 in Germany in summer): the day before's digest to every confirmed subscriber,
-# each with their own streams. The database is the one the site's 00:00 run saved (read only, never saved back).
+# each with their own streams (the list is in the sign-up web app, apps-script/Code.gs). The database is the one
+# the site's 00:00 run saved (read only, never saved back).
 # Before anything is sent the whole day is checked (aipulse/quality.py): any problem holds it for everyone and
 # alerts the project inbox, and the run fails. The log shows counts, never addresses.
 name: Daily digest
@@ -18,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: subscriptions  # never at the same time as the inbox run
+  group: digest
   cancel-in-progress: false
 
 jobs:
@@ -40,15 +41,9 @@ jobs:
           restore-keys: aipulse-db-v4-
           fail-on-cache-miss: true
 
-      - name: Answer new subscriptions first
-        if: ${{ !inputs.dry_run }}
-        env:
-          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
-          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
-        run: python -m aipulse subscribers
-
       - name: Check the day, then send it to every subscriber
         env:
           DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
           DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+          DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the confirmed readers from the sign-up web app
         run: python -m aipulse --db aipulse.db digest --subscribers ${{ inputs.dry_run && '--dry-run check.html' || '' }}

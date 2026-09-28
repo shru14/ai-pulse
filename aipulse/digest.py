@@ -3,8 +3,8 @@ and cards as the daily RSS feeds (rss.daily).
 
 Sent through the project's Gmail account (smtp.gmail.com, an app password), from GitHub Actions:
 DIGEST_EMAIL and DIGEST_APP_PASSWORD are repository secrets, never in the code. Every email says which
-streams the reader chose and how to change them or unsubscribe (also as a List-Unsubscribe header, which
-Gmail shows as an "Unsubscribe" button). No tracking pixels or tracked links: links go straight to the story.
+streams the reader chose and how to change them or unsubscribe (a subscriber's own one-click link, also as a
+List-Unsubscribe header, which mail apps show as an "Unsubscribe" button). No tracking pixels or tracked links: links go straight to the story.
 
     python -m aipulse digest --to someone@example.com [--streams releases,regulation] [--day 2026-09-27] [--dry-run page.html]
 """
@@ -52,10 +52,6 @@ SMTP_HOST = "smtp.gmail.com"
 
 def sender() -> str:
     return os.environ.get("DIGEST_EMAIL", "").strip()
-
-
-def _mailto(subject: str) -> str:
-    return f"mailto:{sender()}?subject={subject.replace(' ', '%20')}"
 
 
 def _mentioned(cards: list[dict], n: int = 5) -> list[tuple[str, int]]:
@@ -220,15 +216,16 @@ def _empty_note(name: str, day: date) -> str:
     return "Nothing new in this stream on this day."
 
 
-def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, str] | None:
-    """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day."""
+def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "") -> tuple[str, str, str] | None:
+    """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day.
+    `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site."""
     by_stream = by_streams(cards, streams, day)
     if not any(by_stream.values()):
         return None
     subject = f"AI Pulse daily · {long_day(day)}"
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
-    change = _mailto("CHANGE " + " ".join(streams))
-    stop = _mailto("UNSUBSCRIBE")
+    change = f"{rss.SITE}#subscribe"  # the sign-up form: the same address with new streams asks to confirm them
+    stop = unsubscribe or change
     open_text, open_html = _opening(by_stream, cards, streams, day)
     table_text, table_html = _ledger(by_stream, streams, day)
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
@@ -251,19 +248,21 @@ def build(cards: list[dict], streams: list[str], day: date) -> tuple[str, str, s
     return subject, "\n".join(text), html
 
 
-def _message(to: str, subject: str, text: str, html: str) -> EmailMessage:
+def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "") -> EmailMessage:
     msg = EmailMessage()
     msg["From"] = formataddr(("AI Pulse", sender()))
     msg["To"] = to  # one reader per email: nobody sees anyone else's address
     msg["Subject"] = subject
-    msg["List-Unsubscribe"] = f"<{_mailto('UNSUBSCRIBE')}>"
+    if unsubscribe.startswith("https://"):  # mail apps show an "Unsubscribe" button that works in one click
+        msg["List-Unsubscribe"] = f"<{unsubscribe}>"
+        msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
     return msg
 
 
-def send_all(emails: list[tuple[str, str, str, str]]) -> int:
-    """Send (to, subject, text, HTML) emails through the project's Gmail account over one connection.
+def send_all(emails: list[tuple]) -> int:
+    """Send (to, subject, text, HTML[, unsubscribe link]) emails through the project's Gmail account over one connection.
     Returns how many were sent; one failed address doesn't stop the rest."""
     address, password = sender(), os.environ.get("DIGEST_APP_PASSWORD", "").replace(" ", "")
     if not (address and password):

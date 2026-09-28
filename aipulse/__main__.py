@@ -62,12 +62,10 @@ def main():
     who = dg.add_mutually_exclusive_group(required=True)
     who.add_argument("--to", help="recipient address")
     who.add_argument("--subscribers", action="store_true",
-                     help="every confirmed subscriber, each with their streams (read from the project inbox)")
+                     help="every confirmed subscriber, each with their streams (from the sign-up web app)")
     dg.add_argument("--streams", default="releases,news,research,regulation,policy", help="comma-separated streams")
     dg.add_argument("--day", help="UTC day, YYYY-MM-DD (default: yesterday)")
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
-    sb = sub.add_parser("subscribers", help="answer new subscriptions in the project inbox, erase unsubscribed readers")
-    sb.add_argument("--dry-run", action="store_true", help="only read the inbox and print counts")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
 
@@ -190,8 +188,8 @@ def main():
             from . import subscribers
             # Each confirmed reader gets their own streams; nothing on a day their streams were empty.
             # Only counts are printed: addresses never appear in the (public) logs.
-            readers = subscribers.current(digest.sender(), os.environ.get("DIGEST_APP_PASSWORD", "").replace(" ", ""))
-            emails = [(to, *e) for to, chosen in readers.items() if (e := digest.build(cards, chosen, day))]
+            readers = subscribers.current(os.environ.get("DIGEST_LIST_KEY", ""), os.environ.get("DIGEST_SIGNUP_URL", ""))
+            emails = [(to, *e, stop) for to, (chosen, stop) in readers.items() if (e := digest.build(cards, chosen, day, stop))]
             if a.dry_run:
                 print(f"Checked, no problems: {len(emails)} of {len(readers)} subscribers would get the {day} digest {counts}")
             else:
@@ -204,9 +202,6 @@ def main():
         else:
             digest.send(a.to, *email)
             print(f"Checked, no problems. Sent: {email[0]} {counts}")
-    elif a.cmd == "subscribers":
-        from . import digest, subscribers
-        subscribers.sync(digest.sender(), os.environ.get("DIGEST_APP_PASSWORD", "").replace(" ", ""), a.dry_run)
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

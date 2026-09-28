@@ -84,14 +84,19 @@ header.top{gap:10px}
 .sub-streams legend{font-size:13px;font-weight:600;color:var(--muted);padding:0;margin-bottom:6px}
 .sub-streams label{display:flex;align-items:center;gap:7px;font-size:15px;cursor:pointer}
 .sub-streams input{width:17px;height:17px;accent-color:var(--accent)}
-.sub-go{display:block;text-align:center;background:var(--accent);color:var(--surface);font-weight:600;text-decoration:none;border-radius:10px;padding:11px 14px}
+.sub-label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.sub-email{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:16px var(--body);padding:0 12px;margin-bottom:14px}
+.sub-email:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.sub-trap{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.sub-go{display:block;width:100%;border:0;background:var(--accent);color:var(--surface);font:600 16px var(--body);border-radius:10px;padding:11px 14px;cursor:pointer}
 .sub-go:hover{filter:brightness(1.08)}
-.sub-go[aria-disabled="true"]{opacity:.45;pointer-events:none}
-.sub-how,.sub-small{font-size:13px;color:var(--muted);line-height:1.5;margin:10px 0 0}
-.sub-how b{color:var(--ink);font-weight:600}
-.sub-how code{font-family:var(--mono);font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 5px;word-break:break-word}
-.sub-copy{font:600 12px var(--body);border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);padding:1px 7px;cursor:pointer}
-.sub-small a{color:var(--accent)}
+.sub-go:disabled{opacity:.45;cursor:default}
+.sub-go:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sub-msg{min-height:0;margin:10px 0 0;font-size:14px;line-height:1.45}
+.sub-msg:empty{display:none}
+.sub-msg[data-kind="ok"]{background:var(--c-tool-soft);color:var(--ink);border-radius:8px;padding:9px 11px}
+.sub-msg[data-kind="error"]{color:var(--c-reg)}
+.sub-small{font-size:13px;color:var(--muted);line-height:1.5;margin:10px 0 0}
 .intro{display:flex;flex-direction:column;gap:8px;padding-block:18px 0}
 .lede{margin:0;max-width:70ch;color:var(--muted);font-size:16px;line-height:1.55}
 .lede strong{color:var(--ink);font-weight:600}
@@ -244,26 +249,28 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   </header>
   <dialog class="subscribe" id="subscribe" aria-labelledby="subscribe-title">
     <form method="dialog" class="sub-close-form"><button class="sub-close" aria-label="Close">×</button></form>
-    <h2 id="subscribe-title">Get the daily digest in your inbox</h2>
-    <p class="sub-lede">Every morning, the day before in AI in one email: every story tagged with what it is, a line of
-      summary and a link to the original. Free, no ads, no tracking.</p>
-    <fieldset class="sub-streams">
-      <legend>Your streams</legend>
-      <label><input type="checkbox" value="releases" checked> Releases</label>
-      <label><input type="checkbox" value="news" checked> Industry</label>
-      <label><input type="checkbox" value="research" checked> Research</label>
-      <label><input type="checkbox" value="regulation" checked> Regulation tracker</label>
-      <label><input type="checkbox" value="policy" checked> Policy</label>
-    </fieldset>
-    <a class="sub-go" id="subscribe-go" href="#">Subscribe by email</a>
-    <p class="sub-how">Your email app opens with a message to <b id="sub-address"></b> already written.
-      Just press send, and we'll reply to confirm. No email app? Send an email yourself with the subject
-      <code id="sub-subject"></code> <button type="button" class="sub-copy" id="sub-copy">Copy</button></p>
-    <p class="sub-small">Already subscribed? <a id="sub-change" href="#">Change to these streams</a> ·
-      <a id="sub-stop" href="#">Unsubscribe</a></p>
-    <p class="sub-small">We keep only your email address and the streams you chose, in the project's email account,
-      to send you the digest. Nothing is shared, tracked or sold. Unsubscribing deletes your address and every
-      email between us.</p>
+    <form class="sub-form" id="sub-form" novalidate>
+      <h2 id="subscribe-title">Get the daily digest in your inbox</h2>
+      <p class="sub-lede">Every morning, the day before in AI in one email: every story tagged with what it is, a line of
+        summary and a link to the original. Free, no ads, no tracking.</p>
+      <label class="sub-label" for="sub-email">Your email</label>
+      <input class="sub-email" id="sub-email" type="email" autocomplete="email" placeholder="you@example.com" required>
+      <input class="sub-trap" name="website" id="sub-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <fieldset class="sub-streams">
+        <legend>Your streams</legend>
+        <label><input type="checkbox" value="releases" checked> Releases</label>
+        <label><input type="checkbox" value="news" checked> Industry</label>
+        <label><input type="checkbox" value="research" checked> Research</label>
+        <label><input type="checkbox" value="regulation" checked> Regulation tracker</label>
+        <label><input type="checkbox" value="policy" checked> Policy</label>
+      </fieldset>
+      <button class="sub-go" id="subscribe-go" type="submit">Subscribe</button>
+      <p class="sub-msg" id="sub-msg" role="status" aria-live="polite"></p>
+      <p class="sub-small">We'll email you a link to confirm; nothing is sent until you click it. Already subscribed?
+        Enter your email with new streams to change them. Every digest has a one-click unsubscribe.</p>
+      <p class="sub-small">We keep only your email address and the streams you chose, in the project's Google account,
+        to send you the digest. Nothing is shared, tracked or sold. Unsubscribing deletes your address.</p>
+    </form>
   </dialog>
   <div class="intro">
     <p class="lede"><strong>Your briefing on what's happening in AI.</strong><br>AI Pulse reads company blogs,
@@ -747,29 +754,44 @@ $("theme").addEventListener("click", () => {
 systemDark.addEventListener("change", renderTheme);
 renderTheme();
 
-// Daily digest: a reader subscribes by emailing the project inbox from their own address (a static site keeps no
-// list). The subject is the command and the chosen streams; aipulse/subscribers.py reads it and replies.
-const DIGEST_ADDRESS = "projectaipulse@gmail.com";
+// Daily digest: the form posts the address and streams to the sign-up web app in the project's Google account
+// (apps-script/Code.gs), which emails a confirm link; nothing is sent until the reader clicks it.
+const SIGNUP_URL = "__SIGNUP_URL__";
 const subDialog = $("subscribe");
-const mailto = subject => "mailto:" + DIGEST_ADDRESS + "?subject=" + encodeURIComponent(subject)
-  + "&body=" + encodeURIComponent("Please send me AI Pulse daily. (Just press send: the subject says which streams.)");
-function renderSubscribe(){
-  const chosen = [...subDialog.querySelectorAll(".sub-streams input:checked")].map(i => i.value);
-  const subject = "SUBSCRIBE " + chosen.join(" ");
-  $("sub-address").textContent = DIGEST_ADDRESS;
-  $("sub-subject").textContent = subject;
-  $("subscribe-go").href = mailto(subject);
-  $("subscribe-go").setAttribute("aria-disabled", chosen.length ? "false" : "true");
-  $("sub-change").href = mailto("CHANGE " + chosen.join(" "));
-  $("sub-stop").href = "mailto:" + DIGEST_ADDRESS + "?subject=UNSUBSCRIBE";
-}
-subDialog.addEventListener("change", renderSubscribe);
-$("subscribe-open").addEventListener("click", () => { renderSubscribe(); subDialog.showModal(); });
+const chosenStreams = () => [...subDialog.querySelectorAll(".sub-streams input:checked")].map(i => i.value);
+function subMessage(text, kind){ $("sub-msg").textContent = text; $("sub-msg").dataset.kind = kind || ""; }
+function openSubscribe(){ subMessage(""); subDialog.showModal(); $("sub-email").focus(); }
+subDialog.addEventListener("change", () => { $("subscribe-go").disabled = !chosenStreams().length; });
+$("subscribe-open").addEventListener("click", openSubscribe);
 subDialog.addEventListener("click", e => { if(e.target === subDialog) subDialog.close(); });  // a click outside closes it
-$("sub-copy").addEventListener("click", async () => {
-  try{ await navigator.clipboard.writeText($("sub-subject").textContent); $("sub-copy").textContent = "Copied"; }
-  catch(e){ $("sub-copy").textContent = "Select and copy"; }
-  setTimeout(() => { $("sub-copy").textContent = "Copy"; }, 1800);
+if(location.hash === "#subscribe") openSubscribe();  // the "Change streams" link in every digest
+$("sub-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("sub-email").value.trim(), streams = chosenStreams();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return subMessage("Please enter a valid email address.", "error");
+  if(!streams.length) return subMessage("Pick at least one stream.", "error");
+  if(SIGNUP_URL.startsWith("__")) return subMessage("Sign-up opens soon.", "error");
+  $("subscribe-go").disabled = true;
+  subMessage("Sending…");
+  try{
+    const body = new URLSearchParams({action: "subscribe", email, streams: streams.join(","), website: $("sub-website").value});
+    const r = await (await fetch(SIGNUP_URL, {method: "POST", body})).json();
+    if(r.ok){
+      subMessage((r.change ? "Almost done: " : "Almost there: ") + "we've emailed a confirm link to " + email
+        + ". Click it" + (r.change ? " and your streams change." : " and you're subscribed.")
+        + " (Not there? Look in spam or promotions.)", "ok");
+      $("sub-email").value = "";
+    } else {
+      subMessage({email: "Please enter a valid email address.", streams: "Pick at least one stream.",
+                  full: "AI Pulse daily is full for now. Please try again in a few weeks.",
+                  busy: "We've sent many confirmations today. Please try again tomorrow."}[r.error]
+                 || "Something went wrong. Please try again.", "error");
+    }
+  }catch(err){
+    subMessage("Couldn't reach the sign-up service. Please try again in a moment.", "error");
+  }finally{
+    $("subscribe-go").disabled = !chosenStreams().length;
+  }
 });
 let t; $("q").addEventListener("input", e => { clearTimeout(t); t=setTimeout(()=>{ state.q=e.target.value; load(true); },250); });
 $("range").addEventListener("change", e => { state.range=Number(e.target.value); saveUI(); load(true); });

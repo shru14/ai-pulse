@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import brands, jurisdictions, rss, store
+from . import subscribers
 from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
 
@@ -83,6 +84,7 @@ def build(conn, out: str | Path) -> int:
 
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
+    page = subscribers.fill(page)
     (out / "index.html").write_text(page, encoding="utf-8")
     (out / ".nojekyll").write_text("")
     return len(cards)
