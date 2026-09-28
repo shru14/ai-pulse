@@ -1301,3 +1301,19 @@ def test_rss_daily_digest_per_stream():
     assert posts[0].findtext("pubDate") == "Mon, 28 Sep 2026 00:00:00 +0000"   # published once the day is over
     assert not ET.fromstring(rss.feed_xml("policy", cards, today=date(2026, 9, 28))).findall("channel/item")
 
+
+
+def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = lambda i, cat, added: {"id": f"c{i}", "title": f"Story {i} <b>", "summary": "What happened.", "url": f"https://ex.com/{i}",
+                                  "source": "Outlet", "category": cat, "date": added[:10], "added_at": added}
+    cards = [card(1, "tool", "2026-09-27T06:00:00+00:00"), card(2, "regulation", "2026-09-27T18:00:00+00:00"),
+             card(3, "news", "2026-09-27T12:00:00+00:00"), card(4, "tool", "2026-09-28T00:30:00+00:00")]
+    subject, text, html = digest.build(cards, ["releases", "regulation"], date(2026, 9, 27))
+    assert subject == "AI Pulse · Sun 27 Sep 2026: 2 stories"
+    assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
+    assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
+    assert "mailto:digest@example.com?subject=UNSUBSCRIBE" in html and "You chose: Releases, Regulation tracker" in html
+    assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email

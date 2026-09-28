@@ -1,0 +1,36 @@
+# Test only, on the "digest" branch: email yesterday's digest (all five streams) to the project's own inbox,
+# from the live site's saved database. Nothing is published and the database isn't saved back.
+# Delete this file before merging the branch.
+name: Digest test
+
+on:
+  push:
+    branches: [digest]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-test-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore the database (read only)
+        uses: actions/cache/restore@v4
+        with:
+          path: aipulse.db
+          key: aipulse-db-v4-${{ github.run_id }}
+          restore-keys: aipulse-db-v4-
+
+      - name: Send the test digest to the project inbox
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL"
