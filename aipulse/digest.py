@@ -323,18 +323,14 @@ def _word(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[list
     return text, html
 
 
-def _made_for(prefs: dict, left: list[dict], picked: int) -> str:
-    """The line telling a reader with choices what their email follows, and what it left out."""
+def _left_note(prefs: dict, left: list[dict]) -> str:
+    """The line telling a reader what their email left out, as they asked (their own picks are marked in place)."""
     from . import preferences
-    parts = []
-    if prefs.get("more") or prefs.get("words"):
-        wanted = ", ".join([*(prefs.get("more") or []), *(f"“{w}”" for w in prefs.get("words") or [])])
-        parts.append(f"More of {wanted}: " + (f"{picked} of your top 10." if picked else "nothing today, so here are the day's biggest."))
-    if left:
-        why = sorted({t for c in left for t in preferences.labels(c) & set(prefs["less"])})
-        parts.append(f"Left out, as you asked: {len(left)} {'story' if len(left) == 1 else 'stories'} ({', '.join(why[:4])})"
-                     f"; they're in the full email.")
-    return " ".join(parts)
+    if not left:
+        return ""
+    why = sorted({t for c in left for t in preferences.labels(c) & set(prefs["less"])})
+    return (f"Left out, as you asked: {len(left)} {'story' if len(left) == 1 else 'stories'} ({', '.join(why[:4])}); "
+            f"they're in the full email.")
 
 
 def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date,
@@ -365,11 +361,9 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         mine = sorted([c for c in todays if id(c) in picks], key=_rank, reverse=True)[:PICKS]
         biggest = [c for c in top + sorted(todays, key=_rank, reverse=True) if c not in mine]
         top = mine + list({id(c): c for c in biggest}.values())[:TOP - len(mine)]
-    picked = sum(1 for c in top if id(c) in picks)
     title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
-             else f"Here are your {len(top)}: {picked} of your choice, then the day's biggest." if picked
              else f"Here are the {len(top)} that mattered most.")
-    made_for = _made_for(prefs, left or [], picked) if (tuned or left) else ""
+    made_for = _left_note(prefs, left or [])
     # In order: the count, the word of the day, the full email, then the stories
     word_text, word_html = _word(cards, day, prefs)
     lines = [hello, "", intro, *([made_for] if made_for else []), "", *word_text, "",

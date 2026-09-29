@@ -1955,11 +1955,12 @@ def test_each_reader_gets_their_own_top_10(monkeypatch):
     # no choices: exactly today's email
     assert digest.build(cards, ["news"], day, prefs={"more": [], "less": [], "words": []}) == everyone
     _, text, html = digest.build(cards, ["news"], day, prefs={"more": ["Robotics"], "less": [], "words": ["Kerala"]})
-    top = text.split("Here are your 10:")[1].split("THE REST OF THE DAY")[0]
+    assert "Here are the 10 that mattered most." in text and "of your top 10" not in text  # picks are marked, not announced
+    top = text.split("Here are the 10 that mattered most.")[1].split("THE REST OF THE DAY")[0]
     yours = [l for l in top.splitlines() if "[Your choice]" in l]
     assert len(yours) == digest.PICKS and "Big story 0" in top and "Big story 4" in top  # 5 of theirs, then the biggest
     assert "Kerala launches" in top  # their own words, in the headline
-    assert "More of Robotics, “Kerala”: 5 of your top 10." in text and "Your choice</span>" in html
+    assert "Your choice</span>" in html and "Left out" not in text  # nothing left out: no note
     # left out: never in their email, counted, and still in the full email
     _, text, _ = digest.build(cards, ["news"], day, prefs={"more": [], "less": ["Tutorial", "Business & work"], "words": []})
     assert "How to fine-tune" not in text and "Left out, as you asked: 3 stories (Tutorial); they're in the full email." in text
