@@ -606,7 +606,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll", "feeds"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll", "feeds", "daily"}
     assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
 
 
@@ -1747,3 +1747,20 @@ def test_daily_email_shows_the_ten_that_mattered_then_headlines(monkeypatch):
     assert "Releases (1 story)" in rest and "In the top 10 above." in rest
     assert "+5 more: https://shru14.github.io/ai-pulse/#news (incl. 1 tutorial)" in rest  # 8 of 15 in the top, 3 listed
     assert "Choose the full email" not in html and html.count("<tr>") >= 5  # the top ten in rows of two
+
+
+def test_every_email_links_to_the_days_full_email(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = lambda i, cat: {"id": f"f{i}", "title": f"Story {i}", "summary": "", "url": f"https://ex.com/{i}",
+                           "source": "S", "category": cat, "date": "2026-09-28", "added_at": "2026-09-28T10:00:00+00:00"}
+    cards = [card(i, "research") for i in range(3)] + [card(9, "tool")]
+    _, text, html = digest.build(cards, ["research"], date(2026, 9, 28))  # a Research-only reader
+    assert "https://shru14.github.io/ai-pulse/daily/2026-09-28.html" in text + html
+    assert "A lighter day in your streams: 3 stories" in text and "ALL 3 STORIES TODAY" in text
+    # the page itself: every stream, the full table, a sign-up line instead of a reader's own settings
+    _, text, html = digest.build(cards, ["releases", "news", "research", "regulation", "policy"], date(2026, 9, 28),
+                                 layout="full", web=True)
+    assert "Type</th>" in html and "Story 9" in text and "Get AI Pulse daily in your inbox" in text
+    assert "Unsubscribe" not in text and "You chose" not in text
