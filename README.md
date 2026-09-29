@@ -23,7 +23,7 @@ summaries are the publishers' own text, and sorting is keyword rules.
 - **Filters:** by stream, region, country and time range; search covers headlines, summaries, tags and authors back to 2023.
 - **One card per event:** the same story from several outlets is grouped, led by the company's own post when there is one.
 - **RSS:** one feed per stream, one post a day ([Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml), [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml)).
-- **Daily email:** yesterday's stories in one table, every story tagged by type, sent at 05:00 UTC to readers who confirmed their sign-up.
+- **Daily email:** yesterday's stories in one table, every story tagged by type, sent each morning from 05:17 UTC to readers who confirmed their sign-up.
 - **Quality check:** before sending, every story is checked (sorting, text, links, duplicates, unusual counts); any problem holds the email for everyone and alerts the project inbox.
 - **Subscriptions:** email and streams entered on the site, confirmed by one link, one-click unsubscribe in every email; addresses stay in the project's Google account, never in this repository or its logs.
 
@@ -86,7 +86,7 @@ Other commands: `collect --labs`, `bills`, `backfill`, `reclassify`, `regroup`, 
 ## Hosting
 
 - **Site:** `.github/workflows/pages.yml` collects and publishes to GitHub Pages every 6 hours and on every push to `main`, with a quick run of lab and company blogs every 30 minutes.
-- **Daily email:** `.github/workflows/digest.yml` at 05:00 UTC (secrets `DIGEST_EMAIL`, `DIGEST_APP_PASSWORD`, `DIGEST_LIST_KEY`).
+- **Daily email:** `.github/workflows/digest.yml`, four tries each morning from 05:17 UTC, sent once (secrets `DIGEST_EMAIL`, `DIGEST_APP_PASSWORD`, `DIGEST_LIST_KEY`).
 - **Sign-ups:** `apps-script/Code.gs`, a Google Apps Script web app in the project's Google account.
 
 ## Layout

@@ -1,13 +1,17 @@
-# Every morning at 05:00 UTC (7:00 in Germany in summer): the day before's digest to every confirmed subscriber,
-# each with their own streams (the list is in the sign-up web app, apps-script/Code.gs). The database is the one
-# the site's 00:00 run saved (read only, never saved back).
-# Before anything is sent the whole day is checked (aipulse/quality.py): any problem holds it for everyone and
-# alerts the project inbox, and the run fails. The log shows counts, never addresses.
+# Every morning: the day before's digest to every confirmed subscriber, each with their own streams (the list is in
+# the sign-up web app, apps-script/Code.gs). The database is the one the site's night runs saved (read only).
+# GitHub starts scheduled runs late or drops them when it's busy, so there are four chances, off the hour; the first
+# one that runs handles the day and leaves a marker in the Actions cache, and the others see it and stop. A day the
+# quality check (aipulse/quality.py) holds counts as handled too: the project inbox gets one alert, not four.
+# The log shows counts, never addresses.
 name: Daily digest
 
 on:
   schedule:
-    - cron: "0 5 * * *"
+    - cron: "17 5 * * *"
+    - cron: "47 5 * * *"
+    - cron: "23 6 * * *"
+    - cron: "53 7 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -27,13 +31,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Which day
+        id: day
+        run: echo "day=$(date -u -d yesterday +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Already handled today?
+        id: done
+        if: ${{ !inputs.dry_run }}
+        uses: actions/cache/restore@v4
+        with:
+          path: digest-sent
+          key: digest-sent-${{ steps.day.outputs.day }}
+          lookup-only: true
+
       - uses: actions/checkout@v4
+        if: steps.done.outputs.cache-hit != 'true'
 
       - uses: actions/setup-python@v5
+        if: steps.done.outputs.cache-hit != 'true'
         with:
           python-version: "3.12"
 
       - name: Restore the database (read only)
+        if: steps.done.outputs.cache-hit != 'true'
         uses: actions/cache/restore@v4
         with:
           path: aipulse.db
@@ -42,8 +62,28 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Check the day, then send it to every subscriber
+        id: send
+        if: steps.done.outputs.cache-hit != 'true'
         env:
           DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
           DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
           DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the confirmed readers from the sign-up web app
-        run: python -m aipulse --db aipulse.db digest --subscribers ${{ inputs.dry_run && '--dry-run check.html' || '' }}
+        run: |
+          set +e
+          python -m aipulse --db aipulse.db digest --subscribers --day ${{ steps.day.outputs.day }} ${{ inputs.dry_run && '--dry-run check.html' || '' }}
+          code=$?
+          # 0 = sent, 3 = held by the quality check (alert sent): either way the day is handled. Anything else (the
+          # list or Gmail unreachable) leaves it for the next chance.
+          if [ "$code" = 0 ] || [ "$code" = 3 ]; then echo "handled=1" >> "$GITHUB_OUTPUT"; fi
+          exit $code
+
+      - name: Mark the day as handled
+        if: always() && !inputs.dry_run && steps.send.outputs.handled == '1'
+        run: echo "${{ steps.day.outputs.day }}" > digest-sent
+
+      - name: Save the marker
+        if: always() && !inputs.dry_run && steps.send.outputs.handled == '1'
+        uses: actions/cache/save@v4
+        with:
+          path: digest-sent
+          key: digest-sent-${{ steps.day.outputs.day }}
