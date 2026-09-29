@@ -220,6 +220,7 @@ def _empty_note(name: str, day: date) -> str:
 # The short email: the day's most-reported stories in full, then each stream's next few headlines.
 TOP = 10          # stories in "10 things that mattered today", 5 rows of 2
 HEADLINES = 3     # further headlines per stream
+LIGHT = 12        # this many stories or fewer in a reader's streams: all of them in the table
 SIDE_KINDS = {"tutorial", "event", "blog"}  # counted in the short email, not listed
 
 
@@ -246,18 +247,27 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     stories = sum(1 + len(c.get("also") or []) for c in todays)
     stream_of = {id(c): n for n in streams for c in by_stream[n]}
     hello = f"Let's explore what happened in AI on {long_day(day)}."
-    intro = (f"{stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
-             f"{'source' if len(outlets) == 1 else 'sources'}. Here are the ones that mattered most; the rest of the "
-             "day is one tap away.")
+    counted = (f"{stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
+               f"{'source' if len(outlets) == 1 else 'sources'}")
+    light = len(todays) <= LIGHT  # a lighter day in these streams: every story in the table, said plainly
+    intro = (f"A lighter day in your streams: {counted}, all of them below." if light else
+             f"{counted}. Here are the ones that mattered most; the rest of the day is one tap away.")
     quiet = _quiet(by_stream, cards, streams, day)
-    top = sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP]
-    lines = [hello, "", intro, *([quiet] if quiet else []), "", f"{len(top)} THINGS THAT MATTERED TODAY"]
+    everything = full_page(day)  # every story of the day, whatever streams this reader chose
+    top = (sorted(todays, key=_rank, reverse=True) if light else
+           sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP])
+    title = (f"All {len(top)} {'story' if len(top) == 1 else 'stories'} today" if light
+             else f"{len(top)} things that mattered today")
+    lines = [hello, "", intro, f"Want everything? The full email, every story of the day in one table: {everything}",
+             *([quiet] if quiet else []), "", title.upper()]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
     html = [f'<div style="font-size:21px;font-weight:bold;line-height:1.3;margin:0 0 6px">{escape(hello)}</div>'
             f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
+            f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
+            f'Want everything? See the full email: every story of the day in one table →</a></p>'
             + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
-            + head(f"{len(top)} things that mattered today")]
+            + head(title)]
     cells = []
     for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])
@@ -291,7 +301,8 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         count = f"{len(by_stream[n])} {'story' if len(by_stream[n]) == 1 else 'stories'}"
         lines.append(f"{stream} ({count})")
         if not by_stream[n] or not rest:
-            note = _empty_note(n, day) if not by_stream[n] else f"In the top {len(top)} above."
+            note = (_empty_note(n, day) if not by_stream[n] else "In the list above." if light
+                    else f"In the top {len(top)} above.")
             lines.append(f"  {note}")
             heads = f'<div style="font-size:13px;color:{GREY}">{escape(note)}</div>'
         else:
@@ -311,12 +322,18 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     return lines, "".join(html)
 
 
+def full_page(day: date) -> str:
+    """The web page with that day's full email: every story, every stream (static.py publishes it)."""
+    return f"{rss.SITE}daily/{day.isoformat()}.html"
+
+
 def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "",
-          layout: str = "short") -> tuple[str, str, str] | None:
+          layout: str = "short", web: bool = False) -> tuple[str, str, str] | None:
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day.
     `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site.
     `layout`: "short", the daily email (the ten stories that mattered most, then each stream's headlines), or
-    "full" (every story in one tagged table)."""
+    "full" (every story in one tagged table). `web`: the page version of a full email (daily/ on the site),
+    with a sign-up line in place of a reader's own settings."""
     by_stream = by_streams(cards, streams, day)
     if not any(by_stream.values()):
         return None
@@ -331,21 +348,24 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
         open_text, open_html = _opening(by_stream, cards, streams, day)
         table_text, table_html = _ledger(by_stream, streams, day)
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
-    text = [*open_text, *table_text, "", f"You chose: {chose}.",
-            "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
-            f"Change streams: {change}", f"Unsubscribe: {stop}", f"AI Pulse is free and non-commercial: {rss.SITE}"]
+    settings = (["Get AI Pulse daily in your inbox: " + change] if web else
+                [f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
+                 f"Change streams: {change}", f"Unsubscribe: {stop}"])
+    text = [*open_text, *table_text, "", *settings, f"AI Pulse is free and non-commercial: {rss.SITE}"]
+    settings_html = (f'<a href="{escape(change)}" style="color:{GREY}">Get AI Pulse daily in your inbox</a><br>' if web else
+                     f'You chose: {escape(chose)}.<br>RSS: '
+                     + " · ".join(f'<a href="{escape(url)}" style="color:{GREY}">{escape(name)}</a>' for name, url in feeds)
+                     + f'<br><a href="{escape(change)}" style="color:{GREY}">Change streams</a> · '
+                       f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a><br>')
     html = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '</head><body style="margin:0;padding:0;background:#eef0f3">'
+            f'<title>{escape(subject)}</title></head><body style="margin:0;padding:0;background:#eef0f3">'
             '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:12px 8px 24px">'
             '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;'
             f'border-radius:6px;font-family:Arial,sans-serif;color:{INK}"><tr><td style="padding:22px 20px 10px">'
             + open_html + table_html
             + f'<p style="margin-top:28px;padding-top:12px;border-top:1px solid #e3e5e8;color:{GREY};font-size:13px;'
-              f'line-height:1.6">You chose: {escape(chose)}.<br>RSS: '
-            + " · ".join(f'<a href="{escape(url)}" style="color:{GREY}">{escape(name)}</a>' for name, url in feeds)
-            + f'<br><a href="{escape(change)}" style="color:{GREY}">Change streams</a> · '
-              f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a><br>'
-              f'AI Pulse is free and non-commercial · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'
+              f'line-height:1.6">' + settings_html
+            + f'AI Pulse is free and non-commercial · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'
               '</td></tr></table></td></tr></table></body></html>')
     return subject, "\n".join(text), html
 

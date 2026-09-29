@@ -14,7 +14,7 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, jurisdictions, rss, store
+from . import brands, digest, jurisdictions, rss, store
 from . import subscribers
 from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
@@ -36,6 +36,7 @@ def search_text(conn) -> dict[str, str]:
 
 
 RECENT_DAYS = 92  # a little over the page's longest range short of "All time"
+DAILY_PAGES = 14  # days whose full email is published under daily/ (each email links to its day's page)
 
 
 def build(conn, out: str | Path) -> int:
@@ -56,6 +57,15 @@ def build(conn, out: str | Path) -> int:
     (out / "feeds").mkdir()
     for name in rss.FEEDS:
         (out / "feeds" / f"{name}.xml").write_bytes(rss.feed_xml(name, cards))
+    # Each recent day's full email (every story, every stream, one tagged table) as a page: every daily email
+    # links to it, whatever streams its reader chose.
+    (out / "daily").mkdir()
+    today = datetime.now(timezone.utc).date()
+    for back in range(1, DAILY_PAGES + 1):
+        day = today - timedelta(days=back)
+        page = digest.build(cards, list(rss.FEEDS), day, layout="full", web=True)
+        if page:
+            (out / "daily" / f"{day.isoformat()}.html").write_text(page[2], encoding="utf-8")
     for c in cards:
         c["s"] = text.get(c["id"], "")
         for k in ("added_at", "cluster"):
