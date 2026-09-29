@@ -271,11 +271,12 @@ PROFESSORS = [
 ]
 
 # Big tech and frontier AI labs. Patterns match a Hugging Face organization or a team author name
-# such as "DeepSeek-AI" or "Qwen Team" (case-insensitive).
+# such as "DeepSeek-AI" or "Qwen Team" (case-insensitive). Names are spelled as the news tags spell them
+# (classify.COMPANY_TERMS), so a company is one tag on the site and one choice for readers.
 COMPANIES = {
     "Google": r"\bgoogle|deepmind|gemini team", "Microsoft": r"microsoft",
     "Meta": r"^meta\b|facebook|meta[- ]?(ai|fair|llama)", "Apple": r"\bapple\b", "Amazon": r"amazon|\baws\b",
-    "NVIDIA": r"nvidia", "IBM": r"\bibm\b", "Intel": r"^intel\b|intel ?labs", "Qualcomm": r"qualcomm",
+    "Nvidia": r"nvidia", "IBM": r"\bibm\b", "Intel": r"^intel\b|intel ?labs", "Qualcomm": r"qualcomm",
     "Salesforce": r"salesforce", "Adobe": r"adobe", "Samsung": r"samsung", "Sony": r"\bsony\b",
     "LG AI Research": r"\blg ?ai|^lgai", "Huawei": r"huawei|noah.?s ark",
     "Alibaba": r"alibaba|qwen|tongyi|damo academy", "Ant Group": r"\bant ?group|inclusionai|antgroup",
@@ -283,7 +284,7 @@ COMPANIES = {
     "Kuaishou": r"kuaishou|\bkwai", "Meituan": r"meituan|longcat", "DeepSeek": r"deepseek",
     "Moonshot AI": r"moonshot|kimi team", "Zhipu AI": r"zhipu|z\.ai|glm team", "MiniMax": r"^minimax",
     "StepFun": r"stepfun", "OpenAI": r"openai", "Anthropic": r"anthropic", "xAI": r"^xai\b|xai-org",
-    "Mistral AI": r"mistral", "Cohere": r"cohere", "NAVER": r"naver", "Kakao": r"kakao", "Sakana AI": r"sakana",
+    "Mistral": r"mistral", "Cohere": r"cohere", "NAVER": r"naver", "Kakao": r"kakao", "Sakana AI": r"sakana",
     "Databricks": r"databricks", "Snowflake": r"snowflake",
 }
 

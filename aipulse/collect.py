@@ -384,14 +384,21 @@ def _is_paper(it: dict) -> bool:
     return it["category"] == "research" or "arxiv.org/abs/" in it["url"]
 
 
+_RENAMED = {"NVIDIA": "Nvidia", "Mistral AI": "Mistral"}
+
+
 def retag(conn) -> int:
     """Recompute keyword tags (companies, places, topics) for stored stories. Papers and expert pieces
     keep their person / company tags, and every paper carries "Research". Returns how many changed."""
     changed = 0
     for it in store.query(conn, None, None, None, limit=100000):
         if it["category"] == "research" or it["action"] == EXPERT:
-            if _is_paper(it) and RESEARCH_TAG not in it["tags"]:
-                store.set_tags(conn, it["id"], [*it["tags"], RESEARCH_TAG])
+            # company names as the news tags spell them (papers stored as "NVIDIA", "Mistral AI")
+            tags = list(dict.fromkeys(_RENAMED.get(t, t) for t in it["tags"]))
+            if _is_paper(it) and RESEARCH_TAG not in tags:
+                tags.append(RESEARCH_TAG)
+            if tags != it["tags"]:
+                store.set_tags(conn, it["id"], tags)
                 changed += 1
             continue
         text = "" if brief.is_draft(it["summary"]) else it["summary"]
