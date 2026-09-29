@@ -1879,9 +1879,9 @@ def test_tags_only_where_the_story_means_it():
     assert jurisdictions.detect("New South Wales trials AI in schools") != ["GB"]
 
 
-def test_the_preference_form_offers_every_label_and_tag_the_site_shows():
+def test_the_preference_form_is_short_and_its_search_finds_every_tag():
     from datetime import date
-    from aipulse import preferences
+    from aipulse import classify, preferences
     cards = [
         {"category": "news", "kind": "tutorial", "title": "A coding guide to Qwen agents", "summary": "", "date": "2026-09-28",
          "tags": ["Alibaba", "China", "Agents"]},
@@ -1890,13 +1890,29 @@ def test_the_preference_form_offers_every_label_and_tag_the_site_shows():
         {"category": "research", "title": "A paper", "summary": "", "date": "2026-01-01", "tags": ["Philip Torr", "Nvidia", "Research"]},
     ]
     o = preferences.options(cards, date(2026, 9, 29))
-    got = {g["name"]: g["items"] for g in o["groups"]}
-    assert got["Story types"][:2] == ["Proposal", "Tutorial"] and "Standard" in got["Story types"]  # used lately first
-    assert got["Companies"] == ["Alibaba", "Nvidia"]  # every tag, even one not seen lately
-    assert "Kenya" in got["Countries"] and got["People"] == ["Philip Torr"] and "Agents" in got["Topics"]
-    assert all(isinstance(t, str) for g in o["groups"] for t in g["items"])  # labels only, no counts
-    assert "Research" not in {t for g in got.values() for t in g}  # the Research stream is the choice for papers
-    assert set(o["gentle"]) <= {t for g in got.values() for t in g} | {"AI-incident", "Misuse", "Deepfakes", "Defense", "Jobs & Labor"}
+    shown = {g["name"]: g["items"] for g in o["groups"]}
+    search = {g["name"]: g.get("search", []) for g in o["groups"]}
+    # a few choices per section...
+    assert shown["Story types"][:2] == ["News", "AI-incident"] and "Standard" in shown["Story types"]
+    assert shown["Topics"] == list(preferences.THEMES) and len(shown["Topics"]) == 8
+    assert shown["Companies"] == ["Alibaba", "Nvidia"]  # the most in the news; the rest through the search
+    assert shown["Places"] == ["Africa", "Asia", "Europe", "North America", "South America", "Oceania", "International bodies"]
+    assert shown["People"] == [] and search["People"] == ["Philip Torr"]
+    # ...and the search finds the rest: every topic, every country
+    assert {"Agents", "Law"} <= set(search["Topics"]) and {"Kenya", "Slovakia", "Russia"} <= set(search["Places"])
+    assert set(classify.TOPIC_TERMS) <= set(preferences.THEME_OF)  # every topic tag is in a theme
+    assert preferences.THEME_OF["Funding"] == "Business & work" and preferences.THEME_OF["Deepfakes"] == "Safety & security"
+    assert preferences.CONTINENT_OF["Kenya"] == "Africa" and preferences.CONTINENT_OF["Israel"] == "Asia"
+    assert preferences.CONTINENT_OF["Mexico"] == "North America" and preferences.CONTINENT_OF["European Union"] == "Europe"
+    # every place has a continent, except Russia: no region, as on the site; chosen by name
+    assert [p for p, c in preferences.CONTINENT_OF.items() if not c] == ["Russia"]
+    # a story carries its theme and continent too, so choosing "Asia" or a theme reaches it
+    assert {"Agents", "Models & products", "China", "Asia", "Tutorial"} <= preferences.labels(cards[0])
+    assert all(isinstance(t, str) for g in o["groups"] for t in g["items"] + g.get("search", []))  # labels only, no counts
+    assert "Research" not in {t for g in o["groups"] for t in g["items"] + g.get("search", [])}
+    everything = {t for g in o["groups"] for t in g["items"] + g.get("search", [])}
+    assert {"Tutorial", "Kenya", "Alibaba", "Nvidia", "Philip Torr", "Agents", "Law"} <= everything  # nothing out of reach
+
 
 
 def test_page_script_declares_each_name_once():

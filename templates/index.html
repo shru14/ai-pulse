@@ -126,6 +126,7 @@ header.top{gap:10px}
 .pref-search{width:100%;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:15px var(--body);padding:0 10px;margin-bottom:6px}
 .pref-search:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
 .pref-group h4{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+.pref-hint{margin:5px 0 0;font-size:12px;color:var(--muted)}
 .pref-chips{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
 .chip{font:13px/1.35 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer}
 .chip:hover{border-color:var(--muted)}
@@ -369,7 +370,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
         <summary>Make it yours <span class="opt">(optional)</span></summary>
         <div class="pref-in">
           <p class="pref-note">Pick what you want more of and what to leave out, from the same labels and tags you see
-            on the stories. Your top 10 is then 5 stories of your choice and 5 of the day's biggest. What you leave
+            on the stories; the search finds any of them. Your top 10 is then 5 stories of your choice and 5 of the day's biggest. What you leave
             out never appears. The link to the full email always has every story.</p>
           <div class="pref-chosen" id="pref-chosen"></div>
           <div class="pref-mode" role="group" aria-label="What a tap does">
@@ -378,11 +379,13 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
           </div>
           <label class="gentle"><input type="checkbox" id="pref-gentle"> <span><b>Gentler start:</b> leave out
             <span id="gentle-list">AI incidents, misuse, deepfakes, defense, and jobs &amp; labor</span> stories</span></label>
-          <input class="pref-search" id="pref-q" type="search" placeholder="Find a topic, company, country or person…" aria-label="Find a label or tag">
+          <input class="pref-search" id="pref-q" type="search" placeholder="Find a topic, company, person or any country…" aria-label="Find a label or tag">
           <div id="pref-groups"><p class="pref-note">Loading…</p></div>
           <label class="pref-words-label" for="pref-words">Your own words <span class="opt">(optional, up to 5)</span></label>
-          <input class="pref-words" id="pref-words" type="text" maxlength="160" placeholder="e.g. Kerala, Tesla Optimus" autocomplete="off">
-          <p class="pref-limit">Stories whose headline has one of these count as your choice.</p>
+          <input class="pref-words" id="pref-words" type="text" maxlength="160" placeholder='"Kerala", "Tesla Optimus"' autocomplete="off">
+          <p class="pref-limit">Put each word or phrase in quotes and separate them with commas, like <b>"Kerala", "Tesla Optimus"</b>.
+            Stories whose headline has one of them count as your choice.</p>
+          <p class="pref-limit" id="pref-words-seen" aria-live="polite"></p>
         </div>
       </details>
       <button class="sub-go" id="subscribe-go" type="submit">Subscribe</button>
@@ -941,13 +944,13 @@ if(subLink){
 // "Make it yours": one picker over every label and tag the site shows (tags.json, built with the site from the
 // stories themselves, the most used this month first; no counts shown). The mode says whether a tap adds to "More of" or "Leave out";
 // a label is never in both.
-const PREF = {more: new Set(), less: new Set(), mode: "more", groups: null, gentle: [], all: new Set(), q: ""};
+const PREF = {more: new Set(), less: new Set(), mode: "more", groups: null, gentle: [], themes: {}, all: new Set(), q: ""};
 const PREF_MAX_MORE = 10, PREF_MAX_WORDS = 5, PREF_SHOWN = 12;
 async function loadPrefOptions(){
   if(PREF.groups) return;
   try{
     const d = await (await fetch("tags.json", {cache: "no-cache"})).json();
-    PREF.groups = d.groups; PREF.gentle = d.gentle;
+    PREF.groups = d.groups; PREF.gentle = d.gentle; PREF.themes = d.themes || {};
     $("gentle-list").textContent = d.gentle.map(t => t === "AI-incident" ? "AI incidents" : t.toLowerCase()).join(", ");
   }catch(err){
     $("pref-groups").replaceChildren(el("p","pref-note","Couldn't load the choices. Try reloading the page."));
@@ -957,6 +960,7 @@ async function loadPrefOptions(){
 }
 function prefChip(label){
   const b = el("button","chip",label); b.type="button";
+  if(PREF.themes[label]) b.title = "Covers " + PREF.themes[label].join(", ");
   const side = PREF.more.has(label) ? "more" : PREF.less.has(label) ? "less" : "";
   if(side) b.classList.add("pick-" + side);
   b.setAttribute("aria-pressed", String(side === PREF.mode));
@@ -990,25 +994,42 @@ function renderPrefs(){
   const q = fold(PREF.q.trim()), box = $("pref-groups"); box.replaceChildren();
   let any = false;
   for(const g of PREF.groups){
-    const items = g.items.filter(t => !q || fold(t).includes(q));
-    if(!items.length) continue;
-    any = true;
+    // Each section shows a few choices (themes, continents, the companies most in the news); a search also finds
+    // the rest (g.search): any topic, company, country or scholar the site tags.
+    const pool = q && g.search ? [...g.items, ...g.search.filter(t => !g.items.includes(t))] : g.items;
+    const items = pool.filter(t => !q || fold(t).includes(q));
+    if(!items.length && (q || !g.note)) continue;
+    if(items.length) any = true;
     const sec = el("div","pref-group"); sec.append(el("h4",null,g.name));
-    const chips = el("div","pref-chips");
-    const open = q || PREF.all.has(g.name);
-    items.slice(0, open ? items.length : PREF_SHOWN).forEach(t => chips.append(prefChip(t)));
-    if(!open && items.length > PREF_SHOWN){
-      const more = el("button","pref-all","Show all " + items.length); more.type="button";
-      more.addEventListener("click", () => { PREF.all.add(g.name); renderPrefs(); });
-      chips.append(more);
+    if(items.length){
+      const chips = el("div","pref-chips");
+      const open = PREF.all.has(g.name);
+      items.slice(0, open ? items.length : PREF_SHOWN).forEach(t => chips.append(prefChip(t)));
+      if(!open && items.length > PREF_SHOWN){
+        const more = el("button","pref-all","Show all " + items.length); more.type="button";
+        more.addEventListener("click", () => { PREF.all.add(g.name); renderPrefs(); });
+        chips.append(more);
+      }
+      sec.append(chips);
     }
-    sec.append(chips); box.append(sec);
+    if(!q && g.note) sec.append(el("p","pref-hint",g.note));
+    box.append(sec);
   }
-  if(!any) box.append(el("p","pref-note","Nothing on the site is tagged like that yet. Add it under “Your own words” below."));
+  if(q && !any) box.append(el("p","pref-note","Nothing on the site is tagged like that yet. Add it under “Your own words” below."));
 }
+// Own words are typed as "Kerala", "Tesla Optimus": each quoted word or phrase is one choice (straight or curly
+// quotes). Text left outside quotes still counts, split at commas, so nothing typed is lost.
 function prefWords(){
-  return $("pref-words").value.split(",").map(w => w.trim().replace(/\s+/g, " ")).filter(w => w.length > 1).slice(0, PREF_MAX_WORDS);
+  const raw = $("pref-words").value;
+  const quoted = [...raw.matchAll(/["“”]([^"“”]+)["“”]/g)].map(m => m[1]);
+  const rest = raw.replace(/["“”][^"“”]*["“”]/g, ",").split(",");
+  return [...new Set([...quoted, ...rest].map(w => w.trim().replace(/\s+/g, " ")).filter(w => w.length > 1))].slice(0, PREF_MAX_WORDS);
 }
+function showWords(){
+  const words = prefWords();
+  $("pref-words-seen").textContent = words.length ? "We'll look for: " + words.map(w => "“" + w + "”").join(", ") : "";
+}
+$("pref-words").addEventListener("input", showWords);
 function prefFields(){  // what the sign-up web app stores with the reader's streams
   return {more: [...PREF.more].join("|"), less: [...PREF.less].join("|"), words: prefWords().join("|")};
 }
