@@ -55,8 +55,8 @@ def group_of(label: str) -> str:
 
 
 def options(cards: list[dict], today: date | None = None) -> dict:
-    """tags.json: every label any stored story has, grouped as the form shows them, each with how many stories
-    had it in the last DAYS days (the most used first; the rest, down to those not seen lately, after them)."""
+    """tags.json: every label any stored story has, grouped as the form shows them. Within a group, the labels
+    stories used most in the last DAYS days come first (no counts are shown), then the rest A to Z."""
     since = ((today or date.today()) - timedelta(days=DAYS)).isoformat()
     every, recent = set(TYPES), Counter()
     for c in cards:
@@ -66,7 +66,7 @@ def options(cards: list[dict], today: date | None = None) -> dict:
             recent.update(mine)
     groups = {g: [] for g in GROUPS}
     for label in every:
-        groups[group_of(label)].append({"t": label, "n": recent[label]})
+        groups[group_of(label)].append(label)
     for items in groups.values():
-        items.sort(key=lambda i: (-i["n"], i["t"].lower()))
-    return {"days": DAYS, "gentle": GENTLE, "groups": [{"name": g, "items": groups[g]} for g in GROUPS]}
+        items.sort(key=lambda t: (-recent[t], t.lower()))
+    return {"gentle": GENTLE, "groups": [{"name": g, "items": groups[g]} for g in GROUPS]}

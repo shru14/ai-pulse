@@ -129,10 +129,8 @@ header.top{gap:10px}
 .pref-chips{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
 .chip{font:13px/1.35 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer}
 .chip:hover{border-color:var(--muted)}
-.chip .n{font:11px var(--mono);color:var(--muted);margin-left:4px}
 .chip.pick-more{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 .chip.pick-less{background:var(--c-reg);border-color:var(--c-reg);color:var(--surface)}
-.chip.pick-more .n,.chip.pick-less .n{color:inherit;opacity:.8}
 /* the tick and cross are drawn, not typed: a symbol font's taller line would stretch the chip */
 .chip.pick-less::before,.chip.pick-more::before{content:"";display:inline-block;width:9px;height:9px;margin-right:5px;background:currentColor;
   -webkit-mask:var(--mark) center/contain no-repeat;mask:var(--mark) center/contain no-repeat}
@@ -941,7 +939,7 @@ if(subLink){
   box.showModal();
 }
 // "Make it yours": one picker over every label and tag the site shows (tags.json, built with the site from the
-// stories themselves, most used this month first). The mode says whether a tap adds to "More of" or "Leave out";
+// stories themselves, the most used this month first; no counts shown). The mode says whether a tap adds to "More of" or "Leave out";
 // a label is never in both.
 const PREF = {more: new Set(), less: new Set(), mode: "more", groups: null, gentle: [], all: new Set(), q: ""};
 const PREF_MAX_MORE = 10, PREF_MAX_WORDS = 5, PREF_SHOWN = 12;
@@ -957,9 +955,8 @@ async function loadPrefOptions(){
   }
   renderPrefs();
 }
-function prefChip(label, n){
+function prefChip(label){
   const b = el("button","chip",label); b.type="button";
-  if(n != null) b.append(el("span","n",n));
   const side = PREF.more.has(label) ? "more" : PREF.less.has(label) ? "less" : "";
   if(side) b.classList.add("pick-" + side);
   b.setAttribute("aria-pressed", String(side === PREF.mode));
@@ -993,13 +990,13 @@ function renderPrefs(){
   const q = fold(PREF.q.trim()), box = $("pref-groups"); box.replaceChildren();
   let any = false;
   for(const g of PREF.groups){
-    const items = g.items.filter(i => !q || fold(i.t).includes(q));
+    const items = g.items.filter(t => !q || fold(t).includes(q));
     if(!items.length) continue;
     any = true;
     const sec = el("div","pref-group"); sec.append(el("h4",null,g.name));
     const chips = el("div","pref-chips");
     const open = q || PREF.all.has(g.name);
-    items.slice(0, open ? items.length : PREF_SHOWN).forEach(i => chips.append(prefChip(i.t, i.n)));
+    items.slice(0, open ? items.length : PREF_SHOWN).forEach(t => chips.append(prefChip(t)));
     if(!open && items.length > PREF_SHOWN){
       const more = el("button","pref-all","Show all " + items.length); more.type="button";
       more.addEventListener("click", () => { PREF.all.add(g.name); renderPrefs(); });

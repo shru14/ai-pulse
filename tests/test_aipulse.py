@@ -1890,10 +1890,11 @@ def test_the_preference_form_offers_every_label_and_tag_the_site_shows():
         {"category": "research", "title": "A paper", "summary": "", "date": "2026-01-01", "tags": ["Philip Torr", "Nvidia", "Research"]},
     ]
     o = preferences.options(cards, date(2026, 9, 29))
-    got = {g["name"]: {i["t"]: i["n"] for i in g["items"]} for g in o["groups"]}
-    assert got["Story types"]["Tutorial"] == 1 and got["Story types"]["Proposal"] == 1 and got["Story types"]["Standard"] == 0
-    assert got["Companies"]["Alibaba"] == 1 and got["Companies"]["Nvidia"] == 0  # every tag, even one not seen lately
-    assert got["Countries"]["Kenya"] == 1 and got["People"]["Philip Torr"] == 0 and got["Topics"]["Agents"] == 1
+    got = {g["name"]: g["items"] for g in o["groups"]}
+    assert got["Story types"][:2] == ["Proposal", "Tutorial"] and "Standard" in got["Story types"]  # used lately first
+    assert got["Companies"] == ["Alibaba", "Nvidia"]  # every tag, even one not seen lately
+    assert "Kenya" in got["Countries"] and got["People"] == ["Philip Torr"] and "Agents" in got["Topics"]
+    assert all(isinstance(t, str) for g in o["groups"] for t in g["items"])  # labels only, no counts
     assert "Research" not in {t for g in got.values() for t in g}  # the Research stream is the choice for papers
     assert set(o["gentle"]) <= {t for g in got.values() for t in g} | {"AI-incident", "Misuse", "Deepfakes", "Defense", "Jobs & Labor"}
 
