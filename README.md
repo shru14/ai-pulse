@@ -6,7 +6,7 @@ them into five streams and links every card to the original.
 **Live site:** https://shru14.github.io/ai-pulse/
 
 Only what is legal to collect and publicly accessible is used. No AI model, paid API or billed service:
-summaries are the publishers' own text, and sorting is keyword rules.
+summaries are the publishers' own text, sorting is keyword rules, and translation runs offline.
 
 ## Streams
 
@@ -21,6 +21,7 @@ summaries are the publishers' own text, and sorting is keyword rules.
 ## Features
 
 - **Filters:** by stream, region, country and time range; search covers headlines, summaries, tags and authors back to 2023.
+- **Everything in English:** stories in other languages are translated offline (OPUS-MT, no API) and marked, with a "Read the original in English" link (Google Translate's page, opened by the reader); a story that can't be translated well is left out.
 - **One card per event:** the same story from several outlets is grouped, led by the company's own post when there is one.
 - **RSS:** one feed per stream, one post a day ([Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml), [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml)).
 - **Daily email:** yesterday's stories in one table, every story tagged by type, sent each morning from 05:17 UTC to readers who confirmed their sign-up.

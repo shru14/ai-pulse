@@ -1674,3 +1674,33 @@ def test_release_notes_keep_only_the_labs_own_launches(tmp_path):
     kept = {src["name"]: [e["title"] for e in col.page_list_entries(conn, src, pages.get)] for src in labs}
     # Only their own products' launches: not an API field, a retirement, or another lab's model Perplexity now offers.
     assert kept == {"xAI": ["Grok 4.7"], "Perplexity": ["Introducing New and Improved Sonar Models"]}
+
+
+def test_every_story_is_shown_in_english(monkeypatch, tmp_path):
+    from aipulse import collect as col, translate
+    assert translate.detect("Noticias Telemundo: Las empresas de telecomunicaciones no han protegido los datos") == "es"
+    assert translate.detect("Nemotron-Personas-Japan: ソブリン AI のための合成データセット") == "ja"
+    assert translate.detect("Ley de IA: el Senado aprueba la regulación") == "es"
+    assert translate.detect("L'intelligence artificielle est une priorité pour le gouvernement") == "fr"
+    assert translate.detect("삼성전자, 새로운 AI 칩 공개") == "ko" and translate.detect("Новый закон об ИИ принят") == "ru"
+    # English stays English: model names, a name in Chinese characters, words shared with other languages
+    for english in ("Addendum to OpenAI o3 and o4-mini system card", "Lai marks Teachers' Day, highlights AI plan (賴清德)",
+                    "Con Instruction: Universal Jailbreaking of Multimodal Large Language Models",
+                    "Microsoft's AI rulebook: readable thinking, no inner life, and definitely no sex"):
+        assert translate.detect(english) is None, english
+    conn = store.connect(tmp_path / "t.db")
+    made = {"Ley de IA: el Senado aprueba la regulación": "AI Law: The Senate approves the regulation",
+            "ソブリン AI のための合成データセット": "Syn<unk> Dataset for Soblin AI"}
+    monkeypatch.setattr(translate, "english", lambda conn, lang, texts: {t: made[t] for t in texts if t in made})
+    assert col.in_english(conn, "Ley de IA: el Senado aprueba la regulación", "") == (
+        "AI Law: The Senate approves the regulation", "Machine-translated from Spanish; the original is linked.")
+    assert col.in_english(conn, "ソブリン AI のための合成データセット", "") is None  # unknown words: left out
+    assert col.in_english(conn, "Una historia sin modelo para traducir de la lengua", "") is None  # no translation: left out
+    assert col.in_english(conn, "Next Wave: Can African banks pick up the baton?",
+                          "Cet article est aussi disponible en français First published 17 Aug") == (
+        "Next Wave: Can African banks pick up the baton?", "First published 17 Aug")
+    assert col.in_english(conn, "TechCabal Daily", "In partnership with Lire en Français اقرأ هذا باللغة العربية Good morning!") == (
+        "TechCabal Daily", "Good morning!")
+    page = (Path(__file__).resolve().parent.parent / "templates" / "index.html").read_text(encoding="utf-8")
+    assert "Read the original in English" in page and "translate.google.com/translate?sl=auto&tl=en&u=" in page
+    assert classify.tags_for("AI Law", "Machine-translated from Spanish; the original is linked.") == classify.tags_for("AI Law", "")

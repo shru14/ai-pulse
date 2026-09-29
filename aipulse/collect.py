@@ -7,7 +7,7 @@ import re
 import time
 from datetime import datetime, timedelta, timezone
 
-from . import bills, brands, brief, classify, cluster, feeds, jurisdictions, store
+from . import bills, brands, brief, classify, cluster, feeds, jurisdictions, store, translate
 from .sources import COMPANIES, EXPERT_FIELDS, PROFESSORS, SOURCES
 
 # The regulation tracker follows proposals and adopted laws; other actions stay under "policy".
@@ -47,6 +47,31 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
         if entries or not src.get("expect_entries"):
             return entries
     raise EmptyFeed(f"no entries after {EMPTY_RETRIES} tries")
+
+
+# Lines some feeds add to a description pointing to the story's other-language editions ("Cet article est aussi
+# disponible en français", "Lire en Français اقرأ هذا باللغة العربية").
+_OTHER_EDITIONS = re.compile(r"\s*(?:Cet article est aussi disponible en français|Lire en français|"
+                             r"اقرأ هذا باللغة العربية|Read (?:this )?in (?:French|Arabic|Portuguese))\.?", re.I)
+TRANSLATED_NOTE = "Machine-translated from {}; the original is linked."
+
+
+def in_english(conn, title: str, summary: str) -> tuple[str, str] | None:
+    """A story's headline and summary in English: as they are, or translated offline (translate.py) with a note
+    saying from which language. None when a part isn't English and can't be translated."""
+    summary = re.sub(r"^In partnership with\s+(?=[A-Z])", "", _OTHER_EDITIONS.sub("", summary).strip())
+    langs = [translate.detect(title), translate.detect(summary)]
+    if not any(langs):
+        return title, summary
+    out = []
+    for text, lang in zip((title, summary), langs):
+        if lang:
+            text = translate.english(conn, lang, [text]).get(text)
+            if not text or "<unk>" in text:  # no model, or words the model doesn't know: not a usable English text
+                return None
+        out.append(text)
+    note = TRANSLATED_NOTE.format(translate.LANGUAGE_NAMES[next(l for l in langs if l)])
+    return out[0], f"{out[1]} {note}".strip()
 
 
 PAGE_LIST_MEMORY = 400  # post addresses remembered per news page
@@ -155,6 +180,10 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 summary = brief.paper_summary(e["summary"], title)
             else:
                 summary = brief.clean_summary(e["summary"], title, source)
+            english = in_english(conn, title, summary)
+            if not english:
+                continue  # not in English and no translation: left out rather than shown in another language
+            title, summary = english
 
             ai_only = src.get("ai_only", src["category"] == "tool")
             if not ai_only and not classify.is_ai_related(title, e["summary"]):
@@ -410,6 +439,19 @@ def reclassify(conn) -> int:
     """Re-run the sorting and regulation rules over stored policy and regulation stories.
     Returns how many changed."""
     changed = 0
+    # Stories stored before collection translated them (a Japanese headline, a Spanish press item), and feeds'
+    # "also in French" lines: English now, where the offline translator can do it.
+    for it in conn.execute("SELECT id, title, summary FROM items").fetchall():
+        summary = it["summary"] or ""
+        if _OTHER_EDITIONS.search(summary) or translate.detect(it["title"]) or translate.detect(summary):
+            english = in_english(conn, it["title"], summary)
+            if english and english != (it["title"], summary):
+                store.update_text(conn, it["id"], *english)
+                changed += 1
+            elif not english and all(translate.available(l) for l in
+                                     filter(None, (translate.detect(it["title"]), translate.detect(summary)))):
+                conn.execute("DELETE FROM items WHERE id = ?", (it["id"],))  # the model can't make English of it
+                changed += 1
     for it in conn.execute(f"SELECT id, title, summary FROM items WHERE source IN ({','.join('?' * len(AI_RECHECKED))})",
                            AI_RECHECKED).fetchall():
         if not classify.is_ai_related(it["title"], "" if brief.is_draft(it["summary"]) else it["summary"]):

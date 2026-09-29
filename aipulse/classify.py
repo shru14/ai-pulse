@@ -293,7 +293,7 @@ def lead_company(title: str) -> str | None:
 
 # Our own note on translated official records ("Machine-translated from Portuguese; ...") names a language,
 # not a place: a Brazilian bill isn't about Portugal, a Swiss one isn't about Germany.
-_TRANSLATED = re.compile(r"\s*Machine-translated from \w+; the official text is linked\.")
+_TRANSLATED = re.compile(r"\s*Machine-translated from \w+; the (?:official text|original) is linked\.")
 
 
 def tags_for(title: str, summary: str, limit: int = 5) -> list[str]:
