@@ -218,7 +218,7 @@ def _empty_note(name: str, day: date) -> str:
 
 
 # The short email: the day's most-reported stories in full, then each stream's next few headlines.
-TOP = 10          # stories in "10 things that mattered", 5 rows of 2
+TOP = 10          # stories in "10 things that mattered today", 5 rows of 2
 HEADLINES = 3     # further headlines per stream
 SIDE_KINDS = {"tutorial", "event", "blog"}  # counted in the short email, not listed
 
@@ -251,21 +251,21 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
              "day is one tap away.")
     quiet = _quiet(by_stream, cards, streams, day)
     top = sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP]
-    lines = [hello, "", intro, *([quiet] if quiet else []), "", f"{len(top)} THINGS THAT MATTERED"]
+    lines = [hello, "", intro, *([quiet] if quiet else []), "", f"{len(top)} THINGS THAT MATTERED TODAY"]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
     html = [f'<div style="font-size:21px;font-weight:bold;line-height:1.3;margin:0 0 6px">{escape(hello)}</div>'
             f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
             + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
-            + head(f"{len(top)} things that mattered")]
+            + head(f"{len(top)} things that mattered today")]
     cells = []
-    for i, c in enumerate(top, 1):
+    for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])
         more, summary = _outlets(c) - 1, _short(c.get("summary") or "", 110)
         by = c["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
-        lines += [f"{i}. [{label}] {c['title']}", *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
+        lines += [f"• [{label}] {c['title']}", *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
         cells.append(f'<td valign="top" width="50%" style="padding:10px;border:1px solid {RULE};background:#fbfbfc">'
-                     f'<div style="font-size:12px;font-weight:bold;color:#9aa0a6;margin-bottom:4px">{i} &nbsp;{_pill(label, bg, fg)}</div>'
+                     f'<div style="margin-bottom:4px">{_pill(label, bg, fg)}</div>'
                      f'<a href="{escape(c["url"])}" style="color:{LINK};font-size:14px;font-weight:bold;line-height:1.35;'
                      f'text-decoration:none">{escape(c["title"])}</a>'
                      + (f'<div style="font-size:12.5px;line-height:1.4;margin-top:3px;color:#3c4043">{escape(summary)}</div>'
@@ -273,7 +273,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
                      + f'<div style="font-size:11.5px;color:{GREY};margin-top:4px">{escape(by)}</div></td>')
     if len(cells) % 2:
         cells.append('<td width="50%"></td>')
-    # 5 rows of 2, read left to right: 1 2 / 3 4 / ...
+    # 5 rows of 2, read left to right
     html.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
                 'table-layout:fixed">' + "".join(f"<tr>{cells[k]}{cells[k + 1]}</tr>" for k in range(0, len(cells), 2))
                 + "</table>")
