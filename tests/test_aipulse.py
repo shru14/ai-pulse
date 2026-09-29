@@ -1877,6 +1877,11 @@ def test_tags_only_where_the_story_means_it():
     assert jurisdictions.detect("ByteDance to expand AI data centre cluster in Inner Mongolia") == ["CN"]
     assert jurisdictions.detect("Northern Ireland victim lost £250,000 in an AI scam") == ["GB"]
     assert jurisdictions.detect("New South Wales trials AI in schools") != ["GB"]
+    # every UN member has a place: these 7 EU members were missing
+    for name, code in [("Bulgaria", "BG"), ("Croatia", "HR"), ("Cyprus", "CY"), ("Latvia", "LV"), ("Lithuania", "LT"),
+                       ("Slovakia", "SK"), ("Slovenia", "SI")]:
+        assert jurisdictions.detect(f"{name} adopts a national AI strategy") == [code]
+    assert jurisdictions.detect("A Slovak startup and a Slovenian lab") == ["SK", "SI"]
 
 
 def test_the_preference_form_is_short_and_its_search_finds_every_tag():
