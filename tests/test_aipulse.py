@@ -1849,3 +1849,31 @@ def test_email_opens_with_the_count_then_the_word_then_the_full_email(monkeypatc
     assert order == sorted(order)
     order = [html.index(s) for s in ("1 story from 1 source.", "Word of the day</div>", "Want everything?", "Here is the one story")]
     assert order == sorted(order)
+
+
+def test_tags_only_where_the_story_means_it():
+    from aipulse import jurisdictions
+    tags = lambda title, summary="": classify.tags_for(title, summary, limit=99)
+    # companies: whole words, and case where the name is also a word
+    assert "Amazon" not in tags("Lawsuit demands OpenAI pay for new school", "It draws on flaws")  # "l-aws-uit"
+    assert "Amazon" in tags("Grok 4.7 is now on AWS")
+    assert "Meta" not in tags("Transformers now runs llama.cpp quants", "Ollama's transparent pricing")
+    assert "Meta" in tags("Meta releases Llama 5")
+    assert "Intel" not in tags("A ‘race’ may deter China from sharing safety intel")
+    # topics: not a fragment of another word or another sense
+    assert "Jobs & Labor" not in tags("A collaboration between Sakana AI and the University of Tokyo")
+    assert "Compute & Data Centers" not in tags("Holo4: powering generalist computer-use agents", "Clustering, Retrieval")
+    assert "Compute & Data Centers" in tags("Huawei unveils its Atlas 960 SuperPoD computing cluster")
+    assert "Education" not in tags("A Coding Guide to MSEB", "A comprehensive coding tutorial")
+    assert "Law" not in tags("Bill Gates says it's irresponsible for AI to not have safeguards")
+    assert "Law" not in tags("Muse can send emails, book travel and negotiate bills")
+    assert "Law" in tags("U.S. bill proposes permanent ban on artificial superintelligence")
+    assert "Science" not in tags("Improving how customers discover and consume content")
+    assert "Science" in tags("Claude discovers a novel enzyme system with CRISPR-like repeats")
+    assert "Governance" not in tags("TechCrunch Founder Summit’s agenda revealed")
+    assert "Governance" in tags("Why AI experts are freaked out over safety fears ahead of Xi-Trump summit")
+    assert "Energy" not in tags("AI hallucination of Chinese nuclear components almost led to a US military attack")
+    # places
+    assert jurisdictions.detect("ByteDance to expand AI data centre cluster in Inner Mongolia") == ["CN"]
+    assert jurisdictions.detect("Northern Ireland victim lost £250,000 in an AI scam") == ["GB"]
+    assert jurisdictions.detect("New South Wales trials AI in schools") != ["GB"]

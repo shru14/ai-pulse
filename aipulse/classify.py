@@ -208,11 +208,14 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
 
 COMPANY_TERMS = {
     "OpenAI": r"OpenAI|ChatGPT|\bGPT-?\d", "Anthropic": r"Anthropic|Claude", "Google": r"Google|Gemini|DeepMind",
-    "Meta": r"\bMeta\b|Llama", "Microsoft": r"Microsoft|(?<!GitHub )Copilot", "Nvidia": r"Nvidia", "Apple": r"\bApple\b",
-    "Amazon": r"Amazon|AWS", "xAI": r"\bxAI\b|Grok", "Mistral": r"Mistral", "DeepSeek": r"DeepSeek",
+    # whole words, and case-sensitive where the name is also a word: not "lawsuit" (AWS), "Ollama" or "llama.cpp"
+    # (Llama), "safety intel" (Intel), "apple", "meta-analysis"
+    "Meta": r"(?-i:\bMeta\b)|\bLlama\b(?!\.cpp)", "Microsoft": r"Microsoft|(?<!GitHub )Copilot", "Nvidia": r"Nvidia",
+    "Apple": r"(?-i:\bApple\b)", "Amazon": r"Amazon|(?-i:\bAWS\b)", "xAI": r"\bxAI\b|Grok", "Mistral": r"Mistral",
+    "DeepSeek": r"DeepSeek",
     "Alibaba": r"Alibaba|Qwen",
     # chips and big tech
-    "AMD": r"\bAMD\b", "Intel": r"\bIntel\b", "Qualcomm": r"Qualcomm", "IBM": r"\bIBM\b", "Oracle": r"\bOracle\b",
+    "AMD": r"\bAMD\b", "Intel": r"(?-i:\bIntel\b)", "Qualcomm": r"Qualcomm", "IBM": r"\bIBM\b", "Oracle": r"\bOracle\b",
     "Samsung": r"Samsung", "SK Hynix": r"SK ?Hynix", "TSMC": r"\bTSMC\b", "Salesforce": r"Salesforce",
     "Tencent": r"Tencent|Hunyuan", "ByteDance": r"ByteDance|TikTok|Doubao", "Baidu": r"Baidu|\bERNIE\b",
     "Huawei": r"Huawei", "Xiaomi": r"Xiaomi",
@@ -256,18 +259,20 @@ TOPIC_TERMS = {
     "Training Data": r"training data|dataset|scrap(e|ing)",
     # Infrastructure
     "Chips": r"\bchips?\b|GPU|semiconductor|TSMC|\bTPU\b",
-    "Compute & Data Centers": r"data cent(er|re)|compute|supercomputer|cluster",
-    "Energy": r"energy|power grid|electricity|nuclear|gigawatt|\bGW\b",
+    "Compute & Data Centers": r"data cent(er|re)|\bcompute\b|supercomputer|(?:GPU|compute|computing|AI|training) clusters?|computing (?:power|capacity)",  # not "computer", "clustering"
+    "Energy": r"energy|power grid|electricity|nuclear (?:power|energy|reactors?|plants?)|gigawatt|\bGW\b",  # not "nuclear war"
     # Business
     "Funding": r"raises|funding|valuation|Series [A-F]",
     "M&A": r"acquir|acquisition|merger|buys\b",
     "IPO": r"\bIPO\b|going public|listing",
-    "Jobs & Labor": r"\bjobs?\b|layoffs?|workforce|employment|labou?r",
+    "Jobs & Labor": r"\bjobs?\b|layoffs?|workforce|employment|\blabou?r\b",  # not "collaboration"
     # Law & governance
     "Standards": _STANDARDS.pattern + r"|\bAI RMF\b|risk management framework|\b42001\b",
-    "Law": r"\blaws?\b|legislat|\bbill\b|lawsuit|\bsue[sd]?\b|court|ruling|judge",
+    "Law": r"\blaws?\b|legislat|\bbill\b(?! Gates)|\b(?:AI|state|federal|Senate|House|draft|two|these|the) bills\b|lawsuit|\bsue[sd]?\b|court|ruling|judge",
     "Regulation": r"regulat|compliance|enforcement|regulator",
-    "Governance": r"governance|oversight|standards?\b|treaty|summit|safety institute|\bAISI\b",
+    # a summit or standard in AI governance, not an industry event or "the gold standard for ..."
+    "Governance": r"governance|oversight|(?:AI|safety|technical|international|global) standards?\b|treaty|"
+                  r"(?:AI|safety|action|impact|G7|G20|UN|global|bilateral|leaders['’]?|Trump-Xi|Xi-Trump) summit|safety institute|\bAISI\b",
     "AI Act": r"\bAI Act\b",
     "Copyright": r"copyright|licens(e|ing) deal|fair use|pirat",
     "Privacy": r"privacy|\bGDPR\b|data protection|personal data",
@@ -286,9 +291,11 @@ TOPIC_TERMS = {
     "Security": r"cyber|hack|vulnerab|exploit|breach|prompt injection",
     "Misuse": r"misuse|abuse|bioweapon|fraud|scam",
     "Surveillance": r"surveillance|facial recognition",
-    "Education": r"educat|school|student|tutor",
+    "Education": r"educat|school|student|teacher|classroom|\btutor(?:s|ing)?\b",  # not "tutorial"
     "Healthcare": r"health|medical|clinic|patient|drug",
-    "Science": r"scientific|discover|protein|biology|physics|chemistry",
+    # a scientific discovery, not "customers discover ..." or "discovered during a review"
+    "Science": r"scientific|(?:drug|materials?) discover|discover(?:s|ed|ing)? (?:a |an )?(?:novel|new) (?:\w+ )?"
+               r"(?:enzymes?|proteins?|molecules?|materials?|drugs?|antibiotics?|compounds?|species|genes?)|protein|biology|physics|chemistry",
     "Climate": r"climate|emissions|carbon|sustainab",
 }
 TOPIC_TAGS = set(TOPIC_TERMS)
