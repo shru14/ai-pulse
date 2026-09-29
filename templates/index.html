@@ -98,6 +98,53 @@ header.top{gap:10px}
 .sub-msg[data-kind="ok"]{background:var(--c-tool-soft);color:var(--ink);border-radius:8px;padding:9px 11px}
 .sub-msg[data-kind="error"]{color:var(--c-reg)}
 .sub-small{font-size:13px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+/* "Make it yours": a reader's own email. One picker over every label and tag the site shows; a mode switch says
+   whether a tap adds to "More of" (blue) or "Leave out" (red, and set apart so nobody filters without seeing it). */
+#subscribe{max-height:calc(100vh - 32px);overflow-y:auto}
+.pref-box{border:1px solid var(--line);border-radius:10px;margin:0 0 14px;background:var(--bg)}
+.pref-box > summary{cursor:pointer;list-style:none;padding:10px 12px;font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
+.pref-box > summary::-webkit-details-marker{display:none}
+.pref-box > summary::before{content:"+";font:600 16px var(--mono);color:var(--accent);width:14px}
+.pref-box[open] > summary::before{content:"\2212"}
+.pref-box > summary .opt{font-weight:400;color:var(--muted);font-size:13px}
+.pref-box > summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
+.pref-in{padding:0 12px 12px}
+.pref-note{margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--muted)}
+.pref-mode{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.pref-mode button{font:600 14px var(--body);padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.pref-mode button[aria-pressed="true"][data-mode="more"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.pref-mode button[aria-pressed="true"][data-mode="less"]{border-color:var(--c-reg);color:var(--c-reg);background:var(--c-reg-soft)}
+.pref-mode button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pref-chosen{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.pref-chosen:empty{display:none}
+.pref-row{display:flex;flex-wrap:wrap;align-items:center;gap:5px;font-size:13px}
+.pref-row > span{font-weight:600;margin-right:2px}
+.pref-row.pick-more > span{color:var(--accent)}
+.pref-row.pick-less > span{color:var(--c-reg)}
+.gentle{display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.4;padding:9px 10px;margin-bottom:10px;border:1px solid var(--c-reg);border-radius:8px;background:var(--c-reg-soft);cursor:pointer}
+.gentle input{width:17px;height:17px;margin-top:1px;accent-color:var(--c-reg);flex:none}
+.pref-search{width:100%;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:15px var(--body);padding:0 10px;margin-bottom:6px}
+.pref-search:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.pref-group h4{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+.pref-chips{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.chip{font:13px/1.35 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.chip .n{font:11px var(--mono);color:var(--muted);margin-left:4px}
+.chip.pick-more{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.chip.pick-less{background:var(--c-reg);border-color:var(--c-reg);color:var(--surface)}
+.chip.pick-more .n,.chip.pick-less .n{color:inherit;opacity:.8}
+/* the tick and cross are drawn, not typed: a symbol font's taller line would stretch the chip */
+.chip.pick-less::before,.chip.pick-more::before{content:"";display:inline-block;width:9px;height:9px;margin-right:5px;background:currentColor;
+  -webkit-mask:var(--mark) center/contain no-repeat;mask:var(--mark) center/contain no-repeat}
+.chip.pick-more{--mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 5.2 4 8 9 2' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.chip.pick-less{--mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 2l6 6M8 2 2 8' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E")}
+.chip:disabled{opacity:.45;cursor:not-allowed}
+.chip:focus-visible,.pref-all:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pref-all{font:500 12px var(--mono);color:var(--accent);background:none;border:0;padding:3px 4px;cursor:pointer}
+.pref-words-label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 6px}
+.pref-words{width:100%;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:15px var(--body);padding:0 10px}
+.pref-words:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.pref-limit{font-size:12px;color:var(--muted);margin:4px 0 0}
 /* Glossary: the header button opens the list; a dotted word in a story opens its meaning in a small popover. */
 .glossary{width:min(640px,calc(100vw - 32px));max-height:min(760px,calc(100vh - 48px));padding:0;overflow:hidden}
 .glossary[open]{display:flex;flex-direction:column}
@@ -320,12 +367,32 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
         <label><input type="checkbox" value="regulation" checked> Regulation tracker</label>
         <label><input type="checkbox" value="policy" checked> Policy</label>
       </fieldset>
+      <details class="pref-box" id="pref-box">
+        <summary>Make it yours <span class="opt">(optional)</span></summary>
+        <div class="pref-in">
+          <p class="pref-note">Pick what you want more of and what to leave out, from the same labels and tags you see
+            on the stories. Your top 10 is then 5 stories of your choice and 5 of the day's biggest. What you leave
+            out never appears. The link to the full email always has every story.</p>
+          <div class="pref-chosen" id="pref-chosen"></div>
+          <div class="pref-mode" role="group" aria-label="What a tap does">
+            <button type="button" data-mode="more" aria-pressed="true">✓ More of</button>
+            <button type="button" data-mode="less" aria-pressed="false">✕ Leave out</button>
+          </div>
+          <label class="gentle"><input type="checkbox" id="pref-gentle"> <span><b>Gentler start:</b> leave out
+            <span id="gentle-list">AI incidents, misuse, deepfakes, defense, and jobs &amp; labor</span> stories</span></label>
+          <input class="pref-search" id="pref-q" type="search" placeholder="Find a topic, company, country or person…" aria-label="Find a label or tag">
+          <div id="pref-groups"><p class="pref-note">Loading…</p></div>
+          <label class="pref-words-label" for="pref-words">Your own words <span class="opt">(optional, up to 5)</span></label>
+          <input class="pref-words" id="pref-words" type="text" maxlength="160" placeholder="e.g. Kerala, Tesla Optimus" autocomplete="off">
+          <p class="pref-limit">Stories whose headline has one of these count as your choice.</p>
+        </div>
+      </details>
       <button class="sub-go" id="subscribe-go" type="submit">Subscribe</button>
       <p class="sub-msg" id="sub-msg" role="status" aria-live="polite"></p>
       <p class="sub-small">We'll email you a link to confirm; nothing is sent until you click it. Already subscribed?
         Enter your email with new streams to change them. Every digest has a one-click unsubscribe.</p>
-      <p class="sub-small">We keep only your email address and the streams you chose, in the project's Google account,
-        to send you the digest. Nothing is shared, tracked or sold. Unsubscribing deletes your address.</p>
+      <p class="sub-small">We keep only your email address, the streams you chose and what you picked under “Make
+        it yours”, in the project's Google account, to send you the digest. Nothing is shared, tracked or sold. Unsubscribing deletes your address.</p>
     </form>
   </dialog>
   <dialog class="subscribe" id="sub-action" aria-labelledby="sub-action-title">
@@ -873,6 +940,90 @@ if(subLink){
   box.addEventListener("close", () => history.replaceState(null, "", location.pathname + location.search));
   box.showModal();
 }
+// "Make it yours": one picker over every label and tag the site shows (tags.json, built with the site from the
+// stories themselves, most used this month first). The mode says whether a tap adds to "More of" or "Leave out";
+// a label is never in both.
+const PREF = {more: new Set(), less: new Set(), mode: "more", groups: null, gentle: [], all: new Set(), q: ""};
+const PREF_MAX_MORE = 10, PREF_MAX_WORDS = 5, PREF_SHOWN = 12;
+async function loadPrefOptions(){
+  if(PREF.groups) return;
+  try{
+    const d = await (await fetch("tags.json", {cache: "no-cache"})).json();
+    PREF.groups = d.groups; PREF.gentle = d.gentle;
+    $("gentle-list").textContent = d.gentle.map(t => t === "AI-incident" ? "AI incidents" : t.toLowerCase()).join(", ");
+  }catch(err){
+    $("pref-groups").replaceChildren(el("p","pref-note","Couldn't load the choices. Try reloading the page."));
+    return;
+  }
+  renderPrefs();
+}
+function prefChip(label, n){
+  const b = el("button","chip",label); b.type="button";
+  if(n != null) b.append(el("span","n",n));
+  const side = PREF.more.has(label) ? "more" : PREF.less.has(label) ? "less" : "";
+  if(side) b.classList.add("pick-" + side);
+  b.setAttribute("aria-pressed", String(side === PREF.mode));
+  // a label chosen on the other side can't be tapped here: take it off there first
+  if(side && side !== PREF.mode){ b.disabled = true; b.title = "In " + (side === "more" ? "More of" : "Leave out") + ": remove it there first"; }
+  b.addEventListener("click", () => {
+    const mine = PREF[PREF.mode];
+    if(mine.has(label)) mine.delete(label);
+    else if(PREF.mode === "more" && mine.size >= PREF_MAX_MORE){ subMessage("Up to " + PREF_MAX_MORE + " in More of: remove one to add another.", "error"); return; }
+    else mine.add(label);
+    subMessage(""); renderPrefs();
+  });
+  return b;
+}
+function renderPrefs(){
+  if(!PREF.groups) return;
+  document.querySelectorAll(".pref-mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === PREF.mode)));
+  $("pref-gentle").checked = PREF.gentle.every(t => PREF.less.has(t));
+  // what's chosen so far, each removable with a tap
+  const chosen = $("pref-chosen"); chosen.replaceChildren();
+  for(const side of ["more", "less"]){
+    if(!PREF[side].size) continue;
+    const row = el("div","pref-row pick-" + side); row.append(el("span",null, side === "more" ? "More of:" : "Leave out:"));
+    [...PREF[side]].forEach(t => {
+      const b = el("button","chip pick-" + side, t); b.type="button"; b.setAttribute("aria-label", "Remove " + t);
+      b.addEventListener("click", () => { PREF[side].delete(t); renderPrefs(); });
+      row.append(b);
+    });
+    chosen.append(row);
+  }
+  const q = fold(PREF.q.trim()), box = $("pref-groups"); box.replaceChildren();
+  let any = false;
+  for(const g of PREF.groups){
+    const items = g.items.filter(i => !q || fold(i.t).includes(q));
+    if(!items.length) continue;
+    any = true;
+    const sec = el("div","pref-group"); sec.append(el("h4",null,g.name));
+    const chips = el("div","pref-chips");
+    const open = q || PREF.all.has(g.name);
+    items.slice(0, open ? items.length : PREF_SHOWN).forEach(i => chips.append(prefChip(i.t, i.n)));
+    if(!open && items.length > PREF_SHOWN){
+      const more = el("button","pref-all","Show all " + items.length); more.type="button";
+      more.addEventListener("click", () => { PREF.all.add(g.name); renderPrefs(); });
+      chips.append(more);
+    }
+    sec.append(chips); box.append(sec);
+  }
+  if(!any) box.append(el("p","pref-note","Nothing on the site is tagged like that yet. Add it under “Your own words” below."));
+}
+function prefWords(){
+  return $("pref-words").value.split(",").map(w => w.trim().replace(/\s+/g, " ")).filter(w => w.length > 1).slice(0, PREF_MAX_WORDS);
+}
+function prefFields(){  // what the sign-up web app stores with the reader's streams
+  return {more: [...PREF.more].join("|"), less: [...PREF.less].join("|"), words: prefWords().join("|")};
+}
+document.querySelectorAll(".pref-mode button").forEach(b => b.addEventListener("click", () => { PREF.mode = b.dataset.mode; renderPrefs(); }));
+$("pref-gentle").addEventListener("change", e => {
+  PREF.gentle.forEach(t => { if(e.target.checked){ PREF.less.add(t); PREF.more.delete(t); } else PREF.less.delete(t); });
+  renderPrefs();
+});
+$("pref-q").addEventListener("input", e => { PREF.q = e.target.value; renderPrefs(); });
+["pref-q", "pref-words"].forEach(id => $(id).addEventListener("keydown", e => { if(e.key === "Enter") e.preventDefault(); }));  // not a sign-up
+$("pref-box").addEventListener("toggle", () => { if($("pref-box").open) loadPrefOptions(); });
+
 $("sub-form").addEventListener("submit", async e => {
   e.preventDefault();
   const email = $("sub-email").value.trim(), streams = chosenStreams();
@@ -882,7 +1033,8 @@ $("sub-form").addEventListener("submit", async e => {
   $("subscribe-go").disabled = true;
   subMessage("Sending…");
   try{
-    const body = new URLSearchParams({action: "subscribe", email, streams: streams.join(","), website: $("sub-website").value});
+    const body = new URLSearchParams({action: "subscribe", email, streams: streams.join(","), website: $("sub-website").value,
+                                      ...prefFields()});
     const r = await (await fetch(SIGNUP_URL, {method: "POST", body})).json();
     if(r.ok){
       subMessage((r.change ? "Almost done: " : "Almost there: ") + "we've emailed a confirm link to " + email

@@ -606,7 +606,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", ".nojekyll", "feeds", "daily"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily"}
     assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
 
 
@@ -1877,3 +1877,32 @@ def test_tags_only_where_the_story_means_it():
     assert jurisdictions.detect("ByteDance to expand AI data centre cluster in Inner Mongolia") == ["CN"]
     assert jurisdictions.detect("Northern Ireland victim lost £250,000 in an AI scam") == ["GB"]
     assert jurisdictions.detect("New South Wales trials AI in schools") != ["GB"]
+
+
+def test_the_preference_form_offers_every_label_and_tag_the_site_shows():
+    from datetime import date
+    from aipulse import preferences
+    cards = [
+        {"category": "news", "kind": "tutorial", "title": "A coding guide to Qwen agents", "summary": "", "date": "2026-09-28",
+         "tags": ["Alibaba", "China", "Agents"]},
+        {"category": "regulation", "action": "proposal", "title": "Kenya AI bill", "summary": "", "date": "2026-09-28",
+         "tags": ["Kenya", "Law"]},
+        {"category": "research", "title": "A paper", "summary": "", "date": "2026-01-01", "tags": ["Philip Torr", "Nvidia", "Research"]},
+    ]
+    o = preferences.options(cards, date(2026, 9, 29))
+    got = {g["name"]: {i["t"]: i["n"] for i in g["items"]} for g in o["groups"]}
+    assert got["Story types"]["Tutorial"] == 1 and got["Story types"]["Proposal"] == 1 and got["Story types"]["Standard"] == 0
+    assert got["Companies"]["Alibaba"] == 1 and got["Companies"]["Nvidia"] == 0  # every tag, even one not seen lately
+    assert got["Countries"]["Kenya"] == 1 and got["People"]["Philip Torr"] == 0 and got["Topics"]["Agents"] == 1
+    assert "Research" not in {t for g in got.values() for t in g}  # the Research stream is the choice for papers
+    assert set(o["gentle"]) <= {t for g in got.values() for t in g} | {"AI-incident", "Misuse", "Deepfakes", "Defense", "Jobs & Labor"}
+
+
+def test_page_script_declares_each_name_once():
+    import re
+    from pathlib import Path
+    script = Path("templates/index.html").read_text(encoding="utf-8").split("<script>")[-1]
+    names = [n for decl in re.findall(r"^(?:const|let|function)\s+(.+?)(?:=>|\(|;|$)", script, re.M)
+             for n in re.findall(r"(?:^|,\s*)([A-Za-z_$][\w$]*)\s*(?:=|\(|$)", decl)]
+    dupes = {n for n in names if names.count(n) > 1}
+    assert not dupes, f"declared twice (the page's script would stop): {dupes}"

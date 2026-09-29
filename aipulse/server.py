@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from . import brands, glossary, jurisdictions, rss, store, subscribers
+from . import brands, glossary, jurisdictions, preferences, rss, store, subscribers
 from .sources import SOURCES
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
@@ -75,6 +75,9 @@ def make_handler(db_path: str):
                 elif url.path == "/glossary.json":
                     recent, _ = store.cards(conn, days=8, limit=10**6, eu_members=EU_MEMBERS)
                     self._send(json.dumps(glossary.payload(recent)).encode(), "application/json")
+                elif url.path == "/tags.json":
+                    every, _ = store.cards(conn, limit=10**6, eu_members=EU_MEMBERS)
+                    self._send(json.dumps(preferences.options(every)).encode(), "application/json")
                 elif url.path.startswith("/brand-icons/"):
                     name = url.path.rsplit("/", 1)[1]
                     f = brands.ICON_DIR / name
