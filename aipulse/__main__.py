@@ -73,6 +73,7 @@ def main():
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     dg.add_argument("--layout", choices=["short", "full"], default="short",
                     help="short (the daily email): the ten that mattered most, then headlines; full: every story in one table")
+    sub.add_parser("glossary", help="acronyms recent stories use often that the glossary doesn't explain yet")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
 
@@ -213,6 +214,12 @@ def main():
         else:
             digest.send(a.to, *email)
             print(f"Checked, no problems. Sent: {email[0]} {counts}")
+    elif a.cmd == "glossary":
+        from . import glossary
+        recent, _ = store.cards(store.connect(a.db), days=90, limit=10**6)
+        print(f"{len(glossary.ENTRIES)} entries; not explained yet, by how many of the last 90 days' cards use them:")
+        for word, n in glossary.missing(recent):
+            print(f"  {word}: {n}")
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

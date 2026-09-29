@@ -293,13 +293,17 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
            sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP])
     title = (f"All {len(top)} {'story' if len(top) == 1 else 'stories'} today" if light
              else f"{len(top)} things that mattered today")
+    words = f"{rss.SITE}#glossary"  # the site opens its glossary panel on this link
     lines = [hello, "", intro, f"Want everything? The full email, every story of the day in one table: {everything}",
+             f"A word you don't know? The AI Pulse glossary explains them in plain English: {words}",
              *([quiet] if quiet else []), "", title.upper()]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
     html = [f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
             f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
             f'Want everything? See the full email: every story of the day in one table →</a></p>'
+            f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(words)}" style="color:{LINK};text-decoration:none">'
+            f'A word you don’t know? The AI Pulse glossary explains them in plain English →</a></p>'
             + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
             + head(title)]
     cells = []

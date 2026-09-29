@@ -606,7 +606,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", ".nojekyll", "feeds", "daily"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", ".nojekyll", "feeds", "daily"}
     assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
 
 
@@ -1758,6 +1758,7 @@ def test_every_email_links_to_the_days_full_email(monkeypatch):
     cards = [card(i, "research") for i in range(3)] + [card(9, "tool")]
     _, text, html = digest.build(cards, ["research"], date(2026, 9, 28))  # a Research-only reader
     assert "https://shru14.github.io/ai-pulse/daily/2026-09-28.html" in text + html
+    assert "https://shru14.github.io/ai-pulse/#glossary" in text and "#glossary" in html  # every email points to the glossary
     assert "A lighter day in your streams: 3 stories" in text and "ALL 3 STORIES TODAY" in text
     # the page itself: every stream, the full table, a sign-up line instead of a reader's own settings
     _, text, html = digest.build(cards, ["releases", "news", "research", "regulation", "policy"], date(2026, 9, 28),
@@ -1784,3 +1785,22 @@ def test_stories_carry_a_country_and_the_email_shows_tags(monkeypatch):
     assert digest.story_tags(card)[0] == "United States"  # countries first
     _, text, html = digest.build([card], ["news"], date(2026, 9, 28))
     assert "#United States #Nvidia #Agents #Safety" in text and "#United States</span>" in html
+
+
+def test_glossary_explains_the_hard_words_in_stories():
+    from datetime import date
+    from pathlib import Path
+    from aipulse import glossary
+    assert len({e["id"] for e in glossary.ENTRIES}) == len(glossary.ENTRIES)
+    assert {e["group"] for e in glossary.ENTRIES} <= set(glossary.GROUPS)
+    assert glossary.terms_in("introducing PipSqueak 3, ShortSqueak, and (c.ai) lite") == ["character-ai"]
+    assert glossary.terms_in("Holo4 comes in 27B dense and 35B-A3B Mixture of Experts") == ["parameters", "mixture-of-experts"]
+    assert "parameters" not in glossary.terms_in("Instinct raises $1B Series C at a $10B valuation")  # money, not model size
+    assert glossary.terms_in("add 250 ml of milk") == []  # acronyms only in capitals
+    cards = [{"date": "2026-09-28", "title": "A RAG pipeline for agents", "summary": ""},
+             {"date": "2026-08-01", "title": "An old RAG story", "summary": ""}]
+    rag = next(e for e in glossary.payload(cards, date(2026, 9, 29))["entries"] if e["id"] == "rag")
+    assert rag["recent"] == 1 and rag["search"] == "RAG" and rag["match"]
+    page = Path("templates/index.html").read_text(encoding="utf-8")
+    assert 'id="glossary-open"' in page and page.index('id="subscribe-open"') < page.index('id="glossary-open"') < page.index('id="theme"')
+    assert 'fetch("glossary.json"' in page
