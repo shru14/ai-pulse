@@ -98,6 +98,42 @@ header.top{gap:10px}
 .sub-msg[data-kind="ok"]{background:var(--c-tool-soft);color:var(--ink);border-radius:8px;padding:9px 11px}
 .sub-msg[data-kind="error"]{color:var(--c-reg)}
 .sub-small{font-size:13px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+/* Glossary: the header button opens the list; a dotted word in a story opens its meaning in a small popover. */
+.glossary{width:min(640px,calc(100vw - 32px));max-height:min(760px,calc(100vh - 48px));padding:0;overflow:hidden}
+.glossary[open]{display:flex;flex-direction:column}
+.gl-head{padding:22px 22px 12px;border-bottom:1px solid var(--line)}
+.gl-head .sub-lede{margin-bottom:12px}
+.gl-search{width:100%;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:16px var(--body);padding:0 12px}
+.gl-search:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.gl-groups{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.gl-groups .group[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.gl-body{overflow-y:auto;padding:4px 22px 18px}
+.gl-hot{margin:14px 0 4px;font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.gl-hot-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.gl-hot-list button{font:13px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer}
+.gl-hot-list button:hover{border-color:var(--muted)}
+.gl-hot-list .n{font:11px var(--mono);color:var(--muted);margin-left:5px}
+.gl-entry{padding:12px 0;border-top:1px solid var(--line);scroll-margin-top:8px}
+.gl-entry:first-of-type{border-top:0}
+.gl-entry.flash{background:var(--accent-soft);border-radius:8px;margin-inline:-10px;padding-inline:10px}
+.gl-entry h3{font-family:var(--display);font-weight:500;font-size:17px;margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.gl-entry h3 .grp{font:11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.gl-entry p{margin:4px 0 0;font-size:15px;line-height:1.5}
+.gl-find{margin-top:6px;font:500 12px var(--mono);color:var(--accent);background:none;border:0;padding:0;cursor:pointer}
+.gl-find:hover{text-decoration:underline;text-underline-offset:3px}
+.gl-none{color:var(--muted);padding:18px 0}
+.gl{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:help;text-decoration:underline dotted;text-decoration-color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1.5px}
+.gl:hover,.gl[aria-expanded="true"]{color:var(--accent)}
+.gl:focus-visible,.gl-find:focus-visible,.gl-hot-list button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.gl-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:13px;color:var(--muted)}
+.gl-row .gl{font-size:13px}
+.gl-pop{position:absolute;z-index:20;width:min(320px,calc(100vw - 32px));background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.gl-pop[hidden]{display:none}
+.gl-pop b{font-family:var(--display);font-weight:500;font-size:16px}
+.gl-pop .grp{font:11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-left:8px}
+.gl-pop p{margin:4px 0 8px;font-size:14px;line-height:1.5}
+.gl-pop button{font:500 12px var(--mono);color:var(--accent);background:none;border:0;padding:0;cursor:pointer}
+@media (max-width:480px){.gl-head{padding:18px 16px 10px}.gl-body{padding:4px 16px 16px}}
 .intro{display:flex;flex-direction:column;gap:8px;padding-block:18px 0}
 .lede{margin:0;max-width:70ch;color:var(--muted);font-size:16px;line-height:1.55}
 .lede strong{color:var(--ink);font-weight:600}
@@ -249,8 +285,24 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
       <span>Daily digest</span>
     </button>
+    <button class="subscribe-btn" id="glossary-open" type="button" aria-haspopup="dialog" title="What the words in these stories mean">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5 2.5 2.5 0 0 0 6.5 24"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H19"/><path d="M9 7h6M9 10.5h4"/></svg>
+      <span>Glossary</span>
+    </button>
     <button class="theme" id="theme" type="button"></button>
   </header>
+  <dialog class="subscribe glossary" id="glossary" aria-labelledby="glossary-title">
+    <form method="dialog" class="sub-close-form"><button class="sub-close" aria-label="Close">×</button></form>
+    <div class="gl-head">
+      <h2 id="glossary-title">AI glossary</h2>
+      <p class="sub-lede">What the words in these stories mean, in plain English. In a story, a word with a dotted
+        underline opens its meaning.</p>
+      <input class="gl-search" id="gl-q" type="search" placeholder="Look up a word: MoE, RAG, inference…" aria-label="Look up a word">
+      <div class="gl-groups" id="gl-groups" role="group" aria-label="Show one group"></div>
+    </div>
+    <div class="gl-body" id="gl-body"><p class="gl-none">Loading…</p></div>
+  </dialog>
+  <div class="gl-pop" id="gl-pop" role="dialog" aria-label="Meaning" hidden></div>
   <dialog class="subscribe" id="subscribe" aria-labelledby="subscribe-title">
     <form method="dialog" class="sub-close-form"><button class="sub-close" aria-label="Close">×</button></form>
     <form class="sub-form" id="sub-form" novalidate>
@@ -359,6 +411,7 @@ function fmtDay(d){
 function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
 
 function render(){
+  $("gl-pop").hidden = true;  // the word it pointed at is about to be redrawn
   document.querySelectorAll(".stream").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.cat===state.cat)));
   showActiveTab();
   const chip = $("catchip");
@@ -393,7 +446,15 @@ function render(){
         const shown = it.authors.slice(0,6).join(", ");
         body.append(el("p","authors", shown + (it.authors.length>6 ? " +"+(it.authors.length-6)+" more" : "")));
       }
-      if(it.summary) body.append(el("p","sum",it.summary));  // clamped to 3 lines; see clampSummaries()
+      // Hard words get a dotted underline that opens their meaning (the glossary); words only in the headline
+      // are listed under the summary, as the headline itself is a link.
+      const words = glossaryFor(it.title, it.summary);
+      if(it.summary) body.append(markWords(el("p","sum"), it.summary, words.inSummary));  // clamped to 3 lines; see clampSummaries()
+      if(words.inTitle.length){
+        const row = el("div","gl-row", "Words explained: ");
+        words.inTitle.forEach(w => row.append(glButton(w.text, w.id)));
+        body.append(row);
+      }
       // A story or record we translated: the original, read through Google Translate's own page in the reader's
       // browser (a link like any other: nothing is fetched or copied by AI Pulse).
       const untranslated = /Translate and read: the original is in \w+\./.test(it.summary||"");
@@ -841,6 +902,138 @@ $("sub-form").addEventListener("submit", async e => {
     $("subscribe-go").disabled = !chosenStreams().length;
   }
 });
+// Glossary: plain-English meanings written by hand (aipulse/glossary.py). glossary.json has every entry, the ways
+// stories write it (regular expressions) and how many of this week's stories use it.
+const GL = {entries: [], byId: {}, groups: [], ready: false, group: null};
+const MAX_WORDS = 3;  // underlined words per card, least common first: the ones a reader is least likely to know
+fetch("glossary.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
+  const re = (e, flags) => new RegExp("(?<!\\w)(?:" + e.match.join("|") + ")(?![\\w])", flags);
+  GL.entries = d.entries.map(e => ({...e, re: re(e, e.case ? "" : "i"), anyCase: re(e, "i")}));
+  GL.byId = Object.fromEntries(GL.entries.map(e => [e.id, e]));
+  GL.groups = d.groups; GL.ready = true;
+  render(); renderGlossary();
+}).catch(() => { $("gl-body").replaceChildren(el("p","gl-none","Couldn't load the glossary. Try reloading the page.")); });
+
+// The glossary words in a card: those in the summary (to underline in place) and those only in the headline.
+function glossaryFor(title, summary){
+  const out = {inSummary: [], inTitle: []};
+  if(!GL.ready) return out;
+  const found = [];
+  for(const e of GL.entries){
+    // A word's first use; for names, each name's first use ("PipSqueak", "ShortSqueak" and "c.ai" are all Character.AI's)
+    const all = new RegExp(e.re.source, e.re.flags + "g"), seen = new Set(), uses = [];
+    for(const m of (summary || "").matchAll(all)){
+      const k = m[0].toLowerCase();
+      if(seen.has(k) || (uses.length && e.group !== "Names")) continue;
+      seen.add(k); uses.push({index: m.index, text: m[0]});
+    }
+    if(uses.length){ found.push({id: e.id, rank: e.recent, uses}); continue; }
+    const t = title ? e.re.exec(title) : null;
+    if(t) found.push({id: e.id, rank: e.recent, title: t[0]});
+  }
+  found.sort((a, b) => a.rank - b.rank);
+  const taken = [];
+  let words = 0;
+  for(const f of found){
+    if(words >= MAX_WORDS) break;
+    if(f.title){ out.inTitle.push({id: f.id, text: f.title}); words++; continue; }
+    const fresh = f.uses.filter(u => !taken.some(([s, e]) => u.index < e && u.index + u.text.length > s));  // "coding agents" is one word, not two
+    if(!fresh.length) continue;
+    fresh.forEach(u => { taken.push([u.index, u.index + u.text.length]); out.inSummary.push({id: f.id, ...u}); });
+    words++;
+  }
+  out.inSummary.sort((a, b) => a.index - b.index);
+  return out;
+}
+function glButton(text, id){
+  const b = el("button","gl",text); b.type="button"; b.dataset.gl = id;
+  b.setAttribute("aria-haspopup","dialog"); b.setAttribute("aria-expanded","false");
+  return b;
+}
+function markWords(p, text, words){
+  let at = 0;
+  words.forEach(w => { p.append(text.slice(at, w.index), glButton(w.text, w.id)); at = w.index + w.text.length; });
+  p.append(text.slice(at));
+  return p;
+}
+
+// The popover: a word's meaning, next to the word.
+const pop = $("gl-pop");
+let popFor = null;
+function closePop(){ if(popFor) popFor.setAttribute("aria-expanded","false"); popFor = null; pop.hidden = true; }
+function openPop(b){
+  const e = GL.byId[b.dataset.gl];
+  if(!e) return;
+  if(popFor === b){ closePop(); return; }
+  closePop();
+  const head = el("div"); head.append(el("b",null,e.term), el("span","grp",e.group));
+  const more = el("button",null,"More words in the glossary →"); more.type="button";
+  more.addEventListener("click", () => { closePop(); openGlossary(e.id); });
+  pop.replaceChildren(head, el("p",null,e.def), more);
+  pop.hidden = false; popFor = b; b.setAttribute("aria-expanded","true");
+  const r = b.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  const left = Math.max(16, Math.min(r.left, document.documentElement.clientWidth - w - 16));
+  const above = r.bottom + h + 12 > innerHeight && r.top > h + 12;
+  pop.style.left = (left + scrollX) + "px";
+  pop.style.top = ((above ? r.top - h - 6 : r.bottom + 6) + scrollY) + "px";
+}
+document.addEventListener("click", ev => {
+  const b = ev.target.closest(".gl");
+  if(b){ openPop(b); return; }
+  if(!pop.contains(ev.target)) closePop();
+});
+document.addEventListener("keydown", ev => { if(ev.key === "Escape" && popFor){ const b = popFor; closePop(); b.focus(); } });
+addEventListener("resize", closePop);
+
+// The glossary panel: this week's most-used words, then every entry A to Z; a search box and one chip per group.
+const glDialog = $("glossary");
+function openGlossary(id){
+  if(id){ $("gl-q").value = ""; GL.group = null; }
+  renderGlossary();
+  if(!glDialog.open) glDialog.showModal();
+  const row = id && document.getElementById("gl-" + id);
+  if(row){ row.scrollIntoView({block: "start"}); row.classList.add("flash"); setTimeout(() => row.classList.remove("flash"), 1600); }
+  else $("gl-q").focus();
+}
+function renderGlossary(){
+  if(!GL.ready) return;
+  const groups = $("gl-groups");
+  if(!groups.childElementCount) [null, ...GL.groups].forEach(g => {
+    const b = el("button","group", g || "All"); b.type="button"; b.dataset.g = g || "";
+    b.addEventListener("click", () => { GL.group = g; renderGlossary(); });
+    groups.append(b);
+  });
+  groups.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.g || null) === GL.group)));
+  const raw = $("gl-q").value.trim(), q = fold(raw);
+  const body = $("gl-body"); body.replaceChildren();
+  if(!q && !GL.group){
+    const hot = GL.entries.filter(e => e.recent).sort((a, b) => b.recent - a.recent).slice(0, 10);
+    if(hot.length){
+      const list = el("div","gl-hot-list");
+      hot.forEach(e => {
+        const b = el("button",null,e.term); b.type="button"; b.title = e.recent + (e.recent === 1 ? " story" : " stories") + " this week";
+        b.append(el("span","n",e.recent)); b.addEventListener("click", () => openGlossary(e.id)); list.append(b);
+      });
+      body.append(el("div","gl-hot","In the news this week"), list);
+    }
+  }
+  const shown = GL.entries.filter(e => (!GL.group || e.group === GL.group)
+    && (!q || fold(e.term + " " + e.def).includes(q) || e.anyCase.test(raw)))
+    .sort((a, b) => a.term.localeCompare(b.term, undefined, {sensitivity: "base"}));
+  shown.forEach(e => {
+    const d = el("div","gl-entry"); d.id = "gl-" + e.id;
+    const h = el("h3",null,e.term); h.append(el("span","grp",e.group));
+    const find = el("button","gl-find","Show stories that mention it →"); find.type="button";
+    find.addEventListener("click", () => { glDialog.close(); state.q = e.search; $("q").value = e.search; load(true); });
+    d.append(h, el("p",null,e.def), find); body.append(d);
+  });
+  if(!shown.length) body.append(el("p","gl-none","No word matches. Try another spelling, or pick “All”."));
+}
+$("glossary-open").addEventListener("click", () => openGlossary());
+$("gl-q").addEventListener("input", renderGlossary);
+glDialog.addEventListener("click", e => { if(e.target === glDialog) glDialog.close(); });  // a click outside closes it
+if(location.hash === "#glossary") openGlossary();
+
 let t; $("q").addEventListener("input", e => { clearTimeout(t); t=setTimeout(()=>{ state.q=e.target.value; load(true); },250); });
 $("range").addEventListener("change", e => { state.range=Number(e.target.value); saveUI(); load(true); });
 $("more").addEventListener("click", () => load(false));
