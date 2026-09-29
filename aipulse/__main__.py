@@ -71,6 +71,8 @@ def main():
     dg.add_argument("--streams", default="releases,news,research,regulation,policy", help="comma-separated streams")
     dg.add_argument("--day", help="UTC day, YYYY-MM-DD (default: yesterday)")
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
+    dg.add_argument("--layout", choices=["full", "short"], default="full",
+                    help="full: every story in one tagged table; short: the ones that mattered most, then headlines")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
 
@@ -198,13 +200,13 @@ def main():
             # Only counts are printed: addresses never appear in the (public) logs.
             readers = subscribers.current(os.environ.get("DIGEST_LIST_KEY", ""), os.environ.get("DIGEST_SIGNUP_URL", ""))
             emails = [(to, *e, one_click) for to, (chosen, one_click, link) in readers.items()
-                      if (e := digest.build(cards, chosen, day, link))]
+                      if (e := digest.build(cards, chosen, day, link, a.layout))]
             if a.dry_run:
                 print(f"Checked, no problems: {len(emails)} of {len(readers)} subscribers would get the {day} digest {counts}")
             else:
                 print(f"Checked, no problems. Sent the {day} digest to {digest.send_all(emails)} of {len(readers)} subscribers {counts}")
             return
-        email = digest.build(cards, streams, day)
+        email = digest.build(cards, streams, day, layout=a.layout)
         if a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(email[2])
             print(f"Checked, no problems: {email[0]} {counts} -> wrote {a.dry_run}")
