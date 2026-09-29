@@ -302,7 +302,7 @@ WORD_FROM = 5  # the word of the day comes from the day's 5 biggest stories in t
 # and not an everyday word (still in the glossary, but not worth a day)
 TECHNICAL = {"Models", "Training", "Agents & products", "Chips & compute", "Safety & security", "Research"}
 EVERYDAY = {"ai-agent", "llm", "gpt", "api", "cpu", "gpu", "open-source", "copilot", "data-center", "compute",
-            "machine-learning"}
+            "machine-learning", "token"}
 _TERMS: dict[str, frozenset[str]] = {}
 
 
