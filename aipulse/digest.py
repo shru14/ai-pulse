@@ -48,6 +48,11 @@ ACTION_LABEL = {"proposal": "Proposal", "law": "Law adopted", "body": "AI body",
 PER_STREAM = 25  # a longer stream ends with a link to the rest (the RSS feed and the page have them all)
 SUMMARY = 160    # characters of summary in the table; the story's page has the rest
 GREY, INK, LINK, RULE = "#5f6368", "#1a1a1a", "#1a4fd6", "#eceef1"
+# the short email's look: a navy header band, white cells edged in their stream's colour, tags coloured by kind
+NAVY, PAGE, EDGE, HEADLINE = "#14213d", "#e9eef7", "#d9e1ef", "#1c3faa"
+BRIGHT = {"releases": "#12b886", "news": "#4c6ef5", "research": "#9c36b5", "regulation": "#e64980", "policy": "#f76707"}
+CHIP = {"place": f"background:{NAVY};color:#ffffff", "company": f"background:#e7ecff;color:{HEADLINE}",
+        "topic": "background:#f1f3f7;color:#4a5060"}
 SMTP_HOST = "smtp.gmail.com"
 
 
@@ -242,8 +247,19 @@ def story_tags(c: dict) -> list[str]:
 
 
 def _chips(tags: list[str]) -> str:
-    return "".join(f'<span style="display:inline-block;font-size:11px;color:#3c4043;background:#eef0f3;border-radius:9px;'
-                   f'padding:1px 7px;margin:4px 4px 0 0;white-space:nowrap">#{escape(t)}</span>' for t in tags)
+    """Tag pills: countries navy, companies light blue, topics grey."""
+    kind = lambda t: ("place" if t in brief._PLACE_TAGS or t == "International" else
+                      "company" if t in classify.COMPANY_TERMS else "topic")
+    return "".join(f'<span style="display:inline-block;font-size:11px;{CHIP[kind(t)]};border-radius:9px;'
+                   f'padding:1px 8px;margin:4px 4px 0 0;white-space:nowrap">#{escape(t)}</span>' for t in tags)
+
+
+def _band(hello: str) -> str:
+    """The short email's header: a navy row across the top of the card."""
+    return (f'<tr><td style="background:{NAVY};color:#ffffff;padding:22px 20px 18px;border-radius:6px 6px 0 0">'
+            f'<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px">'
+            f'AI Pulse daily</div><div style="font-size:22px;font-weight:bold;line-height:1.3;color:#ffffff">'
+            f'{escape(hello)}</div></td></tr>')
 
 
 def _outlets(c: dict) -> int:
@@ -281,8 +297,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
              *([quiet] if quiet else []), "", title.upper()]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
-    html = [f'<div style="font-size:21px;font-weight:bold;line-height:1.3;margin:0 0 6px">{escape(hello)}</div>'
-            f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
+    html = [f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
             f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
             f'Want everything? See the full email: every story of the day in one table →</a></p>'
             + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
@@ -293,9 +308,10 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         more, summary, tags = _outlets(c) - 1, _short(c.get("summary") or "", 110), story_tags(c)
         by = c["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
         lines += [f"• [{label}] {c['title']}", *([f"   {' '.join('#' + t for t in tags)}"] if tags else []), *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
-        cells.append(f'<td valign="top" width="50%" style="padding:10px;border:1px solid {RULE};background:#fbfbfc">'
+        cells.append(f'<td valign="top" width="50%" style="padding:12px;border:1px solid {EDGE};background:#ffffff;'
+                     f'border-left:4px solid {BRIGHT[stream_of[id(c)]]}">'
                      f'<div style="margin-bottom:4px">{_pill(label, bg, fg)}</div>'
-                     f'<a href="{escape(c["url"])}" style="color:{LINK};font-size:14px;font-weight:bold;line-height:1.35;'
+                     f'<a href="{escape(c["url"])}" style="color:{HEADLINE};font-size:14.5px;font-weight:bold;line-height:1.35;'
                      f'text-decoration:none">{escape(c["title"])}</a>'
                      + (f'<div style="font-size:12.5px;line-height:1.4;margin-top:3px;color:#3c4043">{escape(summary)}</div>'
                         if summary else "")
@@ -365,9 +381,11 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
     change = f"{rss.SITE}#subscribe"  # the sign-up form: the same address with new streams asks to confirm them
     stop = unsubscribe or change
+    page, band, top = "#eef0f3", "", 22
     if layout == "short":
         open_text, open_html = _brief(by_stream, cards, streams, day)
         table_text, table_html = [], ""
+        page, band, top = PAGE, _band(open_text[0]), 16
     else:
         open_text, open_html = _opening(by_stream, cards, streams, day)
         table_text, table_html = _ledger(by_stream, streams, day)
@@ -382,10 +400,11 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
                      + f'<br><a href="{escape(change)}" style="color:{GREY}">Change streams</a> · '
                        f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a><br>')
     html = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'<title>{escape(subject)}</title></head><body style="margin:0;padding:0;background:#eef0f3">'
-            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:12px 8px 24px">'
+            f'<title>{escape(subject)}</title></head><body style="margin:0;padding:0;background:{page}">'
+            f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{page}"><tr>'
+            '<td align="center" style="padding:12px 8px 24px">'
             '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;'
-            f'border-radius:6px;font-family:Arial,sans-serif;color:{INK}"><tr><td style="padding:22px 20px 10px">'
+            f'border-radius:6px;font-family:Arial,sans-serif;color:{INK}">{band}<tr><td style="padding:{top}px 20px 10px">'
             + open_html + table_html
             + f'<p style="margin-top:28px;padding-top:12px;border-top:1px solid #e3e5e8;color:{GREY};font-size:13px;'
               f'line-height:1.6">' + settings_html
