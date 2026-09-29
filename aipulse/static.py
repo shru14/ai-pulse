@@ -14,7 +14,7 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, digest, glossary, jurisdictions, rss, store
+from . import brands, digest, glossary, jurisdictions, preferences, rss, store
 from . import subscribers
 from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
@@ -92,6 +92,7 @@ def build(conn, out: str | Path) -> int:
             "failingSources": [h for h in health if h["failing"]]}
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
     (out / "glossary.json").write_text(json.dumps(glossary.payload(cards, today), separators=(",", ":")), encoding="utf-8")
+    (out / "tags.json").write_text(json.dumps(preferences.options(cards, today), separators=(",", ":")), encoding="utf-8")
 
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)

@@ -6,8 +6,14 @@
  * the site's page then talks to this web app:
  *
  *   POST action=subscribe   email, streams  the site's form: stores a pending sign-up, emails a confirm link
- *                                            (SITE#confirm=token)
+ *                           more, less,     (SITE#confirm=token); with the reader's choices ("Make it yours":
+ *                           words           labels separated by |), which start when they confirm
  *   POST action=confirm     t               the site's "Confirm" button: the reader is subscribed
+ *   POST action=choices     t               the site's "Change my choices" (SITE#choices=token, in every email):
+ *                                            the reader's streams and choices
+ *   POST action=save        t, streams,     saves them at once (the link in the reader's own email is the proof
+ *                           more, less,     it's them, as for unsubscribing)
+ *                           words
  *   POST action=unsubscribe t               the site's "Unsubscribe" button (SITE#unsubscribe=token, in every
  *                                            email), or a mail app's one-click unsubscribe (RFC 8058, the
  *                                            List-Unsubscribe header): the address is deleted and our emails
@@ -32,6 +38,8 @@ const MAX_PER_ADDRESS_A_DAY = 3;    // nobody can flood an inbox with confirm li
 const PENDING_DAYS = 7;             // an unconfirmed sign-up is deleted after a week
 const EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
 const CONTACTS = `Add ${SENDER} to your contacts so the daily email lands in your inbox, not in spam.`;
+// A reader's choices: labels the site shows (the form sends them separated by |), and a few words of their own
+const LIMITS = {more: 10, less: 40, words: 5};
 
 const store = () => PropertiesService.getScriptProperties();
 const today = () => new Date().toISOString().slice(0, 10);
@@ -52,6 +60,8 @@ function doPost(e) {
   const result = p.action === "subscribe" ? subscribe(p)
     : p.action === "confirm" ? confirm(p.t)
     : p.action === "unsubscribe" ? unsubscribe(p.t)
+    : p.action === "choices" ? choices(p.t)
+    : p.action === "save" ? save(p)
     : {ok: false};
   return p.action === "subscribe" || p.format === "json" ? json(result) : page(result);
 }
@@ -60,6 +70,20 @@ function read(email) {
   const raw = store().getProperty("s:" + email);
   return raw ? JSON.parse(raw) : null;
 }
+
+// The reader's choices from the form, trimmed and capped: plain labels and words only (letters, digits, spaces
+// and a few marks), so nothing odd is ever stored or sent back.
+function prefsFrom(p) {
+  const clean = (raw, n) => [...new Set(String(raw || "").split("|")
+    .map(s => s.replace(/[^\p{L}\p{N} &.,'’()\-]/gu, "").replace(/\s+/g, " ").trim())
+    .filter(s => s.length > 1 && s.length <= 60))].slice(0, n);
+  const out = {more: clean(p.more, LIMITS.more), less: clean(p.less, LIMITS.less), words: clean(p.words, LIMITS.words)};
+  out.more = out.more.filter(s => !out.less.includes(s));  // never both
+  return out;
+}
+const hasPrefs = pr => !!pr && (pr.more.length + pr.less.length + pr.words.length) > 0;
+const summary = pr => [pr.more.length && `more of ${pr.more.join(", ")}`, pr.less.length && `leaving out ${pr.less.join(", ")}`,
+                       pr.words.length && `your words ${pr.words.map(w => `"${w}"`).join(", ")}`].filter(Boolean).join("; ");
 
 function subscribe(p) {
   if (p.website) return {ok: true};  // the hidden field only bots fill in
@@ -80,6 +104,9 @@ function subscribe(p) {
     if (rec.ctoken) props.deleteProperty("t:" + rec.ctoken);
     rec.ctoken = Utilities.getUuid();
     rec.pending = streams;
+    // choices start with the confirm link too; a reader changing only streams keeps the choices they have
+    const prefs = prefsFrom(p);
+    if (hasPrefs(prefs)) rec.pendingPrefs = prefs; else delete rec.pendingPrefs;
     rec.asked = Date.now();
     rec.n += 1;
     props.setProperty("t:" + rec.ctoken, email);
@@ -90,7 +117,8 @@ function subscribe(p) {
     const change = rec.confirmed;
     const lines = change ? [
       "Hi again,",
-      `You asked to change your AI Pulse daily streams to: ${names(streams)}.`,
+      `You asked to change your AI Pulse daily streams to: ${names(streams)}.` +
+        (hasPrefs(prefs) ? ` Your choices: ${summary(prefs)}.` : ""),
       "Open this link and press Confirm, and the change starts with the next morning's email:",
       link,
       "Didn't ask for this? No worries, just ignore this email and nothing changes.",
@@ -101,7 +129,7 @@ function subscribe(p) {
       "AI Pulse is a free, non-commercial briefing on what's happening in AI. Every morning we read company blogs, " +
         "newsrooms, research archives and government sites, and sort the day's stories into clear streams, each " +
         "linked to the original reporting.",
-      `You picked: ${names(streams)}.`,
+      `You picked: ${names(streams)}.` + (hasPrefs(prefs) ? ` Your choices: ${summary(prefs)}.` : ""),
       "One last step: open this link and press Confirm, and your first digest arrives the next morning:",
       link,
       "Didn't sign up? No worries, just ignore this email: nothing will be sent, and the request disappears within a week.",
@@ -134,15 +162,17 @@ function confirm(t) {
       return {ok: false, title: "AI Pulse daily is full for now", text: "Please try again in a few weeks."};
     const changed = rec.confirmed;
     rec.streams = rec.pending;
+    if (rec.pendingPrefs) rec.prefs = rec.pendingPrefs;
     rec.confirmed = true;
-    rec.token = rec.token || Utilities.getUuid();  // the reader's own unsubscribe link
-    delete rec.pending; delete rec.ctoken;
+    rec.token = rec.token || Utilities.getUuid();  // the reader's own unsubscribe and "Change my choices" link
+    delete rec.pending; delete rec.pendingPrefs; delete rec.ctoken;
     props.deleteProperty("t:" + t);
     props.setProperty("u:" + rec.token, email);
     props.setProperty("s:" + email, JSON.stringify(rec));
     notify(changed ? `AI Pulse: a subscriber changed streams (${count()} subscribers)`
                    : `AI Pulse: new subscriber (${count()} subscribers)`,
-           `${email} ${changed ? "now gets" : "subscribed to"}: ${names(rec.streams)}.`);
+           `${email} ${changed ? "now gets" : "subscribed to"}: ${names(rec.streams)}.` +
+           (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
     return {ok: true, title: changed ? "Your streams are changed" : "Welcome aboard, you're subscribed!",
             text: `${changed ? "From tomorrow" : "Every morning"} you'll get the day before in AI: ${names(rec.streams)}. ` +
                   "It's sent at about 05:00 UTC (7:00 in Germany in summer), and every email has a one-click " +
@@ -178,6 +208,38 @@ function unsubscribe(t) {
                 "You won't hear from us again."};
 }
 
+// "Change my choices": the link in every email (SITE#choices=token) opens the form filled in with what the reader
+// has; saving changes it at once, as that link is the reader's own.
+function choices(t) {
+  const email = t && store().getProperty("u:" + t), rec = email && read(email);
+  if (!rec || !rec.confirmed) return {ok: false, title: "This link doesn't work any more",
+                                      text: "Subscribe again with the Daily digest button."};
+  const pr = rec.prefs || {more: [], less: [], words: []};
+  return {ok: true, streams: rec.streams, more: pr.more, less: pr.less, words: pr.words};
+}
+
+function save(p) {
+  const streams = String(p.streams || "").split(/[\s,]+/).filter(s => s in STREAMS);
+  if (!streams.length) return {ok: false, error: "streams"};
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  let email, rec;
+  try {
+    email = p.t && store().getProperty("u:" + p.t);
+    rec = email && read(email);
+    if (!rec || !rec.confirmed) return {ok: false, error: "link"};
+    rec.streams = streams;
+    rec.prefs = prefsFrom(p);
+    store().setProperty("s:" + email, JSON.stringify(rec));
+  } finally {
+    lock.releaseLock();
+  }
+  notify(`AI Pulse: a subscriber changed their choices (${count()} subscribers)`,
+         `${email} now gets: ${names(streams)}.` + (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
+  return {ok: true, title: "Saved", text: `From tomorrow's email: ${names(streams)}` +
+          (hasPrefs(rec.prefs) ? `; ${summary(rec.prefs)}.` : ".")};
+}
+
 // A note to the project inbox when someone subscribes, changes streams or unsubscribes. It never stops the
 // reader's own step if it fails.
 function notify(subject, text) {
@@ -201,7 +263,7 @@ function list(key) {
     if (k.startsWith("sent:") && k < "sent:" + today()) props.deleteProperty(k);
     if (!k.startsWith("s:")) continue;
     const rec = JSON.parse(v), email = k.slice(2);
-    if (rec.confirmed) out.push({email, streams: rec.streams, token: rec.token});
+    if (rec.confirmed) out.push({email, streams: rec.streams, token: rec.token, ...(rec.prefs || {})});
     else if (rec.asked < cutoff) {  // never confirmed: forgotten
       if (rec.ctoken) props.deleteProperty("t:" + rec.ctoken);
       props.deleteProperty(k);

@@ -606,7 +606,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", ".nojekyll", "feeds", "daily"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily"}
     assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
 
 
@@ -1536,7 +1536,12 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
                             {"email": "cy@example.org", "streams": ["bogus"], "token": token}]}
     got = sb.readers(data)
     site_link = "https://shru14.github.io/ai-pulse/#unsubscribe=" + token
-    assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token, site_link)}  # malformed dropped
+    none = {"more": [], "less": [], "words": []}  # a reader who made no choices
+    assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token, site_link, none)}  # malformed dropped
+    # choices come through capped and cleaned, never in both lists
+    chosen = sb.prefs_of({"more": ["Agents", "Asia", "Asia", "x", "Tutorial"], "less": ["Tutorial", 7], "words": ["  Tesla   Optimus "]})
+    assert chosen == {"more": ["Agents", "Asia"], "less": ["Tutorial"], "words": ["Tesla Optimus"]}
+    assert sb.choices_link(site_link) == "https://shru14.github.io/ai-pulse/#choices=" + token
     try:
         sb.readers({"ok": False})
         raise AssertionError("a refused list must stop the send")
@@ -1552,9 +1557,10 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
     monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
     card = {"id": "p1", "title": "OpenAI sued over AI training data", "summary": "", "url": "https://ex.com/1", "source": "S",
             "category": "policy", "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
-    _, one_click, link = got["ana@example.org"]
+    _, one_click, link, _ = got["ana@example.org"]
     subject, text, html = digest.build([card], ["policy"], date(2026, 9, 27), link)
-    assert f"Unsubscribe: {link}" in text and "Change streams: https://shru14.github.io/ai-pulse/#subscribe" in text
+    # the reader's own link opens the form filled in with their streams and choices
+    assert f"Unsubscribe: {link}" in text and f"Change my streams and choices: {sb.choices_link(link)}" in text
     assert "script.google.com" not in text + html  # links in the email only go to the site (spam filters)
     msg = digest._message("ana@example.org", subject, text, html, one_click)
     assert msg["List-Unsubscribe"] == f"<{one_click}>" and msg["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
@@ -1882,3 +1888,87 @@ def test_tags_only_where_the_story_means_it():
                        ("Slovakia", "SK"), ("Slovenia", "SI")]:
         assert jurisdictions.detect(f"{name} adopts a national AI strategy") == [code]
     assert jurisdictions.detect("A Slovak startup and a Slovenian lab") == ["SK", "SI"]
+
+
+def test_the_preference_form_is_short_and_its_search_finds_every_tag():
+    from datetime import date
+    from aipulse import classify, preferences
+    cards = [
+        {"category": "news", "kind": "tutorial", "title": "A coding guide to Qwen agents", "summary": "", "date": "2026-09-28",
+         "tags": ["Alibaba", "China", "Agents"]},
+        {"category": "regulation", "action": "proposal", "title": "Kenya AI bill", "summary": "", "date": "2026-09-28",
+         "tags": ["Kenya", "Law"]},
+        {"category": "research", "title": "A paper", "summary": "", "date": "2026-01-01", "tags": ["Philip Torr", "Nvidia", "Research"]},
+    ]
+    o = preferences.options(cards, date(2026, 9, 29))
+    shown = {g["name"]: g["items"] for g in o["groups"]}
+    search = {g["name"]: g.get("search", []) for g in o["groups"]}
+    # a few choices per section...
+    assert shown["Story types"][:2] == ["News", "AI-incident"] and "Standard" in shown["Story types"]
+    assert shown["Topics"] == list(preferences.THEMES) and len(shown["Topics"]) == 8
+    assert shown["Companies"] == ["Alibaba", "Nvidia"]  # the most in the news; the rest through the search
+    assert shown["Places"] == ["Africa", "Asia", "Europe", "North America", "South America", "Oceania", "International bodies"]
+    assert shown["People"] == [] and search["People"] == ["Philip Torr"]
+    # ...and the search finds the rest: every topic, every country
+    assert {"Agents", "Law"} <= set(search["Topics"]) and {"Kenya", "Slovakia", "Russia"} <= set(search["Places"])
+    assert set(classify.TOPIC_TERMS) <= set(preferences.THEME_OF)  # every topic tag is in a theme
+    assert preferences.THEME_OF["Funding"] == "Business & work" and preferences.THEME_OF["Deepfakes"] == "Safety & security"
+    assert preferences.CONTINENT_OF["Kenya"] == "Africa" and preferences.CONTINENT_OF["Israel"] == "Asia"
+    assert preferences.CONTINENT_OF["Mexico"] == "North America" and preferences.CONTINENT_OF["European Union"] == "Europe"
+    # every place has a continent, except Russia: no region, as on the site; chosen by name
+    assert [p for p, c in preferences.CONTINENT_OF.items() if not c] == ["Russia"]
+    # a story carries its theme and continent too, so choosing "Asia" or a theme reaches it
+    assert {"Agents", "Models & products", "China", "Asia", "Tutorial"} <= preferences.labels(cards[0])
+    assert all(isinstance(t, str) for g in o["groups"] for t in g["items"] + g.get("search", []))  # labels only, no counts
+    assert "Research" not in {t for g in o["groups"] for t in g["items"] + g.get("search", [])}
+    everything = {t for g in o["groups"] for t in g["items"] + g.get("search", [])}
+    assert {"Tutorial", "Kenya", "Alibaba", "Nvidia", "Philip Torr", "Agents", "Law"} <= everything  # nothing out of reach
+
+
+
+def test_page_script_declares_each_name_once():
+    import re
+    from pathlib import Path
+    script = Path("templates/index.html").read_text(encoding="utf-8").split("<script>")[-1]
+    names = [n for decl in re.findall(r"^(?:const|let|function)\s+(.+?)(?:=>|\(|;|$)", script, re.M)
+             for n in re.findall(r"(?:^|,\s*)([A-Za-z_$][\w$]*)\s*(?:=|\(|$)", decl)]
+    dupes = {n for n in names if names.count(n) > 1}
+    assert not dupes, f"declared twice (the page's script would stop): {dupes}"
+
+
+def test_each_reader_gets_their_own_top_10(monkeypatch):
+    from datetime import date
+    from aipulse import digest, glossary, preferences
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    day = date(2026, 9, 28)
+
+    def card(i, title, outlets=0, kind="news", tags=()):
+        return {"id": f"c{i}", "title": title, "summary": "", "url": f"https://ex.com/{i}", "source": f"S{i}",
+                "category": "news", "kind": kind, "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00",
+                "tags": list(tags), "also": [{"source": f"O{i}{k}", "title": title, "url": f"https://o.com/{i}/{k}"} for k in range(outlets)]}
+    big = [card(i, f"Big story {i} about OpenAI", outlets=10 - i) for i in range(12)]  # the day's biggest
+    robots = [card(20 + i, f"A humanoid robot demo {i}") for i in range(7)]            # Robotics, 1 outlet each
+    guides = [card(40 + i, f"How to fine-tune {i}", kind="tutorial") for i in range(3)]
+    kerala = [card(50, "Kerala launches an AI mission for schools", outlets=1)]  # outranks the robots
+    cards = big + robots + guides + kerala
+    everyone = digest.build(cards, ["news"], day)
+    # no choices: exactly today's email
+    assert digest.build(cards, ["news"], day, prefs={"more": [], "less": [], "words": []}) == everyone
+    _, text, html = digest.build(cards, ["news"], day, prefs={"more": ["Robotics"], "less": [], "words": ["Kerala"]})
+    assert "Here are the 10 that mattered most." in text and "of your top 10" not in text  # picks are marked, not announced
+    top = text.split("Here are the 10 that mattered most.")[1].split("THE REST OF THE DAY")[0]
+    yours = [l for l in top.splitlines() if "[Your choice]" in l]
+    assert len(yours) == digest.PICKS and "Big story 0" in top and "Big story 4" in top  # 5 of theirs, then the biggest
+    assert "Kerala launches" in top  # their own words, in the headline
+    assert "Your choice</span>" in html and "Left out" not in text  # nothing left out: no note
+    # left out: never in their email, counted, and still in the full email
+    _, text, _ = digest.build(cards, ["news"], day, prefs={"more": [], "less": ["Tutorial", "Business & work"], "words": []})
+    assert "How to fine-tune" not in text and "Left out, as you asked: 3 stories (Tutorial); they're in the full email." in text
+    full = digest.build(cards, ["news"], day, layout="full", prefs={"more": [], "less": ["Tutorial"], "words": []})
+    assert "How to fine-tune 0" in full[1]  # the full email is the same for everyone
+    # word of the day: the hardest technical word in the day's 5 biggest stories of this reader's email
+    hard = [card(60, "Nvidia ships HBM4 for AI data centers", outlets=20), card(61, "A new benchmark for agents", outlets=19),
+            card(62, "Another data center opens")]  # "data center" is common; HBM is rare
+    text = digest.build(cards + hard, ["news"], day)[1]
+    assert "WORD OF THE DAY: HBM" in text  # rarer than "benchmark" or "agent" in these stories
+    assert "Where it came up: Nvidia ships HBM4 for AI data centers" in text  # a story in their own email
