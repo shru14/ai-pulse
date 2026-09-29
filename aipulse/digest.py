@@ -119,8 +119,8 @@ def breakdown(day_cards: list[dict], stream: str) -> str:
                       for k, (label, _, _) in KIND.items() if counts[k]) or SECTION_NOTE[stream]
 
 
-def _short(summary: str) -> str:
-    return summary if len(summary) <= SUMMARY else summary[:SUMMARY - 3].rsplit(" ", 1)[0] + "…"
+def _short(summary: str, limit: int = SUMMARY) -> str:
+    return summary if len(summary) <= limit else summary[:limit - 3].rsplit(" ", 1)[0] + "…"
 
 
 def _others(c: dict) -> list[dict]:
@@ -218,7 +218,7 @@ def _empty_note(name: str, day: date) -> str:
 
 
 # The short email: the day's most-reported stories in full, then each stream's next few headlines.
-TOP = 5           # stories in "5 things that mattered"
+TOP = 10          # stories in "10 things that mattered", 5 rows of 2
 HEADLINES = 3     # further headlines per stream
 SIDE_KINDS = {"tutorial", "event", "blog"}  # counted in the short email, not listed
 
@@ -258,19 +258,25 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
             f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
             + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
             + head(f"{len(top)} things that mattered")]
+    cells = []
     for i, c in enumerate(top, 1):
         label, bg, fg = tag(c, stream_of[id(c)])
-        more, summary = _outlets(c) - 1, _short(c.get("summary") or "")
-        by = c["source"] + (f" and {more} more outlet{'s' if more > 1 else ''}" if more else "")
+        more, summary = _outlets(c) - 1, _short(c.get("summary") or "", 110)
+        by = c["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
         lines += [f"{i}. [{label}] {c['title']}", *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
-        html.append(f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
-                    f'margin:0 0 12px"><tr><td valign="top" width="30" style="font-size:20px;font-weight:bold;color:#c3c7ce;'
-                    f'padding-top:2px">{i}</td><td valign="top">{_pill(label, bg, fg)}<div style="margin-top:5px">'
-                    f'<a href="{escape(c["url"])}" style="color:{LINK};font-size:16px;font-weight:bold;line-height:1.35;'
-                    f'text-decoration:none">{escape(c["title"])}</a></div>'
-                    + (f'<div style="font-size:14px;line-height:1.45;margin-top:3px;color:#3c4043">{escape(summary)}</div>'
-                       if summary else "")
-                    + f'<div style="font-size:12px;color:{GREY};margin-top:3px">{escape(by)}</div></td></tr></table>')
+        cells.append(f'<td valign="top" width="50%" style="padding:10px;border:1px solid {RULE};background:#fbfbfc">'
+                     f'<div style="font-size:12px;font-weight:bold;color:#9aa0a6;margin-bottom:4px">{i} &nbsp;{_pill(label, bg, fg)}</div>'
+                     f'<a href="{escape(c["url"])}" style="color:{LINK};font-size:14px;font-weight:bold;line-height:1.35;'
+                     f'text-decoration:none">{escape(c["title"])}</a>'
+                     + (f'<div style="font-size:12.5px;line-height:1.4;margin-top:3px;color:#3c4043">{escape(summary)}</div>'
+                        if summary else "")
+                     + f'<div style="font-size:11.5px;color:{GREY};margin-top:4px">{escape(by)}</div></td>')
+    if len(cells) % 2:
+        cells.append('<td width="50%"></td>')
+    # 5 rows of 2, read left to right: 1 2 / 3 4 / ...
+    html.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
+                'table-layout:fixed">' + "".join(f"<tr>{cells[k]}{cells[k + 1]}</tr>" for k in range(0, len(cells), 2))
+                + "</table>")
     lines += ["", "THE REST OF THE DAY"]
     html.append(head("The rest of the day") + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
                 'style="border-collapse:collapse">')
@@ -284,9 +290,10 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         extra, more = len(rest) - HEADLINES + sum(side.values()), f"{rss.SITE}#{category}"
         count = f"{len(by_stream[n])} {'story' if len(by_stream[n]) == 1 else 'stories'}"
         lines.append(f"{stream} ({count})")
-        if not by_stream[n]:
-            lines.append(f"  {_empty_note(n, day)}")
-            heads = f'<div style="font-size:13px;color:{GREY}">{escape(_empty_note(n, day))}</div>'
+        if not by_stream[n] or not rest:
+            note = _empty_note(n, day) if not by_stream[n] else f"In the top {len(top)} above."
+            lines.append(f"  {note}")
+            heads = f'<div style="font-size:13px;color:{GREY}">{escape(note)}</div>'
         else:
             lines += [f"  • {c['title']} {c['url']}" for c in rest[:HEADLINES]]
             heads = "".join(f'<div style="margin:0 0 5px;line-height:1.35"><a href="{escape(c["url"])}" style="color:{INK};'
