@@ -20,7 +20,7 @@ from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
 
-from . import brief, classify, jurisdictions, quality, rss
+from . import brief, classify, glossary, jurisdictions, quality, rss
 from .sources import SOURCES
 
 # Every story wears a tag saying what it is. Industry's are its sub-categories (classify.news_kind; AI-incidents
@@ -273,6 +273,31 @@ def _rank(c: dict) -> tuple:
     return (_outlets(c), own, (c.get("kind") or "news") in ("news", "incident"), c.get("category") in ("regulation", "policy"))
 
 
+def _word(cards: list[dict], day: date) -> tuple[list[str], str]:
+    """The word of the day (glossary.word_of_the_day): its meaning, a story that used it that day or in the
+    week before, and a link to it in the site's glossary."""
+    e = glossary.word_of_the_day(day)
+    week = (day - timedelta(days=6)).isoformat()
+    used = [c for c in cards if week <= (c.get("date") or "") <= day.isoformat()
+            and glossary.mentions(e["id"], f"{c.get('title') or ''} {c.get('summary') or ''}")]
+    # A headline that shows the word beats one whose summary does; then the latest, then the most reported
+    story = max(used, key=lambda c: (glossary.mentions(e["id"], c.get("title") or ""), c["date"], _outlets(c)), default=None)
+    more = f"{rss.SITE}#glossary={e['id']}"  # the site opens its glossary at this word
+    text = ["WORD OF THE DAY: " + e["term"], e["def"], *([f"Where it came up: {story['title']} {story['url']}"] if story else []),
+            f"More words in the AI Pulse glossary: {more}"]
+    html = (f'<div style="margin:14px 0 12px;padding:14px 16px;background:#eef2ff;border-left:4px solid {NAVY};border-radius:4px">'
+            f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:{HEADLINE};'
+            f'margin-bottom:4px">Word of the day</div>'
+            f'<div style="font-size:18px;font-weight:bold;color:{NAVY}">{escape(e["term"])}</div>'
+            f'<div style="font-size:14px;line-height:1.5;color:#3c4043;margin-top:3px">{escape(e["def"])}</div>'
+            + (f'<div style="font-size:12.5px;line-height:1.45;color:{GREY};margin-top:7px">Where it came up: '
+               f'<a href="{escape(story["url"])}" style="color:{LINK};text-decoration:none">{escape(story["title"])}</a></div>'
+               if story else "")
+            + f'<div style="font-size:13px;margin-top:7px"><a href="{escape(more)}" style="color:{LINK};text-decoration:none">'
+              f'More words in the AI Pulse glossary →</a></div></div>')
+    return text, html
+
+
 def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date) -> tuple[list[str], str]:
     """The short email's body: an opening line, the TOP stories that mattered most (tag, headline, one line,
     how many outlets), then per stream its count, next HEADLINES headlines and a link to the rest.
@@ -285,27 +310,26 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     counted = (f"{stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
                f"{'source' if len(outlets) == 1 else 'sources'}")
     light = len(todays) <= LIGHT  # a lighter day in these streams: every story in the table, said plainly
-    intro = (f"A lighter day in your streams: {counted}, all of them below." if light else
-             f"{counted}. Here are the ones that mattered most; the rest of the day is one tap away.")
+    intro = f"A lighter day in your streams: {counted}." if light else f"{counted}."
     quiet = _quiet(by_stream, cards, streams, day)
     everything = full_page(day)  # every story of the day, whatever streams this reader chose
     top = (sorted(todays, key=_rank, reverse=True) if light else
            sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP])
-    title = (f"All {len(top)} {'story' if len(top) == 1 else 'stories'} today" if light
-             else f"{len(top)} things that mattered today")
-    words = f"{rss.SITE}#glossary"  # the site opens its glossary panel on this link
-    lines = [hello, "", intro, f"Want everything? The full email, every story of the day in one table: {everything}",
-             f"A word you don't know? The AI Pulse glossary explains them in plain English: {words}",
-             *([quiet] if quiet else []), "", title.upper()]
+    title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
+             else f"Here are the {len(top)} that mattered most.")
+    # In order: the count, the word of the day, the full email, then the stories
+    word_text, word_html = _word(cards, day)
+    lines = [hello, "", intro, "", *word_text, "",
+             f"Want everything? The full email, every story of the day in one table: {everything}",
+             *([quiet] if quiet else []), "", title]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
-    html = [f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
-            f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
-            f'Want everything? See the full email: every story of the day in one table →</a></p>'
-            f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(words)}" style="color:{LINK};text-decoration:none">'
-            f'A word you don’t know? The AI Pulse glossary explains them in plain English →</a></p>'
+    html = [f'<p style="margin:0;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
+            + word_html
+            + f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
+              f'Want everything? See the full email: every story of the day in one table →</a></p>'
             + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
-            + head(title)]
+            + f'<div style="font-size:17px;font-weight:bold;color:{NAVY};margin:20px 0 10px">{escape(title)}</div>']
     cells = []
     for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])

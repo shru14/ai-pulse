@@ -9,6 +9,7 @@ doesn't explain yet: candidates to write up by hand.
 """
 from __future__ import annotations
 
+import hashlib
 import re
 from collections import Counter
 from datetime import date, timedelta
@@ -92,7 +93,7 @@ _ENTRIES = [
      "parameters and computing power.", [r"scaling laws?"], False),
     ("Quantization", "Training", "Storing a model's numbers with less precision (e.g. 4 bits instead of 16) so it "
      "needs less memory and runs faster, usually losing a little quality.",
-     [r"quanti[sz](?:ation|ed|ing)", r"FP8", r"FP4", r"BF16", r"GGUF"], False),
+     [r"quanti[sz](?:ation|ed|ing)", r"FP4", r"GGUF"], False),
 
     # ---- Agents & products -------------------------------------------------------------------------------------
     ("AI agent", "Agents & products", "An AI system that doesn't just answer but takes actions on its own, step by "
@@ -319,6 +320,20 @@ _PATTERNS = {e["id"]: _pattern(e) for e in ENTRIES}
 def terms_in(text: str) -> list[str]:
     """The glossary entries a piece of text mentions, in glossary order."""
     return [e["id"] for e in ENTRIES if _PATTERNS[e["id"]].search(text or "")]
+
+
+def mentions(entry_id: str, text: str) -> bool:
+    return bool(_PATTERNS[entry_id].search(text or ""))
+
+
+# The daily email's word of the day: every entry in turn, in an order that mixes the groups, one a day from
+# ROTATION_START, so no word comes back for len(ENTRIES) days. Nothing to store, the same word for every reader.
+ROTATION_START = date(2026, 9, 29)
+
+
+def word_of_the_day(day: date) -> dict:
+    order = sorted(ENTRIES, key=lambda e: hashlib.sha256(e["id"].encode()).hexdigest())
+    return order[(day - ROTATION_START).days % len(order)]
 
 
 def payload(cards: list[dict], today: date | None = None, days: int = 7) -> dict:

@@ -473,6 +473,13 @@ def reclassify(conn) -> int:
     """Re-run the sorting and regulation rules over stored policy and regulation stories.
     Returns how many changed."""
     changed = 0
+    # Stories stored with mojibake ("Peopleâ€™s"), before collection repaired it (feeds.unmangle).
+    for it in conn.execute("SELECT id, title, summary FROM items").fetchall():
+        title, summary = feeds.unmangle(it["title"]), feeds.unmangle(it["summary"] or "")
+        if (title, summary) != (it["title"], it["summary"] or ""):
+            store.update_text(conn, it["id"], title, summary)
+            store.set_tags(conn, it["id"], classify.tags_for(title, summary))
+            changed += 1
     # Stories stored before collection translated them (a Japanese headline, a Spanish press item), and feeds'
     # "also in French" lines: English now, where the offline translator can do it.
     for it in conn.execute("SELECT id, source, url, title, summary FROM items").fetchall():
