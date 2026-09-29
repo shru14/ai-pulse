@@ -142,12 +142,42 @@ def fetch(url: str, timeout: int = 20, attempts: int = ATTEMPTS) -> bytes:
     raise AssertionError("unreachable")
 
 
+# Mojibake: UTF-8 text decoded as Latin-1 or Windows-1252, once or twice ("People’s" arriving as "Peopleâ€™s"
+# or "PeopleÃ¢Â\x80Â\x99s"). Only runs of such characters are touched, so real accents and other scripts stay.
+_CONT = "-¿ŒœŠšŸŽžƒˆ˜–—‘-„†-•…‰‹›€™"
+_MANGLED = re.compile(f"(?:[Â-ô][{_CONT}]{{1,3}})+")
+
+
+def _byte(ch: str) -> bytes:
+    try:
+        return ch.encode("cp1252")
+    except UnicodeError:
+        return ch.encode("latin-1")  # the five bytes cp1252 leaves undefined (0x81, 0x8d, 0x8f, 0x90, 0x9d)
+
+
+def _unmangle_run(run: str) -> str:
+    for _ in range(3):  # a feed can be double-decoded
+        try:
+            fixed = b"".join(_byte(ch) for ch in run).decode("utf-8")
+        except UnicodeError:
+            return run
+        if fixed == run:
+            return run
+        run = fixed
+    return run
+
+
+def unmangle(text: str) -> str:
+    """Repair mojibake; text without it comes back unchanged."""
+    return _MANGLED.sub(lambda m: _unmangle_run(m.group(0)), text) if text else text
+
+
 def clean_text(raw: str | None, limit: int = 3000) -> str:
-    """Strip HTML, unescape entities, collapse whitespace, trim to a sentence. (Summaries are shortened later,
-    by brief.py; a paper's whole abstract is kept so its contribution sentence can be found.)"""
+    """Strip HTML, unescape entities, repair mojibake, collapse whitespace, trim to a sentence. (Summaries are
+    shortened later, by brief.py; a paper's whole abstract is kept so its contribution sentence can be found.)"""
     if not raw:
         return ""
-    text = html.unescape(_TAG_RE.sub(" ", raw))
+    text = unmangle(html.unescape(_TAG_RE.sub(" ", raw)))
     text = _WS_RE.sub(" ", text).strip()
     if len(text) <= limit:
         return text

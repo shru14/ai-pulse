@@ -1820,3 +1820,19 @@ def test_word_of_the_day_rotates_through_the_glossary(monkeypatch):
     _, text, html = digest.build([card], ["news"], day)
     assert "WORD OF THE DAY: RAG" in text and "Where it came up: A RAG pipeline for support teams" in text
     assert "#glossary=rag" in html and "Word of the day</div>" in html
+
+
+def test_mojibake_is_repaired_and_real_accents_are_kept(tmp_path):
+    from aipulse import feeds, store
+    from aipulse.collect import reclassify
+    assert feeds.unmangle("Enhance PeopleÃ¢Â\x80Â\x99s Ability") == "Enhance People’s Ability"  # decoded twice
+    assert feeds.unmangle("Ministerâ€™s plan") == "Minister’s plan"
+    assert feeds.unmangle("CafÃ© rÃ©sumÃ©") == "Café résumé"
+    for fine in ("Café résumé naïve", "São Paulo — AI", "Zürich “quotes”", "東京 AI", "£5bn", "Ça va", "¿Qué?"):
+        assert feeds.unmangle(fine) == fine
+    assert feeds.clean_text("<b>Peopleâ€™s</b> AI") == "People’s AI"
+    conn = store.connect(str(tmp_path / "t.db"))
+    store.insert(conn, {"id": "m1", "source": "Bernama", "category": "news", "title": "Boost NationÃ¢Â\x80Â\x99s AI",
+                        "summary": "", "url": "https://ex.com/m1", "date": "2026-09-29"})
+    reclassify(conn)
+    assert conn.execute("SELECT title FROM items WHERE url = 'https://ex.com/m1'").fetchone()[0] == "Boost Nation’s AI"
