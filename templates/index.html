@@ -1042,8 +1042,52 @@ $("pref-q").addEventListener("input", e => { PREF.q = e.target.value; renderPref
 ["pref-q", "pref-words"].forEach(id => $(id).addEventListener("keydown", e => { if(e.key === "Enter") e.preventDefault(); }));  // not a sign-up
 $("pref-box").addEventListener("toggle", () => { if($("pref-box").open) loadPrefOptions(); });
 
+// "Change my streams and choices": the link in every email (#choices=TOKEN, the reader's own, as for unsubscribing)
+// opens this form with their streams and choices filled in; Save changes them at once, no confirm email.
+const EDIT = {token: null};
+async function openChoices(token){
+  EDIT.token = token;
+  $("subscribe-title").textContent = "Your streams and choices";
+  subDialog.querySelector(".sub-lede").textContent = "Change what your daily email brings you; it applies from the next morning's email.";
+  [$("sub-email"), subDialog.querySelector('label[for="sub-email"]'), subDialog.querySelector(".sub-small")].forEach(x => x.style.display = "none");
+  $("subscribe-go").textContent = "Save my choices";
+  subMessage("Loading your choices…");
+  subDialog.showModal();
+  try{
+    const r = await (await fetch(SIGNUP_URL, {method: "POST", body: new URLSearchParams({action: "choices", t: token, format: "json"})})).json();
+    if(!r.ok) return subMessage(r.text || "This link doesn't work any more. Subscribe again with the Daily digest button.", "error");
+    subDialog.querySelectorAll(".sub-streams input").forEach(i => { i.checked = (r.streams || []).includes(i.value); });
+    PREF.more = new Set(r.more || []); PREF.less = new Set(r.less || []);
+    $("pref-words").value = (r.words || []).map(w => '"' + w + '"').join(", ");
+    showWords();
+    $("pref-box").open = true;
+    await loadPrefOptions();
+    renderPrefs(); subMessage("");
+  }catch(err){
+    subMessage("Couldn't reach the sign-up service. Please try again in a moment.", "error");
+  }
+}
+async function saveChoices(){
+  const streams = chosenStreams();
+  if(!streams.length) return subMessage("Pick at least one stream.", "error");
+  $("subscribe-go").disabled = true;
+  subMessage("Saving…");
+  try{
+    const body = new URLSearchParams({action: "save", t: EDIT.token, streams: streams.join(","), format: "json", ...prefFields()});
+    const r = await (await fetch(SIGNUP_URL, {method: "POST", body})).json();
+    subMessage(r.ok ? r.text : r.error === "link" ? "This link doesn't work any more. Subscribe again with the Daily digest button."
+               : "Something went wrong. Please try again.", r.ok ? "ok" : "error");
+  }catch(err){
+    subMessage("Couldn't reach the sign-up service. Please try again in a moment.", "error");
+  }finally{
+    $("subscribe-go").disabled = !chosenStreams().length;
+  }
+}
+{ const m = location.hash.match(/^#choices=([0-9a-f-]{36})$/); if(m) openChoices(m[1]); }
+
 $("sub-form").addEventListener("submit", async e => {
   e.preventDefault();
+  if(EDIT.token) return saveChoices();
   const email = $("sub-email").value.trim(), streams = chosenStreams();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return subMessage("Please enter a valid email address.", "error");
   if(!streams.length) return subMessage("Pick at least one stream.", "error");

@@ -331,8 +331,11 @@ def mentions(entry_id: str, text: str) -> bool:
 ROTATION_START = date(2026, 9, 29)
 
 
-def word_of_the_day(day: date) -> dict:
-    order = sorted(ENTRIES, key=lambda e: hashlib.sha256(e["id"].encode()).hexdigest())
+def word_of_the_day(day: date, groups: set[str] | None = None) -> dict:
+    """The day's word; with `groups` (a reader's topics, as glossary groups), the same rotation through only those
+    groups' words, so it never repeats before they've all come round."""
+    order = sorted((e for e in ENTRIES if not groups or e["group"] in groups),
+                   key=lambda e: hashlib.sha256(e["id"].encode()).hexdigest()) or ENTRIES
     return order[(day - ROTATION_START).days % len(order)]
 
 

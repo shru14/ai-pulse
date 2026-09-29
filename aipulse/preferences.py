@@ -73,6 +73,30 @@ CONTINENT_OF |= {alias: _continent(code) for alias, code in _ALIASES.items()}
 COUNTRIES = sorted(name for code, (name, *_) in jurisdictions.JURISDICTIONS.items() if code != "INTL")
 
 
+# The glossary's sections that go with each theme, for a reader's own word of the day (glossary.GROUPS)
+GLOSSARY_OF = {
+    "Models & products": {"Models", "Training", "Agents & products", "Research"},
+    "Chips, compute & energy": {"Chips & compute"},
+    "Business & work": {"Money & business"},
+    "Law & regulation": {"Law & policy"},
+    "Safety & security": {"Safety & security"},
+    "Defense & elections": {"Law & policy", "Safety & security"},
+    "Science, health & education": {"Research"},
+    "Ethics & ideas": {"Safety & security"},
+}
+
+
+def glossary_groups(prefs: dict | None) -> set[str] | None:
+    """The glossary sections a reader's "More of" points to: their themes and their topics' themes. None (every
+    word) for a reader who picked none (a company or a place says nothing about which words they'd want)."""
+    groups = set()
+    for label in (prefs or {}).get("more") or []:
+        theme = label if label in THEMES else THEME_OF.get(label)
+        if theme:
+            groups |= GLOSSARY_OF[theme]
+    return groups or None
+
+
 def story_type(c: dict) -> str | None:
     """The label the site shows on a card, when it's one of TYPES."""
     if c.get("category") == "news":

@@ -1536,7 +1536,12 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
                             {"email": "cy@example.org", "streams": ["bogus"], "token": token}]}
     got = sb.readers(data)
     site_link = "https://shru14.github.io/ai-pulse/#unsubscribe=" + token
-    assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token, site_link)}  # malformed dropped
+    none = {"more": [], "less": [], "words": []}  # a reader who made no choices
+    assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token, site_link, none)}  # malformed dropped
+    # choices come through capped and cleaned, never in both lists
+    chosen = sb.prefs_of({"more": ["Agents", "Asia", "Asia", "x", "Tutorial"], "less": ["Tutorial", 7], "words": ["  Tesla   Optimus "]})
+    assert chosen == {"more": ["Agents", "Asia"], "less": ["Tutorial"], "words": ["Tesla Optimus"]}
+    assert sb.choices_link(site_link) == "https://shru14.github.io/ai-pulse/#choices=" + token
     try:
         sb.readers({"ok": False})
         raise AssertionError("a refused list must stop the send")
@@ -1552,9 +1557,10 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
     monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
     card = {"id": "p1", "title": "OpenAI sued over AI training data", "summary": "", "url": "https://ex.com/1", "source": "S",
             "category": "policy", "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
-    _, one_click, link = got["ana@example.org"]
+    _, one_click, link, _ = got["ana@example.org"]
     subject, text, html = digest.build([card], ["policy"], date(2026, 9, 27), link)
-    assert f"Unsubscribe: {link}" in text and "Change streams: https://shru14.github.io/ai-pulse/#subscribe" in text
+    # the reader's own link opens the form filled in with their streams and choices
+    assert f"Unsubscribe: {link}" in text and f"Change my streams and choices: {sb.choices_link(link)}" in text
     assert "script.google.com" not in text + html  # links in the email only go to the site (spam filters)
     msg = digest._message("ana@example.org", subject, text, html, one_click)
     assert msg["List-Unsubscribe"] == f"<{one_click}>" and msg["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
@@ -1928,3 +1934,40 @@ def test_page_script_declares_each_name_once():
              for n in re.findall(r"(?:^|,\s*)([A-Za-z_$][\w$]*)\s*(?:=|\(|$)", decl)]
     dupes = {n for n in names if names.count(n) > 1}
     assert not dupes, f"declared twice (the page's script would stop): {dupes}"
+
+
+def test_each_reader_gets_their_own_top_10(monkeypatch):
+    from datetime import date
+    from aipulse import digest, glossary, preferences
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    day = date(2026, 9, 28)
+
+    def card(i, title, outlets=0, kind="news", tags=()):
+        return {"id": f"c{i}", "title": title, "summary": "", "url": f"https://ex.com/{i}", "source": f"S{i}",
+                "category": "news", "kind": kind, "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00",
+                "tags": list(tags), "also": [{"source": f"O{i}{k}", "title": title, "url": f"https://o.com/{i}/{k}"} for k in range(outlets)]}
+    big = [card(i, f"Big story {i} about OpenAI", outlets=10 - i) for i in range(12)]  # the day's biggest
+    robots = [card(20 + i, f"A humanoid robot demo {i}") for i in range(7)]            # Robotics, 1 outlet each
+    guides = [card(40 + i, f"How to fine-tune {i}", kind="tutorial") for i in range(3)]
+    kerala = [card(50, "Kerala launches an AI mission for schools", outlets=1)]  # outranks the robots
+    cards = big + robots + guides + kerala
+    everyone = digest.build(cards, ["news"], day)
+    # no choices: exactly today's email
+    assert digest.build(cards, ["news"], day, prefs={"more": [], "less": [], "words": []}) == everyone
+    _, text, html = digest.build(cards, ["news"], day, prefs={"more": ["Robotics"], "less": [], "words": ["Kerala"]})
+    top = text.split("Here are your 10:")[1].split("THE REST OF THE DAY")[0]
+    yours = [l for l in top.splitlines() if "[Your choice]" in l]
+    assert len(yours) == digest.PICKS and "Big story 0" in top and "Big story 4" in top  # 5 of theirs, then the biggest
+    assert "Kerala launches" in top  # their own words, in the headline
+    assert "More of Robotics, “Kerala”: 5 of your top 10." in text and "Your choice</span>" in html
+    # left out: never in their email, counted, and still in the full email
+    _, text, _ = digest.build(cards, ["news"], day, prefs={"more": [], "less": ["Tutorial", "Business & work"], "words": []})
+    assert "How to fine-tune" not in text and "Left out, as you asked: 3 stories (Tutorial); they're in the full email." in text
+    full = digest.build(cards, ["news"], day, layout="full", prefs={"more": [], "less": ["Tutorial"], "words": []})
+    assert "How to fine-tune 0" in full[1]  # the full email is the same for everyone
+    # word of the day from their topics; everyone else gets the shared word
+    chips = digest.build(cards, ["news"], day, prefs={"more": ["Chips, compute & energy"], "less": [], "words": []})[1]
+    word = chips.split("WORD OF THE DAY: ")[1].splitlines()[0]
+    assert next(e for e in glossary.ENTRIES if e["term"] == word)["group"] == "Chips & compute"
+    assert preferences.glossary_groups({"more": ["Funding"]}) == {"Money & business"}
+    assert preferences.glossary_groups({"more": ["Asia"]}) is None  # nothing to go on: the shared word

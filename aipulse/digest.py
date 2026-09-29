@@ -12,6 +12,7 @@ List-Unsubscribe header, which mail apps show as an "Unsubscribe" button). No tr
 from __future__ import annotations
 
 import os
+import re
 import smtplib
 import ssl
 from collections import Counter
@@ -20,7 +21,7 @@ from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
 
-from . import brief, classify, glossary, jurisdictions, quality, rss
+from . import brief, classify, glossary, jurisdictions, quality, rss, subscribers
 from .sources import SOURCES
 
 # Every story wears a tag saying what it is. Industry's are its sub-categories (classify.news_kind; AI-incidents
@@ -227,6 +228,7 @@ TOP = 10          # stories in "10 things that mattered today", 5 rows of 2
 HEADLINES = 3     # further headlines per stream
 LIGHT = 12        # this many stories or fewer in a reader's streams: all of them in the table
 SIDE_KINDS = {"tutorial", "event", "blog"}  # counted in the short email, not listed
+PICKS = 5         # a reader with choices: up to this many of theirs in the top 10, then the day's biggest
 
 
 _OWN_BLOGS = {s["name"] for s in SOURCES if s["category"] == "tool"}  # labs' and companies' own posts
@@ -273,10 +275,33 @@ def _rank(c: dict) -> tuple:
     return (_outlets(c), own, (c.get("kind") or "news") in ("news", "incident"), c.get("category") in ("regulation", "policy"))
 
 
-def _word(cards: list[dict], day: date) -> tuple[list[str], str]:
-    """The word of the day (glossary.word_of_the_day): its meaning, a story that used it that day or in the
-    week before, and a link to it in the site's glossary."""
-    e = glossary.word_of_the_day(day)
+def _mine(prefs: dict | None):
+    """A reader's choices as tests on a story: (left out?, one of theirs?). Labels as the site shows them
+    (preferences.labels, themes and continents included); their own words in the headline."""
+    from . import preferences  # it builds on this module's labels
+    prefs = prefs or {}
+    less, more = set(prefs.get("less") or []), set(prefs.get("more") or [])
+    words = [w for w in prefs.get("words") or [] if w.strip()]
+    said = re.compile(r"(?<!\w)(?:" + "|".join(re.escape(w) for w in words) + r")(?!\w)", re.I) if words else None
+    left = lambda c: bool(less & preferences.labels(c))
+    theirs = lambda c: bool(more & preferences.labels(c)) or bool(said and said.search(c.get("title") or ""))
+    return left, theirs
+
+
+def _leave_out(by_stream: dict[str, list[dict]], prefs: dict | None) -> tuple[dict[str, list[dict]], list[dict]]:
+    """A reader's streams without what they left out, and the stories left out (they stay in the full email)."""
+    if not (prefs or {}).get("less"):
+        return by_stream, []
+    left, _ = _mine(prefs)
+    out = {n: [c for c in v if not left(c)] for n, v in by_stream.items()}
+    return out, [c for v in by_stream.values() for c in v if left(c)]
+
+
+def _word(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[list[str], str]:
+    """The word of the day (glossary.word_of_the_day, from the reader's topics when they chose some): its meaning,
+    a story that used it that day or in the week before, and a link to it in the site's glossary."""
+    from . import preferences
+    e = glossary.word_of_the_day(day, preferences.glossary_groups(prefs))
     week = (day - timedelta(days=6)).isoformat()
     used = [c for c in cards if week <= (c.get("date") or "") <= day.isoformat()
             and glossary.mentions(e["id"], f"{c.get('title') or ''} {c.get('summary') or ''}")]
@@ -298,10 +323,26 @@ def _word(cards: list[dict], day: date) -> tuple[list[str], str]:
     return text, html
 
 
-def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date) -> tuple[list[str], str]:
+def _made_for(prefs: dict, left: list[dict], picked: int) -> str:
+    """The line telling a reader with choices what their email follows, and what it left out."""
+    from . import preferences
+    parts = []
+    if prefs.get("more") or prefs.get("words"):
+        wanted = ", ".join([*(prefs.get("more") or []), *(f"“{w}”" for w in prefs.get("words") or [])])
+        parts.append(f"More of {wanted}: " + (f"{picked} of your top 10." if picked else "nothing today, so here are the day's biggest."))
+    if left:
+        why = sorted({t for c in left for t in preferences.labels(c) & set(prefs["less"])})
+        parts.append(f"Left out, as you asked: {len(left)} {'story' if len(left) == 1 else 'stories'} ({', '.join(why[:4])})"
+                     f"; they're in the full email.")
+    return " ".join(parts)
+
+
+def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date,
+           prefs: dict | None = None, left: list[dict] | None = None) -> tuple[list[str], str]:
     """The short email's body: an opening line, the TOP stories that mattered most (tag, headline, one line,
     how many outlets), then per stream its count, next HEADLINES headlines and a link to the rest.
-    Returns (plain-text lines, HTML)."""
+    A reader with choices (`prefs`; `left`, what they left out) gets up to PICKS of theirs first, marked, then the
+    day's biggest. Returns (plain-text lines, HTML)."""
     todays = [c for n in streams for c in by_stream[n]]
     outlets = {o["source"] for c in todays for o in [c, *(c.get("also") or [])] if o.get("source")}
     stories = sum(1 + len(c.get("also") or []) for c in todays)
@@ -315,16 +356,29 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     everything = full_page(day)  # every story of the day, whatever streams this reader chose
     top = (sorted(todays, key=_rank, reverse=True) if light else
            sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP])
+    prefs = prefs or {}
+    tuned = bool(prefs.get("more") or prefs.get("words"))
+    _, theirs = _mine(prefs)
+    picks = {id(c) for c in todays if tuned and theirs(c)}
+    if tuned and not light:
+        # up to PICKS of the reader's own (any kind, a tutorial too if they asked for it), then the day's biggest
+        mine = sorted([c for c in todays if id(c) in picks], key=_rank, reverse=True)[:PICKS]
+        biggest = [c for c in top + sorted(todays, key=_rank, reverse=True) if c not in mine]
+        top = mine + list({id(c): c for c in biggest}.values())[:TOP - len(mine)]
+    picked = sum(1 for c in top if id(c) in picks)
     title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
+             else f"Here are your {len(top)}: {picked} of your choice, then the day's biggest." if picked
              else f"Here are the {len(top)} that mattered most.")
+    made_for = _made_for(prefs, left or [], picked) if (tuned or left) else ""
     # In order: the count, the word of the day, the full email, then the stories
-    word_text, word_html = _word(cards, day)
-    lines = [hello, "", intro, "", *word_text, "",
+    word_text, word_html = _word(cards, day, prefs)
+    lines = [hello, "", intro, *([made_for] if made_for else []), "", *word_text, "",
              f"Want everything? The full email, every story of the day in one table: {everything}",
              *([quiet] if quiet else []), "", title]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
     html = [f'<p style="margin:0;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
+            + (f'<p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:{GREY}">{escape(made_for)}</p>' if made_for else "")
             + word_html
             + f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
               f'Want everything? See the full email: every story of the day in one table →</a></p>'
@@ -335,10 +389,13 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         label, bg, fg = tag(c, stream_of[id(c)])
         more, summary, tags = _outlets(c) - 1, _short(c.get("summary") or "", 110), story_tags(c)
         by = c["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
-        lines += [f"• [{label}] {c['title']}", *([f"   {' '.join('#' + t for t in tags)}"] if tags else []), *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
+        yours = id(c) in picks
+        lines += [f"• [{label}]{' [Your choice]' if yours else ''} {c['title']}", *([f"   {' '.join('#' + t for t in tags)}"] if tags else []), *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
         cells.append(f'<td valign="top" width="50%" style="padding:12px;border:1px solid {EDGE};background:#ffffff;'
                      f'border-left:4px solid {BRIGHT[stream_of[id(c)]]}">'
-                     f'<div style="margin-bottom:4px">{_pill(label, bg, fg)}</div>'
+                     f'<div style="margin-bottom:4px">{_pill(label, bg, fg)}'
+                     + (f' {_pill("Your choice", "#ffffff", NAVY).replace("background:#ffffff", f"background:#ffffff;border:1px solid {NAVY}")}'
+                        if yours else "") + '</div>'
                      f'<a href="{escape(c["url"])}" style="color:{HEADLINE};font-size:14.5px;font-weight:bold;line-height:1.35;'
                      f'text-decoration:none">{escape(c["title"])}</a>'
                      + (f'<div style="font-size:12.5px;line-height:1.4;margin-top:3px;color:#3c4043">{escape(summary)}</div>'
@@ -396,22 +453,30 @@ def full_page(day: date) -> str:
 
 
 def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "",
-          layout: str = "short", web: bool = False) -> tuple[str, str, str] | None:
+          layout: str = "short", web: bool = False, prefs: dict | None = None) -> tuple[str, str, str] | None:
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day.
     `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site.
     `layout`: "short", the daily email (the ten stories that mattered most, then each stream's headlines), or
     "full" (every story in one tagged table). `web`: the page version of a full email (daily/ on the site),
-    with a sign-up line in place of a reader's own settings."""
+    with a sign-up line in place of a reader's own settings. `prefs`: the reader's choices (subscribers.prefs_of):
+    what they left out never appears in their short email, and their own come first; the full email is the same
+    for everyone."""
     by_stream = by_streams(cards, streams, day)
+    left = []
+    if layout == "short":
+        by_stream, left = _leave_out(by_stream, prefs)
     if not any(by_stream.values()):
         return None
     subject = f"AI Pulse daily · {long_day(day)}"
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
-    change = f"{rss.SITE}#subscribe"  # the sign-up form: the same address with new streams asks to confirm them
+    # A reader's own link opens the form with their streams and choices filled in; saving changes them at once.
+    # Without one (a sample, the web page), the sign-up form: the same address with new streams asks to confirm.
+    change = subscribers.choices_link(unsubscribe) if unsubscribe else f"{rss.SITE}#subscribe"
+    change_words = "Change my streams and choices" if unsubscribe else "Change streams"
     stop = unsubscribe or change
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
-        open_text, open_html = _brief(by_stream, cards, streams, day)
+        open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left)
         table_text, table_html = [], ""
         page, band, top = PAGE, _band(open_text[0]), 16
     else:
@@ -420,12 +485,12 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
     settings = (["Get AI Pulse daily in your inbox: " + change] if web else
                 [f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
-                 f"Change streams: {change}", f"Unsubscribe: {stop}"])
+                 f"{change_words}: {change}", f"Unsubscribe: {stop}"])
     text = [*open_text, *table_text, "", *settings, f"AI Pulse is free and non-commercial: {rss.SITE}"]
     settings_html = (f'<a href="{escape(change)}" style="color:{GREY}">Get AI Pulse daily in your inbox</a><br>' if web else
                      f'You chose: {escape(chose)}.<br>RSS: '
                      + " · ".join(f'<a href="{escape(url)}" style="color:{GREY}">{escape(name)}</a>' for name, url in feeds)
-                     + f'<br><a href="{escape(change)}" style="color:{GREY}">Change streams</a> · '
+                     + f'<br><a href="{escape(change)}" style="color:{GREY}">{change_words}</a> · '
                        f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a><br>')
     html = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             f'<title>{escape(subject)}</title></head><body style="margin:0;padding:0;background:{page}">'
