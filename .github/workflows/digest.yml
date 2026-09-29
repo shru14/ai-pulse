@@ -18,6 +18,23 @@ on:
         description: "Check and build only (nothing sent)"
         type: boolean
         default: true
+      sample:
+        description: "Send one sample to the project inbox only (no subscriber, the day stays unsent)"
+        type: boolean
+        default: false
+      day:
+        description: "Sample's day, YYYY-MM-DD (default: yesterday)"
+        type: string
+        default: ""
+      resend:
+        description: "Send to every subscriber even if this day was already sent (by hand only; use rarely)"
+        type: boolean
+        default: false
+      layout:
+        description: "Sample's layout"
+        type: choice
+        options: [short, full]
+        default: short
 
 permissions:
   contents: read
@@ -33,11 +50,13 @@ jobs:
     steps:
       - name: Which day
         id: day
-        run: echo "day=$(date -u -d yesterday +%F)" >> "$GITHUB_OUTPUT"
+        run: |
+          d="${{ inputs.day }}"
+          echo "day=${d:-$(date -u -d yesterday +%F)}" >> "$GITHUB_OUTPUT"
 
       - name: Already handled today?
         id: done
-        if: ${{ !inputs.dry_run }}
+        if: ${{ !inputs.dry_run && !inputs.sample && !inputs.resend }}
         uses: actions/cache/restore@v4
         with:
           path: digest-sent
@@ -70,6 +89,11 @@ jobs:
           DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the confirmed readers from the sign-up web app
         run: |
           set +e
+          if [ "${{ inputs.sample }}" = "true" ]; then
+            # One sample, to the project inbox only: no subscriber gets it and the day isn't marked as sent.
+            python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL" --day ${{ steps.day.outputs.day }} --layout ${{ inputs.layout }}
+            exit $?
+          fi
           python -m aipulse --db aipulse.db digest --subscribers --day ${{ steps.day.outputs.day }} ${{ inputs.dry_run && '--dry-run check.html' || '' }}
           code=$?
           # 0 = sent, 3 = held by the quality check (alert sent): either way the day is handled. Anything else (the
@@ -78,11 +102,11 @@ jobs:
           exit $code
 
       - name: Mark the day as handled
-        if: always() && !inputs.dry_run && steps.send.outputs.handled == '1'
+        if: always() && !inputs.dry_run && !inputs.sample && steps.send.outputs.handled == '1'
         run: echo "${{ steps.day.outputs.day }}" > digest-sent
 
       - name: Save the marker
-        if: always() && !inputs.dry_run && steps.send.outputs.handled == '1'
+        if: always() && !inputs.dry_run && !inputs.sample && steps.send.outputs.handled == '1'
         uses: actions/cache/save@v4
         with:
           path: digest-sent

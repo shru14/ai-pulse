@@ -21,6 +21,7 @@ from email.utils import formataddr
 from html import escape
 
 from . import brief, jurisdictions, quality, rss
+from .sources import SOURCES
 
 # Every story wears a tag saying what it is. Industry's are its sub-categories (classify.news_kind; AI-incidents
 # come from the AI Incident Database), in this order: label, tag background, tag text colour.
@@ -118,8 +119,8 @@ def breakdown(day_cards: list[dict], stream: str) -> str:
                       for k, (label, _, _) in KIND.items() if counts[k]) or SECTION_NOTE[stream]
 
 
-def _short(summary: str) -> str:
-    return summary if len(summary) <= SUMMARY else summary[:SUMMARY - 3].rsplit(" ", 1)[0] + "…"
+def _short(summary: str, limit: int = SUMMARY) -> str:
+    return summary if len(summary) <= limit else summary[:limit - 3].rsplit(" ", 1)[0] + "…"
 
 
 def _others(c: dict) -> list[dict]:
@@ -216,9 +217,106 @@ def _empty_note(name: str, day: date) -> str:
     return "Nothing new in this stream on this day."
 
 
-def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "") -> tuple[str, str, str] | None:
+# The short email: the day's most-reported stories in full, then each stream's next few headlines.
+TOP = 10          # stories in "10 things that mattered today", 5 rows of 2
+HEADLINES = 3     # further headlines per stream
+SIDE_KINDS = {"tutorial", "event", "blog"}  # counted in the short email, not listed
+
+
+_OWN_BLOGS = {s["name"] for s in SOURCES if s["category"] == "tool"}  # labs' and companies' own posts
+
+
+def _outlets(c: dict) -> int:
+    return 1 + len(_others(c))
+
+
+def _rank(c: dict) -> tuple:
+    """How much a story mattered, without any AI: more outlets reporting it, then a company's own launch post,
+    then reporting over opinion, then an official action."""
+    own = c.get("category") == "tool" and (c.get("source") or "") in _OWN_BLOGS
+    return (_outlets(c), own, (c.get("kind") or "news") in ("news", "incident"), c.get("category") in ("regulation", "policy"))
+
+
+def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date) -> tuple[list[str], str]:
+    """The short email's body: an opening line, the TOP stories that mattered most (tag, headline, one line,
+    how many outlets), then per stream its count, next HEADLINES headlines and a link to the rest.
+    Returns (plain-text lines, HTML)."""
+    todays = [c for n in streams for c in by_stream[n]]
+    outlets = {o["source"] for c in todays for o in [c, *(c.get("also") or [])] if o.get("source")}
+    stories = sum(1 + len(c.get("also") or []) for c in todays)
+    stream_of = {id(c): n for n in streams for c in by_stream[n]}
+    hello = f"Let's explore what happened in AI on {long_day(day)}."
+    intro = (f"{stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
+             f"{'source' if len(outlets) == 1 else 'sources'}. Here are the ones that mattered most; the rest of the "
+             "day is one tap away.")
+    quiet = _quiet(by_stream, cards, streams, day)
+    top = sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP]
+    lines = [hello, "", intro, *([quiet] if quiet else []), "", f"{len(top)} THINGS THAT MATTERED TODAY"]
+    head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
+                          f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
+    html = [f'<div style="font-size:21px;font-weight:bold;line-height:1.3;margin:0 0 6px">{escape(hello)}</div>'
+            f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
+            + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
+            + head(f"{len(top)} things that mattered today")]
+    cells = []
+    for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
+        label, bg, fg = tag(c, stream_of[id(c)])
+        more, summary = _outlets(c) - 1, _short(c.get("summary") or "", 110)
+        by = c["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
+        lines += [f"• [{label}] {c['title']}", *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
+        cells.append(f'<td valign="top" width="50%" style="padding:10px;border:1px solid {RULE};background:#fbfbfc">'
+                     f'<div style="margin-bottom:4px">{_pill(label, bg, fg)}</div>'
+                     f'<a href="{escape(c["url"])}" style="color:{LINK};font-size:14px;font-weight:bold;line-height:1.35;'
+                     f'text-decoration:none">{escape(c["title"])}</a>'
+                     + (f'<div style="font-size:12.5px;line-height:1.4;margin-top:3px;color:#3c4043">{escape(summary)}</div>'
+                        if summary else "")
+                     + f'<div style="font-size:11.5px;color:{GREY};margin-top:4px">{escape(by)}</div></td>')
+    if len(cells) % 2:
+        cells.append('<td width="50%"></td>')
+    # 5 rows of 2, read left to right
+    html.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
+                'table-layout:fixed">' + "".join(f"<tr>{cells[k]}{cells[k + 1]}</tr>" for k in range(0, len(cells), 2))
+                + "</table>")
+    lines += ["", "THE REST OF THE DAY"]
+    html.append(head("The rest of the day") + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+                'style="border-collapse:collapse">')
+    shown = {id(c) for c in top}
+    for n in streams:
+        category, stream, _ = rss.FEEDS[n]
+        rest = sorted([c for c in by_stream[n] if id(c) not in shown and c.get("kind") not in SIDE_KINDS],
+                      key=_rank, reverse=True)
+        side = Counter(c["kind"] for c in by_stream[n] if c.get("kind") in SIDE_KINDS)
+        side_words = ", ".join(f"{k} {'company blog' if w == 'blog' else w}{'s' if k > 1 else ''}" for w, k in side.items())
+        extra, more = len(rest) - HEADLINES + sum(side.values()), f"{rss.SITE}#{category}"
+        count = f"{len(by_stream[n])} {'story' if len(by_stream[n]) == 1 else 'stories'}"
+        lines.append(f"{stream} ({count})")
+        if not by_stream[n] or not rest:
+            note = _empty_note(n, day) if not by_stream[n] else f"In the top {len(top)} above."
+            lines.append(f"  {note}")
+            heads = f'<div style="font-size:13px;color:{GREY}">{escape(note)}</div>'
+        else:
+            lines += [f"  • {c['title']} {c['url']}" for c in rest[:HEADLINES]]
+            heads = "".join(f'<div style="margin:0 0 5px;line-height:1.35"><a href="{escape(c["url"])}" style="color:{INK};'
+                            f'font-size:14px;text-decoration:none">{escape(c["title"])}</a></div>' for c in rest[:HEADLINES])
+        if extra > 0:
+            lines.append(f"  +{extra} more: {more}" + (f" (incl. {side_words})" if side_words else ""))
+            heads += (f'<a href="{escape(more)}" style="color:{LINK};font-size:13px;text-decoration:none">+{extra} more on '
+                      f'AI Pulse →</a>' + (f'<span style="font-size:12px;color:{GREY}"> (incl. {escape(side_words)})</span>'
+                                           if side_words else ""))
+        html.append(f'<tr><td valign="top" width="118" style="padding:10px;border-top:1px solid {RULE};border-left:4px solid '
+                    f'{COLOR[n]}"><div style="font-size:14px;font-weight:bold">{escape(stream)}</div><div style="font-size:12px;'
+                    f'color:{GREY}">{count}</div></td><td valign="top" style="padding:10px 0 10px 8px;border-top:1px solid '
+                    f'{RULE}">{heads}</td></tr>')
+    html.append("</table>")
+    return lines, "".join(html)
+
+
+def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "",
+          layout: str = "short") -> tuple[str, str, str] | None:
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day.
-    `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site."""
+    `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site.
+    `layout`: "short", the daily email (the ten stories that mattered most, then each stream's headlines), or
+    "full" (every story in one tagged table)."""
     by_stream = by_streams(cards, streams, day)
     if not any(by_stream.values()):
         return None
@@ -226,8 +324,12 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
     change = f"{rss.SITE}#subscribe"  # the sign-up form: the same address with new streams asks to confirm them
     stop = unsubscribe or change
-    open_text, open_html = _opening(by_stream, cards, streams, day)
-    table_text, table_html = _ledger(by_stream, streams, day)
+    if layout == "short":
+        open_text, open_html = _brief(by_stream, cards, streams, day)
+        table_text, table_html = [], ""
+    else:
+        open_text, open_html = _opening(by_stream, cards, streams, day)
+        table_text, table_html = _ledger(by_stream, streams, day)
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
     text = [*open_text, *table_text, "", f"You chose: {chose}.",
             "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
