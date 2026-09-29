@@ -1764,3 +1764,23 @@ def test_every_email_links_to_the_days_full_email(monkeypatch):
                                  layout="full", web=True)
     assert "Type</th>" in html and "Story 9" in text and "Get AI Pulse daily in your inbox" in text
     assert "Unsubscribe" not in text and "You chose" not in text
+
+
+def test_stories_carry_a_country_and_the_email_shows_tags(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    assert classify.tags_for("AMD is acquiring AI company World Labs in a deal worth more than $8 billion", "")[:3] == [
+        "AMD", "World Labs", "United States"]
+    assert classify.tags_for("StepFun Step 5 Preview: 600B MoE", "")[:2] == ["StepFun", "China"]
+    assert "Germany" in classify.tags_for("Mistral opens a Munich hub", "Physics AI research in Germany")  # named place wins
+    assert "France" not in classify.tags_for("Mistral opens a Munich hub", "Physics AI research in Germany")
+    assert classify.tags_for("A minimax approach to games", "") == [] or "MiniMax" not in classify.tags_for("A minimax approach to games", "")
+    assert "Perplexity" not in classify.tags_for("Perplexity of language models under distribution shift", "")
+    assert "Perplexity" in classify.tags_for("Perplexity launches Comet for everyone", "")
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = {"id": "t1", "title": "Nvidia says its new AI safety platform can contain rogue agents", "summary": "",
+            "url": "https://ex.com/1", "source": "The Verge AI", "category": "news", "kind": "news", "date": "2026-09-28",
+            "added_at": "2026-09-28T10:00:00+00:00", "tags": []}  # stored before the new rules: tags worked out afresh
+    assert digest.story_tags(card)[0] == "United States"  # countries first
+    _, text, html = digest.build([card], ["news"], date(2026, 9, 28))
+    assert "#United States #Nvidia #Agents #Safety" in text and "#United States</span>" in html

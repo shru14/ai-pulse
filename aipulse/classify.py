@@ -211,6 +211,31 @@ COMPANY_TERMS = {
     "Meta": r"\bMeta\b|Llama", "Microsoft": r"Microsoft|(?<!GitHub )Copilot", "Nvidia": r"Nvidia", "Apple": r"\bApple\b",
     "Amazon": r"Amazon|AWS", "xAI": r"\bxAI\b|Grok", "Mistral": r"Mistral", "DeepSeek": r"DeepSeek",
     "Alibaba": r"Alibaba|Qwen",
+    # chips and big tech
+    "AMD": r"\bAMD\b", "Intel": r"\bIntel\b", "Qualcomm": r"Qualcomm", "IBM": r"\bIBM\b", "Oracle": r"\bOracle\b",
+    "Samsung": r"Samsung", "SK Hynix": r"SK ?Hynix", "TSMC": r"\bTSMC\b", "Salesforce": r"Salesforce",
+    "Tencent": r"Tencent|Hunyuan", "ByteDance": r"ByteDance|TikTok|Doubao", "Baidu": r"Baidu|\bERNIE\b",
+    "Huawei": r"Huawei", "Xiaomi": r"Xiaomi",
+    # AI labs and companies ((?-i:...): case matters where the name is also a word, as "minimax" or "perplexity"
+    # in a paper)
+    "Meituan": r"Meituan|LongCat", "Moonshot AI": r"Moonshot AI|\bKimi\b", "Zhipu AI": r"Zhipu|\bZ\.ai\b",
+    "MiniMax": r"(?-i:MiniMax)", "StepFun": r"StepFun", "Cohere": r"(?-i:Cohere)", "Sakana AI": r"Sakana",
+    # the company, not the measure ("Perplexity of language models ...")
+    "Perplexity": r"(?-i:Perplexity(?: AI| Pro| Comet|['’]s|(?= (?:launches|releases|raises|says|adds|unveils|introduces"
+                  r"|is|has|will|CEO|sues|signs|buys|opens)\b)))",
+    "Hugging Face": r"Hugging ?Face", "Databricks": r"Databricks",
+    "Snowflake": r"(?-i:Snowflake)", "Stability AI": r"Stability AI|Stable Diffusion", "Character.AI": r"Character\.?AI",
+    "World Labs": r"World Labs",
+}
+# A company's home country: the country tag of a story that names no place ("Nvidia launches ..." -> United States).
+COMPANY_HOME = {
+    **dict.fromkeys(["OpenAI", "Anthropic", "Google", "Meta", "Microsoft", "Nvidia", "Apple", "Amazon", "xAI", "AMD",
+                     "Intel", "Qualcomm", "IBM", "Oracle", "Salesforce", "Perplexity", "Databricks", "Snowflake",
+                     "Character.AI", "World Labs"], "United States"),
+    **dict.fromkeys(["DeepSeek", "Alibaba", "Tencent", "ByteDance", "Baidu", "Huawei", "Xiaomi", "Meituan", "Moonshot AI",
+                     "Zhipu AI", "MiniMax", "StepFun"], "China"),
+    "Mistral": "France", "Samsung": "South Korea", "SK Hynix": "South Korea", "TSMC": "Taiwan", "Sakana AI": "Japan",
+    "Cohere": "Canada", "Stability AI": "United Kingdom",
 }
 
 TOPIC_TERMS = {
@@ -305,7 +330,11 @@ def tags_for(title: str, summary: str, limit: int = 5) -> list[str]:
     summary = _TRANSLATED.sub("", summary)
     text = f"{title} {summary}"
     topics = [k for k, p in _topics.items() if p.search(text)]
-    return ([UNTRANSLATED_TAG] * untranslated + company_tags(title, summary) + place_tags(title, summary) + topics)[:limit]
+    companies, places = company_tags(title, summary), place_tags(title, summary)
+    lead = lead_company(title) or (companies[0] if companies else None)
+    if not places and lead in COMPANY_HOME:  # a story naming no place: where the company it's about is based
+        places = [COMPANY_HOME[lead]]
+    return ([UNTRANSLATED_TAG] * untranslated + companies[:2] + places + topics)[:limit]
 
 
 def name_key(name: str) -> tuple[str, ...] | None:

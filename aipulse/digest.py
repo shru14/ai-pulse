@@ -20,7 +20,7 @@ from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
 
-from . import brief, jurisdictions, quality, rss
+from . import brief, classify, jurisdictions, quality, rss
 from .sources import SOURCES
 
 # Every story wears a tag saying what it is. Industry's are its sub-categories (classify.news_kind; AI-incidents
@@ -227,6 +227,25 @@ SIDE_KINDS = {"tutorial", "event", "blog"}  # counted in the short email, not li
 _OWN_BLOGS = {s["name"] for s in SOURCES if s["category"] == "tool"}  # labs' and companies' own posts
 
 
+TAGS = 5  # tags shown per story in the email
+
+
+def story_tags(c: dict) -> list[str]:
+    """A story's tags as the site shows them, countries first (then companies and topics), so a reader sees at a
+    glance where and who a story is about: tracker cards' countries, then the story's own tags."""
+    places = ["International" if j == "INTL" else jurisdictions.JURISDICTIONS.get(j, (j,))[0]
+              for j in c.get("jurisdictions") or []]
+    # worked out with the current rules (classify.tags_for), so the email matches the site after its next re-sort
+    tags = [t for t in classify.tags_for(c.get("title") or "", c.get("summary") or "") if t not in ("Research", "Study Report")]
+    ordered = places + [t for t in tags if t in brief._PLACE_TAGS] + [t for t in tags if t not in brief._PLACE_TAGS]
+    return list(dict.fromkeys(ordered))[:TAGS]
+
+
+def _chips(tags: list[str]) -> str:
+    return "".join(f'<span style="display:inline-block;font-size:11px;color:#3c4043;background:#eef0f3;border-radius:9px;'
+                   f'padding:1px 7px;margin:4px 4px 0 0;white-space:nowrap">#{escape(t)}</span>' for t in tags)
+
+
 def _outlets(c: dict) -> int:
     return 1 + len(_others(c))
 
@@ -271,16 +290,17 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     cells = []
     for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])
-        more, summary = _outlets(c) - 1, _short(c.get("summary") or "", 110)
+        more, summary, tags = _outlets(c) - 1, _short(c.get("summary") or "", 110), story_tags(c)
         by = c["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
-        lines += [f"• [{label}] {c['title']}", *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
+        lines += [f"• [{label}] {c['title']}", *([f"   {' '.join('#' + t for t in tags)}"] if tags else []), *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
         cells.append(f'<td valign="top" width="50%" style="padding:10px;border:1px solid {RULE};background:#fbfbfc">'
                      f'<div style="margin-bottom:4px">{_pill(label, bg, fg)}</div>'
                      f'<a href="{escape(c["url"])}" style="color:{LINK};font-size:14px;font-weight:bold;line-height:1.35;'
                      f'text-decoration:none">{escape(c["title"])}</a>'
                      + (f'<div style="font-size:12.5px;line-height:1.4;margin-top:3px;color:#3c4043">{escape(summary)}</div>'
                         if summary else "")
-                     + f'<div style="font-size:11.5px;color:{GREY};margin-top:4px">{escape(by)}</div></td>')
+                     + f'<div style="font-size:11.5px;color:{GREY};margin-top:4px">{escape(by)}</div>'
+                     + (f'<div>{_chips(tags)}</div>' if tags else "") + '</td>')
     if len(cells) % 2:
         cells.append('<td width="50%"></td>')
     # 5 rows of 2, read left to right
@@ -306,9 +326,13 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
             lines.append(f"  {note}")
             heads = f'<div style="font-size:13px;color:{GREY}">{escape(note)}</div>'
         else:
-            lines += [f"  • {c['title']} {c['url']}" for c in rest[:HEADLINES]]
-            heads = "".join(f'<div style="margin:0 0 5px;line-height:1.35"><a href="{escape(c["url"])}" style="color:{INK};'
-                            f'font-size:14px;text-decoration:none">{escape(c["title"])}</a></div>' for c in rest[:HEADLINES])
+            lines += [f"  • {c['title']} {c['url']}" + (f"  ({' '.join('#' + t for t in story_tags(c))})" if story_tags(c) else "")
+                      for c in rest[:HEADLINES]]
+            heads = "".join(f'<div style="margin:0 0 7px;line-height:1.35"><a href="{escape(c["url"])}" style="color:{INK};'
+                            f'font-size:14px;text-decoration:none">{escape(c["title"])}</a>'
+                            + (f'<div style="font-size:11.5px;color:{GREY};margin-top:1px">'
+                               f'{escape(" · ".join("#" + t for t in story_tags(c)))}</div>' if story_tags(c) else "")
+                            + '</div>' for c in rest[:HEADLINES])
         if extra > 0:
             lines.append(f"  +{extra} more: {more}" + (f" (incl. {side_words})" if side_words else ""))
             heads += (f'<a href="{escape(more)}" style="color:{LINK};font-size:13px;text-decoration:none">+{extra} more on '
