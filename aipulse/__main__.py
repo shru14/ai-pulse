@@ -19,6 +19,9 @@ BILL_SOURCES = [("us", "US"), ("eu", "EU"), ("uk", "UK"), ("ca", "Canada"), ("br
                 ("std", "AI standards"), ("aiid", "AI Incident Database")]
 
 
+HELD = 3  # exit code of a digest the quality check held (an error is 1)
+
+
 def main():
     p = argparse.ArgumentParser(prog="aipulse", description="Track AI releases, news and policy.")
     p.add_argument("--db", default="aipulse.db", help="SQLite database file (default: aipulse.db)")
@@ -178,7 +181,8 @@ def main():
         found = quality.problems(by_stream, cards, day)
         if found:
             # Held for everyone: nothing is sent to readers; the project inbox gets what's wrong (a dry run
-            # only writes it). The run fails, so GitHub shows it red.
+            # only writes it). The run fails with HELD, so GitHub shows it red and the day counts as handled
+            # (digest.yml doesn't retry a held day, so the alert comes once).
             note = quality.alert(day, found, streams)
             print(f"HELD: {len(found)} problem(s) in the {day} digest {counts}:", *(f"  - {p}" for p in found), sep="\n")
             if a.dry_run:
@@ -187,7 +191,7 @@ def main():
             else:
                 digest.send(digest.sender(), *note)
                 print(f"Alert sent to the project inbox: {note[0]}")
-            sys.exit(1)
+            sys.exit(HELD)
         if a.subscribers:
             from . import subscribers
             # Each confirmed reader gets their own streams; nothing on a day their streams were empty.
