@@ -297,14 +297,76 @@ def _leave_out(by_stream: dict[str, list[dict]], prefs: dict | None) -> tuple[di
     return out, [c for v in by_stream.values() for c in v if left(c)]
 
 
-def _word(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[list[str], str]:
-    """The word of the day (glossary.word_of_the_day, from the reader's topics when they chose some): its meaning,
-    a story that used it that day or in the week before, and a link to it in the site's glossary."""
-    from . import preferences
-    e = glossary.word_of_the_day(day, preferences.glossary_groups(prefs))
-    week = (day - timedelta(days=6)).isoformat()
-    used = [c for c in cards if week <= (c.get("date") or "") <= day.isoformat()
-            and glossary.mentions(e["id"], f"{c.get('title') or ''} {c.get('summary') or ''}")]
+WORD_FROM = 5  # the word of the day comes from the day's 5 biggest stories in the reader's email
+# The glossary's technical sections: the word of the day is one of these, not a product name or a money word,
+# and not an everyday word (still in the glossary, but not worth a day)
+TECHNICAL = {"Models", "Training", "Agents & products", "Chips & compute", "Safety & security", "Research"}
+EVERYDAY = {"ai-agent", "llm", "gpt", "api", "cpu", "gpu", "open-source", "copilot", "data-center", "compute",
+            "machine-learning"}
+_TERMS: dict[str, frozenset[str]] = {}
+
+
+def _terms(c: dict) -> frozenset[str]:
+    """The glossary words a story uses (worked out once per story and run)."""
+    text = f"{c.get('title') or ''} {c.get('summary') or ''}"
+    if text not in _TERMS:
+        _TERMS[text] = frozenset(glossary.terms_in(text))
+    return _TERMS[text]
+
+
+def _biggest(by_stream: dict[str, list[dict]], streams: list[str]) -> list[dict]:
+    """The day's WORD_FROM biggest stories in a reader's email (their streams, without what they left out),
+    whatever they asked for more of."""
+    todays = [c for n in streams for c in by_stream.get(n) or [] if c.get("kind") not in SIDE_KINDS]
+    return sorted(todays, key=_rank, reverse=True)[:WORD_FROM]
+
+
+def _text(c: dict) -> str:
+    return f"{c.get('title') or ''} {c.get('summary') or ''}"
+
+
+_GROUP = {e["id"]: e["group"] for e in glossary.ENTRIES}
+
+
+def _hardest(stories: list[dict], cards: list[dict], avoid: set[str] = frozenset()) -> str | None:
+    """The hardest technical word these stories use (not an everyday one, nor one of `avoid`): the one used least
+    in the stories we have, the least familiar. None when they use none."""
+    found = {i for c in stories for i in _terms(c) if _GROUP[i] in TECHNICAL and i not in EVERYDAY and i not in avoid}
+    if not found:
+        return None
+    seen = Counter(i for c in cards for i in _terms(c) & found)
+    # a tie goes to the word of the bigger story, then the one its headline shows
+    first = {i: next(k for k, c in enumerate(stories) if i in _terms(c)) for i in found}
+    return min(found, key=lambda i: (seen[i], first[i], not glossary.mentions(i, stories[first[i]].get("title") or ""), i))
+
+
+def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: set[str] = frozenset()) -> tuple[str | None, list[dict]]:
+    """The hardest technical word in the first tier of stories that has one: (word, that tier's stories)."""
+    for stories in tiers:
+        wid = _hardest(stories, cards, avoid)
+        if wid:
+            return wid, stories
+    return None, []
+
+
+def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
+          tiers: list[list[dict]] | None = None) -> tuple[list[str], str]:
+    """The word of the day: the hardest technical word in the day's biggest stories in this reader's email, else
+    in their top 10, else anywhere in their email (`tiers`), and not one the week before gave; else
+    glossary.word_of_the_day. With its meaning, the story that used it (a headline that shows it first) and a
+    link to it in the site's glossary."""
+    streams = streams or list(rss.FEEDS)
+    week = set()
+    for back in range(1, 8):  # the words the week before gave (their biggest stories), so none comes back within a week
+        by_day = _leave_out(by_streams(cards, streams, day - timedelta(days=back)), prefs)[0]
+        week.add(_pick_word(cards, [_biggest(by_day, streams)])[0])
+    wid, stories = _pick_word(cards, tiers or [], week - {None})
+    e = next(x for x in glossary.ENTRIES if x["id"] == wid) if wid else glossary.word_of_the_day(day)
+    if wid:
+        used = [c for c in stories if wid in _terms(c)]
+    else:
+        since = (day - timedelta(days=6)).isoformat()
+        used = [c for c in cards if since <= (c.get("date") or "") <= day.isoformat() and glossary.mentions(e["id"], _text(c))]
     # A headline that shows the word beats one whose summary does; then the latest, then the most reported
     story = max(used, key=lambda c: (glossary.mentions(e["id"], c.get("title") or ""), c["date"], _outlets(c)), default=None)
     more = f"{rss.SITE}#glossary={e['id']}"  # the site opens its glossary at this word
@@ -365,7 +427,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
              else f"Here are the {len(top)} that mattered most.")
     made_for = _left_note(prefs, left or [])
     # In order: the count, the word of the day, the full email, then the stories
-    word_text, word_html = _word(cards, day, prefs)
+    word_text, word_html = _word(cards, day, streams, prefs, [_biggest(by_stream, streams), top, todays])
     lines = [hello, "", intro, *([made_for] if made_for else []), "", *word_text, "",
              f"Want everything? The full email, every story of the day in one table: {everything}",
              *([quiet] if quiet else []), "", title]

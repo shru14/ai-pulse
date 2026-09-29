@@ -49,7 +49,7 @@ _ENTRIES = [
      "Much research is about making it faster for long texts.", [r"self-attention", r"attention (?:mechanism|layers?|heads?)",
                                                                   r"sparse attention", r"linear attention"], False),
     ("Parameters", "Models", "The numbers inside a model that are adjusted during training; a rough measure of size. "
-     "\"70B\" means 70 billion parameters, \"1.6T\" 1.6 trillion.", [r"parameters?", r"(?<!\$)\b\d+(?:\.\d+)?[BT](?=\b)"], False),
+     "\"70B\" means 70 billion parameters, \"1.6T\" 1.6 trillion.", [r"parameters?", r"(?<![$€£¥\d.,])\b\d+(?:\.\d+)?[BT](?=\b)"], False),  # not money: "$3.36B"
     ("Mixture of Experts", "Models", "MoE: a model split into many smaller \"expert\" parts, with only a few switched on "
      "for each word. \"35B-A3B\" means 35 billion parameters in all, 3 billion active at a time: big but cheap to run.",
      [r"MoE", r"[Mm]ixture[- ]of[- ][Ee]xperts", r"A\d+(?:\.\d+)?B"], True),
@@ -331,11 +331,9 @@ def mentions(entry_id: str, text: str) -> bool:
 ROTATION_START = date(2026, 9, 29)
 
 
-def word_of_the_day(day: date, groups: set[str] | None = None) -> dict:
-    """The day's word; with `groups` (a reader's topics, as glossary groups), the same rotation through only those
-    groups' words, so it never repeats before they've all come round."""
-    order = sorted((e for e in ENTRIES if not groups or e["group"] in groups),
-                   key=lambda e: hashlib.sha256(e["id"].encode()).hexdigest()) or ENTRIES
+def word_of_the_day(day: date) -> dict:
+    """The rotation's word for a day (the daily email uses it when the day's biggest stories use no technical word)."""
+    order = sorted(ENTRIES, key=lambda e: hashlib.sha256(e["id"].encode()).hexdigest())
     return order[(day - ROTATION_START).days % len(order)]
 
 

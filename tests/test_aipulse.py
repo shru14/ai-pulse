@@ -1966,9 +1966,9 @@ def test_each_reader_gets_their_own_top_10(monkeypatch):
     assert "How to fine-tune" not in text and "Left out, as you asked: 3 stories (Tutorial); they're in the full email." in text
     full = digest.build(cards, ["news"], day, layout="full", prefs={"more": [], "less": ["Tutorial"], "words": []})
     assert "How to fine-tune 0" in full[1]  # the full email is the same for everyone
-    # word of the day from their topics; everyone else gets the shared word
-    chips = digest.build(cards, ["news"], day, prefs={"more": ["Chips, compute & energy"], "less": [], "words": []})[1]
-    word = chips.split("WORD OF THE DAY: ")[1].splitlines()[0]
-    assert next(e for e in glossary.ENTRIES if e["term"] == word)["group"] == "Chips & compute"
-    assert preferences.glossary_groups({"more": ["Funding"]}) == {"Money & business"}
-    assert preferences.glossary_groups({"more": ["Asia"]}) is None  # nothing to go on: the shared word
+    # word of the day: the hardest technical word in the day's 5 biggest stories of this reader's email
+    hard = [card(60, "Nvidia ships HBM4 for AI data centers", outlets=20), card(61, "A new benchmark for agents", outlets=19),
+            card(62, "Another data center opens")]  # "data center" is common; HBM is rare
+    text = digest.build(cards + hard, ["news"], day)[1]
+    assert "WORD OF THE DAY: HBM" in text  # rarer than "benchmark" or "agent" in these stories
+    assert "Where it came up: Nvidia ships HBM4 for AI data centers" in text  # a story in their own email
