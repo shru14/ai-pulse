@@ -1324,7 +1324,7 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
                                   "source": "Outlet", "category": cat, "date": added[:10], "added_at": added}
     cards = [card(1, "tool", "2026-09-27T06:00:00+00:00"), card(2, "regulation", "2026-09-27T18:00:00+00:00"),
              card(3, "news", "2026-09-27T12:00:00+00:00"), card(4, "tool", "2026-09-28T00:30:00+00:00")]
-    subject, text, html = digest.build(cards, ["releases", "regulation"], date(2026, 9, 27))
+    subject, text, html = digest.build(cards, ["releases", "regulation"], date(2026, 9, 27), layout="full")
     assert subject == "AI Pulse daily · Sunday, 27 September 2026"  # no short forms
     assert "Let's explore what happened in AI on Sunday, 27 September 2026." in text
     assert "6-hour" not in text + html and "Daily update" not in html  # the subject already names the day
@@ -1338,7 +1338,7 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert "https://shru14.github.io/ai-pulse/feeds/releases.xml" in html and "feeds/news.xml" not in html  # chosen feeds
     cards[0]["also"] = [{"title": "Same outlet, other post", "source": "Outlet", "url": "https://ex.com/x", "date": "2026-09-27"},
                         {"title": "Story 1 elsewhere", "source": "Other", "url": "https://other.com/1", "date": "2026-09-27"}]
-    _, text, html = digest.build(cards, ["releases"], date(2026, 9, 27))
+    _, text, html = digest.build(cards, ["releases"], date(2026, 9, 27), layout="full")
     assert "Also reported by Other" in text and ">Outlet</a>" not in html   # never the story's own outlet
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
 
@@ -1354,7 +1354,8 @@ def test_industry_news_is_labelled_not_moved(monkeypatch):
     monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
     card = lambda i, kind: {"id": f"n{i}", "title": f"Story {i}", "summary": "", "url": f"https://ex.com/{i}", "source": f"S{i}",
                             "category": "news", "kind": kind, "date": "2026-09-27", "added_at": "2026-09-27T10:00:00+00:00"}
-    _, text, html = digest.build([card(1, "tutorial"), card(2, "news"), card(3, "blog")], ["news"], date(2026, 9, 27))
+    _, text, html = digest.build([card(1, "tutorial"), card(2, "news"), card(3, "blog")], ["news"], date(2026, 9, 27),
+                                 layout="full")
     assert classify.news_kind("Can Muse overcome Meta's trust issues?", "", False) == "analysis"
     assert classify.news_kind("AI access makes people unwilling to say I don't know, study finds", "", False) == "study"
     assert classify.news_kind("Anthropic researcher quits, warns against self-improving AI", "", False) == "news"
@@ -1722,3 +1723,27 @@ def test_every_story_is_shown_in_english(monkeypatch, tmp_path):
     assert "Read the original in English" in page and "translate.google.com/translate?sl=auto&tl=en&u=" in page
     assert '"Translate and read"' in page
     assert classify.tags_for("AI Law", "Machine-translated from Spanish; the original is linked.") == classify.tags_for("AI Law", "")
+
+
+def test_daily_email_shows_the_ten_that_mattered_then_headlines(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = lambda i, cat, outlets=0, kind="news": {
+        "id": f"s{i}", "title": f"Story {i}", "summary": f"What happened in story {i}.", "url": f"https://ex.com/{i}",
+        "source": f"Outlet {i}", "category": cat, "kind": kind if cat == "news" else None, "date": "2026-09-28",
+        "added_at": f"2026-09-28T{10 + i % 10:02d}:00:00+00:00",
+        "also": [{"title": f"Story {i}", "source": f"Other {k}", "url": f"https://o{k}.com/{i}", "date": "2026-09-28"}
+                 for k in range(outlets)]}
+    cards = ([card(0, "tool", 4)] + [card(i, "news", 2 if i == 1 else 0) for i in range(1, 16)]
+             + [card(20, "news", 0, "tutorial"), card(21, "policy")])
+    subject, text, html = digest.build(cards, ["releases", "news", "policy"], date(2026, 9, 28))  # short by default
+    assert subject == "AI Pulse daily · Monday, 28 September 2026" and "10 THINGS THAT MATTERED TODAY" in text
+    top = text.split("10 THINGS THAT MATTERED TODAY")[1].split("THE REST OF THE DAY")[0]
+    assert top.index("Story 0") < top.index("Story 1") and "Outlet 0 +4 outlets" in top  # most reported first
+    assert top.count("• [") == 10 and "Story 20" not in top  # ten, never a tutorial
+    assert "1. " not in top  # not numbered
+    rest = text.split("THE REST OF THE DAY")[1]
+    assert "Releases (1 story)" in rest and "In the top 10 above." in rest
+    assert "+5 more: https://shru14.github.io/ai-pulse/#news (incl. 1 tutorial)" in rest  # 8 of 15 in the top, 3 listed
+    assert "Choose the full email" not in html and html.count("<tr>") >= 5  # the top ten in rows of two

@@ -312,10 +312,11 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
 
 
 def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "",
-          layout: str = "full") -> tuple[str, str, str] | None:
+          layout: str = "short") -> tuple[str, str, str] | None:
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day.
     `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site.
-    `layout`: "full" (every story, in one tagged table) or "short" (the ones that mattered most, then headlines)."""
+    `layout`: "short", the daily email (the ten stories that mattered most, then each stream's headlines), or
+    "full" (every story in one tagged table)."""
     by_stream = by_streams(cards, streams, day)
     if not any(by_stream.values()):
         return None
@@ -325,10 +326,7 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     stop = unsubscribe or change
     if layout == "short":
         open_text, open_html = _brief(by_stream, cards, streams, day)
-        table_text = ["", "Prefer every story, tagged in one table? Choose the full email: " + change]
-        table_html = (f'<p style="margin-top:22px;padding:10px 12px;background:#f6f7f9;border-radius:8px;font-size:13px;'
-                      f'color:#3c4043">Prefer every story, tagged in one table? <a href="{escape(change)}" style="color:{LINK}">'
-                      f'Choose the full email</a>.</p>')
+        table_text, table_html = [], ""
     else:
         open_text, open_html = _opening(by_stream, cards, streams, day)
         table_text, table_html = _ledger(by_stream, streams, day)

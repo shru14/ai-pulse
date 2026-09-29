@@ -71,8 +71,8 @@ def main():
     dg.add_argument("--streams", default="releases,news,research,regulation,policy", help="comma-separated streams")
     dg.add_argument("--day", help="UTC day, YYYY-MM-DD (default: yesterday)")
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
-    dg.add_argument("--layout", choices=["full", "short"], default="full",
-                    help="full: every story in one tagged table; short: the ones that mattered most, then headlines")
+    dg.add_argument("--layout", choices=["short", "full"], default="short",
+                    help="short (the daily email): the ten that mattered most, then headlines; full: every story in one table")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
 
