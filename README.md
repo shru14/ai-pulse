@@ -6,7 +6,8 @@ them into five streams and links every card to the original.
 **Live site:** https://shru14.github.io/ai-pulse/
 
 Only what is legal to collect and publicly accessible is used. No AI model, paid API or billed service:
-summaries are the publishers' own text, sorting is keyword rules, and translation runs offline.
+summaries are the publishers' own text, sorting is keyword rules, the glossary is written by hand and translation
+runs offline.
 
 ## Streams
 
@@ -21,14 +22,14 @@ summaries are the publishers' own text, sorting is keyword rules, and translatio
 ## Features
 
 - **Filters:** by stream, region, country and time range; search covers headlines, summaries, tags and authors back to 2023.
-- **Everything in English, nothing left out:** a story in another language shows the publisher's own English version when there is one, else an offline translation (OPUS-MT, no API) marked as such; one that can't be translated gets an English headline and line and the **#Translate and read** tag. Both link to the original through Google Translate's page, opened by the reader.
-- **Tags:** companies, a country (the place a story names, else the home country of the company it's about) and topics; the daily email shows them too, countries first.
-- **Glossary:** plain-English meanings, written by hand, of the hard words and product names in stories (MoE, RAG, inference, c.ai…). A dotted word in a story opens its meaning; the Glossary button lists them all, with this week's most-used words first.
+- **Everything in English, nothing left out:** a story in another language shows the publisher's English version, else an offline translation (OPUS-MT) marked as such, else an English headline tagged **#Translate and read**. Each links to the original through Google Translate, opened by the reader.
+- **Tags:** companies, a country (the place a story names, else the company's home country) and topics.
+- **Glossary:** plain-English meanings of the hard words and product names in stories (MoE, RAG, inference, c.ai…). A dotted word in a story opens its meaning; the Glossary button lists all ~120, this week's most-used first. `python -m aipulse glossary` lists acronyms not explained yet.
 - **One card per event:** the same story from several outlets is grouped, led by the company's own post when there is one.
 - **RSS:** one feed per stream, one post a day ([Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml), [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml)).
-- **Daily email:** one email a day with the reader's streams: the 10 things that mattered most (ranked by how many outlets reported them), then each stream's top headlines; on a lighter day (12 stories or fewer) all of them. Every email links to that day's full email on the site (`daily/`: every story, every stream, one table). Sent each morning from 05:17 UTC to readers who confirmed their sign-up.
+- **Daily email:** one a day, with the reader's streams: the 10 things that mattered most (ranked by how many outlets reported them) with their tags, then each stream's top headlines; on a lighter day (12 stories or fewer), all of them. It links to the day's full list on the site (`daily/`) and to the glossary.
 - **Quality check:** before sending, every story is checked (sorting, text, links, duplicates, unusual counts); any problem holds the email for everyone and alerts the project inbox.
-- **Subscriptions:** email and streams entered on the site, confirmed by one link, one-click unsubscribe in every email; addresses stay in the project's Google account, never in this repository or its logs.
+- **Subscriptions:** sign up on the site, confirm by one link, unsubscribe in one click. Addresses stay in the project's Google account, never in this repository or its logs.
 
 ## How we keep it legal
 
@@ -41,8 +42,6 @@ summaries are the publishers' own text, sorting is keyword rules, and translatio
 Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 
 ## Sources
-
-Every source below allows automated access in its robots.txt, and its terms allow headline, description and link.
 
 | Stream | Sources |
 |---|---|
@@ -84,7 +83,7 @@ python -m aipulse serve       # http://127.0.0.1:8000
 python -m pytest -q           # tests
 ```
 
-Other commands: `collect --labs`, `bills`, `backfill`, `reclassify`, `regroup`, `build --out site`, `digest`, `status`.
+Tests run locally, not on GitHub. Every other command (`bills`, `build`, `digest`…): `python -m aipulse --help`.
 
 ## Hosting
 
@@ -95,7 +94,7 @@ Other commands: `collect --labs`, `bills`, `backfill`, `reclassify`, `regroup`, 
 ## Layout
 
 ```
-aipulse/               collection, sorting, grouping, site build, RSS, email, quality check, subscribers
+aipulse/               collection, sorting, grouping, site build, RSS, email, quality check, subscribers, glossary
 apps-script/Code.gs    the sign-up web app
 templates/index.html   the page
 tests/                 tests
