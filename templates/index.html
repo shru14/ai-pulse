@@ -904,7 +904,7 @@ $("sub-form").addEventListener("submit", async e => {
 });
 // Glossary: plain-English meanings written by hand (aipulse/glossary.py). glossary.json has every entry, the ways
 // stories write it (regular expressions) and how many of this week's stories use it.
-const GL = {entries: [], byId: {}, groups: [], ready: false, group: null};
+const GL = {entries: [], byId: {}, groups: [], ready: false, group: null, pending: null};
 const MAX_WORDS = 3;  // underlined words per card, least common first: the ones a reader is least likely to know
 fetch("glossary.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
   const re = (e, flags) => new RegExp("(?<!\\w)(?:" + e.match.join("|") + ")(?![\\w])", flags);
@@ -912,6 +912,7 @@ fetch("glossary.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.
   GL.byId = Object.fromEntries(GL.entries.map(e => [e.id, e]));
   GL.groups = d.groups; GL.ready = true;
   render(); renderGlossary();
+  if(GL.pending != null){ openGlossary(GL.pending); GL.pending = null; }
 }).catch(() => { $("gl-body").replaceChildren(el("p","gl-none","Couldn't load the glossary. Try reloading the page.")); });
 
 // The glossary words in a card: those in the summary (to underline in place) and those only in the headline.
@@ -1032,7 +1033,9 @@ function renderGlossary(){
 $("glossary-open").addEventListener("click", () => openGlossary());
 $("gl-q").addEventListener("input", renderGlossary);
 glDialog.addEventListener("click", e => { if(e.target === glDialog) glDialog.close(); });  // a click outside closes it
-if(location.hash === "#glossary") openGlossary();
+// From the daily email: #glossary opens the list, #glossary=moe opens it at that word (once the list has loaded).
+const glLink = location.hash.match(/^#glossary(?:=([\w-]+))?$/);
+if(glLink) GL.ready ? openGlossary(glLink[1]) : (GL.pending = glLink[1] || "");
 
 let t; $("q").addEventListener("input", e => { clearTimeout(t); t=setTimeout(()=>{ state.q=e.target.value; load(true); },250); });
 $("range").addEventListener("change", e => { state.range=Number(e.target.value); saveUI(); load(true); });

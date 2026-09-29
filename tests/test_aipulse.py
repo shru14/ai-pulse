@@ -1804,3 +1804,19 @@ def test_glossary_explains_the_hard_words_in_stories():
     page = Path("templates/index.html").read_text(encoding="utf-8")
     assert 'id="glossary-open"' in page and page.index('id="subscribe-open"') < page.index('id="glossary-open"') < page.index('id="theme"')
     assert 'fetch("glossary.json"' in page
+
+
+def test_word_of_the_day_rotates_through_the_glossary(monkeypatch):
+    from datetime import date, timedelta
+    from aipulse import digest, glossary
+    start, n = glossary.ROTATION_START, len(glossary.ENTRIES)
+    words = [glossary.word_of_the_day(start + timedelta(days=k))["id"] for k in range(n)]
+    assert len(set(words)) == n  # every word once before any comes back
+    assert glossary.word_of_the_day(start + timedelta(days=n)) == glossary.word_of_the_day(start)
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    day = start + timedelta(days=words.index("rag"))
+    card = {"id": "w1", "title": "A RAG pipeline for support teams", "summary": "", "url": "https://ex.com/rag",
+            "source": "S", "category": "news", "kind": "news", "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00"}
+    _, text, html = digest.build([card], ["news"], day)
+    assert "WORD OF THE DAY: RAG" in text and "Where it came up: A RAG pipeline for support teams" in text
+    assert "#glossary=rag" in html and "Word of the day</div>" in html
