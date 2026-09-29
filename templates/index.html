@@ -165,6 +165,9 @@ header.top{gap:10px}
 
 .body{display:flex;flex-direction:column;gap:4px;min-width:0}
 .sum{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.read-en{display:inline-block;margin-top:4px;font-size:13px;color:var(--accent);text-decoration:none}
+.read-en:hover{text-decoration:underline}
+.read-en::after{content:" \2192"}
 .sum.open{display:block}
 .readmore{align-self:flex-start;font:500 12px var(--mono);color:var(--accent);background:none;border:0;padding:0;cursor:pointer}
 .readmore:hover{text-decoration:underline;text-underline-offset:3px}
@@ -391,6 +394,15 @@ function render(){
         body.append(el("p","authors", shown + (it.authors.length>6 ? " +"+(it.authors.length-6)+" more" : "")));
       }
       if(it.summary) body.append(el("p","sum",it.summary));  // clamped to 3 lines; see clampSummaries()
+      // A story or record we translated: the original, read through Google Translate's own page in the reader's
+      // browser (a link like any other: nothing is fetched or copied by AI Pulse).
+      const untranslated = /Translate and read: the original is in \w+\./.test(it.summary||"");
+      if(untranslated || /Machine-translated from \w+;/.test(it.summary||"")){
+        const tr = el("a","read-en", untranslated ? "Translate and read" : "Read the original in English");
+        tr.target="_blank"; tr.rel="noopener";
+        tr.href = "https://translate.google.com/translate?sl=auto&tl=en&u=" + encodeURIComponent(it.url);
+        body.append(tr);
+      }
       if(life) body.append(lifecycleStrip(life));
       const tags = el("div","tags");
       (it.jurisdictions||[]).forEach(code => {

@@ -1674,3 +1674,51 @@ def test_release_notes_keep_only_the_labs_own_launches(tmp_path):
     kept = {src["name"]: [e["title"] for e in col.page_list_entries(conn, src, pages.get)] for src in labs}
     # Only their own products' launches: not an API field, a retirement, or another lab's model Perplexity now offers.
     assert kept == {"xAI": ["Grok 4.7"], "Perplexity": ["Introducing New and Improved Sonar Models"]}
+
+
+def test_every_story_is_shown_in_english(monkeypatch, tmp_path):
+    from aipulse import collect as col, translate
+    assert translate.detect("Noticias Telemundo: Las empresas de telecomunicaciones no han protegido los datos") == "es"
+    assert translate.detect("Nemotron-Personas-Japan: ソブリン AI のための合成データセット") == "ja"
+    assert translate.detect("Ley de IA: el Senado aprueba la regulación") == "es"
+    assert translate.detect("L'intelligence artificielle est une priorité pour le gouvernement") == "fr"
+    assert translate.detect("삼성전자, 새로운 AI 칩 공개") == "ko" and translate.detect("Новый закон об ИИ принят") == "ru"
+    # English stays English: model names, a name in Chinese characters, words shared with other languages
+    for english in ("Addendum to OpenAI o3 and o4-mini system card", "Lai marks Teachers' Day, highlights AI plan (賴清德)",
+                    "Con Instruction: Universal Jailbreaking of Multimodal Large Language Models",
+                    "Microsoft's AI rulebook: readable thinking, no inner life, and definitely no sex"):
+        assert translate.detect(english) is None, english
+    conn = store.connect(tmp_path / "t.db")
+    made = {"Ley de IA: el Senado aprueba la regulación": "AI Law: The Senate approves the regulation"}
+    monkeypatch.setattr(translate, "english", lambda conn, lang, texts: {t: made[t] for t in texts if t in made})
+    assert col.in_english(conn, "Ley de IA: el Senado aprueba la regulación", "", "https://ex.es/ley") == (
+        "AI Law: The Senate approves the regulation", "Machine-translated from Spanish; the original is linked.",
+        "https://ex.es/ley")
+    # The publisher's own English version wins, and the card links to it ("-ja" dropped from the address).
+    pages = {"https://huggingface.co/blog/nvidia/nemotron-personas-japan":
+             b'<meta property="og:title" content="Nemotron-Personas-Japan: Synthesized Data for Sovereign AI">'
+             b'<meta property="og:description" content="Synthetic personas for building AI in Japan.">'}
+    def fetch(url):
+        if url not in pages:
+            raise OSError("404")
+        return pages[url]
+    assert col.in_english(conn, "Nemotron-Personas-Japan: ソブリン AI のための合成データセット", "",
+                          "https://huggingface.co/blog/nvidia/nemotron-personas-japan-ja", "Hugging Face Blog", fetch) == (
+        "Nemotron-Personas-Japan: Synthesized Data for Sovereign AI", "Synthetic personas for building AI in Japan.",
+        "https://huggingface.co/blog/nvidia/nemotron-personas-japan")
+    # No English version, no translation: kept, with an English headline and line, tagged "Translate and read".
+    title, summary, url = col.in_english(conn, "Nemotron-Personas-Japan: ソブリン AI のための合成データセット", "",
+                                         "https://ex.jp/x", "Hugging Face Blog", fetch)
+    assert title == "Nemotron-Personas-Japan (in Japanese)" and url == "https://ex.jp/x"
+    assert summary == "A Japanese-language story from Hugging Face Blog. Translate and read: the original is in Japanese."
+    assert classify.tags_for(title, summary)[0] == "Translate and read"
+    assert col.in_english(conn, "삼성전자 새로운 칩", "", "", "Yonhap")[0] == "A Korean-language story from Yonhap"
+    assert col.in_english(conn, "Next Wave: Can African banks pick up the baton?",
+                          "Cet article est aussi disponible en français First published 17 Aug")[:2] == (
+        "Next Wave: Can African banks pick up the baton?", "First published 17 Aug")
+    assert col.in_english(conn, "TechCabal Daily", "In partnership with Lire en Français اقرأ هذا باللغة العربية Good morning!")[:2] == (
+        "TechCabal Daily", "Good morning!")
+    page = (Path(__file__).resolve().parent.parent / "templates" / "index.html").read_text(encoding="utf-8")
+    assert "Read the original in English" in page and "translate.google.com/translate?sl=auto&tl=en&u=" in page
+    assert '"Translate and read"' in page
+    assert classify.tags_for("AI Law", "Machine-translated from Spanish; the original is linked.") == classify.tags_for("AI Law", "")

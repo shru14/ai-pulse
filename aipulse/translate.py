@@ -25,8 +25,15 @@ MODELS = {"pt": "https://argos-net.com/v1/translate-pt_en-1_9.argosmodel",
           "zh": "https://argos-net.com/v1/translate-zh_en-1_9.argosmodel",
           "ja": "https://argos-net.com/v1/translate-ja_en-1_1.argosmodel",
           "vi": "https://argos-net.com/v1/translate-vi_en-1_9.argosmodel",
-          "de": "https://argos-net.com/v1/translate-de_en-1_3.argosmodel"}
-LANGUAGE_NAMES = {"pt": "Portuguese", "zh": "Chinese", "ja": "Japanese", "vi": "Vietnamese", "de": "German"}
+          "de": "https://argos-net.com/v1/translate-de_en-1_3.argosmodel",
+          # for news in other languages (see detect): downloaded only when a story in that language appears
+          "es": "https://argos-net.com/v1/translate-es_en-1_0.argosmodel",  # 1.9 uses another tokenizer
+          "fr": "https://argos-net.com/v1/translate-fr_en-1_9.argosmodel",
+          "ko": "https://argos-net.com/v1/translate-ko_en-1_1.argosmodel",
+          "ru": "https://argos-net.com/v1/translate-ru_en-1_9.argosmodel",
+          "ar": "https://argos-net.com/v1/translate-ar_en-1_0.argosmodel"}
+LANGUAGE_NAMES = {"pt": "Portuguese", "zh": "Chinese", "ja": "Japanese", "vi": "Vietnamese", "de": "German",
+                  "es": "Spanish", "fr": "French", "ko": "Korean", "ru": "Russian", "ar": "Arabic"}
 VERSION = "2"  # part of each stored translation's key: bump it when the term fixes below change
 
 # Fixed terms, per language. BEFORE replaces a phrase in the original that the model mistranslates (only
@@ -78,7 +85,8 @@ def _installed(lang: str) -> Path | None:
             m = json.loads(meta.read_text(encoding="utf-8"))
         except Exception:
             continue
-        if m.get("from_code") == lang and m.get("to_code") == "en" and (meta.parent / "model" / "model.bin").exists():
+        if (m.get("from_code") == lang and m.get("to_code") == "en" and (meta.parent / "model" / "model.bin").exists()
+                and (meta.parent / "sentencepiece.model").exists()):  # a package with another tokenizer can't be used
             return meta.parent
     return None
 
@@ -162,13 +170,52 @@ def english(conn, lang: str, texts: list[str]) -> dict[str, str]:
         translator, sp = model
         for i in range(0, len(todo), 16):
             batch = todo[i:i + 16]
+            # disable_unk: the model picks a real word where it would write "<unk>" ("Syn<unk> Dataset")
             results = translator.translate_batch([sp.encode(_before(lang, t), out_type=str) for t in batch],
-                                                 beam_size=2, max_decoding_length=400)
+                                                 beam_size=2, max_decoding_length=400, disable_unk=True)
             for src, r in zip(batch, results):
                 out[src] = _after(lang, tidy("".join(r.hypotheses[0])))
                 conn.execute("INSERT OR REPLACE INTO translations VALUES (?, ?, ?)", (_key(lang, src), lang, out[src]))
             conn.commit()
     return out
+
+
+# Which language a headline or summary is in, when it isn't English: by script (a quarter of its letters or more,
+# so an English story naming "賴清德" stays English), else by the short words only that language uses.
+_SCRIPTS = [("ja", re.compile(r"[぀-ヿ]")), ("ko", re.compile(r"[가-힯]")),
+            ("zh", re.compile(r"[㐀-鿿]")), ("ru", re.compile(r"[Ѐ-ӿ]")),
+            ("ar", re.compile(r"[؀-ۿ]"))]
+_VIETNAMESE = re.compile(r"[ơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹđ]", re.I)
+_WORDS = {"es": set("de la el los las del que por para con una como más pero sus este esta también sobre entre desde".split()),
+          "fr": set("de la le les des est pour dans une sur pas qui aux du par avec sont cette nous vous leur plus".split()),
+          "pt": set("de da os das dos em um uma para com não que ao na no são mais pela pelo sobre também como".split()),
+          "de": set("der die das und ist mit für von zu auf den im ein eine nicht sich dem bei wird werden".split())}
+_ENGLISH = set("the a an of and to in for on with is are from by at as how what why this that it be will has have "
+               "was its our we you new can not more".split())
+
+
+def detect(text: str) -> str | None:
+    """The language code of `text` when it's one we can recognise and it isn't English; None otherwise."""
+    letters = re.findall(r"[^\W\d_]", text or "")
+    if not letters:
+        return None
+    for lang, script in _SCRIPTS:
+        if len(script.findall(text)) >= len(letters) / 4:
+            # Chinese characters appear in Japanese too: kana decide (checked first)
+            return lang
+    if len(_VIETNAMESE.findall(text)) >= 3:
+        return "vi"
+    words = re.findall(r"[a-zà-öø-ÿ]{2,}", text.lower())
+    if len(words) < 4:
+        return None
+    english = sum(w in _ENGLISH for w in words)
+    lang, hits = max(((code, sum(w in vocab for w in words)) for code, vocab in _WORDS.items()), key=lambda x: x[1])
+    return lang if hits >= 2 and hits > 2 * english else None
+
+
+def available(lang: str) -> bool:
+    """Can `lang` be translated here (libraries and model present, or downloadable)?"""
+    return _model(lang) is not None
 
 
 def cached(conn, lang: str, text: str) -> str | None:

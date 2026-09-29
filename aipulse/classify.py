@@ -293,15 +293,19 @@ def lead_company(title: str) -> str | None:
 
 # Our own note on translated official records ("Machine-translated from Portuguese; ...") names a language,
 # not a place: a Brazilian bill isn't about Portugal, a Swiss one isn't about Germany.
-_TRANSLATED = re.compile(r"\s*Machine-translated from \w+; the official text is linked\.")
+_TRANSLATED = re.compile(r"\s*(?:Machine-translated from \w+; the (?:official text|original) is linked|"
+                         r"Translate and read: the original is in \w+)\.")
+UNTRANSLATED_TAG = "Translate and read"  # a story no translation could be made of (collect.in_english)
 
 
 def tags_for(title: str, summary: str, limit: int = 5) -> list[str]:
-    """Companies first, then places, then topics (see TOPIC_TERMS)."""
+    """Companies first, then places, then topics (see TOPIC_TERMS); a story left in its own language leads with
+    "Translate and read"."""
+    untranslated = "Translate and read: the original is in" in summary
     summary = _TRANSLATED.sub("", summary)
     text = f"{title} {summary}"
     topics = [k for k, p in _topics.items() if p.search(text)]
-    return (company_tags(title, summary) + place_tags(title, summary) + topics)[:limit]
+    return ([UNTRANSLATED_TAG] * untranslated + company_tags(title, summary) + place_tags(title, summary) + topics)[:limit]
 
 
 def name_key(name: str) -> tuple[str, ...] | None:
