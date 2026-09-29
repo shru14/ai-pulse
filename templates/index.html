@@ -396,8 +396,10 @@ function render(){
       if(it.summary) body.append(el("p","sum",it.summary));  // clamped to 3 lines; see clampSummaries()
       // A story or record we translated: the original, read through Google Translate's own page in the reader's
       // browser (a link like any other: nothing is fetched or copied by AI Pulse).
-      if(/Machine-translated from \w+;/.test(it.summary||"")){
-        const tr = el("a","read-en","Read the original in English"); tr.target="_blank"; tr.rel="noopener";
+      const untranslated = /Translate and read: the original is in \w+\./.test(it.summary||"");
+      if(untranslated || /Machine-translated from \w+;/.test(it.summary||"")){
+        const tr = el("a","read-en", untranslated ? "Translate and read" : "Read the original in English");
+        tr.target="_blank"; tr.rel="noopener";
         tr.href = "https://translate.google.com/translate?sl=auto&tl=en&u=" + encodeURIComponent(it.url);
         body.append(tr);
       }

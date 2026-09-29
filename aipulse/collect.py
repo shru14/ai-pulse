@@ -54,24 +54,61 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
 _OTHER_EDITIONS = re.compile(r"\s*(?:Cet article est aussi disponible en français|Lire en français|"
                              r"اقرأ هذا باللغة العربية|Read (?:this )?in (?:French|Arabic|Portuguese))\.?", re.I)
 TRANSLATED_NOTE = "Machine-translated from {}; the original is linked."
+UNTRANSLATED_NOTE = "Translate and read: the original is in {}."  # also the story's tag (classify.tags_for)
+# A language marker in an address, whose English page is the same address without it: "…/nemotron-personas-japan-ja",
+# "…/es/…", "…?lang=fr".
+_URL_LANG = re.compile(r"(?:-|_)(?:ja|zh|ko|ru|ar|vi|es|fr|pt|de)(?=/?$)|/(?:ja|zh|ko|ru|ar|vi|es|fr|pt|de)(?=/)|[?&](?:lang|hl)=\w+")
 
 
-def in_english(conn, title: str, summary: str) -> tuple[str, str] | None:
-    """A story's headline and summary in English: as they are, or translated offline (translate.py) with a note
-    saying from which language. None when a part isn't English and can't be translated."""
+def english_version(url: str, fetcher=feeds.fetch) -> tuple[str, str, str] | None:
+    """The publisher's own English version of a page: the address without its language marker, or the English
+    page it declares (hreflang="en"). (title, summary, url), or None."""
+    tries = [u for u in dict.fromkeys([_URL_LANG.sub("", url, count=1)]) if u != url]
+    try:
+        page = fetcher(url).decode("utf-8", "replace")
+        declared = re.findall(r"""<link[^>]+hreflang=["']en(?:-[A-Za-z]+)?["'][^>]*href=["']([^"']+)""", page)
+        tries += [u for u in declared if u not in tries and u != url]
+    except Exception:
+        pass
+    for candidate in tries[:3]:
+        try:
+            post = feeds.page_meta(fetcher(candidate))
+        except Exception:
+            continue
+        if post["title"] and not translate.detect(post["title"]) and not translate.detect(post["summary"]):
+            return post["title"], post["summary"], candidate
+    return None
+
+
+def in_english(conn, title: str, summary: str, url: str = "", source: str = "",
+               fetcher=None) -> tuple[str, str, str]:
+    """A story's headline, summary and link in English, never leaving it out: as they are; else the publisher's own
+    English version (with `fetcher`); else translated offline (translate.py), marked as such; else, when no
+    translation is possible, an English headline from its Latin-script names and a line saying what it is, tagged
+    "Translate and read"."""
     summary = re.sub(r"^In partnership with\s+(?=[A-Z])", "", _OTHER_EDITIONS.sub("", summary).strip())
     langs = [translate.detect(title), translate.detect(summary)]
     if not any(langs):
-        return title, summary
+        return title, summary, url
+    lang = next(l for l in langs if l)
+    name = translate.LANGUAGE_NAMES[lang]
+    if fetcher and url:
+        found = english_version(url, fetcher)
+        if found:
+            return found
     out = []
-    for text, lang in zip((title, summary), langs):
-        if lang:
-            text = translate.english(conn, lang, [text]).get(text)
-            if not text or "<unk>" in text:  # no model, or words the model doesn't know: not a usable English text
-                return None
+    for text, text_lang in zip((title, summary), langs):
+        if text_lang:
+            text = translate.english(conn, text_lang, [text]).get(text)
+            if not text or "<unk>" in text:
+                break
         out.append(text)
-    note = TRANSLATED_NOTE.format(translate.LANGUAGE_NAMES[next(l for l in langs if l)])
-    return out[0], f"{out[1]} {note}".strip()
+    else:
+        return out[0], f"{out[1]} {TRANSLATED_NOTE.format(name)}".strip(), url
+    # the names written in Latin letters ("Nemotron-Personas-Japan"), not a stray "AI" inside the other text
+    names = " ".join(n for n in re.findall(r"[A-Za-z][\w.+-]*(?:[ :][A-Z][\w.+-]*)*", title) if len(n) >= 3).strip(" :")
+    return ((f"{names} (in {name})" if len(names) >= 3 else f"A {name}-language story from {source or 'the source'}"),
+            f"A {name}-language story{' from ' + source if source else ''}. {UNTRANSLATED_NOTE.format(name)}", url)
 
 
 PAGE_LIST_MEMORY = 400  # post addresses remembered per news page
@@ -180,18 +217,15 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 summary = brief.paper_summary(e["summary"], title)
             else:
                 summary = brief.clean_summary(e["summary"], title, source)
-            english = in_english(conn, title, summary)
-            if not english:
-                continue  # not in English and no translation: left out rather than shown in another language
-            title, summary = english
+            if src.get("english_only") and translate.detect(title):
+                continue  # the same post in Japanese (Sakana AI posts both): the English one is kept
+            title, summary, url = in_english(conn, title, summary, e["url"], source, fetcher)
 
             ai_only = src.get("ai_only", src["category"] == "tool")
             if not ai_only and not classify.is_ai_related(title, e["summary"]):
                 continue  # general feeds carry non-AI stories too
             if src.get("ai_in_title") and not classify.is_ai_related(title, ""):
                 continue
-            if src.get("english_only") and re.search(r"[぀-ヿ㐀-鿿가-힯]", title):
-                continue  # the same post in Japanese, Chinese or Korean (the English one is kept)
             if (e.get("lead") or src.get("page_lead")) and not summary and not store.exists(conn, e["url"]):
                 try:  # a list without descriptions: the item's own first paragraph, read once
                     page = fetcher(e["url"])
@@ -203,9 +237,9 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             item = {
                 "title": title.strip(),
                 "summary": summary,
-                "url": e["url"],
+                "url": url,  # the publisher's English version, when there is one
                 "source": source.strip(),
-                "category": blog_category(src, title, summary, e["url"]) if src["category"] == "tool"
+                "category": blog_category(src, title, summary, url) if src["category"] == "tool"
                             else classify.categorize(title, summary, src["category"]),
                 "date": published.date().isoformat(),
                 "tags": classify.tags_for(title, summary),
@@ -441,16 +475,14 @@ def reclassify(conn) -> int:
     changed = 0
     # Stories stored before collection translated them (a Japanese headline, a Spanish press item), and feeds'
     # "also in French" lines: English now, where the offline translator can do it.
-    for it in conn.execute("SELECT id, title, summary FROM items").fetchall():
+    for it in conn.execute("SELECT id, source, url, title, summary FROM items").fetchall():
         summary = it["summary"] or ""
         if _OTHER_EDITIONS.search(summary) or translate.detect(it["title"]) or translate.detect(summary):
-            english = in_english(conn, it["title"], summary)
-            if english and english != (it["title"], summary):
-                store.update_text(conn, it["id"], *english)
-                changed += 1
-            elif not english and all(translate.available(l) for l in
-                                     filter(None, (translate.detect(it["title"]), translate.detect(summary)))):
-                conn.execute("DELETE FROM items WHERE id = ?", (it["id"],))  # the model can't make English of it
+            title, new_summary, url = in_english(conn, it["title"], summary, it["url"], it["source"], feeds.fetch)
+            if (title, new_summary, url) != (it["title"], summary, it["url"]):
+                store.update_text(conn, it["id"], title, new_summary)
+                conn.execute("UPDATE items SET url = ? WHERE id = ?", (url, it["id"]))  # the English version
+                store.set_tags(conn, it["id"], classify.tags_for(title, new_summary))
                 changed += 1
     for it in conn.execute(f"SELECT id, title, summary FROM items WHERE source IN ({','.join('?' * len(AI_RECHECKED))})",
                            AI_RECHECKED).fetchall():

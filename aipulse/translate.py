@@ -170,8 +170,9 @@ def english(conn, lang: str, texts: list[str]) -> dict[str, str]:
         translator, sp = model
         for i in range(0, len(todo), 16):
             batch = todo[i:i + 16]
+            # disable_unk: the model picks a real word where it would write "<unk>" ("Syn<unk> Dataset")
             results = translator.translate_batch([sp.encode(_before(lang, t), out_type=str) for t in batch],
-                                                 beam_size=2, max_decoding_length=400)
+                                                 beam_size=2, max_decoding_length=400, disable_unk=True)
             for src, r in zip(batch, results):
                 out[src] = _after(lang, tidy("".join(r.hypotheses[0])))
                 conn.execute("INSERT OR REPLACE INTO translations VALUES (?, ?, ?)", (_key(lang, src), lang, out[src]))
