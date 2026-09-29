@@ -1738,8 +1738,8 @@ def test_daily_email_shows_the_ten_that_mattered_then_headlines(monkeypatch):
     cards = ([card(0, "tool", 4)] + [card(i, "news", 2 if i == 1 else 0) for i in range(1, 16)]
              + [card(20, "news", 0, "tutorial"), card(21, "policy")])
     subject, text, html = digest.build(cards, ["releases", "news", "policy"], date(2026, 9, 28))  # short by default
-    assert subject == "AI Pulse daily · Monday, 28 September 2026" and "10 THINGS THAT MATTERED TODAY" in text
-    top = text.split("10 THINGS THAT MATTERED TODAY")[1].split("THE REST OF THE DAY")[0]
+    assert subject == "AI Pulse daily · Monday, 28 September 2026" and "Here are the 10 that mattered most." in text
+    top = text.split("Here are the 10 that mattered most.")[1].split("THE REST OF THE DAY")[0]
     assert top.index("Story 0") < top.index("Story 1") and "Outlet 0 +4 outlets" in top  # most reported first
     assert top.count("• [") == 10 and "Story 20" not in top  # ten, never a tutorial
     assert "1. " not in top  # not numbered
@@ -1759,7 +1759,7 @@ def test_every_email_links_to_the_days_full_email(monkeypatch):
     _, text, html = digest.build(cards, ["research"], date(2026, 9, 28))  # a Research-only reader
     assert "https://shru14.github.io/ai-pulse/daily/2026-09-28.html" in text + html
     assert "https://shru14.github.io/ai-pulse/#glossary" in text and "#glossary" in html  # every email points to the glossary
-    assert "A lighter day in your streams: 3 stories" in text and "ALL 3 STORIES TODAY" in text
+    assert "A lighter day in your streams: 3 stories" in text and "Here are all 3 stories of the day." in text
     # the page itself: every stream, the full table, a sign-up line instead of a reader's own settings
     _, text, html = digest.build(cards, ["releases", "news", "research", "regulation", "policy"], date(2026, 9, 28),
                                  layout="full", web=True)
@@ -1836,3 +1836,16 @@ def test_mojibake_is_repaired_and_real_accents_are_kept(tmp_path):
                         "summary": "", "url": "https://ex.com/m1", "date": "2026-09-29"})
     reclassify(conn)
     assert conn.execute("SELECT title FROM items WHERE url = 'https://ex.com/m1'").fetchone()[0] == "Boost Nation’s AI"
+
+
+def test_email_opens_with_the_count_then_the_word_then_the_full_email(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = {"id": "o1", "title": "Story 1", "summary": "", "url": "https://ex.com/o1", "source": "S", "category": "news",
+            "kind": "news", "date": "2026-09-28", "added_at": "2026-09-28T10:00:00+00:00"}
+    _, text, html = digest.build([card], ["news"], date(2026, 9, 28))
+    order = [text.index(s) for s in ("1 story from 1 source.", "WORD OF THE DAY", "Want everything?", "Here is the one story")]
+    assert order == sorted(order)
+    order = [html.index(s) for s in ("1 story from 1 source.", "Word of the day</div>", "Want everything?", "Here is the one story")]
+    assert order == sorted(order)

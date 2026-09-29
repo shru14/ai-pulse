@@ -274,17 +274,18 @@ def _rank(c: dict) -> tuple:
 
 
 def _word(cards: list[dict], day: date) -> tuple[list[str], str]:
-    """The word of the day (glossary.word_of_the_day): its meaning, the story that used it that day or in the
-    week before (the one most outlets reported), and a link to it in the site's glossary."""
+    """The word of the day (glossary.word_of_the_day): its meaning, a story that used it that day or in the
+    week before, and a link to it in the site's glossary."""
     e = glossary.word_of_the_day(day)
     week = (day - timedelta(days=6)).isoformat()
     used = [c for c in cards if week <= (c.get("date") or "") <= day.isoformat()
             and glossary.mentions(e["id"], f"{c.get('title') or ''} {c.get('summary') or ''}")]
-    story = max(used, key=lambda c: (c["date"], _outlets(c)), default=None)
+    # A headline that shows the word beats one whose summary does; then the latest, then the most reported
+    story = max(used, key=lambda c: (glossary.mentions(e["id"], c.get("title") or ""), c["date"], _outlets(c)), default=None)
     more = f"{rss.SITE}#glossary={e['id']}"  # the site opens its glossary at this word
     text = ["WORD OF THE DAY: " + e["term"], e["def"], *([f"Where it came up: {story['title']} {story['url']}"] if story else []),
             f"More words in the AI Pulse glossary: {more}"]
-    html = (f'<div style="margin:22px 0 0;padding:14px 16px;background:#eef2ff;border-left:4px solid {NAVY};border-radius:4px">'
+    html = (f'<div style="margin:14px 0 12px;padding:14px 16px;background:#eef2ff;border-left:4px solid {NAVY};border-radius:4px">'
             f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:{HEADLINE};'
             f'margin-bottom:4px">Word of the day</div>'
             f'<div style="font-size:18px;font-weight:bold;color:{NAVY}">{escape(e["term"])}</div>'
@@ -309,23 +310,26 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     counted = (f"{stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
                f"{'source' if len(outlets) == 1 else 'sources'}")
     light = len(todays) <= LIGHT  # a lighter day in these streams: every story in the table, said plainly
-    intro = (f"A lighter day in your streams: {counted}, all of them below." if light else
-             f"{counted}. Here are the ones that mattered most; the rest of the day is one tap away.")
+    intro = f"A lighter day in your streams: {counted}." if light else f"{counted}."
     quiet = _quiet(by_stream, cards, streams, day)
     everything = full_page(day)  # every story of the day, whatever streams this reader chose
     top = (sorted(todays, key=_rank, reverse=True) if light else
            sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP])
-    title = (f"All {len(top)} {'story' if len(top) == 1 else 'stories'} today" if light
-             else f"{len(top)} things that mattered today")
-    lines = [hello, "", intro, f"Want everything? The full email, every story of the day in one table: {everything}",
-             *([quiet] if quiet else []), "", title.upper()]
+    title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
+             else f"Here are the {len(top)} that mattered most.")
+    # In order: the count, the word of the day, the full email, then the stories
+    word_text, word_html = _word(cards, day)
+    lines = [hello, "", intro, "", *word_text, "",
+             f"Want everything? The full email, every story of the day in one table: {everything}",
+             *([quiet] if quiet else []), "", title]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
-    html = [f'<p style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
-            f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
-            f'Want everything? See the full email: every story of the day in one table →</a></p>'
+    html = [f'<p style="margin:0;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
+            + word_html
+            + f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
+              f'Want everything? See the full email: every story of the day in one table →</a></p>'
             + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
-            + head(title)]
+            + f'<div style="font-size:17px;font-weight:bold;color:{NAVY};margin:20px 0 10px">{escape(title)}</div>']
     cells = []
     for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])
@@ -347,9 +351,6 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     html.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
                 'table-layout:fixed">' + "".join(f"<tr>{cells[k]}{cells[k + 1]}</tr>" for k in range(0, len(cells), 2))
                 + "</table>")
-    word_text, word_html = _word(cards, day)
-    lines += ["", *word_text]
-    html.append(word_html)
     lines += ["", "THE REST OF THE DAY"]
     html.append(head("The rest of the day") + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
                 'style="border-collapse:collapse">')
