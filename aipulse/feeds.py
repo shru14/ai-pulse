@@ -326,6 +326,26 @@ def parse_msit(html_bytes: bytes) -> list[dict]:
     return entries
 
 
+_MSIT_BODY = re.compile(r'class="view_cont"[^>]*>(.*?)<div class="view_file', re.S)
+_MSIT_TASK = re.compile(r"^(?:【|\d+(?:-\d+)?\.\s)")  # "【Relevant National Tasks】", "23. Realizing ...", "23-4. ..."
+
+
+def msit_lead(html_bytes: bytes) -> str:
+    """A release's own summary: MSIT opens each with one or two "- ..." lines saying what happened; the first of
+    them, else the first paragraph of the text itself (past the "national tasks" it lists)."""
+    page = html_bytes.decode("utf-8", "replace")
+    body = _MSIT_BODY.search(page)
+    lines = [re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", raw))).replace("﻿", "").strip()
+             for raw in _P.findall(body.group(1) if body else page)]
+    for line in lines:
+        if line.startswith("- ") and len(line.split()) >= 5:
+            return line[2:].strip()
+    return next((l for l in lines if len(l.split()) >= 12 and not _MSIT_TASK.match(l)), "")
+
+
+# A source whose posts are read once for their opening ("page_lead"): how, when not as a blog post (article_lead)
+LEAD_READERS = {"msit": msit_lead}
+
 DIGITAL_MY = "https://www.digital.gov.my"
 _DIGITAL_MY_ITEM = re.compile(r'href="(/en-GB/siaran/[^"#?]+)".*?<p class="line-clamp-2[^"]*">(.*?)</p>.*?'
                               r'<time[^>]*>(\d{1,2} \w{3} \d{4})</time>', re.S)

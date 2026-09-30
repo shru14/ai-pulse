@@ -87,7 +87,7 @@ def labels(c: dict) -> set[str]:
     a filter sees every one), and the theme and continent they belong to."""
     tags = set(c.get("tags") or [])
     if c.get("category") != "research":
-        tags |= set(classify.tags_for(c.get("title") or "", c.get("summary") or "", limit=99))
+        tags |= set(classify.tags_for(c.get("title") or "", c.get("summary") or "", limit=99, source=c.get("source") or ""))
     tags -= _SKIP
     wider = {THEME_OF.get(t) for t in tags} | {CONTINENT_OF.get(t) for t in tags}
     return tags | (wider - {None, ""}) | ({story_type(c)} - {None})

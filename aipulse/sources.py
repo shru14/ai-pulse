@@ -157,7 +157,7 @@ SOURCES = [
     # country's AI rules as they're announced. (The National Assembly's bill API needs a key only available
     # with Korean identity verification, so Korean bills aren't tracked.)
     {"name": "Ministry of Science and ICT (Korea)", "format": "msit", "category": "policy", "jurisdictions": ["KR"],
-     "ai_in_title": True, "government": True, "paged": True, "page_param": "pageIndex",
+     "ai_in_title": True, "government": True, "paged": True, "page_param": "pageIndex", "page_lead": True,
      "url": "https://www.msit.go.kr/eng/bbs/list.do?sCode=eng&mPid=2&mId=4"},
     # Malaysia: the Ministry of Digital (its National AI Office drafts the AI Governance Bill). Its English
     # media releases; no robots.txt or terms restrict them. The list is short, so older releases are kept.

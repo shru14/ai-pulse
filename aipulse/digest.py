@@ -243,7 +243,7 @@ def story_tags(c: dict) -> list[str]:
     places = ["International" if j == "INTL" else jurisdictions.JURISDICTIONS.get(j, (j,))[0]
               for j in c.get("jurisdictions") or []]
     # worked out with the current rules (classify.tags_for), so the email matches the site after its next re-sort
-    tags = [t for t in classify.tags_for(c.get("title") or "", c.get("summary") or "") if t not in ("Research", "Study Report")]
+    tags = [t for t in classify.tags_for(c.get("title") or "", c.get("summary") or "", source=c.get("source") or "") if t not in ("Research", "Study Report")]
     ordered = places + [t for t in tags if t in brief._PLACE_TAGS] + [t for t in tags if t not in brief._PLACE_TAGS]
     return list(dict.fromkeys(ordered))[:TAGS]
 
