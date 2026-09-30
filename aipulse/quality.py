@@ -78,9 +78,13 @@ def _story_problems(c: dict, stream: str) -> list[str]:
 
 
 def usual(cards: list[dict], category: str, day: date) -> float:
-    """A stream's median day over the two weeks before `day` (0 for a new stream)."""
+    """A stream's median day over the two weeks before `day`, among days of the same kind: weekdays for a weekday,
+    weekends for a weekend (arXiv and newsrooms publish far less at weekends, so mixing them makes an ordinary
+    busy weekday look like a surge). 0 for a new stream."""
     before = rss.daily(cards, category, today=day, days=HISTORY_DAYS)
-    return statistics.median([len(before.get(day - timedelta(days=k), [])) for k in range(1, HISTORY_DAYS + 1)])
+    weekend = day.weekday() >= 5
+    days = [day - timedelta(days=k) for k in range(1, HISTORY_DAYS + 1)]
+    return statistics.median([len(before.get(d, [])) for d in days if (d.weekday() >= 5) == weekend])
 
 
 def problems(by_stream: dict[str, list[dict]], cards: list[dict], day: date) -> list[str]:

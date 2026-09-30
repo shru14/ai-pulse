@@ -116,3 +116,24 @@ jobs:
 
       - id: deploy
         uses: actions/deploy-pages@v4
+
+  # A backup for the daily email: GitHub has left the email workflow's own schedule unstarted (30 Sep 2026), while
+  # this workflow's schedule runs. Each scheduled run between 05:00 and 11:59 UTC starts the email workflow; it
+  # sends the day once (a marker in the Actions cache), so every start after the first stops at once.
+  morning-email:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Start the daily email if it's morning (UTC)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          hour=$(date -u +%H)
+          if [ "$hour" -ge 5 ] && [ "$hour" -lt 12 ]; then
+            gh workflow run digest.yml --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
+          else
+            echo "Not morning ($hour UTC): nothing to do."
+          fi

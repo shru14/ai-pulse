@@ -1972,3 +1972,23 @@ def test_each_reader_gets_their_own_top_10(monkeypatch):
     text = digest.build(cards + hard, ["news"], day)[1]
     assert "WORD OF THE DAY: HBM" in text  # rarer than "benchmark" or "agent" in these stories
     assert "Where it came up: Nvidia ships HBM4 for AI data centers" in text  # a story in their own email
+
+
+def test_a_busy_weekday_is_compared_with_weekdays():
+    from datetime import date, timedelta
+    from aipulse import quality
+    day = date(2026, 9, 29)  # a Tuesday
+    papers = []
+    for k in range(1, 15):  # two weeks: ~10 papers a weekday, ~2 at weekends (arXiv doesn't publish then)
+        d = day - timedelta(days=k)
+        n = 2 if d.weekday() >= 5 else 10
+        papers += [{"id": f"p{k}-{i}", "category": "research", "date": d.isoformat(), "title": f"Paper {k}.{i}",
+                    "url": f"https://arxiv.org/abs/2609.{k:02d}{i:03d}", "source": "arXiv", "summary": "x"} for i in range(n)]
+    assert quality.usual(papers, "research", day) == 10  # weekdays only, not the weekend-dragged median
+    assert quality.usual(papers, "research", date(2026, 9, 27)) == 2  # a Sunday: compared with weekends
+    today = [{"id": f"t{i}", "category": "research", "date": day.isoformat(), "title": f"New paper {i}",
+              "url": f"https://arxiv.org/abs/2609.9{i:04d}", "source": "arXiv", "summary": "x"} for i in range(27)]
+    surge = [p for p in quality.problems({"research": today}, papers + today, day) if "usual" in p]
+    assert not surge  # 27 on a busy Tuesday is normal
+    flood = today + [dict(t, id=f"f{t['id']}", title=f"More {t['title']}", url=t["url"] + "v9") for t in today[:13]]
+    assert [p for p in quality.problems({"research": flood}, papers + flood, day) if "usual" in p]  # 40: still held

@@ -3,15 +3,17 @@
 # GitHub starts scheduled runs late or drops them when it's busy, so there are four chances, off the hour; the first
 # one that runs handles the day and leaves a marker in the Actions cache, and the others see it and stop. A day the
 # quality check (aipulse/quality.py) holds counts as handled too: the project inbox gets one alert, not four.
+# GitHub once never started this schedule at all (30 Sep 2026), so the site's workflow (pages.yml, whose schedule
+# does run) also starts this one each morning; the marker makes every start after the first a no-op.
 # The log shows counts, never addresses.
 name: Daily digest
 
 on:
   schedule:
-    - cron: "17 5 * * *"
-    - cron: "47 5 * * *"
-    - cron: "23 6 * * *"
-    - cron: "53 7 * * *"
+    - cron: "12 5 * * *"
+    - cron: "42 5 * * *"
+    - cron: "18 6 * * *"
+    - cron: "48 7 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
