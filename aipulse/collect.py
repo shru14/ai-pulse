@@ -229,7 +229,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             if (e.get("lead") or src.get("page_lead")) and not summary and not store.exists(conn, e["url"]):
                 try:  # a list without descriptions: the item's own first paragraph, read once
                     page = fetcher(e["url"])
-                    lead = feeds.article_lead(page) if src.get("page_lead") else feeds.lead_paragraph(page, e["title"])
+                    lead = (feeds.LEAD_READERS.get(src.get("format"), feeds.article_lead)(page) if src.get("page_lead")
+                            else feeds.lead_paragraph(page, e["title"]))
                     summary = brief.clean_summary(lead, title, source)
                 except Exception:
                     pass
@@ -242,7 +243,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 "category": blog_category(src, title, summary, url) if src["category"] == "tool"
                             else classify.categorize(title, summary, src["category"]),
                 "date": published.date().isoformat(),
-                "tags": classify.tags_for(title, summary),
+                "tags": classify.tags_for(title, summary, source=source),
                 "authors": authors[:30],
             }
             if src["category"] == "research":
@@ -402,7 +403,7 @@ def retag(conn) -> int:
                 changed += 1
             continue
         text = "" if brief.is_draft(it["summary"]) else it["summary"]
-        tags = classify.tags_for(it["title"], text)
+        tags = classify.tags_for(it["title"], text, source=it["source"])
         if tags != it["tags"]:
             store.set_tags(conn, it["id"], tags)
             changed += 1
@@ -476,16 +477,35 @@ def resummarize_papers(conn, fetcher=feeds.fetch, limit: int = 3000, log=print) 
 AI_RECHECKED = ("ScienceDaily", "Tech Xplore")
 
 
-def reclassify(conn) -> int:
+LEADS_PER_RUN = 20  # stored headline-only releases whose pages one run reads
+
+
+def reclassify(conn, fetcher=feeds.fetch) -> int:
     """Re-run the sorting and regulation rules over stored policy and regulation stories.
     Returns how many changed."""
     changed = 0
     # Stories stored with mojibake ("Peopleâ€™s"), before collection repaired it (feeds.unmangle).
-    for it in conn.execute("SELECT id, title, summary FROM items").fetchall():
+    for it in conn.execute("SELECT id, source, title, summary FROM items").fetchall():
         title, summary = feeds.unmangle(it["title"]), feeds.unmangle(it["summary"] or "")
         if (title, summary) != (it["title"], it["summary"] or ""):
             store.update_text(conn, it["id"], title, summary)
-            store.set_tags(conn, it["id"], classify.tags_for(title, summary))
+            store.set_tags(conn, it["id"], classify.tags_for(title, summary, source=it["source"]))
+            changed += 1
+    # Releases stored as a headline only, before their source's pages were read for their opening (a "page_lead"
+    # source with its own reader, feeds.LEAD_READERS): read now, a few a run.
+    readers = {s["name"]: feeds.LEAD_READERS[s["format"]] for s in SOURCES
+               if s.get("page_lead") and s.get("format") in feeds.LEAD_READERS}
+    bare = [it for it in conn.execute(f"SELECT id, source, url, title, summary FROM items WHERE source IN "
+                                      f"({','.join('?' * len(readers))})", list(readers)).fetchall()
+            if not it["summary"] or brief.is_draft(it["summary"])] if readers else []
+    for it in bare[:LEADS_PER_RUN]:
+        try:
+            lead = brief.clean_summary(readers[it["source"]](fetcher(it["url"])), it["title"], it["source"])
+        except Exception:
+            continue
+        if lead:
+            store.update_text(conn, it["id"], it["title"], lead)
+            store.set_tags(conn, it["id"], classify.tags_for(it["title"], lead, source=it["source"]))
             changed += 1
     # Stories stored before collection translated them (a Japanese headline, a Spanish press item), and feeds'
     # "also in French" lines: English now, where the offline translator can do it.
@@ -496,7 +516,7 @@ def reclassify(conn) -> int:
             if (title, new_summary, url) != (it["title"], summary, it["url"]):
                 store.update_text(conn, it["id"], title, new_summary)
                 conn.execute("UPDATE items SET url = ? WHERE id = ?", (url, it["id"]))  # the English version
-                store.set_tags(conn, it["id"], classify.tags_for(title, new_summary))
+                store.set_tags(conn, it["id"], classify.tags_for(title, new_summary, source=it["source"]))
                 changed += 1
     for it in conn.execute(f"SELECT id, title, summary FROM items WHERE source IN ({','.join('?' * len(AI_RECHECKED))})",
                            AI_RECHECKED).fetchall():

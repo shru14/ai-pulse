@@ -9,6 +9,7 @@ import re
 import unicodedata
 
 from . import jurisdictions
+from .sources import SOURCES
 
 # "Agent" is AI unless it's another kind: "foreign agents" (a Russian law), "FBI agents", "nerve agent".
 _AGENT = (r"(?<!foreign )(?<!secret )(?<!federal )(?<!FBI )(?<!border )(?<!customs )(?<!travel )(?<!estate )"
@@ -279,7 +280,7 @@ TOPIC_TERMS = {
     "Antitrust": r"antitrust|competition authority|monopol|\bFTC\b",
     "Export Controls": r"export control|sanction|entity list",
     "Defense": r"military|defen[cs]e|Pentagon|drone|national security",
-    "Elections": r"election|misinformation|disinformation",
+    "Elections": r"\belections?\b|\belectoral\b|misinformation|disinformation",  # not "selection"
     "Deepfakes": r"deepfake|synthetic media|watermark",
     # Society & ideas
     "Ethics": r"ethic|bias|fairness|discriminat|accountab",
@@ -330,16 +331,25 @@ _TRANSLATED = re.compile(r"\s*(?:Machine-translated from \w+; the (?:official te
 UNTRANSLATED_TAG = "Translate and read"  # a story no translation could be made of (collect.in_english)
 
 
-def tags_for(title: str, summary: str, limit: int = 5) -> list[str]:
+# An official source's own country (or the EU): the country tag of its publications that name no place ("Pilot AI
+# App for Smart Grocery Shopping Launched in Five Regions", from Korea's ministry -> South Korea).
+SOURCE_HOME = {s["name"]: jurisdictions.JURISDICTIONS[s["jurisdictions"][0]][0] for s in SOURCES
+               if s.get("jurisdictions") and (s.get("government") or s["category"] == "regulation")}
+
+
+def tags_for(title: str, summary: str, limit: int = 5, source: str = "") -> list[str]:
     """Companies first, then places, then topics (see TOPIC_TERMS); a story left in its own language leads with
-    "Translate and read"."""
+    "Translate and read". `source`: the story's publisher; a government's own publication that names no place
+    gets that government's country."""
     untranslated = "Translate and read: the original is in" in summary
     summary = _TRANSLATED.sub("", summary)
     text = f"{title} {summary}"
     topics = [k for k, p in _topics.items() if p.search(text)]
     companies, places = company_tags(title, summary), place_tags(title, summary)
     lead = lead_company(title) or (companies[0] if companies else None)
-    if not places and lead in COMPANY_HOME:  # a story naming no place: where the company it's about is based
+    if not places and source in SOURCE_HOME:
+        places = [SOURCE_HOME[source]]
+    elif not places and lead in COMPANY_HOME:  # a story naming no place: where the company it's about is based
         places = [COMPANY_HOME[lead]]
     return ([UNTRANSLATED_TAG] * untranslated + companies[:2] + places + topics)[:limit]
 

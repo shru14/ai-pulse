@@ -23,7 +23,7 @@ runs offline.
 
 - **Filters:** by stream, region, country and time range; search covers headlines, summaries, tags and authors back to 2023.
 - **Everything in English, nothing left out:** a story in another language shows the publisher's English version, else an offline translation (OPUS-MT) marked as such, else an English headline tagged **#Translate and read**. Each links to the original through Google Translate, opened by the reader.
-- **Tags:** companies, a country (the place a story names, else the company's home country) and topics.
+- **Tags:** companies, a country (the place a story names, else the country of the government that published it, else the company's home country) and topics.
 - **Glossary:** plain-English meanings of the hard words and product names in stories (MoE, RAG, inference, c.ai…). A dotted word in a story opens its meaning; the Glossary button lists all ~120, this week's most-used first. `python -m aipulse glossary` lists acronyms not explained yet.
 - **One card per event:** the same story from several outlets is grouped, led by the company's own post when there is one.
 - **RSS:** one feed per stream, one post a day ([Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml), [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml)).
@@ -52,7 +52,7 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 | Industry | **Global:** TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World · **Asia:** South China Morning Post, Pandaily, TechNode, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
 | AI incidents (Industry) | AI Incident Database: every incident its editors confirmed since 2023, one card each (terms bar only high-volume and commercial use; text CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
-| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news) |
+| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT (its list has headlines only, so each new release is read once for its opening line), Malaysia's Ministry of Digital, Russia's State Duma (English news) |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 
 ### Official records (Regulation tracker)

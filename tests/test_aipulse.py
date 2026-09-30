@@ -1992,3 +1992,37 @@ def test_a_busy_weekday_is_compared_with_weekdays():
     assert not surge  # 27 on a busy Tuesday is normal
     flood = today + [dict(t, id=f"f{t['id']}", title=f"More {t['title']}", url=t["url"] + "v9") for t in today[:13]]
     assert [p for p in quality.problems({"research": flood}, papers + flood, day) if "usual" in p]  # 40: still held
+
+
+def test_a_ministrys_release_gets_its_own_summary_and_country(tmp_path):
+    from aipulse import feeds, store
+    from aipulse.collect import reclassify, retag
+    page = ('<h1>Pilot AI App</h1><div id="cont-wrap" class="view_cont"><p><span>﻿- The price information consultative '
+            'body was launched, and the pilot app will be further improved.</span></p><p>【Relevant National Task】</p>'
+            '<p>23. Realizing a “Universal Basic AI Society” to enhance public safety and universal quality of life.</p>'
+            '<p>The Ministry of Science and ICT held a commemorative ceremony at the Cheongju Osong Convention Center to '
+            'mark the launch of the pilot app.</p></div><div class="view_file">files</div>').encode()
+    assert feeds.msit_lead(page) == "The price information consultative body was launched, and the pilot app will be further improved."
+    no_dash = page.replace("﻿- The price".encode(), b"Short line")
+    assert feeds.msit_lead(no_dash.replace(b"information consultative body was launched, and the pilot app will be further improved.", b"")
+                           ).startswith("The Ministry of Science and ICT held")  # else the text itself, not the tasks
+    # its country, though the headline names none; a named place still wins; a company's home comes after
+    korea = "Ministry of Science and ICT (Korea)"
+    assert classify.tags_for("Pilot AI App for Smart Grocery Shopping Launched in Five Regions", "", source=korea) == ["South Korea"]
+    assert "South Korea" not in classify.tags_for("MSIT and Japan sign an AI pact", "", source=korea)
+    assert classify.tags_for("OpenAI opens an office", "", source=korea)[:2] == ["OpenAI", "South Korea"]
+    assert classify.tags_for("A guide to AI assurance", "", source="GOV.UK") == ["United Kingdom"]
+    assert "Elections" not in classify.tags_for("Selection Result Announced for the AI Foundation Model Project", "")
+    assert "Elections" in classify.tags_for("AI deepfakes ahead of the election", "")
+    # a release already stored as a headline only is read once and tagged
+    conn = store.connect(str(tmp_path / "t.db"))
+    store.insert(conn, {"source": korea, "category": "policy", "title": "Pilot AI App for Smart Grocery Shopping Launched in Five Regions",
+                        "summary": "", "url": feeds.MSIT_VIEW + "1310", "date": "2026-09-30"})
+    asked = []
+    reclassify(conn, fetcher=lambda url: (asked.append(url), page)[1])
+    retag(conn)
+    row = conn.execute("SELECT summary, tags FROM items").fetchone()
+    assert asked == [feeds.MSIT_VIEW + "1310"] and row["summary"].startswith("The price information consultative body")
+    assert "South Korea" in row["tags"]
+    reclassify(conn, fetcher=lambda url: asked.append(url) or page)
+    assert len(asked) == 1  # it has its summary now: not read again
