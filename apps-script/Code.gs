@@ -240,6 +240,39 @@ function save(p) {
           (hasPrefs(rec.prefs) ? `; ${summary(rec.prefs)}.` : ".")};
 }
 
+// The daily email starts here, on time: GitHub's own scheduler starts runs late or not at all (it never started the
+// email on 30 Sep 2026), while Apps Script's timers are punctual. Each morning a timer asks GitHub to run the email
+// workflow (digest.yml); that run checks the day, sends it once to every subscriber and marks it sent, so the
+// workflow's own schedule and the site's backup starting it too never send twice.
+// Setup, once: Project Settings > Script properties > GITHUB_TOKEN = a fine-grained GitHub token for this repository
+// only, with the one permission "Actions: Read and write" (never in this file: the repository is public); then run
+// setUpDailyTimers from the editor and allow the new permission it asks for.
+const REPO = "shru14/ai-pulse";
+const START_HOURS_UTC = [5, 6];  // about 05:15 UTC (Google fires within ~15 minutes), and a second chance at 06:15
+
+function setUpDailyTimers() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "startDailyEmail")
+    .forEach(t => ScriptApp.deleteTrigger(t));
+  START_HOURS_UTC.forEach(h => ScriptApp.newTrigger("startDailyEmail").timeBased().atHour(h).nearMinute(15)
+    .everyDays(1).inTimezone("Etc/UTC").create());
+  startDailyEmail(true);  // checks the token now: an alert comes at once if GitHub refuses it
+}
+
+function startDailyEmail(check) {
+  const token = store().getProperty("GITHUB_TOKEN");
+  const answer = token ? UrlFetchApp.fetch(`https://api.github.com/repos/${REPO}/actions/workflows/digest.yml/dispatches`, {
+    method: "post", contentType: "application/json", muteHttpExceptions: true,
+    headers: {Authorization: "Bearer " + token, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"},
+    payload: JSON.stringify({ref: "main", inputs: {dry_run: check === true ? "true" : "false"}}),
+  }) : null;
+  const code = answer ? answer.getResponseCode() : 0;
+  if (code === 204) return console.log(check === true ? "GitHub accepted the token (a dry run started)." : "Daily email started.");
+  notify("AI Pulse: the daily email could not be started",
+         (token ? `GitHub answered ${code}: ${answer.getContentText().slice(0, 300)}` : "No GITHUB_TOKEN script property.") +
+         "\nThe token may have expired or lost its Actions permission: make a new one and save it as GITHUB_TOKEN." +
+         " The workflow's own schedule may still send it; to send by hand: GitHub > Actions > Daily digest > Run workflow, dry run unticked.");
+}
+
 // A note to the project inbox when someone subscribes, changes streams or unsubscribes. It never stops the
 // reader's own step if it fails.
 function notify(subject, text) {
