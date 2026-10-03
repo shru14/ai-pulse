@@ -54,6 +54,7 @@ def build(conn, out: str | Path) -> int:
         (out / "brand-icons").mkdir()
         for src in icons:
             shutil.copy(brands.ICON_DIR / Path(src).name, out / src)
+    shutil.copytree(TEMPLATE.parent / "fonts", out / "fonts")  # the page's own fonts (no Google Fonts)
     (out / "feeds").mkdir()
     for name in rss.FEEDS:
         (out / "feeds" / f"{name}.xml").write_bytes(rss.feed_xml(name, cards))

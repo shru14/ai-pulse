@@ -1,9 +1,12 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads ~95 public sources, keeps only AI stories, sorts
+A free, non-commercial, worldwide briefing on AI. It reads ~90 public sources, keeps only AI stories, sorts
 them into six streams and links every card to the original.
 
 **Live site:** https://shru14.github.io/ai-pulse/
+
+**Version 2** (3 October 2026): a magazine-styled site, the sixth stream (Infra & climate), the daily email and
+official records from 14 countries. Version 1 (27 September 2026) had five streams and five parliaments.
 
 Only what is legal to collect and publicly accessible is used. No AI model, paid API or billed service:
 summaries are the publishers' own text, sorting is keyword rules, the glossary is written by hand and translation
@@ -42,6 +45,9 @@ runs offline.
 4. **Free to read:** every story links to an article anyone can read without paying; a story that needs a subscription is left out (The Verge's pages are checked for the paywall mark each publisher gives search engines; Eco-Business, whose articles carry it, isn't read).
 5. **Only what's needed:** headline, short description, date and link. No personal data from records.
 6. **Credit and non-commercial use**, as the licences below require.
+7. **Readers' privacy:** the site and the email load nothing from other servers (the fonts are the site's own, so no
+   reader's address reaches Google Fonts) and track no one; a subscriber's address stays in the project's Google account. Contact for questions or data
+   requests: projectaipulse@gmail.com (on the site's footer and sign-up form).
 
 Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 
@@ -118,4 +124,5 @@ Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI P
 documents: National Legal Database (https://vbpl.vn). Australian legislation: based on content from the
 Federal Register of Legislation (CC BY 4.0); for the latest information go to https://www.legislation.gov.au.
 AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
-(MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon. Section icons and header drawings: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).
+(MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon. Fonts: Bricolage Grotesque, Space Grotesk, IBM Plex Mono and Source Sans 3 (SIL Open Font License 1.1), served
+from this site. Section icons and header drawings: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).
