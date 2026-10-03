@@ -157,9 +157,19 @@ def news_kind(title: str, summary: str, company_blog: bool) -> str:
     return "news"
 
 
+# A headline about people coming and going is never a release ("Another OpenAI safety departure ...", whose summary
+# mentions agents that were "accidentally released"). A person leaving names where from ("leaves Meta", "leaves the
+# company"); a technical "early exit" or "no data leaves the device" isn't one.
+_PEOPLE = re.compile(r"(?i:\bdepartures?\b|\bresign(?:s|ed|ing|ation)?\b|\bquits?\b|\bsteps? down\b|\bfired\b|\bousted\b)|"
+                     r"\b(?i:leav(?:es|ing))\s+(?:[A-Z]|(?i:the company|his|her|their|its board|to (?:launch|join|start|found|focus|work)))|"
+                     r"(?:'s|’s) (?i:exit)\b|\b(?i:exits)\s+(?:[A-Z]|(?i:the company|as\b))")
+
+
 def launched(title: str, summary: str) -> bool:
     """Does a news story report something being released? It needs launch language, and a study's findings
     count only when the headline itself announces a launch ("Researchers release ...")."""
+    if (m := _PEOPLE.search(title)) and not _LAUNCH.search(title[:m.start()]):  # "Meta releases Llama 4, leaves EU out" still is
+        return False
     text = _HISTORY.sub(" ", f"{title} {summary}")
     return bool(_LAUNCH.search(text)) and not (_STUDY.search(text) and not _LAUNCH.search(title))
 
@@ -361,10 +371,18 @@ _POWER = re.compile(r"\belectricity (?:demand|use|usage|consumption|prices|bills
                     r"\bwater (?:use|usage|consumption|supply)\b", re.I)
 
 
+_LIKE = re.compile(r"\b(?:like|than)\s+(?:an?\s+|the\s+)?$", re.I)
+
+
+def _power(title: str) -> bool:
+    """Power named as itself, not in a comparison ("AI should be regulated like nuclear power plants")."""
+    return any(not _LIKE.search(title[:m.start()]) for m in _POWER.finditer(title))
+
+
 def infra_story(title: str) -> bool:
     """Judged on the headline, for moving an Industry story into the stream: about data centres or other places
     AI runs, AI's own footprint, or AI and power ("Microsoft taps Three Mile Island nuclear plant to power AI")."""
-    return bool(_SITE.search(title) or _FOOTPRINT.search(title) or (_ai.search(title) and _POWER.search(title)))
+    return bool(_SITE.search(title) or _FOOTPRINT.search(title) or (_ai.search(title) and _power(title)))
 
 
 def is_infra(title: str, summary: str) -> bool:
@@ -427,7 +445,8 @@ def tags_for(title: str, summary: str, limit: int = 5, source: str = "") -> list
     untranslated = "Translate and read: the original is in" in summary
     summary = _TRANSLATED.sub("", summary)
     text = f"{title} {summary}"
-    topics = [k for k, p in _topics.items() if p.search(text)]
+    # a topic named only in a comparison isn't the story's ("regulated like nuclear power plants" isn't Energy)
+    topics = [k for k, p in _topics.items() if any(not _LIKE.search(text[:m.start()]) for m in p.finditer(text))]
     if is_infra(title, summary):  # in every stream, so Research, Policy and the tracker show it too
         finer = [k for k, p in _infra_topics.items() if p.search(text)]
         topics = [INFRA_TAG, *finer, *(t for t in topics if INFRA_SAYS.get(t) not in (INFRA_TAG, *finer))]
@@ -483,6 +502,10 @@ _not_adopted = re.compile(r"n't|\bnot\b|\bfail(s|ed)? to\b|\burg(e|es|ed|ing)\b|
 _naming = re.compile(r"\bto (call|rename|refer to|stop calling|use the (word|term|name))\b", re.I)
 _lobbying = re.compile(r"\b(asks?|urg(e|es|ed|ing)|submissions?|calls? (on|for)|push(es)? for|lobb\w*|"
                        r"letter to)\b", re.I)
+# A body putting AI to work is news about its use of AI, not an action on AI ("NITDA deploys AI to turn youths'
+# ideas into policy proposals", "council uses chatbot to draft guidance").
+_uses_ai = re.compile(r"\b(?:deploy|use|adopt|launch|roll|build|tap|turn)\w*\s+(?:out\s+)?(?:an?\s+|its\s+|new\s+)?"
+                      r"(?:AI|artificial intelligence|chatbots?|generative AI|AI[- ]\w+)\b(?:\s+\w+){0,2}?\s+to\b", re.I)
 # A lawsuit only counts as enforcement when a public authority brings it.
 _suit = re.compile(r"\b(sues|sued|suing|lawsuit)\b", re.I)
 _authority = re.compile(r"attorneys? general|\bFTC\b|\bDOJ\b|regulator|commission|authority|government|state of",
@@ -495,6 +518,12 @@ def regulatory_action(title: str) -> str | None:
     Only the title is used: feed summaries (Google News especially) carry publisher names such as
     "Business Standard" that would otherwise read as actions.
     """
+    # A body that "moves to regulate" is proposing rules; the fines in such a headline are the ones it plans
+    # ("FCCPC moves to regulate AI marketing, businesses face N100 million penalty").
+    # Not a move against one company ("Trump moves to ban Anthropic from the US government"): that's no rule on AI.
+    if (m := re.search(r"\bmov(?:es|ed|ing) to (?:regulate|ban|require|restrict|curb|outlaw)\b", title, re.I)) \
+            and not _lobbying.search(title) and not company_tags(title[m.end():]):
+        return "proposal"
     if _suit.search(title) and _authority.search(title):
         return "enforcement"
     for action, pattern in _actions.items():
@@ -512,6 +541,8 @@ def regulatory_action(title: str) -> str | None:
         # "OpenAI, Anthropic ask Australia to ... propose", "My submission to the consultation":
         # lobbying a government, not a government proposing.
         if action == "proposal" and _lobbying.search(title[: m.start()]):
+            continue
+        if action in ("proposal", "guidance") and _uses_ai.search(title[: m.start()]):
             continue
         return action
     return None

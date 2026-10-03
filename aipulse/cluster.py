@@ -155,6 +155,20 @@ def _anchored(a: dict, b: dict, idf: dict[str, float]) -> bool:
     return any(idf.get(t, 0.0) >= ANCHOR_EXTRA_IDF for t in (tokens(a) & tokens(b)) - anchors - {own})
 
 
+_PERSON = re.compile(r"\b([A-Z][a-z]+) ([A-Z][a-z]+)\b")
+
+
+def _same_person(a: dict, b: dict, idf: dict[str, float]) -> bool:
+    """One person leaving, told by two outlets in different words ("Another OpenAI safety departure ..." and "OpenAI
+    safety employee resigns ...", both about David Robinson): both headlines are about someone leaving and both
+    stories name the same person in full, a rare name. Only departures: a name shared by a launch and a column
+    ("Mark Zuckerberg") is not the same event."""
+    if not (classify._PEOPLE.search(a["title"]) and classify._PEOPLE.search(b["title"])):
+        return False
+    people = lambda it: {(_norm(f.lower()), _norm(l.lower())) for f, l in _PERSON.findall(_text(it))}
+    return any(all(idf.get(w, 0.0) >= ANCHOR_IDF for w in p) for p in people(a) & people(b))
+
+
 def _days(a: str, b: str) -> int:
     return abs((date.fromisoformat(a) - date.fromisoformat(b)).days)
 
@@ -178,7 +192,8 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
             if _conflict(specs[i], specs[j]) or _same_outlet(items[i], items[j]) or _release_and_incident(items[i], items[j]):
                 continue
             s = similarity(toks[i], toks[j], idf)
-            if s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and _anchored(items[i], items[j], idf):
+            if s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and (_anchored(items[i], items[j], idf)
+                                                                     or _same_person(items[i], items[j], idf)):
                 s = THRESHOLD
             if s > 0:
                 sim[min(i, j), max(i, j)] = s

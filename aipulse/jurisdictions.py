@@ -97,7 +97,7 @@ JURISDICTIONS: dict[str, tuple] = {
     "SA": ("Saudi Arabia", [r"\bSaudi\b"]),
     "QA": ("Qatar", [r"\bQatar"]),
     "EG": ("Egypt", [r"\bEgypt"]),
-    "NG": ("Nigeria", [r"\bNigeria"]),
+    "NG": ("Nigeria", [r"\bNigeria", r"\bNITDA\b", r"\bFCCPC\b", r"\bNDPC\b"]),  # its IT, competition and data regulators
     "KE": ("Kenya", [r"\bKenya"]),
     "GH": ("Ghana", [r"\bGhana"]),
     "RW": ("Rwanda", [r"\bRwanda"]),
