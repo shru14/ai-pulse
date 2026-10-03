@@ -2210,12 +2210,29 @@ def test_memes_are_made_from_our_data_and_never_touch_serious_stories():
                        ("Senate passes AI bill", "policy")]:
         assert not memes.light({**base, "title": title, "category": cat, "tags": []}), title
     assert memes.light({**base, "title": "Google releases Gemini 4", "category": "tool", "tags": ["Google"]})
-    # the same day always gives the same meme: our cartoons from the site, captions escaped, a plain-text version too
+    # the same day always gives the same meme: a real template with the captions written on, credited, a text version too
     cards = launches + [{**base, "title": "Big news story", "url": "https://e.com/n", "category": "news", "tags": [], "also": [{}, {}]}]
     one, two = memes.of_the_day(cards, day), memes.of_the_day(cards, day)
     assert one == two and one["title"] == "Meme of the day"
-    assert 'src="https://shru14.github.io/ai-pulse/memes/' in memes.html(one) and memes.text(one)[0] == "MEME OF THE DAY:"
-    assert 'src="memes/' in memes.html(one, base="")
+    page = memes.html(one, "cid:meme")
+    assert 'src="cid:meme"' in page and "via imgflip.com" in page and memes.TEMPLATES[one["format"]][1] in page
+    assert memes.text(one)[0].startswith("MEME OF THE DAY (")
+    # every template takes its captions and makes a picture (the email carries it; the site shows it)
+    samples = [{"format": "distracted", "labels": ["A", "B", "C"]}, {"format": "buttons", "labels": ["A", "B"], "caption": "C"},
+               {"format": "nopeyep", "who": "W", "nope": "A", "yep": "B"}, {"format": "fine", "caption": "A", "under": "B"},
+               {"format": "brain", "rows": ["A", "B", "C", "D"]}, {"format": "yelling", "labels": ["A", "B"]},
+               {"format": "pigeon", "labels": ["A", "B"], "caption": "C"},
+               {"format": "panik", "rows": [("Panik", "A"), ("Kalm", "B"), ("Panik", "C")]}]
+    assert {m["format"] for m in samples} == set(memes.TEMPLATES)
+    for m in samples:
+        assert (memes.render(m) or b"")[:3] == b"\xff\xd8\xff", m["format"]  # a JPEG
+    # inside the email: the picture travels with it, and a dry run shows it in the file
+    from aipulse import digest
+    digest.INLINE[digest.MEME_CID] = memes.render(samples[0])
+    msg = digest._message("a@b.c", "s", "t", f'<img src="cid:{digest.MEME_CID}">')
+    assert any(part.get_content_type() == "image/jpeg" for part in msg.walk())
+    assert "data:image/jpeg;base64," in digest.preview(f'<img src="cid:{digest.MEME_CID}">')
+    digest.INLINE.clear()
 
 
 def test_gemini_memes_are_checked_kept_once_and_fall_back(tmp_path, monkeypatch):
@@ -2229,6 +2246,7 @@ def test_gemini_memes_are_checked_kept_once_and_fall_back(tmp_path, monkeypatch)
     good = {"format": "nopeyep", "based_on": [2], "who": "AI startups", "nope": "A business plan", "yep": "Another $55M"}
     bad = [{**good, "yep": "Another $90M"},                     # a number no headline has
            {**good, "nope": "Asking the President"},            # politics
+           {**good, "who": "Drake"}, {**good, "who": "Techie in a hoodie"},  # describes the picture, not the news
            {**good, "format": "unknown"}, {**good, "based_on": []}, {**good, "yep": "x" * 100}]
     asked = []
     def fake(prompt, key):
@@ -2251,5 +2269,5 @@ def test_gemini_memes_are_checked_kept_once_and_fall_back(tmp_path, monkeypatch)
     memes.GENERATED.clear()
     memegen.prepare(conn, cards, day=day)
     assert memes.of_the_day(cards, day)["yep"] == "Another $55M"
-    assert "Captions written with Gemini" in memes.html(memes.of_the_day(cards, day))
+    assert "Captions written with Gemini" in memes.html(memes.of_the_day(cards, day), "cid:meme")
     memes.GENERATED.clear()

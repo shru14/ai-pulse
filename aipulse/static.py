@@ -11,7 +11,7 @@ import json
 import re
 import shutil
 import unicodedata
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import brands, classify, digest, glossary, jurisdictions, memegen, memes, photos, preferences, rss, store
@@ -55,7 +55,6 @@ def build(conn, out: str | Path) -> int:
         for src in icons:
             shutil.copy(brands.ICON_DIR / Path(src).name, out / src)
     shutil.copytree(TEMPLATE.parent / "fonts", out / "fonts")  # the page's own fonts (no Google Fonts)
-    shutil.copytree(TEMPLATE.parent / "memes", out / "memes")  # the memes' cartoons (ours; the email links them here)
     shutil.copytree(TEMPLATE.parent / "photos", out / "photos")  # the stories' photos (Wikimedia Commons, credited)
     (out / "photos" / "credits.html").write_text(photos.credits_page(), encoding="utf-8")
     (out / "feeds").mkdir()
@@ -97,7 +96,12 @@ def build(conn, out: str | Path) -> int:
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
     (out / "glossary.json").write_text(json.dumps(glossary.payload(cards, today), separators=(",", ":")), encoding="utf-8")
     memegen.prepare(conn, cards, today)  # the week's Gemini meme, if the "memes" step made one (no call here)
-    (out / "meme.json").write_text(json.dumps(memes.payload(cards, today), separators=(",", ":")), encoding="utf-8")
+    meme = memes.payload(cards, today)
+    (out / "meme.json").write_text(json.dumps(meme, separators=(",", ":")), encoding="utf-8")
+    if meme["image"]:  # the finished picture: the template with last week's captions written on
+        monday = date.fromisoformat(meme["from"])
+        (out / "memes").mkdir(exist_ok=True)
+        (out / meme["image"]).write_bytes(memes.render(memes.of_the_week(cards, monday)))
     (out / "tags.json").write_text(json.dumps(preferences.options(cards, today), separators=(",", ":")), encoding="utf-8")
 
     page = TEMPLATE.read_text(encoding="utf-8")

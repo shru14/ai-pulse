@@ -1,8 +1,8 @@
 """Meme captions written by Google's Gemini on its free tier: the one place AI Pulse uses an AI model, by the
 project owner's choice (2026-10-03). Nothing else (summaries, sorting, the tracker) uses it.
 
-Gemini sees only public data, the period's headlines, and picks one of our drawn templates (memes.py, meme_art.py)
-and writes its captions. It draws nothing: the pictures stay ours. Its answer must pass every check here (a known
+Gemini sees only public data, the period's headlines, and picks one of the well-known meme templates (memes.py)
+and writes its captions, which are then written onto the template. It makes no picture. Its answer must pass every check here (a known
 template, short lines, no harm/politics/crime words, no real person named unless a headline names them, every number
 taken from a headline) or the rule-based meme is used instead. No key, no network, a quota limit or a bad answer all
 fall back the same way, so the email and the site never wait on it.
@@ -29,23 +29,24 @@ MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")  # always Google's
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 MAX = 72  # characters a caption may have
 
-# What each of our drawn templates means, for the prompt; the fields Gemini fills
+# The well-known meme templates (memes.TEMPLATES), as Gemini knows them; the fields it fills, box by box
 TEMPLATES = {
-    "distracted": ('The "distracted boyfriend": a techie turns to stare at a shiny robot while his partner glares.',
-                   {"labels": "3 captions: [the shiny new thing, who is distracted, what they already had]"}),
-    "buttons": ('"Two buttons": a sweating techie can\'t choose between two red buttons.',
+    "distracted": ("Distracted Boyfriend: a man walking with his girlfriend turns to stare at another woman passing by.",
+                   {"labels": "3 captions: [the shiny new thing (the woman passing), who is distracted (the man), "
+                              "what they already had (the girlfriend)]"}),
+    "buttons": ("Two Buttons: a sweating man can't choose between two red buttons.",
                 {"labels": "2 captions, one per button", "caption": "who is sweating"}),
-    "nopeyep": ('Drake-style "nope / yep": a techie rejects one thing and happily points at another.',
-                {"who": "whose choice this is", "nope": "what they reject", "yep": "what they prefer"}),
-    "fine": ('"This is fine": a techie calmly drinks coffee in a burning server room.',
-             {"caption": "the situation, on top", "under": "who says “This is fine.”, underneath"}),
-    "brain": ('"Expanding brain": four rows, each idea more "enlightened" (and more absurd) than the last.',
+    "nopeyep": ("Drake Hotline Bling: Drake turns away from one thing and happily points at another.",
+                {"who": "whose choice this is (a line above the meme)", "nope": "what they reject", "yep": "what they prefer"}),
+    "fine": ("This Is Fine: a dog sips coffee in a room on fire.",
+             {"caption": "the situation (the fire)", "under": "who is the dog, saying “This is fine.”"}),
+    "brain": ("Expanding Brain: four rows, each idea more \"enlightened\" (and more absurd) than the last.",
               {"rows": "4 captions, from plain to galaxy-brained"}),
-    "yelling": ('"Woman yelling at cat": a woman points and yells; a confused robot sits at a dinner table.',
-                {"labels": "2 captions: [the one yelling (often with their words), the robot's calm reply in quotes]"}),
-    "pigeon": ('"Is this a pigeon?": a techie points at a butterfly and names it wrongly.',
+    "yelling": ("Woman Yelling at Cat: a woman points and yells; a smug white cat sits at a dinner table.",
+                {"labels": "2 captions: [the one yelling (often with their words), the cat's calm reply in quotes]"}),
+    "pigeon": ("Is This a Pigeon?: an anime man points at a butterfly and names it wrongly.",
                {"labels": "2 captions: [who points, what they point at]", "caption": "the question: Is this ...?"}),
-    "panik": ('"Panik / Kalm / Panik": three rows of a techie panicking, calm, panicking again.',
+    "panik": ("Panik Kalm Panik: three rows of a meme face panicking, calm, panicking again.",
               {"rows": "3 pairs [[\"Panik\", line], [\"Kalm\", line], [\"Panik\", line]]"}),
 }
 
@@ -53,6 +54,11 @@ TEMPLATES = {
 _POLITICS = re.compile(r"\b(?:trump|biden|harris|obama|vance|musk|putin|xi|modi|starmer|macron|president|prime minister|"
                        r"senat\w*|congress\w*|parliament\w*|minister\w*|election\w*|vote\w*|democrat\w*|republican\w*|"
                        r"party|parties|government\w*|white house|kremlin|beijing|tariff\w*)\b", re.I)
+
+
+# A caption that describes the picture instead of the news ("Boyfriend", "Techie in a hoodie") says nothing
+_DRAWING = re.compile(r"\b(?:techie|hoodie|cartoon|caricature|girlfriend|boyfriend|drake|meme template)s?\b|"
+                      r"\b(?:the|a|smug) cat\b|\b(?:the|a) dog\b|\b(?:his|her|the) partner\b", re.I)
 
 
 # The owner's own two asks, word for word, then how to answer (2026-10-03)
@@ -70,19 +76,20 @@ The {"news for today" if span == "day" else "weekly AI updates"} (real headlines
 {lines}
 
 Our readers are engineers, researchers and curious people worldwide who read AI Pulse, a free AI news briefing.
-Use cartoon, caricatures and colourful presentation: the meme is drawn as a bright, colourful cartoon by our artist,
-with a cast of caricatures (a techie in a hoodie, a woman, a friendly robot) acting out the joke. Your part is the
-idea and the words: pick the cartoon below that fits the joke best and write its captions so the scene is instantly
+The meme is one of the well-known internet meme templates below, with your captions written onto it. Your part is
+the idea and the words: pick the template that fits the joke best and write its captions so the meme is instantly
 funny. Think like the best meme pages: one sharp, specific observation; the punchline last; the kind of joke people
 forward to their team. Prefer the most talked-about story.
 
-The cartoons:
+The templates:
 {kinds}
 
 Rules (a meme that breaks one is thrown away):
 - Don't make dark jokes and do not insult anyone. Laugh with the industry's habits (hype, launch days, naming,
   benchmarks, funding rounds, jargon, the reader keeping up), never at a person, company staff or group.
-- Caricatures are of our cartoon cast only: never name, describe or draw a real person.
+- Never name or describe a real person, the people in the template included.
+- Captions say who and what the joke is about: the companies, products and people-in-general of the news, or the
+  readers ("Developers", "Everyone with a GPU"). Never describe the picture itself ("Boyfriend", "the cat", "Drake").
 - Leave out AI safety, risk, deception, politics, governments, elections, war, crime, lawsuits, layoffs, health,
   death, children and religion entirely, even if a headline is about them.
 - Do not invent facts: every number and every company or product you use must appear in the headlines above.
@@ -90,7 +97,7 @@ Rules (a meme that breaks one is thrown away):
 - "based_on": the numbers of the headlines the joke is about (1 to 3).
 
 Write 3 different candidate memes, the funniest first. Answer with JSON only:
-{{"memes": [{{"format": "...", "based_on": [0], ...the cartoon's fields...}}, ...]}}"""
+{{"memes": [{{"format": "...", "based_on": [0], ...the template's fields...}}, ...]}}"""
 
 
 # The next free Flash models, each with its own free allowance (20 requests a day, 5 a minute): used when the one
@@ -169,7 +176,7 @@ def check(m: dict, stories: list[dict]) -> dict | None:
         return None
     source = " ".join(f"{c['title']} {c.get('summary') or ''}" for c in stories)
     for t in texts:
-        if memes._SERIOUS.search(t) or _POLITICS.search(t) or re.search(r"https?://|www\.|@|#", t):
+        if memes._SERIOUS.search(t) or _POLITICS.search(t) or _DRAWING.search(t) or re.search(r"https?://|www\.|@|#", t):
             return None
         for num in re.findall(r"\d[\d.,]*", t):  # every number comes from a headline
             if num.rstrip(".,") not in source:
@@ -200,7 +207,12 @@ def stored(conn, kind: str, when: date, cards: list[dict], make: bool) -> dict |
     k = f"meme:{kind}:{when.isoformat()}"
     row = conn.execute("SELECT value FROM meta WHERE key = ?", (k,)).fetchone()
     if row:
-        return json.loads(row[0]) or None
+        kept = json.loads(row[0]) or None
+        # Checked again against today's rules: one kept from before a rule was added ("Techie in a hoodie") isn't used
+        words = kept and [*memes.captions(kept), kept.get("who") or ""] if kept and kept.get("format") in memes.TEMPLATES else []
+        if kept and (not words or any(memes._SERIOUS.search(t) or _POLITICS.search(t) or _DRAWING.search(t) for t in words)):
+            return None
+        return kept
     if not make:
         return None
     if kind == "week":

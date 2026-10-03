@@ -73,6 +73,10 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install Pillow (writes the meme's captions onto its template)
+        if: steps.done.outputs.cache-hit != 'true'
+        run: pip install --quiet pillow
+
       - name: Restore the database (read only)
         if: steps.done.outputs.cache-hit != 'true'
         uses: actions/cache/restore@v4
