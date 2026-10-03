@@ -1,0 +1,842 @@
+[
+ {
+  "photo": "datacenter-1.jpg",
+  "topic": "datacenter",
+  "title": "CERN_Server_03.jpg",
+  "author": "Florian Hirzinger - www.fh-ap.com",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ACERN_Server_03.jpg"
+ },
+ {
+  "photo": "datacenter-2.jpg",
+  "topic": "datacenter",
+  "title": "Bacloud.com_data_center.JPG",
+  "author": "Fleshas",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABacloud.com_data_center.JPG"
+ },
+ {
+  "photo": "datacenter-3.jpg",
+  "topic": "datacenter",
+  "title": "BalticServers_data_center.jpg",
+  "author": "BalticServers.com",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABalticServers_data_center.jpg"
+ },
+ {
+  "photo": "datacenter-4.jpg",
+  "topic": "datacenter",
+  "title": "Cabinet_Asile.jpg",
+  "author": "Robert.Harker",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ACabinet_Asile.jpg"
+ },
+ {
+  "photo": "datacenter-5.jpg",
+  "topic": "datacenter",
+  "title": "Data_Center.jpg",
+  "author": "Gideonwills44",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AData_Center.jpg"
+ },
+ {
+  "photo": "datacenter-6.jpg",
+  "topic": "datacenter",
+  "title": "Datacenter_de_ARSAT.jpg",
+  "author": "IMarcoHerrera",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ADatacenter_de_ARSAT.jpg"
+ },
+ {
+  "photo": "datacenter-7.jpg",
+  "topic": "datacenter",
+  "title": "Datacenter_Server_Racks_(22370909788).jpg",
+  "author": "Carl Lender from Sunrise, USA",
+  "attribution": "",
+  "licence": "CC BY 2.0",
+  "licence_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ADatacenter_Server_Racks_%2822370909788%29.jpg"
+ },
+ {
+  "photo": "chips-2.jpg",
+  "topic": "chips",
+  "title": "NXP_PCF8577C_LCD_driver_with_I²C_(Colour_Corrected).jpg",
+  "author": "cole8888, https://flickr.com/photos/187597251@N05/ (aka Cole L)",
+  "attribution": "",
+  "licence": "CC BY-SA 2.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/2.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ANXP_PCF8577C_LCD_driver_with_I%C2%B2C_%28Colour_Corrected%29.jpg"
+ },
+ {
+  "photo": "chips-3.jpg",
+  "topic": "chips",
+  "title": "3x3_Quilt_Packaging_Chip_Array.jpg",
+  "author": "Jacksontlu",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A3x3_Quilt_Packaging_Chip_Array.jpg"
+ },
+ {
+  "photo": "chips-4.jpg",
+  "topic": "chips",
+  "title": "Amdahl_5860_Computer_Air_Cooled_LSI_RAM_Chip_02.jpg",
+  "author": "Mister rf",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAmdahl_5860_Computer_Air_Cooled_LSI_RAM_Chip_02.jpg"
+ },
+ {
+  "photo": "chips-5.jpg",
+  "topic": "chips",
+  "title": "An_overview_of_an_IC_die.jpg",
+  "author": "Unknown author Unknown author",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAn_overview_of_an_IC_die.jpg"
+ },
+ {
+  "photo": "chips-6.jpg",
+  "topic": "chips",
+  "title": "Bitfury-top-HD.jpg",
+  "author": "ZeptoBars",
+  "attribution": "",
+  "licence": "CC BY 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABitfury-top-HD.jpg"
+ },
+ {
+  "photo": "chips-7.jpg",
+  "topic": "chips",
+  "title": "Circuit_(70680553).jpeg",
+  "author": "Yuri Samoilov",
+  "attribution": "",
+  "licence": "CC BY 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ACircuit_%2870680553%29.jpeg"
+ },
+ {
+  "photo": "energy-1.jpg",
+  "topic": "energy",
+  "title": "A_wind_turbine_and_a_windmill.jpg",
+  "author": "Matthew T Rader",
+  "attribution": "Matthew T Rader, https://matthewtrader.com You are free: to share – to copy, distribute and transmit the work to remix – to adapt the work Under the following c",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AA_wind_turbine_and_a_windmill.jpg"
+ },
+ {
+  "photo": "energy-2.jpg",
+  "topic": "energy",
+  "title": "Erster_Trianel_Onshore_Windpark_ins_Eisleben_-_Volkstedt.jpg",
+  "author": "Günther Goldstein",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AErster_Trianel_Onshore_Windpark_ins_Eisleben_-_Volkstedt.jpg"
+ },
+ {
+  "photo": "energy-3.jpg",
+  "topic": "energy",
+  "title": "Kd3-20200724-181716-windpark-drackenstein.jpg",
+  "author": "Karle3",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AKd3-20200724-181716-windpark-drackenstein.jpg"
+ },
+ {
+  "photo": "energy-4.jpg",
+  "topic": "energy",
+  "title": "Nabralift_tower_in_a_wind_farm_in_Morocco.jpg",
+  "author": "Miguel Turullols",
+  "attribution": "",
+  "licence": "CC0",
+  "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ANabralift_tower_in_a_wind_farm_in_Morocco.jpg"
+ },
+ {
+  "photo": "energy-5.jpg",
+  "topic": "energy",
+  "title": "Parque_eólico_cerca_de_Tegucigalpa_Honduras.jpg",
+  "author": "Fernan bth",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AParque_e%C3%B3lico_cerca_de_Tegucigalpa_Honduras.jpg"
+ },
+ {
+  "photo": "energy-6.jpg",
+  "topic": "energy",
+  "title": "Pillila_Wind_Farm,_Laguna_2.jpg",
+  "author": "Elmer B. Domingo",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3APillila_Wind_Farm%2C_Laguna_2.jpg"
+ },
+ {
+  "photo": "energy-7.jpg",
+  "topic": "energy",
+  "title": "The_Smoky_Hills_wind_farm_in_Kansas.jpg",
+  "author": "Giangimore",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AThe_Smoky_Hills_wind_farm_in_Kansas.jpg"
+ },
+ {
+  "photo": "energy-8.jpg",
+  "topic": "energy",
+  "title": "Black_mountain_wind_farm_near_Ammanford.jpg",
+  "author": "Golwygyrafon",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABlack_mountain_wind_farm_near_Ammanford.jpg"
+ },
+ {
+  "photo": "robots-1.jpg",
+  "topic": "robots",
+  "title": "FANUC_6-axis_welding_robots.jpg",
+  "author": "Phasmatisnox",
+  "attribution": "",
+  "licence": "CC BY 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AFANUC_6-axis_welding_robots.jpg"
+ },
+ {
+  "photo": "robots-2.jpg",
+  "topic": "robots",
+  "title": "Blindniet_Roboteranlage_4327.jpg",
+  "author": "Michael KR",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABlindniet_Roboteranlage_4327.jpg"
+ },
+ {
+  "photo": "robots-3.jpg",
+  "topic": "robots",
+  "title": "Clinchen_audi.jpg",
+  "author": "Nestor Jarque",
+  "attribution": "",
+  "licence": "CC BY 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AClinchen_audi.jpg"
+ },
+ {
+  "photo": "robots-4.jpg",
+  "topic": "robots",
+  "title": "Comau_robotics.jpg",
+  "author": "S211897polito",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AComau_robotics.jpg"
+ },
+ {
+  "photo": "robots-5.jpg",
+  "topic": "robots",
+  "title": "KawasakiFS03N.jpg",
+  "author": "",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AKawasakiFS03N.jpg"
+ },
+ {
+  "photo": "robots-6.jpg",
+  "topic": "robots",
+  "title": "Motoman_Industrie-Schweissroboter.jpg",
+  "author": "Michael KR",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AMotoman_Industrie-Schweissroboter.jpg"
+ },
+ {
+  "photo": "robots-7.jpg",
+  "topic": "robots",
+  "title": "Paris_Motor_Show_2018,_Paris_(1Y7A1752).jpg",
+  "author": "Matti Blume",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AParis_Motor_Show_2018%2C_Paris_%281Y7A1752%29.jpg"
+ },
+ {
+  "photo": "robots-8.jpg",
+  "topic": "robots",
+  "title": "Revolocity_DNA_sequencer.jpg",
+  "author": "Scotted400",
+  "attribution": "",
+  "licence": "CC BY 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ARevolocity_DNA_sequencer.jpg"
+ },
+ {
+  "photo": "lab-1.jpg",
+  "topic": "lab",
+  "title": "10.Suction_of_the_concentrate_samples_700ml_(15589731280).jpg",
+  "author": "SuSanA Secretariat",
+  "attribution": "",
+  "licence": "CC BY 2.0",
+  "licence_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A10.Suction_of_the_concentrate_samples_700ml_%2815589731280%29.jpg"
+ },
+ {
+  "photo": "lab-2.jpg",
+  "topic": "lab",
+  "title": "401_Prof_lab_2_(3).jpg",
+  "author": "ResComSolutions",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A401_Prof_lab_2_%283%29.jpg"
+ },
+ {
+  "photo": "lab-3.jpg",
+  "topic": "lab",
+  "title": "8_Śląski_Festiwal_Nauki,_MCK,_Katowice,,_09.12.2024,_1254.jpg",
+  "author": "Krzysztof Popławski",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A8_%C5%9Al%C4%85ski_Festiwal_Nauki%2C_MCK%2C_Katowice%2C%2C_09.12.2024%2C_1254.jpg"
+ },
+ {
+  "photo": "lab-4.jpg",
+  "topic": "lab",
+  "title": "A_laboratory.jpg",
+  "author": "Murat Kizaibek",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AA_laboratory.jpg"
+ },
+ {
+  "photo": "lab-5.jpg",
+  "topic": "lab",
+  "title": "Ank_vet_fak_lab_02.jpg",
+  "author": "Tarcirion",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAnk_vet_fak_lab_02.jpg"
+ },
+ {
+  "photo": "lab-6.jpg",
+  "topic": "lab",
+  "title": "ArchivesOntario2012DoorsOpen2.JPG",
+  "author": "Raysonho @ Open Grid Scheduler / Grid Engine",
+  "attribution": "",
+  "licence": "CC0",
+  "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AArchivesOntario2012DoorsOpen2.JPG"
+ },
+ {
+  "photo": "lab-7.jpg",
+  "topic": "lab",
+  "title": "AXO230_ICL_Molecular_Science_N5.jpg",
+  "author": "AmeliaHL",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAXO230_ICL_Molecular_Science_N5.jpg"
+ },
+ {
+  "photo": "lab-8.jpg",
+  "topic": "lab",
+  "title": "Biochemist_working_in_biochemical_laboratory,_Биохемичар_4.jpg",
+  "author": "Делфина",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABiochemist_working_in_biochemical_laboratory%2C_%D0%91%D0%B8%D0%BE%D1%85%D0%B5%D0%BC%D0%B8%D1%87%D0%B0%D1%80_4.jpg"
+ },
+ {
+  "photo": "court-1.jpg",
+  "topic": "court",
+  "title": "Courtroom_European_Court_of_Human_Rights_02.JPG",
+  "author": "Adrian Grycuk",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0 pl",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ACourtroom_European_Court_of_Human_Rights_02.JPG"
+ },
+ {
+  "photo": "court-2.jpg",
+  "topic": "court",
+  "title": "Bermuda_(UK)_image_number_282_courtroom.jpg",
+  "author": "Tomwsulcer",
+  "attribution": "",
+  "licence": "CC0",
+  "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABermuda_%28UK%29_image_number_282_courtroom.jpg"
+ },
+ {
+  "photo": "court-3.jpg",
+  "topic": "court",
+  "title": "Courtroon_in_Suekawa_Memorial_Hall_(RItsumeikan_University,_Kyoto,_Japan).JPG",
+  "author": "RoyHalzenski",
+  "attribution": "",
+  "licence": "Public domain",
+  "licence_url": "",
+  "source": "https://commons.wikimedia.org/wiki/File%3ACourtroon_in_Suekawa_Memorial_Hall_%28RItsumeikan_University%2C_Kyoto%2C_Japan%29.JPG"
+ },
+ {
+  "photo": "court-4.jpg",
+  "topic": "court",
+  "title": "Guantanamo_court_room.jpg",
+  "author": "Petty Officer 2nd Class Patrick Thompson",
+  "attribution": "",
+  "licence": "Public domain",
+  "licence_url": "",
+  "source": "https://commons.wikimedia.org/wiki/File%3AGuantanamo_court_room.jpg"
+ },
+ {
+  "photo": "court-5.jpg",
+  "topic": "court",
+  "title": "Interior_in_Constitutional_Court,_Judicial_Yuan_20090706.jpg",
+  "author": "Jiang",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AInterior_in_Constitutional_Court%2C_Judicial_Yuan_20090706.jpg"
+ },
+ {
+  "photo": "court-6.jpg",
+  "topic": "court",
+  "title": "Teaching_courtroom.jpg",
+  "author": "Omgallusernamesaretaken",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ATeaching_courtroom.jpg"
+ },
+ {
+  "photo": "court-7.jpg",
+  "topic": "court",
+  "title": "3D_illustration_image_of_a_gavel_-_auction_hammer_-_free_to_use_in_your_projects_03.jpg",
+  "author": "Quince Media",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A3D_illustration_image_of_a_gavel_-_auction_hammer_-_free_to_use_in_your_projects_03.jpg"
+ },
+ {
+  "photo": "court-8.jpg",
+  "topic": "court",
+  "title": "3D_illustration_image_of_a_gavel_-_auction_hammer_-_free_to_use_in_your_projects_06.jpg",
+  "author": "Quince Media",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A3D_illustration_image_of_a_gavel_-_auction_hammer_-_free_to_use_in_your_projects_06.jpg"
+ },
+ {
+  "photo": "parliament-1.jpg",
+  "topic": "parliament",
+  "title": "Parlament_Wien_abends.jpg",
+  "author": "Thomas Wolf , www.foto-tw.de",
+  "attribution": "Thomas Wolf, www.foto-tw.de You are free: to share – to copy, distribute and transmit the work to remix – to adapt the work Under the following conditions: attr",
+  "licence": "CC BY-SA 3.0 de",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AParlament_Wien_abends.jpg"
+ },
+ {
+  "photo": "parliament-2.jpg",
+  "topic": "parliament",
+  "title": "Parliament_building_of_Cuba_Havanna_El_Capitolio.jpg",
+  "author": "Marc-Lautenbacher",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AParliament_building_of_Cuba_Havanna_El_Capitolio.jpg"
+ },
+ {
+  "photo": "parliament-3.jpg",
+  "topic": "parliament",
+  "title": "ParliamentChambers_-_100419.jpg",
+  "author": "Josuamudreilagi",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AParliamentChambers_-_100419.jpg"
+ },
+ {
+  "photo": "parliament-4.jpg",
+  "topic": "parliament",
+  "title": "Quốc_hội_VN_(khóa_XV).jpg",
+  "author": "Dulken",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AQu%E1%BB%91c_h%E1%BB%99i_VN_%28kh%C3%B3a_XV%29.jpg"
+ },
+ {
+  "photo": "parliament-5.jpg",
+  "topic": "parliament",
+  "title": "The_Léon_Mba_Palace_(National_Assembly_Palace)_-_2023.jpg",
+  "author": "Daniel Beloumou / European Union, 2023 / EC - Audiovisual Service",
+  "attribution": "© European Union, 2026 You are free: to share – to copy, distribute and transmit the work to remix – to adapt the work Under the following conditions: attributi",
+  "licence": "CC BY 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AThe_L%C3%A9on_Mba_Palace_%28National_Assembly_Palace%29_-_2023.jpg"
+ },
+ {
+  "photo": "parliament-6.jpg",
+  "topic": "parliament",
+  "title": "Vanuatu_Parliament,_Port_Vila_-_Flickr_-_PhillipC.jpg",
+  "author": "Phillip Capper from Wellington, New Zealand",
+  "attribution": "",
+  "licence": "CC BY 2.0",
+  "licence_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AVanuatu_Parliament%2C_Port_Vila_-_Flickr_-_PhillipC.jpg"
+ },
+ {
+  "photo": "parliament-7.jpg",
+  "topic": "parliament",
+  "title": "DPRD_Jatim.jpg",
+  "author": "Ya, saya inBaliTimur",
+  "attribution": "",
+  "licence": "CC BY-SA 2.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/2.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ADPRD_Jatim.jpg"
+ },
+ {
+  "photo": "parliament-8.jpg",
+  "topic": "parliament",
+  "title": "Karen_State_Parliament.jpg",
+  "author": "Christophe95",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AKaren_State_Parliament.jpg"
+ },
+ {
+  "photo": "business-1.jpg",
+  "topic": "business",
+  "title": "Bloomberg_Terminal_and_keyboard.JPG",
+  "author": "Gforsythe",
+  "attribution": "",
+  "licence": "CC0",
+  "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABloomberg_Terminal_and_keyboard.JPG"
+ },
+ {
+  "photo": "business-2.jpg",
+  "topic": "business",
+  "title": "E-ticker.jpg",
+  "author": "User:klip game",
+  "attribution": "",
+  "licence": "Public domain",
+  "licence_url": "",
+  "source": "https://commons.wikimedia.org/wiki/File%3AE-ticker.jpg"
+ },
+ {
+  "photo": "business-3.jpg",
+  "topic": "business",
+  "title": "Stock-exchange-trading-floor.jpg",
+  "author": "S.aderogba",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AStock-exchange-trading-floor.jpg"
+ },
+ {
+  "photo": "business-4.jpg",
+  "topic": "business",
+  "title": "Stockmarket.jpg",
+  "author": "AhmadArdity",
+  "attribution": "",
+  "licence": "CC0",
+  "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AStockmarket.jpg"
+ },
+ {
+  "photo": "business-5.jpg",
+  "topic": "business",
+  "title": "INGHouse1.jpg",
+  "author": "",
+  "attribution": "",
+  "licence": "Public domain",
+  "licence_url": "",
+  "source": "https://commons.wikimedia.org/wiki/File%3AINGHouse1.jpg"
+ },
+ {
+  "photo": "business-6.jpg",
+  "topic": "business",
+  "title": "2006_03_27_Oficina_con_nubes_001.jpg",
+  "author": "UHY Fay & Co",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A2006_03_27_Oficina_con_nubes_001.jpg"
+ },
+ {
+  "photo": "software-1.jpg",
+  "topic": "software",
+  "title": "Basic_interpreter_on_the_DVK_computer.JPG",
+  "author": "Sergei Frolov , Soviet Computers Museum, http://www.leningrad.su/museum/",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABasic_interpreter_on_the_DVK_computer.JPG"
+ },
+ {
+  "photo": "software-2.jpg",
+  "topic": "software",
+  "title": "Colorful_lines_of_code_(Unsplash).jpg",
+  "author": "Ilya Pavlov ilyapavlov",
+  "attribution": "",
+  "licence": "CC0",
+  "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AColorful_lines_of_code_%28Unsplash%29.jpg"
+ },
+ {
+  "photo": "software-3.jpg",
+  "topic": "software",
+  "title": "Html_php_java_source_code_(38891650224).jpg",
+  "author": "Markus Spiske from Forchheim, Bavaria Upper Franconia",
+  "attribution": "",
+  "licence": "CC0",
+  "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AHtml_php_java_source_code_%2838891650224%29.jpg"
+ },
+ {
+  "photo": "software-4.jpg",
+  "topic": "software",
+  "title": "Java_code_demonstrating_source-code_abilities.jpg",
+  "author": "Ilyaaaaa",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AJava_code_demonstrating_source-code_abilities.jpg"
+ },
+ {
+  "photo": "software-5.jpg",
+  "topic": "software",
+  "title": "UserpicHenna.JPG",
+  "author": "Henna",
+  "attribution": "",
+  "licence": "CC BY-SA 2.5",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/2.5/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AUserpicHenna.JPG"
+ },
+ {
+  "photo": "software-6.jpg",
+  "topic": "software",
+  "title": "201608_WikiConvention_Paris_10.jpg",
+  "author": "Ziko van Dijk",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A201608_WikiConvention_Paris_10.jpg"
+ },
+ {
+  "photo": "health-3.jpg",
+  "topic": "health",
+  "title": "Brain_CT_Scan_for_Stroke_Diagnosis.jpg",
+  "author": "Goleisureintl",
+  "attribution": "",
+  "licence": "CC BY 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABrain_CT_Scan_for_Stroke_Diagnosis.jpg"
+ },
+ {
+  "photo": "health-4.jpg",
+  "topic": "health",
+  "title": "Computed_Tomography_(CT)_Scan_Facility_in_Navi_Mumbai.jpg",
+  "author": "Goleisureintl",
+  "attribution": "",
+  "licence": "CC BY 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AComputed_Tomography_%28CT%29_Scan_Facility_in_Navi_Mumbai.jpg"
+ },
+ {
+  "photo": "health-5.jpg",
+  "topic": "health",
+  "title": "CT_Brain_Scan.jpg",
+  "author": "Goleisureintl",
+  "attribution": "",
+  "licence": "CC BY 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ACT_Brain_Scan.jpg"
+ },
+ {
+  "photo": "health-6.jpg",
+  "topic": "health",
+  "title": "Diagnostic_Imaging_and_Radiology_Facility_in_Navi_Mumbai,_Maharashtra,_India.jpg",
+  "author": "Goleisureintl",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ADiagnostic_Imaging_and_Radiology_Facility_in_Navi_Mumbai%2C_Maharashtra%2C_India.jpg"
+ },
+ {
+  "photo": "health-8.jpg",
+  "topic": "health",
+  "title": "Computed_Tomography_CT_Chest_Imaging.jpg",
+  "author": "Goleisureintl",
+  "attribution": "",
+  "licence": "CC BY 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AComputed_Tomography_CT_Chest_Imaging.jpg"
+ },
+ {
+  "photo": "school-1.jpg",
+  "topic": "school",
+  "title": "A_classroom_in_the_Faculty_of_Architecture,_FUASK.jpg",
+  "author": "Kambai Akau",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AA_classroom_in_the_Faculty_of_Architecture%2C_FUASK.jpg"
+ },
+ {
+  "photo": "school-2.jpg",
+  "topic": "school",
+  "title": "AI_Classroom_at_Universal_Ai_University.jpg",
+  "author": "ManoBV16",
+  "attribution": "",
+  "licence": "CC0",
+  "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAI_Classroom_at_Universal_Ai_University.jpg"
+ },
+ {
+  "photo": "school-3.jpg",
+  "topic": "school",
+  "title": "Ashs-digital-technology-suite.jpg",
+  "author": "Mosborne01",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAshs-digital-technology-suite.jpg"
+ },
+ {
+  "photo": "school-4.jpg",
+  "topic": "school",
+  "title": "Aula_de_formació_Santa_Coloma.jpg",
+  "author": "Zezinho72",
+  "attribution": "",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAula_de_formaci%C3%B3_Santa_Coloma.jpg"
+ },
+ {
+  "photo": "school-5.jpg",
+  "topic": "school",
+  "title": "Aula_de_primaria.jpg",
+  "author": "Phelyan Sanjoin",
+  "attribution": "",
+  "licence": "CC BY 2.0",
+  "licence_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAula_de_primaria.jpg"
+ },
+ {
+  "photo": "school-6.jpg",
+  "topic": "school",
+  "title": "Aula,_escola..jpg",
+  "author": "Abdes Dabai",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAula%2C_escola..jpg"
+ },
+ {
+  "photo": "school-7.jpg",
+  "topic": "school",
+  "title": "BC10A班教室_-_Panoramio_46661718.jpg",
+  "author": "Weixi Zeng",
+  "attribution": "Weixi Zeng You are free: to share – to copy, distribute and transmit the work to remix – to adapt the work Under the following conditions: attribution – You mus",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3ABC10A%E7%8F%AD%E6%95%99%E5%AE%A4_-_Panoramio_46661718.jpg"
+ },
+ {
+  "photo": "conference-1.jpg",
+  "topic": "conference",
+  "title": "\"LE_MODÈLE_NOIR_DE_GÉRICAULT_À_MATISSE\",_Séminaire_au_MÉMORIAL_ACTE,_Apparition_de_deux_tableaux_de_Stan_Musquer,_peintre_de_la_Guadeloupe.jpg",
+  "author": "Collection artistes de la Guadeloupe",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A%22LE_MOD%C3%88LE_NOIR_DE_G%C3%89RICAULT_%C3%80_MATISSE%22%2C_S%C3%A9minaire_au_M%C3%89MORIAL_ACTE%2C_Apparition_de_deux_tableaux_de_Stan_Musquer%2C_peintre_de_la_Guadeloupe.jpg"
+ },
+ {
+  "photo": "conference-2.jpg",
+  "topic": "conference",
+  "title": "20191017_BBC_100_Women_2019_img20_Artist_Amy_Karle.jpg",
+  "author": "Igbofur",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A20191017_BBC_100_Women_2019_img20_Artist_Amy_Karle.jpg"
+ },
+ {
+  "photo": "conference-3.jpg",
+  "topic": "conference",
+  "title": "20191017_BBC_100_Women_2019_img23_Artist_Amy_Karle.jpg",
+  "author": "Igbofur",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3A20191017_BBC_100_Women_2019_img23_Artist_Amy_Karle.jpg"
+ },
+ {
+  "photo": "conference-4.jpg",
+  "topic": "conference",
+  "title": "ACT_Expo_2022-_DTNA_Press_Conference.jpg",
+  "author": "Kris at GNA",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AACT_Expo_2022-_DTNA_Press_Conference.jpg"
+ },
+ {
+  "photo": "conference-5.jpg",
+  "topic": "conference",
+  "title": "Acto_de_apertura_de_la_GLAM_WIKI_Conference_2023-Montevideo.jpg",
+  "author": "Ucriesidelplata",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AActo_de_apertura_de_la_GLAM_WIKI_Conference_2023-Montevideo.jpg"
+ },
+ {
+  "photo": "conference-6.jpg",
+  "topic": "conference",
+  "title": "Aicesis.jpg",
+  "author": "Pventurini",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAicesis.jpg"
+ },
+ {
+  "photo": "conference-7.jpg",
+  "topic": "conference",
+  "title": "Alan_Butler_Plymouth_LGBT_ARA2018.jpg",
+  "author": "Archivillian",
+  "attribution": "",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File%3AAlan_Butler_Plymouth_LGBT_ARA2018.jpg"
+ }
+]

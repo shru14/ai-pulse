@@ -11,18 +11,14 @@
 <style>
 /* The fonts are served from this site (templates/fonts, SIL Open Font License), not Google Fonts: loading them from
    Google would send every reader's IP address to Google without their consent (GDPR; LG München I, 20 Jan 2022). */
-@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-display: swap; font-weight: 500; src:url("fonts/bricolage-grotesque-vietnamese-500-normal.woff2") format("woff2"); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
-@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-display: swap; font-weight: 500; src:url("fonts/bricolage-grotesque-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-display: swap; font-weight: 500; src:url("fonts/bricolage-grotesque-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
-@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-display: swap; font-weight: 700; src:url("fonts/bricolage-grotesque-vietnamese-700-normal.woff2") format("woff2"); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
-@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-display: swap; font-weight: 700; src:url("fonts/bricolage-grotesque-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-display: swap; font-weight: 700; src:url("fonts/bricolage-grotesque-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-display: swap; font-weight: 500; src:url("fonts/space-grotesk-vietnamese-500-normal.woff2") format("woff2"); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-display: swap; font-weight: 500; src:url("fonts/space-grotesk-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-display: swap; font-weight: 500; src:url("fonts/space-grotesk-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-display: swap; font-weight: 700; src:url("fonts/space-grotesk-vietnamese-700-normal.woff2") format("woff2"); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-display: swap; font-weight: 700; src:url("fonts/space-grotesk-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-display: swap; font-weight: 700; src:url("fonts/space-grotesk-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Archivo Black'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/archivo-black-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Archivo Black'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/archivo-black-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Archivo'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/archivo-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Archivo'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/archivo-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Archivo'; font-style: normal; font-display: swap; font-weight: 600; src:url("fonts/archivo-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Archivo'; font-style: normal; font-display: swap; font-weight: 600; src:url("fonts/archivo-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Archivo'; font-style: normal; font-display: swap; font-weight: 800; src:url("fonts/archivo-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Archivo'; font-style: normal; font-display: swap; font-weight: 800; src:url("fonts/archivo-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/ibm-plex-mono-vietnamese-400-normal.woff2") format("woff2"); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/ibm-plex-mono-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
@@ -32,39 +28,34 @@
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-display: swap; font-weight: 600; src:url("fonts/ibm-plex-mono-vietnamese-600-normal.woff2") format("woff2"); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-display: swap; font-weight: 600; src:url("fonts/ibm-plex-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-display: swap; font-weight: 600; src:url("fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
-@font-face { font-family: 'Source Sans 3'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/source-sans-3-vietnamese-400-normal.woff2") format("woff2"); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
-@font-face { font-family: 'Source Sans 3'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/source-sans-3-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Source Sans 3'; font-style: normal; font-display: swap; font-weight: 400; src:url("fonts/source-sans-3-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
-@font-face { font-family: 'Source Sans 3'; font-style: normal; font-display: swap; font-weight: 600; src:url("fonts/source-sans-3-vietnamese-600-normal.woff2") format("woff2"); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
-@font-face { font-family: 'Source Sans 3'; font-style: normal; font-display: swap; font-weight: 600; src:url("fonts/source-sans-3-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-@font-face { font-family: 'Source Sans 3'; font-style: normal; font-display: swap; font-weight: 600; src:url("fonts/source-sans-3-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 :root{
-  --bg:#F3F4F7; --surface:#FFFFFF; --ink:#141925; --muted:#5B6275; --line:#DDE0E8;
-  --accent:#2F4FD8; --accent-soft:#E6EAFB;
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --muted:#3B3B3B; --line:#000000;
+  --accent:#0072B2; --accent-soft:#D9ECF6;
   --c-tool:#007656; --c-tool-soft:#D6EFE9;
   --c-news:#367193; --c-news-soft:#E4F3FB;
   --c-policy:#916400; --c-policy-soft:#FBF0D6;
   --c-research:#9C4798; --c-research-soft:#F6E5F5;
   --c-reg:#AA4B00; --c-reg-soft:#F8E5D6; --c-infra:#487B48; --c-infra-soft:#ECFCEC; --c-all:#7A7422; --c-all-soft:#FDFBE1;
   --warn:#8A5300; --warn-soft:#FFF1D6;
-  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --display:"Archivo Black", "Arial Black", sans-serif;
   /* Section colours: Okabe-Ito's colour-blind-safe set (research tuned so every pair stays apart under protan-, deutan-
      and tritanopia). --f-* fill tiles (dark text on them, both themes); --c-* are the text shades of the same hues. */
   --f-tool:#009E73; --f-news:#56B4E9; --f-research:#C85BC3; --f-reg:#D55E00; --f-policy:#E69F00; --f-infra:#8BEC8B; --f-all:#F0E442;
   /* Front page, pastel: the same hues half-mixed with white. Pastels sit too close for colour alone to tell them apart
      under colour blindness, so each tile also carries its name and its icon in the full-strength colour above. */
   --p-tool:#80CEB9; --p-news:#AADAF4; --p-research:#E4ADE1; --p-reg:#EAAE80; --p-policy:#F2CF80; --p-infra:#C5F6C5;
-  --p-email:#C9D3FB; --p-word:#F6E6CF;
-  --head:"Space Grotesk", "Segoe UI", system-ui, sans-serif;  /* front-page and section headings */
-  --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --p-email:#C9D3FB; --p-word:#F6E6CF; --p-meme:#FBD5E5;
+  --head:"Archivo Black", "Arial Black", sans-serif;  /* headings: the Swiss-poster look */
+  --body:"Archivo", "Segoe UI", system-ui, sans-serif;
+  --poster-grid:rgba(0,0,0,.045);
   --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
     --art-op:.22;
-    --bg:#0F121A; --surface:#171B26; --ink:#E7E9F0; --muted:#98A0B4; --line:#2A3040;
-    --accent:#8FA3FF; --accent-soft:#222B4D;
+    --bg:#0A0A0A; --surface:#141414; --ink:#FFFFFF; --muted:#C8C8C8; --line:#FFFFFF; --poster-grid:rgba(255,255,255,.06);
+    --accent:#56B4E9; --accent-soft:#0F2A3A;
     --c-tool:#2EAF8C; --c-tool-soft:#123837;
     --c-news:#56B4E9; --c-news-soft:#253D51;
     --c-policy:#E69F00; --c-policy-soft:#45381E;
@@ -76,8 +67,8 @@
 :root[data-theme="dark"]{
   color-scheme:dark;
   --art-op:.22;
-  --bg:#0F121A; --surface:#171B26; --ink:#E7E9F0; --muted:#98A0B4; --line:#2A3040;
-  --accent:#8FA3FF; --accent-soft:#222B4D;
+  --bg:#0A0A0A; --surface:#141414; --ink:#FFFFFF; --muted:#C8C8C8; --line:#FFFFFF; --poster-grid:rgba(255,255,255,.06);
+  --accent:#56B4E9; --accent-soft:#0F2A3A;
   --c-tool:#2EAF8C; --c-tool-soft:#123837;
   --c-news:#56B4E9; --c-news-soft:#253D51;
   --c-policy:#E69F00; --c-policy-soft:#45381E;
@@ -104,6 +95,7 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .theme:hover{border-color:var(--muted)}
 .theme svg{width:18px;height:18px}
 /* "Daily digest": opens the subscribe panel. The label hides on narrow screens; the icon stays. */
+.subscribe-btn[hidden]{display:none}
 .subscribe-btn{flex:none;height:36px;display:inline-flex;align-items:center;gap:7px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:600 14px var(--body);cursor:pointer}
 .subscribe-btn:hover{border-color:var(--muted)}
 .subscribe-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -246,13 +238,13 @@ header.top{gap:10px}
 .tile-note{margin:0;color:var(--muted)}
 .kicker{font:500 11.5px/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .mchip{display:inline-block;align-self:flex-start;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:2px;background:var(--cat-f);color:#141925}
-.mag-cover{display:grid;grid-template-columns:1.35fr 1fr;border-radius:4px;overflow:hidden;background:#141925;color:#FFFFFF;min-height:330px}
+.mag-cover{display:flex;flex-direction:column;border-radius:4px;overflow:hidden;background:#141925;color:#FFFFFF;min-width:0}
 .mag-cover>.tile-note{padding:24px;color:#C9CEDA}
-.mag-cover .copy{padding:28px 30px;display:flex;flex-direction:column;justify-content:flex-end;gap:12px;min-width:0}
-.mag-cover h2{font:700 clamp(26px,2.8vw,38px)/1.1 var(--head);letter-spacing:-.025em;margin:0;text-wrap:balance}
+.mag-cover .copy{padding:20px 22px 22px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.mag-cover h2{font:700 24px/1.15 var(--head);letter-spacing:-.02em;margin:0;text-wrap:balance}
 .mag-cover h2 a{color:#FFFFFF;text-decoration:none}
 .mag-cover h2 a:hover{text-decoration:underline;text-decoration-color:var(--cat-f);text-underline-offset:4px}
-.mag-cover .sum{margin:0;color:#C9CEDA;line-height:1.55;-webkit-line-clamp:4}
+.mag-cover .sum{margin:0;color:#C9CEDA;line-height:1.5;font-size:15px;-webkit-line-clamp:3}
 .mag-cover .kicker{color:#A9B0C2}
 .mag-cover .reported{color:#A9B0C2}
 .mag-cover .reported a{color:#FFFFFF;text-decoration-color:#4A5266}
@@ -266,21 +258,63 @@ header.top{gap:10px}
 .sart .logo{position:absolute;left:50%;top:40%;translate:-50% -50%}
 .sart .logo .ico{width:64px;height:64px;border-radius:16px;background:#FFFFFF;border:0;color:#141925;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .sart .logo .ico svg,.sart .logo .ico img{width:38px;height:38px}
-.mag-cover .sart{min-height:260px}
-.mag-cover .sart .logo .ico{width:104px;height:104px;border-radius:26px}
-.mag-cover .sart .logo .ico svg,.mag-cover .sart .logo .ico img{width:58px;height:58px}
-.mag-cover .sart .logo .ico.mono{font-size:30px}
-.mag-row{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.mag-cover .sart{height:150px;flex:none}
+.mag-cover .sart .week-badge{position:absolute;left:24px;top:24px}
+.mag-cover .sart .logo{left:auto;right:28px;translate:0 -50%;top:64%!important}
+/* The week's three (story, word, meme): one badge each, top left, boxed and highlighted */
+.week-badge{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 10px;align-self:flex-start;background:#141925;color:#FFFFFF;
+  border-radius:4px;padding:8px 12px;font:500 12px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;box-shadow:4px 4px 0 #F5C542}
+.week-badge b{font-weight:700;font-size:13px}
+.week-dates{display:flex;align-items:center;gap:6px;margin-top:12px;font:500 12px var(--mono);letter-spacing:.04em;opacity:.8}
+.week-dates svg{width:14px;height:14px;flex:none}
+.gl-tile .week-badge b{display:inline;font:700 13px/1.2 var(--mono);letter-spacing:.08em;margin:0}
+.mag-cover .sart .logo .ico{width:64px;height:64px;border-radius:16px}
+.mag-cover .sart .logo .ico svg,.mag-cover .sart .logo .ico img{width:38px;height:38px}
+.mag-cover .sart .logo .ico.mono{font-size:22px}
+.mag-cover .sart .logo{top:50%}
+.mag-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch}
+@media (max-width:1000px){.mag-row{grid-template-columns:1fr}}
+/* Meme of the week (memes.py): a joke format drawn in plain HTML, filled from last week's stories */
+.meme-tile{background:var(--p-meme);color:#141925;border:0;display:flex;flex-direction:column;gap:12px}
+.meme-tile[hidden]{display:none}
+.meme a{word-break:break-word}
 .sub-tile,.gl-tile{display:flex;flex-direction:column;justify-content:space-between;gap:14px;border:0}
 .sub-tile{background:var(--p-email);color:#141925}
+.sub-strip{display:grid;grid-template-columns:minmax(220px,1fr) 2.2fr auto;align-items:center;gap:26px;padding:20px 24px}
+.sub-strip h2{font-size:22px;margin:6px 0 0}
+.sub-steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.sub-steps li{counter-increment:s;font-size:13.5px;line-height:1.4;position:relative;padding-top:30px}
+.sub-steps li::before{content:counter(s);position:absolute;top:0;left:0;width:22px;height:22px;border-radius:50%;background:#141925;color:#FFFFFF;
+  font:600 12px/22px var(--mono);text-align:center}
+.sub-steps b{display:block;font:700 15px var(--head);margin-bottom:2px}
+.sub-hint{grid-column:2;grid-row:2;margin:-8px 0 0;font-size:13px}
+.sub-act{display:flex;flex-direction:column;align-items:center;gap:8px}
+.sub-act small{font-size:12px;opacity:.8;white-space:nowrap}
+.sub-strip .sub-tile-go{align-self:center;flex:none;font-size:16px;padding:12px 26px;background:#0072B2;color:#FFFFFF;box-shadow:3px 3px 0 #141925}
+.sub-strip .sub-tile-go:hover{filter:brightness(1.12)}
+@media (max-width:1100px){.sub-strip{grid-template-columns:1fr auto}.sub-steps{grid-column:1/-1;grid-row:2}.sub-hint{grid-column:1/-1;grid-row:3}}
+@media (max-width:640px){.sub-steps{grid-template-columns:1fr 1fr}}
 .sub-tile h2{font:700 26px/1.1 var(--head);letter-spacing:-.02em;margin:6px 0}
 .sub-tile p,.gl-tile p{margin:0;opacity:.9;font-size:15px}
 .sub-tile-go,.gl-tile-go{align-self:flex-start;font:600 15px var(--body);border-radius:999px;padding:10px 20px;cursor:pointer}
 .sub-tile-go{background:#141925;color:#FFFFFF;border:0}
 .gl-tile{background:var(--p-word);color:#141925}
-.gl-tile b{display:block;font:700 30px/1.1 var(--head);letter-spacing:-.02em;margin:4px 0}
-.gl-tile p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.gl-tile-go{background:none;color:inherit;border:1px solid currentColor}
+/* the word itself: a dictionary card, the word under a highlighter */
+.gl-card{margin-top:12px;background:#FFFFFF;border:2px solid #141925;border-radius:6px;box-shadow:5px 5px 0 #141925;padding:14px 16px 16px}
+.gl-kind{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#5A6172}
+.gl-tile b{display:block;font:700 32px/1.15 var(--head);letter-spacing:-.02em;margin:6px 0 8px}
+.gl-tile b mark{background:linear-gradient(transparent 52%,#F5C542 52%,#F5C542 92%,transparent 92%);color:inherit;padding:0 3px;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone}
+.gl-tile .gl-card p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:14.5px;line-height:1.5;opacity:1}
+/* how often it came up: the count, then a bar a day with the busiest day marked */
+.gl-stat{display:flex;align-items:center;gap:16px;margin-top:16px;padding:12px 14px;border:1.5px dashed rgba(20,25,37,.35);border-radius:6px}
+.gl-num{font:700 30px/1 var(--head);letter-spacing:-.02em}
+.gl-num small{display:block;font:500 10.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-top:4px}
+.gl-stat .bars{flex:1}
+.bar.peak span{background:#D55E00;opacity:1}
+.bar.peak small{font-weight:700;opacity:1}
+.gl-tile-go{align-self:center;background:#0072B2;color:#FFFFFF;border:0;padding:11px 26px;box-shadow:3px 3px 0 #141925}
+.gl-tile-go:hover{filter:brightness(1.12)}
 /* Word of the week: a bar a day, then the stories it came from. */
 .gl-viz{margin-top:12px}
 .viz-note{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;opacity:.75;margin:10px 0 6px}
@@ -291,6 +325,8 @@ header.top{gap:10px}
 .bar small{font:10px var(--mono);opacity:.75}
 .gl-tile .from{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.35}
 .gl-tile .from a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;opacity:.95}
+.gl-tile .from li{position:relative;padding-left:18px}
+.gl-tile .from li::before{content:"→";position:absolute;left:0;font-weight:700;color:#D55E00}
 .sub-tile-go:hover,.gl-tile-go:hover{filter:brightness(1.1)}
 .sub-tile-go:focus-visible,.gl-tile-go:focus-visible,.go:focus-visible,.stream-head:focus-visible,.lead:focus-visible,.mitem:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .mag-sections{display:grid;grid-template-columns:1fr 1fr;gap:44px 46px}
@@ -323,10 +359,10 @@ header.top{gap:10px}
 .mitem .tags{margin-top:6px}
 .go{display:inline-block;margin-top:16px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--cat-f);text-decoration-thickness:2px}
 .go:hover{text-decoration-color:var(--ink)}
-@media (max-width:860px){.mag-cover,.mag-row,.mag-sections{grid-template-columns:1fr}.mag-cover .sart{min-height:200px}}
+@media (max-width:860px){.sub-strip{grid-template-columns:1fr}.sub-hint{grid-row:auto}.sub-act{align-items:flex-start}.mag-cover,.mag-row,.mag-sections{grid-template-columns:1fr}.mag-cover .sart{min-height:200px}}
 @media (max-width:480px){.mitem{grid-template-columns:104px 1fr;gap:12px}.lead{min-height:220px}.lead h3{font-size:19px}.mag-cover .copy{padding:22px 18px}}
 /* A stream's page: its name and what it holds, in its colour, then the filters and the stories. */
-.section,footer{max-width:860px;margin-inline:auto}
+.section{max-width:860px;margin-inline:auto}
 .sec-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-top:18px;padding:26px 22px 20px;border-radius:4px;background:var(--cat-soft,var(--surface));
   border:1px solid var(--line)}
 .sec-hero{position:relative;overflow:hidden}
@@ -452,7 +488,15 @@ header.top{gap:10px}
 .more button:disabled{cursor:progress;color:var(--muted)}
 .more button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .empty{margin-top:40px;color:var(--muted);text-align:center}
-footer{margin-top:36px;font-size:13px;color:var(--muted)}
+/* The footer: the header's full column on every page, three columns that stack on a phone */
+.site-foot{display:grid;grid-template-columns:1.4fr 1.6fr 1fr;gap:20px 40px;margin-top:48px;padding:22px 0 30px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--muted)}
+.site-foot h5{margin:0 0 8px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
+.site-foot p{margin:0;max-width:48ch}
+.site-foot ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px}
+.site-foot ul.col{flex-direction:column}
+.site-foot a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.site-foot a:hover{color:var(--accent);text-decoration-color:currentColor}
+@media (max-width:760px){.site-foot{grid-template-columns:1fr}}
 /* The sections' icons: filled, in the section's colour on a white tile in both themes. */
 .ico.sec{background:#141925;border-radius:10px}
 .ico.sec svg{fill:var(--cat-f,#FFFFFF);stroke:none}
@@ -460,6 +504,87 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 .k-regulation{--cat-f:var(--f-reg);--cat-p:var(--p-reg)}.k-policy{--cat-f:var(--f-policy);--cat-p:var(--p-policy)}.k-infra{--cat-f:var(--f-infra);--cat-p:var(--p-infra)}
 .sec-hero .ico.sec{background:#141925}
 .sec-hero .ico.sec svg{width:32px;height:32px}
+/* ---- The Swiss-poster look: black rules, bold caps, flat Okabe-Ito blocks (yellow, blue, vermilion) on a faint grid ---- */
+body{background:var(--bg) repeating-linear-gradient(90deg,var(--poster-grid) 0 1px,transparent 1px 98px)}
+header.top{border-bottom:4px solid var(--ink)}
+.brand{font-family:var(--head);text-transform:uppercase}
+.lede strong{font:400 30px/1.05 var(--head);text-transform:uppercase;letter-spacing:-.02em}
+.tile,.mag-cover,.sub-strip,.gl-tile,.meme-tile{border:3px solid var(--ink)!important;border-radius:0!important}
+.sub-strip{background:#F0E442;color:#000}
+.sub-strip h2{font:400 26px/1.05 var(--head);text-transform:uppercase}
+.sub-steps b{font-family:var(--head);font-weight:400;text-transform:uppercase}
+.sub-steps li::before{border-radius:0;background:#000;color:#FFFFFF}
+.sub-strip .sub-tile-go,.gl-tile-go{background:#000!important;color:#FFFFFF!important;border-radius:0!important;box-shadow:6px 6px 0 #0072B2!important;
+  text-transform:uppercase;font-weight:800}
+.mag-cover{background:#000}
+.mag-cover h2{font:400 24px/1.12 var(--head);text-transform:uppercase}
+.gl-tile{background:#0072B2;color:#FFFFFF}
+.gl-card{border-radius:0;border:3px solid #000;box-shadow:8px 8px 0 #000;color:#000}
+.gl-tile b{font:400 34px/1.05 var(--head)}
+.gl-tile b mark{background:#F0E442}
+.gl-stat{border:3px solid #FFFFFF;border-radius:0}
+.gl-tile .from li::before{color:#F0E442}
+.meme-tile{background:#D55E00;color:#000}
+.week-badge{border-radius:0;box-shadow:none;border:3px solid #000;background:#FFFFFF;color:#000}
+.mag-cover .week-badge{border-color:#FFFFFF}
+.stream-head h2{font:400 34px/1 var(--head);text-transform:none;letter-spacing:-.015em}  /* "Research", "Industry": title case */
+.mag-sec .rule{width:100%;height:10px;background:var(--cat-f)}
+.lead,.thumb{border-radius:0!important;border:3px solid var(--ink)}
+.lead h3,.mitem h4{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:-.01em}
+.site-foot{border-top:4px solid var(--ink)}
+.site-foot h5{font-family:var(--head);font-weight:400}
+/* Photos: black and white, printed in the stream's colour (a duotone); the logo sits small in a corner */
+.sart.photo{background:var(--cat-f,#F0E442)}
+.sart.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.25) brightness(1.04);mix-blend-mode:multiply}
+.sart.photo .logo,.mag-cover .sart.photo .logo{left:auto;right:10px;top:10px!important;translate:none}
+.sart.photo .logo .ico,.mag-cover .sart.photo .logo .ico{width:40px;height:40px;border-radius:0;border:2px solid #000;box-shadow:none}
+.sart.photo .logo .ico svg,.sart.photo .logo .ico img,.mag-cover .sart.photo .logo .ico svg,.mag-cover .sart.photo .logo .ico img{width:24px;height:24px}
+.sart.photo .logo .ico.mono,.mag-cover .sart.photo .logo .ico.mono{font-size:12px}
+.thumb .sart.photo .logo{right:6px;top:6px!important}
+.thumb .sart.photo .logo .ico{width:30px;height:30px}
+.thumb .sart.photo .logo .ico svg,.thumb .sart.photo .logo .ico img{width:18px;height:18px}
+.mag-cover .sart{height:180px}
+.lead{min-height:280px}
+/* A stream's page: the cards in the poster style, each with its photo; the header over a photo of the stream */
+.item{grid-template-columns:168px 1fr;border:3px solid var(--ink);border-top:8px solid var(--cat-f,var(--ink));border-radius:0;box-shadow:none;padding:14px 16px 12px 14px}
+.item .side .sart{position:relative;width:168px;aspect-ratio:4/3;border:2px solid var(--ink);overflow:hidden}
+.item h3{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:-.005em;font-size:18px}
+.sec-hero{border:3px solid var(--ink);border-radius:0;background:var(--cat-f,#F0E442)}
+.sec-hero::before{content:"";position:absolute;inset:0;background:var(--hero-photo) center/cover no-repeat;filter:grayscale(1) contrast(1.2);mix-blend-mode:multiply}
+.sec-hero>.art{display:none}
+/* the header, a poster: one column on the left (icon, name, what it covers, counts), each on its own label */
+.sec-hero{align-items:flex-start;justify-content:flex-end;text-align:left;min-height:240px;padding:28px;gap:12px}
+.sec-hero>div{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.sec-hero h2,.sec-hero p,.sec-hero .status{background:var(--bg);color:var(--ink);margin:0;padding:6px 14px;max-width:100%}
+.sec-hero h2{font:400 clamp(30px,3.6vw,44px)/1 var(--head);padding:8px 14px 6px}
+.sec-hero h2::after{display:none}
+.sec-hero p{font-size:16px;max-width:60ch}
+.sec-hero .status{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px 14px;font-size:12px}
+.sec-hero .ico,.sec-hero .ico.sec{width:52px;height:52px;border-radius:0;border:3px solid var(--ink);background:var(--bg);color:var(--ink)}
+/* the masthead: name and buttons on top, every stream on its own ruled row below (never cut off) */
+:root{--bar-h:104px}
+header.top{flex-wrap:wrap;align-content:space-evenly;row-gap:6px}
+header.top .brand{margin-right:auto}
+header.top .secnav{order:5;flex-basis:100%;margin:0;padding:4px 0 0;border-top:2px solid var(--ink)}
+.secnav a{border-radius:0;padding:6px 12px 6px 0;margin-right:10px}
+.secnav a[aria-current]{background:none;color:var(--ink);box-shadow:inset 0 -4px 0 var(--cat-f,var(--ink))}
+.subscribe-btn{border-radius:0;border:2px solid var(--ink)}
+.subscribe-btn.cta{box-shadow:none}
+.item.tool{--cat-f:var(--f-tool)}.item.news{--cat-f:var(--f-news)}.item.research{--cat-f:var(--f-research)}
+.item.regulation{--cat-f:var(--f-reg)}.item.policy{--cat-f:var(--f-policy)}.item.infra{--cat-f:var(--f-infra)}
+@media (max-width:560px){
+  .item{grid-template-columns:1fr}
+  .item .side{flex-direction:column;align-items:flex-start}
+  .item .side .sart{width:100%;aspect-ratio:16/9}  /* on a phone the photo runs across the card, its label under it */
+  header.top .brand h1{font-size:17px}
+  header.top .brand{gap:8px}
+  header.top .gl-open span{display:none}
+  header.top .gl-open{width:38px;padding:0;justify-content:center}
+  header.top .subscribe-btn.cta{padding:0 10px}
+  header.top .subscribe-btn.cta svg{display:none}  /* the word alone, so the top row fits a phone */
+  header.top{gap:8px}
+  .sec-hero{min-height:0;padding:20px 16px}
+}
 </style>
 </head><body>
 
@@ -520,7 +645,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
         <label><input type="checkbox" value="infra" checked> Infra &amp; climate</label>
       </fieldset>
       <details class="pref-box" id="pref-box">
-        <summary>Make it yours <span class="opt">(optional)</span></summary>
+        <summary>Make it yours <span class="opt">(optional) · more of, leave out, your own words</span></summary>
         <div class="pref-in">
           <p class="pref-note">Pick what you want more of and what to leave out, from the same labels and tags you see
             on the stories; the search finds any of them. Your top 10 is then 5 stories of your choice and 5 of the day's biggest. What you leave
@@ -556,22 +681,35 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
     <p class="sub-lede" id="sub-action-text"></p>
     <button class="sub-go" id="sub-action-go" type="button"></button>
   </dialog>
-  <!-- Front page: tiles. The week's biggest story, the daily email, a glossary word, then a tile per stream. -->
+  <!-- Front page: the daily email strip, the week's biggest story, the word and meme of the week, then a tile per stream. -->
   <section class="home" id="front" hidden>
     <p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
     <div class="status home-status" id="home-status">Loading feed…</div>
     <div class="mag">
-      <article class="mag-cover" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
+      <div class="tile sub-tile sub-strip">
+        <div class="sub-head"><span class="label">Daily email · free</span><h2>The 10 AI stories that mattered, every morning</h2></div>
+        <ol class="sub-steps">
+          <li><b>Pick streams</b>Releases, Industry, Research, Regulation, Policy, Infra &amp; climate</li>
+          <li><b>More of</b>Topics, companies, places and people you follow fill 5 of your 10</li>
+          <li><b>Leave out</b>What you'd rather skip never shows up</li>
+          <li><b>Your words</b>Up to 5 of your own, like “Kerala”</li>
+        </ol>
+        <p class="sub-hint">Steps 2–4 are optional: find them under <b>“+ Make it yours”</b> in the sign-up form.</p>
+        <div class="sub-act"><button class="sub-tile-go" type="button" data-open="subscribe">Subscribe free →</button>
+          <small>One email a day · unsubscribe in one click</small></div>
+      </div>
       <div class="mag-row">
-        <div class="tile sub-tile">
-          <div><span class="label">Daily email</span><h2>The 10 AI stories that mattered, every morning</h2>
-            <p>Free. Pick your streams and make it yours: more of what you like, none of what you'd rather skip.</p></div>
-          <button class="sub-tile-go" type="button" data-open="subscribe">Subscribe</button>
-        </div>
+        <article class="mag-cover" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
         <div class="tile gl-tile">
-          <div><span class="label" id="gl-label">Word of the week</span><b id="gl-word">Glossary</b><p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p>
+          <div><span class="week-badge"><b>Word of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="gl-label">Last week</span></span>
+            <div class="gl-card"><span class="gl-kind">From the AI Pulse glossary</span><b id="gl-word"><mark>Glossary</mark></b>
+              <p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p></div>
             <div class="gl-viz" id="gl-viz"></div></div>
-          <button class="gl-tile-go" type="button" data-open="glossary">Open the glossary</button>
+          <button class="gl-tile-go" type="button" data-open="glossary">Open the glossary →</button>
+        </div>
+        <div class="tile meme-tile" id="meme-tile" hidden>
+          <div><span class="week-badge"><b>Meme of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="meme-label">Last week</span></span></div>
+          <div class="meme" id="meme"></div>
         </div>
       </div>
       <div class="mag-sections" id="stream-tiles"></div>
@@ -603,7 +741,13 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
   </section>
-  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a> · Contact: <a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a> · <a href="feeds/policy.xml">Policy</a> · <a href="feeds/infra.xml">Infra &amp; climate</a></footer>
+  <footer class="site-foot">
+    <div><h5>About</h5><p>Summaries are the publishers’ own descriptions; follow the source link for the full story.</p></div>
+    <div><h5>Daily RSS</h5><ul><li><a href="feeds/releases.xml">Releases</a></li><li><a href="feeds/news.xml">Industry</a></li><li><a href="feeds/research.xml">Research</a></li>
+      <li><a href="feeds/regulation.xml">Regulation tracker</a></li><li><a href="feeds/policy.xml">Policy</a></li><li><a href="feeds/infra.xml">Infra &amp; climate</a></li></ul></div>
+    <div><h5>Sources and contact</h5><ul class="col"><li><a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a></li>
+      <li><a href="photos/credits.html">Photo credits</a></li><li><a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></li></ul></div>
+  </footer>
 </div>
 
 <script>
@@ -668,6 +812,7 @@ function heroArt(cat){
 function showPage(){
   const home = state.cat === "home";
   $("front").hidden = !home; $("section").hidden = home;
+  $("subscribe-open").hidden = $("glossary-open").hidden = home;  // the front page has its own: the email strip, the word of the week
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
   if(home){ document.title = "AI Pulse"; return loadHome(); }
   const hero = $("sec-hero");
@@ -675,6 +820,9 @@ function showPage(){
   $("sec-title").textContent = state.cat === "all" ? "All stories" : STREAM_NAME[state.cat];
   $("sec-desc").textContent = SECTION_DESC[state.cat];
   $("sec-art").innerHTML = heroArt(state.cat);
+  const hp = (PHOTOS[STREAM_PHOTO[state.cat]] || PHOTOS.business || [])[0];
+  hero.style.setProperty("--hero-photo", hp ? 'url("photos/' + hp[0] + '")' : "none");
+  hero.title = hp ? hp[1] : "";
   $("sec-ico").replaceWith(Object.assign(sectionIcon(state.cat), {id: "sec-ico"}));
   document.title = (state.cat === "all" ? "All stories" : STREAM_NAME[state.cat]) + " · AI Pulse";
   const soon = SOON.has(state.cat);
@@ -715,6 +863,7 @@ function render(){
   const list = state.items;  // already filtered, grouped and sorted by the server
 
   const feed = $("feed"); feed.replaceChildren();
+  PHOTO_USED.clear();
   const byDay = new Map();
   list.forEach(it => { if(!byDay.has(it.date)) byDay.set(it.date, []); byDay.get(it.date).push(it); });
   for(const [day, its] of byDay){
@@ -729,7 +878,7 @@ function render(){
       const life = it.lifecycle;
       const side = el("div","side");
       // The badge says what kind of item it is; a bill's stages are on its timeline, not repeated here.
-      side.append(cardIcon(it), el("span","cat "+it.category, (it.category==="regulation" && ACTION_LABEL[it.action]) || KIND_LABEL[it.kind] || CAT_LABEL[it.category] || it.category));
+      side.append(storyArt(it), el("span","cat "+it.category, (it.category==="regulation" && ACTION_LABEL[it.action]) || KIND_LABEL[it.kind] || CAT_LABEL[it.category] || it.category));
       art.append(side);
       const body = el("div","body"); art.append(body);
       const h = el("h3"); const a = el("a",null,it.title); a.href = it.url; a.target="_blank"; a.rel="noopener"; h.append(a); body.append(h);
@@ -1104,11 +1253,23 @@ async function loadHomeCounts(){
     failing: d ? d.failingSources || [] : []});
   renderStatus(); renderHome();
 }
+// The meme of the week: drawn by the build (memes.py) from last week's stories, Monday to Sunday as the word of the week.
+async function loadMeme(){
+  try{
+    const m = await (await fetch("meme.json", {cache:"no-cache"})).json();
+    if(!m.html) return;
+    const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
+    $("meme-label").textContent = "Last week · " + fmt(m.from) + " – " + fmt(m.to);
+    $("meme").innerHTML = m.html;  // our own markup, built from escaped text
+    $("meme-tile").hidden = false;
+  }catch(e){}
+}
 async function loadHome(){
   loadHomeCounts();
   if(HOME.by || HOME.loading) return renderHome();
   HOME.loading = true; HOME.error = false; renderHome();
   try{
+    loadMeme();
     const [lists, recent] = await Promise.all([
       Promise.all(CATS.map(c => fetchItems(new URLSearchParams({category: c, days: 7, per_page: 200, page: 1})))),
       fetchItems(new URLSearchParams({days: 15, per_page: 100000, page: 1}))]);  // for last week's word
@@ -1149,11 +1310,11 @@ function renderWord(){
   const box = $("gl-viz"), e = HOME.word && GL.byId[HOME.word];
   box.replaceChildren();
   if(!e) return;
-  $("gl-word").textContent = e.term; $("gl-word-def").textContent = e.def;
+  $("gl-word").replaceChildren(el("mark", null, e.term)); $("gl-word-def").textContent = e.def;
   const [from] = lastWeek(), days = [];
   for(let i = 0; i < 7; i++){ const d = new Date(from + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + i); days.push(d.toISOString().slice(0, 10)); }
   const fmt = (d, o) => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone: "UTC", ...o});
-  $("gl-label").textContent = "Word of the week · " + fmt(days[0], {day: "numeric", month: "short"}) + " – " + fmt(days[6], {day: "numeric", month: "short"});
+  $("gl-label").textContent = "Last week · " + fmt(days[0], {day: "numeric", month: "short"}) + " – " + fmt(days[6], {day: "numeric", month: "short"});
   const used = mentions(e, HOME.lastWeek);
   const per = days.map(d => used.filter(it => it.date === d).length), max = Math.max(1, ...per);
   const bars = el("div","bars"); bars.setAttribute("role","img");
@@ -1164,13 +1325,16 @@ function renderWord(){
     const col = el("div","bar"); col.title = day + ": " + per[i] + (per[i] === 1 ? " story" : " stories");
     const fill = el("span"); fill.style.height = Math.max(3, Math.round(per[i] / max * 36)) + "px";
     if(!per[i]) fill.classList.add("none");
+    if(per[i] && per[i] === max) col.classList.add("peak");  // the busiest day
     col.append(fill, el("small", null, fmt(d, {weekday: "short"}).slice(0, 2)));
     bars.append(col);
   });
-  box.append(el("div","viz-note", "In " + used.length + (used.length === 1 ? " story" : " stories") + " last week"), bars);
+  const stat = el("div","gl-stat"), num = el("div","gl-num", used.length.toLocaleString());
+  num.append(el("small", null, (used.length === 1 ? "story" : "stories") + " last week"));
+  stat.append(num, bars); box.append(stat);
   const list = el("ul","from");
   [...used].sort(byWeight).slice(0, 2).forEach(it => { const li = el("li"); li.append(storyLink(it)); list.append(li); });
-  box.append(el("div","viz-note","From"), list);
+  box.append(el("div","viz-note","Seen in"), list);
 }
 function searchAll(q){ state.q = q; $("q").value = q; go("all"); }
 // An infrastructure story's card leaves out the stream's own name (its other streams' cards keep it as a tag).
@@ -1183,9 +1347,30 @@ function storyTags(it, max){
   return tags;
 }
 // Drawn art for a story: its stream's colour and drawings (as on the stream's page) and its logo (cardIcon).
+// Photos (photos.py): openly licensed Wikimedia Commons pictures, picked by a story's topic, else its stream, shown as
+// a duotone in the stream's colour; each carries its credit as a tooltip and all are listed on photos/credits.html.
+const PHOTOS = {};  // filled by the build: {topic: [[file, credit], ...]}
+const PHOTO_TOPIC = [["Chips","chips"], ["Compute & Data Centers","datacenter"], ["Robotics","robots"], ["Healthcare","health"],
+  ["Education","school"], ["Energy","energy"], ["Climate","energy"], ["Infrastructure & sustainability","energy"], ["Funding","business"],
+  ["IPO","business"], ["M&A","business"], ["Law","court"], ["Copyright","court"], ["Elections","parliament"],
+  ["International bodies","conference"], ["Governance","conference"], ["Coding Tools","software"], ["Science","lab"]];
+const STREAM_PHOTO = {tool:"software", news:"business", research:"lab", regulation:"court", policy:"parliament", infra:"datacenter"};
+const PHOTO_USED = new Set();  // a page shows each photo once while it has others to show
+function storyPhoto(it){
+  const tags = new Set(it.tags || []);
+  const topic = (PHOTO_TOPIC.find(([t]) => tags.has(t)) || [])[1];
+  const list = (topic && PHOTOS[topic]) || PHOTOS[STREAM_PHOTO[it.category]] || [];
+  if(!list.length) return null;
+  const h = [...String(it.id || it.url)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
+  let i = h % list.length;
+  for(let n = 0; n < list.length && PHOTO_USED.has(list[i][0]); n++) i = (i + 1) % list.length;
+  PHOTO_USED.add(list[i][0]);
+  return list[i];
+}
 function storyArt(it){
-  const a = el("div","sart");
-  a.innerHTML = heroArt(it.category).replaceAll("<svg ", '<svg class="d" ');
+  const p = storyPhoto(it), a = el("div", p ? "sart photo" : "sart");
+  if(p){ const img = el("img"); img.src = "photos/" + p[0]; img.alt = ""; img.loading = "lazy"; img.title = p[1]; a.append(img); }
+  else a.innerHTML = heroArt(it.category).replaceAll("<svg ", '<svg class="d" ');
   const logo = el("span","logo"); logo.append(cardIcon(it)); a.append(logo);
   return a;
 }
@@ -1196,6 +1381,7 @@ function kicker(it){
     + (outlets(it) > 1 ? " · " + outlets(it) + " sources" : ""));
 }
 function renderHome(){
+  PHOTO_USED.clear();
   const hero = $("hero"), tiles = $("stream-tiles");
   if(!HOME.by){
     hero.className = "mag-cover";
@@ -1209,17 +1395,20 @@ function renderHome(){
     hero.className = "mag-cover k-" + top.category;
     const copy = el("div","copy"), h = el("h2");
     h.append(storyLink(top));
-    copy.append(el("span","mchip","Story of the week · " + STREAM_NAME[top.category]), h);
+    copy.append(h, el("span","mchip", STREAM_NAME[top.category]));  // its stream, as a tag under the headline
     if(top.summary) copy.append(el("p","sum", top.summary));
     copy.append(kicker(top));
-    const others = (top.also || []).filter((o, i, a) => a.findIndex(x => x.source === o.source) === i).slice(0, 8);
+    const others = (top.also || []).filter((o, i, a) => a.findIndex(x => x.source === o.source) === i).slice(0, 4);
     if(others.length){
       const by = el("div","reported", "Also reported by ");
       others.forEach(o => { const a = el("a", null, o.source || domainOf(o.url)); a.href = o.url; a.target = "_blank"; a.rel = "noopener"; by.append(a); });
       copy.append(by);
     }
-    copy.append(storyTags(top, 4));
-    hero.append(storyArt(top), copy);
+    copy.append(storyTags(top, 3));
+    const art = storyArt(top), badge = el("span","week-badge");
+    badge.append(el("b", null, "Story of the week"));
+    art.append(badge);
+    hero.append(art, copy);
   } else hero.append(el("p","tile-note","No stories this week yet."));
   renderWord();
   // Each stream: its name, count and description, then its three biggest stories of the week, newest first.
@@ -1663,20 +1852,19 @@ if("IntersectionObserver" in window){
 document.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () =>
   b.dataset.open === "subscribe" ? openSubscribe() : openGlossary(HOME.word)));
 
-// The subscribe form pops up once, 8 seconds into a visit, and again a month later; never for a reader who
-// subscribed from this browser, nor over a link from an email (confirm, unsubscribe, choices, glossary).
-const SUB_PROMPT = "aipulse-sub-prompt", SUB_AGAIN = 30*864e5;
+// The subscribe form pops up as the site loads, once a visit (not again on reloads in the same tab session); never
+// for a reader who subscribed from this browser, nor over a link from an email (confirm, unsubscribe, choices, glossary).
+const SUB_PROMPT = "aipulse-sub-prompt";
 function promptSubscribe(){
-  if(location.hash && !/^#(home|all|tool|news|research|regulation|policy)?$/.test(location.hash)) return;
+  if(location.hash && !/^#(home|all|tool|news|research|regulation|policy|infra)?$/.test(location.hash)) return;
   try{
-    const last = localStorage.getItem(SUB_PROMPT);
-    if(last === "subscribed" || Date.now() - (+last || 0) < SUB_AGAIN) return;
-  }catch(e){ return; }  // without storage it would pop up on every visit
+    if(localStorage.getItem(SUB_PROMPT) === "subscribed" || sessionStorage.getItem(SUB_PROMPT)) return;
+  }catch(e){ return; }  // without storage it would pop up on every page load
   setTimeout(() => {
     if(document.querySelector("dialog[open]")) return;  // the reader is already in a panel
-    try{ localStorage.setItem(SUB_PROMPT, String(Date.now())); }catch(e){}
+    try{ sessionStorage.setItem(SUB_PROMPT, "shown"); }catch(e){}
     openSubscribe();
-  }, 8000);
+  }, 1200);
 }
 showPage();
 promptSubscribe();
