@@ -1854,7 +1854,7 @@ def test_glossary_explains_the_hard_words_in_stories():
     rag = next(e for e in glossary.payload(cards, date(2026, 9, 29))["entries"] if e["id"] == "rag")
     assert rag["recent"] == 1 and rag["search"] == "RAG" and rag["match"]
     page = Path("templates/index.html").read_text(encoding="utf-8")
-    assert 'id="glossary-open"' in page and page.index('id="subscribe-open"') < page.index('id="glossary-open"') < page.index('id="theme"')
+    assert 'id="glossary-open"' in page and page.index('id="subscribe-open"') < page.index('id="glossary-open"') and 'id="theme"' not in page  # one light theme
     assert 'fetch("glossary.json"' in page
 
 

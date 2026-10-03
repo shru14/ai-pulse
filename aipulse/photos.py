@@ -51,7 +51,6 @@ def credits_page() -> str:
             '<title>Photo credits · AI Pulse</title><style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
             'padding:24px 16px;color:#222;background:#fff}h1{font-size:20px;font-weight:600;margin:0 0 6px}p{margin:0 0 14px;color:#555}'
             'ul{list-style:none;margin:0;padding:0}li{padding:5px 0;border-top:1px solid #ddd;overflow-wrap:anywhere}'
-            'a{color:#0072B2}@media (prefers-color-scheme:dark){body{background:#111;color:#ddd}p{color:#aaa}li{border-color:#333}'
-            'a{color:#56B4E9}}</style></head><body><h1>Photo credits</h1><p>Openly licensed photos from Wikimedia Commons, '
+            'a{color:#0072B2}</style></head><body><h1>Photo credits</h1><p>Openly licensed photos from Wikimedia Commons, '
             'shown in each stream’s colour. They illustrate a topic, not the story itself. <a href="../">Back to AI Pulse</a></p>'
             f'<ul>{rows}</ul></body></html>')
