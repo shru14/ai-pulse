@@ -176,7 +176,6 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
     added, errors = 0, []
     purge_disallowed(conn, log)
-    purge_paywalled(conn, log)
 
     for src in sources:
         try:
@@ -258,6 +257,11 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             if src["category"] == "regulation" and item["category"] != "regulation":
                 continue  # the tracker's searches are broad; keep only proposals and laws from them
 
+            if src.get("paywall_check") and not store.exists(conn, item["url"]):
+                if subscriber_only(conn, item["url"], fetcher):
+                    continue  # every story on the site must be free to read
+                conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", ("free:" + item["url"], _days_ago(0)))
+
             if not store.exists(conn, item["url"]):
                 fill_summary(item)
             if store.insert(conn, item):
@@ -273,6 +277,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
         bills.sync(conn, fetcher, log=log)  # official bill stages (congress.gov, European Parliament)
         resummarize_papers(conn, fetcher, log=log)
         fill_page_leads(conn, fetcher, log=log)
+        drop_subscriber_only(conn, fetcher, log=log)
         if (conn.execute("SELECT value FROM meta WHERE key = 'summaries_version'").fetchone() or [""])[0] != SUMMARIES:
             log(f"  summaries re-cleaned: {resummarize(conn, log=lambda *_: None)}")  # once, after brief.py changes
             conn.execute("INSERT OR REPLACE INTO meta VALUES ('summaries_version', ?)", (SUMMARIES,))
@@ -317,28 +322,45 @@ def purge_disallowed(conn, log=print) -> int:
     return n
 
 
-# Outlets dropped because their articles need a subscription: every story on the site must be free to read.
-PAYWALLED = ("theverge.com",)
+PAYWALL_PER_RUN = 40  # stored stories from paywall_check sources whose pages one run reads
 
 
-def purge_paywalled(conn, log=print) -> int:
-    """Delete the stories of PAYWALLED outlets, once per outlet and database; returns how many."""
-    total = 0
-    for host in PAYWALLED:
-        key = f"purged:{host}"
-        if conn.execute("SELECT 1 FROM meta WHERE key = ?", (key,)).fetchone():
-            continue
-        like = f"%://{host}/%", f"%.{host}/%"
-        n = conn.execute("DELETE FROM items WHERE url LIKE ? OR url LIKE ?", like).rowcount
-        conn.execute("DELETE FROM sources WHERE url LIKE ? OR url LIKE ?", like)
+def subscriber_only(conn, url: str, fetcher=feeds.fetch) -> bool:
+    """A paywall_check source's article that needs a subscription; its page is read once per URL. A page that
+    can't be read counts as not free, so nothing behind a paywall slips through (the next run tries again)."""
+    if conn.execute("SELECT 1 FROM meta WHERE key = ?", ("paid:" + url,)).fetchone():
+        return True
+    try:
+        paid = not feeds.free_to_read(fetcher(url))
+    except Exception:
+        return True
+    if paid:
+        conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", ("paid:" + url, _days_ago(0)))
+    return paid
+
+
+def drop_subscriber_only(conn, fetcher=feeds.fetch, log=print) -> int:
+    """Stories stored before their outlet's articles were checked for a paywall: read a few pages a run,
+    delete the subscriber-only ones and remember the free ones. Returns how many were deleted."""
+    names = [s["name"] for s in SOURCES if s.get("paywall_check")]
+    if not names:
+        return 0
+    rows = conn.execute(f"SELECT id, url FROM items WHERE source IN ({','.join('?' * len(names))}) AND url NOT IN "
+                        "(SELECT substr(key, 6) FROM meta WHERE key LIKE 'free:%') ORDER BY date DESC",
+                        names).fetchall()
+    gone = 0
+    for it in rows[:PAYWALL_PER_RUN]:
+        if subscriber_only(conn, it["url"], fetcher):
+            conn.execute("DELETE FROM items WHERE id = ?", (it["id"],))
+            gone += 1
+        else:
+            conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", ("free:" + it["url"], _days_ago(0)))
+    if gone:
         conn.execute("UPDATE items SET cluster = id WHERE cluster NOT IN (SELECT id FROM items)")  # lead was deleted
-        conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", (key, _days_ago(0)))
-        conn.commit()
-        if n:
-            cluster.assign(conn, days=None)
-            log(f"  removed {n} stories from {host} (paywalled)")
-        total += n
-    return total
+        cluster.assign(conn, days=None)
+        log(f"  removed {gone} subscriber-only stories")
+    conn.commit()
+    return gone
 
 
 def status_report(conn) -> str:
@@ -509,9 +531,14 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
     """Re-run the sorting and regulation rules over stored policy and regulation stories.
     Returns how many changed."""
     changed = 0
+    lead_sources = {s["name"] for s in SOURCES if s.get("page_lead")}
     # Stories stored with mojibake ("Peopleâ€™s"), before collection repaired it (feeds.unmangle).
     for it in conn.execute("SELECT id, source, title, summary FROM items").fetchall():
         title, summary = feeds.unmangle(it["title"]), feeds.unmangle(it["summary"] or "")
+        # MSIT summaries stored with the page's invisible byte-order mark and its "- " bullet
+        title, summary = title.replace("﻿", ""), summary.replace("﻿", "")
+        if it["source"] in lead_sources and summary.startswith("- "):
+            summary = summary[2:]
         if (title, summary) != (it["title"], it["summary"] or ""):
             store.update_text(conn, it["id"], title, summary)
             store.set_tags(conn, it["id"], classify.tags_for(title, summary, source=it["source"]))

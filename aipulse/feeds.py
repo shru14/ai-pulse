@@ -343,6 +343,15 @@ def msit_lead(html_bytes: bytes) -> str:
     return next((l for l in lines if len(l.split()) >= 12 and not _MSIT_TASK.match(l)), "")
 
 
+_NOT_FREE = re.compile(rb'"isAccessibleForFree"\s*:\s*"?(false|False)(?![A-Za-z])')
+
+
+def free_to_read(page: bytes) -> bool:
+    """False when the article page marks itself as needing a subscription (schema.org isAccessibleForFree,
+    the markup publishers use to tell search engines which articles are paywalled)."""
+    return not _NOT_FREE.search(page)
+
+
 # A source whose posts are read once for their opening ("page_lead"): how, when not as a blog post (article_lead)
 LEAD_READERS = {"msit": msit_lead}
 

@@ -93,7 +93,9 @@ SOURCES = [
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",
      "paged": True},
-    # The Verge is left out: its articles now sit behind a paywall, and every story here must be free to read.
+    # Many Verge articles need a subscription: each is read once and kept only when the page says it's free.
+    {"name": "The Verge AI", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "category": "news",
+     "paywall_check": True},
     {"name": "Ars Technica AI", "url": "https://arstechnica.com/ai/feed/", "category": "news", "paged": True},
     {"name": "MIT Technology Review AI", "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
      "category": "news", "paged": True},

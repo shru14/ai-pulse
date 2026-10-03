@@ -721,18 +721,31 @@ def test_stories_from_google_news_are_removed_once(tmp_path):
     assert purge_disallowed(conn, log=lambda *_: None) == 0  # runs once per database
 
 
-def test_paywalled_outlets_are_removed_once(tmp_path):
-    from aipulse.collect import purge_paywalled
+def test_only_free_articles_of_a_paywalled_outlet_are_kept(tmp_path):
+    from aipulse.collect import drop_subscriber_only
     from aipulse.sources import SOURCES
-    assert not [s for s in SOURCES if "theverge.com" in s["url"]]
+    assert [s["name"] for s in SOURCES if s.get("paywall_check")] == ["The Verge AI"]
+    paid = b'<script type="application/ld+json">{"@type":"NewsArticle","isAccessibleForFree":false}</script>'
+    free = b'<script type="application/ld+json">{"@type":"NewsArticle","isAccessibleForFree":true}</script>'
+    assert not feeds.free_to_read(paid) and feeds.free_to_read(free) and feeds.free_to_read(b"<html></html>")
     conn = store.connect(tmp_path / "t.db")
-    base = {"summary": "", "source": "E", "category": "news", "date": "2026-05-01", "tags": [], "authors": []}
-    store.insert(conn, {**base, "title": "Chip deal announced", "url": "https://www.theverge.com/news/1"})
-    store.insert(conn, {**base, "title": "Chip deal announced, says another outlet", "url": "https://e.com/1"})
-    assert purge_paywalled(conn, log=lambda *_: None) == 1
-    assert [r[0] for r in conn.execute("SELECT url FROM items")] == ["https://e.com/1"]
-    store.insert(conn, {**base, "title": "Later", "url": "https://www.theverge.com/news/2"})
-    assert purge_paywalled(conn, log=lambda *_: None) == 0  # runs once per database
+    base = {"summary": "", "source": "The Verge AI", "category": "news", "date": "2026-05-01", "tags": [], "authors": []}
+    for n in (1, 2):
+        store.insert(conn, {**base, "title": f"Chip deal {n}", "url": f"https://www.theverge.com/news/{n}"})
+    pages, read = {"https://www.theverge.com/news/1": paid, "https://www.theverge.com/news/2": free}, []
+    fetcher = lambda u: read.append(u) or pages[u]
+    assert drop_subscriber_only(conn, fetcher, log=lambda *_: None) == 1
+    assert [r[0] for r in conn.execute("SELECT url FROM items")] == ["https://www.theverge.com/news/2"]
+    assert drop_subscriber_only(conn, fetcher, log=lambda *_: None) == 0 and len(read) == 2  # each page read once
+
+
+def test_msit_summaries_lose_the_stray_mark(tmp_path):
+    conn = store.connect(tmp_path / "t.db")
+    store.insert(conn, {"title": "Pilot AI app for grocery shopping", "summary": "﻿- The price body was launched.",
+                        "url": "https://www.msit.go.kr/eng/1", "source": "Ministry of Science and ICT (Korea)",
+                        "category": "policy", "date": "2026-09-30", "tags": [], "authors": []})
+    reclassify(conn, fetcher=lambda u: b"")
+    assert conn.execute("SELECT summary FROM items").fetchone()[0] == "The price body was launched."
 
 
 def test_an_order_about_names_is_policy_not_law():
