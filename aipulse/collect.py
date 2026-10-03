@@ -536,7 +536,7 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
     for it in conn.execute("SELECT id, source, title, summary FROM items").fetchall():
         title, summary = feeds.unmangle(it["title"]), feeds.unmangle(it["summary"] or "")
         # MSIT summaries stored with the page's invisible byte-order mark and its "- " bullet
-        title, summary = title.replace("﻿", ""), summary.replace("﻿", "")
+        title, summary = title.replace("\ufeff", ""), summary.replace("\ufeff", "")
         if it["source"] in lead_sources and summary.startswith("- "):
             summary = summary[2:]
         if (title, summary) != (it["title"], it["summary"] or ""):
