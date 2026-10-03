@@ -86,11 +86,11 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 header.top{gap:10px}
 .secnav{display:flex;gap:2px;margin-right:auto;overflow-x:auto;scrollbar-width:none}
 .secnav::-webkit-scrollbar{display:none}
-.secnav a{flex:none;font:600 14px var(--body);color:var(--muted);text-decoration:none;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.secnav a{flex:none;font:600 11.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:2px;white-space:nowrap}
 .secnav a:hover{color:var(--ink);background:var(--surface)}
 .secnav a[aria-current]{color:var(--cat-c);background:var(--cat-soft)}
 .k-all{--cat-c:var(--c-all);--cat-soft:var(--c-all-soft);--cat-f:var(--f-all)}  /* All stories: light yellow */
-.brand{margin-right:8px}
+.brand{margin-right:8px;white-space:nowrap}
 .subscribe-btn.cta{background:var(--accent);border-color:var(--accent);color:var(--surface);box-shadow:0 0 0 4px var(--accent-soft)}
 .subscribe-btn.cta:hover{filter:brightness(1.08)}
 .subscribe-btn.gl-open{background:var(--ink);border-color:var(--ink);color:var(--bg)}
@@ -208,22 +208,44 @@ header.top{gap:10px}
 .gl-pop p{margin:4px 0 8px;font-size:14px;line-height:1.5}
 .gl-pop button{font:500 12px var(--mono);color:var(--accent);background:none;border:0;padding:0;cursor:pointer}
 @media (max-width:480px){.gl-head{padding:18px 16px 10px}.gl-body{padding:4px 16px 16px}}
-/* Front page: tiles. The week's biggest story, the daily email and a glossary word up top, then a tile per stream. */
+/* Front page, magazine-styled: the story of the week as a cover, the daily email and the word of the week, then
+   two streams a row, each a lead story over its drawn art and two more with thumbnails. All art is drawn here
+   (the stream's colour, its drawings, the story's logo), never the publisher's photo (theirs to license). */
 .lede{margin:18px 0 0;max-width:80ch;color:var(--muted);font-size:16px;line-height:1.55}
-.lede strong{color:var(--ink);font-weight:600}
-.bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;margin-top:20px}
-.tile{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;min-width:0}
+.lede strong{color:var(--ink);font:700 18px var(--head);letter-spacing:-.01em}
+.home-status{margin-top:6px}
+.mag{display:grid;gap:34px;margin-top:20px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:24px;min-width:0}
 .tile .label{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.08em}
 .tile-note{margin:0;color:var(--muted)}
-.tile .meta{font:12px/1.5 var(--mono);color:var(--muted);margin-top:4px}
-.hero{grid-column:span 2;grid-row:span 2;min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;
-}
-.hero .label{color:var(--cat-c,var(--muted))}
-.hero h2{font:700 clamp(26px,3.2vw,40px)/1.08 var(--head);letter-spacing:-.03em;margin:0;text-wrap:balance}
-.hero h2 a{color:var(--ink);text-decoration:none}
-.hero h2 a:hover{text-decoration:underline;text-decoration-color:var(--cat-c);text-underline-offset:4px}
-.hero .sum{margin:0;font-size:17px;-webkit-line-clamp:4;max-width:62ch}
-.sub-tile,.gl-tile{grid-column:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:14px;border:0}
+.kicker{font:500 11.5px/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chip{display:inline-block;align-self:flex-start;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:2px;background:var(--cat-f);color:#141925}
+.mag-cover{display:grid;grid-template-columns:1.35fr 1fr;border-radius:4px;overflow:hidden;background:#141925;color:#FFFFFF;min-height:330px}
+.mag-cover>.tile-note{padding:24px;color:#C9CEDA}
+.mag-cover .copy{padding:28px 30px;display:flex;flex-direction:column;justify-content:flex-end;gap:12px;min-width:0}
+.mag-cover h2{font:700 clamp(26px,2.8vw,38px)/1.1 var(--head);letter-spacing:-.025em;margin:0;text-wrap:balance}
+.mag-cover h2 a{color:#FFFFFF;text-decoration:none}
+.mag-cover h2 a:hover{text-decoration:underline;text-decoration-color:var(--cat-f);text-underline-offset:4px}
+.mag-cover .sum{margin:0;color:#C9CEDA;line-height:1.55;-webkit-line-clamp:4}
+.mag-cover .kicker{color:#A9B0C2}
+.mag-cover .reported{color:#A9B0C2}
+.mag-cover .reported a{color:#FFFFFF;text-decoration-color:#4A5266}
+.mag-cover .tag{color:#C9CEDA;border-color:#4A5266}
+.reported{font-size:13px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.reported a{text-decoration:underline;text-underline-offset:3px}
+.reported a:hover{text-decoration-color:var(--cat-f)}
+/* Drawn art: the stream's colour, its six faint drawings (as on its page's header) and the story's logo. */
+.sart{position:relative;background:var(--cat-p);overflow:hidden;color:#141925}
+.sart svg.d{position:absolute;opacity:.18}
+.sart .logo{position:absolute;left:50%;top:40%;translate:-50% -50%}
+.sart .logo .ico{width:64px;height:64px;border-radius:16px;background:#FFFFFF;border:0;color:#141925;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.sart .logo .ico svg,.sart .logo .ico img{width:38px;height:38px}
+.mag-cover .sart{min-height:260px}
+.mag-cover .sart .logo .ico{width:104px;height:104px;border-radius:26px}
+.mag-cover .sart .logo .ico svg,.mag-cover .sart .logo .ico img{width:58px;height:58px}
+.mag-cover .sart .logo .ico.mono{font-size:30px}
+.mag-row{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.sub-tile,.gl-tile{display:flex;flex-direction:column;justify-content:space-between;gap:14px;border:0}
 .sub-tile{background:var(--p-email);color:#141925}
 .sub-tile h2{font:700 26px/1.1 var(--head);letter-spacing:-.02em;margin:6px 0}
 .sub-tile p,.gl-tile p{margin:0;opacity:.9;font-size:15px}
@@ -233,17 +255,6 @@ header.top{gap:10px}
 .gl-tile b{display:block;font:700 30px/1.1 var(--head);letter-spacing:-.02em;margin:4px 0}
 .gl-tile p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .gl-tile-go{background:none;color:inherit;border:1px solid currentColor}
-.hero-art{position:relative;flex:1;min-height:170px;margin:-8px -8px 10px;border-radius:14px;background:var(--cat-p,var(--p-email));
-  display:grid;place-items:center;overflow:hidden}
-.hero-art .pulse{position:absolute;inset:0;width:100%;height:100%}
-.hero-art .pulse polyline{fill:none;stroke:rgba(20,25,37,.28);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-.hero-art .ico{position:relative;width:104px;height:104px;border-radius:26px;background:#FFFFFF;color:#141925;
-  border:0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.hero-art .ico svg,.hero-art .ico img{width:58px;height:58px}
-.hero-art .ico.mono{font-size:30px}
-.reported{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
-.reported a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
-.reported a:hover{text-decoration-color:var(--cat-c)}
 /* Word of the week: a bar a day, then the stories it came from. */
 .gl-viz{margin-top:12px}
 .viz-note{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;opacity:.75;margin:10px 0 6px}
@@ -255,31 +266,42 @@ header.top{gap:10px}
 .gl-tile .from{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.35}
 .gl-tile .from a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;opacity:.95}
 .sub-tile-go:hover,.gl-tile-go:hover{filter:brightness(1.1)}
-.sub-tile-go:focus-visible,.gl-tile-go:focus-visible,.go:focus-visible,.stream-head:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.streams-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
-.stream-tile{background:var(--cat-p);color:#141925;border:0;display:flex;flex-direction:column}
-.stream-head{display:flex;align-items:center;gap:10px;text-decoration:none}
-.stream-head h2{font:700 23px var(--head);letter-spacing:-.02em;margin:0;color:inherit;flex:1}
-.stream-head .n{font:500 12px var(--mono);color:var(--cat-c);background:var(--surface);border:0;border-radius:999px;padding:2px 9px}
-.stream-tile li .tags,.hero .tags{margin-top:6px}
-.home-status{margin-top:8px}
-.stream-tile .ico{width:36px;height:36px;background:var(--surface);color:var(--cat-c)}
-.stream-tile .ico svg{width:20px;height:20px}
-.stream-tile .desc{font-size:14px;color:inherit;opacity:.9;margin:8px 0 10px;line-height:1.4}
-.stream-tile ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;flex:1}
-.stream-tile li{background:var(--surface);border-radius:10px;padding:10px 12px}
-.stream-tile li a{color:var(--ink);font-weight:600;font-size:15px;line-height:1.3;text-decoration:none}
-.stream-tile li a:hover{text-decoration:underline;text-decoration-color:var(--cat-c);text-underline-offset:3px}
-.stream-tile .go{color:inherit}
-.stream-head{color:inherit}
-.go{display:inline-block;margin-top:12px;font:600 14px var(--body);color:var(--cat-c,var(--accent));text-decoration:none}
-.go:hover{text-decoration:underline;text-underline-offset:3px}
-.stream-tile .soon{flex:1;margin:0;font-size:15px;color:inherit;opacity:.9}
-@media (max-width:900px){.bento{grid-template-columns:1fr 1fr}.hero{min-height:280px}}
-@media (max-width:600px){.bento{grid-template-columns:1fr}.hero,.sub-tile,.gl-tile{grid-column:auto;grid-row:auto}.streams-grid{grid-template-columns:1fr}}
+.sub-tile-go:focus-visible,.gl-tile-go:focus-visible,.go:focus-visible,.stream-head:focus-visible,.lead:focus-visible,.mitem:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.mag-sections{display:grid;grid-template-columns:1fr 1fr;gap:44px 46px}
+.mag-sec{display:flex;flex-direction:column;min-width:0}
+.stream-head{display:flex;align-items:baseline;gap:10px;text-decoration:none;color:var(--ink)}
+.stream-head h2{font:700 20px var(--head);letter-spacing:.04em;text-transform:uppercase;margin:0;flex:1}
+.stream-head .n{font:500 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mag-sec .rule{width:52px;height:5px;background:var(--cat-f);margin:8px 0 10px}
+.mag-sec .desc{font-size:14px;color:var(--muted);margin:0 0 16px;line-height:1.45}
+.lead{position:relative;display:block;border-radius:4px;overflow:hidden;min-height:250px;text-decoration:none;color:#FFFFFF}
+.lead .sart{position:absolute;inset:0}
+.lead .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,25,37,0) 30%,rgba(20,25,37,.9) 80%)}
+.lead .chip{position:absolute;left:14px;top:14px}
+.lead .txt{position:absolute;left:0;right:0;bottom:0;padding:18px 20px}
+.lead .kicker{color:#D5D9E3}
+.lead h3{font:700 22px/1.2 var(--head);letter-spacing:-.015em;margin:6px 0 0;color:#FFFFFF;text-wrap:balance}
+.lead:hover h3{text-decoration:underline;text-decoration-color:var(--cat-f);text-underline-offset:4px}
+.mag-list{display:grid;gap:18px;margin-top:20px}
+.mitem{display:grid;grid-template-columns:140px 1fr;gap:16px;min-width:0}
+.thumb{position:relative;aspect-ratio:4/3;border-radius:4px;overflow:hidden;display:block}
+.thumb .sart{position:absolute;inset:0}
+.thumb .sart svg.d{scale:.6}
+.thumb .logo .ico{width:44px;height:44px;border-radius:12px}
+.thumb .logo .ico svg,.thumb .logo .ico img{width:26px;height:26px}
+.thumb .sart .logo{top:50%}
+.mitem h4{font:700 16.5px/1.3 var(--head);letter-spacing:-.01em;margin:0 0 6px}
+.mitem h4 a{color:var(--ink);text-decoration:none}
+.mitem h4 a:hover{text-decoration:underline;text-decoration-color:var(--cat-f);text-underline-offset:3px}
+.mitem p{margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mitem .tags{margin-top:6px}
+.go{display:inline-block;margin-top:16px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--cat-f);text-decoration-thickness:2px}
+.go:hover{text-decoration-color:var(--ink)}
+@media (max-width:860px){.mag-cover,.mag-row,.mag-sections{grid-template-columns:1fr}.mag-cover .sart{min-height:200px}}
+@media (max-width:480px){.mitem{grid-template-columns:104px 1fr;gap:12px}.lead{min-height:220px}.lead h3{font-size:19px}.mag-cover .copy{padding:22px 18px}}
 /* A stream's page: its name and what it holds, in its colour, then the filters and the stories. */
 .section,footer{max-width:860px;margin-inline:auto}
-.sec-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-top:18px;padding:26px 22px 20px;border-radius:18px;background:var(--cat-soft,var(--surface));
+.sec-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-top:18px;padding:26px 22px 20px;border-radius:4px;background:var(--cat-soft,var(--surface));
   border:1px solid var(--line)}
 .sec-hero{position:relative;overflow:hidden}
 :root{--art-op:.16}
@@ -287,7 +309,8 @@ header.top{gap:10px}
 .sec-hero>.art{position:absolute;inset:0;pointer-events:none;color:var(--cat-c,var(--muted))}
 .sec-hero .art svg{position:absolute;opacity:var(--art-op)}
 @media (max-width:560px){.sec-hero .art svg{scale:.6;transform-origin:center}.sec-hero .art svg:nth-child(2),.sec-hero .art svg:nth-child(5){display:none}}
-.sec-hero h2{font:700 clamp(24px,3vw,32px)/1.1 var(--head);letter-spacing:-.02em;margin:0 0 6px;color:var(--ink)}
+.sec-hero h2{font:700 clamp(24px,3vw,32px)/1.1 var(--head);letter-spacing:.03em;text-transform:uppercase;margin:0 0 6px;color:var(--ink)}
+.sec-hero h2::after{content:"";display:block;width:52px;height:5px;margin:10px auto 0;background:var(--cat-f,var(--ink))}
 .sec-hero p{margin:0 auto 10px;color:var(--muted);max-width:56ch}
 .sec-hero .status{justify-content:center}
 .sec-hero .ico{width:48px;height:48px;background:var(--surface);color:var(--cat-c,var(--ink))}
@@ -310,11 +333,11 @@ header.top{gap:10px}
 .range{flex:none;font:14px var(--body);padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 
 .day{margin-top:26px}
-.day h2{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;gap:10px;align-items:center}
+.day h2{font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:0 0 10px;display:flex;gap:10px;align-items:center}
 .day h2::after{content:"";flex:1;height:1px;background:var(--line)}
 .items{display:flex;flex-direction:column;gap:10px}
 /* Cards: a stripe in the category's colour on the left, the label, then the body. */
-.item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px 18px;display:grid;grid-template-columns:104px 1fr;gap:4px 14px;box-shadow:inset 3px 0 0 var(--cat-c,var(--line));transition:border-color .15s}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:14px 16px 12px 18px;display:grid;grid-template-columns:104px 1fr;gap:4px 14px;box-shadow:inset 3px 0 0 var(--cat-c,var(--line));transition:border-color .15s}
 .item:hover{border-color:var(--muted)}
 .item.tool,.k-tool{--cat-c:var(--c-tool);--cat-soft:var(--c-tool-soft)} .item.news,.k-news{--cat-c:var(--c-news);--cat-soft:var(--c-news-soft)}
 .item.policy,.k-policy{--cat-c:var(--c-policy);--cat-soft:var(--c-policy-soft)} .item.research,.k-research{--cat-c:var(--c-research);--cat-soft:var(--c-research-soft)}
@@ -340,13 +363,13 @@ header.top{gap:10px}
 .readmore:hover{text-decoration:underline;text-underline-offset:3px}
 .readmore:focus-visible,.foot .src:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 12px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font:12px var(--mono);color:var(--muted)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 12px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font:12px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .foot .src{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:500;text-decoration:none;min-width:0}
 .foot .src:hover{color:var(--accent)}
 .foot .arr{transition:transform .15s}
 .foot .src:hover .arr{transform:translateX(3px)}
 @media (prefers-reduced-motion: reduce){.item,.foot .arr{transition:none}}
-.cat{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;justify-self:start;max-width:100%;overflow-wrap:anywhere}
+.cat{font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:2px;justify-self:start;max-width:100%;overflow-wrap:anywhere}
 .cat.tool{color:var(--c-tool);background:var(--c-tool-soft)}
 .cat.news{color:var(--c-news);background:var(--c-news-soft)}
 .cat.policy{color:var(--c-policy);background:var(--c-policy-soft)}
@@ -373,7 +396,7 @@ header.top{gap:10px}
 .life li.now{font-weight:600}
 .life li.ended{color:var(--c-reg)}
 .life .when{color:var(--muted);margin-left:5px;font-weight:400}
-.item h3{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.25;margin:0;text-wrap:balance}
+.item h3{font-family:var(--head);font-weight:700;font-size:19px;line-height:1.25;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .item h3 a{color:var(--ink);text-decoration:none}
 .item h3 a:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
 .item p{margin:0;color:var(--ink);opacity:.85;max-width:68ch}
@@ -409,9 +432,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 .ico.sec svg{fill:var(--cat-f,#FFFFFF);stroke:none}
 .k-tool{--cat-f:var(--f-tool);--cat-p:var(--p-tool)}.k-news{--cat-f:var(--f-news);--cat-p:var(--p-news)}.k-research{--cat-f:var(--f-research);--cat-p:var(--p-research)}
 .k-regulation{--cat-f:var(--f-reg);--cat-p:var(--p-reg)}.k-policy{--cat-f:var(--f-policy);--cat-p:var(--p-policy)}.k-infra{--cat-f:var(--f-infra);--cat-p:var(--p-infra)}
-.stream-tile .ico.sec,.sec-hero .ico.sec{background:#141925}
-.stream-tile .ico.sec{width:42px;height:42px;border-radius:12px}
-.stream-tile .ico.sec svg{width:28px;height:28px}
+.sec-hero .ico.sec{background:#141925}
 .sec-hero .ico.sec svg{width:32px;height:32px}
 </style>
 </head><body>
@@ -510,23 +531,23 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   </dialog>
   <!-- Front page: tiles. The week's biggest story, the daily email, a glossary word, then a tile per stream. -->
   <section class="home" id="front" hidden>
-    <p class="lede"><strong>Your briefing on what's happening in AI.</strong><br>AI Pulse reads company blogs,
-      newsrooms, research archives and government sites, sorts every story into one of six streams and links
-      each card to the original reporting.</p>
+    <p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
     <div class="status home-status" id="home-status">Loading feed…</div>
-    <div class="bento">
-      <article class="tile hero" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
-      <div class="tile sub-tile">
-        <div><span class="label">Daily email</span><h2>The 10 AI stories that mattered, every morning</h2>
-          <p>Free. Pick your streams and make it yours: more of what you like, none of what you'd rather skip.</p></div>
-        <button class="sub-tile-go" type="button" data-open="subscribe">Subscribe</button>
+    <div class="mag">
+      <article class="mag-cover" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
+      <div class="mag-row">
+        <div class="tile sub-tile">
+          <div><span class="label">Daily email</span><h2>The 10 AI stories that mattered, every morning</h2>
+            <p>Free. Pick your streams and make it yours: more of what you like, none of what you'd rather skip.</p></div>
+          <button class="sub-tile-go" type="button" data-open="subscribe">Subscribe</button>
+        </div>
+        <div class="tile gl-tile">
+          <div><span class="label" id="gl-label">Word of the week</span><b id="gl-word">Glossary</b><p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p>
+            <div class="gl-viz" id="gl-viz"></div></div>
+          <button class="gl-tile-go" type="button" data-open="glossary">Open the glossary</button>
+        </div>
       </div>
-      <div class="tile gl-tile">
-        <div><span class="label" id="gl-label">Word of the week</span><b id="gl-word">Glossary</b><p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p>
-          <div class="gl-viz" id="gl-viz"></div></div>
-        <button class="gl-tile-go" type="button" data-open="glossary">Open the glossary</button>
-      </div>
-      <div class="streams-grid" id="stream-tiles"></div>
+      <div class="mag-sections" id="stream-tiles"></div>
     </div>
   </section>
 
@@ -1134,62 +1155,83 @@ function storyTags(it, max){
   shownTags(it).filter(t => !places.has(t)).slice(0, max).forEach(t => { const b = el("button","tag","#"+t); b.type = "button"; b.addEventListener("click", () => searchAll(t)); tags.append(b); });
   return tags;
 }
+// Drawn art for a story: its stream's colour and drawings (as on the stream's page) and its logo (cardIcon).
+function storyArt(it){
+  const a = el("div","sart");
+  a.innerHTML = heroArt(it.category).replaceAll("<svg ", '<svg class="d" ');
+  const logo = el("span","logo"); logo.append(cardIcon(it)); a.append(logo);
+  return a;
+}
+const longDate = it => new Date(it.date + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"long", year:"numeric"});
+function kicker(it){
+  const places = (it.jurisdictions || []).filter(c => !c.startsWith("US-")).slice(0, 3);
+  return el("span","kicker", [...places, longDate(it), it.source || domainOf(it.url)].join(" · ")
+    + (outlets(it) > 1 ? " · " + outlets(it) + " sources" : ""));
+}
 function renderHome(){
   const hero = $("hero"), tiles = $("stream-tiles");
   if(!HOME.by){
-    hero.className = "tile hero";
+    hero.className = "mag-cover";
     hero.replaceChildren(el("p","tile-note", HOME.error ? "Couldn't load this week's stories. Try reloading the page." : "Loading this week's stories…"));
     return;
   }
   const week = CATS.flatMap(c => HOME.by[c]).sort(byWeight), top = week[0];
   hero.replaceChildren();
   if(top){
-    hero.className = "tile hero k-" + top.category;
-    const h = el("h2"); h.append(storyLink(top));
-    // Cover art drawn here, not the publisher's photo (theirs to license): the story's logo (else its country or
-    // topic) on a band in its stream's colour, over the AI Pulse pulse line.
-    const art = el("div","hero-art");
-    art.innerHTML = '<svg class="pulse" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">'
-      + '<polyline points="0,70 90,70 120,70 140,25 170,105 195,45 215,70 400,70"/></svg>';
-    art.append(cardIcon(top));
-    hero.append(art, el("span","label","Story of the week · " + STREAM_NAME[top.category]), h);
-    if(top.summary) hero.append(el("p","sum", top.summary));
-    hero.append(storyMeta(top));
-    // the outlets that reported it, each linking to its own version
+    // The cover: the story of the week over its drawn art, with who else reported it and its tags.
+    hero.className = "mag-cover k-" + top.category;
+    const copy = el("div","copy"), h = el("h2");
+    h.append(storyLink(top));
+    copy.append(el("span","chip","Story of the week · " + STREAM_NAME[top.category]), h);
+    if(top.summary) copy.append(el("p","sum", top.summary));
+    copy.append(kicker(top));
     const others = (top.also || []).filter((o, i, a) => a.findIndex(x => x.source === o.source) === i).slice(0, 8);
     if(others.length){
       const by = el("div","reported", "Also reported by ");
       others.forEach(o => { const a = el("a", null, o.source || domainOf(o.url)); a.href = o.url; a.target = "_blank"; a.rel = "noopener"; by.append(a); });
-      hero.append(by);
+      copy.append(by);
     }
-    hero.append(storyTags(top, 4));
+    copy.append(storyTags(top, 4));
+    hero.append(storyArt(top), copy);
   } else hero.append(el("p","tile-note","No stories this week yet."));
   renderWord();
-  // Each stream, then the section being designed (All stories is in the header).
+  // Each stream: its name, count and description, then its three biggest stories of the week, newest first.
   tiles.replaceChildren();
   const span = {7:"in the last 7 days", 30:"in the last 30 days", 90:"in the last 90 days", 0:"in total"}[state.range];
-  [...CATS, ...SOON].forEach(c => {
-    const name = STREAM_NAME[c];
-    const t = el("section","tile stream-tile k-" + c);
+  CATS.forEach(c => {
+    const name = STREAM_NAME[c], sec = el("section","mag-sec k-" + c);
     const head = el("a","stream-head"); head.href = "#" + c; head.dataset.go = c;
-    head.append(sectionIcon(c), el("h2", null, name));
-    // how many stories it holds for the chosen range, as the old stream cards showed
-    const n = SOON.has(c) ? null : state.counts[c];
-    const badge = el("span","n", SOON.has(c) ? "Soon" : n == null ? "…" : n.toLocaleString());
+    const n = state.counts[c];
+    const badge = el("span","n", n == null ? "…" : n.toLocaleString() + (n === 1 ? " story" : " stories"));
     if(n != null) badge.title = n.toLocaleString() + (n === 1 ? " story " : " stories ") + span;
-    head.append(badge);
-    t.append(head, el("p","desc", SECTION_DESC[c]));
-    if(SOON.has(c)) t.append(el("p","soon tile-note","Coming soon: news, research and policy on these subjects, from public sources worldwide."));
+    head.append(el("h2", null, name), badge);
+    sec.append(head, el("div","rule"), el("p","desc", SECTION_DESC[c]));
+    // the week's three most reported, shown newest first (picked by importance, read in order of date)
+    const list = HOME.by[c].filter(it => !top || it.id !== top.id).slice(0, 3)
+      .sort((a, b) => b.date.localeCompare(a.date) || byWeight(a, b));
+    if(!list.length) sec.append(el("p","tile-note","Nothing new this week."));
     else {
-      const list = HOME.by[c].filter(it => !top || it.id !== top.id).slice(0, 2);
-      const ul = el("ul");
-      list.forEach(it => { const li = el("li"); li.append(storyLink(it), storyMeta(it), storyTags(it, 3)); ul.append(li); });
-      if(list.length) t.append(ul); else t.append(el("p","tile-note","Nothing new this week."));
+      const first = list[0], lead = el("a","lead");
+      lead.href = first.url; lead.target = "_blank"; lead.rel = "noopener";
+      const txt = el("div","txt"); txt.append(kicker(first), el("h3", null, first.title));
+      lead.append(storyArt(first), el("div","shade"), el("span","chip", CAT_LABEL[c]), txt);
+      const more = el("div","mag-list");
+      list.slice(1).forEach(it => {
+        const row = el("article","mitem"), th = el("a","thumb");
+        th.href = it.url; th.target = "_blank"; th.rel = "noopener"; th.tabIndex = -1; th.setAttribute("aria-hidden", "true");
+        th.append(storyArt(it));
+        const d = el("div"), h4 = el("h4"); h4.append(storyLink(it));
+        d.append(h4, kicker(it));
+        if(it.summary) d.append(el("p", null, it.summary));
+        d.append(storyTags(it, 3));
+        row.append(th, d); more.append(row);
+      });
+      sec.append(lead, more);
     }
-    const all = el("a","go", (SOON.has(c) ? "About this section" : "All " + name) + " →");
+    const all = el("a","go","All " + name + " →");
     all.href = "#" + c; all.dataset.go = c;
-    t.append(all);
-    tiles.append(t);
+    sec.append(all);
+    tiles.append(sec);
   });
 }
 
