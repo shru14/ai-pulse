@@ -406,7 +406,7 @@ def resummarize(conn, log=print) -> int:
 
 
 def stream_of(src: dict, title: str, summary: str, url: str) -> str:
-    """A new story's stream: an infrastructure source's are Infrastructure & sustainability; an Industry story
+    """A new story's stream: an infrastructure source's are Infra & climate; an Industry story
     whose headline is about AI's data centres or footprint moves there too (classify.infra_story)."""
     if src["category"] == "infra":
         return "infra"

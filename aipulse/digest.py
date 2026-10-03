@@ -36,7 +36,7 @@ KIND = {
     "event": ("Event", "#e0f7fa", "#00737a"),
 }
 STREAM_TAG = {"releases": "Release", "research": "Research paper", "regulation": "Tracker", "policy": "Policy",
-              "infra": "Infrastructure"}
+              "infra": "Infra & climate"}
 # What each stream holds, in a line under its heading, and its colour on the site.
 SECTION_NOTE = {
     "releases": "New models, products and open-source launches.",
@@ -241,15 +241,16 @@ _OWN_BLOGS = {s["name"] for s in SOURCES if s["category"] == "tool"}  # labs' an
 TAGS = 5  # tags shown per story in the email
 
 
-def story_tags(c: dict) -> list[str]:
+def story_tags(c: dict, in_stream: bool = False) -> list[str]:
     """A story's tags as the site shows them, countries first (then companies and topics), so a reader sees at a
-    glance where and who a story is about: tracker cards' countries, then the story's own tags."""
+    glance where and who a story is about: tracker cards' countries, then the story's own tags. `in_stream`: listed
+    under its own stream, where an infrastructure story leaves out the stream's name."""
     places = ["International" if j == "INTL" else jurisdictions.JURISDICTIONS.get(j, (j,))[0]
               for j in c.get("jurisdictions") or []]
     # worked out with the current rules (classify.tags_for), so the email matches the site after its next re-sort
     tags = [t for t in classify.tags_for(c.get("title") or "", c.get("summary") or "", source=c.get("source") or "") if t not in ("Research", "Study Report")]
-    # Infrastructure & sustainability right after the places, so a Research or Policy story about it shows the tag
-    infra = [classify.INFRA_TAG] if classify.INFRA_TAG in tags else []
+    # Infra & climate right after the places, so a Research or Policy story about it shows the tag
+    infra = [classify.INFRA_TAG] if classify.INFRA_TAG in tags and not (in_stream and c.get("category") == "infra") else []
     ordered = (places + [t for t in tags if t in brief._PLACE_TAGS] + infra
                + [t for t in tags if t not in brief._PLACE_TAGS and t != classify.INFRA_TAG])
     return list(dict.fromkeys(ordered))[:TAGS]
@@ -410,9 +411,9 @@ def _new_stream(day: date, streams: list[str]) -> str:
     if day > NEW_STREAM_UNTIL:
         return ""
     if "infra" in streams:
-        return ("New: Infrastructure & sustainability, AI's data centres and the power, water and land they draw on, "
+        return ("New: Infra & climate, AI's data centres and the power, water and land they draw on, "
                 "is now part of your email.")
-    return ("New on AI Pulse: Infrastructure & sustainability, AI's data centres and the power, water and land they "
+    return ("New on AI Pulse: Infra & climate, AI's data centres and the power, water and land they "
             "draw on. Add it with “Change my streams and choices” at the bottom of this email.")
 
 
@@ -507,12 +508,12 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
             lines.append(f"  {note}")
             heads = f'<div style="font-size:13px;color:{GREY}">{escape(note)}</div>'
         else:
-            lines += [f"  • {c['title']} {c['url']}" + (f"  ({' '.join('#' + t for t in story_tags(c))})" if story_tags(c) else "")
+            lines += [f"  • {c['title']} {c['url']}" + (f"  ({' '.join('#' + t for t in story_tags(c, True))})" if story_tags(c, True) else "")
                       for c in rest[:HEADLINES]]
             heads = "".join(f'<div style="margin:0 0 7px;line-height:1.35"><a href="{escape(c["url"])}" style="color:{INK};'
                             f'font-size:14px;text-decoration:none">{escape(c["title"])}</a>'
                             + (f'<div style="font-size:11.5px;color:{GREY};margin-top:1px">'
-                               f'{escape(" · ".join("#" + t for t in story_tags(c)))}</div>' if story_tags(c) else "")
+                               f'{escape(" · ".join("#" + t for t in story_tags(c, True)))}</div>' if story_tags(c, True) else "")
                             + '</div>' for c in rest[:HEADLINES])
         if extra > 0:
             lines.append(f"  +{extra} more: {more}" + (f" (incl. {side_words})" if side_words else ""))

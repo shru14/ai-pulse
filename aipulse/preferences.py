@@ -29,7 +29,7 @@ _SKIP = {"Research"}  # every paper carries it: the Research stream is the choic
 THEMES = {
     "Models & products": ["Agents", "Open Models", "Reasoning", "Multimodal", "Voice", "Image & Video Generation",
                           "Coding Tools", "Robotics", "Benchmarks", "Training Data"],
-    classify.INFRA_TAG: [classify.INFRA_TAG, "Chips", "Compute & Data Centers", "Energy", "Climate"],
+    classify.INFRA_TAG: [classify.INFRA_TAG, *classify.INFRA_TOPICS, "Chips", "Compute & Data Centers", "Energy", "Climate"],
     "Business & work": ["Funding", "M&A", "IPO", "Jobs & Labor"],
     "Law & regulation": ["Law", "Regulation", "AI Act", "Standards", "Governance", "Copyright", "Privacy",
                          "Antitrust", "Export Controls"],
@@ -41,7 +41,7 @@ THEMES = {
 }
 THEME_OF = {topic: theme for theme, topics in THEMES.items() for topic in topics}
 # Themes renamed since readers chose them: a saved choice of the old name still means the new theme.
-RENAMED = {"Chips, compute & energy": classify.INFRA_TAG}
+RENAMED = {"Chips, compute & energy": classify.INFRA_TAG, "Infrastructure & sustainability": classify.INFRA_TAG}
 
 # Places are offered as continents (UN M49 geoscheme), not a long list of countries; every country can still be
 # found with the form's search. Built from the site's own regions: Americas and Asia-Pacific split, the Middle
@@ -93,6 +93,7 @@ def labels(c: dict) -> set[str]:
     tags -= _SKIP
     if c.get("category") == "infra":  # the stream's every story counts as the theme, tag or not
         tags.add(classify.INFRA_TAG)
+    tags |= {old for old, new in classify.INFRA_SAYS.items() if new in tags}  # saved choices of the topics these replaced
     wider = {THEME_OF.get(t) for t in tags} | {CONTINENT_OF.get(t) for t in tags}
     wider |= {old for old, new in RENAMED.items() if new in wider}
     return tags | (wider - {None, ""}) | ({story_type(c)} - {None})

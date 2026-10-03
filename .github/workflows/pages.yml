@@ -79,7 +79,7 @@ jobs:
         if: github.event.schedule != '25,55 * * * *'
         run: python -m aipulse --db aipulse.db reclassify
 
-      # A new stream's history back to 2023 (Infrastructure & sustainability, added 3 Oct 2026): its sources'
+      # A new stream's history back to 2023 (Infra & climate, added 3 Oct 2026): its sources'
       # archives, about 12 minutes a full run, carrying on where the last run stopped until every source is done.
       - name: History for a new stream
         if: github.event.schedule != '25,55 * * * *'

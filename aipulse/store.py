@@ -280,11 +280,15 @@ def _card_where(category=None, q=None, days=None, place=None, eu_members=(), cod
             cond = f"({cond} OR (',' || i.jurisdictions || ',') LIKE '%,EU,%')"
         where.append(cond)
     if codes:  # a region: any of its places, as a tracker code or as a news story's country tag ("India")
+        from .classify import paper_homes
         from .jurisdictions import JURISDICTIONS
         names = [JURISDICTIONS[c][0] for c in codes if c in JURISDICTIONS]
+        # a paper names no place: it counts where its scholar or company is based
+        homes = [t for t, home in paper_homes().items() if home in names]
         where.append("(" + " OR ".join(["(',' || i.jurisdictions || ',') LIKE ?"] * len(codes)
-                                       + ["(',' || i.tags || ',') LIKE ?"] * len(names)) + ")")
-        args += [f"%,{c},%" for c in codes] + [f"%,{n},%" for n in names]
+                                       + ["(',' || i.tags || ',') LIKE ?"] * len(names)
+                                       + ["(i.category = 'research' AND (',' || i.tags || ',') LIKE ?)"] * len(homes)) + ")")
+        args += [f"%,{c},%" for c in codes] + [f"%,{n},%" for n in names] + [f"%,{t},%" for t in homes]
     match = fts_query(q)
     if match:
         # A card matches if any outlet's version of the story matches.

@@ -1049,6 +1049,14 @@ def test_every_place_has_a_region_and_the_filter_uses_it(tmp_path):
     pick = lambda region: sorted(c["title"] for c in store.cards(conn, "regulation", codes=J.region_codes(region))[0])
     assert pick("europe") == ["AI rule EU", "AI rule FR"]
     assert pick("americas") == ["AI rule US-CA"] and pick("asia") == ["AI rule JP"]
+    # a paper names no place: it counts where its scholar or company is based
+    paper = {**base, "category": "research", "jurisdictions": []}
+    store.insert(conn, {**paper, "title": "A paper by Max Welling", "url": "https://arxiv.org/abs/1", "tags": ["Max Welling", "Research"]})
+    store.insert(conn, {**paper, "title": "A Qwen paper", "url": "https://arxiv.org/abs/2", "tags": ["Alibaba", "Research"]})
+    conn.commit()
+    papers = lambda region: sorted(c["title"] for c in store.cards(conn, "research", codes=J.region_codes(region))[0])
+    assert papers("europe") == ["A paper by Max Welling"] and papers("asia") == ["A Qwen paper"]
+    assert not [n for n, _ in __import__("aipulse.sources").sources.PROFESSORS if n not in classify.paper_homes()]
 
 
 def test_oecd_ai_bodies_become_body_cards():
@@ -2077,6 +2085,14 @@ def test_infrastructure_stories_are_about_ai_s_own_footprint():
     assert classify.INFRA_TAG in classify.tags_for("S. 4214: Artificial Intelligence Data Center Moratorium Act", "")
     assert classify.INFRA_TAG in classify.tags_for("Cooling at scale", "We study water use in hyperscale data centres.")
     assert classify.INFRA_TAG not in classify.tags_for("Privacy-utility trade-offs in LLM training", "A better utility bound.")
+    # what each infrastructure story is about, in place of the general tags that only repeat the stream
+    tags = classify.tags_for("Data center guzzled 30 million gallons of water, and nobody noticed", "")
+    assert "Water" in tags and "Compute & Data Centers" not in tags
+    assert "Land & local pushback" in classify.tags_for("Residents oppose new AI data centre near farmland", "")
+    assert "Water" not in classify.tags_for("Water polo team uses AI to plan plays", "")  # not about AI's infrastructure
+    from aipulse import preferences
+    story = {"title": "Texas halts data center connections to power grid", "summary": "", "source": "E", "category": "infra"}
+    assert {"Power & grid", "Energy", "Compute & Data Centers", "Infrastructure & sustainability"} <= preferences.labels(story)
 
 
 def test_infrastructure_stories_have_their_own_stream():
