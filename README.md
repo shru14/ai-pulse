@@ -37,8 +37,9 @@ runs offline.
 1. **robots.txt must allow us.** It's checked before every request (`feeds.allowed`); official APIs whose terms allow programmatic use are the only exception (arXiv, Wikidata, congress.gov, jsDelivr).
 2. **Terms must allow** showing a headline, a short description and a link.
 3. **No workarounds:** nothing behind a login, bot check or rate limit. Sites that block automated readers (xAI's and Perplexity's news pages, iso.org) aren't read.
-4. **Only what's needed:** headline, short description, date and link. No personal data from records.
-5. **Credit and non-commercial use**, as the licences below require.
+4. **Free to read:** every story links to an article anyone can read without paying; a story that needs a subscription is left out (The Verge's pages are checked for the paywall mark each publisher gives search engines).
+5. **Only what's needed:** headline, short description, date and link. No personal data from records.
+6. **Credit and non-commercial use**, as the licences below require.
 
 Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 

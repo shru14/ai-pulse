@@ -393,6 +393,7 @@ _actions = {k: re.compile("|".join(v), re.I) for k, v in ACTIONS.items()}
 # "hasn't passed a law" or "urges China to adopt a law" is not a law being adopted.
 _not_adopted = re.compile(r"n't|\bnot\b|\bfail(s|ed)? to\b|\burg(e|es|ed|ing)\b|\bcalls? (on|for)\b|\basks?\b|"
                           r"\bpush(es)? for\b|\bwithout\b", re.I)
+_naming = re.compile(r"\bto (call|rename|refer to|stop calling|use the (word|term|name))\b", re.I)
 _lobbying = re.compile(r"\b(asks?|urg(e|es|ed|ing)|submissions?|calls? (on|for)|push(es)? for|lobb\w*|"
                        r"letter to)\b", re.I)
 # A lawsuit only counts as enforcement when a public authority brings it.
@@ -416,6 +417,10 @@ def regulatory_action(title: str) -> str | None:
         # Negations count only before the action: "hasn't passed a law", "urge China to adopt",
         # but not "establishes AI cabinet amid calls for greater regulation".
         if action == "law" and _not_adopted.search(title[: m.end()]):
+            continue
+        # "Trump orders US government to call AI 'Super Intelligence'": an order about what the
+        # government calls something regulates nothing.
+        if action == "law" and _naming.search(title[m.start():]):
             continue
         # "OpenAI, Anthropic ask Australia to ... propose", "My submission to the consultation":
         # lobbying a government, not a government proposing.

@@ -486,7 +486,7 @@ function render(){
   chip.hidden = state.cat === "all";
   if(!chip.hidden){ chip.textContent = STREAM_NAME[state.cat]+" ✕"; chip.setAttribute("aria-label", "Show all streams, not just "+STREAM_NAME[state.cat]); }
   $("range").value = String(state.range);
-  CATS.forEach(c => $("n-"+c).textContent = state.counts[c] ?? 0);
+  CATS.forEach(c => $("n-"+c).textContent = state.counts[c] ?? (state.loading ? "…" : 0));
   const tracker = state.cat==="regulation";
   renderPlaceBar(REGION_TABS.has(state.cat));
   const list = state.items;  // already filtered, grouped and sorted by the server
@@ -717,23 +717,25 @@ async function load(reset){
 // and the page filters, searches and pages it here, answering with what /api/items would.
 const STATIC = document.documentElement.dataset.static === "1";
 let staticData = null;
-let archiveLoaded = false;
+// Each file is fetched once: loads that overlap (a tab or search changed while it downloads) wait for
+// the same download instead of each adding the archive's cards again.
+let dataLoading = null, archiveLoading = null;
 async function fetchItems(params){
   if(!STATIC) return (await fetch("api/items?"+params)).json();
-  if(!staticData){
-    const r = await fetch("data.json", {cache:"no-cache"});
+  dataLoading ??= fetch("data.json", {cache:"no-cache"}).then(r => {
     if(!r.ok) throw new Error("data.json: "+r.status);
-    staticData = await r.json();
-  }
+    return r.json();
+  }).then(d => { staticData = d; });
+  // A failed download is tried again by the next load.
+  try{ await dataLoading; }catch(e){ dataLoading = null; throw e; }
   // data.json holds about the last 90 days; "All time" also needs the yearly archive files.
-  if(!+params.get("days") && !archiveLoaded && (staticData.archive || []).length){
-    const years = await Promise.all(staticData.archive.map(async a => {
+  if(!+params.get("days") && (staticData.archive || []).length){
+    archiveLoading ??= Promise.all(staticData.archive.map(async a => {
       const r = await fetch(a.file, {cache:"no-cache"});
       if(!r.ok) throw new Error(a.file+": "+r.status);
       return r.json();
-    }));
-    staticData.cards = staticData.cards.concat(...years);
-    archiveLoaded = true;
+    })).then(years => { staticData.cards = staticData.cards.concat(...years); });
+    try{ await archiveLoading; }catch(e){ archiveLoading = null; throw e; }
   }
   return staticPayload(staticData, params);
 }
@@ -821,6 +823,8 @@ function renderStatus(){
   const last = state.status && state.status.lastRun;
   const when = t => new Date(t).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
   s.replaceChildren();
+  // Nothing has arrived yet: say so, a row of zeros would read as an empty site.
+  if(state.loading && state.counts.all === undefined){ s.append(el("div", null, "Loading…")); return; }
   const l1 = el("div"); l1.append(el("b",null,String(n)), document.createTextNode(
     (n===1 ? " story " : " stories ") + (state.q.trim() ? "matching your search " : "") + span));
   const l2 = el("div", null, last ? "Last update "+when(last) : "Not collected yet");
