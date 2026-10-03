@@ -393,6 +393,18 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
     return text, html
 
 
+def _meme(cards: list[dict], day: date) -> tuple[list[str], str]:
+    """The meme of the day (memes.py): a joke format drawn in HTML, filled from the day's stories; none on a day
+    whose stories can't fill one."""
+    from . import memes
+    meme = memes.of_the_day(cards, day)
+    if not meme:
+        return [], ""
+    return memes.text(meme), (f'<div style="margin:0 0 14px"><div style="font-size:11px;font-weight:bold;letter-spacing:2px;'
+                              f'text-transform:uppercase;color:{HEADLINE};margin-bottom:6px">Meme of the day</div>'
+                              f'{memes.html(meme)}</div>')
+
+
 def _left_note(prefs: dict, left: list[dict]) -> str:
     """The line telling a reader what their email left out, as they asked (their own picks are marked in place)."""
     from . import preferences
@@ -451,7 +463,9 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     news = _new_stream(day, streams)
     # In order: the count, the word of the day, the full email, then the stories
     word_text, word_html = _word(cards, day, streams, prefs, [_biggest(by_stream, streams), top, todays])
+    meme_text, meme_html = _meme(cards, day)
     lines = [hello, "", intro, *([made_for] if made_for else []), *([news] if news else []), "", *word_text, "",
+             *([*meme_text, ""] if meme_text else []),
              f"Want everything? The full email, every story of the day in one table: {everything}",
              *([quiet] if quiet else []), "", title]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
@@ -460,7 +474,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
             + (f'<p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:{GREY}">{escape(made_for)}</p>' if made_for else "")
             + (f'<p style="margin:8px 0 0;font-size:13px;line-height:1.5;background:#e3f6d5;color:#2b5d0a;padding:8px 10px;'
                f'border-radius:4px">{escape(news)}</p>' if news else "")
-            + word_html
+            + word_html + meme_html
             + f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
               f'Want everything? See the full email: every story of the day in one table →</a></p>'
             + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")

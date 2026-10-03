@@ -77,6 +77,7 @@ def main():
     dg.add_argument("--layout", choices=["short", "full"], default="short",
                     help="short (the daily email): the ten that mattered most, then headlines; full: every story in one table")
     sub.add_parser("glossary", help="acronyms recent stories use often that the glossary doesn't explain yet")
+    sub.add_parser("memes", help="ask Gemini (GEMINI_API_KEY, free tier) for last week's meme once and keep it")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
 
@@ -157,6 +158,13 @@ def main():
         cluster.assign(conn, days=None)
         tracked = conn.execute("SELECT jurisdiction, stage, COUNT(*) FROM bills GROUP BY 1, 2 ORDER BY 1, 2").fetchall()
         print("Bills changed stage: " + "; ".join(f"{label}: {results.get(k, 'skipped')}" for k, label in BILL_SOURCES) + ". Tracking: " + ", ".join(f"{j} {s} {n}" for j, s, n in tracked))
+    elif a.cmd == "memes":
+        from . import memegen
+        conn = store.connect(a.db)
+        cards, _ = store.cards(conn, days=16, limit=10**6)
+        memegen.prepare(conn, cards, make=True)
+        from . import memes
+        print("Meme of the week:", "by Gemini" if any(k[0] == "week" for k in memes.GENERATED) else "rule-based")
     elif a.cmd == "build":
         from .static import build
         print(f"Wrote {build(store.connect(a.db), a.out)} cards to {a.out}/")
@@ -183,6 +191,8 @@ def main():
         conn = store.connect(a.db)
         # The day, and the two weeks before it (what a usual day looks like).
         cards, _ = store.cards(conn, days=(date.today() - day).days + quality.HISTORY_DAYS + 2, limit=10**6)
+        from . import memegen
+        memegen.prepare(conn, cards, day=day, make=True)  # the day's meme by Gemini, if GEMINI_API_KEY is set
         by_stream = digest.by_streams(cards, streams, day)
         counts = {x: len(v) for x, v in by_stream.items()}
         for c in digest.left_out(cards, streams, day):

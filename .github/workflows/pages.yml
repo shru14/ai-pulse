@@ -85,6 +85,14 @@ jobs:
         if: github.event.schedule != '25,55 * * * *'
         run: python -m aipulse --db aipulse.db history --stream infra --minutes 12
 
+      # Gemini (free tier, the project's only AI model, for memes only) writes last week's meme once; it is kept in the
+      # database, so later runs reuse it. Without the secret, or on any error, the rule-based meme is used.
+      - name: Meme of the week
+        continue-on-error: true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python -m aipulse --db aipulse.db memes
+
       - name: Fold the write-ahead log into the database file
         if: always()
         run: python -c "import sqlite3; c = sqlite3.connect('aipulse.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.execute('PRAGMA journal_mode=DELETE'); c.close()"

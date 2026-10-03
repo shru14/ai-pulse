@@ -14,7 +14,7 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, classify, digest, glossary, jurisdictions, preferences, rss, store
+from . import brands, classify, digest, glossary, jurisdictions, memegen, memes, photos, preferences, rss, store
 from . import subscribers
 from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
@@ -55,6 +55,9 @@ def build(conn, out: str | Path) -> int:
         for src in icons:
             shutil.copy(brands.ICON_DIR / Path(src).name, out / src)
     shutil.copytree(TEMPLATE.parent / "fonts", out / "fonts")  # the page's own fonts (no Google Fonts)
+    shutil.copytree(TEMPLATE.parent / "memes", out / "memes")  # the memes' cartoons (ours; the email links them here)
+    shutil.copytree(TEMPLATE.parent / "photos", out / "photos")  # the stories' photos (Wikimedia Commons, credited)
+    (out / "photos" / "credits.html").write_text(photos.credits_page(), encoding="utf-8")
     (out / "feeds").mkdir()
     for name in rss.FEEDS:
         (out / "feeds" / f"{name}.xml").write_bytes(rss.feed_xml(name, cards))
@@ -93,11 +96,13 @@ def build(conn, out: str | Path) -> int:
             "failingSources": [h for h in health if h["failing"]]}
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
     (out / "glossary.json").write_text(json.dumps(glossary.payload(cards, today), separators=(",", ":")), encoding="utf-8")
+    memegen.prepare(conn, cards, today)  # the week's Gemini meme, if the "memes" step made one (no call here)
+    (out / "meme.json").write_text(json.dumps(memes.payload(cards, today), separators=(",", ":")), encoding="utf-8")
     (out / "tags.json").write_text(json.dumps(preferences.options(cards, today), separators=(",", ":")), encoding="utf-8")
 
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
-    page = subscribers.fill(page)
+    page = photos.fill(subscribers.fill(page))
     (out / "index.html").write_text(page, encoding="utf-8")
     (out / ".nojekyll").write_text("")
     return len(cards)

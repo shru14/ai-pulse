@@ -89,6 +89,7 @@ jobs:
           DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
           DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
           DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the confirmed readers from the sign-up web app
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}  # the day's meme captions (free tier; rule-based without it)
         run: |
           set +e
           if [ "${{ inputs.sample }}" = "true" ]; then

@@ -8,9 +8,9 @@ them into six streams and links every card to the original.
 **Version 2** (3 October 2026): a magazine-styled site, the sixth stream (Infra & climate), the daily email and
 official records from 14 countries. Version 1 (27 September 2026) had five streams and five parliaments.
 
-Only what is legal to collect and publicly accessible is used. No AI model, paid API or billed service:
-summaries are the publishers' own text, sorting is keyword rules, the glossary is written by hand and translation
-runs offline.
+Only what is legal to collect and publicly accessible is used. No paid API or billed service, and no AI model for the
+news itself: summaries are the publishers' own text, sorting is keyword rules, the glossary is written by hand and
+translation runs offline. The one exception is the memes' captions, written by Google's Gemini on its free tier (below).
 
 ## Streams
 
@@ -25,14 +25,15 @@ runs offline.
 
 ## Features
 
-- **Pages:** a magazine-styled front page (the week's most-reported story as its cover, the daily email, the word of the week with where it came from, then each stream's three most-reported stories of the week, newest first, each over drawn art: the stream's colour and drawings and the story's logo, never a publisher's photo) and a page per stream. Section colours are colour-blind safe (Okabe–Ito).
+- **Pages:** a magazine-styled front page (the week's most-reported story as its cover, the daily email, the word of the week with where it came from, the meme of the week, then each stream's three most-reported stories of the week, newest first, each over an openly licensed photo of its topic, printed in the stream's colour, with the story's logo; never a publisher's photo) and a page per stream, in a Swiss-poster style. Section colours are colour-blind safe (Okabe–Ito).
 - **Filters:** by stream, region (on every page; a paper counts where its scholar's institution or its company is based), country and time range; search covers headlines, summaries, tags and authors back to 2023.
 - **Everything in English, nothing left out:** a story in another language shows the publisher's English version, else an offline translation (OPUS-MT) marked as such, else an English headline tagged **#Translate and read**. Each links to the original through Google Translate, opened by the reader.
 - **Tags:** companies, a country (the place a story names, else the country of the government that published it, else the company's home country) and topics.
+- **Memes:** a meme of the day (email) and of the week (site): well-known joke layouts drawn by AI Pulse (never copied meme pictures). Their captions are written by Google's Gemini (free tier, no billing; `GEMINI_API_KEY`) from the period's headlines, and marked so; each answer is checked (no politics, harm, crime, lawsuits, layoffs or children, no person, every number from a headline) and, if none passes or Gemini is unavailable, rule-based captions from the stories' own counts, companies and glossary words are used. Gemini sees only public headlines, is asked once a day and once a week, and draws nothing.
 - **Glossary:** plain-English meanings of the hard words and product names in stories (MoE, RAG, inference, c.ai…). A dotted word in a story opens its meaning; the Glossary button lists all ~120, this week's most-used first. `python -m aipulse glossary` lists acronyms not explained yet.
 - **One card per event:** the same story from several outlets is grouped, led by the company's own post when there is one.
 - **RSS:** one feed per stream, one post a day ([Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml), [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml), [Infra & climate](https://shru14.github.io/ai-pulse/feeds/infra.xml)).
-- **Daily email:** one a day, with the reader's streams: the 10 things that mattered most (ranked by how many outlets reported them) with their tags (a story about AI's infrastructure carries **#Infra & climate**, whatever its stream), then each stream's top headlines; on a lighter day (12 stories or fewer), all of them. It links to the day's full list on the site (`daily/`) and to the glossary. Readers who had every stream get Infra & climate too; until 31 Oct 2026 the email announces it and tells the others how to add it.
+- **Daily email:** one a day, with the reader's streams: the 10 things that mattered most (ranked by how many outlets reported them) with their tags (a story about AI's infrastructure carries **#Infra & climate**, whatever its stream), then each stream's top headlines; on a lighter day (12 stories or fewer), all of them. It links to the day's full list on the site (`daily/`) and to the glossary, and ends its opening with a meme of the day. Readers who had every stream get Infra & climate too; until 31 Oct 2026 the email announces it and tells the others how to add it.
 - **Make it yours:** readers can ask for more of, or leave out, any label or tag the site shows (story types, 8 topic themes, companies, continents or any country, scholars) and add up to 5 words of their own. Their top 10 is then up to 5 of their choice and the day's biggest; what they leave out never appears, and the email says how many were left out. The full email is the same for everyone. Every email has a "Change my streams and choices" link.
 - **Quality check:** before sending, every story is checked (sorting, text, links, duplicates, unusual counts); any problem holds the email for everyone and alerts the project inbox.
 - **Subscriptions:** sign up on the site, confirm by one link, unsubscribe in one click. Addresses stay in the project's Google account, never in this repository or its logs.
@@ -124,5 +125,8 @@ Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI P
 documents: National Legal Database (https://vbpl.vn). Australian legislation: based on content from the
 Federal Register of Legislation (CC BY 4.0); for the latest information go to https://www.legislation.gov.au.
 AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
-(MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon. Fonts: Bricolage Grotesque, Space Grotesk, IBM Plex Mono and Source Sans 3 (SIL Open Font License 1.1), served
+(MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon. Fonts: Archivo Black, Archivo and IBM Plex Mono (SIL Open Font License 1.1), served
 from this site. Section icons and header drawings: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).
+Photos: 84 openly licensed photos from [Wikimedia Commons](https://commons.wikimedia.org) (CC BY, CC BY-SA, CC0 or public
+domain), chosen by hand to illustrate a story's topic (not the story itself) and shown in black and white in the stream's colour;
+each photo's author, licence and source are on the site's Photo credits page (`templates/photos/credits.json`). No publisher's photo is used.

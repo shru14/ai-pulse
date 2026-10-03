@@ -608,7 +608,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "memes", "photos"}
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -2156,3 +2156,70 @@ def test_a_new_stream_s_history_resumes_where_it_stopped(tmp_path):
                                    stream="infra", minutes=0)
     assert added == 0 and not asked  # out of time before the first source: nothing read, nothing marked done
     assert not conn.execute("SELECT 1 FROM meta WHERE key LIKE 'backfill-feed:%' AND value = 'done'").fetchone()
+
+
+def test_memes_are_made_from_our_data_and_never_touch_serious_stories():
+    from datetime import date
+    from aipulse import memes
+    day = date(2026, 9, 29)
+    base = {"summary": "", "source": "E", "date": day.isoformat(), "also": [], "kind": "news"}
+    titles = ["NVIDIA Releases Kumo Tabular: open models", "Supersonic Labs Releases Julia 1: a CPU model",
+              "AWS debuts Strands Decider 2B, a decision model", "Google Research Introduces an AI Video Co-Director for films"]
+    launches = [{**base, "title": t, "url": f"https://e.com/{i}", "category": "tool", "tags": []} for i, t in enumerate(titles)]
+    # who launched what, only as the headline says it
+    assert [memes.launch_of(c) for c in launches] == [("NVIDIA", "Kumo Tabular"), ("Supersonic Labs", "Julia 1"),
+                                                       ("AWS", "Strands Decider 2B"), ("Google Research", "AI Video Co-Director")]
+    assert memes.launch_of({"title": "DeepSeek Open-Sources Ascend Versions of TileLang"}) is None
+    f = memes.facts(launches)
+    assert memes._buttons(f, "today")["labels"] == ["Try NVIDIA's Kumo Tabular", "Try Supersonic Labs' Julia 1"]
+    assert memes._fine(f, "today")["caption"] == "4 new AI models and tools today"
+    assert memes._fine(f, "this week") is None  # a joke only when the stories back it up (15 launches a week)
+    assert memes._nope_yep(f, "today") is None  # no raise, no money joke
+    # harm, lawsuits, layoffs, children and politics are never joked about
+    for title, cat in [("Chatbot linked to teen's death", "news"), ("Authors sue OpenAI", "news"), ("Startup lays off staff, layoffs hit AI", "news"),
+                       ("Senate passes AI bill", "policy")]:
+        assert not memes.light({**base, "title": title, "category": cat, "tags": []}), title
+    assert memes.light({**base, "title": "Google releases Gemini 4", "category": "tool", "tags": ["Google"]})
+    # the same day always gives the same meme: our cartoons from the site, captions escaped, a plain-text version too
+    cards = launches + [{**base, "title": "Big news story", "url": "https://e.com/n", "category": "news", "tags": [], "also": [{}, {}]}]
+    one, two = memes.of_the_day(cards, day), memes.of_the_day(cards, day)
+    assert one == two and one["title"] == "Meme of the day"
+    assert 'src="https://shru14.github.io/ai-pulse/memes/' in memes.html(one) and memes.text(one)[0] == "MEME OF THE DAY:"
+    assert 'src="memes/' in memes.html(one, base="")
+
+
+def test_gemini_memes_are_checked_kept_once_and_fall_back(tmp_path, monkeypatch):
+    import json
+    from datetime import date
+    from aipulse import memegen, memes, store
+    day = date(2026, 9, 29)
+    base = {"summary": "", "source": "E", "date": day.isoformat(), "also": [], "kind": "news", "tags": []}
+    cards = [{**base, "title": t, "url": f"https://e.com/{i}", "category": "tool"} for i, t in enumerate(
+        ["NVIDIA Releases Kumo Tabular: open models", "Cohere Releases Embed 5", "Startup raises $55M for agents"])]
+    good = {"format": "nopeyep", "based_on": [2], "who": "AI startups", "nope": "A business plan", "yep": "Another $55M"}
+    bad = [{**good, "yep": "Another $90M"},                     # a number no headline has
+           {**good, "nope": "Asking the President"},            # politics
+           {**good, "format": "unknown"}, {**good, "based_on": []}, {**good, "yep": "x" * 100}]
+    asked = []
+    def fake(prompt, key):
+        asked.append(prompt)
+        return json.dumps({"memes": bad + [good]})
+    assert memegen.write(cards, "day", key="k", ask=fake) == {**{k: v for k, v in good.items() if k != "based_on"},
+                                                              "based_on": [cards[2]["title"]], "by": "gemini"}
+    assert "Kumo Tabular" in asked[0] and "k" not in asked[0].split("Rules")[0][-2:]
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    assert memegen.write(cards, "day", key=None, ask=fake) is None                      # no key: rule-based
+    assert memegen.write(cards, "day", key="k", ask=lambda p, k: 1 / 0) is None        # an error: rule-based
+    assert memegen.write(cards, "day", key="k", ask=lambda p, k: json.dumps({"memes": bad})) is None
+    # made once and kept: the next build reads it from the database without asking again
+    conn = store.connect(tmp_path / "m.db")
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setattr(memegen, "_ask", fake)
+    n = len(asked)
+    first = memegen.stored(conn, "day", day, cards, make=True)
+    assert memegen.stored(conn, "day", day, cards, make=True) == first and len(asked) == n + 1
+    memes.GENERATED.clear()
+    memegen.prepare(conn, cards, day=day)
+    assert memes.of_the_day(cards, day)["yep"] == "Another $55M"
+    assert "Captions written with Gemini" in memes.html(memes.of_the_day(cards, day))
+    memes.GENERATED.clear()
