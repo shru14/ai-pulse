@@ -2215,8 +2215,8 @@ def test_memes_are_made_from_our_data_and_never_touch_serious_stories():
     one, two = memes.of_the_day(cards, day), memes.of_the_day(cards, day)
     assert one == two and one["title"] == "Meme of the day"
     page = memes.html(one, "cid:meme")
-    assert 'src="cid:meme"' in page and "via imgflip.com" in page and memes.TEMPLATES[one["format"]][1] in page
-    assert memes.text(one)[0].startswith("MEME OF THE DAY (")
+    assert 'src="cid:meme"' in page and "via imgflip.com" in page and memes.TEMPLATES[one["format"]][1] not in page
+    assert memes.text(one)[0] == "MEME OF THE DAY:"
     # every template takes its captions and makes a picture (the email carries it; the site shows it)
     samples = [{"format": "distracted", "labels": ["A", "B", "C"]}, {"format": "buttons", "labels": ["A", "B"], "caption": "C"},
                {"format": "nopeyep", "who": "W", "nope": "A", "yep": "B"}, {"format": "fine", "caption": "A", "under": "B"},
