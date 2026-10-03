@@ -232,8 +232,13 @@ def payload(cards: list[dict], today: date | None = None) -> dict:
     meme = of_the_week(cards, monday)
     image = f"memes/week-{monday.isoformat()}.jpg"  # the finished picture, written by the build (static.py)
     ok = bool(meme and render(meme))
+    # the news behind it, linked to the stories themselves (a meme made from the week's words has none)
+    week = {c["title"]: c for c in cards if monday.isoformat() <= (c.get("date") or "") < (monday + timedelta(days=7)).isoformat()}
+    behind = [{"title": t, "url": week[t]["url"], "source": week[t].get("source") or ""}
+              for t in (meme or {}).get("based_on") or [] if t in week and week[t].get("url")][:3]
     return {"from": monday.isoformat(), "to": (monday + timedelta(days=6)).isoformat(),
-            "html": html(meme, image) if ok else "", "format": meme["format"] if ok else None, "image": image if ok else None}
+            "html": html(meme, image) if ok else "", "format": meme["format"] if ok else None, "image": image if ok else None,
+            "stories": behind if ok else [], "week": len(week)}
 
 
 # ---------- The real meme templates, captions written onto them (one finished picture, the same in every mail app) ----------
@@ -357,8 +362,7 @@ def render(meme: dict) -> bytes | None:
 def html(meme: dict, src: str) -> str:
     """The finished picture (src: its address, or "cid:..." for the copy inside an email), its words as the alt
     text, and the credits: Gemini's captions said plainly, and the template's source."""
-    name = TEMPLATES[meme["format"]][1]
-    credit = ("Captions written with Gemini · " if meme.get("by") == "gemini" else "") + f"Template: {name} · via imgflip.com"
+    credit = ("Captions written with Gemini · " if meme.get("by") == "gemini" else "") + "via imgflip.com"  # the source, not the template's name
     alt = " ".join(text(meme)[1:])
     width = 420 if meme["format"] in TALL else 600  # a tall template stays short enough to read without scrolling
     return (f'<div style="max-width:{width}px;background:#ffffff;border:2px solid #1d2433;border-radius:6px;overflow:hidden;'
@@ -369,9 +373,9 @@ def html(meme: dict, src: str) -> str:
 
 
 def text(meme: dict) -> list[str]:
-    """The meme in the plain-text email: the template named, then its captions."""
+    """The meme in the plain-text email: what happens in it, with its captions."""
     f = meme["format"]
-    out = [meme["title"].upper() + f" ({TEMPLATES[f][1]}):"]
+    out = [meme["title"].upper() + ":"]
     if f == "distracted":
         new, who, old = meme["labels"]
         out.append(f"{who}, walking with {old}, turning to stare at {new}.")

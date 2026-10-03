@@ -249,6 +249,13 @@ header.top{gap:10px}
 /* Meme of the week (memes.py): a joke format drawn in plain HTML, filled from last week's stories */
 .meme-tile{background:var(--p-meme);color:#141925;border:0;display:flex;flex-direction:column;gap:12px}
 .meme-tile[hidden]{display:none}
+.meme-tile .from{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.35}
+.meme-tile .from li{position:relative;padding-left:18px}
+.meme-tile .from li::before{content:"→";position:absolute;left:0;font-weight:700}
+.meme-tile .from a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.meme-tile .from .src{font-size:12.5px}
+.meme-tile .viz-note{opacity:1;margin:0 0 6px}
+.meme-next{margin:12px 0 0;font-size:13px;line-height:1.4}
 .meme a{word-break:break-word}
 .sub-tile,.gl-tile{display:flex;flex-direction:column;justify-content:space-between;gap:14px;border:0}
 .sub-tile{background:var(--p-email);color:#141925}
@@ -502,8 +509,8 @@ header.top{border-bottom:4px solid var(--ink)}
 .meme-tile{background:#D55E00;color:#000}
 .week-badge{border-radius:0;box-shadow:none;border:3px solid #000;background:#FFFFFF;color:#000;text-transform:none;letter-spacing:0;font-family:var(--head);font-weight:400;font-size:15px}
 .mag-cover .week-badge{border-color:#FFFFFF}
-.stream-head h2{font:400 34px/1 var(--head);text-transform:none;letter-spacing:-.015em}  /* "Research", "Industry": title case */
-.mag-sec .rule{width:100%;height:10px;background:var(--cat-f)}
+.stream-head h2{font:400 26px/1.1 var(--head);text-transform:none;letter-spacing:0}  /* "Research", "Industry": title case */
+.mag-sec .rule{width:100%;height:4px;background:var(--cat-f)}
 .lead,.thumb{border-radius:0!important;border:3px solid var(--ink)}
 .lead h3,.mitem h4{font-family:var(--head);font-weight:400;text-transform:none;letter-spacing:-.01em}
 .site-foot{border-top:4px solid var(--ink)}
@@ -692,6 +699,7 @@ header.top.home{height:auto;padding-top:10px}
         <div class="tile meme-tile" id="meme-tile" hidden>
           <div><span class="week-badge"><b>Meme of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="meme-label">Last week</span></span></div>
           <div class="meme" id="meme"></div>
+          <div class="meme-more" id="meme-more"></div>
         </div>
       </div>
       <div class="mag-sections" id="stream-tiles"></div>
@@ -1244,6 +1252,16 @@ async function loadMeme(){
     const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
     $("meme-label").textContent = "Last week · " + fmt(m.from) + " – " + fmt(m.to);
     $("meme").innerHTML = m.html;  // our own markup, built from escaped text
+    // the news behind the joke, and when the next one comes
+    const more = $("meme-more"); more.replaceChildren();
+    if((m.stories || []).length){
+      const list = el("ul","from");
+      m.stories.forEach(s => { const li = el("li"); li.append(storyLink(s)); if(s.source) li.append(el("span","src"," · " + s.source)); list.append(li); });
+      more.append(el("div","viz-note","The news behind it"), list);
+    } else if(m.week){
+      more.append(el("div","viz-note","Made from last week's " + m.week.toLocaleString() + " stories"));
+    }
+    more.append(el("p","meme-next","A new meme every Monday, from the week before. The daily email has a meme of the day."));
     $("meme-tile").hidden = false;
   }catch(e){}
 }
