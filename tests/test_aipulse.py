@@ -1,4 +1,5 @@
 import os
+import re
 import sqlite3
 from datetime import date
 from pathlib import Path
@@ -607,7 +608,10 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily"}
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts"}
+    # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
+    assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
+    assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
     assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["infra.xml", "news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
 
 
