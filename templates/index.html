@@ -234,7 +234,7 @@ header.top{gap:10px}
 .home-status{margin-top:6px}
 .mag{display:grid;gap:34px;margin-top:20px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:24px;min-width:0}
-.tile .label{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.tile .label{font:600 13px var(--mono);letter-spacing:.02em}
 .tile-note{margin:0;color:var(--muted)}
 .kicker{font:500 11.5px/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .mchip{display:inline-block;align-self:flex-start;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:2px;background:var(--cat-f);color:#141925}
@@ -507,17 +507,17 @@ header.top{gap:10px}
 /* ---- The Swiss-poster look: black rules, bold caps, flat Okabe-Ito blocks (yellow, blue, vermilion) on a faint grid ---- */
 body{background:var(--bg) repeating-linear-gradient(90deg,var(--poster-grid) 0 1px,transparent 1px 98px)}
 header.top{border-bottom:4px solid var(--ink)}
-.brand{font-family:var(--head);text-transform:uppercase}
-.lede strong{font:400 30px/1.05 var(--head);text-transform:uppercase;letter-spacing:-.02em}
+.brand{font-family:var(--head);text-transform:none}
+.lede strong{font:400 24px/1.1 var(--head);text-transform:none;letter-spacing:-.01em}
 .tile,.mag-cover,.sub-strip,.gl-tile,.meme-tile{border:3px solid var(--ink)!important;border-radius:0!important}
 .sub-strip{background:#F0E442;color:#000}
-.sub-strip h2{font:400 26px/1.05 var(--head);text-transform:uppercase}
-.sub-steps b{font-family:var(--head);font-weight:400;text-transform:uppercase}
+.sub-strip h2{font:400 26px/1.05 var(--head);text-transform:none}
+.sub-steps b{font-family:var(--head);font-weight:400;text-transform:none}
 .sub-steps li::before{border-radius:0;background:#000;color:#FFFFFF}
 .sub-strip .sub-tile-go,.gl-tile-go{background:#000!important;color:#FFFFFF!important;border-radius:0!important;box-shadow:6px 6px 0 #0072B2!important;
-  text-transform:uppercase;font-weight:800}
+  text-transform:none;font-weight:800}
 .mag-cover{background:#000}
-.mag-cover h2{font:400 24px/1.12 var(--head);text-transform:uppercase}
+.mag-cover h2{font:400 24px/1.12 var(--head);text-transform:none}
 .gl-tile{background:#0072B2;color:#FFFFFF}
 .gl-card{border-radius:0;border:3px solid #000;box-shadow:8px 8px 0 #000;color:#000}
 .gl-tile b{font:400 34px/1.05 var(--head)}
@@ -525,14 +525,14 @@ header.top{border-bottom:4px solid var(--ink)}
 .gl-stat{border:3px solid #FFFFFF;border-radius:0}
 .gl-tile .from li::before{color:#F0E442}
 .meme-tile{background:#D55E00;color:#000}
-.week-badge{border-radius:0;box-shadow:none;border:3px solid #000;background:#FFFFFF;color:#000}
+.week-badge{border-radius:0;box-shadow:none;border:3px solid #000;background:#FFFFFF;color:#000;text-transform:none;letter-spacing:0;font-family:var(--head);font-weight:400;font-size:15px}
 .mag-cover .week-badge{border-color:#FFFFFF}
 .stream-head h2{font:400 34px/1 var(--head);text-transform:none;letter-spacing:-.015em}  /* "Research", "Industry": title case */
 .mag-sec .rule{width:100%;height:10px;background:var(--cat-f)}
 .lead,.thumb{border-radius:0!important;border:3px solid var(--ink)}
-.lead h3,.mitem h4{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:-.01em}
+.lead h3,.mitem h4{font-family:var(--head);font-weight:400;text-transform:none;letter-spacing:-.01em}
 .site-foot{border-top:4px solid var(--ink)}
-.site-foot h5{font-family:var(--head);font-weight:400}
+.site-foot h5{font-family:var(--head);font-weight:400;text-transform:none;font-size:14px}
 /* Photos: black and white, printed in the stream's colour (a duotone); the logo sits small in a corner */
 .sart.photo{background:var(--cat-f,#F0E442)}
 .sart.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.25) brightness(1.04);mix-blend-mode:multiply}
@@ -548,7 +548,7 @@ header.top{border-bottom:4px solid var(--ink)}
 /* A stream's page: the cards in the poster style, each with its photo; the header over a photo of the stream */
 .item{grid-template-columns:168px 1fr;border:3px solid var(--ink);border-top:8px solid var(--cat-f,var(--ink));border-radius:0;box-shadow:none;padding:14px 16px 12px 14px}
 .item .side .sart{position:relative;width:168px;aspect-ratio:4/3;border:2px solid var(--ink);overflow:hidden}
-.item h3{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:-.005em;font-size:18px}
+.item h3{font-family:var(--head);font-weight:400;text-transform:none;letter-spacing:-.005em;font-size:18px}
 .sec-hero{border:3px solid var(--ink);border-radius:0;background:var(--cat-f,#F0E442)}
 .sec-hero::before{content:"";position:absolute;inset:0;background:var(--hero-photo) center/cover no-repeat;filter:grayscale(1) contrast(1.2);mix-blend-mode:multiply}
 .sec-hero>.art{display:none}
@@ -556,7 +556,7 @@ header.top{border-bottom:4px solid var(--ink)}
 .sec-hero{align-items:flex-start;justify-content:flex-end;text-align:left;min-height:240px;padding:28px;gap:12px}
 .sec-hero>div{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .sec-hero h2,.sec-hero p,.sec-hero .status{background:var(--bg);color:var(--ink);margin:0;padding:6px 14px;max-width:100%}
-.sec-hero h2{font:400 clamp(30px,3.6vw,44px)/1 var(--head);padding:8px 14px 6px}
+.sec-hero h2{font:400 clamp(30px,3.6vw,44px)/1 var(--head);padding:8px 14px 6px;text-transform:none;letter-spacing:-.015em}
 .sec-hero h2::after{display:none}
 .sec-hero p{font-size:16px;max-width:60ch}
 .sec-hero .status{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px 14px;font-size:12px}
@@ -566,7 +566,12 @@ header.top{border-bottom:4px solid var(--ink)}
 header.top{flex-wrap:wrap;align-content:space-evenly;row-gap:6px}
 header.top .brand{margin-right:auto}
 header.top .secnav{order:5;flex-basis:100%;margin:0;padding:4px 0 0;border-top:2px solid var(--ink)}
-.secnav a{border-radius:0;padding:6px 12px 6px 0;margin-right:10px}
+header.top.home{height:auto;padding-top:10px}
+.mast-line{order:4;flex-basis:100%;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 24px;padding:2px 0 8px}
+.mast-line[hidden]{display:none}
+.mast-line .lede{margin:0}
+.mast-line .home-status{margin:0}
+.secnav a{border-radius:0;padding:6px 12px 6px 0;margin-right:10px;text-transform:none;letter-spacing:0;font:600 14px var(--body)}
 .secnav a[aria-current]{background:none;color:var(--ink);box-shadow:inset 0 -4px 0 var(--cat-f,var(--ink))}
 .subscribe-btn{border-radius:0;border:2px solid var(--ink)}
 .subscribe-btn.cta{box-shadow:none}
@@ -584,6 +589,7 @@ header.top .secnav{order:5;flex-basis:100%;margin:0;padding:4px 0 0;border-top:2
   header.top .subscribe-btn.cta svg{display:none}  /* the word alone, so the top row fits a phone */
   header.top{gap:8px}
   .sec-hero{min-height:0;padding:20px 16px}
+  header.top.home{position:static}  /* the taller front-page masthead scrolls away on a phone */
 }
 </style>
 </head><body>
@@ -594,6 +600,8 @@ header.top .secnav{order:5;flex-basis:100%;margin:0;padding:4px 0 0;border-top:2
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>
       <h1>AI Pulse</h1>
     </a>
+    <div class="mast-line" id="mast-line"><p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
+      <div class="status home-status" id="home-status">Loading feed…</div></div>
     <!-- Each stream is its own page (#tool, #news…); the brand goes back to the front page. -->
     <nav class="secnav" id="secnav" aria-label="Streams">
       <a href="#all" data-go="all" class="k-all">All stories</a>
@@ -683,8 +691,6 @@ header.top .secnav{order:5;flex-basis:100%;margin:0;padding:4px 0 0;border-top:2
   </dialog>
   <!-- Front page: the daily email strip, the week's biggest story, the word and meme of the week, then a tile per stream. -->
   <section class="home" id="front" hidden>
-    <p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
-    <div class="status home-status" id="home-status">Loading feed…</div>
     <div class="mag">
       <div class="tile sub-tile sub-strip">
         <div class="sub-head"><span class="label">Daily email · free</span><h2>The 10 AI stories that mattered, every morning</h2></div>
@@ -812,7 +818,8 @@ function heroArt(cat){
 function showPage(){
   const home = state.cat === "home";
   $("front").hidden = !home; $("section").hidden = home;
-  $("subscribe-open").hidden = $("glossary-open").hidden = home;  // the front page has its own: the email strip, the word of the week
+  $("subscribe-open").hidden = $("glossary-open").hidden = home;
+  $("mast-line").hidden = !home; document.querySelector("header.top").classList.toggle("home", home);  // the front page has its own: the email strip, the word of the week
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
   if(home){ document.title = "AI Pulse"; return loadHome(); }
   const hero = $("sec-hero");
