@@ -245,7 +245,7 @@ header.top{gap:10px}
 .tile .label{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.08em}
 .tile-note{margin:0;color:var(--muted)}
 .kicker{font:500 11.5px/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.chip{display:inline-block;align-self:flex-start;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:2px;background:var(--cat-f);color:#141925}
+.mchip{display:inline-block;align-self:flex-start;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:2px;background:var(--cat-f);color:#141925}
 .mag-cover{display:grid;grid-template-columns:1.35fr 1fr;border-radius:4px;overflow:hidden;background:#141925;color:#FFFFFF;min-height:330px}
 .mag-cover>.tile-note{padding:24px;color:#C9CEDA}
 .mag-cover .copy{padding:28px 30px;display:flex;flex-direction:column;justify-content:flex-end;gap:12px;min-width:0}
@@ -303,7 +303,7 @@ header.top{gap:10px}
 .lead{position:relative;display:block;border-radius:4px;overflow:hidden;min-height:250px;text-decoration:none;color:#FFFFFF}
 .lead .sart{position:absolute;inset:0}
 .lead .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,25,37,0) 30%,rgba(20,25,37,.9) 80%)}
-.lead .chip{position:absolute;left:14px;top:14px}
+.lead .mchip{position:absolute;left:14px;top:14px}
 .lead .txt{position:absolute;left:0;right:0;bottom:0;padding:18px 20px}
 .lead .kicker{color:#D5D9E3}
 .lead h3{font:700 22px/1.2 var(--head);letter-spacing:-.015em;margin:6px 0 0;color:#FFFFFF;text-wrap:balance}
@@ -1209,7 +1209,7 @@ function renderHome(){
     hero.className = "mag-cover k-" + top.category;
     const copy = el("div","copy"), h = el("h2");
     h.append(storyLink(top));
-    copy.append(el("span","chip","Story of the week · " + STREAM_NAME[top.category]), h);
+    copy.append(el("span","mchip","Story of the week · " + STREAM_NAME[top.category]), h);
     if(top.summary) copy.append(el("p","sum", top.summary));
     copy.append(kicker(top));
     const others = (top.also || []).filter((o, i, a) => a.findIndex(x => x.source === o.source) === i).slice(0, 8);
@@ -1241,7 +1241,7 @@ function renderHome(){
       const first = list[0], lead = el("a","lead");
       lead.href = first.url; lead.target = "_blank"; lead.rel = "noopener";
       const txt = el("div","txt"); txt.append(kicker(first), el("h3", null, first.title));
-      lead.append(storyArt(first), el("div","shade"), el("span","chip", CAT_LABEL[c]), txt);
+      lead.append(storyArt(first), el("div","shade"), el("span","mchip", CAT_LABEL[c]), txt);
       const more = el("div","mag-list");
       list.slice(1).forEach(it => {
         const row = el("article","mitem"), th = el("a","thumb");
