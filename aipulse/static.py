@@ -14,7 +14,7 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, digest, glossary, jurisdictions, preferences, rss, store
+from . import brands, classify, digest, glossary, jurisdictions, preferences, rss, store
 from . import subscribers
 from .server import EU_MEMBERS, TEMPLATE
 from .sources import SOURCES
@@ -88,7 +88,7 @@ def build(conn, out: str | Path) -> int:
     data = {"built": datetime.now(timezone.utc).isoformat(timespec="seconds"), "cards": recent, "archive": archive,
             "stories": store.story_count(conn), "lastRun": store.last_run(conn),
             "jurisdictions": jurisdictions.meta(), "euMembers": sorted(EU_MEMBERS),
-            "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()},
+            "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()}, "paperHomes": classify.paper_homes(),
             "failingSources": [h for h in health if h["failing"]]}
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
     (out / "glossary.json").write_text(json.dumps(glossary.payload(cards, today), separators=(",", ":")), encoding="utf-8")

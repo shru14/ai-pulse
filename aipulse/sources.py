@@ -137,7 +137,7 @@ SOURCES = [
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
 
-    # --- Infrastructure & sustainability: AI's data centres and what they draw on (power, water, land, emissions) ---
+    # --- Infra & climate: AI's data centres and what they draw on (power, water, land, emissions) ---
     # Checked 3 Oct 2026: each robots.txt allows reading and each publishes this feed; articles are free to read.
     # Out: IRENA, Japan's METI, BNamericas and Dialogue Earth (robots.txt disallows); WRI, Ireland's CSO, AEMO and
     # Data Center Dynamics (bot checks); Eco-Business (its articles are marked subscriber-only). Only stories about
@@ -299,6 +299,36 @@ PROFESSORS = [
     ("Amnon Shashua", "Hebrew University of Jerusalem"), ("Eric Xing", "MBZUAI"), ("Timothy Baldwin", "MBZUAI"),
     ("Anton van den Hengel", "University of Adelaide"),
 ]
+
+# Where each listed scholar works (the country of their institution), so the Research stream can be filtered
+# by region like the others: a paper counts where its scholar, or its company (classify.COMPANY_HOME), is based.
+INSTITUTION_COUNTRY = {
+    "Mila / Université de Montréal": "Canada", "McGill / Mila": "Canada", "University of Toronto": "Canada",
+    "University of Alberta": "Canada", "NYU": "United States", "Stanford": "United States",
+    "UC Berkeley": "United States", "MIT": "United States", "CMU": "United States",
+    "Princeton": "United States", "University of Washington": "United States", "UNC Chapel Hill": "United States",
+    "Caltech": "United States", "Yale": "United States", "Carnegie Mellon": "United States",
+    "DAIR": "United States", "Hugging Face": "United States", "USC / Microsoft Research": "United States",
+    "Humane Intelligence": "United States", "Cornell": "United States", "University of Virginia": "United States",
+    "University of Colorado": "United States", "Boston University": "United States", "Columbia": "United States",
+    "Harvard": "United States", "Johns Hopkins": "United States", "USC": "United States",
+    "Duke": "United States", "CSET, Georgetown": "United States", "Carnegie Endowment": "United States",
+    "University of Amsterdam": "Netherlands", "Max Planck Institute for Intelligent Systems": "Germany", "ETH Zurich": "Switzerland",
+    "University of Oxford": "United Kingdom", "University of Cambridge": "United Kingdom", "UCL": "United Kingdom",
+    "University of Edinburgh": "United Kingdom", "LSE": "United Kingdom", "Oxford Internet Institute": "United Kingdom",
+    "Newcastle University": "United Kingdom", "Google DeepMind": "United Kingdom", "JKU Linz": "Austria",
+    "University of Vienna": "Austria", "IDSIA / KAUST": "Switzerland", "TU Darmstadt": "Germany",
+    "University of Freiburg": "Germany", "Hertie School": "Germany", "TU Munich": "Germany",
+    "Inria": "France", "EPFL": "Switzerland", "Umeå University": "Sweden",
+    "Trinity College Dublin": "Ireland", "Vrije Universiteit Brussel": "Belgium", "Tsinghua University": "China",
+    "Nanjing University": "China", "HKUST": "Hong Kong", "CUHK": "Hong Kong",
+    "University of Tokyo / RIKEN": "Japan", "University of Tokyo": "Japan", "National University of Singapore": "Singapore",
+    "Nanyang Technological University": "Singapore", "KAIST": "South Korea", "IIT Madras": "India",
+    "IIT Bombay": "India", "Bar-Ilan University": "Israel", "Hebrew University of Jerusalem": "Israel",
+    "MBZUAI": "United Arab Emirates", "University of Adelaide": "Australia", "Australian National University": "Australia",
+}
+SCHOLAR_HOME = {name: INSTITUTION_COUNTRY[place] for name, place in PROFESSORS}
+SCHOLAR_HOME |= {name: INSTITUTION_COUNTRY[place] for name, _, place in EXPERTS}
 
 # Big tech and frontier AI labs. Patterns match a Hugging Face organization or a team author name
 # such as "DeepSeek-AI" or "Qwen Team" (case-insensitive). Names are spelled as the news tags spell them

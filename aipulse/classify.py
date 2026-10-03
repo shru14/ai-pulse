@@ -9,7 +9,7 @@ import re
 import unicodedata
 
 from . import jurisdictions
-from .sources import SOURCES
+from .sources import SCHOLAR_HOME, SOURCES
 
 # "Agent" is AI unless it's another kind: "foreign agents" (a Russian law), "FBI agents", "nerve agent".
 _AGENT = (r"(?<!foreign )(?<!secret )(?<!federal )(?<!FBI )(?<!border )(?<!customs )(?<!travel )(?<!estate )"
@@ -337,8 +337,8 @@ SOURCE_HOME = {s["name"]: jurisdictions.JURISDICTIONS[s["jurisdictions"][0]][0] 
                if s.get("jurisdictions") and (s.get("government") or s["category"] == "regulation")}
 
 
-# --- Infrastructure & sustainability: AI's physical side (data centres and what they draw on) ---
-INFRA_TAG = "Infrastructure & sustainability"
+# --- Infra & climate: AI's physical side (data centres and what they draw on) ---
+INFRA_TAG = "Infra & climate"
 # Data centres themselves: named anywhere in a story, they make it one about AI's infrastructure.
 _DC = re.compile(r"data[- ]?cent(?:er|re)s?|\bhyperscalers?\b|\bhyperscale (?:data|campus|facilit)|server farms?|"
                  r"\bAI campus(?:es)?|gigafactor\w* of compute", re.I)
@@ -353,7 +353,7 @@ _FOOTPRINT = re.compile(r"\bAI['’]s (?:energy|electricity|power|carbon|water|e
 # With AI in the headline: power and the grid ("Microsoft taps Three Mile Island nuclear plant to power AI"); not
 # "the new electricity", "pre-nuclear steel" or a "nuclear option".
 _POWER = re.compile(r"\belectricity (?:demand|use|usage|consumption|prices|bills|costs?|supply|needs|grid)\b|"
-                    r"\bto power (?:AI|its|the|data)\b|"
+                    r"\bto power (?:AI\b|its AI|(?:AI |the |its |their )?data cent)|"
                     r"\bpower (?:plants?|deals?|supply|demand|grid|costs?|purchase|consumption|usage|infrastructure)\b|"
                     r"\bnuclear (?:power|plants?|reactors?|energy|deals?|startups?)\b|\b(?:giga|mega)watts?\b|"
                     r"\b\d+(?:\.\d+)? ?[GM]W\b|"
@@ -373,6 +373,53 @@ def is_infra(title: str, summary: str) -> bool:
     return infra_story(title) or bool(_DC.search(summary) or _FOOTPRINT.search(summary))
 
 
+# What a story about AI's infrastructure is about, so its stream can be read by subject. Only for those stories
+# (is_infra): "water" or "permit" elsewhere means something else. One story can have several.
+INFRA_TOPICS = {
+    "Power & grid": r"electricity|\bpower (?:grid|supply|demand|plants?|stations?|purchase|deals?|consumption|capacity|prices)|"
+                    r"\bgrid\b|nuclear|\bSMRs?\b|small modular reactor|natural gas|gas[- ]fired|gas turbines?|"
+                    r"\butilit(?:y|ies)\b|transmission lines?|baseload|geothermal|fuel cells?|"
+                    r"energy (?:demand|use|usage|consumption|supply|costs?|prices|bills?)|"
+                    r"power[- ]hungry|energy[- ]hungry|\bPPAs?\b|power purchase|energy[- ]efficien|"
+                    r"energy (?:burden|impact|appetite|footprint|crunch|obsession)",
+    "Water": r"\bwater (?:use|usage|consumption|supply|footprint|stress|scarcity|rights|bills?)|gallons|litres|liters|"
+             r"drought|aquifer|water[- ]cooled|cooling water|\bwater\b.{0,40}\bcool|\bcool.{0,40}\bwater\b",
+    "Emissions & climate": r"emission|carbon|greenhouse|\bCO2\b|net[- ]zero|renewabl|\bsolar\b|wind (?:power|farms?|energy|turbines?)|"
+                           r"clean (?:energy|power)|green (?:energy|power|data cent)|sustainab|decarboni|\bPUE\b|e-waste|"
+                           r"waste heat|heat reuse|climate (?:impact|goals?|targets?|pledges?|commitments?|costs?|footprint|change)|"
+                           r"environmental (?:impact|costs?|footprint|toll|harm)",
+    "Land & local pushback": r"oppos(?:e|es|ed|ing|ition)|protest|residents|neighbou?rs|\bcommunit(?:y|ies)\b|zoning|rezon|"
+                             r"moratorium|backlash|pushback|resist|\bnoise\b|farmland|land use|\bacres?\b|"
+                             r"(?:county|town|city) (?:board|council|commission)|local (?:officials|resistance|concerns)",
+    "Builds & deals": r"\bbuild(?:s|ing)?\b|\bbuilt\b|construct|\bcampus(?:es)?\b|\bopens?\b|\bopened\b|break(?:s|ing)? ground|"
+                      r"groundbreaking|expan(?:d|ds|sion)|\binvest(?:s|ed|ing|ments?)?\b|\$\s?\d|billion|\bbn\b|\blease[sd]?\b|"
+                      r"acqui(?:re|res|red|sition)|\bstake\b|\b\d+(?:\.\d+)? ?[GM]W\b|megawatts?|gigawatts?|"
+                      r"\bdeal\b|partners(?:hip)?\b|\bplans?\b|\bproposed\b",
+    "Rules & permits": r"permits?\b|planning (?:permission|approval|application)|\bapprov(?:al|es|ed)\b|regulat|\blaws?\b|"
+                       r"\bbills?\b(?! Gates)|legislat|tax (?:breaks?|incentives?|credits?|exemptions?)|incentives?|"
+                       r"subsid|reporting (?:rules?|requirements?)|\bban(?:s|ned)?\b|moratorium|halts?\b|"
+                       r"government (?:plan|policy|rules?|strategy)",
+    # the machines themselves: supercomputers, "AI factories", GPU clusters, servers and their cooling
+    "Hardware & compute": r"supercomput|AI factor(?:y|ies)|\bGPUs?\b|\bservers?\b|\bclusters?\b|\bchips?\b|\bracks?\b|"
+                          r"cooling|accelerators?|compute capacity|\bTPUs?\b|Blackwell|Vera Rubin|Grace Hopper|semiconductor|networking",
+}
+_infra_topics = {k: re.compile(v, re.I) for k, v in INFRA_TOPICS.items()}
+# What an infrastructure story's own tags already say: the stream's subject itself, and the general topics the
+# finer ones above replace (a reader's saved choice of these still matches: preferences.labels).
+INFRA_SAYS = {"Compute & Data Centers": INFRA_TAG, "Energy": "Power & grid", "Climate": "Emissions & climate",
+              "Chips": "Hardware & compute"}
+
+
+def paper_homes() -> dict[str, str]:
+    """{tag: country} for a paper's scholar and company tags: where a paper counts in the region filter."""
+    return {**COMPANY_HOME, **_PAPER_COMPANY_HOME, **SCHOLAR_HOME}
+
+
+# Companies that publish papers (sources.COMPANIES) but aren't in the news tags' COMPANY_HOME
+_PAPER_COMPANY_HOME = {"Adobe": "United States", "Sony": "Japan", "Ant Group": "China", "Kuaishou": "China",
+                       "Kakao": "South Korea", "NAVER": "South Korea", "LG AI Research": "South Korea"}
+
+
 def tags_for(title: str, summary: str, limit: int = 5, source: str = "") -> list[str]:
     """Companies first, then places, then topics (see TOPIC_TERMS); a story left in its own language leads with
     "Translate and read". `source`: the story's publisher; a government's own publication that names no place
@@ -382,7 +429,9 @@ def tags_for(title: str, summary: str, limit: int = 5, source: str = "") -> list
     text = f"{title} {summary}"
     topics = [k for k, p in _topics.items() if p.search(text)]
     if is_infra(title, summary):  # in every stream, so Research, Policy and the tracker show it too
-        topics.insert(0, INFRA_TAG)
+        finer = [k for k, p in _infra_topics.items() if p.search(text)]
+        topics = [INFRA_TAG, *finer, *(t for t in topics if INFRA_SAYS.get(t) not in (INFRA_TAG, *finer))]
+        limit += 1  # the stream's own page leaves out its name (templates/index.html), so it still shows `limit`
     companies, places = company_tags(title, summary), place_tags(title, summary)
     lead = lead_company(title) or (companies[0] if companies else None)
     if not places and source in SOURCE_HOME:
