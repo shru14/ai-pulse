@@ -161,9 +161,18 @@ def stream_history(conn, stream: str, minutes: float, since: date = date(2023, 1
                    log=print) -> int:
     """A new stream's sources back to `since`, a few minutes at a time (the site's scheduled runs call it until
     every source is done); returns how many stories were added."""
-    added = feed_archives(conn, since, fetcher, log, stream=stream, minutes=minutes)
+    # Regrouping every story afterwards takes minutes (5.5 on 3 Oct 2026) and must fit in `minutes` too: reading
+    # stops that much earlier, as long as the last regroup took. Grouping only the new stories' days was tried and
+    # grouped some stories differently from a full regroup, so the full one stays.
+    row = conn.execute("SELECT value FROM meta WHERE key = 'history-regroup-seconds'").fetchone()
+    regroup = float(row[0]) / 60 if row else 6.0
+    added = feed_archives(conn, since, fetcher, log, stream=stream, minutes=max(minutes - regroup, 1.0))
     if added:
+        started = time.monotonic()
         cluster.assign(conn, days=None)
+        conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES ('history-regroup-seconds', ?)",
+                     (str(round(time.monotonic() - started)),))
+        conn.commit()
     return added
 
 
