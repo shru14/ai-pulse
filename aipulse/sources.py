@@ -137,6 +137,34 @@ SOURCES = [
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
 
+    # --- Infrastructure & sustainability: AI's data centres and what they draw on (power, water, land, emissions) ---
+    # Checked 3 Oct 2026: each robots.txt allows reading and each publishes this feed; articles are free to read.
+    # Out: IRENA, Japan's METI, BNamericas and Dialogue Earth (robots.txt disallows); WRI, Ireland's CSO, AEMO and
+    # Data Center Dynamics (bot checks); Eco-Business (its articles are marked subscriber-only). Only stories about
+    # AI's infrastructure are kept (classify.is_infra).
+    # Data-centre trade news, by region
+    {"name": "Data Center Knowledge", "url": "https://www.datacenterknowledge.com/rss.xml", "category": "infra", "infra_filter": True},
+    {"name": "W.Media", "url": "https://w.media/feed/", "category": "infra", "infra_filter": True, "paged": True},  # Asia-Pacific
+    {"name": "Data Centre Review", "url": "https://www.datacentrereview.com/feed/", "category": "infra", "infra_filter": True,
+     "paged": True},  # UK and Europe
+    {"name": "Capacity Media", "url": "https://www.capacitymedia.com/rss", "category": "infra", "infra_filter": True},
+    {"name": "iTnews", "url": "https://www.itnews.com.au/RSS/rss.ashx", "category": "infra", "infra_filter": True},  # Australia
+    # Energy, climate and environment newsrooms, worldwide
+    {"name": "Carbon Brief", "url": "https://www.carbonbrief.org/feed/", "category": "infra", "infra_filter": True, "paged": True},
+    {"name": "Climate Home News", "url": "https://www.climatechangenews.com/feed/", "category": "infra", "infra_filter": True,
+     "paged": True},
+    {"name": "Mongabay", "url": "https://news.mongabay.com/feed/", "category": "infra", "infra_filter": True, "paged": True},
+    {"name": "Energy Monitor", "url": "https://www.energymonitor.ai/feed/", "category": "infra", "infra_filter": True, "paged": True},
+    {"name": "The Conversation (Energy)", "url": "https://theconversation.com/global/topics/energy-72/articles.atom",
+     "category": "infra", "infra_filter": True},
+    {"name": "Canary Media", "url": "https://www.canarymedia.com/rss", "category": "infra", "infra_filter": True},  # North America
+    {"name": "ESI Africa", "url": "https://www.esi-africa.com/feed/", "category": "infra", "infra_filter": True, "paged": True},
+    # Official energy bodies
+    {"name": "US Energy Information Administration", "url": "https://www.eia.gov/rss/press_rss.xml", "category": "infra",
+     "infra_filter": True},
+    {"name": "European Commission (Energy)", "url": "https://energy.ec.europa.eu/node/2/rss_en", "category": "infra",
+     "infra_filter": True},
+
     # --- Policy and politics ---
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
     # the publisher's own site feed carries its explainers and analysis.

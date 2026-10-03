@@ -64,14 +64,19 @@ def page_url(url: str, n: int, param: str = "paged") -> str:
     return url if n == 1 else url + ("&" if "?" in url else "?") + f"{param}={n}"
 
 
-def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
+def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print, stream: str | None = None,
+                  minutes: float | None = None) -> int:
     """Each RSS/Atom source's own archive back to `since`: its feed as it stands, then (sources marked
     "paged") one page after another until a page reaches `since`, repeats the last one, or doesn't exist
     (404). A page that keeps failing is skipped; if several in a row do, the source is left unfinished.
-    The last page read is remembered, so a stopped or unfinished run carries on from there."""
+    The last page read is remembered, so a stopped or unfinished run carries on from there.
+    `stream`: only that stream's sources; `minutes`: stop after that long (the next run carries on)."""
     age = (date.today() - since).days + 2
-    added = 0
-    for src in [s for s in SOURCES if s.get("format", "feed") == "feed" or s.get("page_param")]:
+    added, stop_at = 0, (time.monotonic() + minutes * 60 if minutes is not None else None)
+    for src in [s for s in SOURCES if (s.get("format", "feed") == "feed" or s.get("page_param"))
+                and (stream is None or s["category"] == stream)]:
+        if stop_at is not None and time.monotonic() >= stop_at:
+            break
         parse = feeds.PARSERS[src.get("format", "feed")]
         key = f"backfill-feed:{src['url']}"
         row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
@@ -79,6 +84,9 @@ def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
             continue
         start, n_src, seen, failed, finished = (int(row[0]) + 1 if row else 1), 0, set(), 0, True
         for n in range(start, (MAX_PAGES if src.get("paged") else 1) + 1):
+            if stop_at is not None and time.monotonic() >= stop_at:
+                finished = False  # out of time: the next run carries on from the last page read
+                break
             body, entries, error = None, [], None
             for attempt in range(PAGE_TRIES):
                 try:
@@ -119,7 +127,7 @@ def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print) -> int:
         if finished:
             conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, 'done')", (key,))
             conn.commit()
-        log(f"  {src['name']}: {n_src} stories" + ("" if finished else " (unfinished: its host kept failing)"))
+        log(f"  {src['name']}: {n_src} stories" + ("" if finished else " (unfinished: carries on next run)"))
         added += n_src
     return added
 
@@ -147,6 +155,16 @@ def paper_sources(since: date, until: date) -> list[dict]:
 
 
 GROUPS = {"feeds": feed_archives, "official": official_sources, "research": arxiv_sources, "papers": paper_sources}
+
+
+def stream_history(conn, stream: str, minutes: float, since: date = date(2023, 1, 1), fetcher=feeds.fetch,
+                   log=print) -> int:
+    """A new stream's sources back to `since`, a few minutes at a time (the site's scheduled runs call it until
+    every source is done); returns how many stories were added."""
+    added = feed_archives(conn, since, fetcher, log, stream=stream, minutes=minutes)
+    if added:
+        cluster.assign(conn, days=None)
+    return added
 
 
 def run(conn, since: date = date(2023, 1, 1), only: list[str] | None = None, fetcher=feeds.fetch, log=print) -> int:

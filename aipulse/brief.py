@@ -157,6 +157,7 @@ def paper_summary(abstract: str, title: str = "") -> str:
 
 
 _KIND = {"tool": "A release", "news": "Industry news", "policy": "Policy news", "research": "A paper",
+         "infra": "Infrastructure news",
          ("regulation", "proposal"): "A proposal", ("regulation", "law"): "A law adopted",
          ("regulation", "expert"): "Commentary"}
 # Tags that name places rather than companies or people.

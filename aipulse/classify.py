@@ -337,6 +337,42 @@ SOURCE_HOME = {s["name"]: jurisdictions.JURISDICTIONS[s["jurisdictions"][0]][0] 
                if s.get("jurisdictions") and (s.get("government") or s["category"] == "regulation")}
 
 
+# --- Infrastructure & sustainability: AI's physical side (data centres and what they draw on) ---
+INFRA_TAG = "Infrastructure & sustainability"
+# Data centres themselves: named anywhere in a story, they make it one about AI's infrastructure.
+_DC = re.compile(r"data[- ]?cent(?:er|re)s?|\bhyperscalers?\b|\bhyperscale (?:data|campus|facilit)|server farms?|"
+                 r"\bAI campus(?:es)?|gigafactor\w* of compute", re.I)
+# In a headline, also the other places AI runs (a paper's summary mentioning its GPU cluster doesn't count).
+_SITE = re.compile(_DC.pattern + r"|\bAI factor(?:y|ies)|\b(?:GPU|compute|AI|training) clusters?|supercomput\w*|"
+                   r"\bcompute capacity", re.I)
+# AI's own footprint: "AI's energy use", "emissions from AI", "energy-hungry AI". Not AI used *for* sustainability
+# (a soil-quality model, AI that cuts a factory's emissions), and not "climate" or weather science.
+_FOOTPRINT = re.compile(r"\bAI['’]s (?:energy|electricity|power|carbon|water|emissions|environmental|climate)\b|"
+                        r"\b(?:emissions|energy|electricity|water) (?:from|of|used by|use of) (?:AI|data)\b|"
+                        r"\benergy[- ]hungry", re.I)
+# With AI in the headline: power and the grid ("Microsoft taps Three Mile Island nuclear plant to power AI"); not
+# "the new electricity", "pre-nuclear steel" or a "nuclear option".
+_POWER = re.compile(r"\belectricity (?:demand|use|usage|consumption|prices|bills|costs?|supply|needs|grid)\b|"
+                    r"\bto power (?:AI|its|the|data)\b|"
+                    r"\bpower (?:plants?|deals?|supply|demand|grid|costs?|purchase|consumption|usage|infrastructure)\b|"
+                    r"\bnuclear (?:power|plants?|reactors?|energy|deals?|startups?)\b|\b(?:giga|mega)watts?\b|"
+                    r"\b\d+(?:\.\d+)? ?[GM]W\b|"
+                    r"\benergy (?:demand|use|usage|consumption|costs?|appetite|bills?|needs|crunch)\b|"
+                    r"\bwater (?:use|usage|consumption|supply)\b", re.I)
+
+
+def infra_story(title: str) -> bool:
+    """Judged on the headline, for moving an Industry story into the stream: about data centres or other places
+    AI runs, AI's own footprint, or AI and power ("Microsoft taps Three Mile Island nuclear plant to power AI")."""
+    return bool(_SITE.search(title) or _FOOTPRINT.search(title) or (_ai.search(title) and _POWER.search(title)))
+
+
+def is_infra(title: str, summary: str) -> bool:
+    """A story about AI's infrastructure or footprint: its headline says so (infra_story), or its text names data
+    centres or AI's footprint. Tags the story in every stream, and filters the energy and climate newsrooms."""
+    return infra_story(title) or bool(_DC.search(summary) or _FOOTPRINT.search(summary))
+
+
 def tags_for(title: str, summary: str, limit: int = 5, source: str = "") -> list[str]:
     """Companies first, then places, then topics (see TOPIC_TERMS); a story left in its own language leads with
     "Translate and read". `source`: the story's publisher; a government's own publication that names no place
@@ -345,6 +381,8 @@ def tags_for(title: str, summary: str, limit: int = 5, source: str = "") -> list
     summary = _TRANSLATED.sub("", summary)
     text = f"{title} {summary}"
     topics = [k for k, p in _topics.items() if p.search(text)]
+    if is_infra(title, summary):  # in every stream, so Research, Policy and the tracker show it too
+        topics.insert(0, INFRA_TAG)
     companies, places = company_tags(title, summary), place_tags(title, summary)
     lead = lead_company(title) or (companies[0] if companies else None)
     if not places and source in SOURCE_HOME:

@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from datetime import date
 from pathlib import Path
 
 os.environ["AIPULSE_OFFLINE"] = "1"  # brand logos: cached data only, no network
@@ -315,7 +316,7 @@ def test_api_serves_grouped_cards_one_page_at_a_time(tmp_path):
     assert len(page2["items"]) == 2 and not page2["hasMore"]
     ma = [c for c in page1["items"] + page2["items"] if c["category"] == "policy"]
     assert len(ma) == 1 and len(ma[0]["also"]) == 1  # two outlets, one card
-    assert page1["counts"] == {"tool": 5, "news": 0, "policy": 1, "research": 0, "regulation": 0, "all": 6}
+    assert page1["counts"] == {"tool": 5, "news": 0, "policy": 1, "research": 0, "regulation": 0, "infra": 0, "all": 6}
     assert page1["stories"] == 7
 
 
@@ -607,7 +608,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily"}
-    assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
+    assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["infra.xml", "news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
 
 
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
@@ -2059,3 +2060,79 @@ def test_a_ministrys_release_gets_its_own_summary_and_country(tmp_path):
     assert "South Korea" in row["tags"]
     reclassify(conn, fetcher=lambda url: asked.append(url) or page)
     assert len(asked) == 1  # it has its summary now: not read again
+
+
+def test_infrastructure_stories_are_about_ai_s_own_footprint():
+    for t in ["Microsoft taps Three Mile Island nuclear plant to power AI", "AI data centres strain Arizona's water",
+              "County pauses new data centers amid noise complaints", "Meta to build 5GW AI campus in Louisiana",
+              "AI's energy appetite drives Nvidia and Amazon to pour billions into power infrastructure",
+              "Texas halts data center connections to power grid amid overwhelming demand"]:
+        assert classify.infra_story(t), t
+    for t in ["Google AI weather model beats forecasters", "Fero Labs, which uses AI to cut carbon emissions in factories, raises $15M",
+              "Scientists once hoarded pre-nuclear steel; now we're hoarding pre-AI content", "OpenAI raises $40B",
+              "At TED AI, experts debate whether we've created “the new electricity”", "Nvidia unveils new GPU",
+              "OpenAI weighs “nuclear option” of antitrust complaint", "Robbie G2: an AI agent that uses a grid to navigate GUIs"]:
+        assert not classify.infra_story(t), t
+    # the tag, in any stream: a paper or a bill about data centres carries it; a paper on privacy-utility doesn't
+    assert classify.INFRA_TAG in classify.tags_for("S. 4214: Artificial Intelligence Data Center Moratorium Act", "")
+    assert classify.INFRA_TAG in classify.tags_for("Cooling at scale", "We study water use in hyperscale data centres.")
+    assert classify.INFRA_TAG not in classify.tags_for("Privacy-utility trade-offs in LLM training", "A better utility bound.")
+
+
+def test_infrastructure_stories_have_their_own_stream():
+    from aipulse.collect import stream_of
+    from aipulse.sources import SOURCES
+    infra = [s for s in SOURCES if s["category"] == "infra"]
+    assert len(infra) >= 10 and all(s.get("infra_filter") for s in infra)  # an energy newsroom: only AI's footprint
+    news = {"name": "E", "url": "https://e.com/feed", "category": "news"}
+    assert stream_of(infra[0], "Anything they publish", "", "https://e.com/1") == "infra"
+    assert stream_of(news, "Local resistance blocks $98 billion in AI data center projects", "", "https://e.com/2") == "infra"
+    assert stream_of(news, "OpenAI raises $40B", "", "https://e.com/3") == "news"
+    # stored Industry stories move in (history back to 2023), and back out if the rule no longer holds
+    conn = store.connect(":memory:")
+    base = {"summary": "", "source": "E", "date": "2024-09-20", "tags": [], "authors": []}
+    store.insert(conn, {**base, "title": "Microsoft taps Three Mile Island nuclear plant to power AI", "url": "https://e.com/4", "category": "news"})
+    store.insert(conn, {**base, "title": "OpenAI raises $40B", "url": "https://e.com/5", "category": "infra"})
+    reclassify(conn, fetcher=lambda u: b"")
+    assert dict(conn.execute("SELECT url, category FROM items").fetchall()) == {"https://e.com/4": "infra", "https://e.com/5": "news"}
+    # a feed that gives its links as paths (the EIA's) is stored with full addresses
+    from datetime import datetime, timezone
+    day = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+    feed = (f"<rss><channel><item><title>Data centers drive US electricity demand</title><link>/pressroom/releases/press592.php</link>"
+            f"<pubDate>{day}</pubDate></item></channel></rss>").encode()
+    eia = {"name": "EIA", "url": "https://www.eia.gov/rss/press_rss.xml", "category": "infra", "infra_filter": True}
+    collect(conn, [eia], fetcher=lambda u: feed, log=lambda m: None, official_bills=False)
+    assert store.exists(conn, "https://www.eia.gov/pressroom/releases/press592.php")
+
+
+def test_infrastructure_reaches_the_email_and_its_readers():
+    from datetime import date
+    from aipulse import digest, preferences, quality, rss, subscribers
+    assert list(rss.FEEDS)[-1] == "infra" and rss.FEEDS["infra"][0] == "infra"
+    # a reader who had every stream gets the new one; a reader who chose some doesn't, but is told how to add it
+    base = {"ok": True, "unsubscribe": "https://script.google.com/x?t=", "subscribers": [
+        {"email": "a@x.org", "token": "0" * 36, "streams": ["releases", "news", "research", "regulation", "policy"]},
+        {"email": "b@x.org", "token": "1" * 36, "streams": ["research"]}]}
+    got = subscribers.readers(base)
+    assert got["a@x.org"][0][-1] == "infra" and got["b@x.org"][0] == ["research"]
+    assert "now part of your email" in digest._new_stream(date(2026, 10, 5), ["infra"])
+    assert "Change my streams" in digest._new_stream(date(2026, 10, 5), ["research"])
+    assert digest._new_stream(date(2026, 11, 1), ["research"]) == ""
+    # its stories are on topic without naming AI, and carry the tag and theme readers can choose
+    story = {"title": "Teraco opens a 40MW data centre in Cape Town", "summary": "", "source": "ESI Africa", "category": "infra"}
+    assert quality.on_topic(story)
+    assert {classify.INFRA_TAG} <= preferences.labels(story)
+    assert "Chips, compute & energy" in preferences.labels(story)  # an older saved choice still matches
+    assert classify.INFRA_TAG in digest.story_tags(story)
+
+
+def test_a_new_stream_s_history_resumes_where_it_stopped(tmp_path):
+    from aipulse import backfill
+    conn = store.connect(tmp_path / "t.db")
+    feed = (b'<rss><channel><item><title>Data centres draw on Ireland\'s grid</title><link>https://e.com/a</link>'
+            b'<pubDate>Mon, 02 Jan 2023 10:00:00 GMT</pubDate></item></channel></rss>')
+    asked = []
+    added = backfill.feed_archives(conn, date(2023, 1, 1), fetcher=lambda u: asked.append(u) or feed, log=lambda *_: None,
+                                   stream="infra", minutes=0)
+    assert added == 0 and not asked  # out of time before the first source: nothing read, nothing marked done
+    assert not conn.execute("SELECT 1 FROM meta WHERE key LIKE 'backfill-feed:%' AND value = 'done'").fetchone()

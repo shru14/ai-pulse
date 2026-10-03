@@ -19,7 +19,7 @@ import statistics
 from datetime import date, timedelta
 
 from . import rss
-from .classify import about_standards, is_ai_related
+from .classify import about_standards, is_ai_related, is_infra
 from .sources import SOURCES
 
 GOVERNMENT = {s["name"] for s in SOURCES if s.get("government")}
@@ -44,7 +44,8 @@ def on_topic(c: dict) -> bool:
     """False for a story from a general feed that doesn't name AI: it's left out of the email (and logged),
     rather than holding everyone's email over one borderline story."""
     return (c.get("source") not in MUST_NAME_AI or c.get("category") == "regulation"
-            or is_ai_related(c.get("title") or "", c.get("summary") or ""))
+            or is_ai_related(c.get("title") or "", c.get("summary") or "")
+            or (c.get("category") == "infra" and is_infra(c.get("title") or "", c.get("summary") or "")))
 
 
 def _story_problems(c: dict, stream: str) -> list[str]:

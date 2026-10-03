@@ -51,6 +51,9 @@ def choices_link(unsubscribe_link: str) -> str:
     return unsubscribe_link.replace("#unsubscribe=", "#choices=")
 
 
+BEFORE_INFRA = ("releases", "news", "research", "regulation", "policy")  # the streams before 3 Oct 2026
+
+
 def readers(data: dict) -> dict[str, tuple[list[str], str, str, dict[str, list[str]]]]:
     """{address: (streams, one-click unsubscribe address, unsubscribe link, choices)} from the web app's list,
     keeping only well-formed entries. The one-click address (the web app) goes only in the List-Unsubscribe
@@ -62,7 +65,10 @@ def readers(data: dict) -> dict[str, tuple[list[str], str, str, dict[str, list[s
     out = {}
     for r in data.get("subscribers") or []:
         email, token = str(r.get("email") or "").lower(), str(r.get("token") or "")
-        streams = [n for n in rss.FEEDS if n in (r.get("streams") or [])]
+        chosen = r.get("streams") or []
+        if all(n in chosen for n in BEFORE_INFRA):  # chose every stream before the sixth existed: it's theirs too
+            chosen = [*chosen, "infra"]
+        streams = [n for n in rss.FEEDS if n in chosen]
         if ADDRESS.match(email) and TOKEN.match(token) and streams and base.startswith("https://"):
             out[email] = (streams, base + token, f"{rss.SITE}#unsubscribe={token}", prefs_of(r))
     return out

@@ -35,7 +35,8 @@ KIND = {
     "tutorial": ("Tutorial", "#f3e8fd", "#7b1fa2"),
     "event": ("Event", "#e0f7fa", "#00737a"),
 }
-STREAM_TAG = {"releases": "Release", "research": "Research paper", "regulation": "Tracker", "policy": "Policy"}
+STREAM_TAG = {"releases": "Release", "research": "Research paper", "regulation": "Tracker", "policy": "Policy",
+              "infra": "Infrastructure"}
 # What each stream holds, in a line under its heading, and its colour on the site.
 SECTION_NOTE = {
     "releases": "New models, products and open-source launches.",
@@ -43,17 +44,20 @@ SECTION_NOTE = {
     "research": "New papers from arXiv, top labs and leading scholars.",
     "regulation": "Bills and laws on their way from proposal to force, AI bodies and AI standards.",
     "policy": "What governments, courts and politicians are doing about AI.",
+    "infra": "AI's data centres and what they draw on: power, water, land and emissions.",
 }
-COLOR = {"releases": "#0f9d76", "news": "#5b5fd6", "research": "#9153d9", "regulation": "#d6457e", "policy": "#d9822b"}
+COLOR = {"releases": "#0f9d76", "news": "#5b5fd6", "research": "#9153d9", "regulation": "#d6457e", "policy": "#d9822b",
+         "infra": "#5c940d"}
 ACTION_LABEL = {"proposal": "Proposal", "law": "Law adopted", "body": "AI body", "standard": "Standard"}
 PER_STREAM = 25  # a longer stream ends with a link to the rest (the RSS feed and the page have them all)
 SUMMARY = 160    # characters of summary in the table; the story's page has the rest
 GREY, INK, LINK, RULE = "#5f6368", "#1a1a1a", "#1a4fd6", "#eceef1"
 # the short email's look: a navy header band, white cells edged in their stream's colour, tags coloured by kind
 NAVY, PAGE, EDGE, HEADLINE = "#14213d", "#e9eef7", "#d9e1ef", "#1c3faa"
-BRIGHT = {"releases": "#12b886", "news": "#4c6ef5", "research": "#9c36b5", "regulation": "#e64980", "policy": "#f76707"}
+BRIGHT = {"releases": "#12b886", "news": "#4c6ef5", "research": "#9c36b5", "regulation": "#e64980", "policy": "#f76707",
+          "infra": "#74b816"}
 CHIP = {"place": f"background:{NAVY};color:#ffffff", "company": f"background:#e7ecff;color:{HEADLINE}",
-        "topic": "background:#f1f3f7;color:#4a5060"}
+        "topic": "background:#f1f3f7;color:#4a5060", "infra": "background:#e3f6d5;color:#2b5d0a"}
 SMTP_HOST = "smtp.gmail.com"
 
 
@@ -143,9 +147,9 @@ def _opening(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[
     stories = sum(1 + len(c.get("also") or []) for c in todays)
     hello = f"Let's explore what happened in AI on {long_day(day)}."
     what = {"releases": "launches", "news": "the business of AI", "research": "new research",
-            "regulation": "laws in the making", "policy": "what governments did"}
+            "regulation": "laws in the making", "policy": "what governments did", "infra": "AI's footprint"}
     kinds = [what[n] for n in streams]
-    sorted_into = (f"your {['two', 'three', 'four', 'five'][len(streams) - 2]} streams: {', '.join(kinds[:-1])} and {kinds[-1]}" if len(streams) > 1
+    sorted_into = (f"your {['two', 'three', 'four', 'five', 'six'][len(streams) - 2]} streams: {', '.join(kinds[:-1])} and {kinds[-1]}" if len(streams) > 1
                    else f"your stream, {kinds[0]}")
     intro = (f"We read {stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
              f"{'source' if len(outlets) == 1 else 'sources'} and sorted them into {sorted_into}.")
@@ -244,14 +248,17 @@ def story_tags(c: dict) -> list[str]:
               for j in c.get("jurisdictions") or []]
     # worked out with the current rules (classify.tags_for), so the email matches the site after its next re-sort
     tags = [t for t in classify.tags_for(c.get("title") or "", c.get("summary") or "", source=c.get("source") or "") if t not in ("Research", "Study Report")]
-    ordered = places + [t for t in tags if t in brief._PLACE_TAGS] + [t for t in tags if t not in brief._PLACE_TAGS]
+    # Infrastructure & sustainability right after the places, so a Research or Policy story about it shows the tag
+    infra = [classify.INFRA_TAG] if classify.INFRA_TAG in tags else []
+    ordered = (places + [t for t in tags if t in brief._PLACE_TAGS] + infra
+               + [t for t in tags if t not in brief._PLACE_TAGS and t != classify.INFRA_TAG])
     return list(dict.fromkeys(ordered))[:TAGS]
 
 
 def _chips(tags: list[str]) -> str:
     """Tag pills: countries navy, companies light blue, topics grey."""
     kind = lambda t: ("place" if t in brief._PLACE_TAGS or t == "International" else
-                      "company" if t in classify.COMPANY_TERMS else "topic")
+                      "company" if t in classify.COMPANY_TERMS else "infra" if t == classify.INFRA_TAG else "topic")
     return "".join(f'<span style="display:inline-block;font-size:11px;{CHIP[kind(t)]};border-radius:9px;'
                    f'padding:1px 8px;margin:4px 4px 0 0;white-space:nowrap">#{escape(t)}</span>' for t in tags)
 
@@ -395,6 +402,20 @@ def _left_note(prefs: dict, left: list[dict]) -> str:
             f"they're in the full email.")
 
 
+NEW_STREAM_UNTIL = date(2026, 10, 31)  # the new stream is announced in every email until then
+
+
+def _new_stream(day: date, streams: list[str]) -> str:
+    """While the sixth stream is new: a line saying it's here, or how to add it."""
+    if day > NEW_STREAM_UNTIL:
+        return ""
+    if "infra" in streams:
+        return ("New: Infrastructure & sustainability, AI's data centres and the power, water and land they draw on, "
+                "is now part of your email.")
+    return ("New on AI Pulse: Infrastructure & sustainability, AI's data centres and the power, water and land they "
+            "draw on. Add it with “Change my streams and choices” at the bottom of this email.")
+
+
 def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date,
            prefs: dict | None = None, left: list[dict] | None = None) -> tuple[list[str], str]:
     """The short email's body: an opening line, the TOP stories that mattered most (tag, headline, one line,
@@ -426,15 +447,18 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
              else f"Here are the {len(top)} that mattered most.")
     made_for = _left_note(prefs, left or [])
+    news = _new_stream(day, streams)
     # In order: the count, the word of the day, the full email, then the stories
     word_text, word_html = _word(cards, day, streams, prefs, [_biggest(by_stream, streams), top, todays])
-    lines = [hello, "", intro, *([made_for] if made_for else []), "", *word_text, "",
+    lines = [hello, "", intro, *([made_for] if made_for else []), *([news] if news else []), "", *word_text, "",
              f"Want everything? The full email, every story of the day in one table: {everything}",
              *([quiet] if quiet else []), "", title]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
     html = [f'<p style="margin:0;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
             + (f'<p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:{GREY}">{escape(made_for)}</p>' if made_for else "")
+            + (f'<p style="margin:8px 0 0;font-size:13px;line-height:1.5;background:#e3f6d5;color:#2b5d0a;padding:8px 10px;'
+               f'border-radius:4px">{escape(news)}</p>' if news else "")
             + word_html
             + f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
               f'Want everything? See the full email: every story of the day in one table →</a></p>'

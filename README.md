@@ -1,7 +1,7 @@
 # AI Pulse
 
 A free, non-commercial, worldwide briefing on AI. It reads ~95 public sources, keeps only AI stories, sorts
-them into five streams and links every card to the original.
+them into six streams and links every card to the original.
 
 **Live site:** https://shru14.github.io/ai-pulse/
 
@@ -18,17 +18,18 @@ runs offline.
 | **Research** | Research papers only: arXiv papers by ~120 leading AI and AI-ethics scholars, and big-lab papers | Every 6 h (arXiv publishes on weekdays) |
 | **Regulation tracker** | AI proposals, adopted laws, AI bodies and AI standards, by country | Every 6 h; Korea, Vietnam and OECD.AI weekly; standards by hand |
 | **Policy** | What governments, courts and politicians do about AI; government publications always land here | Every 6 h |
+| **Infrastructure & sustainability** | AI's data centres and what they draw on: power, the grid, water, land, emissions. Industry stories about them move here; Research, Policy and tracker stories about them stay in their stream with the **#Infrastructure & sustainability** tag | Every 6 h |
 
 ## Features
 
-- **Pages:** a front page of tiles (the week's most-reported story, the daily email, the word of the week with where it came from, and each stream's top two of the week) and a page per stream; Infrastructure & sustainability is coming. Section colours are colour-blind safe (Okabe–Ito).
+- **Pages:** a front page of tiles (the week's most-reported story, the daily email, the word of the week with where it came from, and each stream's top two of the week) and a page per stream. Section colours are colour-blind safe (Okabe–Ito).
 - **Filters:** by stream, region, country and time range; search covers headlines, summaries, tags and authors back to 2023.
 - **Everything in English, nothing left out:** a story in another language shows the publisher's English version, else an offline translation (OPUS-MT) marked as such, else an English headline tagged **#Translate and read**. Each links to the original through Google Translate, opened by the reader.
 - **Tags:** companies, a country (the place a story names, else the country of the government that published it, else the company's home country) and topics.
 - **Glossary:** plain-English meanings of the hard words and product names in stories (MoE, RAG, inference, c.ai…). A dotted word in a story opens its meaning; the Glossary button lists all ~120, this week's most-used first. `python -m aipulse glossary` lists acronyms not explained yet.
 - **One card per event:** the same story from several outlets is grouped, led by the company's own post when there is one.
-- **RSS:** one feed per stream, one post a day ([Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml), [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml)).
-- **Daily email:** one a day, with the reader's streams: the 10 things that mattered most (ranked by how many outlets reported them) with their tags, then each stream's top headlines; on a lighter day (12 stories or fewer), all of them. It links to the day's full list on the site (`daily/`) and to the glossary.
+- **RSS:** one feed per stream, one post a day ([Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml), [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml), [Infrastructure & sustainability](https://shru14.github.io/ai-pulse/feeds/infra.xml)).
+- **Daily email:** one a day, with the reader's streams: the 10 things that mattered most (ranked by how many outlets reported them) with their tags (a story about AI's infrastructure carries **#Infrastructure & sustainability**, whatever its stream), then each stream's top headlines; on a lighter day (12 stories or fewer), all of them. It links to the day's full list on the site (`daily/`) and to the glossary. Readers who had every stream get Infrastructure & sustainability too; until 31 Oct 2026 the email announces it and tells the others how to add it.
 - **Make it yours:** readers can ask for more of, or leave out, any label or tag the site shows (story types, 8 topic themes, companies, continents or any country, scholars) and add up to 5 words of their own. Their top 10 is then up to 5 of their choice and the day's biggest; what they leave out never appears, and the email says how many were left out. The full email is the same for everyone. Every email has a "Change my streams and choices" link.
 - **Quality check:** before sending, every story is checked (sorting, text, links, duplicates, unusual counts); any problem holds the email for everyone and alerts the project inbox.
 - **Subscriptions:** sign up on the site, confirm by one link, unsubscribe in one click. Addresses stay in the project's Google account, never in this repository or its logs.
@@ -37,8 +38,8 @@ runs offline.
 
 1. **robots.txt must allow us.** It's checked before every request (`feeds.allowed`); official APIs whose terms allow programmatic use are the only exception (arXiv, Wikidata, congress.gov, jsDelivr).
 2. **Terms must allow** showing a headline, a short description and a link.
-3. **No workarounds:** nothing behind a login, bot check or rate limit. Sites that block automated readers (xAI's and Perplexity's news pages, iso.org) aren't read.
-4. **Free to read:** every story links to an article anyone can read without paying; a story that needs a subscription is left out (The Verge's pages are checked for the paywall mark each publisher gives search engines).
+3. **No workarounds:** nothing behind a login, bot check or rate limit. Sites that block automated readers (xAI's and Perplexity's news pages, iso.org, IRENA, Data Center Dynamics) aren't read, nor are sites whose robots.txt says no (METI, BNamericas, Dialogue Earth).
+4. **Free to read:** every story links to an article anyone can read without paying; a story that needs a subscription is left out (The Verge's pages are checked for the paywall mark each publisher gives search engines; Eco-Business, whose articles carry it, isn't read).
 5. **Only what's needed:** headline, short description, date and link. No personal data from records.
 6. **Credit and non-commercial use**, as the licences below require.
 
@@ -55,6 +56,7 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 | AI incidents (Industry) | AI Incident Database: every incident its editors confirmed since 2023, one card each (terms bar only high-volume and commercial use; text CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT (its list has headlines only, so each new release is read once for its opening line), Malaysia's Ministry of Digital, Russia's State Duma (English news) |
+| Infrastructure & sustainability | **Global:** Carbon Brief, Climate Home News, Mongabay, Energy Monitor, The Conversation (energy), Capacity Media, Data Center Knowledge · **Europe:** European Commission (energy), Data Centre Review · **Asia-Pacific:** W.Media, iTnews (Australia) · **Africa:** ESI Africa · **North America:** US Energy Information Administration, Canary Media. Only their stories about AI's infrastructure are kept |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 
 ### Official records (Regulation tracker)
@@ -90,7 +92,7 @@ Tests run locally, not on GitHub. Every other command (`bills`, `build`, `digest
 
 ## Hosting
 
-- **Site:** `.github/workflows/pages.yml` collects and publishes to GitHub Pages every 6 hours and on every push to `main`, with a quick run of lab and company blogs every 30 minutes.
+- **Site:** `.github/workflows/pages.yml` collects and publishes to GitHub Pages every 6 hours and on every push to `main`, with a quick run of lab and company blogs every 30 minutes. A new stream's history back to 2023 is read 12 minutes a run until it's complete.
 - **Daily email:** `.github/workflows/digest.yml`, four tries each morning from 05:17 UTC, sent once (secrets `DIGEST_EMAIL`, `DIGEST_APP_PASSWORD`, `DIGEST_LIST_KEY`).
 - **Sign-ups:** `apps-script/Code.gs`, a Google Apps Script web app in the project's Google account.
 
@@ -105,8 +107,8 @@ tests/                 tests
 
 ## Credits and licences
 
-European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK: Open Government Licence v3.0. Federal Register and
-congress.gov: US public domain. Canada: reproduced with the Speaker's permission for non-commercial use.
+European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK: Open Government Licence v3.0. Federal Register,
+congress.gov and US Energy Information Administration: US public domain. Canada: reproduced with the Speaker's permission for non-commercial use.
 Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. Korean laws: National
 Law Information Center (https://www.law.go.kr), Ministry of Government Legislation. Taiwanese laws:
 Legislative Yuan law system (https://lis.ly.gov.tw). Malaysian bills: Parliament of Malaysia
