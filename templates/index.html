@@ -7,6 +7,7 @@
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Research" href="feeds/research.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Regulation tracker" href="feeds/regulation.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Policy" href="feeds/policy.xml">
+<link rel="alternate" type="application/rss+xml" title="AI Pulse · Infrastructure & sustainability" href="feeds/infra.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
@@ -545,13 +546,13 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
   </section>
-  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a> · <a href="feeds/policy.xml">Policy</a></footer>
+  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a> · <a href="feeds/policy.xml">Policy</a> · <a href="feeds/infra.xml">Infrastructure &amp; sustainability</a></footer>
 </div>
 
 <script>
 // Industry cards that aren't reporting are labelled on the card (classify.news_kind).
 const KIND_LABEL = {incident:"AI-incident", study:"Study", analysis:"Opinion & analysis", tutorial:"Tutorial", event:"Event", blog:"Company blog"};
-const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation", infra:"Infrastructure"};
+const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation", infra:"Infra"};
 const CATS = ["tool","news","research","regulation","policy","infra"];
 const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research:"Research", regulation:"Regulation tracker",
   infra:"Infrastructure & sustainability"};
@@ -577,7 +578,7 @@ const SECTION_DESC = {
   research: "New papers from arXiv, top labs and leading scholars.",
   regulation: "Bills and laws from proposal to force, AI bodies and standards, country by country.",
   policy: "What governments, courts and politicians are doing about AI.",
-  infra: "The physical side of AI: data centres, chips and power, energy, water and emissions, and what is being done about them."};
+  infra: "The physical side of AI: data centres, the power, water and land they draw on, their emissions, and what is being done about them."};
 // A section being designed (docs: AI Pulse Discover): its page and tile are in place, its stories come later.
 const SOON = new Set();
 const hashCat = () => { const h = location.hash.slice(1); return h==="all" || CATS.includes(h) || SOON.has(h) ? h : "home"; };
