@@ -71,7 +71,7 @@ def main():
     who.add_argument("--to", help="recipient address")
     who.add_argument("--subscribers", action="store_true",
                      help="every confirmed subscriber, each with their streams (from the sign-up web app)")
-    dg.add_argument("--streams", default="releases,news,research,regulation,policy", help="comma-separated streams")
+    dg.add_argument("--streams", default=",".join(rss.FEEDS), help="comma-separated streams (default: all)")
     dg.add_argument("--day", help="UTC day, YYYY-MM-DD (default: yesterday)")
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     dg.add_argument("--layout", choices=["short", "full"], default="short",
