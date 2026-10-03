@@ -21,6 +21,7 @@ runs offline.
 
 ## Features
 
+- **Pages:** a front page of tiles (the week's most-reported story, the daily email, the word of the week with where it came from, and each stream's top two of the week) and a page per stream; Infrastructure & sustainability is coming. Section colours are colour-blind safe (Okabe–Ito).
 - **Filters:** by stream, region, country and time range; search covers headlines, summaries, tags and authors back to 2023.
 - **Everything in English, nothing left out:** a story in another language shows the publisher's English version, else an offline translation (OPUS-MT) marked as such, else an English headline tagged **#Translate and read**. Each links to the original through Google Translate, opened by the reader.
 - **Tags:** companies, a country (the place a story names, else the country of the government that published it, else the company's home country) and topics.
@@ -115,4 +116,4 @@ Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI P
 documents: National Legal Database (https://vbpl.vn). Australian legislation: based on content from the
 Federal Register of Legislation (CC BY 4.0); for the latest information go to https://www.legislation.gov.au.
 AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
-(MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon.
+(MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon. Section icons: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).
