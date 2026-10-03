@@ -650,11 +650,15 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
             it["category"] = classify.categorize(it["title"], text, "policy")
             if it["category"] != "policy":
                 store.set_regulation(conn, it["id"], it["category"], [], None)
+                if brief.is_draft(it["summary"]):  # "A proposal in Nigeria." named the old stream
+                    store.update_text(conn, it["id"], it["title"], brief.draft({**it, "action": None}, PLACE_NAMES))
                 changed += 1
                 continue
         apply_regulation(it, defaults.get(it["source"], []))
         if (it["category"], it["jurisdictions"], it["action"]) != before:
             store.set_regulation(conn, it["id"], it["category"], it["jurisdictions"], it["action"])
+            if brief.is_draft(it["summary"]):  # "A proposal in Nigeria." for what is no longer a proposal
+                store.update_text(conn, it["id"], it["title"], brief.draft(it, PLACE_NAMES))
             changed += 1
     conn.commit()
     return changed

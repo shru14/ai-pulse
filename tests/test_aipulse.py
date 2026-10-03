@@ -1304,6 +1304,36 @@ def test_a_study_reported_by_the_news_is_not_a_release():
     assert not c.launched("Financial AI startup Model ML nabs $75M investment", "The startup raised money for its model.")
 
 
+def test_people_leaving_comparisons_and_a_body_using_ai_are_not_misfiled():
+    from aipulse import classify as c, cluster
+    # someone leaving is never a release, whatever the summary says was "released"
+    assert not c.launched("Another OpenAI safety departure adds to a pattern of researchers leaving with public warnings",
+                          "He points to AI agents that were accidentally released.")
+    assert not c.launched("Yann LeCun leaves Meta to launch new AI startup", "")
+    assert c.launched("Meta releases first multimodal Llama-4 models, leaves EU out in the cold", "")
+    assert c.launched("Google's Gemma 4 puts free agentic AI on your phone and no data ever leaves the device", "Google released Gemma 4.")
+    # a comparison isn't a power story; the real thing still is
+    assert not c.infra_story("Former OpenAI employee says AI should be regulated like nuclear power plants")
+    assert c.infra_story("AI boom could delay US coal phase-out plans as electricity demand soars")
+    # an agency using AI isn't a regulatory action; a proposal still is
+    assert c.regulatory_action("NITDA deploys AI to turn Nigerian youths’ ideas into policy proposals") is None
+    assert c.regulatory_action("Kenya proposes AI bill") == "proposal"
+    # a body that "moves to regulate" proposes rules (the fine is a planned one); a move against one company doesn't
+    assert c.regulatory_action("FCCPC moves to regulate AI marketing, businesses face N100 million penalty") == "proposal"
+    assert c.regulatory_action("FCC moves to outlaw AI-generated robocalls") == "proposal"
+    assert c.regulatory_action("Trump moves to ban Anthropic from the US government") is None
+    # one person leaving, told by two outlets in different words, is one card
+    a = {"id": "a", "date": "2026-10-03", "category": "news", "source": "The Decoder",
+         "title": "Another OpenAI safety departure adds to a pattern of researchers leaving with public warnings",
+         "summary": "David Robinson, who worked on safety systems at OpenAI, left the company and is blasting its safety culture."}
+    b = {"id": "b", "date": "2026-10-03", "category": "news", "source": "TechCrunch AI",
+         "title": "OpenAI safety employee resigns, claiming the company’s ‘culture is broken’",
+         "summary": "By his own admission, David Robinson is “something of a cliché”: an employee who resigns with a warning."}
+    idf = {"david": 6.0, "robinson": 6.0}
+    assert cluster._same_person(a, b, idf)
+    assert not cluster._same_person({**a, "title": "Meta launches Muse"}, b, idf)  # a shared name alone isn't one event
+
+
 def test_papers_get_research_and_news_about_studies_gets_study_report():
     from aipulse import classify as c
     tags = c.tags_for("AI access makes people unwilling to say I don't know, study finds", "A new study found that...")
