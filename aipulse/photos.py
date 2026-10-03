@@ -9,6 +9,7 @@ domain, CC0, CC BY and CC BY-SA photos are used. No news photo is copied from a 
 from __future__ import annotations
 
 import json
+import re
 from html import escape
 from pathlib import Path
 
@@ -27,19 +28,30 @@ def fill(page: str) -> str:
     return page.replace("const PHOTOS = {};", "const PHOTOS = " + json.dumps(by, ensure_ascii=False, separators=(",", ":")) + ";", 1)
 
 
+def _who(c) -> str:
+    """The author's name alone: no web addresses, licence text or a name said twice (as Commons sometimes has it)."""
+    t = re.sub(r"\(?(?:https?://|www\.)\S+\)?", "", c["author"] or c["attribution"] or "")
+    t = re.split(r"\s(?:You are free|Under the following|Licensed under)", t)[0]
+    t = re.sub(r"\(aka [^)]*\)", "", t)
+    t = " ".join(t.split()).strip(" ,;:-–")
+    half = t[:len(t) // 2].strip()
+    if t and t == f"{half} {half}":
+        t = half
+    return t or "Unknown author"
+
+
 def credits_page() -> str:
+    """One line per photo: its title (linked to Commons), who made it, the licence."""
+    def lic(c):
+        return f'<a href="{escape(c["licence_url"])}">{escape(c["licence"])}</a>' if c["licence_url"] else escape(c["licence"])
     rows = "".join(
-        f'<tr><td><img src="{escape(c["photo"])}" alt="" width="120" height="90" loading="lazy"></td>'
-        f'<td><a href="{escape(c["source"])}">{escape(c["title"].replace("_", " "))}</a><br>{escape(c["author"] or "Unknown author")}'
-        + (f'<br><small>{escape(c["attribution"])}</small>' if c["attribution"] and c["attribution"] != c["author"] else "")
-        + f'</td><td>' + (f'<a href="{escape(c["licence_url"])}">{escape(c["licence"])}</a>' if c["licence_url"] else escape(c["licence"]))
-        + '</td></tr>' for c in credits())
+        f'<li><a href="{escape(c["source"])}">{escape(c["title"].replace("_", " ").rsplit(".", 1)[0])}</a>'
+        f' · {escape(_who(c))} · {lic(c)}</li>' for c in credits())
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '<title>Photo credits · AI Pulse</title><style>body{font:15px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;padding:24px 16px;'
-            'color:#000;background:#fff}h1{font:900 30px Arial Black,Arial,sans-serif;text-transform:uppercase;border-bottom:4px solid #000;padding-bottom:8px}'
-            'table{border-collapse:collapse;width:100%;table-layout:fixed}td{border-top:2px solid #000;padding:8px;vertical-align:top;overflow-wrap:anywhere}'
-            'td:first-child{width:136px}td:last-child{width:130px}img{display:block;object-fit:cover}'
-            'a{color:#0072B2}@media (prefers-color-scheme:dark){body{background:#0A0A0A;color:#fff}td{border-color:#fff}h1{border-color:#fff}a{color:#56B4E9}}</style></head><body>'
-            '<h1>Photo credits</h1><p>The photos on AI Pulse are openly licensed pictures from Wikimedia Commons, shown in the colour of '
-            'each stream. They illustrate a story\'s topic; they are not photos of the story itself. <a href="../">Back to AI Pulse</a></p>'
-            f'<table>{rows}</table></body></html>')
+            '<title>Photo credits · AI Pulse</title><style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
+            'padding:24px 16px;color:#222;background:#fff}h1{font-size:20px;font-weight:600;margin:0 0 6px}p{margin:0 0 14px;color:#555}'
+            'ul{list-style:none;margin:0;padding:0}li{padding:5px 0;border-top:1px solid #ddd;overflow-wrap:anywhere}'
+            'a{color:#0072B2}@media (prefers-color-scheme:dark){body{background:#111;color:#ddd}p{color:#aaa}li{border-color:#333}'
+            'a{color:#56B4E9}}</style></head><body><h1>Photo credits</h1><p>Openly licensed photos from Wikimedia Commons, '
+            'shown in each stream’s colour. They illustrate a topic, not the story itself. <a href="../">Back to AI Pulse</a></p>'
+            f'<ul>{rows}</ul></body></html>')
