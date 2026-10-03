@@ -7,6 +7,7 @@
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Research" href="feeds/research.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Regulation tracker" href="feeds/regulation.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Policy" href="feeds/policy.xml">
+<link rel="alternate" type="application/rss+xml" title="AI Pulse · Infrastructure & sustainability" href="feeds/infra.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
@@ -310,7 +311,7 @@ header.top{gap:10px}
 .item.tool,.k-tool{--cat-c:var(--c-tool);--cat-soft:var(--c-tool-soft)} .item.news,.k-news{--cat-c:var(--c-news);--cat-soft:var(--c-news-soft)}
 .item.policy,.k-policy{--cat-c:var(--c-policy);--cat-soft:var(--c-policy-soft)} .item.research,.k-research{--cat-c:var(--c-research);--cat-soft:var(--c-research-soft)}
 .item.regulation,.k-regulation{--cat-c:var(--c-reg);--cat-soft:var(--c-reg-soft)}
-.k-infra{--cat-c:var(--c-infra);--cat-soft:var(--c-infra-soft)}
+.item.infra,.k-infra{--cat-c:var(--c-infra);--cat-soft:var(--c-infra-soft)}
 .item > .body{grid-column:2}
 /* Left column: a picture of who or what the story is about, then its label. */
 .side{grid-row:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
@@ -351,6 +352,7 @@ header.top{gap:10px}
 .group:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .authors{font-size:14px;color:var(--muted);margin:0}
 .cat.regulation{color:var(--c-reg);background:var(--c-reg-soft)}
+.cat.infra{color:var(--c-infra);background:var(--c-infra-soft)}
 .place{font:500 12px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;cursor:pointer}
 .place:hover{border-color:var(--muted)}
 .day h2 .count{color:var(--muted);font-weight:400}
@@ -460,6 +462,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
         <label><input type="checkbox" value="research" checked> Research</label>
         <label><input type="checkbox" value="regulation" checked> Regulation tracker</label>
         <label><input type="checkbox" value="policy" checked> Policy</label>
+        <label><input type="checkbox" value="infra" checked> Infrastructure &amp; sustainability</label>
       </fieldset>
       <details class="pref-box" id="pref-box">
         <summary>Make it yours <span class="opt">(optional)</span></summary>
@@ -500,7 +503,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   <!-- Front page: tiles. The week's biggest story, the daily email, a glossary word, then a tile per stream. -->
   <section class="home" id="front" hidden>
     <p class="lede"><strong>Your briefing on what's happening in AI.</strong><br>AI Pulse reads company blogs,
-      newsrooms, research archives and government sites, sorts every story into one of five streams and links
+      newsrooms, research archives and government sites, sorts every story into one of six streams and links
       each card to the original reporting.</p>
     <div class="status home-status" id="home-status">Loading feed…</div>
     <div class="bento">
@@ -543,14 +546,14 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
   </section>
-  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a> · <a href="feeds/policy.xml">Policy</a></footer>
+  <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a> · <a href="feeds/policy.xml">Policy</a> · <a href="feeds/infra.xml">Infrastructure &amp; sustainability</a></footer>
 </div>
 
 <script>
 // Industry cards that aren't reporting are labelled on the card (classify.news_kind).
 const KIND_LABEL = {incident:"AI-incident", study:"Study", analysis:"Opinion & analysis", tutorial:"Tutorial", event:"Event", blog:"Company blog"};
-const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation"};
-const CATS = ["tool","news","research","regulation","policy"];
+const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation", infra:"Infra"};
+const CATS = ["tool","news","research","regulation","policy","infra"];
 const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research:"Research", regulation:"Regulation tracker",
   infra:"Infrastructure & sustainability"};
 // Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
@@ -559,7 +562,7 @@ const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", body:"AI body", st
 const monthOf = d => new Date(d+"T00:00:00").toLocaleDateString(undefined,{month:"short", year:"numeric"});
 // items: the cards loaded so far for the current tab / search / range / country (the server filters and
 // pages them); counts: cards per tab; mapTally: proposals and laws per country for the tracker's map.
-const REGION_TABS = new Set(["regulation", "news"]);  // tabs with the region filter
+const REGION_TABS = new Set(["regulation", "news", "infra"]);  // tabs with the region filter
 const state = {cat:"home", place:null, region:null, regions:{}, q:"", range:30, items:[], page:0, total:0, hasMore:false, loading:false,
                error:false, counts:{}, mapTally:null, stories:0, status:null, places:{}, failing:[]};
 const PER_PAGE = 40;
@@ -575,9 +578,9 @@ const SECTION_DESC = {
   research: "New papers from arXiv, top labs and leading scholars.",
   regulation: "Bills and laws from proposal to force, AI bodies and standards, country by country.",
   policy: "What governments, courts and politicians are doing about AI.",
-  infra: "The physical side of AI: data centres, chips and power, energy, water and emissions, and what is being done about them."};
+  infra: "The physical side of AI: data centres, the power, water and land they draw on, their emissions, and what is being done about them."};
 // A section being designed (docs: AI Pulse Discover): its page and tile are in place, its stories come later.
-const SOON = new Set(["infra"]);
+const SOON = new Set();
 const hashCat = () => { const h = location.hash.slice(1); return h==="all" || CATS.includes(h) || SOON.has(h) ? h : "home"; };
 state.cat = hashCat();
 { const q = new URLSearchParams(location.search).get("q"); if(q){ state.q = q; if(state.cat === "home") state.cat = "all"; } }
@@ -924,7 +927,7 @@ function staticPayload(d, params){
   let since = "";
   if(days){ const t = new Date(); t.setUTCDate(t.getUTCDate() - days); since = t.toISOString().slice(0, 10); }
   const base = d.cards.filter(c => c.date >= since && words.every(w => c.s.includes(" "+w)));
-  const counts = {tool:0, news:0, policy:0, research:0, regulation:0};
+  const counts = {tool:0, news:0, policy:0, research:0, regulation:0, infra:0};
   base.forEach(c => { counts[c.category] = (counts[c.category] || 0) + 1; });
   counts.all = base.length;
   const eu = new Set(d.euMembers);
@@ -1356,7 +1359,9 @@ async function openChoices(token){
   try{
     const r = await (await fetch(SIGNUP_URL, {method: "POST", body: new URLSearchParams({action: "choices", t: token, format: "json"})})).json();
     if(!r.ok) return subMessage(r.text || "This link doesn't work any more. Subscribe again with the Daily digest button.", "error");
-    subDialog.querySelectorAll(".sub-streams input").forEach(i => { i.checked = (r.streams || []).includes(i.value); });
+    // a reader who chose every stream before the sixth existed gets it too (subscribers.readers): shown ticked
+    const had = r.streams || [], all5 = ["releases","news","research","regulation","policy"].every(s => had.includes(s));
+    subDialog.querySelectorAll(".sub-streams input").forEach(i => { i.checked = had.includes(i.value) || (i.value === "infra" && all5); });
     PREF.more = new Set(r.more || []); PREF.less = new Set(r.less || []);
     $("pref-words").value = (r.words || []).map(w => '"' + w + '"').join(", ");
     showWords();

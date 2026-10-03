@@ -53,6 +53,9 @@ def main():
     bf.add_argument("--since", default="2023-01-01", help="start date, YYYY-MM-DD")
     bf.add_argument("--only", action="append", choices=["feeds", "official", "research", "papers"],
                     help="run just these groups (repeatable)")
+    hi = sub.add_parser("history", help="a new stream's sources back to 2023, a few minutes a run (resumes)")
+    hi.add_argument("--stream", required=True, help="the stream's category, e.g. infra")
+    hi.add_argument("--minutes", type=float, default=12, help="stop after this long; the next run carries on")
     bl = sub.add_parser("bills", help="sync AI bills' stages from official records (US, EU, UK, Canada, Brazil, Australia, China, India, "
                                         "Japan, Vietnam, Switzerland, Malaysia, Taiwan, Korea) and OECD.AI")
     bl.add_argument("--eu-since", type=int, help="also discover EU procedures from this year on (one-time backfill)")
@@ -165,6 +168,9 @@ def main():
         from .backfill import run as backfill
         conn = store.connect(a.db)
         print(f"Added {backfill(conn, _date.fromisoformat(a.since), a.only)} stories.")
+    elif a.cmd == "history":
+        from .backfill import stream_history
+        print(f"Added {stream_history(store.connect(a.db), a.stream, a.minutes)} stories.")
     elif a.cmd == "digest":
         from . import digest
         streams = [x.strip() for x in a.streams.split(",") if x.strip()]

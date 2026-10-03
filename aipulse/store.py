@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
-CATEGORIES = ("tool", "news", "policy", "research", "regulation")
+CATEGORIES = ("tool", "news", "policy", "research", "regulation", "infra")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS items (
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS items (
     summary    TEXT NOT NULL DEFAULT '',
     url        TEXT NOT NULL,
     source     TEXT NOT NULL,
-    category   TEXT NOT NULL CHECK (category IN ('tool','news','policy','research','regulation')),
+    category   TEXT NOT NULL CHECK (category IN ('tool','news','policy','research','regulation','infra')),
     date       TEXT NOT NULL,             -- YYYY-MM-DD the story was published / released
     tags       TEXT NOT NULL DEFAULT '',  -- comma-separated
     authors    TEXT NOT NULL DEFAULT '',  -- comma-separated, for papers

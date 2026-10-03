@@ -29,17 +29,19 @@ _SKIP = {"Research"}  # every paper carries it: the Research stream is the choic
 THEMES = {
     "Models & products": ["Agents", "Open Models", "Reasoning", "Multimodal", "Voice", "Image & Video Generation",
                           "Coding Tools", "Robotics", "Benchmarks", "Training Data"],
-    "Chips, compute & energy": ["Chips", "Compute & Data Centers", "Energy"],
+    classify.INFRA_TAG: [classify.INFRA_TAG, "Chips", "Compute & Data Centers", "Energy", "Climate"],
     "Business & work": ["Funding", "M&A", "IPO", "Jobs & Labor"],
     "Law & regulation": ["Law", "Regulation", "AI Act", "Standards", "Governance", "Copyright", "Privacy",
                          "Antitrust", "Export Controls"],
     "Safety & security": ["Safety", "Alignment", "Interpretability", "Existential Risk", "Security", "Misuse",
                           "Deepfakes", "Surveillance"],
     "Defense & elections": ["Defense", "Elections"],
-    "Science, health & education": ["Science", "Healthcare", "Education", "Climate", "Study Report"],
+    "Science, health & education": ["Science", "Healthcare", "Education", "Study Report"],
     "Ethics & ideas": ["Ethics", "Philosophy"],
 }
 THEME_OF = {topic: theme for theme, topics in THEMES.items() for topic in topics}
+# Themes renamed since readers chose them: a saved choice of the old name still means the new theme.
+RENAMED = {"Chips, compute & energy": classify.INFRA_TAG}
 
 # Places are offered as continents (UN M49 geoscheme), not a long list of countries; every country can still be
 # found with the form's search. Built from the site's own regions: Americas and Asia-Pacific split, the Middle
@@ -89,7 +91,10 @@ def labels(c: dict) -> set[str]:
     if c.get("category") != "research":
         tags |= set(classify.tags_for(c.get("title") or "", c.get("summary") or "", limit=99, source=c.get("source") or ""))
     tags -= _SKIP
+    if c.get("category") == "infra":  # the stream's every story counts as the theme, tag or not
+        tags.add(classify.INFRA_TAG)
     wider = {THEME_OF.get(t) for t in tags} | {CONTINENT_OF.get(t) for t in tags}
+    wider |= {old for old, new in RENAMED.items() if new in wider}
     return tags | (wider - {None, ""}) | ({story_type(c)} - {None})
 
 

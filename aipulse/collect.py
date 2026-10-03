@@ -6,6 +6,7 @@ import json
 import re
 import time
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urljoin
 
 from . import bills, brands, brief, classify, cluster, feeds, jurisdictions, store, translate
 from .sources import COMPANIES, EXPERT_FIELDS, PROFESSORS, SOURCES
@@ -195,6 +196,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
         for e in entries[: src.get("max_items")]:
             if not e["title"] or not e["url"]:
                 continue
+            e["url"] = urljoin(src["url"], e["url"])  # a feed that gives its links as paths (the EIA's)
             published = e["published"] or datetime.now(timezone.utc)
             if published < src_cutoff:
                 continue
@@ -222,9 +224,12 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             title, summary, url = in_english(conn, title, summary, e["url"], source, fetcher)
 
             ai_only = src.get("ai_only", src["category"] == "tool")
-            if not ai_only and not classify.is_ai_related(title, e["summary"]):
-                continue  # general feeds carry non-AI stories too
-            if src.get("ai_in_title") and not classify.is_ai_related(title, ""):
+            if src.get("infra_filter"):
+                if not classify.is_infra(title, e["summary"]):
+                    continue  # an energy or climate newsroom: only its stories about AI's infrastructure
+            elif not ai_only and not classify.is_ai_related(title, e["summary"]) and not classify.infra_story(title):
+                continue  # general feeds carry non-AI stories too (a data-centre story counts: it's AI's infrastructure)
+            if src.get("ai_in_title") and not classify.is_ai_related(title, "") and not classify.infra_story(title):
                 continue
             if (e.get("lead") or src.get("page_lead")) and not summary and not store.exists(conn, e["url"]):
                 try:  # a list without descriptions: the item's own first paragraph, read once
@@ -240,8 +245,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 "summary": summary,
                 "url": url,  # the publisher's English version, when there is one
                 "source": source.strip(),
-                "category": blog_category(src, title, summary, url) if src["category"] == "tool"
-                            else classify.categorize(title, summary, src["category"]),
+                "category": stream_of(src, title, summary, url),
                 "date": published.date().isoformat(),
                 "tags": classify.tags_for(title, summary, source=source),
                 "authors": authors[:30],
@@ -399,6 +403,16 @@ def resummarize(conn, log=print) -> int:
                 log(f"  {changed} updated")
     conn.commit()
     return changed
+
+
+def stream_of(src: dict, title: str, summary: str, url: str) -> str:
+    """A new story's stream: an infrastructure source's are Infrastructure & sustainability; an Industry story
+    whose headline is about AI's data centres or footprint moves there too (classify.infra_story)."""
+    if src["category"] == "infra":
+        return "infra"
+    category = (blog_category(src, title, summary, url) if src["category"] == "tool"
+                else classify.categorize(title, summary, src["category"]))
+    return "infra" if category == "news" and classify.infra_story(title) else category
 
 
 def apply_regulation(item: dict, default_jurisdictions: list[str] = ()) -> None:
@@ -600,6 +614,10 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
                 store.set_regulation(conn, it["id"], "news", [], INCIDENT)
                 changed += 1
             continue
+        if it["category"] == "infra" and streams.get(it["source"]) != "infra" and not classify.infra_story(it["title"]):
+            store.set_regulation(conn, it["id"], "news", it["jurisdictions"], it["action"] or None)  # the rule changed
+            changed += 1
+            continue
         if it["category"] in ("news", "tool"):
             # A news outlet's "release" that launched nothing (e.g. a study's findings) moves to industry news.
             # Only that check is re-run: summaries are shorter now, so re-scoring would drop real releases.
@@ -614,6 +632,8 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
             # a post whose opening paragraph arrives later (fill_page_leads) can turn out to be a launch.
             elif streams.get(it["source"]) == "tool" and blog_category(by_name[it["source"]], it["title"], text, it["url"]) in ("news", "tool"):
                 now = blog_category(by_name[it["source"]], it["title"], text, it["url"])
+            if now == "news" and classify.infra_story(it["title"]):
+                now = "infra"  # Industry news about AI's data centres or footprint, back to 2023 (collect.stream_of)
             if now != it["category"]:
                 store.set_regulation(conn, it["id"], now, it["jurisdictions"], it["action"] or None)
                 if brief.is_draft(it["summary"]):  # "A release, involving Mistral." names the old stream
