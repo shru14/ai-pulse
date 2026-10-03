@@ -176,6 +176,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
     added, errors = 0, []
     purge_disallowed(conn, log)
+    purge_paywalled(conn, log)
 
     for src in sources:
         try:
@@ -314,6 +315,30 @@ def purge_disallowed(conn, log=print) -> int:
         cluster.assign(conn, days=None)
         log(f"  removed {n} stories collected through Google News")
     return n
+
+
+# Outlets dropped because their articles need a subscription: every story on the site must be free to read.
+PAYWALLED = ("theverge.com",)
+
+
+def purge_paywalled(conn, log=print) -> int:
+    """Delete the stories of PAYWALLED outlets, once per outlet and database; returns how many."""
+    total = 0
+    for host in PAYWALLED:
+        key = f"purged:{host}"
+        if conn.execute("SELECT 1 FROM meta WHERE key = ?", (key,)).fetchone():
+            continue
+        like = f"%://{host}/%", f"%.{host}/%"
+        n = conn.execute("DELETE FROM items WHERE url LIKE ? OR url LIKE ?", like).rowcount
+        conn.execute("DELETE FROM sources WHERE url LIKE ? OR url LIKE ?", like)
+        conn.execute("UPDATE items SET cluster = id WHERE cluster NOT IN (SELECT id FROM items)")  # lead was deleted
+        conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", (key, _days_ago(0)))
+        conn.commit()
+        if n:
+            cluster.assign(conn, days=None)
+            log(f"  removed {n} stories from {host} (paywalled)")
+        total += n
+    return total
 
 
 def status_report(conn) -> str:

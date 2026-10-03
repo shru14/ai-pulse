@@ -37,8 +37,9 @@ runs offline.
 1. **robots.txt must allow us.** It's checked before every request (`feeds.allowed`); official APIs whose terms allow programmatic use are the only exception (arXiv, Wikidata, congress.gov, jsDelivr).
 2. **Terms must allow** showing a headline, a short description and a link.
 3. **No workarounds:** nothing behind a login, bot check or rate limit. Sites that block automated readers (xAI's and Perplexity's news pages, iso.org) aren't read.
-4. **Only what's needed:** headline, short description, date and link. No personal data from records.
-5. **Credit and non-commercial use**, as the licences below require.
+4. **Free to read:** every story links to an article anyone can read without paying; outlets that put theirs behind a paywall are dropped (The Verge, 2026).
+5. **Only what's needed:** headline, short description, date and link. No personal data from records.
+6. **Credit and non-commercial use**, as the licences below require.
 
 Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 
@@ -49,7 +50,7 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 | Releases (feeds) | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama, Sakana AI, Character.AI, Stability AI; AI stories from the newsrooms of Microsoft, Meta, Apple and Amazon |
 | Releases (news pages, no feed) | Anthropic, Meta AI, DeepSeek, Cohere, MiniMax, Moonshot AI (Kimi): each new post is read once; a post with no date gets the day it's first seen |
 | Releases (developer release notes) | xAI (docs.x.ai) and Perplexity (docs.perplexity.ai), their news pages being closed to readers; only launches of their own products |
-| Industry | **Global:** TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World · **Asia:** South China Morning Post, Pandaily, TechNode, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
+| Industry | **Global:** TechCrunch, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World · **Asia:** South China Morning Post, Pandaily, TechNode, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports |
 | AI incidents (Industry) | AI Incident Database: every incident its editors confirmed since 2023, one card each (terms bar only high-volume and commercial use; text CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT (its list has headlines only, so each new release is read once for its opening line), Malaysia's Ministry of Digital, Russia's State Duma (English news) |

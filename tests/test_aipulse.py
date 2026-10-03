@@ -721,6 +721,26 @@ def test_stories_from_google_news_are_removed_once(tmp_path):
     assert purge_disallowed(conn, log=lambda *_: None) == 0  # runs once per database
 
 
+def test_paywalled_outlets_are_removed_once(tmp_path):
+    from aipulse.collect import purge_paywalled
+    from aipulse.sources import SOURCES
+    assert not [s for s in SOURCES if "theverge.com" in s["url"]]
+    conn = store.connect(tmp_path / "t.db")
+    base = {"summary": "", "source": "E", "category": "news", "date": "2026-05-01", "tags": [], "authors": []}
+    store.insert(conn, {**base, "title": "Chip deal announced", "url": "https://www.theverge.com/news/1"})
+    store.insert(conn, {**base, "title": "Chip deal announced, says another outlet", "url": "https://e.com/1"})
+    assert purge_paywalled(conn, log=lambda *_: None) == 1
+    assert [r[0] for r in conn.execute("SELECT url FROM items")] == ["https://e.com/1"]
+    store.insert(conn, {**base, "title": "Later", "url": "https://www.theverge.com/news/2"})
+    assert purge_paywalled(conn, log=lambda *_: None) == 0  # runs once per database
+
+
+def test_an_order_about_names_is_policy_not_law():
+    from aipulse.classify import regulatory_action
+    assert regulatory_action("Trump orders US government to call AI ‘Super Intelligence’") is None
+    assert regulatory_action("Newsom orders new steps on AI safety") == "law"
+
+
 def test_government_apis_parse():
     fr = b'{"results": [{"title": "Artificial Intelligence Safety Rule", "html_url": "https://www.federalregister.gov/d/1",' \
          b' "abstract": "The agency proposes rules for AI systems.", "publication_date": "2024-02-01"}]}'
