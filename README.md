@@ -22,7 +22,7 @@ runs offline.
 
 ## Features
 
-- **Pages:** a front page of tiles (the week's most-reported story, the daily email, the word of the week with where it came from, and each stream's top two of the week) and a page per stream. Section colours are colour-blind safe (Okabe–Ito).
+- **Pages:** a magazine-styled front page (the week's most-reported story as its cover, the daily email, the word of the week with where it came from, then each stream's three most-reported stories of the week, newest first, each over drawn art: the stream's colour and drawings and the story's logo, never a publisher's photo) and a page per stream. Section colours are colour-blind safe (Okabe–Ito).
 - **Filters:** by stream, region (on every page; a paper counts where its scholar's institution or its company is based), country and time range; search covers headlines, summaries, tags and authors back to 2023.
 - **Everything in English, nothing left out:** a story in another language shows the publisher's English version, else an offline translation (OPUS-MT) marked as such, else an English headline tagged **#Translate and read**. Each links to the original through Google Translate, opened by the reader.
 - **Tags:** companies, a country (the place a story names, else the country of the government that published it, else the company's home country) and topics.
