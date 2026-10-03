@@ -95,9 +95,17 @@ def make_handler(db_path: str):
                 elif url.path.startswith("/fonts/") and url.path.endswith(".woff2") and "/" not in url.path[7:] \
                         and (TEMPLATE.parent / "fonts" / url.path[7:]).is_file():
                     self._send((TEMPLATE.parent / "fonts" / url.path[7:]).read_bytes(), "font/woff2")
-                elif url.path.startswith("/memes/") and url.path.endswith(".png") and "/" not in url.path[7:] \
-                        and (TEMPLATE.parent / "memes" / url.path[7:]).is_file():
-                    self._send((TEMPLATE.parent / "memes" / url.path[7:]).read_bytes(), "image/png")
+                elif url.path.startswith("/memes/week-") and url.path.endswith(".jpg"):
+                    from . import memegen, memes
+                    from datetime import date as _date
+                    recent, _ = store.cards(conn, days=16, limit=10**6, eu_members=EU_MEMBERS)
+                    memegen.prepare(conn, recent)
+                    try:
+                        meme = memes.of_the_week(recent, _date.fromisoformat(url.path[12:-4]))
+                    except ValueError:
+                        meme = None
+                    picture = meme and memes.render(meme)
+                    self._send(picture, "image/jpeg") if picture else self._send(b"Not found", "text/plain", 404)
                 elif url.path == "/photos/credits.html":
                     self._send(photos.credits_page().encode("utf-8"), "text/html; charset=utf-8")
                 elif url.path.startswith("/photos/") and url.path.endswith(".jpg") and "/" not in url.path[8:] \

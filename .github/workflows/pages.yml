@@ -58,7 +58,7 @@ jobs:
       # English versions of non-English official records (aipulse/translate.py): an open-source model
       # (OPUS-MT, CC BY 4.0) run on the runner with two small libraries. No API; the model is cached.
       - name: Install the offline translator
-        run: pip install --quiet ctranslate2 sentencepiece certifi
+        run: pip install --quiet ctranslate2 sentencepiece certifi pillow  # pillow: writes the meme's captions onto its template
 
       - name: Restore the translation model
         uses: actions/cache@v4

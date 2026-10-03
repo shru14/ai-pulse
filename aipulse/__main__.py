@@ -227,7 +227,7 @@ def main():
             return
         email = digest.build(cards, streams, day, layout=a.layout)
         if a.dry_run:
-            open(a.dry_run, "w", encoding="utf-8").write(email[2])
+            open(a.dry_run, "w", encoding="utf-8").write(digest.preview(email[2]))
             print(f"Checked, no problems: {email[0]} {counts} -> wrote {a.dry_run}")
         else:
             digest.send(a.to, *email)

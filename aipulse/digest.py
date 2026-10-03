@@ -393,16 +393,32 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
     return text, html
 
 
+# Pictures that travel inside the email (content ID -> JPEG), so the meme shows in every mail app without
+# waiting for the site to publish it
+INLINE: dict[str, bytes] = {}
+MEME_CID = "meme-of-the-day@aipulse"
+
+
 def _meme(cards: list[dict], day: date) -> tuple[list[str], str]:
-    """The meme of the day (memes.py): a joke format drawn in HTML, filled from the day's stories; none on a day
-    whose stories can't fill one."""
+    """The meme of the day (memes.py): a real meme template with the day's captions written on, sent inside the
+    email; none on a day whose stories can't fill one, or when the picture can't be made."""
     from . import memes
     meme = memes.of_the_day(cards, day)
-    if not meme:
+    picture = meme and memes.render(meme)
+    if not picture:
         return [], ""
+    INLINE[MEME_CID] = picture
     return memes.text(meme), (f'<div style="margin:0 0 14px"><div style="font-size:11px;font-weight:bold;letter-spacing:2px;'
                               f'text-transform:uppercase;color:{HEADLINE};margin-bottom:6px">Meme of the day</div>'
-                              f'{memes.html(meme)}</div>')
+                              f'{memes.html(meme, "cid:" + MEME_CID)}</div>')
+
+
+def preview(html: str) -> str:
+    """The email as a file to look at (a dry run): its inline pictures put in the page itself."""
+    import base64
+    for cid, data in INLINE.items():
+        html = html.replace(f"cid:{cid}", "data:image/jpeg;base64," + base64.b64encode(data).decode())
+    return html
 
 
 def _left_note(prefs: dict, left: list[dict]) -> str:
@@ -611,6 +627,9 @@ def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "")
         msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
+    for cid, data in INLINE.items():  # the meme, inside the email
+        if f"cid:{cid}" in html:
+            msg.get_payload()[1].add_related(data, "image", "jpeg", cid=f"<{cid}>", filename="meme.jpg")
     return msg
 
 

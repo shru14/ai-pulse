@@ -1,10 +1,10 @@
-"""Meme of the day (in the daily email) and meme of the week (on the front page), made without any AI model.
+"""Meme of the day (in the daily email) and meme of the week (on the front page).
 
-Each meme is a cartoon of ours (meme_art.py: a techie, two women and a robot, saved as PNGs in templates/memes/)
-posed in the layout of a well-known meme format (nope/yep, the distracted look back, "this is fine", two buttons,
-the expanding brain, yelling at the cat, "is this a...?", panik/kalm), with captions filled from our own data: the
-day's or week's launches, raises, papers, power stories and glossary words, named as the headlines name them. No
-meme photo, film still or real person's likeness is used, only the idea of each layout. Jokes are light: about the AI
+Each meme is a well-known internet meme template (Drake, Distracted Boyfriend, This Is Fine, Two Buttons, Expanding
+Brain, Woman Yelling at Cat, Is This a Pigeon?, Panik Kalm Panik; copies in templates/memes/, from Imgflip's free
+template list) with captions written onto it: by Gemini (memegen.py) or, without it, filled from our own data: the
+day's or week's launches, raises, papers, power stories and glossary words, named as the headlines name them. The
+templates are used as parody and commentary on a free, non-commercial site, credited under every meme. Jokes are light: about the AI
 industry's habits, never a person; politics and any story about harm, death, crime, lawsuits, layoffs, war or
 children are never used. A format is picked by the date from those the stories can fill, so the same day always
 gives the same meme. The meme of the week is last week's (Monday to Sunday), so it changes every Monday.
@@ -12,12 +12,15 @@ gives the same meme. The meme of the week is last week's (Monday to Sunday), so 
 
 from __future__ import annotations
 
+import json
 import re
 from collections import Counter
 from datetime import date, timedelta
 from html import escape
+from io import BytesIO
+from pathlib import Path
 
-from . import glossary, rss
+from . import glossary
 
 _SERIOUS_TAGS = {"Misuse", "Deepfakes", "Defense", "Elections", "Existential Risk", "Security", "Jobs & Labor",
                  "Surveillance", "Healthcare", "AI-incident", "Safety", "Alignment"}  # AI safety: never a joke (owner's rule)
@@ -223,80 +226,155 @@ def of_the_week(cards: list[dict], monday: date) -> dict | None:
 
 def payload(cards: list[dict], today: date | None = None) -> dict:
     """meme.json for the front page: last week's meme (Monday to Sunday, UTC, as the word of the week). It changes
-    every Monday. Its pictures are the site's own (memes/...)."""
+    every Monday. Its picture is made by the build (memes/week-<monday>.jpg)."""
     today = today or date.today()
     monday = today - timedelta(days=today.weekday() + 7)
     meme = of_the_week(cards, monday)
+    image = f"memes/week-{monday.isoformat()}.jpg"  # the finished picture, written by the build (static.py)
+    ok = bool(meme and render(meme))
     return {"from": monday.isoformat(), "to": (monday + timedelta(days=6)).isoformat(),
-            "html": html(meme, base="") if meme else "", "format": meme["format"] if meme else None}
+            "html": html(meme, image) if ok else "", "format": meme["format"] if ok else None, "image": image if ok else None}
 
 
-# ---------- Laid out in tables that work in email and on the site; the cartoons are PNGs on the site ----------
+# ---------- The real meme templates, captions written onto them (one finished picture, the same in every mail app) ----------
 
-CAP = "font-family:'Arial Black',Arial,Helvetica,sans-serif;font-weight:900;color:#1d2433"
+# The well-known templates, from Imgflip's free template list (api.imgflip.com/get_memes); a copy of each is kept here
+# so old emails never lose their picture. Used as parody and commentary on a free, non-commercial site (the owner's
+# choice, 2026-10-04), with the template credited under every meme.
+DIR = Path(__file__).resolve().parent.parent / "templates" / "memes"
+WIDTH = 800  # every finished meme is this wide
+# format: (template file, its name, the caption boxes as fractions of the picture: x, y, width, height, style, turn)
+# style "photo": white capitals with a black outline, on a picture; "panel": black text on a white panel
+TEMPLATES = {
+    "distracted": ("distracted.jpg", "Distracted Boyfriend",
+                   [(.10, .55, .38, .18, "photo", 0), (.45, .36, .32, .14, "photo", 0), (.72, .48, .27, .26, "photo", 0)]),
+    "buttons": ("buttons.jpg", "Two Buttons",
+                [(.06, .12, .40, .12, "photo", 14), (.44, .04, .38, .12, "photo", 14), (.04, .82, .92, .12, "photo", 0)]),
+    "nopeyep": ("nopeyep.jpg", "Drake Hotline Bling", [(.52, .04, .46, .42, "panel", 0), (.52, .54, .46, .42, "panel", 0)]),
+    "fine": ("fine.jpg", "This Is Fine", [(.02, .03, .47, .30, "photo", 0), (.52, .72, .46, .26, "photo", 0)]),
+    "brain": ("brain.jpg", "Expanding Brain", [(.02, .0, .46, .24, "panel", 0), (.02, .25, .46, .24, "panel", 0),
+                                               (.02, .51, .46, .22, "panel", 0), (.02, .74, .46, .25, "panel", 0)]),
+    "yelling": ("yelling.jpg", "Woman Yelling at Cat", [(.01, .0, .49, .22, "panel", 0), (.51, .0, .48, .22, "panel", 0)]),
+    "pigeon": ("pigeon.jpg", "Is This a Pigeon?",
+               [(.03, .48, .46, .17, "photo", 0), (.60, .27, .38, .19, "photo", 0), (.05, .83, .90, .15, "photo", 0)]),
+    "panik": ("panik.png", "Panik Kalm Panik", [(.02, .0, .45, .33, "panel", 0), (.02, .34, .45, .33, "panel", 0),
+                                                (.02, .67, .45, .33, "panel", 0)]),
+}
+TALL = {"buttons", "nopeyep", "brain", "panik"}  # taller than wide
+FONTS = {"photo": DIR / "fonts" / "Anton-Regular.ttf", "panel": DIR / "fonts" / "ArchivoBlack-Regular.ttf"}
 
 
-def _img(base: str, name: str, width: int, alt: str) -> str:
-    return (f'<img src="{escape(base)}memes/{name}.png" width="{width}" alt="{escape(alt)}" '
-            f'style="display:block;width:100%;max-width:{width}px;height:auto;border:0">')
-
-
-def _cells(labels: list[str], size: int = 14) -> str:
-    w = 100 // len(labels)
-    return ('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed"><tr>'
-            + "".join(f'<td width="{w}%" align="center" valign="top" style="{CAP};font-size:{size}px;line-height:1.25;padding:8px 6px">'
-                      f'{escape(l)}</td>' for l in labels) + '</tr></table>')
-
-
-def _rows(rows: list[tuple[str, str]], width: int) -> str:
-    """Text on the left, a picture on the right, one row each (nope/yep, the brain, panik/kalm)."""
-    return ('<table role="presentation" width="100%" cellpadding="0" cellspacing="0">'
-            + "".join(f'<tr><td valign="middle" style="{CAP};font-size:16px;line-height:1.3;padding:8px 14px 8px 4px;'
-                      f'border-bottom:2px solid #1d2433">{t}</td>'
-                      f'<td width="{width}" valign="middle" style="border-bottom:2px solid #1d2433;border-left:2px solid #1d2433">{i}</td></tr>'
-                      for t, i in rows) + '</table>')
-
-
-def html(meme: dict, base: str = rss.SITE) -> str:
+def captions(meme: dict) -> list[str]:
+    """The meme's captions in the order of its template's boxes."""
     f = meme["format"]
-    if f == "distracted":
-        body = _img(base, "distracted", 600, "A techie turns to stare at a shiny robot while his partner glares") + _cells(
-            [meme["labels"][0], meme["labels"][1], meme["labels"][2]])
-    elif f == "buttons":
-        body = (_cells(meme["labels"], 15) + _img(base, "buttons", 600, "Two big red buttons and a sweating techie")
-                + _cells([meme["caption"]], 16))
-    elif f == "nopeyep":
-        body = (_cells([meme["who"]], 15)
-                + _rows([(escape(meme["nope"]), _img(base, "nope", 150, "Nope")), (escape(meme["yep"]), _img(base, "yep", 150, "Yep"))], 150))
-    elif f == "fine":
-        body = _cells([meme["caption"]], 17) + _img(base, "fine", 600, "A techie at a desk in a burning room says “This is fine.”") \
-            + _cells([meme["under"]], 15)
-    elif f == "brain":
-        body = _rows([(escape(t), _img(base, f"brain{i}", 140, f"Brain, level {i}")) for i, t in enumerate(meme["rows"], 1)], 140)
-    elif f == "yelling":
-        body = _img(base, "yelling", 600, "A woman yells and points at a confused robot at a dinner table") + _cells(meme["labels"])
-    elif f == "pigeon":
-        body = (_img(base, "pigeon", 600, "A techie points at a butterfly") + _cells(meme["labels"])
-                + _cells([meme["caption"]], 20))
-    elif f == "panik":
-        body = _rows([(f'<span style="font-size:20px">{escape(k.upper())}</span><br><span style="font-size:14px">{escape(t)}</span>',
-                       _img(base, "kalm" if k == "Kalm" else "panik", 140, k)) for k, t in meme["rows"]], 140)
-    else:
-        return ""
-    if meme.get("by") == "gemini":  # said plainly: the words came from an AI model, the drawing is ours
-        body += ('<div style="font-size:11px;color:#5f6368;padding:4px 8px 6px;text-align:right">'
-                 'Captions written with Gemini · drawing by AI Pulse</div>')
-    return (f'<div style="max-width:600px;background:#ffffff;border:2px solid #1d2433;border-radius:6px;overflow:hidden;'
-            f'font-family:Arial,Helvetica,sans-serif;color:#1d2433">{body}</div>')
+    if f in ("distracted", "yelling"):
+        return list(meme["labels"])
+    if f in ("buttons", "pigeon"):
+        return [*meme["labels"], meme["caption"]]
+    if f == "nopeyep":
+        return [meme["nope"], meme["yep"]]
+    if f == "fine":
+        return [meme["caption"], meme["under"]]
+    if f == "brain":
+        return list(meme["rows"])
+    if f == "panik":
+        return [t for _, t in meme["rows"]]
+    return []
+
+
+def _fit(draw, text: str, font_file: Path, w: int, h: int, start: int):
+    """The biggest font size at which the text, wrapped on words, fits the box; and its lines."""
+    from PIL import ImageFont
+    for size in range(start, 9, -1):
+        font = ImageFont.truetype(str(font_file), size)
+        lines, line = [], ""
+        for word in text.split():
+            trial = f"{line} {word}".strip()
+            if draw.textlength(trial, font=font) <= w or not line:
+                line = trial
+            else:
+                lines.append(line)
+                line = word
+        lines.append(line)
+        if max(draw.textlength(l, font=font) for l in lines) <= w and len(lines) * size * 1.12 <= h:
+            break
+    return font, lines, size
+
+
+def _caption(img, text: str, box: tuple) -> None:
+    from PIL import Image, ImageDraw
+    x, y, w, h, style, turn = box
+    W, H = img.size
+    bw, bh = int(w * W), int(h * H)
+    layer = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    text = text.upper() if style == "photo" else text
+    font, lines, size = _fit(draw, text, FONTS[style], bw - 8, bh - 4, max(14, min(bh, int(W * .085))))
+    stroke = max(2, size // 11) if style == "photo" else 0
+    step = size * 1.12
+    top = (bh - step * len(lines)) / 2
+    for i, line in enumerate(lines):
+        lw = draw.textlength(line, font=font)
+        draw.text(((bw - lw) / 2, top + i * step), line, font=font, fill="white" if style == "photo" else "black",
+                  stroke_width=stroke, stroke_fill="black")
+    if turn:
+        layer = layer.rotate(turn, expand=True, resample=Image.BICUBIC)
+    cx, cy = int((x + w / 2) * W), int((y + h / 2) * H)
+    img.alpha_composite(layer, (cx - layer.width // 2, cy - layer.height // 2))
+
+
+_RENDERED: dict[str, bytes | None] = {}
+
+
+def render(meme: dict) -> bytes | None:
+    """The finished meme as a JPEG: the template with its captions written on, or None if it can't be made (no
+    Pillow, an unknown format); the email and the site then leave the meme out."""
+    key = json.dumps([meme.get("format"), meme.get("who"), captions(meme) if meme.get("format") in TEMPLATES else None])
+    if key in _RENDERED:
+        return _RENDERED[key]
+    try:
+        from PIL import Image
+        file, _, boxes = TEMPLATES[meme["format"]]
+        img = Image.open(DIR / file).convert("RGBA")
+        img = img.resize((WIDTH, round(img.height * WIDTH / img.width)), Image.LANCZOS)
+        for words, box in zip(captions(meme), boxes):
+            _caption(img, words, box)
+        if meme["format"] == "nopeyep" and meme.get("who"):  # whose choice: a white band on top
+            band = Image.new("RGBA", (WIDTH, 90), "white")
+            _caption(band, meme["who"], (.02, .05, .96, .9, "panel", 0))
+            full = Image.new("RGBA", (WIDTH, img.height + 90), "white")
+            full.paste(band, (0, 0))
+            full.paste(img, (0, 90))
+            img = full
+        out = BytesIO()
+        img.convert("RGB").save(out, "JPEG", quality=86, optimize=True)
+        _RENDERED[key] = out.getvalue()
+    except (ImportError, KeyError, OSError, ValueError):
+        _RENDERED[key] = None
+    return _RENDERED[key]
+
+
+def html(meme: dict, src: str) -> str:
+    """The finished picture (src: its address, or "cid:..." for the copy inside an email), its words as the alt
+    text, and the credits: Gemini's captions said plainly, and the template's source."""
+    name = TEMPLATES[meme["format"]][1]
+    credit = ("Captions written with Gemini · " if meme.get("by") == "gemini" else "") + f"Template: {name} · via imgflip.com"
+    alt = " ".join(text(meme)[1:])
+    width = 420 if meme["format"] in TALL else 600  # a tall template stays short enough to read without scrolling
+    return (f'<div style="max-width:{width}px;background:#ffffff;border:2px solid #1d2433;border-radius:6px;overflow:hidden;'
+            f'font-family:Arial,Helvetica,sans-serif;color:#1d2433">'
+            f'<img src="{escape(src)}" width="{width}" alt="{escape(alt)}" '
+            f'style="display:block;width:100%;max-width:{width}px;height:auto;border:0">'
+            f'<div style="font-size:11px;color:#5f6368;padding:4px 8px 6px;text-align:right">{escape(credit)}</div></div>')
 
 
 def text(meme: dict) -> list[str]:
-    """The meme in the plain-text email: the cartoon described, then its captions."""
+    """The meme in the plain-text email: the template named, then its captions."""
     f = meme["format"]
-    out = [meme["title"].upper() + ":"]
+    out = [meme["title"].upper() + f" ({TEMPLATES[f][1]}):"]
     if f == "distracted":
         new, who, old = meme["labels"]
-        out.append(f"{who}, turning to stare at {new}, while {old} glares.")
+        out.append(f"{who}, walking with {old}, turning to stare at {new}.")
     elif f == "buttons":
         out += [f"Two buttons: “{meme['labels'][0]}” or “{meme['labels'][1]}”.", f"Sweating: {meme['caption']}."]
     elif f == "nopeyep":
@@ -306,7 +384,7 @@ def text(meme: dict) -> list[str]:
     elif f == "brain":
         out += [f"  {'🧠' * i} {t}" for i, t in enumerate(meme["rows"], 1)]
     elif f == "yelling":
-        out.append(f"{meme['labels'][0]}, yelling at a robot at the dinner table: {meme['labels'][1]}")
+        out.append(f"{meme['labels'][0]} / the cat: {meme['labels'][1]}")
     elif f == "pigeon":
         out += [f"{meme['labels'][0]}, pointing at {meme['labels'][1]}:", meme["caption"]]
     elif f == "panik":
