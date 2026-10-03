@@ -9,18 +9,26 @@
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Policy" href="feeds/policy.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
 :root{
   --bg:#F3F4F7; --surface:#FFFFFF; --ink:#141925; --muted:#5B6275; --line:#DDE0E8;
   --accent:#2F4FD8; --accent-soft:#E6EAFB;
-  --c-tool:#0E7C6B; --c-tool-soft:#DDF2EE;
-  --c-news:#2F4FD8; --c-news-soft:#E6EAFB;
-  --c-policy:#B4531A; --c-policy-soft:#FAE9DE;
-  --c-research:#7A3DB8; --c-research-soft:#EFE4FA;
-  --c-reg:#B02E62; --c-reg-soft:#FBE3EC;
+  --c-tool:#007656; --c-tool-soft:#D6EFE9;
+  --c-news:#367193; --c-news-soft:#E4F3FB;
+  --c-policy:#916400; --c-policy-soft:#FBF0D6;
+  --c-research:#9C4798; --c-research-soft:#F6E5F5;
+  --c-reg:#AA4B00; --c-reg-soft:#F8E5D6; --c-infra:#487B48; --c-infra-soft:#ECFCEC; --c-all:#7A7422; --c-all-soft:#FDFBE1;
   --warn:#8A5300; --warn-soft:#FFF1D6;
   --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  /* Section colours: Okabe-Ito's colour-blind-safe set (research tuned so every pair stays apart under protan-, deutan-
+     and tritanopia). --f-* fill tiles (dark text on them, both themes); --c-* are the text shades of the same hues. */
+  --f-tool:#009E73; --f-news:#56B4E9; --f-research:#C85BC3; --f-reg:#D55E00; --f-policy:#E69F00; --f-infra:#8BEC8B; --f-all:#F0E442;
+  /* Front page, pastel: the same hues half-mixed with white. Pastels sit too close for colour alone to tell them apart
+     under colour blindness, so each tile also carries its name and its icon in the full-strength colour above. */
+  --p-tool:#80CEB9; --p-news:#AADAF4; --p-research:#E4ADE1; --p-reg:#EAAE80; --p-policy:#F2CF80; --p-infra:#C5F6C5;
+  --p-email:#C9D3FB; --p-word:#F6E6CF;
+  --head:"Space Grotesk", "Segoe UI", system-ui, sans-serif;  /* front-page and section headings */
   --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
@@ -29,11 +37,11 @@
     color-scheme:dark;
     --bg:#0F121A; --surface:#171B26; --ink:#E7E9F0; --muted:#98A0B4; --line:#2A3040;
     --accent:#8FA3FF; --accent-soft:#222B4D;
-    --c-tool:#5CCFB9; --c-tool-soft:#15332E;
-    --c-news:#8FA3FF; --c-news-soft:#222B4D;
-    --c-policy:#F0A26E; --c-policy-soft:#3A2618;
-    --c-research:#C9A2F2; --c-research-soft:#2E2140;
-    --c-reg:#F28AB3; --c-reg-soft:#3D1C29;
+    --c-tool:#2EAF8C; --c-tool-soft:#123837;
+    --c-news:#56B4E9; --c-news-soft:#253D51;
+    --c-policy:#E69F00; --c-policy-soft:#45381E;
+    --c-research:#D37CCF; --c-research-soft:#3E2949;
+    --c-reg:#DE8036; --c-reg-soft:#412A1E; --c-infra:#8BEC8B; --c-infra-soft:#31493C; --c-all:#F0E442; --c-all-soft:#47472C;
     --warn:#F5C66B; --warn-soft:#3A2E12;
   }
 }
@@ -41,16 +49,16 @@
   color-scheme:dark;
   --bg:#0F121A; --surface:#171B26; --ink:#E7E9F0; --muted:#98A0B4; --line:#2A3040;
   --accent:#8FA3FF; --accent-soft:#222B4D;
-  --c-tool:#5CCFB9; --c-tool-soft:#15332E;
-  --c-news:#8FA3FF; --c-news-soft:#222B4D;
-  --c-policy:#F0A26E; --c-policy-soft:#3A2618;
-  --c-research:#C9A2F2; --c-research-soft:#2E2140;
-  --c-reg:#F28AB3; --c-reg-soft:#3D1C29;
+  --c-tool:#2EAF8C; --c-tool-soft:#123837;
+  --c-news:#56B4E9; --c-news-soft:#253D51;
+  --c-policy:#E69F00; --c-policy-soft:#45381E;
+  --c-research:#D37CCF; --c-research-soft:#3E2949;
+  --c-reg:#DE8036; --c-reg-soft:#412A1E; --c-infra:#8BEC8B; --c-infra-soft:#31493C; --c-all:#F0E442; --c-all-soft:#47472C;
   --warn:#F5C66B; --warn-soft:#3A2E12;
 }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
-.wrap{max-width:860px;margin:0 auto}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(0px,2vw,24px)}
 /* Sticky brand bar; the filter bar below sticks right under it (--bar-h). */
 :root{--bar-h:56px}
 header.top{position:sticky;top:0;z-index:6;background:var(--bg);height:var(--bar-h);display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--line)}
@@ -73,6 +81,23 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .subscribe-btn svg{width:18px;height:18px}
 @media (max-width:480px){.subscribe-btn span{display:none}.subscribe-btn{width:36px;padding:0;justify-content:center}}
 header.top{gap:10px}
+.secnav{display:flex;gap:2px;margin-right:auto;overflow-x:auto;scrollbar-width:none}
+.secnav::-webkit-scrollbar{display:none}
+.secnav a{flex:none;font:600 14px var(--body);color:var(--muted);text-decoration:none;padding:6px 11px;border-radius:999px;white-space:nowrap}
+.secnav a:hover{color:var(--ink);background:var(--surface)}
+.secnav a[aria-current]{color:var(--cat-c);background:var(--cat-soft)}
+.k-all{--cat-c:var(--c-all);--cat-soft:var(--c-all-soft);--cat-f:var(--f-all)}  /* All stories: light yellow */
+.brand{margin-right:8px}
+.subscribe-btn.cta{background:var(--accent);border-color:var(--accent);color:var(--surface);box-shadow:0 0 0 4px var(--accent-soft)}
+.subscribe-btn.cta:hover{filter:brightness(1.08)}
+.subscribe-btn.gl-open{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+@media (max-width:980px){
+  :root{--bar-h:100px}
+  header.top{flex-wrap:wrap;align-content:space-evenly}
+  .brand{margin-right:auto}
+  .secnav{order:5;flex-basis:100%;margin:0 -16px;padding:0 12px}
+}
+@media (max-width:480px){.subscribe-btn.cta span{display:inline}.subscribe-btn.cta{width:auto;padding:0 12px}}
 .subscribe{width:min(460px,calc(100vw - 32px));border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:22px 22px 16px;box-shadow:0 18px 50px rgba(0,0,0,.18)}
 .subscribe::backdrop{background:rgba(10,12,18,.45)}
 .subscribe h2{font-family:var(--display);font-size:21px;line-height:1.2;margin:0 28px 8px 0}
@@ -180,33 +205,85 @@ header.top{gap:10px}
 .gl-pop p{margin:4px 0 8px;font-size:14px;line-height:1.5}
 .gl-pop button{font:500 12px var(--mono);color:var(--accent);background:none;border:0;padding:0;cursor:pointer}
 @media (max-width:480px){.gl-head{padding:18px 16px 10px}.gl-body{padding:4px 16px 16px}}
-.intro{display:flex;flex-direction:column;gap:8px;padding-block:18px 0}
-.lede{margin:0;max-width:70ch;color:var(--muted);font-size:16px;line-height:1.55}
+/* Front page: tiles. The week's biggest story, the daily email and a glossary word up top, then a tile per stream. */
+.lede{margin:18px 0 0;max-width:80ch;color:var(--muted);font-size:16px;line-height:1.55}
 .lede strong{color:var(--ink);font-weight:600}
-/* The five streams, explained; each opens its tab. */
-.streams{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}
-.stream{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:12px;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;cursor:pointer;box-shadow:inset 0 3px 0 var(--cat-c);transition:border-color .15s}
-.stream:hover{border-color:var(--cat-c)}
-.stream:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.stream .ico{width:32px;height:32px;border-radius:8px;margin-bottom:4px}
-.stream .ico svg{width:18px;height:18px}
-.stream b{font-weight:600;font-size:14px}
-.stream .shead{display:flex;justify-content:space-between;align-items:flex-start;width:100%;margin-bottom:4px}
-.stream .shead .ico{margin-bottom:0}
-.stream .n{font:500 12px var(--mono);color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
-.stream .desc{font-size:13px;line-height:1.35;color:var(--muted)}
-.stream[aria-pressed="true"]{border-color:var(--cat-c);background:var(--cat-soft)}
-.stream[aria-pressed="true"] .desc{color:var(--ink)}
-.stream[aria-pressed="true"] .n{color:var(--cat-c);border-color:var(--cat-c);background:var(--surface)}
-.streams.fade-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent)}
-.streams.fade-l{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 20px),transparent)}
-.streams.fade-l.fade-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 20px,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to right,transparent,#000 20px,#000 calc(100% - 20px),transparent)}
-@media (max-width:760px){
-  .streams{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;scrollbar-width:none;margin-inline:-16px;padding:2px 16px}
-  .streams::-webkit-scrollbar{display:none}
-  .stream{flex:0 0 200px;scroll-snap-align:start}
+.bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;margin-top:20px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;min-width:0}
+.tile .label{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.tile-note{margin:0;color:var(--muted)}
+.tile .meta{font:12px/1.5 var(--mono);color:var(--muted);margin-top:4px}
+.hero{grid-column:span 2;grid-row:span 2;min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;
 }
-@media (prefers-reduced-motion: reduce){.stream{transition:none}}
+.hero .label{color:var(--cat-c,var(--muted))}
+.hero h2{font:700 clamp(26px,3.2vw,40px)/1.08 var(--head);letter-spacing:-.03em;margin:0;text-wrap:balance}
+.hero h2 a{color:var(--ink);text-decoration:none}
+.hero h2 a:hover{text-decoration:underline;text-decoration-color:var(--cat-c);text-underline-offset:4px}
+.hero .sum{margin:0;font-size:17px;-webkit-line-clamp:4;max-width:62ch}
+.sub-tile,.gl-tile{grid-column:span 2;display:flex;flex-direction:column;justify-content:space-between;gap:14px;border:0}
+.sub-tile{background:var(--p-email);color:#141925}
+.sub-tile h2{font:700 26px/1.1 var(--head);letter-spacing:-.02em;margin:6px 0}
+.sub-tile p,.gl-tile p{margin:0;opacity:.9;font-size:15px}
+.sub-tile-go,.gl-tile-go{align-self:flex-start;font:600 15px var(--body);border-radius:999px;padding:10px 20px;cursor:pointer}
+.sub-tile-go{background:#141925;color:#FFFFFF;border:0}
+.gl-tile{background:var(--p-word);color:#141925}
+.gl-tile b{display:block;font:700 30px/1.1 var(--head);letter-spacing:-.02em;margin:4px 0}
+.gl-tile p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gl-tile-go{background:none;color:inherit;border:1px solid currentColor}
+.hero-art{position:relative;flex:1;min-height:170px;margin:-8px -8px 10px;border-radius:14px;background:var(--cat-p,var(--p-email));
+  display:grid;place-items:center;overflow:hidden}
+.hero-art .pulse{position:absolute;inset:0;width:100%;height:100%}
+.hero-art .pulse polyline{fill:none;stroke:rgba(20,25,37,.28);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.hero-art .ico{position:relative;width:104px;height:104px;border-radius:26px;background:#FFFFFF;color:#141925;
+  border:0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.hero-art .ico svg,.hero-art .ico img{width:58px;height:58px}
+.hero-art .ico.mono{font-size:30px}
+.reported{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.reported a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.reported a:hover{text-decoration-color:var(--cat-c)}
+/* Word of the week: a bar a day, then the stories it came from. */
+.gl-viz{margin-top:12px}
+.viz-note{font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;opacity:.75;margin:10px 0 6px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:56px}
+.bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;flex:1;max-width:34px;height:100%;cursor:default}
+.bar span{display:block;width:100%;max-width:18px;background:currentColor;border-radius:4px 4px 0 0;opacity:.9}
+.bar span.none{opacity:.3;border-radius:2px}
+.bar small{font:10px var(--mono);opacity:.75}
+.gl-tile .from{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.35}
+.gl-tile .from a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;opacity:.95}
+.sub-tile-go:hover,.gl-tile-go:hover{filter:brightness(1.1)}
+.sub-tile-go:focus-visible,.gl-tile-go:focus-visible,.go:focus-visible,.stream-head:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.streams-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.stream-tile{background:var(--cat-p);color:#141925;border:0;display:flex;flex-direction:column}
+.stream-head{display:flex;align-items:center;gap:10px;text-decoration:none}
+.stream-head h2{font:700 23px var(--head);letter-spacing:-.02em;margin:0;color:inherit;flex:1}
+.stream-head .n{font:500 12px var(--mono);color:var(--cat-c);background:var(--surface);border:0;border-radius:999px;padding:2px 9px}
+.stream-tile li .tags,.hero .tags{margin-top:6px}
+.home-status{margin-top:8px}
+.stream-tile .ico{width:36px;height:36px;background:var(--surface);color:var(--cat-c)}
+.stream-tile .ico svg{width:20px;height:20px}
+.stream-tile .desc{font-size:14px;color:inherit;opacity:.9;margin:8px 0 10px;line-height:1.4}
+.stream-tile ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;flex:1}
+.stream-tile li{background:var(--surface);border-radius:10px;padding:10px 12px}
+.stream-tile li a{color:var(--ink);font-weight:600;font-size:15px;line-height:1.3;text-decoration:none}
+.stream-tile li a:hover{text-decoration:underline;text-decoration-color:var(--cat-c);text-underline-offset:3px}
+.stream-tile .go{color:inherit}
+.stream-head{color:inherit}
+.go{display:inline-block;margin-top:12px;font:600 14px var(--body);color:var(--cat-c,var(--accent));text-decoration:none}
+.go:hover{text-decoration:underline;text-underline-offset:3px}
+.stream-tile .soon{flex:1;margin:0;font-size:15px;color:inherit;opacity:.9}
+@media (max-width:900px){.bento{grid-template-columns:1fr 1fr}.hero{min-height:280px}}
+@media (max-width:600px){.bento{grid-template-columns:1fr}.hero,.sub-tile,.gl-tile{grid-column:auto;grid-row:auto}.streams-grid{grid-template-columns:1fr}}
+/* A stream's page: its name and what it holds, in its colour, then the filters and the stories. */
+.section,footer{max-width:860px;margin-inline:auto}
+.sec-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-top:18px;padding:26px 22px 20px;border-radius:18px;background:var(--cat-soft,var(--surface));
+  border:1px solid var(--line)}
+.sec-hero h2{font:700 clamp(24px,3vw,32px)/1.1 var(--head);letter-spacing:-.02em;margin:0 0 6px;color:var(--ink)}
+.sec-hero p{margin:0 auto 10px;color:var(--muted);max-width:56ch}
+.sec-hero .status{justify-content:center}
+.sec-hero .ico{width:48px;height:48px;background:var(--surface);color:var(--cat-c,var(--ink))}
+.sec-hero .ico svg{width:26px;height:26px}
+@media (max-width:560px){.sec-hero{padding:16px}.sec-hero .ico{display:none}}
 .status{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
 .status b{color:var(--ink);font-weight:500}
 .health{text-align:left}
@@ -219,8 +296,6 @@ header.top{gap:10px}
 .controls{position:sticky;top:var(--bar-h);z-index:5;background:var(--bg);padding-block:12px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
 /* One row: the chosen stream (click to clear), search and time range. */
 .toolbar{display:flex;gap:8px;align-items:center}
-.catchip{flex:none;font-weight:600}
-.catchip[hidden]{display:none}
 .search:focus-visible,a:focus-visible,.tag:focus-visible,.range:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .search{flex:1 1 auto;min-width:0;font:16px var(--body);padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 .range{flex:none;font:14px var(--body);padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
@@ -232,9 +307,10 @@ header.top{gap:10px}
 /* Cards: a stripe in the category's colour on the left, the label, then the body. */
 .item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px 18px;display:grid;grid-template-columns:104px 1fr;gap:4px 14px;box-shadow:inset 3px 0 0 var(--cat-c,var(--line));transition:border-color .15s}
 .item:hover{border-color:var(--muted)}
-.item.tool,.stream.tool{--cat-c:var(--c-tool);--cat-soft:var(--c-tool-soft)} .item.news,.stream.news{--cat-c:var(--c-news);--cat-soft:var(--c-news-soft)}
-.item.policy,.stream.policy{--cat-c:var(--c-policy);--cat-soft:var(--c-policy-soft)} .item.research,.stream.research{--cat-c:var(--c-research);--cat-soft:var(--c-research-soft)}
-.item.regulation,.stream.regulation{--cat-c:var(--c-reg);--cat-soft:var(--c-reg-soft)}
+.item.tool,.k-tool{--cat-c:var(--c-tool);--cat-soft:var(--c-tool-soft)} .item.news,.k-news{--cat-c:var(--c-news);--cat-soft:var(--c-news-soft)}
+.item.policy,.k-policy{--cat-c:var(--c-policy);--cat-soft:var(--c-policy-soft)} .item.research,.k-research{--cat-c:var(--c-research);--cat-soft:var(--c-research-soft)}
+.item.regulation,.k-regulation{--cat-c:var(--c-reg);--cat-soft:var(--c-reg-soft)}
+.k-infra{--cat-c:var(--c-infra);--cat-soft:var(--c-infra-soft)}
 .item > .body{grid-column:2}
 /* Left column: a picture of who or what the story is about, then its label. */
 .side{grid-row:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
@@ -318,20 +394,39 @@ header.top{gap:10px}
 .more button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .empty{margin-top:40px;color:var(--muted);text-align:center}
 footer{margin-top:36px;font-size:13px;color:var(--muted)}
+/* The sections' icons: filled, in the section's colour on a white tile in both themes. */
+.ico.sec{background:#141925;border-radius:10px}
+.ico.sec svg{fill:var(--cat-f,#FFFFFF);stroke:none}
+.k-tool{--cat-f:var(--f-tool);--cat-p:var(--p-tool)}.k-news{--cat-f:var(--f-news);--cat-p:var(--p-news)}.k-research{--cat-f:var(--f-research);--cat-p:var(--p-research)}
+.k-regulation{--cat-f:var(--f-reg);--cat-p:var(--p-reg)}.k-policy{--cat-f:var(--f-policy);--cat-p:var(--p-policy)}.k-infra{--cat-f:var(--f-infra);--cat-p:var(--p-infra)}
+.stream-tile .ico.sec,.sec-hero .ico.sec{background:#141925}
+.stream-tile .ico.sec{width:42px;height:42px;border-radius:12px}
+.stream-tile .ico.sec svg{width:28px;height:28px}
+.sec-hero .ico.sec svg{width:32px;height:32px}
 </style>
 </head><body>
 
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="#all" data-cat="all">
+    <a class="brand" href="#home" data-go="home">
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>
       <h1>AI Pulse</h1>
     </a>
-    <button class="subscribe-btn" id="subscribe-open" type="button" aria-haspopup="dialog" title="Get the daily digest in your inbox">
+    <!-- Each stream is its own page (#tool, #news…); the brand goes back to the front page. -->
+    <nav class="secnav" id="secnav" aria-label="Streams">
+      <a href="#all" data-go="all" class="k-all">All stories</a>
+      <a href="#tool" data-go="tool" class="k-tool">Releases</a>
+      <a href="#news" data-go="news" class="k-news">Industry</a>
+      <a href="#research" data-go="research" class="k-research">Research</a>
+      <a href="#regulation" data-go="regulation" class="k-regulation">Regulation tracker</a>
+      <a href="#policy" data-go="policy" class="k-policy">Policy</a>
+      <a href="#infra" data-go="infra" class="k-infra">Infrastructure &amp; sustainability</a>
+    </nav>
+    <button class="subscribe-btn cta" id="subscribe-open" type="button" aria-haspopup="dialog" title="Get the daily digest in your inbox">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-      <span>Daily digest</span>
+      <span>Subscribe</span>
     </button>
-    <button class="subscribe-btn" id="glossary-open" type="button" aria-haspopup="dialog" title="What the words in these stories mean">
+    <button class="subscribe-btn gl-open" id="glossary-open" type="button" aria-haspopup="dialog" title="What the words in these stories mean">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5 2.5 2.5 0 0 0 6.5 24"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H19"/><path d="M9 7h6M9 10.5h4"/></svg>
       <span>Glossary</span>
     </button>
@@ -402,23 +497,37 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
     <p class="sub-lede" id="sub-action-text"></p>
     <button class="sub-go" id="sub-action-go" type="button"></button>
   </dialog>
-  <div class="intro">
+  <!-- Front page: tiles. The week's biggest story, the daily email, a glossary word, then a tile per stream. -->
+  <section class="home" id="front" hidden>
     <p class="lede"><strong>Your briefing on what's happening in AI.</strong><br>AI Pulse reads company blogs,
       newsrooms, research archives and government sites, sorts every story into one of five streams and links
       each card to the original reporting.</p>
-    <div class="status" id="status">Loading feed…</div>
-  </div>
-  <div class="streams" id="streams" role="group" aria-label="Streams: pick one to show only its stories">
-    <button type="button" class="stream tool" id="tab-tool" data-cat="tool" aria-pressed="false"><span class="shead"><span class="n" id="n-tool">0</span></span><b>Releases</b><span class="desc">New models, product features and open-source launches</span></button>
-    <button type="button" class="stream news" id="tab-news" data-cat="news" aria-pressed="false"><span class="shead"><span class="n" id="n-news">0</span></span><b>Industry</b><span class="desc">Company news, deals, market moves and AI incidents, plus company blogs, tutorials and events</span></button>
-    <button type="button" class="stream research" id="tab-research" data-cat="research" aria-pressed="false"><span class="shead"><span class="n" id="n-research">0</span></span><b>Research</b><span class="desc">New papers from arXiv, top labs and leading scholars</span></button>
-    <button type="button" class="stream regulation" id="tab-regulation" data-cat="regulation" aria-pressed="false"><span class="shead"><span class="n" id="n-regulation">0</span></span><b>Regulation tracker</b><span class="desc">Bills and laws from proposal to force, AI bodies and standards, by country</span></button>
-    <button type="button" class="stream policy" id="tab-policy" data-cat="policy" aria-pressed="false"><span class="shead"><span class="n" id="n-policy">0</span></span><b>Policy</b><span class="desc">What governments, courts and politicians are doing about AI</span></button>
+    <div class="status home-status" id="home-status">Loading feed…</div>
+    <div class="bento">
+      <article class="tile hero" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
+      <div class="tile sub-tile">
+        <div><span class="label">Daily email</span><h2>The 10 AI stories that mattered, every morning</h2>
+          <p>Free. Pick your streams and make it yours: more of what you like, none of what you'd rather skip.</p></div>
+        <button class="sub-tile-go" type="button" data-open="subscribe">Subscribe</button>
+      </div>
+      <div class="tile gl-tile">
+        <div><span class="label" id="gl-label">Word of the week</span><b id="gl-word">Glossary</b><p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p>
+          <div class="gl-viz" id="gl-viz"></div></div>
+        <button class="gl-tile-go" type="button" data-open="glossary">Open the glossary</button>
+      </div>
+      <div class="streams-grid" id="stream-tiles"></div>
+    </div>
+  </section>
+
+  <!-- A stream's own page (or All stories): its name, then the filters and the stories, as before. -->
+  <section class="section" id="section" hidden>
+  <div class="sec-hero" id="sec-hero">
+    <span class="ico" id="sec-ico" aria-hidden="true"></span>
+    <div><h2 id="sec-title"></h2><p id="sec-desc"></p><div class="status" id="status">Loading feed…</div></div>
   </div>
 
   <div class="controls">
     <div class="toolbar">
-      <button type="button" class="group place-filter catchip" id="catchip" hidden></button>
       <input class="search" id="q" type="search" placeholder="Search titles, summaries, companies, people…" aria-label="Search">
       <select class="range" id="range" aria-label="Time range">
         <option value="7">7 days</option>
@@ -433,6 +542,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
+  </section>
   <footer>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a><br>Daily RSS: <a href="feeds/releases.xml">Releases</a> · <a href="feeds/news.xml">Industry</a> · <a href="feeds/research.xml">Research</a> · <a href="feeds/regulation.xml">Regulation tracker</a> · <a href="feeds/policy.xml">Policy</a></footer>
 </div>
 
@@ -441,7 +551,8 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 const KIND_LABEL = {incident:"AI-incident", study:"Study", analysis:"Opinion & analysis", tutorial:"Tutorial", event:"Event", blog:"Company blog"};
 const CAT_LABEL = {tool:"Release", news:"News", policy:"Policy", research:"Research", regulation:"Regulation"};
 const CATS = ["tool","news","research","regulation","policy"];
-const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research:"Research", regulation:"Regulation tracker"};
+const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research:"Research", regulation:"Regulation tracker",
+  infra:"Infrastructure & sustainability"};
 // Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
 const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", body:"AI body", standard:"Standard"};
 // ISO gives a standard's month of publication only (aipulse/standards.py dates it the 1st): show the month.
@@ -449,21 +560,67 @@ const monthOf = d => new Date(d+"T00:00:00").toLocaleDateString(undefined,{month
 // items: the cards loaded so far for the current tab / search / range / country (the server filters and
 // pages them); counts: cards per tab; mapTally: proposals and laws per country for the tracker's map.
 const REGION_TABS = new Set(["regulation", "news"]);  // tabs with the region filter
-const state = {cat:"all", place:null, region:null, regions:{}, q:"", range:30, items:[], page:0, total:0, hasMore:false, loading:false,
+const state = {cat:"home", place:null, region:null, regions:{}, q:"", range:30, items:[], page:0, total:0, hasMore:false, loading:false,
                error:false, counts:{}, mapTally:null, stories:0, status:null, places:{}, failing:[]};
 const PER_PAGE = 40;
-try{ const s = JSON.parse(localStorage.getItem("aipulse-ui")||"{}"); if(s.cat) state.cat=s.cat; if(s.range!=null) state.range=s.range; }catch(e){}
+try{ const s = JSON.parse(localStorage.getItem("aipulse-ui")||"{}"); if(s.range!=null) state.range=s.range; }catch(e){}
 
-// A link like /#regulation opens that tab; /?q=kotek#regulation also searches.
-const hashCat = () => { const h = location.hash.slice(1); return h==="all" || CATS.includes(h) ? h : null; };
-if(hashCat()) state.cat = hashCat();
-{ const q = new URLSearchParams(location.search).get("q"); if(q) state.q = q; }
+// Pages: the front page (no address, or #home), a stream's page (#tool, #news, #research, #regulation, #policy) and
+// All stories (#all). /?q=kotek#regulation also searches. Any other address (#subscribe, #glossary=moe, the email
+// links) opens the front page with that panel.
+const SECTION_DESC = {
+  all: "Every stream in one list, newest first. Search covers every story since 2023.",
+  tool: "New models, product features and open-source launches, straight from the labs and companies.",
+  news: "Company news, deals, market moves and AI incidents, plus company blogs, tutorials and events.",
+  research: "New papers from arXiv, top labs and leading scholars.",
+  regulation: "Bills and laws from proposal to force, AI bodies and standards, country by country.",
+  policy: "What governments, courts and politicians are doing about AI.",
+  infra: "The physical side of AI: data centres, chips and power, energy, water and emissions, and what is being done about them."};
+// A section being designed (docs: AI Pulse Discover): its page and tile are in place, its stories come later.
+const SOON = new Set(["infra"]);
+const hashCat = () => { const h = location.hash.slice(1); return h==="all" || CATS.includes(h) || SOON.has(h) ? h : "home"; };
+state.cat = hashCat();
+{ const q = new URLSearchParams(location.search).get("q"); if(q){ state.q = q; if(state.cat === "home") state.cat = "all"; } }
 
 const $ = id => document.getElementById(id);
 function saveUI(){
-  try{ localStorage.setItem("aipulse-ui", JSON.stringify({cat:state.cat, range:state.range})); }catch(e){}
-  // Keep the address in step with the tab, so a reload or a shared link opens the same one.
-  if(hashCat() !== state.cat) history.replaceState(null, "", location.pathname + location.search + "#" + state.cat);
+  try{ localStorage.setItem("aipulse-ui", JSON.stringify({range:state.range})); }catch(e){}
+}
+// Open a page. The address changes too (a new history entry), so Back returns to the page before and a reload or
+// a shared link opens the same one; hashchange sees the state already matches and does nothing more.
+function go(cat){
+  if(cat !== "regulation") state.place = null;
+  state.cat = cat; state.region = null;
+  const hash = cat === "home" ? "#home" : "#" + cat;
+  if(location.hash !== hash) location.hash = hash;
+  showPage();
+  window.scrollTo({top:0, behavior:"auto"});
+}
+function showPage(){
+  const home = state.cat === "home";
+  $("front").hidden = !home; $("section").hidden = home;
+  document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
+  if(home){ document.title = "AI Pulse"; return loadHome(); }
+  const hero = $("sec-hero");
+  hero.className = "sec-hero k-" + state.cat;
+  $("sec-title").textContent = state.cat === "all" ? "All stories" : STREAM_NAME[state.cat];
+  $("sec-desc").textContent = SECTION_DESC[state.cat];
+  $("sec-ico").replaceWith(Object.assign(sectionIcon(state.cat), {id: "sec-ico"}));
+  document.title = (state.cat === "all" ? "All stories" : STREAM_NAME[state.cat]) + " · AI Pulse";
+  const soon = SOON.has(state.cat);
+  document.querySelector(".controls").style.display = soon ? "none" : "";
+  if(!soon) return load(true);
+  requestSeq++;  // a stream's stories still on their way don't land here
+  Object.assign(state, {items: [], hasMore: false, loading: false});
+  render();
+}
+// A section being designed: what it will hold, in place of stories.
+function renderSoon(){
+  $("feed").replaceChildren(); $("more").hidden = true;
+  $("status").textContent = "Coming soon";
+  $("empty").hidden = false;
+  $("empty").textContent = "Stories about AI's data centres, energy, water and emissions will be collected here from public sources "
+    + "worldwide, from 2023 on. Research, Policy and Regulation tracker stories on these subjects will carry its tags too.";
 }
 
 function domainOf(u){ try{ return new URL(u).hostname.replace(/^www\./,""); }catch(e){ return ""; } }
@@ -480,13 +637,9 @@ function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.clas
 
 function render(){
   $("gl-pop").hidden = true;  // the word it pointed at is about to be redrawn
-  document.querySelectorAll(".stream").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.cat===state.cat)));
-  showActiveTab();
-  const chip = $("catchip");
-  chip.hidden = state.cat === "all";
-  if(!chip.hidden){ chip.textContent = STREAM_NAME[state.cat]+" ✕"; chip.setAttribute("aria-label", "Show all streams, not just "+STREAM_NAME[state.cat]); }
+  if(state.cat === "home") return renderHome();
+  if(SOON.has(state.cat)) return renderSoon();
   $("range").value = String(state.range);
-  CATS.forEach(c => $("n-"+c).textContent = state.counts[c] ?? (state.loading ? "…" : 0));
   const tracker = state.cat==="regulation";
   renderPlaceBar(REGION_TABS.has(state.cat));
   const list = state.items;  // already filtered, grouped and sorted by the server
@@ -537,7 +690,7 @@ function render(){
       (it.jurisdictions||[]).forEach(code => {
         const b = el("button","place",code); b.type="button"; b.title = "Show only "+placeName(code);
         b.setAttribute("aria-label", "Filter tracker to "+placeName(code));
-        b.addEventListener("click", () => { state.cat="regulation"; state.place=code; saveUI(); load(true); });
+        b.addEventListener("click", () => { state.place=code; if(state.cat === "regulation") load(true); else go("regulation"); });
         tags.append(b);
       });
       // Tracker cards already show their countries as chips; don't repeat them as tags.
@@ -618,12 +771,30 @@ const SYMBOL = {
   briefcase: "M4 8h16v11H4zM9 8V5h6v3M4 13h16",
   cap: "M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5",
   ballot: "M4 12h16v8H4zM8 12V5h8v7M10 8.5h4",
+  leaf: "M5 19C5 10 11 5 20 4c0 9-5 15-15 15zM5 19l8-8",
 };
 const TOPIC_SYMBOL = {"Chips":"chip", "Compute & Data Centers":"chip", "Robotics":"robot", "Agents":"robot",
   "Healthcare":"heart", "Energy":"bolt", "Climate":"bolt", "Security":"shield", "Defense":"shield", "Safety":"shield",
   "Funding":"trend", "M&A":"trend", "IPO":"trend", "Jobs & Labor":"briefcase", "Education":"cap",
   "Elections":"ballot", "Law":"scale", "Regulation":"scale", "Copyright":"scale", "Antitrust":"scale"};
-const CAT_SYMBOL = {tool:"release", news:"news", policy:"capitol", research:"flask", regulation:"scale"};
+const CAT_SYMBOL = {tool:"release", news:"news", policy:"capitol", research:"flask", regulation:"scale", infra:"leaf"};
+// The sections' icons (tiles and page headers): Phosphor Icons, fill weight (MIT License, Copyright (c) 2023
+// Phosphor Icons, phosphoricons.com), in the section's colour on a white tile.
+const SECTION_ICON = {
+  tool: "M101.85,191.14C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Zm122-144a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.4,27.07h0L88,108.7A8,8,0,0,1,76.67,97.39l26.56-26.57A4,4,0,0,0,100.41,64H74.35A15.9,15.9,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A16,16,0,0,0,192,181.65V155.59a4,4,0,0,0-6.83-2.82l-26.57,26.56a8,8,0,0,1-11.71-.42,8.2,8.2,0,0,1,.6-11.1l49.27-49.27h0C223.45,91.86,224.6,59.71,223.85,47.12Z",  // rocket-launch
+  news: "M239.73,208H224V96a16,16,0,0,0-16-16H164a4,4,0,0,0-4,4V208H144V32.41a16.43,16.43,0,0,0-6.16-13,16,16,0,0,0-18.72-.69L39.12,72A16,16,0,0,0,32,85.34V208H16.27A8.18,8.18,0,0,0,8,215.47,8,8,0,0,0,16,224H240a8,8,0,0,0,8-8.53A8.18,8.18,0,0,0,239.73,208ZM76,184a8,8,0,0,1-8.53,8A8.18,8.18,0,0,1,60,183.72V168.27A8.19,8.19,0,0,1,67.47,160,8,8,0,0,1,76,168Zm0-56a8,8,0,0,1-8.53,8A8.19,8.19,0,0,1,60,127.72V112.27A8.19,8.19,0,0,1,67.47,104,8,8,0,0,1,76,112Zm40,56a8,8,0,0,1-8.53,8,8.18,8.18,0,0,1-7.47-8.26V168.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Zm0-56a8,8,0,0,1-8.53,8,8.19,8.19,0,0,1-7.47-8.26V112.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Z",  // buildings
+  research: "M221.69,199.77,160,96.92V40h8a8,8,0,0,0,0-16H88a8,8,0,0,0,0,16h8V96.92L34.31,199.77A16,16,0,0,0,48,224H208a16,16,0,0,0,13.72-24.23Zm-90.08-42.91c-15.91-8.05-31.05-12.32-45.22-12.81l24.47-40.8A7.93,7.93,0,0,0,112,99.14V40h32V99.14a7.93,7.93,0,0,0,1.14,4.11L183.36,167C171.4,169.34,154.29,168.34,131.61,156.86Z",  // flask
+  regulation: "M239.43,133l-32-80A8,8,0,0,0,200,48a8.27,8.27,0,0,0-1.73.21L136,62V40a8,8,0,0,0-16,0V65.58L54.27,80.21A8,8,0,0,0,48.57,85l-32,80a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133Zm-160,35H32.62L56,109.54Zm97.24-32L200,77.54,223.38,136Z",  // scales
+  policy: "M248,208a8,8,0,0,1-8,8H16a8,8,0,0,1,0-16H240A8,8,0,0,1,248,208ZM16.3,98.18a8,8,0,0,1,3.51-9l104-64a8,8,0,0,1,8.38,0l104,64A8,8,0,0,1,232,104H208v64h16a8,8,0,0,1,0,16H32a8,8,0,0,1,0-16H48V104H24A8,8,0,0,1,16.3,98.18ZM144,160a8,8,0,0,0,16,0V112a8,8,0,0,0-16,0Zm-48,0a8,8,0,0,0,16,0V112a8,8,0,0,0-16,0Z",  // bank
+  infra: "M205.41,159.07a60.9,60.9,0,0,1-31.83,8.86,71.71,71.71,0,0,1-27.36-5.66A55.55,55.55,0,0,0,136,194.51V224a8,8,0,0,1-8.53,8,8.18,8.18,0,0,1-7.47-8.25V211.31L81.38,172.69A52.5,52.5,0,0,1,63.44,176a45.82,45.82,0,0,1-23.92-6.67C17.73,156.09,6,125.62,8.27,87.79a8,8,0,0,1,7.52-7.52c37.83-2.23,68.3,9.46,81.5,31.25A46,46,0,0,1,103.74,140a4,4,0,0,1-6.89,2.43l-19.2-20.1a8,8,0,0,0-11.31,11.31l53.88,55.25c.06-.78.13-1.56.21-2.33a68.56,68.56,0,0,1,18.64-39.46l50.59-53.46a8,8,0,0,0-11.31-11.32l-49,51.82a4,4,0,0,1-6.78-1.74c-4.74-17.48-2.65-34.88,6.4-49.82,17.86-29.48,59.42-45.26,111.18-42.22a8,8,0,0,1,7.52,7.52C250.67,99.65,234.89,141.21,205.41,159.07Z",  // plant
+  all: "M120,56v48a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40h48A16,16,0,0,1,120,56Zm80-16H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm-96,96H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm96,0H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Z",  // squares-four
+};
+function sectionIcon(cat){
+  const tile = el("span","ico sec"); tile.setAttribute("aria-hidden","true");
+  const svg = svgIcon(SECTION_ICON[cat] || SECTION_ICON.all); svg.setAttribute("viewBox", "0 0 256 256");
+  tile.append(svg);
+  return tile;
+}
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 function svgIcon(d){
@@ -688,6 +859,7 @@ function clampSummaries(root){
 // otherwise the next page is appended. Responses to superseded requests are dropped.
 let requestSeq = 0;
 async function load(reset){
+  if(state.cat === "home" || SOON.has(state.cat)) return;  // the front page loads its own (loadHome); a coming section has none yet
   if(!reset && (state.loading || !state.hasMore)) return;
   const seq = ++requestSeq;
   const page = reset ? 1 : state.page + 1;
@@ -815,10 +987,10 @@ function renderPlaceBar(show){
 }
 
 function renderStatus(){
-  const s = $("status");
-  // Same unit as the stream counts (one card per event, however many outlets reported it), for the
-  // current time range and search, so it always equals their sum.
-  const n = state.counts.all ?? 0;
+  const s = $(state.cat === "home" ? "home-status" : "status");
+  // One card per event, however many outlets reported it, for the current time range and search: on a stream's
+  // page that stream's own, on the front page and All stories every stream's (the sum of the tiles' counts).
+  const n = (CATS.includes(state.cat) ? state.counts[state.cat] : state.counts.all) ?? 0;
   const span = {7:"in the last 7 days", 30:"in the last 30 days", 90:"in the last 90 days", 0:"in total"}[state.range];
   const last = state.status && state.status.lastRun;
   const when = t => new Date(t).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
@@ -826,7 +998,7 @@ function renderStatus(){
   // Nothing has arrived yet: say so, a row of zeros would read as an empty site.
   if(state.loading && state.counts.all === undefined){ s.append(el("div", null, "Loading…")); return; }
   const l1 = el("div"); l1.append(el("b",null,String(n)), document.createTextNode(
-    (n===1 ? " story " : " stories ") + (state.q.trim() ? "matching your search " : "") + span));
+    (n===1 ? " story " : " stories ") + (state.q.trim() && state.cat !== "home" ? "matching your search " : "") + span));
   const l2 = el("div", null, last ? "Last update "+when(last) : "Not collected yet");
   s.append(l1, l2);
   // Sources that failed several collections in a row; otherwise a dead feed would just go quiet.
@@ -845,42 +1017,166 @@ function renderStatus(){
   }
 }
 
-// On narrow screens the stream cards scroll sideways: fade the edge that has more, keep the chosen one in view.
-function tabFades(){
-  const s = $("streams");
-  s.classList.toggle("fade-l", s.scrollLeft > 2);
-  s.classList.toggle("fade-r", s.scrollLeft + s.clientWidth < s.scrollWidth - 2);
+// ---------- Front page: this week's stories, ranked as in the daily email (by how many outlets reported them) ----------
+const HOME = {by: null, loading: false, error: false};
+const outlets = it => (it.also || []).length + 1;
+const byWeight = (a, b) => outlets(b) - outlets(a) || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0);
+// The front page's totals: every stream for the chosen time range (as on the stream pages, without a search),
+// read again each time the page opens, as the range may have changed on a stream's page.
+async function loadHomeCounts(){
+  state.loading = true; state.counts = {}; renderStatus();
+  let d = null;
+  try{ d = await fetchItems(new URLSearchParams({days: state.range, per_page: 1, page: 1})); }catch(e){}
+  if(state.cat !== "home") return;  // the reader moved on to a stream's page, which has its own
+  Object.assign(state, {loading: false, counts: d ? d.counts : {all: 0}, status: d && d.lastRun ? {lastRun: d.lastRun.ran_at} : null,
+    failing: d ? d.failingSources || [] : []});
+  renderStatus(); renderHome();
 }
-let shownTab = null;
-function showActiveTab(){
-  const s = $("streams"), b = $("tab-"+state.cat);
-  if(b && shownTab !== state.cat){
-    shownTab = state.cat;
-    if(b.offsetLeft < s.scrollLeft || b.offsetLeft + b.offsetWidth > s.scrollLeft + s.clientWidth)
-      s.scrollLeft = b.offsetLeft - parseFloat(getComputedStyle(s).paddingLeft);  // line up with the snap point
+async function loadHome(){
+  loadHomeCounts();
+  if(HOME.by || HOME.loading) return renderHome();
+  HOME.loading = true; HOME.error = false; renderHome();
+  try{
+    const [lists, recent] = await Promise.all([
+      Promise.all(CATS.map(c => fetchItems(new URLSearchParams({category: c, days: 7, per_page: 200, page: 1})))),
+      fetchItems(new URLSearchParams({days: 15, per_page: 100000, page: 1}))]);  // for last week's word
+    HOME.by = Object.fromEntries(CATS.map((c, i) => [c, [...lists[i].items].sort(byWeight)]));
+    const [from, to] = lastWeek();
+    HOME.lastWeek = recent.items.filter(it => it.date >= from && it.date < to);
+    if(lists[0].jurisdictions) state.places = lists[0].jurisdictions;
+  }catch(e){ HOME.error = true; }
+  HOME.loading = false; renderHome();
+}
+function storyLink(it, cls){
+  const a = el("a", cls, it.title); a.href = it.url; a.target = "_blank"; a.rel = "noopener"; return a;
+}
+function storyMeta(it){
+  const places = (it.jurisdictions || []).filter(c => !c.startsWith("US-")).slice(0, 3);
+  const when = ({research:"Published ", regulation:"Reported "}[it.category] || "Released ") + it.date;  // as on the cards
+  return el("div","meta", [...places, it.source || domainOf(it.url), when].join(" · ") + (outlets(it) > 1 ? " · " + outlets(it) + " sources" : ""));
+}
+// The word of the week changes each Monday: the glossary word that came up in the most of last week's stories
+// (Monday to Sunday, UTC), shown with how many of them used it each day (one bar a day, day and count on hover)
+// and the two biggest stories it came from. The whole week sees the same word.
+function lastWeek(){
+  const d = new Date(); d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7);  // this Monday
+  const to = d.toISOString().slice(0, 10);
+  d.setUTCDate(d.getUTCDate() - 7);
+  return [d.toISOString().slice(0, 10), to];
+}
+const mentions = (e, its) => its.filter(it => e.re.test(it.title + " " + (it.summary || "")));
+function pickWord(){
+  if(HOME.word || !GL.ready || !HOME.lastWeek) return;
+  let best = null, most = 0;
+  for(const e of GL.entries){ const n = mentions(e, HOME.lastWeek).length; if(n > most){ best = e; most = n; } }
+  HOME.word = best ? best.id : null;
+}
+function renderWord(){
+  pickWord();
+  const box = $("gl-viz"), e = HOME.word && GL.byId[HOME.word];
+  box.replaceChildren();
+  if(!e) return;
+  $("gl-word").textContent = e.term; $("gl-word-def").textContent = e.def;
+  const [from] = lastWeek(), days = [];
+  for(let i = 0; i < 7; i++){ const d = new Date(from + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + i); days.push(d.toISOString().slice(0, 10)); }
+  const fmt = (d, o) => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone: "UTC", ...o});
+  $("gl-label").textContent = "Word of the week · " + fmt(days[0], {day: "numeric", month: "short"}) + " – " + fmt(days[6], {day: "numeric", month: "short"});
+  const used = mentions(e, HOME.lastWeek);
+  const per = days.map(d => used.filter(it => it.date === d).length), max = Math.max(1, ...per);
+  const bars = el("div","bars"); bars.setAttribute("role","img");
+  bars.setAttribute("aria-label", e.term + " came up in " + used.length + " stories last week: " +
+    days.map((d, i) => fmt(d, {weekday: "short"}) + " " + per[i]).join(", "));
+  days.forEach((d, i) => {
+    const day = fmt(d, {weekday: "short", day: "numeric", month: "short"});
+    const col = el("div","bar"); col.title = day + ": " + per[i] + (per[i] === 1 ? " story" : " stories");
+    const fill = el("span"); fill.style.height = Math.max(3, Math.round(per[i] / max * 36)) + "px";
+    if(!per[i]) fill.classList.add("none");
+    col.append(fill, el("small", null, fmt(d, {weekday: "short"}).slice(0, 2)));
+    bars.append(col);
+  });
+  box.append(el("div","viz-note", "In " + used.length + (used.length === 1 ? " story" : " stories") + " last week"), bars);
+  const list = el("ul","from");
+  [...used].sort(byWeight).slice(0, 2).forEach(it => { const li = el("li"); li.append(storyLink(it)); list.append(li); });
+  box.append(el("div","viz-note","From"), list);
+}
+function searchAll(q){ state.q = q; $("q").value = q; go("all"); }
+// A story's tags, as on its card; a tap shows every story with that tag.
+function storyTags(it, max){
+  const tags = el("div","tags");
+  const places = new Set((it.jurisdictions || []).map(placeName));  // already shown as codes, as on the cards
+  (it.tags || []).filter(t => !places.has(t)).slice(0, max).forEach(t => { const b = el("button","tag","#"+t); b.type = "button"; b.addEventListener("click", () => searchAll(t)); tags.append(b); });
+  return tags;
+}
+function renderHome(){
+  const hero = $("hero"), tiles = $("stream-tiles");
+  if(!HOME.by){
+    hero.className = "tile hero";
+    hero.replaceChildren(el("p","tile-note", HOME.error ? "Couldn't load this week's stories. Try reloading the page." : "Loading this week's stories…"));
+    return;
   }
-  tabFades();
+  const week = CATS.flatMap(c => HOME.by[c]).sort(byWeight), top = week[0];
+  hero.replaceChildren();
+  if(top){
+    hero.className = "tile hero k-" + top.category;
+    const h = el("h2"); h.append(storyLink(top));
+    // Cover art drawn here, not the publisher's photo (theirs to license): the story's logo (else its country or
+    // topic) on a band in its stream's colour, over the AI Pulse pulse line.
+    const art = el("div","hero-art");
+    art.innerHTML = '<svg class="pulse" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">'
+      + '<polyline points="0,70 90,70 120,70 140,25 170,105 195,45 215,70 400,70"/></svg>';
+    art.append(cardIcon(top));
+    hero.append(art, el("span","label","Story of the week · " + STREAM_NAME[top.category]), h);
+    if(top.summary) hero.append(el("p","sum", top.summary));
+    hero.append(storyMeta(top));
+    // the outlets that reported it, each linking to its own version
+    const others = (top.also || []).filter((o, i, a) => a.findIndex(x => x.source === o.source) === i).slice(0, 8);
+    if(others.length){
+      const by = el("div","reported", "Also reported by ");
+      others.forEach(o => { const a = el("a", null, o.source || domainOf(o.url)); a.href = o.url; a.target = "_blank"; a.rel = "noopener"; by.append(a); });
+      hero.append(by);
+    }
+    hero.append(storyTags(top, 4));
+  } else hero.append(el("p","tile-note","No stories this week yet."));
+  renderWord();
+  // Each stream, then the section being designed (All stories is in the header).
+  tiles.replaceChildren();
+  const span = {7:"in the last 7 days", 30:"in the last 30 days", 90:"in the last 90 days", 0:"in total"}[state.range];
+  [...CATS, ...SOON].forEach(c => {
+    const name = STREAM_NAME[c];
+    const t = el("section","tile stream-tile k-" + c);
+    const head = el("a","stream-head"); head.href = "#" + c; head.dataset.go = c;
+    head.append(sectionIcon(c), el("h2", null, name));
+    // how many stories it holds for the chosen range, as the old stream cards showed
+    const n = SOON.has(c) ? null : state.counts[c];
+    const badge = el("span","n", SOON.has(c) ? "Soon" : n == null ? "…" : n.toLocaleString());
+    if(n != null) badge.title = n.toLocaleString() + (n === 1 ? " story " : " stories ") + span;
+    head.append(badge);
+    t.append(head, el("p","desc", SECTION_DESC[c]));
+    if(SOON.has(c)) t.append(el("p","soon tile-note","Coming soon: news, research and policy on these subjects, from public sources worldwide."));
+    else {
+      const list = HOME.by[c].filter(it => !top || it.id !== top.id).slice(0, 2);
+      const ul = el("ul");
+      list.forEach(it => { const li = el("li"); li.append(storyLink(it), storyMeta(it), storyTags(it, 3)); ul.append(li); });
+      if(list.length) t.append(ul); else t.append(el("p","tile-note","Nothing new this week."));
+    }
+    const all = el("a","go", (SOON.has(c) ? "About this section" : "All " + name) + " →");
+    all.href = "#" + c; all.dataset.go = c;
+    t.append(all);
+    tiles.append(t);
+  });
 }
-$("streams").addEventListener("scroll", tabFades, {passive:true});
-window.addEventListener("resize", tabFades);
-// Web fonts change the cards' widths after the first render.
-if(document.fonts) document.fonts.ready.then(() => { shownTab = null; showActiveTab(); });
-const pickCat = cat => { state.cat=cat; state.place=null; saveUI(); load(true); };
-// A stream card shows only that stream; clicking the chosen one again (or its chip) goes back to all.
-document.querySelectorAll(".stream").forEach(b => {
-  const tile = el("span","ico"); tile.setAttribute("aria-hidden","true");
-  tile.append(svgIcon(SYMBOL[CAT_SYMBOL[b.dataset.cat]])); b.querySelector(".shead").prepend(tile);
-  b.addEventListener("click", () => pickCat(state.cat === b.dataset.cat ? "all" : b.dataset.cat));
-});
-$("catchip").addEventListener("click", () => pickCat("all"));
 
-// The logo opens the All tab and goes back to the top of the feed.
-document.querySelectorAll("header.top a[data-cat]").forEach(a => a.addEventListener("click", e => {
-  e.preventDefault();
-  state.cat=a.dataset.cat; state.place=null; saveUI(); load(true);
-  window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
-}));
-window.addEventListener("hashchange", () => { const c = hashCat(); if(c && c!==state.cat){ state.cat=c; state.place=null; saveUI(); load(true); } });
+// The brand, the stream links and the tiles open their page.
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[data-go]");
+  if(!a || e.ctrlKey || e.metaKey || e.shiftKey) return;  // a new tab opens the page by its address
+  e.preventDefault(); go(a.dataset.go);
+});
+window.addEventListener("hashchange", () => {
+  const c = hashCat();
+  if(c !== state.cat){ if(c !== "regulation") state.place = null; state.cat = c; state.region = null; showPage(); }
+});
 
 // Theme: follows the system until the button picks the other one; picking the system's own theme
 // goes back to following it.
@@ -1108,6 +1404,7 @@ $("sub-form").addEventListener("submit", async e => {
         + " Not in your inbox? Look in Spam or Promotions and mark it “Not spam”, and add " + DIGEST_SENDER
         + " to your contacts so the daily email lands in your inbox.", "ok");
       $("sub-email").value = "";
+      try{ localStorage.setItem("aipulse-sub-prompt", "subscribed"); }catch(err){}  // no more pop-ups
     } else {
       subMessage({email: "Please enter a valid email address.", streams: "Pick at least one stream.",
                   full: "AI Pulse daily is full for now. Please try again in a few weeks.",
@@ -1243,7 +1540,10 @@ function renderGlossary(){
     const d = el("div","gl-entry"); d.id = "gl-" + e.id;
     const h = el("h3",null,e.term); h.append(el("span","grp",e.group));
     const find = el("button","gl-find","Show stories that mention it →"); find.type="button";
-    find.addEventListener("click", () => { glDialog.close(); state.q = e.search; $("q").value = e.search; load(true); });
+    find.addEventListener("click", () => {
+      glDialog.close(); state.q = e.search; $("q").value = e.search;
+      if(state.cat === "home") go("all"); else load(true);
+    });
     d.append(h, el("p",null,e.def), find); body.append(d);
   });
   if(!shown.length) body.append(el("p","gl-none","No word matches. Try another spelling, or pick “All”."));
@@ -1262,7 +1562,27 @@ $("q").value = state.q;
 if("IntersectionObserver" in window){
   new IntersectionObserver(es => { if(es.some(e => e.isIntersecting)) load(false); }, {rootMargin: "600px"}).observe($("more"));
 }
-load(true);
+// The front page's tiles open the subscribe form and the glossary (at the word of the week).
+document.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () =>
+  b.dataset.open === "subscribe" ? openSubscribe() : openGlossary(HOME.word)));
+
+// The subscribe form pops up once, 8 seconds into a visit, and again a month later; never for a reader who
+// subscribed from this browser, nor over a link from an email (confirm, unsubscribe, choices, glossary).
+const SUB_PROMPT = "aipulse-sub-prompt", SUB_AGAIN = 30*864e5;
+function promptSubscribe(){
+  if(location.hash && !/^#(home|all|tool|news|research|regulation|policy)?$/.test(location.hash)) return;
+  try{
+    const last = localStorage.getItem(SUB_PROMPT);
+    if(last === "subscribed" || Date.now() - (+last || 0) < SUB_AGAIN) return;
+  }catch(e){ return; }  // without storage it would pop up on every visit
+  setTimeout(() => {
+    if(document.querySelector("dialog[open]")) return;  // the reader is already in a panel
+    try{ localStorage.setItem(SUB_PROMPT, String(Date.now())); }catch(e){}
+    openSubscribe();
+  }, 8000);
+}
+showPage();
+promptSubscribe();
 setInterval(() => location.reload(), 30*60*1000);
 </script>
 
