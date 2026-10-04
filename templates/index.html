@@ -1246,7 +1246,7 @@ function renderStatus(){
   }
 }
 
-// ---------- Front page: this week's stories, ranked as in the daily email (by how many outlets reported them) ----------
+// ---------- Front page: last week's stories, ranked as in the daily email (by how many outlets reported them) ----------
 const HOME = {by: null, loading: false, error: false};
 const outlets = it => (it.also || []).length + 1;
 const byWeight = (a, b) => outlets(b) - outlets(a) || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0);
@@ -1311,14 +1311,14 @@ async function loadHome(){
   HOME.loading = true; HOME.error = false; renderHome();
   try{
     loadMeme();
-    const [lists, recent] = await Promise.all([
-      Promise.all(CATS.map(c => fetchItems(new URLSearchParams({category: c, days: 7, per_page: 200, page: 1})))),
-      fetchItems(new URLSearchParams({days: 36, per_page: 100000, page: 1}))]);  // last week's word, and the 3 weeks before
-    HOME.by = Object.fromEntries(CATS.map((c, i) => [c, [...lists[i].items].sort(byWeight)]));
+    // last week's stories (the word of the week looks 3 weeks further back)
+    const recent = await fetchItems(new URLSearchParams({days: 36, per_page: 100000, page: 1}));
     const [from, to] = lastWeek();
     HOME.lastWeek = recent.items.filter(it => it.date >= from && it.date < to);
     HOME.recent = recent.items;
-    if(lists[0].jurisdictions) state.places = lists[0].jurisdictions;
+    // every part of the front page covers the same week: each stream's sections too, not just the three tiles
+    HOME.by = Object.fromEntries(CATS.map(c => [c, HOME.lastWeek.filter(it => it.category === c).sort(byWeight)]));
+    if(recent.jurisdictions) state.places = recent.jurisdictions;
   }catch(e){ HOME.error = true; }
   HOME.loading = false; renderHome();
 }
@@ -1481,21 +1481,21 @@ function renderHome(){
   } else hero.append(el("p","tile-note","No stories last week."));
   renderWord();
   requestAnimationFrame(fitMeme);  // the row's height may have changed
-  // Each stream: its name, count and description, then its three biggest stories of the week, newest first.
+  // Each stream: its name, last week's count and its description, then last week's three biggest stories, newest
+  // first (the same Monday to Sunday as the three tiles above).
   tiles.replaceChildren();
-  const span = {7:"in the last 7 days", 30:"in the last 30 days", 90:"in the last 90 days", 0:"in total"}[state.range];
   CATS.forEach(c => {
     const name = STREAM_NAME[c], sec = el("section","mag-sec k-" + c);
     const head = el("a","stream-head"); head.href = "#" + c; head.dataset.go = c;
-    const n = state.counts[c];
-    const badge = el("span","n", n == null ? "…" : n.toLocaleString() + (n === 1 ? " story" : " stories"));
-    if(n != null) badge.title = n.toLocaleString() + (n === 1 ? " story " : " stories ") + span;
+    const n = HOME.by[c].length;
+    const badge = el("span","n", n.toLocaleString() + (n === 1 ? " story" : " stories") + " last week");
+    badge.title = weekLabel();
     head.append(el("h2", null, name), badge);
     sec.append(head, el("div","rule"), el("p","desc", SECTION_DESC[c]));
     // the week's three most reported, shown newest first (picked by importance, read in order of date)
     const list = HOME.by[c].filter(it => !top || it.id !== top.id).slice(0, 3)
       .sort((a, b) => b.date.localeCompare(a.date) || byWeight(a, b));
-    if(!list.length) sec.append(el("p","tile-note","Nothing new this week."));
+    if(!list.length) sec.append(el("p","tile-note","Nothing last week."));
     else {
       const first = list[0], lead = el("a","lead");
       lead.href = first.url; lead.target = "_blank"; lead.rel = "noopener";
