@@ -550,7 +550,6 @@ header.top .brand{margin-right:auto}
 header.top .secnav{order:5;flex-basis:100%;margin:0;padding:4px 0 0;border-top:2px solid var(--ink)}
 header.top.home{height:auto;padding-top:10px}
 .mast-line{order:4;flex-basis:100%;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 24px;padding:2px 0 8px}
-.mast-line[hidden]{display:none}
 .mast-line .lede{margin:0}
 .mast-line .home-status{margin:0}
 .secnav a{border-radius:0;padding:6px 12px 6px 0;margin-right:10px;text-transform:none;letter-spacing:0;font:600 14px var(--body)}
@@ -571,13 +570,14 @@ header.top.home{height:auto;padding-top:10px}
   header.top .subscribe-btn.cta svg{display:none}  /* the word alone, so the top row fits a phone */
   header.top{gap:8px}
   .sec-hero{min-height:0;padding:20px 16px}
-  header.top.home{position:static}  /* the taller front-page masthead scrolls away on a phone */
+  header.top.home{position:static}  /* the tall masthead scrolls away on a phone... */
+  .controls{top:0}  /* ...and the filters stick to the top instead */
 }
 </style>
 </head><body>
 
 <div class="wrap">
-  <header class="top">
+  <header class="top home">
     <a class="brand" href="#home" data-go="home">
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>
       <h1>AI Pulse</h1>
@@ -803,7 +803,7 @@ function showPage(){
   const home = state.cat === "home";
   $("front").hidden = !home; $("section").hidden = home;
   $("subscribe-open").hidden = $("glossary-open").hidden = home;
-  $("mast-line").hidden = !home; document.querySelector("header.top").classList.toggle("home", home);  // the front page has its own: the email strip, the word of the week
+  // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
   if(home){ document.title = "AI Pulse"; return loadHome(); }
   const hero = $("sec-hero");
@@ -1198,6 +1198,10 @@ function renderPlaceBar(show){
   });
 }
 
+const MAST = document.querySelector("header.top");
+const barHeight = () => document.documentElement.style.setProperty("--bar-h", MAST.offsetHeight + "px");
+try{ new ResizeObserver(barHeight).observe(MAST); }catch(e){ addEventListener("resize", barHeight); }
+barHeight();
 function renderStatus(){
   const s = $(state.cat === "home" ? "home-status" : "status");
   // One card per event, however many outlets reported it, for the current time range and search: on a stream's
@@ -1212,7 +1216,13 @@ function renderStatus(){
   const l1 = el("div"); l1.append(el("b",null,String(n)), document.createTextNode(
     (n===1 ? " story " : " stories ") + (state.q.trim() && state.cat !== "home" ? "matching your search " : "") + span));
   const l2 = el("div", null, last ? "Last update "+when(last) : "Not collected yet");
-  s.append(l1, l2);
+  if(state.cat === "home") s.append(l1, l2);
+  else s.append(l1);  // the stream's own count; when it was last updated is in the masthead
+  if(state.cat !== "home"){
+    const all = state.counts.all ?? 0, m = $("home-status"), t = el("div");
+    t.append(el("b", null, String(all)), document.createTextNode((all === 1 ? " story " : " stories ") + span));
+    m.replaceChildren(t, el("div", null, last ? "Last update " + when(last) : "Not collected yet"));
+  }
   // Sources that failed several collections in a row; otherwise a dead feed would just go quiet.
   const failing = state.failing || [];
   if(failing.length){
