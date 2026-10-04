@@ -52,12 +52,10 @@ ACTION_LABEL = {"proposal": "Proposal", "law": "Law adopted", "body": "AI body",
 PER_STREAM = 25  # a longer stream ends with a link to the rest (the RSS feed and the page have them all)
 SUMMARY = 160    # characters of summary in the table; the story's page has the rest
 GREY, INK, LINK, RULE = "#5f6368", "#1a1a1a", "#1a4fd6", "#eceef1"
-# the short email's look: a navy header band, white cells edged in their stream's colour, tags coloured by kind
-NAVY, PAGE, EDGE, HEADLINE = "#14213d", "#e9eef7", "#d9e1ef", "#1c3faa"
+# the short email's look: a navy header band, a coloured rule over each of the top stories
+NAVY, PAGE, HEADLINE = "#14213d", "#e9eef7", "#1c3faa"
 BRIGHT = {"releases": "#12b886", "news": "#4c6ef5", "research": "#9c36b5", "regulation": "#e64980", "policy": "#f76707",
           "infra": "#74b816"}
-CHIP = {"place": f"background:{NAVY};color:#ffffff", "company": f"background:#e7ecff;color:{HEADLINE}",
-        "topic": "background:#f1f3f7;color:#4a5060", "infra": "background:#e3f6d5;color:#2b5d0a"}
 SMTP_HOST = "smtp.gmail.com"
 
 
@@ -254,14 +252,6 @@ def story_tags(c: dict, in_stream: bool = False) -> list[str]:
     ordered = (places + [t for t in tags if t in brief._PLACE_TAGS] + infra
                + [t for t in tags if t not in brief._PLACE_TAGS and t != classify.INFRA_TAG])
     return list(dict.fromkeys(ordered))[:TAGS]
-
-
-def _chips(tags: list[str]) -> str:
-    """Tag pills: countries navy, companies light blue, topics grey."""
-    kind = lambda t: ("place" if t in brief._PLACE_TAGS or t == "International" else
-                      "company" if t in classify.COMPANY_TERMS else "infra" if t == classify.INFRA_TAG else "topic")
-    return "".join(f'<span style="display:inline-block;font-size:11px;{CHIP[kind(t)]};border-radius:9px;'
-                   f'padding:1px 8px;margin:4px 4px 0 0;white-space:nowrap">#{escape(t)}</span>' for t in tags)
 
 
 def _band(hello: str) -> str:

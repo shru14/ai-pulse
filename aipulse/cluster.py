@@ -169,10 +169,6 @@ def _same_person(a: dict, b: dict, idf: dict[str, float]) -> bool:
     return any(all(idf.get(w, 0.0) >= ANCHOR_IDF for w in p) for p in people(a) & people(b))
 
 
-def _days(a: str, b: str) -> int:
-    return abs((date.fromisoformat(a) - date.fromisoformat(b)).days)
-
-
 def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[dict]]:
     """Groups of the same event (single-story groups included), lead first, in the input's order."""
     idf = idf if idf is not None else idf_weights(items)
