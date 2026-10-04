@@ -410,7 +410,7 @@ def _meme(cards: list[dict], day: date) -> tuple[list[str], str]:
     INLINE[MEME_CID] = picture
     return memes.text(meme), (f'<div style="margin:0 0 14px"><div style="font-size:11px;font-weight:bold;letter-spacing:2px;'
                               f'text-transform:uppercase;color:{HEADLINE};margin-bottom:6px">Meme of the day</div>'
-                              f'{memes.html(meme, "cid:" + MEME_CID)}</div>')
+                              f'{memes.html(meme, "cid:" + MEME_CID, small=True)}</div>')
 
 
 def preview(html: str) -> str:
@@ -477,52 +477,52 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
              else f"Here are the {len(top)} that mattered most.")
     made_for = _left_note(prefs, left or [])
     news = _new_stream(day, streams)
-    # In order: the count, the word of the day, the full email, then the stories
+    # In order: the count, the word and the meme of the day, the stories, the rest in brief,
+    # then the full email
     word_text, word_html = _word(cards, day, streams, prefs, [_biggest(by_stream, streams), top, todays])
     meme_text, meme_html = _meme(cards, day)
-    lines = [hello, "", intro, *([made_for] if made_for else []), *([news] if news else []), "", *word_text, "",
-             *([*meme_text, ""] if meme_text else []),
-             f"Want everything? The full email, every story of the day in one table: {everything}",
-             *([quiet] if quiet else []), "", title]
+    lines = [hello, "", intro, *([made_for] if made_for else []), *([news] if news else []),
+             *([quiet] if quiet else []), "", *word_text, "", *([*meme_text, ""] if meme_text else []), title]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
-    html = [f'<p style="margin:0;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
-            + (f'<p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:{GREY}">{escape(made_for)}</p>' if made_for else "")
-            + (f'<p style="margin:8px 0 0;font-size:13px;line-height:1.5;background:#e3f6d5;color:#2b5d0a;padding:8px 10px;'
-               f'border-radius:4px">{escape(news)}</p>' if news else "")
+    note = lambda words, style: f'<p style="margin:0 0 10px;font-size:13px;line-height:1.5;{style}">{escape(words)}</p>'
+    html = [f'<p style="margin:0 0 10px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
+            + (note(made_for, f"color:{GREY}") if made_for else "")
+            + (note(news, "background:#e3f6d5;color:#2b5d0a;padding:8px 10px;border-radius:4px") if news else "")
+            + (note(quiet, "background:#fff8e6;padding:8px 10px;border-radius:4px") if quiet else "")
             + word_html + meme_html
-            + f'<p style="margin:0 0 6px;font-size:13px"><a href="{escape(everything)}" style="color:{LINK};text-decoration:none">'
-              f'Want everything? See the full email: every story of the day in one table →</a></p>'
-            + (f'<p style="margin:0 0 6px;font-size:14px;background:#fff8e6;padding:8px 10px">{escape(quiet)}</p>' if quiet else "")
-            + f'<div style="font-size:17px;font-weight:bold;color:{NAVY};margin:20px 0 10px">{escape(title)}</div>']
+            + f'<div style="font-size:22px;font-weight:bold;line-height:1.2;color:{INK};margin:26px 0 14px;'
+              f'padding-top:10px;border-top:3px solid {INK}">{escape(title)}</div>']
     cells = []
     for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])
-        more, summary, tags = _outlets(c) - 1, _short(c.get("summary") or "", 110), story_tags(c)
+        more, summary, tags = _outlets(c) - 1, _short(c.get("summary") or "", 100), story_tags(c)
         by = c["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
         yours = id(c) in picks
         lines += [f"• [{label}]{' [Your choice]' if yours else ''} {c['title']}", *([f"   {' '.join('#' + t for t in tags)}"] if tags else []), *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]
-        cells.append(f'<td valign="top" width="50%" style="padding:12px;border:1px solid {EDGE};background:#ffffff;'
-                     f'border-left:4px solid {BRIGHT[stream_of[id(c)]]}">'
-                     f'<div style="margin-bottom:4px">{_pill(label, bg, fg)}'
-                     + (f' {_pill("Your choice", "#ffffff", NAVY).replace("background:#ffffff", f"background:#ffffff;border:1px solid {NAVY}")}'
-                        if yours else "") + '</div>'
-                     f'<a href="{escape(c["url"])}" style="color:{HEADLINE};font-size:14.5px;font-weight:bold;line-height:1.35;'
+        rule = BRIGHT[stream_of[id(c)]]
+        kicker = label.upper() + (" · Your choice" if yours else "").upper()
+        cells.append(f'<td class="cell" valign="top" width="50%" style="padding:12px 2px 16px;border-top:4px solid {rule}">'
+                     f'<div style="font-size:10.5px;font-weight:bold;letter-spacing:1.5px;color:{INK};margin-bottom:6px">'
+                     f'{escape(kicker)}</div>'
+                     f'<a href="{escape(c["url"])}" style="color:{INK};font-size:16px;font-weight:bold;line-height:1.3;'
                      f'text-decoration:none">{escape(c["title"])}</a>'
-                     + (f'<div style="font-size:12.5px;line-height:1.4;margin-top:3px;color:#3c4043">{escape(summary)}</div>'
+                     + (f'<div style="font-size:13px;line-height:1.45;margin-top:6px;color:#4a4f57">{escape(summary)}</div>'
                         if summary else "")
-                     + f'<div style="font-size:11.5px;color:{GREY};margin-top:4px">{escape(by)}</div>'
-                     + (f'<div>{_chips(tags)}</div>' if tags else "") + '</td>')
+                     + f'<div style="font-size:11px;letter-spacing:.3px;color:{GREY};margin-top:8px">'
+                       f'{escape(" · ".join([by, *("#" + t for t in tags[:2])]))}</div></td>')
     if len(cells) % 2:
-        cells.append('<td width="50%"></td>')
-    # 5 rows of 2, read left to right
-    html.append('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
-                'table-layout:fixed">' + "".join(f"<tr>{cells[k]}{cells[k + 1]}</tr>" for k in range(0, len(cells), 2))
-                + "</table>")
+        cells.append('<td class="cell" width="50%"></td>')
+    # a grid of two (one on a phone): a coloured rule over each story, its kind, the headline, one line, who reported it
+    gap = '<td class="gap" width="20" style="width:20px;font-size:0">&nbsp;</td>'
+    html.append('<table class="grid" role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+                'style="border-collapse:collapse;table-layout:fixed">'
+                + "".join(f"<tr>{cells[k]}{gap}{cells[k + 1]}</tr>" for k in range(0, len(cells), 2)) + "</table>")
     lines += ["", "THE REST OF THE DAY"]
     html.append(head("The rest of the day") + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
                 'style="border-collapse:collapse">')
     shown = {id(c) for c in top}
+    covered, empty = [], []  # streams said in one line: all in the top stories; nothing that day
     for n in streams:
         category, stream, _ = rss.FEEDS[n]
         rest = sorted([c for c in by_stream[n] if id(c) not in shown and c.get("kind") not in SIDE_KINDS],
@@ -531,10 +531,15 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         side_words = ", ".join(f"{k} {'company blog' if w == 'blog' else w}{'s' if k > 1 else ''}" for w, k in side.items())
         extra, more = len(rest) - HEADLINES + sum(side.values()), f"{rss.SITE}#{category}"
         count = f"{len(by_stream[n])} {'story' if len(by_stream[n]) == 1 else 'stories'}"
+        if not by_stream[n]:
+            empty.append(stream + (" (arXiv doesn't publish at weekends)" if n == "research" and day.weekday() >= 5 else ""))
+            continue
+        if not rest and extra <= 0:
+            covered.append(stream)
+            continue
         lines.append(f"{stream} ({count})")
-        if not by_stream[n] or not rest:
-            note = (_empty_note(n, day) if not by_stream[n] else "In the list above." if light
-                    else f"In the top {len(top)} above.")
+        if not rest:
+            note = "In the list above." if light else f"In the top {len(top)} above."
             lines.append(f"  {note}")
             heads = f'<div style="font-size:13px;color:{GREY}">{escape(note)}</div>'
         else:
@@ -554,7 +559,15 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
                     f'{COLOR[n]}"><div style="font-size:14px;font-weight:bold">{escape(stream)}</div><div style="font-size:12px;'
                     f'color:{GREY}">{count}</div></td><td valign="top" style="padding:10px 0 10px 8px;border-top:1px solid '
                     f'{RULE}">{heads}</td></tr>')
+    said = [*([("In the list above" if light else f"All in the top {len(top)}", ", ".join(covered))] if covered else []),
+            *([("Nothing new today", ", ".join(empty))] if empty else [])]
+    html.extend(f'<tr><td valign="top" width="118" style="padding:10px;border-top:1px solid {RULE};border-left:4px solid {RULE};'
+                f'font-size:13px;font-weight:bold;color:{GREY}">{escape(k)}</td><td valign="top" style="padding:10px 0 10px 8px;'
+                f'border-top:1px solid {RULE};font-size:13px;color:{GREY}">{escape(v)}</td></tr>' for k, v in said)
     html.append("</table>")
+    lines += [*(f"{k}: {v}." for k, v in said), "", f"Every story of the day in one table: {everything}"]
+    html.append(f'<p style="margin:16px 0 0;font-size:14px"><a href="{escape(everything)}" style="color:{LINK};'
+                f'text-decoration:none;font-weight:bold">Every story of the day in one table →</a></p>')
     return lines, "".join(html)
 
 
@@ -604,7 +617,8 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
                      + f'<br><a href="{escape(change)}" style="color:{GREY}">{change_words}</a> · '
                        f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a><br>')
     html = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'<title>{escape(subject)}</title></head><body style="margin:0;padding:0;background:{page}">'
+            f'<title>{escape(subject)}</title><style>@media (max-width:520px){{.grid .cell{{display:block!important;'
+            f'width:100%!important}}.grid .gap{{display:none!important}}}}</style></head><body style="margin:0;padding:0;background:{page}">'
             f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{page}"><tr>'
             '<td align="center" style="padding:12px 8px 24px">'
             '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;'
