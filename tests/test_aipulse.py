@@ -1826,9 +1826,11 @@ def test_daily_email_shows_the_ten_that_mattered_then_headlines(monkeypatch):
     assert top.count("• [") == 10 and "Story 20" not in top  # ten, never a tutorial
     assert "1. " not in top  # not numbered
     rest = text.split("THE REST OF THE DAY")[1]
-    assert "Releases (1 story)" in rest and "In the top 10 above." in rest
+    assert "Releases (" not in rest and "All in the top 10: Releases, Policy." in rest  # one row for them
+    _, text2, _ = digest.build(cards, ["releases", "news", "infra"], date(2026, 9, 28))
+    assert "Nothing new today: Infra & climate." in text2 and "Infra & climate (" not in text2  # an empty stream too
     assert "+5 more: https://projectaipulse.com/#news (incl. 1 tutorial)" in rest  # 8 of 15 in the top, 3 listed
-    assert "Choose the full email" not in html and html.count("<tr>") >= 5  # the top ten in rows of two
+    assert "Choose the full email" not in html and html.count('class="cell"') == 10 and "@media" in html  # two by five, one column on a phone
 
 
 def test_every_email_links_to_the_days_full_email(monkeypatch):
@@ -1866,7 +1868,7 @@ def test_stories_carry_a_country_and_the_email_shows_tags(monkeypatch):
             "added_at": "2026-09-28T10:00:00+00:00", "tags": []}  # stored before the new rules: tags worked out afresh
     assert digest.story_tags(card)[0] == "United States"  # countries first
     _, text, html = digest.build([card], ["news"], date(2026, 9, 28))
-    assert "#United States #Nvidia #Agents #Safety" in text and "#United States</span>" in html
+    assert "#United States #Nvidia #Agents #Safety" in text and "The Verge AI · #United States · #Nvidia<" in html  # two in the table
 
 
 def test_glossary_explains_the_hard_words_in_stories():
@@ -1927,9 +1929,9 @@ def test_email_opens_with_the_count_then_the_word_then_the_full_email(monkeypatc
     card = {"id": "o1", "title": "Story 1", "summary": "", "url": "https://ex.com/o1", "source": "S", "category": "news",
             "kind": "news", "date": "2026-09-28", "added_at": "2026-09-28T10:00:00+00:00"}
     _, text, html = digest.build([card], ["news"], date(2026, 9, 28))
-    order = [text.index(s) for s in ("1 story from 1 source.", "WORD OF THE DAY", "Want everything?", "Here is the one story")]
+    order = [text.index(s) for s in ("1 story from 1 source.", "WORD OF THE DAY", "Here is the one story", "Every story of the day")]
     assert order == sorted(order)
-    order = [html.index(s) for s in ("1 story from 1 source.", "Word of the day</div>", "Want everything?", "Here is the one story")]
+    order = [html.index(s) for s in ("1 story from 1 source.", "Word of the day</div>", "Here is the one story", "Every story of the day")]
     assert order == sorted(order)
 
 
@@ -2036,7 +2038,7 @@ def test_each_reader_gets_their_own_top_10(monkeypatch):
     yours = [l for l in top.splitlines() if "[Your choice]" in l]
     assert len(yours) == digest.PICKS and "Big story 0" in top and "Big story 4" in top  # 5 of theirs, then the biggest
     assert "Kerala launches" in top  # their own words, in the headline
-    assert "Your choice</span>" in html and "Left out" not in text  # nothing left out: no note
+    assert " · YOUR CHOICE</div>" in html and "Left out" not in text  # nothing left out: no note
     # left out: never in their email, counted, and still in the full email
     _, text, _ = digest.build(cards, ["news"], day, prefs={"more": [], "less": ["Tutorial", "Business & work"], "words": []})
     assert "How to fine-tune" not in text and "Left out, as you asked: 3 stories (Tutorial); they're in the full email." in text
@@ -2239,7 +2241,8 @@ def test_gemini_memes_are_checked_kept_once_and_fall_back(tmp_path, monkeypatch)
     import json
     from datetime import date
     from aipulse import memegen, memes, store
-    day = date(2026, 9, 29)
+    day = date(2026, 10, 10)  # a nope/yep day (memes.ROTATION)
+    assert memes.template_of(day) == "nopeyep"
     base = {"summary": "", "source": "E", "date": day.isoformat(), "also": [], "kind": "news", "tags": []}
     cards = [{**base, "title": t, "url": f"https://e.com/{i}", "category": "tool"} for i, t in enumerate(
         ["NVIDIA Releases Kumo Tabular: open models", "Cohere Releases Embed 5", "Startup raises $55M for agents"])]
@@ -2269,5 +2272,32 @@ def test_gemini_memes_are_checked_kept_once_and_fall_back(tmp_path, monkeypatch)
     memes.GENERATED.clear()
     memegen.prepare(conn, cards, day=day)
     assert memes.of_the_day(cards, day)["yep"] == "Another $55M"
-    assert "Captions written with Gemini" in memes.html(memes.of_the_day(cards, day), "cid:meme")
+    assert "Gemini" not in memes.html(memes.of_the_day(cards, day), "cid:meme")  # readers see only the source
     memes.GENERATED.clear()
+    # on another day's template, Gemini is asked for that one only, and a kept meme on the wrong one is asked again
+    other = date(2026, 10, 11)
+    assert memes.template_of(other) == "yelling"
+    assert '"yelling"' in memegen._prompt(cards, "day", set(memes.TEMPLATES) - {"yelling"}).split("Rules")[0]
+    assert '"nopeyep"' not in memegen._prompt(cards, "day", set(memes.TEMPLATES) - {"yelling"}).split("Rules")[0]
+    assert memegen.check(good, cards, {"nopeyep"}) is None
+    conn.execute("INSERT INTO meta VALUES (?, ?)", (f"meme:day:{other.isoformat()}", json.dumps({**good, "by": "gemini"})))
+    assert memegen.stored(conn, "day", other, cards, make=False, avoid={"nopeyep"}) is None
+
+
+def test_each_days_meme_template_comes_back_only_after_5_days():
+    from datetime import date, timedelta
+    from aipulse import memes
+    memes.GENERATED.clear()
+    start = date(2026, 10, 1)
+    days = [start + timedelta(days=k) for k in range(120)]
+    used = [memes.template_of(d) for d in days]
+    for i, t in enumerate(used):
+        assert t not in used[max(0, i - 4):i], days[i]  # never within 5 days in a row
+    assert set(used[:8]) == set(memes.TEMPLATES)  # all eight in turn
+    # a day whose stories can't fill its template still gets one (a standby joke, no names or numbers), on that template
+    for d in days[:8]:
+        card = {"title": "Something happened", "summary": "", "url": "https://e.com/1", "source": "E", "category": "news",
+                "kind": "news", "date": d.isoformat(), "also": [], "tags": []}
+        m = memes.of_the_day([card], d)
+        assert m and m["format"] == memes.template_of(d) and memes.render(m)
+    assert memes.of_the_day([], start) is None  # no stories that day: no meme

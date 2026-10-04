@@ -209,11 +209,40 @@ FORMATS = [_distracted, _buttons, _nope_yep, _fine, _brain, _yelling, _pigeon, _
 GENERATED: dict = {}  # ("day" | "week", date) -> a meme Gemini wrote (memegen.prepare); used instead of the rules
 
 
+# The day's template, by the date, in this order: each comes back only every 8 days, never within 5, the same for
+# a dry run and the morning's send (wide and tall ones alternate)
+ROTATION = ["distracted", "buttons", "fine", "nopeyep", "yelling", "brain", "pigeon", "panik"]
+
+
+# A day's template when its stories can't fill it (and Gemini wrote nothing): a joke about keeping up with AI news,
+# with no names or numbers, so there's nothing in it to get wrong
+STANDBY = {
+    "distracted": {"labels": ["Whatever launched this morning", "Developers", "The model they set up last week"]},
+    "buttons": {"labels": ["Read every AI story today", "Get some actual work done"], "caption": "Anyone in AI before 9am"},
+    "fine": {"caption": "Your AI reading list", "under": "Me, opening one more tab"},
+    "nopeyep": {"who": "AI companies", "nope": "Calling it version 2", "yep": "Calling it a new era"},
+    "yelling": {"labels": ["Every AI budget", "“I just need one more GPU.”"]},
+    "brain": {"rows": ["Reading every AI headline", "Reading the summaries", "Reading only the 10 that mattered",
+                       "Letting AI Pulse pick the ones that matter"]},
+    "pigeon": {"labels": ["Every app update", "a chatbot in a sidebar"], "caption": "Is this an AI agent?"},
+    "panik": {"rows": [("Panik", "A new model drops overnight"), ("Kalm", "Your code still works"),
+                       ("Panik", "Your boss saw the demo")]},
+}
+
+
+def template_of(day: date) -> str:
+    return ROTATION[day.toordinal() % len(ROTATION)]
+
+
 def of_the_day(cards: list[dict], day: date) -> dict | None:
-    """The day's meme, from that day's stories (the same for every reader)."""
-    f = facts([c for c in cards if c.get("date") == day.isoformat()])
-    meme = GENERATED.get(("day", day)) or _pick([m for g in FORMATS if (m := g(f, "today"))], day)
-    return meme and {**meme, "title": "Meme of the day"}
+    """The day's meme, from that day's stories (the same for every reader), on the day's template (none if the
+    stories can't fill it)."""
+    made, want = GENERATED.get(("day", day)), template_of(day)
+    if not (made and made.get("format") == want):
+        f = facts([c for c in cards if c.get("date") == day.isoformat()])
+        made = next((m for g in FORMATS if (m := g(f, "today")) and m["format"] == want), None) or (
+            {"format": want, **STANDBY[want], "based_on": []} if day.isoformat() in {c.get("date") for c in cards} else None)
+    return made and {**made, "title": "Meme of the day"}
 
 
 def of_the_week(cards: list[dict], monday: date) -> dict | None:
@@ -359,12 +388,13 @@ def render(meme: dict) -> bytes | None:
     return _RENDERED[key]
 
 
-def html(meme: dict, src: str) -> str:
+def html(meme: dict, src: str, small: bool = False) -> str:
     """The finished picture (src: its address, or "cid:..." for the copy inside an email), its words as the alt
-    text, and the credits: Gemini's captions said plainly, and the template's source."""
-    credit = ("Captions written with Gemini · " if meme.get("by") == "gemini" else "") + "via imgflip.com"  # the source, not the template's name
+    text, and the template's source as its credit (who wrote the captions is in the README, not shown to readers). `small`: the email's size,
+    so the meme never fills a phone's screen."""
+    credit = "via imgflip.com"  # the source, not the template's name
     alt = " ".join(text(meme)[1:])
-    width = 420 if meme["format"] in TALL else 600  # a tall template stays short enough to read without scrolling
+    width = (340 if small else 420) if meme["format"] in TALL else (460 if small else 600)  # a tall template stays short enough to read without scrolling
     return (f'<div style="max-width:{width}px;background:#ffffff;border:2px solid #1d2433;border-radius:6px;overflow:hidden;'
             f'font-family:Arial,Helvetica,sans-serif;color:#1d2433">'
             f'<img src="{escape(src)}" width="{width}" alt="{escape(alt)}" '

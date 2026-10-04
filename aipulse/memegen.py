@@ -66,10 +66,10 @@ ASK = {"day": "Create a funny meme out of this current AI news for today.",
        "week": "Analyse these weekly AI updates and create a meme for the week for our readers."}
 
 
-def _prompt(stories: list[dict], span: str) -> str:
+def _prompt(stories: list[dict], span: str, avoid: set[str] = frozenset()) -> str:
     lines = "\n".join(f"{i}. {c['title']} ({c.get('source') or ''})" for i, c in enumerate(stories))
     kinds = "\n".join(f'- "{k}": {d} Fields: ' + "; ".join(f"{f}: {h}" for f, h in fields.items())
-                      for k, (d, fields) in TEMPLATES.items())
+                      for k, (d, fields) in TEMPLATES.items() if k not in avoid)  # not the last days' templates
     return f"""{ASK[span]}
 
 The {"news for today" if span == "day" else "weekly AI updates"} (real headlines, numbered):
@@ -132,10 +132,10 @@ def _clean(t) -> str | None:
     return t if 0 < len(t) <= MAX else None
 
 
-def check(m: dict, stories: list[dict]) -> dict | None:
-    """The meme in memes.py's shape, or None if it breaks a rule."""
+def check(m: dict, stories: list[dict], avoid: set[str] = frozenset()) -> dict | None:
+    """The meme in memes.py's shape, or None if it breaks a rule (or uses a template in `avoid`)."""
     f = m.get("format")
-    if f not in TEMPLATES:
+    if f not in TEMPLATES or f in avoid:
         return None
     based = [i for i in m.get("based_on") or [] if isinstance(i, int) and 0 <= i < len(stories)][:3]
     if not based:
@@ -184,26 +184,28 @@ def check(m: dict, stories: list[dict]) -> dict | None:
     return out
 
 
-def write(cards: list[dict], span: str, key: str | None = None, ask=None) -> dict | None:
-    """A Gemini meme for these stories, checked, or None (no key, no light stories, an error or no candidate passed)."""
+def write(cards: list[dict], span: str, key: str | None = None, ask=None, avoid: set[str] = frozenset()) -> dict | None:
+    """A Gemini meme for these stories, checked, or None (no key, no light stories, an error or no candidate passed).
+    `avoid`: templates it mustn't use (the last days')."""
     key = key or os.environ.get("GEMINI_API_KEY")
     stories = sorted([c for c in cards if memes.light(c)], key=lambda c: -len(c.get("also") or []))[:30]
     if not key or len(stories) < 3:
         return None
     try:
-        answer = json.loads((ask or _ask)(_prompt(stories, span), key))
+        answer = json.loads((ask or _ask)(_prompt(stories, span, avoid), key))
     except Exception as e:  # network, quota, a malformed answer: the rule-based meme is used
         print(f"Gemini meme skipped: {type(e).__name__} {getattr(e, 'code', '')}".rstrip())
         return None
     for m in (answer.get("memes") if isinstance(answer, dict) else None) or []:
-        if isinstance(m, dict) and (ok := check(m, stories)):
+        if isinstance(m, dict) and (ok := check(m, stories, avoid)):
             return {**ok, "by": "gemini"}
     print("Gemini meme skipped: no candidate passed the checks")
     return None
 
 
-def stored(conn, kind: str, when: date, cards: list[dict], make: bool) -> dict | None:
-    """The period's Gemini meme from the database; with make, ask Gemini once and keep its answer (or that it failed)."""
+def stored(conn, kind: str, when: date, cards: list[dict], make: bool, avoid: set[str] = frozenset()) -> dict | None:
+    """The period's Gemini meme from the database; with make, ask Gemini once and keep its answer (or that it failed).
+    `avoid`: templates it mustn't use; a kept one on such a template is asked for again (with make) or not used."""
     k = f"meme:{kind}:{when.isoformat()}"
     row = conn.execute("SELECT value FROM meta WHERE key = ?", (k,)).fetchone()
     if row:
@@ -212,14 +214,15 @@ def stored(conn, kind: str, when: date, cards: list[dict], make: bool) -> dict |
         words = kept and [*memes.captions(kept), kept.get("who") or ""] if kept and kept.get("format") in memes.TEMPLATES else []
         if kept and (not words or any(memes._SERIOUS.search(t) or _POLITICS.search(t) or _DRAWING.search(t) for t in words)):
             return None
-        return kept
+        if not (kept and kept.get("format") in avoid and make):
+            return None if kept and kept.get("format") in avoid else kept
     if not make:
         return None
     if kind == "week":
         period = [c for c in cards if when.isoformat() <= (c.get("date") or "") < (when + timedelta(days=7)).isoformat()]
     else:
         period = [c for c in cards if c.get("date") == when.isoformat()]
-    meme = write(period, "week" if kind == "week" else "day")
+    meme = write(period, "week" if kind == "week" else "day", avoid=avoid)
     if meme or os.environ.get("GEMINI_API_KEY"):  # keep a failure too, so a bad day isn't retried at every build
         conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (k, json.dumps(meme)))
         conn.commit()
@@ -233,5 +236,7 @@ def prepare(conn, cards: list[dict], today: date | None = None, day: date | None
     monday = today - timedelta(days=today.weekday() + 7)
     if (m := stored(conn, "week", monday, cards, make)):
         memes.GENERATED[("week", monday)] = m
-    if day and (m := stored(conn, "day", day, cards, make)):
-        memes.GENERATED[("day", day)] = m
+    if day:
+        avoid = set(TEMPLATES) - {memes.template_of(day)}  # the day's template only (memes.ROTATION)
+        if (m := stored(conn, "day", day, cards, make, avoid)):
+            memes.GENERATED[("day", day)] = m
