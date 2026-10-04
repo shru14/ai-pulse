@@ -226,7 +226,8 @@ header.top{gap:10px}
 .sart .logo .ico{width:64px;height:64px;border-radius:16px;background:#FFFFFF;border:0;color:#141925;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .sart .logo .ico svg,.sart .logo .ico img{width:38px;height:38px}
 .mag-cover .sart{height:150px;flex:none}
-.mag-cover .sart .week-badge{position:static}
+.mag-cover .wk{display:flex;flex-direction:column;align-items:flex-start}
+.mag-cover .wk .week-badge{position:static}
 .mag-cover .sart .logo{left:auto;right:28px;translate:0 -50%;top:64%!important}
 /* The week's three (story, word, meme): one badge each, top left, boxed and highlighted */
 .week-badge{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 10px;align-self:flex-start;background:#141925;color:#FFFFFF;
@@ -235,8 +236,6 @@ header.top{gap:10px}
 .week-dates{display:flex;align-items:center;gap:6px;margin-top:12px;font:500 12px var(--mono);letter-spacing:.04em;opacity:.8}
 .week-dates svg{width:14px;height:14px;flex:none}
 .gl-tile .week-badge b{display:inline;font:700 13px/1.2 var(--head);letter-spacing:0;margin:0}  /* as the other two badges, not the word's own big type */
-.mag-cover .sart .wk{position:absolute;left:24px;top:24px;display:flex;flex-direction:column;align-items:flex-start}
-.mag-cover .sart .wk .week-dates{color:#FFFFFF;text-shadow:0 1px 2px #000,0 0 6px #000}  /* as on the other two, readable on any photo */
 .mag-cover .sart .logo .ico{width:64px;height:64px;border-radius:16px}
 .mag-cover .sart .logo .ico svg,.mag-cover .sart .logo .ico img{width:38px;height:38px}
 .mag-cover .sart .logo .ico.mono{font-size:22px}
@@ -256,7 +255,9 @@ header.top{gap:10px}
 .src-links .src-more{border-style:dashed}
 .src-links a:hover{background:#FFFFFF;color:#141925}
 .mag-cover .also .viz-note{margin-top:0;color:#D5D9E3;opacity:1}
-.mag-cover .copy{flex:1;padding-bottom:24px}  /* its button level with the other two */
+.mag-cover{padding:24px;gap:14px}  /* laid out as the other two tiles */
+.mag-cover .sart{border:3px solid #FFFFFF;flex:none}  /* the picture in its own box */
+.mag-cover .copy{flex:1;padding:0}
 .mag-cover .story-go{margin-top:auto;text-align:center;text-decoration:none}
 .meme-tile .gl-stat[hidden]{display:none}
 /* side by side, the story and the word set the row's height; the meme tile fits itself in (fitMeme) */
@@ -346,7 +347,7 @@ header.top{gap:10px}
 .go{display:inline-block;margin-top:16px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--cat-f);text-decoration-thickness:2px}
 .go:hover{text-decoration-color:var(--ink)}
 @media (max-width:860px){.sub-strip{grid-template-columns:1fr}.sub-hint{grid-row:auto}.sub-act{align-items:flex-start}.mag-cover,.mag-row,.mag-sections{grid-template-columns:1fr}.mag-cover .sart{min-height:200px}}
-@media (max-width:480px){.mitem{grid-template-columns:104px 1fr;gap:12px}.lead{min-height:220px}.lead h3{font-size:19px}.mag-cover .copy{padding:22px 18px}}
+@media (max-width:480px){.mitem{grid-template-columns:104px 1fr;gap:12px}.lead{min-height:220px}.lead h3{font-size:19px}}
 /* A stream's page: its name and what it holds, in its colour, then the filters and the stories. */
 .section{max-width:860px;margin-inline:auto}
 .sec-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-top:18px;padding:26px 22px 20px;border-radius:4px;background:var(--cat-soft,var(--surface));
@@ -530,7 +531,7 @@ header.top{border-bottom:4px solid var(--ink)}
 .thumb .sart.photo .logo{right:6px;top:6px!important}
 .thumb .sart.photo .logo .ico{width:30px;height:30px}
 .thumb .sart.photo .logo .ico svg,.thumb .sart.photo .logo .ico img{width:18px;height:18px}
-.mag-cover .sart{height:180px}
+.mag-cover .sart{height:130px}  /* boxed, so a little shorter: the row stays as tall as before */
 .lead{min-height:280px}
 /* A stream's page: the cards in the poster style, each with its photo; the header over a photo of the stream */
 .item{grid-template-columns:168px 1fr;border:3px solid var(--ink);border-top:8px solid var(--cat-f,var(--ink));border-radius:0;box-shadow:none;padding:14px 16px 12px 14px}
@@ -1476,8 +1477,7 @@ function renderHome(){
     const art = storyArt(top), badge = el("span","week-badge"), head = el("div","wk");
     badge.append(el("b", null, "Story of the week"));
     head.append(badge, when);
-    art.append(head);
-    hero.append(art, copy);
+    hero.append(head, art, copy);  // as the other two: badge and week on the tile, the picture boxed below them
   } else hero.append(el("p","tile-note","No stories last week."));
   renderWord();
   requestAnimationFrame(fitMeme);  // the row's height may have changed
