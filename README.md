@@ -3,7 +3,7 @@
 A free, non-commercial, worldwide briefing on AI. It reads ~90 public sources, keeps only AI stories, sorts
 them into six streams and links every card to the original.
 
-**Live site:** https://shru14.github.io/ai-pulse/ · **Version 2** (3 October 2026)
+**Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
 
 Only what is legal to collect and publicly accessible is used. No paid API or billed service, and no AI model for the
 news itself: summaries are the publishers' own text, sorting is keyword rules, the glossary is written by hand and
@@ -28,7 +28,7 @@ translation runs offline. The one exception: the memes' captions, written by Goo
 - **One card per event:** the same story from several outlets is grouped.
 - **Glossary:** plain-English meanings of ~120 hard words; a dotted word in a story opens its meaning.
 - **Memes:** a meme of the day (email) and of the week (site) on well-known internet meme templates (via imgflip.com), used as parody on this free, non-commercial site. Gemini (free tier, no billing) writes the captions from public headlines; each is checked (no politics, harm, people or invented numbers), else rule-based captions are used. The site lists the stories behind each meme.
-- **RSS:** one feed per stream, one post a day ([Releases](https://shru14.github.io/ai-pulse/feeds/releases.xml), [Industry](https://shru14.github.io/ai-pulse/feeds/news.xml), [Research](https://shru14.github.io/ai-pulse/feeds/research.xml), [Regulation tracker](https://shru14.github.io/ai-pulse/feeds/regulation.xml), [Policy](https://shru14.github.io/ai-pulse/feeds/policy.xml), [Infra & climate](https://shru14.github.io/ai-pulse/feeds/infra.xml)).
+- **RSS:** one feed per stream, one post a day ([Releases](https://projectaipulse.com/feeds/releases.xml), [Industry](https://projectaipulse.com/feeds/news.xml), [Research](https://projectaipulse.com/feeds/research.xml), [Regulation tracker](https://projectaipulse.com/feeds/regulation.xml), [Policy](https://projectaipulse.com/feeds/policy.xml), [Infra & climate](https://projectaipulse.com/feeds/infra.xml)).
 - **Daily email:** the reader's streams: the 10 that mattered most, the rest in brief, word and meme of the day, and every story in one table on the site.
 - **Make it yours:** more of, or leave out, any topic, company, place or scholar, plus up to 5 own words.
 - **Quality check:** before sending, every story is checked; any problem holds the email for everyone and alerts the project inbox.

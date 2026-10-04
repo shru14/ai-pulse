@@ -1406,12 +1406,12 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert "6-hour" not in text + html and "Daily update" not in html  # the subject already names the day
     assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
     assert "Story 1 &lt;b&gt;" in html                                     # headlines are escaped
-    assert "https://shru14.github.io/ai-pulse/#subscribe" in html and "You chose: Releases, Regulation tracker" in html
+    assert "https://projectaipulse.com/#subscribe" in html and "You chose: Releases, Regulation tracker" in html
     assert "mailto:" not in html  # changing streams and unsubscribing never need an email
     assert "Releases: 1 (" in text and "Regulation tracker: 1 (" in text and "vs Sat" not in text + html  # the day at a glance
     assert ">Regulation tracker</a>" in html and "came up most" not in text  # nobody named twice: no line
     assert "[Release] Story 1" in text and "Type</th>" in html  # one table: type | story | source
-    assert "https://shru14.github.io/ai-pulse/feeds/releases.xml" in html and "feeds/news.xml" not in html  # chosen feeds
+    assert "https://projectaipulse.com/feeds/releases.xml" in html and "feeds/news.xml" not in html  # chosen feeds
     cards[0]["also"] = [{"title": "Same outlet, other post", "source": "Outlet", "url": "https://ex.com/x", "date": "2026-09-27"},
                         {"title": "Story 1 elsewhere", "source": "Other", "url": "https://other.com/1", "date": "2026-09-27"}]
     _, text, html = digest.build(cards, ["releases"], date(2026, 9, 27), layout="full")
@@ -1611,13 +1611,13 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
                             {"email": "bob@example.org", "streams": ["news"], "token": "../../etc"},
                             {"email": "cy@example.org", "streams": ["bogus"], "token": token}]}
     got = sb.readers(data)
-    site_link = "https://shru14.github.io/ai-pulse/#unsubscribe=" + token
+    site_link = "https://projectaipulse.com/#unsubscribe=" + token
     none = {"more": [], "less": [], "words": []}  # a reader who made no choices
     assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token, site_link, none)}  # malformed dropped
     # choices come through capped and cleaned, never in both lists
     chosen = sb.prefs_of({"more": ["Agents", "Asia", "Asia", "x", "Tutorial"], "less": ["Tutorial", 7], "words": ["  Tesla   Optimus "]})
     assert chosen == {"more": ["Agents", "Asia"], "less": ["Tutorial"], "words": ["Tesla Optimus"]}
-    assert sb.choices_link(site_link) == "https://shru14.github.io/ai-pulse/#choices=" + token
+    assert sb.choices_link(site_link) == "https://projectaipulse.com/#choices=" + token
     try:
         sb.readers({"ok": False})
         raise AssertionError("a refused list must stop the send")
@@ -1827,7 +1827,7 @@ def test_daily_email_shows_the_ten_that_mattered_then_headlines(monkeypatch):
     assert "1. " not in top  # not numbered
     rest = text.split("THE REST OF THE DAY")[1]
     assert "Releases (1 story)" in rest and "In the top 10 above." in rest
-    assert "+5 more: https://shru14.github.io/ai-pulse/#news (incl. 1 tutorial)" in rest  # 8 of 15 in the top, 3 listed
+    assert "+5 more: https://projectaipulse.com/#news (incl. 1 tutorial)" in rest  # 8 of 15 in the top, 3 listed
     assert "Choose the full email" not in html and html.count("<tr>") >= 5  # the top ten in rows of two
 
 
@@ -1839,8 +1839,8 @@ def test_every_email_links_to_the_days_full_email(monkeypatch):
                            "source": "S", "category": cat, "date": "2026-09-28", "added_at": "2026-09-28T10:00:00+00:00"}
     cards = [card(i, "research") for i in range(3)] + [card(9, "tool")]
     _, text, html = digest.build(cards, ["research"], date(2026, 9, 28))  # a Research-only reader
-    assert "https://shru14.github.io/ai-pulse/daily/2026-09-28.html" in text + html
-    assert "https://shru14.github.io/ai-pulse/#glossary" in text and "#glossary" in html  # every email points to the glossary
+    assert "https://projectaipulse.com/daily/2026-09-28.html" in text + html
+    assert "https://projectaipulse.com/#glossary" in text and "#glossary" in html  # every email points to the glossary
     assert "A lighter day in your streams: 3 stories" in text and "Here are all 3 stories of the day." in text
     # the page itself: every stream, the full table, a sign-up line instead of a reader's own settings
     _, text, html = digest.build(cards, ["releases", "news", "research", "regulation", "policy"], date(2026, 9, 28),

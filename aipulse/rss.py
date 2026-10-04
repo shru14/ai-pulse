@@ -15,7 +15,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from email.utils import format_datetime
 from xml.sax.saxutils import escape
 
-SITE = "https://shru14.github.io/ai-pulse/"
+SITE = "https://projectaipulse.com/"
 DAYS = 14
 # File name -> (category, stream name, what it carries); the names match the page's streams.
 FEEDS = {

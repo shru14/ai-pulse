@@ -28,7 +28,7 @@
  * Deploy > Manage deployments > edit > Version: New version (the address stays the same).
  */
 
-const SITE = "https://shru14.github.io/ai-pulse/";
+const SITE = "https://projectaipulse.com/";
 const SENDER = "projectaipulse@gmail.com";
 const STREAMS = {releases: "Releases", news: "Industry", research: "Research", regulation: "Regulation tracker",
                  policy: "Policy", infra: "Infra & climate"};
