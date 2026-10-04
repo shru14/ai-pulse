@@ -217,7 +217,7 @@ ROTATION = ["distracted", "buttons", "fine", "nopeyep", "yelling", "brain", "pig
 # A day's template when its stories can't fill it (and Gemini wrote nothing): a joke about keeping up with AI news,
 # with no names or numbers, so there's nothing in it to get wrong
 STANDBY = {
-    "distracted": {"labels": ["Whatever launched this morning", "Developers", "The model they set up last week"]},
+    "distracted": {"labels": ["Whatever just launched", "Developers", "The model they set up last week"]},
     "buttons": {"labels": ["Read every AI story today", "Get some actual work done"], "caption": "Anyone in AI before 9am"},
     "fine": {"caption": "Your AI reading list", "under": "Me, opening one more tab"},
     "nopeyep": {"who": "AI companies", "nope": "Calling it version 2", "yep": "Calling it a new era"},
@@ -234,6 +234,16 @@ def template_of(day: date) -> str:
     return ROTATION[day.toordinal() % len(ROTATION)]
 
 
+# The site's tile is small: the meme of the week takes only the wide templates (the tall ones stay in the email),
+# the next each Monday
+WEEK_ROTATION = ["distracted", "fine", "yelling", "pigeon"]
+
+
+def template_of_week(monday: date) -> str:
+    """The meme of the week's template: the next in WEEK_ROTATION each week, so the site's meme changes every Monday."""
+    return WEEK_ROTATION[(monday.toordinal() // 7 + 3) % len(WEEK_ROTATION)]  # set so 21 Sep 2026's week keeps its meme (distracted)
+
+
 def of_the_day(cards: list[dict], day: date) -> dict | None:
     """The day's meme, from that day's stories (the same for every reader), on the day's template (none if the
     stories can't fill it)."""
@@ -248,9 +258,12 @@ def of_the_day(cards: list[dict], day: date) -> dict | None:
 def of_the_week(cards: list[dict], monday: date) -> dict | None:
     """The meme of the week from Monday to Sunday's stories."""
     week = [c for c in cards if monday.isoformat() <= (c.get("date") or "") < (monday + timedelta(days=7)).isoformat()]
-    f = facts(week)
-    meme = GENERATED.get(("week", monday)) or _pick([m for g in FORMATS if (m := g(f, "this week"))], monday)
-    return meme and {**meme, "title": "Meme of the week"}
+    made, want = GENERATED.get(("week", monday)), template_of_week(monday)
+    if not (made and made.get("format") == want):
+        f = facts(week)
+        made = next((m for g in FORMATS if (m := g(f, "this week")) and m["format"] == want), None) or (
+            {"format": want, **STANDBY[want], "based_on": []} if week else None)
+    return made and {**made, "title": "Meme of the week"}
 
 
 def payload(cards: list[dict], today: date | None = None) -> dict:

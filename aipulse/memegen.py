@@ -234,7 +234,7 @@ def prepare(conn, cards: list[dict], today: date | None = None, day: date | None
     database already holds (the site's build); with make, Gemini is asked for what's missing."""
     today = today or date.today()
     monday = today - timedelta(days=today.weekday() + 7)
-    if (m := stored(conn, "week", monday, cards, make)):
+    if (m := stored(conn, "week", monday, cards, make, set(TEMPLATES) - {memes.template_of_week(monday)})):
         memes.GENERATED[("week", monday)] = m
     if day:
         avoid = set(TEMPLATES) - {memes.template_of(day)}  # the day's template only (memes.ROTATION)

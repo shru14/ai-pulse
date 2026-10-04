@@ -2301,3 +2301,8 @@ def test_each_days_meme_template_comes_back_only_after_5_days():
         m = memes.of_the_day([card], d)
         assert m and m["format"] == memes.template_of(d) and memes.render(m)
     assert memes.of_the_day([], start) is None  # no stories that day: no meme
+    # the meme of the week takes the next template each Monday
+    mondays = [date(2026, 9, 28) + timedelta(weeks=k) for k in range(16)]
+    weekly = [memes.template_of_week(m) for m in mondays]
+    assert all(a != b for a, b in zip(weekly, weekly[1:])) and set(weekly[:4]) == set(memes.WEEK_ROTATION)
+    assert not set(memes.WEEK_ROTATION) & memes.TALL  # only wide ones, readable in the site's tile
