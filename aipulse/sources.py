@@ -197,6 +197,13 @@ SOURCES = [
     # tokens). No terms restrict the news list; only items with AI in the headline are kept.
     {"name": "State Duma (Russia)", "format": "duma_en", "category": "policy", "jurisdictions": ["RU"],
      "ai_in_title": True, "government": True, "max_age_days": 400, "url": "http://duma.gov.ru/en/news/"},
+    # Canada: Innovation, Science and Economic Development Canada, the department with the Minister of AI. Its news
+    # releases from the Government of Canada's news API (no robots.txt rules; canada.ca's terms allow
+    # non-commercial reproduction with credit); only those with AI in the headline are kept.
+    {"name": "Innovation, Science and Economic Development Canada", "category": "policy", "jurisdictions": ["CA"],
+     "ai_in_title": True, "government": True,
+     "url": "https://api.io.canada.ca/io-server/gc/news/en/v2?dept=departmentofindustry&type=newsreleases"
+            "&sort=publishedDate&orderBy=desc&pick=50&format=atom&atomtitle=ISED"},
     {"name": "GOV.UK", "format": "govuk", "category": "policy", "jurisdictions": ["GB"], "ai_in_title": True,
      "government": True,
      "url": "https://www.gov.uk/api/search.json?q=%22artificial+intelligence%22&order=-public_timestamp&count=50"

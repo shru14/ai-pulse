@@ -213,11 +213,6 @@ def detect(text: str) -> str | None:
     return lang if hits >= 2 and hits > 2 * english else None
 
 
-def available(lang: str) -> bool:
-    """Can `lang` be translated here (libraries and model present, or downloadable)?"""
-    return _model(lang) is not None
-
-
 def cached(conn, lang: str, text: str) -> str | None:
     """The stored English version of `text`, if there is one (no translating)."""
     connect(conn)

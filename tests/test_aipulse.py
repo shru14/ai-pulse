@@ -933,6 +933,38 @@ def test_china_regulations_from_the_cac_list(tmp_path, monkeypatch):
         "Interim Measures for the Administration of generative artificial intelligence services"
 
 
+def test_canada_regulations_from_the_canada_gazette(tmp_path, monkeypatch):
+    import json
+    from aipulse import bills, store
+    day = {1: ("October 3, 2026", "2026-10-03"), 2: ("February 10, 2027", "2027-02-10")}  # proposed, then registered
+    feed = lambda part: (f'<rss><channel><item><title>Canada Gazette - Part {"I" * part}, {day[part][0]}, volume 160, '
+                         f'number 40</title><link>https://gazette.gc.ca/rp-pr/p{part}/2026/{day[part][1]}/html/index-eng.html'
+                         '</link></item></channel></rss>').encode()
+    issue = ('<a href="./notice-avis-eng.html">Government notices</a>'
+             '<a href="reg1-eng.html">Regulations Respecting Artificial Intelligence Systems — Part One</a>'
+             '<a href="reg2-eng.html">Canadian Chicken Licensing Regulations</a>').encode("cp1252")  # an older page
+    pages = {bills.CA_GAZETTE.format(part=p): feed(p) for p in (1, 2)}
+    monkeypatch.setattr(bills.time, "sleep", lambda s: None)
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_canada_gazette(conn, fetcher=lambda url: pages.get(url, issue), log=lambda *_: None) == 1
+    # proposed in Part I, then registered in Part II: one record, its card now a law
+    (key, stage, history), = conn.execute("SELECT key, stage, history FROM bills").fetchall()
+    assert key == "CA-GAZ-regulations-respecting-artificial-intelligence-systems-part-one" and stage == "signed"
+    assert [h["stage"] for h in json.loads(history)] == ["introduced", "signed"]
+    (title, action), = conn.execute("SELECT title, action FROM items WHERE source = 'Canada Gazette'").fetchall()
+    assert title == "Regulations Respecting Artificial Intelligence Systems — Part One" and action == "law"
+    # seen in Part I one run and registered months later: the same card becomes a law (the proposal isn't left behind)
+    conn2 = store.connect(tmp_path / "t2.db")
+    only = lambda part: lambda url: feed(part) if url == bills.CA_GAZETTE.format(part=part) else (
+        b"<rss></rss>" if url.endswith(".xml") else issue)
+    bills.sync_canada_gazette(conn2, fetcher=only(1), log=lambda *_: None)
+    actions = lambda: [r[0] for r in conn2.execute("SELECT action FROM items WHERE source = 'Canada Gazette'")]
+    assert actions() == ["proposal"]
+    bills.sync_canada_gazette(conn2, fetcher=only(2), log=lambda *_: None)
+    assert actions() == ["law"]
+    assert [h["stage"] for h in json.loads(conn2.execute("SELECT history FROM bills").fetchone()[0])] == ["introduced", "signed"]
+
+
 def test_india_bills_from_parliament(tmp_path, monkeypatch):
     import json
     from aipulse import bills
@@ -1891,7 +1923,7 @@ def test_glossary_explains_the_hard_words_in_stories():
 
 
 def test_word_of_the_day_rotates_through_the_glossary(monkeypatch):
-    from datetime import date, timedelta
+    from datetime import timedelta
     from aipulse import digest, glossary
     start, n = glossary.ROTATION_START, len(glossary.ENTRIES)
     words = [glossary.word_of_the_day(start + timedelta(days=k))["id"] for k in range(n)]
@@ -2016,7 +2048,7 @@ def test_page_script_declares_each_name_once():
 
 def test_each_reader_gets_their_own_top_10(monkeypatch):
     from datetime import date
-    from aipulse import digest, glossary, preferences
+    from aipulse import digest
     monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
     day = date(2026, 9, 28)
 

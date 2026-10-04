@@ -44,10 +44,6 @@ def light(c: dict) -> bool:
             and not _SERIOUS_TAGS & set(c.get("tags") or []) and not _SERIOUS.search(text))
 
 
-def _pick(options: list[dict], when: date) -> dict | None:
-    return options[when.toordinal() % len(options)] if options else None
-
-
 
 
 

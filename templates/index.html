@@ -218,12 +218,7 @@ header.top{gap:10px}
 .mag-cover h2 a:hover{text-decoration:underline;text-decoration-color:var(--cat-f);text-underline-offset:4px}
 .mag-cover .sum{margin:0;color:#C9CEDA;line-height:1.5;font-size:15px;-webkit-line-clamp:3}
 .mag-cover .kicker{color:#A9B0C2}
-.mag-cover .reported{color:#A9B0C2}
-.mag-cover .reported a{color:#FFFFFF;text-decoration-color:#4A5266}
 .mag-cover .tag{color:#C9CEDA;border-color:#4A5266}
-.reported{font-size:13px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
-.reported a{text-decoration:underline;text-underline-offset:3px}
-.reported a:hover{text-decoration-color:var(--cat-f)}
 /* Drawn art: the stream's colour, its six faint drawings (as on its page's header) and the story's logo. */
 .sart{position:relative;background:var(--cat-p);overflow:hidden;color:#141925}
 .sart svg.d{position:absolute;opacity:.18}
@@ -251,18 +246,11 @@ header.top{gap:10px}
 /* Meme of the week (memes.py): a joke format drawn in plain HTML, filled from last week's stories */
 .meme-tile{background:var(--p-meme);color:#141925;border:0;display:flex;flex-direction:column;gap:12px}
 .meme-tile[hidden]{display:none}
-.meme-tile .from{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.35}
-.meme-tile .from li{position:relative;padding-left:18px}
-.meme-tile .from li::before{content:"→";position:absolute;left:0;font-weight:700}
-.meme-tile .from a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
-.meme-tile .from .src{font-size:12.5px}
 .meme-tile .viz-note{opacity:1;margin:0 0 6px}
 .meme-tile .meme-more{flex:1;display:flex;flex-direction:column;gap:12px}
 .meme-tile .meme-more .gl-stat{margin-top:0;padding:8px 14px}
 .meme-tile .meme-more .gl-num{font-size:24px}
 .meme-tile .meme-stat{font:700 17px/1.2 var(--head)}
-.meme-tile .from li{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}  /* two lines a story, the whole title on hover */
-.meme-tile.tight .from li{-webkit-line-clamp:1}
 .src-links{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}
 .src-links a,.src-links .src-more{color:#FFFFFF;border:2px solid #FFFFFF;padding:4px 10px;font:600 13px/1.2 var(--body);text-decoration:none;white-space:nowrap}
 .src-links .src-more{border-style:dashed}
@@ -325,10 +313,6 @@ header.top{gap:10px}
 .bar span{display:block;width:100%;max-width:18px;background:currentColor;border-radius:4px 4px 0 0;opacity:.9}
 .bar span.none{opacity:.3;border-radius:2px}
 .bar small{font:10px var(--mono);opacity:.75}
-.gl-tile .from{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.35}
-.gl-tile .from a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;opacity:.95}
-.gl-tile .from li{position:relative;padding-left:18px}
-.gl-tile .from li::before{content:"→";position:absolute;left:0;font-weight:700;color:#D55E00}
 .sub-tile-go:hover,.gl-tile-go:hover{filter:brightness(1.1)}
 .sub-tile-go:focus-visible,.gl-tile-go:focus-visible,.go:focus-visible,.stream-head:focus-visible,.lead:focus-visible,.mitem:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .mag-sections{display:grid;grid-template-columns:1fr 1fr;gap:44px 46px}
@@ -526,9 +510,8 @@ header.top{border-bottom:4px solid var(--ink)}
 .gl-tile .week-badge b{font:700 13px/1.2 var(--head)}
 .gl-tile b mark{background:#F0E442}
 .gl-stat{border:3px solid #FFFFFF;border-radius:0}
-.gl-tile .gl-tile-go,.meme-tile .gl-tile-go,.mag-cover .gl-tile-go{min-width:260px;border:2px solid #FFFFFF!important;box-shadow:6px 6px 0 #FFFFFF!important;
+.gl-tile .gl-tile-go,.meme-tile .gl-tile-go,.mag-cover .gl-tile-go{min-width:260px;border:2px solid #FFFFFF!important;box-shadow:none!important;
   align-self:center}  /* the three tiles' buttons alike, at the same height */
-.gl-tile .from li::before{color:#F0E442}
 .meme-tile{background:#B85000;color:#FFFFFF}  /* a deeper vermillion: white text at 5:1, as on the word's blue */
 .week-badge{border-radius:0;box-shadow:none;border:3px solid #000;background:#FFFFFF;color:#000;text-transform:none;letter-spacing:0;font-family:var(--head);font-weight:400;font-size:15px}
 .stream-head h2{font:400 26px/1.1 var(--head);text-transform:none;letter-spacing:0}  /* "Research", "Industry": title case */
@@ -1306,15 +1289,14 @@ async function loadMeme(){
     if(shown && !shown.complete) shown.addEventListener("load", fitMeme); else fitMeme();
   }catch(e){}
 }
-// When the meme and its stories are taller than the row, the count box gives way first, then each story keeps one
-// line; if it still doesn't fit, the tile grows (the row with it) rather than cut anything off.
+// When the meme and its stories are taller than the row, the count box gives way first; if it still doesn't fit,
+// the tile grows (the row with it) rather than cut anything off.
 function fitMeme(){
   const tile = $("meme-tile"), stat = tile.querySelector(".gl-stat");
   if(tile.hidden) return;
-  tile.classList.remove("tight", "grow"); if(stat) stat.hidden = false;
+  tile.classList.remove("grow"); if(stat) stat.hidden = false;
   const over = () => tile.scrollHeight > tile.clientHeight + 1;
   if(over() && stat) stat.hidden = true;
-  if(over()) tile.classList.add("tight");
   if(over()) tile.classList.add("grow");
 }
 // fitted again when the window's width changes, and when the story and the word arrive (renderHome), never on its
@@ -1352,11 +1334,6 @@ function srcLinks(stories, more = 0){
 }
 function storyLink(it, cls){
   const a = el("a", cls, it.title); a.href = it.url; a.target = "_blank"; a.rel = "noopener"; return a;
-}
-function storyMeta(it){
-  const places = (it.jurisdictions || []).filter(c => !c.startsWith("US-")).slice(0, 3);
-  const when = ({research:"Published ", regulation:"Reported "}[it.category] || "Released ") + it.date;  // as on the cards
-  return el("div","meta", [...places, it.source || domainOf(it.url), when].join(" · ") + (outlets(it) > 1 ? " · " + outlets(it) + " sources" : ""));
 }
 // The word of the week changes each Monday: the glossary word that came up in the most of last week's stories
 // (Monday to Sunday, UTC), shown with how many of them used it each day (one bar a day, day and count on hover)
