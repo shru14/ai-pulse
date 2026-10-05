@@ -228,7 +228,7 @@ def _empty_note(name: str, day: date) -> str:
 # The short email: the day's most-reported stories in full, then each stream's next few headlines.
 TOP = 10          # stories in "10 things that mattered today", 5 rows of 2
 HEADLINES = 3     # further headlines per stream
-LIGHT = 12        # this many stories or fewer in a reader's streams: all of them in the table
+LIGHT = TOP       # this many stories or fewer in a reader's streams: all of them in the table, never more than TOP
 SIDE_KINDS = {"tutorial", "event", "blog"}  # counted in the short email, not listed
 PICKS = 5         # a reader with choices: up to this many of theirs in the top 10, then the day's biggest
 
@@ -463,6 +463,8 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         mine = sorted([c for c in todays if id(c) in picks], key=_rank, reverse=True)[:PICKS]
         biggest = [c for c in top + sorted(todays, key=_rank, reverse=True) if c not in mine]
         top = mine + list({id(c): c for c in biggest}.values())[:TOP - len(mine)]
+    elif tuned:  # a lighter day: every story is in, the reader's own first
+        top = sorted(top, key=lambda c: id(c) not in picks)
     title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
              else f"Here are the {len(top)} that mattered most.")
     made_for = _left_note(prefs, left or [])
