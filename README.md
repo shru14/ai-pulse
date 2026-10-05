@@ -27,9 +27,10 @@ Only legal, publicly accessible sources are used.
 - **Glossary:** plain-English meanings of ~120 hard words.
 - **Memes:** on well-known templates via imgflip.com, as parody; captions checked (no politics, harm, people or invented numbers), else rule-based.
 - **RSS:** one feed per stream ([Releases](https://projectaipulse.com/feeds/releases.xml), [Industry](https://projectaipulse.com/feeds/news.xml), [Research](https://projectaipulse.com/feeds/research.xml), [Regulation tracker](https://projectaipulse.com/feeds/regulation.xml), [Policy](https://projectaipulse.com/feeds/policy.xml), [Infra & climate](https://projectaipulse.com/feeds/infra.xml)).
-- **Daily email:** the reader's streams: word and meme of the day, the top 10 (the reader's choices first), the rest in brief; checked before sending.
+- **Daily email:** the reader's streams: word and meme of the day, the top 10 (the reader's choices first), the rest in brief; checked before sending. On Sundays, the week's story, word and meme instead. Daily, or weekly (Sundays only).
+- **Weekly dossier (in testing):** up to 3 questions in the reader's own words; each Sunday, the week's stories that answer them, found by an open model run offline (BGE-base) and the site's tags. It picks and links; it writes nothing.
 - **Make it yours:** more of, or leave out, any topic, company, place or scholar, plus up to 5 own words.
-- **Subscriptions:** confirm by one link, unsubscribe in one click. Addresses stay in the project's Google account, never in this repository or its logs.
+- **Subscriptions:** confirm by one link, unsubscribe in one click. Addresses and questions stay in the project's Google account, never in this repository or its logs.
 
 ## How we keep it legal
 

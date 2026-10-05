@@ -12,13 +12,17 @@
  *   POST action=choices     t               the site's "Change my choices" (SITE#choices=token, in every email):
  *                                            the reader's streams and choices
  *   POST action=save        t, streams,     saves them at once (the link in the reader's own email is the proof
- *                           more, less,     it's them, as for unsubscribing)
- *                           words
+ *                           more, less,     it's them, as for unsubscribing); interests (the weekly dossier: up to
+ *                           words,          3 in the reader's own words, separated by |) are kept as they are
+ *                           interests,      when the form doesn't send them; often: "daily" (every email, the
+ *                           often           week on Sundays too) or "weekly" (Sunday's email only), kept likewise
  *   POST action=unsubscribe t               the site's "Unsubscribe" button (SITE#unsubscribe=token, in every
  *                                            email), or a mail app's one-click unsubscribe (RFC 8058, the
  *                                            List-Unsubscribe header): the address is deleted and our emails
  *                                            with it moved to the Trash
  *   GET  action=list        key             the confirmed readers, for the daily send (key = LIST_KEY)
+ *   GET  action=interests   key             every interest readers follow, once each and without who follows it,
+ *                                            for the site's weekly dossiers (key = LIST_KEY)
  * With format=json the site gets {ok, title, text}; without it (an old link opened here) a small page.
  * The project inbox gets a short note when someone subscribes, changes streams or unsubscribes.
  *
@@ -39,7 +43,8 @@ const PENDING_DAYS = 7;             // an unconfirmed sign-up is deleted after a
 const EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
 const CONTACTS = `Add ${SENDER} to your contacts so the daily email lands in your inbox, not in spam.`;
 // A reader's choices: labels the site shows (the form sends them separated by |), and a few words of their own
-const LIMITS = {more: 10, less: 40, words: 5};
+const LIMITS = {more: 10, less: 40, words: 5, interests: 3};
+const INTEREST_MAX = 150;  // characters in one interest (aipulse/weekly.py INTEREST_MAX)
 
 const store = () => PropertiesService.getScriptProperties();
 const today = () => new Date().toISOString().slice(0, 10);
@@ -50,6 +55,7 @@ const names = streams => streams.map(s => STREAMS[s]).join(", ");
 function doGet(e) {
   const p = e.parameter || {};
   if (p.action === "list") return json(list(p.key));
+  if (p.action === "interests") return json(interests(p.key));
   if (p.action === "confirm" || p.action === "unsubscribe") return button(p.action, p.t);  // links sent before the site handled them
   return page({title: "AI Pulse daily", text: "Sign up for the daily digest on the AI Pulse site."});
 }
@@ -72,18 +78,36 @@ function read(email) {
 }
 
 // The reader's choices from the form, trimmed and capped: plain labels and words only (letters, digits, spaces
-// and a few marks), so nothing odd is ever stored or sent back.
-function prefsFrom(p) {
+// and a few marks), so nothing odd is ever stored or sent back. Interests (sentences in the reader's own words)
+// allow a few more marks; when the form doesn't send them, the reader keeps the ones they had (`had`).
+function prefsFrom(p, had) {
   const clean = (raw, n) => [...new Set(String(raw || "").split("|")
     .map(s => s.replace(/[^\p{L}\p{N} &.,'’()\-]/gu, "").replace(/\s+/g, " ").trim())
     .filter(s => s.length > 1 && s.length <= 60))].slice(0, n);
   const out = {more: clean(p.more, LIMITS.more), less: clean(p.less, LIMITS.less), words: clean(p.words, LIMITS.words)};
   out.more = out.more.filter(s => !out.less.includes(s));  // never both
+  out.interests = p.interests === undefined ? ((had && had.interests) || []) : cleanInterests(String(p.interests).split("|"));
+  out.often = p.often === "weekly" || p.often === "daily" ? p.often : (had && had.often) || "daily";
   return out;
 }
-const hasPrefs = pr => !!pr && (pr.more.length + pr.less.length + pr.words.length) > 0;
-const summary = pr => [pr.more.length && `more of ${pr.more.join(", ")}`, pr.less.length && `leaving out ${pr.less.join(", ")}`,
-                       pr.words.length && `your words ${pr.words.map(w => `"${w}"`).join(", ")}`].filter(Boolean).join("; ");
+function cleanInterests(list) {
+  const seen = new Set(), out = [];
+  for (const raw of list) {
+    const t = String(raw || "").replace(/[^\p{L}\p{N} &.,'’"“”()\-?!:;\/%$+#@]/gu, "").replace(/\s+/g, " ").trim().slice(0, INTEREST_MAX).trim();
+    if (!/[\p{L}\p{N}]{2}/u.test(t) || seen.has(t.toLowerCase())) continue;
+    seen.add(t.toLowerCase());
+    out.push(t);
+  }
+  return out.slice(0, LIMITS.interests);
+}
+const hasChoices = pr => !!pr && pr.more.length + pr.less.length + pr.words.length + (pr.interests || []).length > 0;
+const hasPrefs = pr => hasChoices(pr) || (!!pr && pr.often === "weekly");
+const weeklyOnly = pr => !!pr && pr.often === "weekly";
+const summary = pr => [weeklyOnly(pr) && "the weekly email only, on Sundays",
+                       pr.more.length && `more of ${pr.more.join(", ")}`, pr.less.length && `leaving out ${pr.less.join(", ")}`,
+                       pr.words.length && `your words ${pr.words.map(w => `"${w}"`).join(", ")}`,
+                       (pr.interests || []).length && `a weekly dossier on ${pr.interests.map(w => `"${w}"`).join(", ")}`]
+                      .filter(Boolean).join("; ");
 
 function subscribe(p) {
   if (p.website) return {ok: true};  // the hidden field only bots fill in
@@ -105,8 +129,11 @@ function subscribe(p) {
     rec.ctoken = Utilities.getUuid();
     rec.pending = streams;
     // choices start with the confirm link too; a reader changing only streams keeps the choices they have
-    const prefs = prefsFrom(p);
-    if (hasPrefs(prefs)) rec.pendingPrefs = prefs; else delete rec.pendingPrefs;
+    // how often always starts with the confirm link: alone, it keeps the choices they have
+    const prefs = prefsFrom(p, rec.prefs);
+    if (hasChoices(prefs)) rec.pendingPrefs = prefs;
+    else if (rec.prefs || weeklyOnly(prefs)) rec.pendingPrefs = {...(rec.prefs || prefs), often: prefs.often};
+    else delete rec.pendingPrefs;
     rec.asked = Date.now();
     rec.n += 1;
     props.setProperty("t:" + rec.ctoken, email);
@@ -130,7 +157,7 @@ function subscribe(p) {
         "newsrooms, research archives and government sites, and sort the day's stories into clear streams, each " +
         "linked to the original reporting.",
       `You picked: ${names(streams)}.` + (hasPrefs(prefs) ? ` Your choices: ${summary(prefs)}.` : ""),
-      "One last step: open this link and press Confirm, and your first digest arrives the next morning:",
+      `One last step: open this link and press Confirm, and your first digest arrives ${weeklyOnly(prefs) ? "on Sunday" : "the next morning"}:`,
       link,
       "Didn't sign up? No worries, just ignore this email: nothing will be sent, and the request disappears within a week.",
       `Tip: ${CONTACTS.charAt(0).toLowerCase()}${CONTACTS.slice(1)}`,
@@ -174,7 +201,8 @@ function confirm(t) {
            `${email} ${changed ? "now gets" : "subscribed to"}: ${names(rec.streams)}.` +
            (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
     return {ok: true, title: changed ? "Your streams are changed" : "Welcome aboard, you're subscribed!",
-            text: `${changed ? "From tomorrow" : "Every morning"} you'll get the day before in AI: ${names(rec.streams)}. ` +
+            text: (weeklyOnly(rec.prefs) ? `${changed ? "From Sunday" : "Every Sunday"} you'll get the week in AI: ${names(rec.streams)}. `
+                   : `${changed ? "From tomorrow" : "Every morning"} you'll get the day before in AI: ${names(rec.streams)}. `) +
                   "It's sent at about 05:00 UTC (7:00 in Germany in summer), and every email has a one-click " +
                   `unsubscribe link. ${CONTACTS}`};
   } finally {
@@ -215,7 +243,8 @@ function choices(t) {
   if (!rec || !rec.confirmed) return {ok: false, title: "This link doesn't work any more",
                                       text: "Subscribe again with the Daily digest button."};
   const pr = rec.prefs || {more: [], less: [], words: []};
-  return {ok: true, streams: rec.streams, more: pr.more, less: pr.less, words: pr.words};
+  return {ok: true, streams: rec.streams, more: pr.more, less: pr.less, words: pr.words, interests: pr.interests || [],
+          often: pr.often || "daily"};
 }
 
 function save(p) {
@@ -229,14 +258,14 @@ function save(p) {
     rec = email && read(email);
     if (!rec || !rec.confirmed) return {ok: false, error: "link"};
     rec.streams = streams;
-    rec.prefs = prefsFrom(p);
+    rec.prefs = prefsFrom(p, rec.prefs);
     store().setProperty("s:" + email, JSON.stringify(rec));
   } finally {
     lock.releaseLock();
   }
   notify(`AI Pulse: a subscriber changed their choices (${count()} subscribers)`,
          `${email} now gets: ${names(streams)}.` + (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
-  return {ok: true, title: "Saved", text: `From tomorrow's email: ${names(streams)}` +
+  return {ok: true, title: "Saved", text: `From ${weeklyOnly(rec.prefs) ? "Sunday's" : "tomorrow's"} email: ${names(streams)}` +
           (hasPrefs(rec.prefs) ? `; ${summary(rec.prefs)}.` : ".")};
 }
 
@@ -286,6 +315,19 @@ function notify(subject, text) {
 function count() {
   return Object.entries(store().getProperties())
     .filter(([k, v]) => k.startsWith("s:") && JSON.parse(v).confirmed).length;
+}
+
+// Every interest the confirmed readers follow, once each (however capitalised), with nothing about who follows it.
+function interests(key) {
+  const secret = store().getProperty("LIST_KEY");
+  if (!secret || secret.length < 24 || key !== secret) return {ok: false};
+  const seen = new Map();
+  for (const [k, v] of Object.entries(store().getProperties())) {
+    if (!k.startsWith("s:")) continue;
+    const rec = JSON.parse(v);
+    if (rec.confirmed) ((rec.prefs && rec.prefs.interests) || []).forEach(t => seen.set(t.toLowerCase(), t));
+  }
+  return {ok: true, interests: [...seen.values()]};
 }
 
 function list(key) {

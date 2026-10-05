@@ -306,6 +306,21 @@ def cards(conn: sqlite3.Connection, category=None, q=None, days=None, place=None
     leads = [_row(r) for r in conn.execute(
         f"SELECT * FROM items i WHERE {where} ORDER BY i.date DESC, i.added_at DESC LIMIT ? OFFSET ?",
         [*args, limit, offset])]
+    return _complete(conn, leads), total
+
+
+def cards_by_id(conn: sqlite3.Connection, ids: list[str]) -> list[dict]:
+    """These cards (lead story ids), in this order, complete as cards() gives them."""
+    leads = {}
+    for i in range(0, len(ids), 900):
+        batch = ids[i:i + 900]
+        leads.update({r["id"]: _row(r) for r in conn.execute(
+            f"SELECT * FROM items WHERE id IN ({','.join('?' * len(batch))})", batch)})
+    return _complete(conn, [leads[i] for i in ids if i in leads])
+
+
+def _complete(conn: sqlite3.Connection, leads: list[dict]) -> list[dict]:
+    """Cards' other outlets, kind within the stream and a tracked bill's timeline."""
     if leads:
         ids = [c["id"] for c in leads]
         also: dict[str, list[dict]] = {}
@@ -330,7 +345,7 @@ def cards(conn: sqlite3.Connection, category=None, q=None, days=None, place=None
             if c.get("bill"):  # a tracked bill: its lifecycle timeline
                 from .bills import lifecycle
                 c["lifecycle"] = lifecycle(conn, c["bill"])
-    return leads, total
+    return leads
 
 
 def card_counts(conn: sqlite3.Connection, q=None, days=None) -> dict:

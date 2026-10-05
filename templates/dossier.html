@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Your AI Pulse dossier</title>
+<!-- A reader's weekly dossier. The link from their Sunday email carries the ids of their interests after the "#"
+     (dossier.html#<id>.<id>, then ":2" to open the second), which browsers never send to a server; each id's
+     section of the week is in dossier/<id>.json (aipulse/weekly.py publish). One card per interest; the chosen
+     one's section shows below. The look matches the dossier's sections (weekly.py). -->
+<style>
+  /* the daily email's look (aipulse/digest.py): Arial, a navy band, a white card on a pale blue page */
+  body{margin:0;background:#e9eef7;color:#1a1a1a;font-family:Arial,Helvetica,sans-serif}
+  .paper{max-width:680px;margin:12px auto 24px;background:#ffffff;border-radius:6px;overflow:hidden}
+  .band{background:#14213d;color:#fff;padding:22px 20px 18px}
+  .band .brand{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px}
+  .band h1{font-size:22px;line-height:1.3;margin:0}
+  .band .span{font-size:13px;color:#c9d3ef;margin-top:4px}
+  .inner{padding:16px 20px 10px}
+  @media (max-width:520px){.paper{margin:0;border-radius:0}.inner{padding:14px 14px 8px}}
+  .kicker{font-size:13px;font-weight:bold;letter-spacing:.5px;text-transform:uppercase;color:#5f6368;margin:6px 0 10px}
+  .interests{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .interest{display:flex;flex-direction:column;gap:6px;text-align:left;padding:12px 12px 12px;background:#f4f6fa;
+    border:1px solid #e3e5e8;border-top:4px solid #e3e5e8;border-radius:0;color:#1a1a1a;font:inherit;cursor:pointer}
+  .interest:hover{border-top-color:#1c3faa}
+  .interest[aria-pressed="true"]{background:#ffffff;border-color:#1a1a1a;border-top-color:#1c3faa}
+  .interest .topic{font-size:15px;font-weight:bold;line-height:1.3}
+  .interest .count{font-size:12px;color:#5f6368}
+  .note{font-size:14px;color:#5f6368}
+  .foot{margin-top:28px;padding-top:12px;border-top:1px solid #e3e5e8;color:#5f6368;font-size:13px;line-height:1.6}
+  .foot a{color:#5f6368}
+</style>
+</head>
+<body>
+<main class="paper">
+  <div class="band"><div class="brand">AI Pulse weekly dossier</div><h1>Your week on what you follow</h1>
+    <div class="span" id="span">Your interests</div></div>
+  <div class="inner">
+    <div id="dossier"><p class="note">Loading your dossier…</p></div>
+    <p class="foot">Picked by search over AI Pulse's stories, by meaning, by words and by the site's tags.<br>AI Pulse is free and non-commercial ·
+      <a href="./">projectaipulse.com</a></p>
+  </div>
+</main>
+<script>
+(async () => {
+  const box = document.getElementById("dossier");
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
+  const say = text => box.replaceChildren(el("p", "note", text));
+  const [list, open] = location.hash.slice(1).split(":");
+  const ids = [...new Set((list || "").split(".").filter(id => /^[0-9a-f]{24}$/.test(id)))].slice(0, 3);
+  if(!ids.length) return say("Open your dossier from the link in your Sunday email.");
+  const got = await Promise.all(ids.map(id => fetch(`dossier/${id}.json`, {cache: "no-cache"})
+    .then(r => r.ok ? r.json() : null).catch(() => null)));
+  const found = got.filter(Boolean);
+  if(!found.length) return say("Your dossier isn't ready yet: it's made every six hours. Please try again later.");
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];  // as the email writes them
+  const day = iso => { const d = new Date(iso + "T00:00:00Z"); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()]; };
+  document.getElementById("span").textContent = `${day(found[0].from)} – ${day(found[0].to)} ${found[0].to.slice(0, 4)}`;
+
+  // one card per question: the reader's words and how many stories; the chosen one's section below
+  const cards = el("div", "interests"), section = el("div");
+  const show = k => {
+    cards.querySelectorAll(".interest").forEach((c, j) => c.setAttribute("aria-pressed", String(j === k)));
+    const d = found[k], head = document.createElement("div");
+    // the section's head, as weekly.py's _head draws it; its body is the dossier's own HTML (made and escaped there)
+    head.innerHTML = '<div style="margin-top:' + (found.length > 1 ? 28 : 8) + 'px;font-size:22px;font-weight:bold;line-height:1.25;'
+      + 'color:#1a1a1a"></div><div style="border-top:1px solid #1a1a1a;margin:10px 0 16px"></div>';
+    head.firstChild.textContent = d.topic;
+    const body = document.createElement("div");
+    body.innerHTML = d.html;
+    section.replaceChildren(head, body);
+  };
+  found.forEach((d, k) => {
+    const card = el("button", "interest");
+    card.type = "button";
+    card.append(el("span", "topic", d.topic),
+                el("span", "count", d.count + (d.count === 1 ? " story this week" : " stories this week")));
+    card.addEventListener("click", () => { show(k); history.replaceState(null, "", `#${list}:${k + 1}`); });
+    cards.append(card);
+  });
+  // one question: no cards to pick from, just its stories; several: a card each, side by side
+  const parts = found.length > 1 ? [el("div", "kicker", "Your questions · pick one"), cards, section] : [section];
+  if(found.length < ids.length) parts.push(el("p", "note", "One of your interests isn't ready yet: it's made every six hours."));
+  box.replaceChildren(...parts);
+  const first = Math.min(Math.max((parseInt(open, 10) || 1) - 1, 0), found.length - 1);
+  show(first);
+})();
+</script>
+</body>
+</html>

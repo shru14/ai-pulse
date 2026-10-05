@@ -609,7 +609,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -1645,11 +1645,15 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
                             {"email": "cy@example.org", "streams": ["bogus"], "token": token}]}
     got = sb.readers(data)
     site_link = "https://projectaipulse.com/#unsubscribe=" + token
-    none = {"more": [], "less": [], "words": []}  # a reader who made no choices
+    none = {"more": [], "less": [], "words": [], "interests": [], "often": "daily"}  # a reader who made no choices
     assert got == {"ana@example.org": (["news", "policy"], data["unsubscribe"] + token, site_link, none)}  # malformed dropped
     # choices come through capped and cleaned, never in both lists
-    chosen = sb.prefs_of({"more": ["Agents", "Asia", "Asia", "x", "Tutorial"], "less": ["Tutorial", 7], "words": ["  Tesla   Optimus "]})
-    assert chosen == {"more": ["Agents", "Asia"], "less": ["Tutorial"], "words": ["Tesla Optimus"]}
+    chosen = sb.prefs_of({"more": ["Agents", "Asia", "Asia", "x", "Tutorial"], "less": ["Tutorial", 7], "words": ["  Tesla   Optimus "],
+                          "interests": ["How hospitals   use AI", "how hospitals use AI", "?!", "x" * 300, "Nvidia", "One too many"]})
+    assert chosen == {"more": ["Agents", "Asia"], "less": ["Tutorial"], "words": ["Tesla Optimus"],
+                      "interests": ["How hospitals use AI", "x" * 150, "Nvidia"], "often": "daily"}  # tidied, once each, at most 3 of 150
+    # how often: "weekly" (Sunday's email only) when asked for, anything else daily
+    assert sb.prefs_of({"often": "weekly"})["often"] == "weekly" and sb.prefs_of({"often": "hourly"})["often"] == "daily"
     assert sb.choices_link(site_link) == "https://projectaipulse.com/#choices=" + token
     try:
         sb.readers({"ok": False})
@@ -2207,8 +2211,18 @@ def test_infrastructure_reaches_the_email_and_its_readers():
         {"email": "b@x.org", "token": "1" * 36, "streams": ["research"]}]}
     got = subscribers.readers(base)
     assert got["a@x.org"][0][-1] == "infra" and got["b@x.org"][0] == ["research"]
-    assert "now part of your email" in digest._new_stream(date(2026, 10, 5), ["infra"])
-    assert "Change my streams" in digest._new_stream(date(2026, 10, 5), ["research"])
+    # only for readers who haven't chosen the new stream
+    assert digest._new_stream(date(2026, 10, 5), ["infra"]) == ""
+    assert "Add it to your feed by clicking on following button" in digest._new_stream(date(2026, 10, 5), ["research"])
+    # the note carries a highlighted button to the sign-up form, filled in with the reader's own email and choices
+    one_click = "https://projectaipulse.com/#unsubscribe=0f8fad5b-d9cb-469f-a165-70867728950e"
+    card = {"id": "r", "title": "A paper on AI agents", "summary": "", "url": "https://ex.com/r", "source": "arXiv",
+            "category": "research", "date": "2026-10-05", "added_at": "2026-10-05T10:00:00+00:00"}
+    _, text, html = digest.build([card], ["research"], date(2026, 10, 5), one_click)
+    mine = one_click.replace("#unsubscribe=", "#choices=")
+    assert f"following button\nAdd Infra & climate: {mine}" in text
+    note = html.split("New on AI Pulse: Infra")[1].split("</div>")[0]
+    assert f'href="{mine}"' in note and "Add Infra &amp; climate →" in note
     assert digest._new_stream(date(2026, 11, 1), ["research"]) == ""
     # its stories are on topic without naming AI, and carry the tag and theme readers can choose
     story = {"title": "Teraco opens a 40MW data centre in Cape Town", "summary": "", "source": "ESI Africa", "category": "infra"}
@@ -2281,7 +2295,7 @@ def test_gemini_memes_are_checked_kept_once_and_fall_back(tmp_path, monkeypatch)
     import json
     from datetime import date
     from aipulse import memegen, memes, store
-    day = date(2026, 10, 10)  # a nope/yep day (memes.ROTATION)
+    day = date(2026, 10, 18)  # a nope/yep day (memes.ROTATION), not a Saturday (Sunday's email has the week's meme)
     assert memes.template_of(day) == "nopeyep"
     base = {"summary": "", "source": "E", "date": day.isoformat(), "also": [], "kind": "news", "tags": []}
     cards = [{**base, "title": t, "url": f"https://e.com/{i}", "category": "tool"} for i, t in enumerate(
@@ -2346,3 +2360,220 @@ def test_each_days_meme_template_comes_back_only_after_5_days():
     weekly = [memes.template_of_week(m) for m in mondays]
     assert all(a != b for a, b in zip(weekly, weekly[1:])) and set(weekly[:4]) == set(memes.WEEK_ROTATION)
     assert not set(memes.WEEK_ROTATION) & memes.TALL  # only wide ones, readable in the site's tile
+
+
+# ---------- The weekly briefing (in testing): vectors, hybrid search, the briefing ----------
+
+def _fake_embedder(monkeypatch):
+    """Stand-in for the model: a story's vector counts a few words, so stories sharing them sit close."""
+    import numpy as np
+    from aipulse import embed
+    axes = ["water", "cooling", "data", "centre", "chip", "export", "china", "act", "eu", "fine", "model", "launch"]
+
+    def encode(texts, query=False):
+        out = np.zeros((len(texts), embed.DIM), dtype=np.float32)
+        for k, t in enumerate(texts):
+            words = re.findall(r"\w+", t.lower())
+            v = out[k]
+            v[len(axes)] = 0.25  # what every story has in common
+            for w in words:
+                if w in axes:
+                    v[axes.index(w)] += 1
+            out[k] = v / np.linalg.norm(v)
+        return out
+    monkeypatch.setattr(embed, "encode", encode)
+    monkeypatch.setattr(embed, "available", lambda: True)
+    monkeypatch.setattr(embed, "DAYS", 10 ** 5)  # the tests' stories have fixed dates, whatever today is
+
+
+def _story(conn, n, title, day, summary="", source="S", category="infra"):
+    store.insert(conn, {"title": title, "summary": summary, "url": f"https://ex.com/{n}", "source": source,
+                        "category": category, "date": day, "tags": []})
+
+
+def test_wordpiece_matches_bert(tmp_path):
+    from aipulse.embed import WordPiece
+    vocab = tmp_path / "vocab.txt"
+    vocab.write_text("\n".join(["[PAD]", "[UNK]", "[CLS]", "[SEP]", "data", "centre", "##s", "cafe", "gpt", "-", "6", "’", "s",
+                                "人", "工"]), encoding="utf-8")
+    wp = WordPiece(vocab)
+    # lower case, accents off, punctuation and each Chinese character on its own, the rest in word pieces
+    assert wp.tokens("Data centres Café GPT-6’s 人工 zzz") == ["[CLS]", "data", "centre", "##s", "cafe", "gpt", "-", "6", "’",
+                                                              "s", "人", "工", "[UNK]", "[SEP]"]
+    assert len(wp.tokens("data " * 500)) == 128  # cut to the model's limit, ends kept
+
+
+def test_stories_are_embedded_once_and_again_when_changed(tmp_path, monkeypatch):
+    from aipulse import embed
+    _fake_embedder(monkeypatch)
+    conn = store.connect(tmp_path / "t.db")
+    _story(conn, 1, "Data centre water use rises", "2026-09-29")
+    _story(conn, 2, "EU fines a chip maker", "2026-09-30")
+    conn.commit()
+    assert embed.update(conn, log=lambda *_: None) == 2
+    assert embed.update(conn, log=lambda *_: None) == 0  # nothing new
+    store.update_text(conn, store.item_id("https://ex.com/1"), "Data centre water use rises again", "")
+    conn.execute("DELETE FROM items WHERE id = ?", (store.item_id("https://ex.com/2"),))
+    conn.commit()
+    assert embed.update(conn, log=lambda *_: None) == 1  # the changed one; the deleted one's vector goes too
+    assert conn.execute("SELECT COUNT(*) FROM vectors").fetchone()[0] == 1
+
+
+def test_search_by_meaning_and_by_words(tmp_path, monkeypatch):
+    from aipulse import embed, search
+    _fake_embedder(monkeypatch)
+    conn = store.connect(tmp_path / "t.db")
+    _story(conn, 1, "Data centre water cooling draws fire", "2026-09-29")
+    _story(conn, 2, "Water and cooling for a new data centre", "2026-09-30", source="T")
+    _story(conn, 3, "Chip export rules for China tighten", "2026-10-01", category="policy")
+    _story(conn, 4, "S. 5518 introduced", "2026-10-02", category="regulation")  # no words the vectors know
+    _story(conn, 5, "Data centre water cooling, last month", "2026-09-01")  # before the week
+    conn.commit()
+    embed.update(conn, log=lambda *_: None)
+    since, until = date(2026, 9, 28), date(2026, 10, 5)
+    found = [c["title"] for c in search.search(conn, "data centre water cooling", since, until)]
+    assert found[:2] and set(found[:2]) == {"Data centre water cooling draws fire", "Water and cooling for a new data centre"}
+    assert "Chip export rules for China tighten" not in found  # far in meaning, no shared words: left out
+    assert "Data centre water cooling, last month" not in found  # only the week asked for
+    assert [c["title"] for c in search.search(conn, "S. 5518", since, until)] == ["S. 5518 introduced"]  # exact words count
+
+
+def test_dossier_sections_pick_the_week_and_never_write(tmp_path, monkeypatch):
+    from aipulse import embed, weekly
+    _fake_embedder(monkeypatch)
+    conn = store.connect(tmp_path / "t.db")
+    _story(conn, 1, "Data centre water cooling draws fire", "2026-09-29", summary="Residents object to water use.")
+    _story(conn, 2, "Chip export rules for China tighten", "2026-10-01", category="policy")
+    _story(conn, 3, "Data centre water cooling plan filed", "2026-09-10")  # the earlier story it follows on from
+    _story(conn, 5, "Water cooling approved for a data centre", "2026-09-30", source="T")
+    conn.commit()
+    embed.update(conn, log=lambda *_: None)
+    monkeypatch.setattr(weekly, "SAME_STORY", 0.8)
+    key, monday = "k" * 32, date(2026, 10, 6)
+    topics = ["data centre water cooling", "chip export China"]
+    weekly.prepare(conn, topics, key, monday, log=lambda *_: None)
+    first, second = (weekly.kept(conn, monday)[weekly.interest_id(key, t)]["html"] for t in topics)
+    assert "THE LEAD" in first and "Data centre water cooling draws fire" in first and "Water cooling approved for a data centre" in first
+    assert "WHO" not in first  # the stories name no company or person (their topics aren't names)
+    assert "Dig deeper ↓" in first and "<details" in first and "1 earlier story on this in the month before" in first
+    assert first.index("<details") < first.index("Data centre water cooling plan filed")  # the past only behind the arrow
+    assert "The rest of the week" in first and "https://ex.com/1" in first
+    assert "Chip export rules for China tighten" in second and "Data centre water cooling plan filed" not in second
+    assert "Nothing on this topic this week." in weekly._body({"topic": "quantum sensing", "cards": []})
+    assert "written by AI" not in first + second
+
+
+def test_dossiers_kept_per_interest_published_by_id_and_noted_on_sunday(tmp_path, monkeypatch):
+    import json
+    from aipulse import digest, embed, weekly
+    _fake_embedder(monkeypatch)
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    conn = store.connect(tmp_path / "t.db")
+    _story(conn, 1, "Data centre water cooling draws fire", "2026-09-29", summary="Residents object to water use.")
+    _story(conn, 2, "Chip export rules for China tighten", "2026-10-01", category="policy")
+    _story(conn, 3, "Data centre water cooling plan shelved", "2026-10-04", summary="The water plan is off.")
+    conn.commit()
+    embed.update(conn, log=lambda *_: None)
+    key, sunday, monday = "k" * 32, date(2026, 10, 4), date(2026, 10, 5)
+    # the dossier's week: on a Sunday, Monday to Saturday (for the Sunday email); from Monday on, the whole week
+    assert weekly.last_week(sunday) == (date(2026, 9, 28), sunday) and weekly.last_week(monday) == (date(2026, 9, 28), monday)
+    assert weekly.last_week(date(2026, 10, 3)) == (date(2026, 9, 21), date(2026, 9, 28))
+    mine = ["Data centre water cooling", "quantum sensing"]
+    # the same interest from two readers (any capitals) is worked out once; an empty one never
+    assert weekly.prepare(conn, [*mine, "data centre WATER cooling", "  ", "?!"], key, sunday, log=lambda *_: None) == 2
+    ids = [weekly.interest_id(key, t) for t in mine]
+    assert all(re.fullmatch(r"[0-9a-f]{24}", i) for i in ids) and weekly.interest_id("other" * 8, mine[0]) != ids[0]
+    assert weekly.kept(conn, sunday)[ids[0]]["count"] == 1 and weekly.kept(conn, sunday)[ids[1]]["count"] == 0  # not Sunday's
+    # the site: one file per interest, named by its id only; the reader's link carries ids, never their words
+    assert weekly.publish(conn, tmp_path / "site", sunday) == 2
+    page = json.loads((tmp_path / "site" / "dossier" / f"{ids[0]}.json").read_text(encoding="utf-8"))
+    assert page["topic"] == "Data centre water cooling" and page["from"] == "2026-09-28" and page["to"] == "2026-10-03"
+    assert "Data centre water cooling draws fire" in page["html"] and "https://ex.com/1" in page["html"]
+    link = weekly.link(key, mine)
+    assert link == f"https://projectaipulse.com/dossier.html#{ids[0]}.{ids[1]}" and "water" not in link.lower()
+    # Sunday's email (the day it covers is the Saturday): the note, with each interest's count and the link
+    note = weekly.note(conn, key, mine, date(2026, 10, 3))
+    assert note == {"link": link, "week": "28 Sep – 3 Oct",
+                    "entries": [{"topic": "Data centre water cooling", "count": 1}, {"topic": "quantum sensing", "count": 0}]}
+    assert weekly.note(conn, key, ["Something nobody asked for"], date(2026, 10, 3)) is None  # not worked out: no note
+    card = {"id": "x", "title": "Data centre water cooling draws fire", "summary": "", "url": "https://ex.com/1", "source": "S",
+            "category": "infra", "date": "2026-10-03", "added_at": "2026-10-03T10:00:00+00:00"}
+    one_click = "https://projectaipulse.com/#unsubscribe=0f8fad5b-d9cb-469f-a165-70867728950e"
+    _, text, html = digest.build([card], ["infra"], date(2026, 10, 3), one_click, dossier=note)
+    ask = one_click.replace("#unsubscribe=", "#choices=") + "&dossier"  # their own form, at the dossier's box
+    assert f'href="{ask.replace("&", "&amp;")}"' in html and "Type your question…" in html and f"text box: {ask}" in text
+    assert "YOUR WEEKLY DOSSIER, 28 Sep – 3 Oct" in text and "Data centre water cooling" not in text.split("YOUR WEEKLY")[1][:200]
+    assert f'href="{link}"' in html and "Open your weekly dossier" in html and f"cid:{digest.DOSSIER_CID}" in html  # the button
+    assert digest.INLINE[digest.DOSSIER_CID][:4] == b"\x89PNG"  # its icon, inside the email
+    msg = digest._message("a@b.c", "s", text, html)
+    assert any(part.get_content_type() == "image/png" for part in msg.walk())
+    digest.INLINE.clear()
+    assert "YOUR WEEKLY DOSSIER" not in digest.build([card], ["infra"], date(2026, 10, 3))[1]  # without one, no note
+    # Monday's run: the same week, now with Sunday's story, under the same Monday (Sunday's links keep working)
+    weekly.prepare(conn, mine, key, monday, log=lambda *_: None)
+    assert weekly.kept(conn, monday)[ids[0]]["count"] == 2
+    # next run: only the interests readers have now
+    weekly.prepare(conn, ["quantum sensing"], key, monday, log=lambda *_: None)
+    assert list(weekly.kept(conn, monday)) == [ids[1]]
+
+
+def test_sunday_email_brings_the_week_and_skips_the_days_word_and_meme(monkeypatch):
+    from datetime import date
+    from aipulse import digest, memes
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = lambda i, day, cat="news", outlets=0, title=None: {
+        "id": f"s{i}", "title": title or f"Story {i}", "summary": f"What happened in story {i}.", "url": f"https://ex.com/{i}",
+        "source": f"Outlet {i}", "category": cat, "kind": "news" if cat == "news" else None, "date": day,
+        "added_at": f"{day}T10:00:00+00:00", "tags": [],
+        "also": [{"title": f"Story {i}", "source": f"Other {k}", "url": f"https://o{k}.com/{i}", "date": day} for k in range(outlets)]}
+    cards = ([card(1, "2026-09-29", "news", 6, "Big chip deal for a new data center")]  # the week's most reported
+             + [card(i, "2026-10-0" + str(1 + i % 3), "news", 0, f"Data center story {i}") for i in range(2, 9)]
+             + [card(9, "2026-10-04", "news", 9, "Sunday's story is next week's email")]  # not Monday to Saturday
+             + [card(i, "2026-10-03", "tool" if i % 2 else "news") for i in range(10, 22)])
+    subject, text, html = digest.build(cards, ["releases", "news"], date(2026, 10, 3))
+    assert subject == "AI Pulse · The week in AI, and Saturday, 3 October 2026"
+    assert "THE WEEK IN AI, 28 Sep – 3 Oct" in text and "The week in AI" in html
+    # the week's count and the day's, a line each
+    assert "This week, 28 Sep – 3 Oct: 20 stories.\nSaturday: " in text  # Monday to Saturday, not Sunday's
+    assert "STORY OF THE WEEK: Big chip deal for a new data center" in text and "Sunday's story" not in text
+    assert "WORD OF THE WEEK: Data center" in text and "It came up in 8 of the week's stories" in text
+    assert "Word of the day" not in html and "Meme of the day" not in html and "WORD OF THE DAY" not in text
+    assert "The 10 that mattered most on Saturday." in text
+    # a reader whose streams had nothing on Saturday (Research: arXiv doesn't publish at weekends) still gets the
+    # week, and one line for the day instead of a top 10
+    got = digest.build(cards, ["research"], date(2026, 10, 3))
+    assert got and "STORY OF THE WEEK: Big chip deal for a new data center" in got[1]
+    assert "Saturday: nothing new in your streams." in got[1] and "Nothing new in your streams on Saturday." in got[2]
+    assert "mattered most" not in got[1] and "THE REST OF THE DAY" not in got[1] and "only 0 stories" not in got[1]
+    assert digest.build(cards, ["research"], date(2026, 10, 2)) is None  # any other day: nothing, as before
+    # weekly readers get Sunday's email only; daily readers get every one
+    readers = {"d@x.org": (["news"], "", "", {"often": "daily"}), "w@x.org": (["news"], "", "", {"often": "weekly"})}
+    assert list(digest.due(readers, date(2026, 10, 3))) == ["d@x.org", "w@x.org"]  # Sunday's email (a Saturday)
+    assert list(digest.due(readers, date(2026, 10, 2))) == ["d@x.org"]
+    # the other days stay as they were
+    friday = digest.build(cards, ["releases", "news"], date(2026, 10, 1))
+    assert friday[0] == "AI Pulse daily · Thursday, 1 October 2026" and "Word of the day" in friday[2]
+    assert "The week in AI" not in friday[2]
+    # the full email (the site's daily page) is the same every day
+    assert digest.build(cards, ["releases", "news"], date(2026, 10, 3), layout="full")[0] == "AI Pulse daily · Saturday, 3 October 2026"
+    digest.INLINE.clear()
+    memes.GENERATED.clear()
+
+
+def test_a_question_about_a_place_keeps_to_that_place(tmp_path, monkeypatch):
+    from aipulse import embed, search
+    _fake_embedder(monkeypatch)
+    assert search.places("how is ai in usa") == {"US": "United States"} and search.places("AI in Britain") == {"GB": "United Kingdom"}
+    assert search.places("tell us about chips") == {}  # "us" the pronoun isn't the country
+    conn = store.connect(tmp_path / "t.db")
+    _story(conn, 1, "US data centre water cooling rules", "2026-09-29")
+    _story(conn, 2, "UK data centre water cooling rules", "2026-09-30")
+    _story(conn, 3, "Data centre water cooling in Britain", "2026-10-01")
+    for n, title in enumerate(["Chip export rules tighten", "A new model launch", "EU fine for a chip maker", "Model launch in China"], 10):
+        _story(conn, n, title, "2026-10-02", category="policy")  # the week's other stories, unlike these
+    conn.commit()
+    embed.update(conn, log=lambda *_: None)
+    since, until = date(2026, 9, 28), date(2026, 10, 5)
+    assert [c["title"] for c in search.search(conn, "data centre water cooling in the USA", since, until)] == ["US data centre water cooling rules"]
+    uk = {c["title"] for c in search.search(conn, "data centre water cooling in the UK", since, until)}
+    assert uk == {"UK data centre water cooling rules", "Data centre water cooling in Britain"}  # found as the site tags places

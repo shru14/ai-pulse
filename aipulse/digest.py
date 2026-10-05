@@ -20,6 +20,7 @@ from datetime import date, datetime, timedelta, timezone
 from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
+from pathlib import Path
 
 from . import brief, classify, glossary, jurisdictions, quality, rss, subscribers
 from .sources import SOURCES
@@ -383,10 +384,15 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
     return text, html
 
 
-# Pictures that travel inside the email (content ID -> JPEG), so the meme shows in every mail app without
-# waiting for the site to publish it
+# Pictures that travel inside the email (content ID -> JPEG or PNG), so the memes and the dossier's icon show in
+# every mail app without waiting for the site to publish them
 INLINE: dict[str, bytes] = {}
-MEME_CID = "meme-of-the-day@aipulse"
+MEME_CID, MEME_WEEK_CID, DOSSIER_CID = "meme-of-the-day@aipulse", "meme-of-the-week@aipulse", "dossier@aipulse"
+DOSSIER_ICON = Path(__file__).resolve().parent.parent / "templates" / "icons" / "dossier.png"  # our own drawing
+
+
+def _kind(data: bytes) -> str:
+    return "png" if data[:4] == b"\x89PNG" else "jpeg"
 
 
 def _meme(cards: list[dict], day: date) -> tuple[list[str], str]:
@@ -407,7 +413,7 @@ def preview(html: str) -> str:
     """The email as a file to look at (a dry run): its inline pictures put in the page itself."""
     import base64
     for cid, data in INLINE.items():
-        html = html.replace(f"cid:{cid}", "data:image/jpeg;base64," + base64.b64encode(data).decode())
+        html = html.replace(f"cid:{cid}", f"data:image/{_kind(data)};base64," + base64.b64encode(data).decode())
     return html
 
 
@@ -425,18 +431,182 @@ NEW_STREAM_UNTIL = date(2026, 10, 31)  # the new stream is announced in every em
 
 
 def _new_stream(day: date, streams: list[str]) -> str:
-    """While the sixth stream is new: a line saying it's here, or how to add it."""
-    if day > NEW_STREAM_UNTIL:
+    """While the sixth stream is new, for a reader who hasn't chosen it: the same note every day (the owner's
+    words), with its button (see _brief). Nothing for a reader who has it."""
+    if day > NEW_STREAM_UNTIL or "infra" in streams:
         return ""
-    if "infra" in streams:
-        return ("New: Infra & climate, AI's data centres and the power, water and land they draw on, "
-                "is now part of your email.")
-    return ("New on AI Pulse: Infra & climate, AI's data centres and the power, water and land they "
-            "draw on. Add it with “Change my streams and choices” at the bottom of this email.")
+    return ("New on AI Pulse: Infra & climate section, AI's data centres and the power, water and land they "
+            "draw on. Add it to your feed by clicking on following button")
+
+
+def _dossier(dossier: dict | None) -> tuple[list[str], str]:
+    """The Sunday email's note of a reader's weekly dossier (`dossier`: {"link", "week", "entries"}, from
+    weekly.note): one box and a button with the dossier's icon that opens it (the dossier itself lists the questions)."""
+    if not dossier or not dossier.get("entries"):
+        return [], ""
+    paper, line = "#f4f6fa", "#e3e5e8"  # the email's own colours
+    link, ask = dossier["link"], dossier.get("ask") or ""
+    text = [f"YOUR WEEKLY DOSSIER, {dossier['week']}",
+            *([f"Ask what you'd like to follow in the text box: {ask}"] if ask else []),
+            f"Open your weekly dossier: {link}"]
+    icon = DOSSIER_ICON.read_bytes() if DOSSIER_ICON.exists() else b""
+    if icon:
+        INLINE[DOSSIER_CID] = icon
+    button = (f'<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:12px;border-collapse:separate">'
+              f'<tr><td style="background:#ffffff;border:2px solid {NAVY};border-radius:8px;padding:8px 14px 8px 10px;'
+              f'white-space:nowrap">'
+              f'<a href="{escape(link)}" style="text-decoration:none;color:{NAVY};font-size:15px;font-weight:bold">'
+              + (f'<img src="cid:{DOSSIER_CID}" width="30" height="30" alt="" style="display:inline-block;vertical-align:middle;'
+                 f'border:0;margin-right:8px">' if icon else "")
+              + '<span style="vertical-align:middle;white-space:nowrap">Open your weekly dossier&nbsp;→</span></a>'
+              '</td></tr></table>')
+
+    html = (f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 6px;background:{paper};'
+            f'border:1px solid {line};border-collapse:collapse"><tr><td style="padding:14px 16px 16px">'
+            f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;color:{HEADLINE}">WEEKLY DOSSIER · '
+            f'{escape(dossier["week"].upper())}</div><div style="font-size:19px;font-weight:bold;line-height:1.25;color:{INK};'
+            f'margin:4px 0 2px">This week on what you follow</div>'
+            f'<div style="font-size:13.5px;line-height:1.45;color:#4a4f57">Ask what you\'d like to follow in the text box '
+            f'and get the week\'s stories on it, in one dossier.</div>'
+            # an email can't hold a real text box: this one looks like it and opens the reader's own form at its
+            # dossier box, ready to type in (`ask`: their link, from build)
+            + (f'<a href="{escape(ask)}" style="display:block;margin-top:10px;background:#ffffff;border:1px solid #c9ced6;'
+               f'border-top:3px solid {HEADLINE};border-radius:8px;padding:10px 12px;font-size:14px;color:{GREY};'
+               f'text-decoration:none">Type your question…</a>' if ask else "")
+            + f'{button}</td></tr></table>')
+    return text, html
+
+
+# ---------- Sunday: the week ----------
+
+WEEKLY = 5  # the day Sunday's email covers (a Saturday): it brings the week's story, word and meme (Monday to
+            # Saturday) and the reader's weekly dossier, in place of the word and the meme of the day
+WORD_RULE_FROM = date(2026, 9, 28)  # as the site: from this week on, never the week before's word
+_STREAMS = {v[0] for v in rss.FEEDS.values()}
+
+
+def weekly(day: date) -> bool:
+    """Is this day's email the Sunday one, with the week?"""
+    return day.weekday() == WEEKLY
+
+
+def due(readers: dict, day: date) -> dict:
+    """The readers who get this day's email: daily readers every day; weekly readers (choices "often": "weekly")
+    only Sunday's (the day is a Saturday). `readers` as subscribers.readers gives them."""
+    return {to: r for to, r in readers.items() if weekly(day) or r[3].get("often") != "weekly"}
+
+
+def _week_has(cards: list[dict], day: date) -> bool:
+    """Did the week (Monday to `day`) have any story in the streams?"""
+    _, days = _span(day)
+    return any((c.get("date") or "") in days and c.get("category") in _STREAMS for c in cards)
+
+
+def _span(day: date) -> tuple[date, list[str]]:
+    monday = day - timedelta(days=day.weekday())
+    return monday, [(monday + timedelta(days=k)).isoformat() for k in range((day - monday).days + 1)]
+
+
+def _week_story(cards: list[dict], day: date, prefs: dict | None = None) -> dict | None:
+    """The story of the week, as the site picks it: the week's most reported story (then the latest), in any
+    stream, not one the reader left out."""
+    left, _ = _mine(prefs)
+    _, days = _span(day)
+    pool = [c for c in cards if (c.get("date") or "") in days and c.get("category") in _STREAMS and not left(c)]
+    return max(pool, key=lambda c: (1 + len(c.get("also") or []), c.get("date") or ""), default=None)
+
+
+_WEEK_WORD: dict = {}
+
+
+def _week_word(cards: list[dict], day: date) -> str | None:
+    """The word of the week, as the site picks it: the glossary word in the most of the week's stories, worked
+    out from 3 weeks back so it's never the word of the week before (the same for every reader)."""
+    if (day, len(cards)) in _WEEK_WORD:
+        return _WEEK_WORD[(day, len(cards))]
+    monday, _ = _span(day)
+    texts = [(c.get("date") or "", _text(c)) for c in cards]
+    word = None
+    for back in (3, 2, 1, 0):
+        since = monday - timedelta(days=7 * back)
+        until = day if not back else since + timedelta(days=6)
+        week = [t for d, t in texts if since.isoformat() <= d <= until.isoformat()]
+        best, most = None, 0
+        for e in glossary.ENTRIES:
+            if e["id"] == word and since >= WORD_RULE_FROM:
+                continue
+            k = sum(1 for t in week if glossary.mentions(e["id"], t))
+            if k > most:
+                best, most = e["id"], k
+        word = best
+    _WEEK_WORD[(day, len(cards))] = word
+    return word
+
+
+def _week_meme(cards: list[dict], day: date) -> tuple[list[str], str]:
+    """The meme of the week, Monday to Saturday's stories (the one the site shows from Monday, memegen.prepare)."""
+    from . import memes
+    monday, _ = _span(day)
+    meme = memes.of_the_week([c for c in cards if (c.get("date") or "") <= day.isoformat()], monday)
+    picture = meme and memes.render(meme)
+    if not picture:
+        return [], ""
+    INLINE[MEME_WEEK_CID] = picture
+    return memes.text(meme), (f'<div style="margin:16px 0 4px"><div style="font-size:11px;font-weight:bold;letter-spacing:2px;'
+                              f'text-transform:uppercase;color:{HEADLINE};margin-bottom:6px">Meme of the week</div>'
+                              f'{memes.html(meme, "cid:" + MEME_WEEK_CID, small=True)}</div>')
+
+
+def _the_week(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[list[str], str]:
+    """Sunday's opening: the week (Monday to Saturday) in its story, its word and its meme."""
+    monday, days = _span(day)
+    span = f"{monday.day} {monday:%b} – {day.day} {day:%b}"
+    week = [c for c in cards if (c.get("date") or "") in days]
+    label = lambda words: (f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;'
+                           f'color:{HEADLINE};margin-bottom:6px">{escape(words)}</div>')
+    text = [f"THE WEEK IN AI, {span}", ""]
+    html = (f'<div style="font-size:22px;font-weight:bold;line-height:1.2;color:{INK};margin:22px 0 2px;padding-top:10px;'
+            f'border-top:3px solid {INK}">The week in AI</div><div style="font-size:13px;color:{GREY};margin-bottom:14px">'
+            f'{escape(span)}</div>')
+    story = _week_story(cards, day, prefs)
+    if story:
+        name = next((rss.FEEDS[n][1] for n in rss.FEEDS if rss.FEEDS[n][0] == story["category"]), "")
+        more = _outlets(story) - 1
+        by = story["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
+        summary = _short(story.get("summary") or "", 180)
+        text += ["STORY OF THE WEEK: " + story["title"], *([summary] if summary else []), f"{by}", story["url"], ""]
+        html += (f'<div style="padding:12px 0 14px;border-top:4px solid {BRIGHT.get(next((n for n in rss.FEEDS if rss.FEEDS[n][0] == story["category"]), ""), NAVY)}">'
+                 + label("Story of the week" + (f" · {name}" if name else ""))
+                 + f'<a href="{escape(story["url"])}" style="color:{INK};font-size:19px;font-weight:bold;line-height:1.3;'
+                   f'text-decoration:none">{escape(story["title"])}</a>'
+                 + (f'<div style="font-size:14px;line-height:1.5;margin-top:6px;color:#4a4f57">{escape(summary)}</div>' if summary else "")
+                 + f'<div style="font-size:12px;color:{GREY};margin-top:8px">{escape(by)}</div></div>')
+    wid = _week_word(cards, day)
+    if wid:
+        e = next(x for x in glossary.ENTRIES if x["id"] == wid)
+        used = sorted([c for c in week if glossary.mentions(wid, _text(c))],
+                      key=lambda c: (1 + len(c.get("also") or []), c.get("date") or ""), reverse=True)
+        more = f"{rss.SITE}#glossary={e['id']}"
+        text += ["WORD OF THE WEEK: " + e["term"], e["def"], f"It came up in {len(used)} of the week's stories, like:",
+                 *(f"  {c['title']} {c['url']}" for c in used[:2]), f"More words in the AI Pulse glossary: {more}", ""]
+        html += (f'<div style="margin:12px 0;padding:14px 16px;background:#eef2ff;border-left:4px solid {NAVY};border-radius:4px">'
+                 + label("Word of the week")
+                 + f'<div style="font-size:18px;font-weight:bold;color:{NAVY}">{escape(e["term"])}</div>'
+                   f'<div style="font-size:14px;line-height:1.5;color:#3c4043;margin-top:3px">{escape(e["def"])}</div>'
+                   f'<div style="font-size:12.5px;line-height:1.45;color:{GREY};margin-top:7px">It came up in {len(used)} of the '
+                   f'week\'s stories, like: '
+                 + " · ".join(f'<a href="{escape(c["url"])}" style="color:{LINK};text-decoration:none">{escape(c["title"])}</a>'
+                              for c in used[:2])
+                 + f'</div><div style="font-size:13px;margin-top:7px"><a href="{escape(more)}" style="color:{LINK};'
+                   f'text-decoration:none">More words in the AI Pulse glossary →</a></div></div>')
+    meme_text, meme_html = _week_meme(cards, day)
+    text += [*meme_text, *([""] if meme_text else [])]
+    return text, html + meme_html
 
 
 def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date,
-           prefs: dict | None = None, left: list[dict] | None = None) -> tuple[list[str], str]:
+           prefs: dict | None = None, left: list[dict] | None = None, dossier: dict | None = None,
+           change: tuple[str, str] = ("", "")) -> tuple[list[str], str]:
     """The short email's body: an opening line, the TOP stories that mattered most (tag, headline, one line,
     how many outlets), then per stream its count, next HEADLINES headlines and a link to the rest.
     A reader with choices (`prefs`; `left`, what they left out) gets up to PICKS of theirs first, marked, then the
@@ -445,12 +615,22 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     outlets = {o["source"] for c in todays for o in [c, *(c.get("also") or [])] if o.get("source")}
     stories = sum(1 + len(c.get("also") or []) for c in todays)
     stream_of = {id(c): n for n in streams for c in by_stream[n]}
-    hello = f"Let's explore what happened in AI on {long_day(day)}."
+    sunday = weekly(day)
+    hello = (f"Your week in AI, and what happened on {long_day(day)}." if sunday else
+             f"Let's explore what happened in AI on {long_day(day)}.")
     counted = (f"{stories} {'story' if stories == 1 else 'stories'} from {len(outlets)} "
                f"{'source' if len(outlets) == 1 else 'sources'}")
     light = len(todays) <= LIGHT  # a lighter day in these streams: every story in the table, said plainly
     intro = f"A lighter day in your streams: {counted}." if light else f"{counted}."
-    quiet = _quiet(by_stream, cards, streams, day)
+    # the counts: on Sunday the week's (Monday to Saturday) and the day's, a line each, so neither is mistaken
+    counts = [intro]
+    if sunday:
+        monday, days = _span(day)
+        n = sum(1 for c in cards if (c.get("date") or "") in days and c.get("category") in _STREAMS)
+        counts = [f"This week, {monday.day} {monday:%b} – {day.day} {day:%b}: {n} {'story' if n == 1 else 'stories'}.",
+                  f"{day:%A}: nothing new in your streams." if not todays else
+                  f"{day:%A}: {intro[0].lower() + intro[1:] if intro.startswith('A lighter') else intro}"]
+    quiet = _quiet(by_stream, cards, streams, day) if todays else ""  # an empty day (a Sunday) says so once
     everything = full_page(day)  # every story of the day, whatever streams this reader chose
     top = (sorted(todays, key=_rank, reverse=True) if light else
            sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP])
@@ -467,24 +647,53 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         top = sorted(top, key=lambda c: id(c) not in picks)
     title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
              else f"Here are the {len(top)} that mattered most.")
+    if sunday:  # after the week, the day: said plainly which
+        title = (f"{'The one story' if len(top) == 1 else f'All {len(top)} stories'} of {day:%A}." if light
+                 else f"The {len(top)} that mattered most on {day:%A}.")
     made_for = _left_note(prefs, left or [])
     news = _new_stream(day, streams)
     # In order: the count, the word and the meme of the day, the stories, the rest in brief,
     # then the full email
-    word_text, word_html = _word(cards, day, streams, prefs, [_biggest(by_stream, streams), top, todays])
-    meme_text, meme_html = _meme(cards, day)
-    lines = [hello, "", intro, *([made_for] if made_for else []), *([news] if news else []),
-             *([quiet] if quiet else []), "", *word_text, "", *([*meme_text, ""] if meme_text else []), title]
+    if sunday:  # the week's story, word and meme in place of the day's word and meme
+        week_text, week_html = _the_week(cards, day, prefs)
+        word_text, word_html, meme_text, meme_html = [], "", [], ""
+    else:
+        week_text, week_html = [], ""
+        word_text, word_html = _word(cards, day, streams, prefs, [_biggest(by_stream, streams), top, todays])
+        meme_text, meme_html = _meme(cards, day)
+    dossier_text, dossier_html = _dossier(dossier)  # Sundays, for a reader with questions: their weekly dossier
+    # the new stream's note carries a highlighted button to the sign-up form (`change`: the reader's own link,
+    # which opens it with their email and choices filled in), so readers see their choices can be changed
+    go, go_words = change[0], "Add Infra & climate"
+    news_button = (f'<a href="{escape(go)}" style="display:inline-block;margin-top:8px;background:{NAVY};color:#ffffff;'
+                   f'font-size:13px;font-weight:bold;text-decoration:none;padding:7px 12px;border-radius:5px">'
+                   f'{escape(go_words)} →</a>' if news and go else "")
+    lines = [hello, "", *counts, *([made_for] if made_for else []), *([news] if news else []),
+             *([f"{go_words}: {go}"] if news_button else []),
+             *([quiet] if quiet else []), *(["", *week_text] if week_text else []),
+             *([*dossier_text, ""] if dossier_text else []), *(["", *word_text, ""] if word_text else []),
+             *([*meme_text, ""] if meme_text else []), title]
     head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
                           f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
     note = lambda words, style: f'<p style="margin:0 0 10px;font-size:13px;line-height:1.5;{style}">{escape(words)}</p>'
-    html = [f'<p style="margin:0 0 10px;font-size:15px;line-height:1.5;color:#3c4043">{escape(intro)}</p>'
+    html = ["".join(f'<p style="margin:0 0 {4 if k < len(counts) - 1 else 10}px;font-size:15px;line-height:1.5;color:#3c4043">'
+                    f'{escape(c)}</p>' for k, c in enumerate(counts))
             + (note(made_for, f"color:{GREY}") if made_for else "")
-            + (note(news, "background:#e3f6d5;color:#2b5d0a;padding:8px 10px;border-radius:4px") if news else "")
+            + (f'<div style="margin:0 0 10px;font-size:13px;line-height:1.5;background:#e3f6d5;color:#2b5d0a;'
+               f'padding:8px 10px 10px;border-radius:4px">{escape(news)}{"<br>" + news_button if news_button else ""}</div>'
+               if news else "")
             + (note(quiet, "background:#fff8e6;padding:8px 10px;border-radius:4px") if quiet else "")
-            + word_html + meme_html
-            + f'<div style="font-size:22px;font-weight:bold;line-height:1.2;color:{INK};margin:26px 0 14px;'
-              f'padding-top:10px;border-top:3px solid {INK}">{escape(title)}</div>']
+            + week_html + dossier_html + word_html + meme_html]
+    if not todays:  # only on a Sunday (see build): the week above, and for the day one line, no top 10
+        title = f"Nothing new in your streams on {day:%A}."
+        lines[-1] = title
+        lines += ["", f"Every story of the day in one table: {everything}"]
+        html.append(f'<p style="margin:24px 0 0;padding-top:12px;border-top:3px solid {INK};font-size:15px;color:#3c4043">'
+                    f'{escape(title)}</p><p style="margin:10px 0 0;font-size:14px"><a href="{escape(everything)}" '
+                    f'style="color:{LINK};text-decoration:none;font-weight:bold">Every story of the day in one table →</a></p>')
+        return lines, "".join(html)
+    html.append(f'<div style="font-size:22px;font-weight:bold;line-height:1.2;color:{INK};margin:26px 0 14px;'
+                f'padding-top:10px;border-top:3px solid {INK}">{escape(title)}</div>')
     cells = []
     for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])
@@ -569,21 +778,26 @@ def full_page(day: date) -> str:
 
 
 def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "",
-          layout: str = "short", web: bool = False, prefs: dict | None = None) -> tuple[str, str, str] | None:
-    """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day.
+          layout: str = "short", web: bool = False, prefs: dict | None = None,
+          dossier: dict | None = None) -> tuple[str, str, str] | None:
+    """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day (Sunday's short
+    email still goes if the week had stories: it says the day had none).
     `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site.
     `layout`: "short", the daily email (the ten stories that mattered most, then each stream's headlines), or
     "full" (every story in one tagged table). `web`: the page version of a full email (daily/ on the site),
     with a sign-up line in place of a reader's own settings. `prefs`: the reader's choices (subscribers.prefs_of):
     what they left out never appears in their short email, and their own come first; the full email is the same
-    for everyone."""
+    for everyone. `dossier`: on Sundays, the reader's weekly dossier (see _dossier), in the short email only.
+    Sunday's short email (the day is a Saturday, see WEEKLY) opens with the week: its story, word and meme."""
     by_stream = by_streams(cards, streams, day)
     left = []
     if layout == "short":
         by_stream, left = _leave_out(by_stream, prefs)
-    if not any(by_stream.values()):
-        return None
-    subject = f"AI Pulse daily · {long_day(day)}"
+    sunday = layout == "short" and weekly(day)
+    if not any(by_stream.values()) and not (sunday and _week_has(cards, day)):
+        return None  # nothing that day; but Sunday's email goes whenever the week had stories, for the week
+    subject = (f"AI Pulse · The week in AI, and {long_day(day)}" if layout == "short" and weekly(day) else
+               f"AI Pulse daily · {long_day(day)}")
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
     # A reader's own link opens the form with their streams and choices filled in; saving changes them at once.
     # Without one (a sample, the web page), the sign-up form: the same address with new streams asks to confirm.
@@ -592,7 +806,9 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     stop = unsubscribe or change
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
-        open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left)
+        if dossier and unsubscribe:  # the dossier's text box opens the reader's own form at its question box
+            dossier = {**dossier, "ask": change + "&dossier"}
+        open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left, dossier, (change, change_words))
         table_text, table_html = [], ""
         page, band, top = PAGE, _band(open_text[0]), 16
     else:
@@ -635,7 +851,9 @@ def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "")
     msg.add_alternative(html, subtype="html")
     for cid, data in INLINE.items():  # the meme, inside the email
         if f"cid:{cid}" in html:
-            msg.get_payload()[1].add_related(data, "image", "jpeg", cid=f"<{cid}>", filename="meme.jpg")
+            kind = _kind(data)
+            msg.get_payload()[1].add_related(data, "image", kind, cid=f"<{cid}>",
+                                             filename=f"{'dossier' if cid == DOSSIER_CID else 'meme'}.{'png' if kind == 'png' else 'jpg'}")
     return msg
 
 

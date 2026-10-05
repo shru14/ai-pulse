@@ -108,5 +108,9 @@ def build(conn, out: str | Path) -> int:
     page = page.replace("<html ", '<html data-static="1" ', 1)
     page = photos.fill(subscribers.fill(page))
     (out / "index.html").write_text(page, encoding="utf-8")
+    # readers' weekly dossiers: the page, and each interest's section the full run kept (weekly.prepare)
+    from . import weekly
+    (out / "dossier.html").write_text((TEMPLATE.parent / "dossier.html").read_text(encoding="utf-8"), encoding="utf-8")
+    weekly.publish(conn, out, today)
     (out / ".nojekyll").write_text("")
     return len(cards)

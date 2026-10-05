@@ -102,6 +102,8 @@ header.top{gap:10px}
 .sub-streams legend{font-size:13px;font-weight:600;color:var(--muted);padding:0;margin-bottom:6px}
 .sub-streams label{display:flex;align-items:center;gap:7px;font-size:15px;cursor:pointer}
 .sub-streams input{width:17px;height:17px;accent-color:var(--accent)}
+.sub-often{grid-template-columns:1fr 1fr}
+.sub-often small{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
 .sub-label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
 .sub-email{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:16px var(--body);padding:0 12px;margin-bottom:14px}
 .sub-email:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
@@ -161,6 +163,19 @@ header.top{gap:10px}
 .pref-words-label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 6px}
 .pref-words{width:100%;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:15px var(--body);padding:0 10px}
 .pref-words:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.dossier-box{margin:14px 0 4px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:8px}
+.dossier-row{display:flex;gap:6px;align-items:stretch;margin-top:8px}
+.dossier-ask{flex:1;min-width:0;box-sizing:border-box;border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:8px;background:var(--surface);color:var(--ink);font:14px/1.45 var(--body);padding:8px 10px}
+.dossier-ask:focus{outline:2px solid var(--accent);outline-offset:1px}
+.dossier-more{flex:none;width:40px;border:1px solid var(--ink);border-radius:8px;background:var(--surface);color:var(--ink);font:bold 20px/1 var(--body);cursor:pointer}
+.dossier-more:hover,.dossier-more:focus-visible{border-color:var(--accent);outline:none}
+.dossier-asked{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.dossier-asked:empty{display:none}
+.dossier-q{border:1px solid var(--ink);border-radius:6px;background:var(--surface);color:var(--ink);font:13px/1.3 var(--body);padding:4px 8px;cursor:pointer;text-align:left}
+.dossier-q:hover,.dossier-q:focus-visible{border-color:var(--accent);outline:none}
+.dossier-samples{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+.dossier-sample{border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:13px/1.3 var(--body);padding:5px 9px;cursor:pointer;text-align:left}
+.dossier-sample:hover,.dossier-sample:focus-visible{border-color:var(--accent);outline:none}
 .pref-limit{font-size:12px;color:var(--muted);margin:4px 0 0}
 /* Glossary: the header button opens the list; a dotted word in a story opens its meaning in a small popover. */
 .glossary{width:min(640px,calc(100vw - 32px));max-height:min(760px,calc(100vh - 48px));padding:0;overflow:hidden}
@@ -630,6 +645,13 @@ header.top.home{height:auto;padding-top:10px}
       <label class="sub-label" for="sub-email">Your email</label>
       <input class="sub-email" id="sub-email" type="email" autocomplete="email" placeholder="you@example.com" required>
       <input class="sub-trap" name="website" id="sub-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <!-- How often (aipulse/__main__.py digest): daily readers get every email, Sunday's (the week) too;
+           weekly readers get Sunday's only -->
+      <fieldset class="sub-streams sub-often">
+        <legend>How often</legend>
+        <label><input type="radio" name="often" value="daily" checked> <span>Daily<small>every morning, the week on Sundays</small></span></label>
+        <label><input type="radio" name="often" value="weekly"> <span>Weekly<small>Sundays only: the week in AI</small></span></label>
+      </fieldset>
       <fieldset class="sub-streams">
         <legend>Your streams</legend>
         <label><input type="checkbox" value="releases" checked> Releases</label>
@@ -661,6 +683,27 @@ header.top.home{height:auto;padding-top:10px}
           <p class="pref-limit" id="pref-words-seen" aria-live="polite"></p>
         </div>
       </details>
+      <!-- The weekly dossier (in testing): shown from a reader's own choices link with "&dossier" after it, or once
+           they have interests. Each interest is searched in the week's stories (aipulse/weekly.py). -->
+      <div class="dossier-box" id="dossier-box" hidden>
+        <label class="pref-words-label" for="dossier-ask">Your weekly dossier <span class="opt">(optional)</span></label>
+        <p class="pref-limit">Ask what you'd like to follow, in your own words. Every Sunday, the week's stories that
+          answer it, in one dossier.</p>
+        <div class="dossier-row">
+          <input class="dossier-ask" id="dossier-ask" type="text" maxlength="150" autocomplete="off"
+            placeholder="How hospitals are using AI">
+          <button type="button" class="dossier-more" id="dossier-more" aria-label="Add this question" title="Add this question">+</button>
+        </div>
+        <div class="dossier-asked" id="dossier-asked" aria-live="polite"></div>
+        <p class="pref-limit"><span id="dossier-left">Type a question and press +. You can ask 2 more.</span> Name the place,
+          company or subject you mean. Some to try:</p>
+        <div class="dossier-samples" id="dossier-samples">
+          <button type="button" class="dossier-sample">How hospitals are using AI</button>
+          <button type="button" class="dossier-sample">AI rules in the UK</button>
+          <button type="button" class="dossier-sample">Nvidia chips and China</button>
+          <button type="button" class="dossier-sample">AI in banking and fintech</button>
+        </div>
+      </div>
       <button class="sub-go" id="subscribe-go" type="submit">Subscribe</button>
       <p class="sub-msg" id="sub-msg" role="status" aria-live="polite"></p>
       <p class="sub-small">We'll email you a link to confirm; nothing is sent until you click it. Already subscribed?
@@ -1537,7 +1580,8 @@ window.addEventListener("hashchange", () => {
 const SIGNUP_URL = "__SIGNUP_URL__";
 const DIGEST_SENDER = "projectaipulse@gmail.com";
 const subDialog = $("subscribe");
-const chosenStreams = () => [...subDialog.querySelectorAll(".sub-streams input:checked")].map(i => i.value);
+const chosenStreams = () => [...subDialog.querySelectorAll(".sub-streams input[type=checkbox]:checked")].map(i => i.value);
+const chosenOften = () => (subDialog.querySelector('input[name="often"]:checked') || {}).value === "weekly" ? "weekly" : "daily";
 function subMessage(text, kind){ $("sub-msg").textContent = text; $("sub-msg").dataset.kind = kind || ""; }
 function openSubscribe(){ subMessage(""); subDialog.showModal(); $("sub-email").focus(); }
 subDialog.addEventListener("change", () => { $("subscribe-go").disabled = !chosenStreams().length; });
@@ -1661,8 +1705,43 @@ function showWords(){
 }
 $("pref-words").addEventListener("input", showWords);
 function prefFields(){  // what the sign-up web app stores with the reader's streams
-  return {more: [...PREF.more].join("|"), less: [...PREF.less].join("|"), words: prefWords().join("|")};
+  const out = {more: [...PREF.more].join("|"), less: [...PREF.less].join("|"), words: prefWords().join("|"), often: chosenOften()};
+  if(DOSSIER.on) out.interests = dossierValues().join("|");  // left out, the web app keeps the reader's interests
+  return out;
 }
+
+// The weekly dossier: one box; "+" (or Enter) keeps its question as a tag below and empties it for the next, up to
+// DOSSIER_MAX, each a section of their dossier. A tag's "×" drops it; a question left in the box counts too.
+const DOSSIER_MAX = 3, DOSSIER = {on: false, asked: []};
+const cleanAsk = v => v.replace(/[|\s]+/g, " ").trim();
+const dossierValues = () => {
+  const all = [...DOSSIER.asked, cleanAsk($("dossier-ask").value)].filter(v => v.length > 1);
+  return all.filter((v, i) => all.findIndex(w => w.toLowerCase() === v.toLowerCase()) === i).slice(0, DOSSIER_MAX);
+};
+function renderAsked(){
+  const left = DOSSIER_MAX - DOSSIER.asked.length;
+  $("dossier-asked").replaceChildren(...DOSSIER.asked.map((q, i) => {
+    const b = document.createElement("button");
+    Object.assign(b, {type: "button", className: "dossier-q", textContent: `${q} ×`});
+    b.setAttribute("aria-label", `Remove: ${q}`);
+    b.addEventListener("click", () => { DOSSIER.asked.splice(i, 1); renderAsked(); });
+    return b;
+  }));
+  $("dossier-ask").parentElement.hidden = left < 1;
+  $("dossier-left").textContent = left < 1 ? "That's 3 questions, the most for one dossier."
+    : DOSSIER.asked.length ? `You can ask ${left} more.` : `Type a question and press +. You can ask ${left - 1} more.`;
+}
+function addAsk(q){
+  q = cleanAsk(q);
+  if(q.length < 2 || DOSSIER.asked.length >= DOSSIER_MAX || DOSSIER.asked.some(v => v.toLowerCase() === q.toLowerCase())) return false;
+  DOSSIER.asked.push(q); renderAsked(); return true;
+}
+const renderInterests = values => { DOSSIER.asked = []; $("dossier-ask").value = ""; values.forEach(addAsk); renderAsked(); };
+renderInterests([]);
+const keepAsk = () => { if(addAsk($("dossier-ask").value)) $("dossier-ask").value = ""; $("dossier-ask").focus(); };
+$("dossier-more").addEventListener("click", keepAsk);
+$("dossier-ask").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); keepAsk(); } });  // never sends the form
+$("dossier-samples").addEventListener("click", e => { const b = e.target.closest(".dossier-sample"); if(b) addAsk(b.textContent); });
 document.querySelectorAll(".pref-mode button").forEach(b => b.addEventListener("click", () => { PREF.mode = b.dataset.mode; renderPrefs(); }));
 $("pref-gentle").addEventListener("change", e => {
   PREF.gentle.forEach(t => { if(e.target.checked){ PREF.less.add(t); PREF.more.delete(t); } else PREF.less.delete(t); });
@@ -1688,10 +1767,14 @@ async function openChoices(token){
     if(!r.ok) return subMessage(r.text || "This link doesn't work any more. Subscribe again with the Daily digest button.", "error");
     // a reader who chose every stream before the sixth existed gets it too (subscribers.readers): shown ticked
     const had = r.streams || [], all5 = ["releases","news","research","regulation","policy"].every(s => had.includes(s));
-    subDialog.querySelectorAll(".sub-streams input").forEach(i => { i.checked = had.includes(i.value) || (i.value === "infra" && all5); });
+    subDialog.querySelectorAll(".sub-streams input[type=checkbox]").forEach(i => { i.checked = had.includes(i.value) || (i.value === "infra" && all5); });
+    subDialog.querySelectorAll('input[name="often"]').forEach(i => { i.checked = i.value === (r.often === "weekly" ? "weekly" : "daily"); });
     PREF.more = new Set(r.more || []); PREF.less = new Set(r.less || []);
     $("pref-words").value = (r.words || []).map(w => '"' + w + '"').join(", ");
     showWords();
+    DOSSIER.on = EDIT.dossier || (r.interests || []).length > 0;
+    $("dossier-box").hidden = !DOSSIER.on;
+    if(DOSSIER.on) renderInterests(r.interests || []);
     $("pref-box").open = true;
     await loadPrefOptions();
     renderPrefs(); subMessage("");
@@ -1715,7 +1798,7 @@ async function saveChoices(){
     $("subscribe-go").disabled = !chosenStreams().length;
   }
 }
-{ const m = location.hash.match(/^#choices=([0-9a-f-]{36})$/); if(m) openChoices(m[1]); }
+{ const m = location.hash.match(/^#choices=([0-9a-f-]{36})(&dossier)?$/); if(m){ EDIT.dossier = !!m[2]; openChoices(m[1]); } }
 
 $("sub-form").addEventListener("submit", async e => {
   e.preventDefault();
