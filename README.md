@@ -5,9 +5,7 @@ databases), keeps only AI stories, sorts them into six streams and links every c
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
 
-Only legal, publicly accessible sources are used. No paid API, and no AI model for the news itself: summaries are the
-publishers' own text, sorting is keyword rules, the glossary is written by hand and translation runs offline. The one
-exception: meme captions, written by Google's Gemini on its free tier.
+Only legal, publicly accessible sources are used.
 
 ## Streams
 
