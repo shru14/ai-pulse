@@ -608,7 +608,8 @@ def test_static_build_holds_every_card(tmp_path):
     assert all(c["s"].startswith(" ") for c in data["cards"])  # search words, folded
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "memes", "photos"}
+    meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -2071,6 +2072,13 @@ def test_each_reader_gets_their_own_top_10(monkeypatch):
     assert len(yours) == digest.PICKS and "Big story 0" in top and "Big story 4" in top  # 5 of theirs, then the biggest
     assert "Kerala launches" in top  # their own words, in the headline
     assert " · YOUR CHOICE</div>" in html and "Left out" not in text  # nothing left out: no note
+    # 12 stories in their streams (one more than the top 10 holds): still a top 10, their own first
+    twelve = big[2:10] + [kerala[0], robots[0], *guides[:2]]
+    _, text, _ = digest.build(twelve, ["news"], day, prefs={"more": ["Robotics"], "less": [], "words": ["Kerala"]})
+    assert "Here are the 10 that mattered most." in text and "lighter day" not in text
+    top = text.split("Here are the 10 that mattered most.")[1].split("THE REST OF THE DAY")[0]
+    firsts = [l for l in top.splitlines() if l.startswith("• ")]
+    assert len(firsts) == 10 and all("[Your choice]" in l for l in firsts[:2]) and "[Your choice]" not in firsts[2]
     # left out: never in their email, counted, and still in the full email
     _, text, _ = digest.build(cards, ["news"], day, prefs={"more": [], "less": ["Tutorial", "Business & work"], "words": []})
     assert "How to fine-tune" not in text and "Left out, as you asked: 3 stories (Tutorial); they're in the full email." in text
