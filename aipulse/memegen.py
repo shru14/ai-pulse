@@ -231,11 +231,22 @@ def stored(conn, kind: str, when: date, cards: list[dict], make: bool, avoid: se
 
 def prepare(conn, cards: list[dict], today: date | None = None, day: date | None = None, make: bool = False) -> None:
     """Put last week's (and with day, that day's) Gemini meme where memes.py finds it. Without make, only what the
-    database already holds (the site's build); with make, Gemini is asked for what's missing."""
+    database already holds (the site's build); with make, Gemini is asked for what's missing.
+    On a Sunday (or for a Saturday's email, `day`), this week's too, Monday to Saturday: the Sunday email's meme
+    of the week, kept under its Monday, so the site shows the same one from Monday on."""
     today = today or date.today()
-    monday = today - timedelta(days=today.weekday() + 7)
-    if (m := stored(conn, "week", monday, cards, make, set(TEMPLATES) - {memes.template_of_week(monday)})):
-        memes.GENERATED[("week", monday)] = m
+    mondays = [today - timedelta(days=today.weekday() + 7)]
+    if today.weekday() == 6:
+        mondays.append(today - timedelta(days=6))
+    if day and day.weekday() == 5:
+        mondays.append(day - timedelta(days=5))
+    for monday in dict.fromkeys(mondays):
+        upto = [c for c in cards if (c.get("date") or "") < (monday + timedelta(days=6)).isoformat()] \
+            if monday + timedelta(days=6) > today - timedelta(days=1) else cards  # a week not over: no Sunday yet
+        if (m := stored(conn, "week", monday, upto, make, set(TEMPLATES) - {memes.template_of_week(monday)})):
+            memes.GENERATED[("week", monday)] = m
+    if day and day.weekday() == 5:
+        return  # Sunday's email has the meme of the week, not one of the day
     if day:
         avoid = set(TEMPLATES) - {memes.template_of(day)}  # the day's template only (memes.ROTATION)
         if (m := stored(conn, "day", day, cards, make, avoid)):

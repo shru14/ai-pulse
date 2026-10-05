@@ -93,6 +93,29 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python -m aipulse --db aipulse.db memes
 
+      # Readers' weekly dossiers (aipulse/weekly.py): new stories become vectors with an open model (BGE-base-en-v1.5,
+      # MIT) run on the runner with the translator's library; no API, nothing billed; the model is cached. Only the
+      # last 45 days' stories (last week and the month before), at most 4,000 a run, newest first. Then each interest
+      # readers follow is searched in last week's stories and kept in the database, for the site and the Monday email.
+      - name: Restore the embedding model
+        if: github.event.schedule != '25,55 * * * *'
+        uses: actions/cache@v4
+        with:
+          path: data/embed-models
+          key: embed-models-bge-base-en-v1.5-2de9369
+
+      - name: Story vectors
+        if: github.event.schedule != '25,55 * * * *'
+        continue-on-error: true
+        run: python -m aipulse --db aipulse.db embed --limit 4000
+
+      - name: Weekly dossiers
+        if: github.event.schedule != '25,55 * * * *'
+        continue-on-error: true
+        env:
+          DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the interests (never who follows them) from the sign-up web app
+        run: python -m aipulse --db aipulse.db dossiers
+
       - name: Fold the write-ahead log into the database file
         if: always()
         run: python -c "import sqlite3; c = sqlite3.connect('aipulse.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.execute('PRAGMA journal_mode=DELETE'); c.close()"

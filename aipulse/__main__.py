@@ -78,6 +78,11 @@ def main():
                     help="short (the daily email): the ten that mattered most, then headlines; full: every story in one table")
     sub.add_parser("glossary", help="acronyms recent stories use often that the glossary doesn't explain yet")
     sub.add_parser("memes", help="ask Gemini (GEMINI_API_KEY, free tier) for last week's meme once and keep it")
+    em = sub.add_parser("embed", help="story vectors for the weekly dossier's search (offline model; new or changed stories)")
+    em.add_argument("--limit", type=int, help="at most this many stories this run (the first run has them all to do)")
+    ds = sub.add_parser("dossiers", help="the week's dossier for every reader's question, kept for the site and the "
+                                         "Sunday email (offline model; reads the questions with DIGEST_LIST_KEY)")
+    ds.add_argument("--interest", action="append", help="these instead of the readers' (testing)")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
 
@@ -189,10 +194,12 @@ def main():
             streams = list(rss.FEEDS)  # the check covers every stream, whoever chose what
         day = date.fromisoformat(a.day) if a.day else digest.yesterday()
         conn = store.connect(a.db)
-        # The day, and the two weeks before it (what a usual day looks like).
-        cards, _ = store.cards(conn, days=(date.today() - day).days + quality.HISTORY_DAYS + 2, limit=10**6)
+        # The day, and the four weeks before it (what a usual day looks like; Sunday's word of the week, never
+        # the week before's, is worked out from 3 weeks back)
+        cards, _ = store.cards(conn, days=(date.today() - day).days + max(quality.HISTORY_DAYS, 28) + 2, limit=10**6)
         from . import memegen
-        memegen.prepare(conn, cards, day=day, make=True)  # the day's meme by Gemini, if GEMINI_API_KEY is set
+        # the day's meme by Gemini, if GEMINI_API_KEY is set; Sunday's email has the week's instead
+        memegen.prepare(conn, cards, day=day, make=True)
         by_stream = digest.by_streams(cards, streams, day)
         counts = {x: len(v) for x, v in by_stream.items()}
         for c in digest.left_out(cards, streams, day):
@@ -215,15 +222,23 @@ def main():
             from . import subscribers
             # Each confirmed reader gets their own streams and choices; nothing on a day their streams were empty.
             # Only counts are printed: addresses never appear in the (public) logs.
-            readers = subscribers.current(os.environ.get("DIGEST_LIST_KEY", ""), os.environ.get("DIGEST_SIGNUP_URL", ""))
+            key = os.environ.get("DIGEST_LIST_KEY", "")
+            readers = subscribers.current(key, os.environ.get("DIGEST_SIGNUP_URL", ""))
+            from . import weekly
+            # Sunday's email (the day is a Saturday): a reader with questions gets the note of their weekly dossier
+            dossier = (lambda prefs: weekly.note(conn, key, prefs.get("interests") or [], day)) if digest.weekly(day) else (lambda prefs: None)
+            # a weekly reader gets Sunday's email only (the day is a Saturday); daily readers get every one
+            weekly_only = sum(1 for r in readers.values() if r[3].get("often") == "weekly")
+            readers = digest.due(readers, day)
             emails = [(to, *e, one_click) for to, (chosen, one_click, link, prefs) in readers.items()
-                      if (e := digest.build(cards, chosen, day, link, a.layout, prefs=prefs))]
+                      if (e := digest.build(cards, chosen, day, link, a.layout, prefs=prefs, dossier=dossier(prefs)))]
             if a.dry_run:
-                tuned = sum(1 for r in readers.values() if any(r[3].values()))
+                tuned = sum(1 for r in readers.values() if any(v for k, v in r[3].items() if k != "often"))
                 print(f"Checked, no problems: {len(emails)} of {len(readers)} subscribers would get the {day} digest "
-                      f"({tuned} with their own choices) {counts}")
+                      f"({tuned} with their own choices; {weekly_only} weekly only) {counts}")
             else:
-                print(f"Checked, no problems. Sent the {day} digest to {digest.send_all(emails)} of {len(readers)} subscribers {counts}")
+                print(f"Checked, no problems. Sent the {day} digest to {digest.send_all(emails)} of {len(readers)} subscribers "
+                      f"({weekly_only} weekly only{'' if digest.weekly(day) else ', not today'}) {counts}")
             return
         email = digest.build(cards, streams, day, layout=a.layout)
         if a.dry_run:
@@ -238,6 +253,21 @@ def main():
         print(f"{len(glossary.ENTRIES)} entries; not explained yet, by how many of the last 90 days' cards use them:")
         for word, n in glossary.missing(recent):
             print(f"  {word}: {n}")
+    elif a.cmd == "embed":
+        from . import embed
+        embed.update(store.connect(a.db), limit=a.limit)
+    elif a.cmd == "dossiers":
+        from . import embed, subscribers, weekly
+        key = os.environ.get("DIGEST_LIST_KEY", "")
+        if not key or not embed.available():
+            print("dossiers: skipped (needs DIGEST_LIST_KEY and the embedding model)")
+        else:
+            try:
+                wanted = a.interest or subscribers.interests(key)
+            except Exception as e:  # e.g. the web app not yet updated to send them: last run's dossiers stay
+                print(f"dossiers: skipped, the interests couldn't be read ({type(e).__name__})")
+            else:
+                weekly.prepare(store.connect(a.db), wanted, key, datetime.now(timezone.utc).date())
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

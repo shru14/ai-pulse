@@ -32,8 +32,9 @@ LIMITS = {"more": 10, "less": 40, "words": 5}
 
 
 def prefs_of(r: dict) -> dict[str, list[str]]:
-    """A reader's choices ("Make it yours" on the site): labels they want more of or left out, and words of their
-    own; capped and trimmed again here, whatever the web app sends."""
+    """A reader's choices ("Make it yours" on the site): labels they want more of or left out, words of their
+    own, the interests their weekly dossier follows, and how often they want the email ("daily", or "weekly":
+    Sunday's only); capped and trimmed again here, whatever the web app sends."""
     def clean(values, n):
         out = []
         for v in values if isinstance(values, list) else []:
@@ -43,6 +44,13 @@ def prefs_of(r: dict) -> dict[str, list[str]]:
         return out[:n]
     prefs = {k: clean(r.get(k), n) for k, n in LIMITS.items()}
     prefs["more"] = [t for t in prefs["more"] if t not in prefs["less"]]
+    from .weekly import TOPICS, clean_interest  # the weekly dossier: up to TOPICS interests in their own words
+    given = r.get("interests") if isinstance(r.get("interests"), list) else []
+    once = {}  # the same interest, however capitalised, once
+    for t in filter(None, map(clean_interest, given)):
+        once.setdefault(t.lower(), t)
+    prefs["interests"] = list(once.values())[:TOPICS]
+    prefs["often"] = "weekly" if r.get("often") == "weekly" else "daily"  # weekly: Sunday's email only
     return prefs
 
 
@@ -82,3 +90,17 @@ def current(key: str, url: str = "") -> dict[str, tuple[list[str], str, str, dic
     query = urllib.parse.urlencode({"action": "list", "key": key})
     with urllib.request.urlopen(f"{url}?{query}", timeout=60) as r:  # follows Google's redirect to the answer
         return readers(json.loads(r.read().decode("utf-8")))
+
+
+def interests(key: str, url: str = "") -> list[str]:
+    """Every interest readers follow for their weekly dossier, without who follows it: the web app sends only
+    the distinct interests."""
+    url = url or SIGNUP_URL
+    if not (url and key):
+        raise RuntimeError("the sign-up web app's address and DIGEST_LIST_KEY must be set")
+    query = urllib.parse.urlencode({"action": "interests", "key": key})
+    with urllib.request.urlopen(f"{url}?{query}", timeout=60) as r:
+        data = json.loads(r.read().decode("utf-8"))
+    if not data.get("ok"):
+        raise RuntimeError("the sign-up web app refused the interests (check DIGEST_LIST_KEY)")
+    return [str(i) for i in data.get("interests") or [] if isinstance(i, str)]
