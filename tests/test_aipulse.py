@@ -640,7 +640,7 @@ def test_static_build_holds_every_card(tmp_path):
     sitemap = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
     tracker_pages = list((tmp_path / "site" / "tracker").glob("**/index.html"))
     tracker_pages += list((tmp_path / "site" / "glossary").glob("**/index.html"))  # and the glossary's
-    assert sitemap.count("<url>") == 1 + 7 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name != "latest.html"])
+    assert sitemap.count("<url>") == 1 + 7 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -653,7 +653,7 @@ def test_static_build_holds_every_card(tmp_path):
         assert f'{cat}: "{title}"' in page and f'href="/{path}/" data-go="{cat}"' in page
     # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
-    days = sorted(p.name for p in daily.iterdir() if p.name not in ("latest.html", "index.html"))
+    days = sorted(p.name for p in daily.iterdir() if p.name not in ("latest.html", "index.html", "sample.html") and p.suffix == ".html")
     assert "<h1>Daily editions</h1>" in (daily / "index.html").read_text(encoding="utf-8")  # every edition, by month
     assert 'href="daily/sample.html"' in page and 'href="daily/"' not in page
     # "See what the email looks like": its format with placeholder stories, none of the day's own
@@ -661,6 +661,10 @@ def test_static_build_holds_every_card(tmp_path):
     sample = sample_cards(cards, date.fromisoformat(cards[0]["date"][:10]))
     assert sample and all(c["source"].startswith("Outlet ") and c["title"].startswith("Example headline") for c in sample)
     assert not {c["title"] for c in cards} & {c["title"] for c in sample}
+    if daily_sample:  # indexed, in the sitemap, with the day's real meme of the day as a picture beside it
+        html = (daily / "sample.html").read_text(encoding="utf-8")
+        assert "noindex" not in html and "https://projectaipulse.com/daily/sample.html" in sitemap
+        assert "Meme of the day" not in html or 'src="meme-of-the-day.' in html
     assert not days or (daily / "latest.html").read_text(encoding="utf-8") == (daily / days[-1]).read_text(encoding="utf-8")
 
 
