@@ -136,6 +136,16 @@ SOURCES = [
     # Africa
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
+    # Added from the sources review (6 Oct 2026): robots.txt allows each feed and no terms forbid headlines with a short
+    # description and a link (ServeTheHome's copyright policy allows a synopsis of up to 300 characters; ours are 240).
+    # Chips and servers
+    {"name": "Semiconductor Digest", "url": "https://www.semiconductor-digest.com/feed/", "category": "news"},
+    {"name": "ServeTheHome", "url": "https://www.servethehome.com/feed/", "category": "news"},
+    # Practitioners and evaluators
+    {"name": "Simon Willison", "url": "https://simonwillison.net/atom/entries/", "category": "news"},
+    {"name": "Lil'Log", "url": "https://lilianweng.github.io/index.xml", "category": "news", "ai_only": True,
+     "max_age_days": 60},  # a few long posts a year
+    {"name": "METR", "url": "https://metr.org/feed.xml", "category": "news", "ai_only": True},
 
     # --- Infra & climate: AI's data centres and what they draw on (power, water, land, emissions) ---
     # Checked 3 Oct 2026: each robots.txt allows reading and each publishes this feed; articles are free to read.
@@ -164,6 +174,9 @@ SOURCES = [
      "infra_filter": True},
     {"name": "European Commission (Energy)", "url": "https://energy.ec.europa.eu/node/2/rss_en", "category": "infra",
      "infra_filter": True},
+    # IEA articles and news are CC BY 4.0 (iea.org/terms); no feed, so its news page is read (sources review, 6 Oct 2026)
+    {"name": "International Energy Agency", "url": "https://www.iea.org/news", "format": "page_list",
+     "link": r"^https://www\.iea\.org/news/[a-z0-9-]+$", "category": "infra", "infra_filter": True},
 
     # --- Policy and politics ---
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
@@ -175,9 +188,20 @@ SOURCES = [
     {"name": "Future of Life Institute", "url": "https://futureoflife.org/feed/", "category": "policy", "ai_only": True},
     {"name": "EFF", "url": "https://www.eff.org/rss/updates.xml", "category": "policy", "ai_in_title": True},
     {"name": "EPIC", "url": "https://epic.org/feed/", "category": "policy", "paged": True},
+    # Added from the sources review (6 Oct 2026). ITU allows non-commercial use with credit (itu.int terms of use).
+    {"name": "CLTC (UC Berkeley)", "url": "https://cltc.berkeley.edu/feed/", "category": "policy"},
+    {"name": "ITU", "url": "https://www.itu.int/hub/feed/", "category": "policy"},
     # Governments' own publications (US federal records and GOV.UK are public-domain / Open Government Licence).
     {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"],
      "government": True},
+    {"name": "DARPA", "url": "https://www.darpa.mil/rss/news.xml", "category": "policy", "jurisdictions": ["US"],
+     "government": True},
+    {"name": "NSF", "url": "https://www.nsf.gov/rss/rss_www_news.xml", "category": "policy", "jurisdictions": ["US"],
+     "government": True},
+    # No feed: its blog page lists every post (a UK government body, Open Government Licence)
+    {"name": "UK AI Security Institute", "url": "https://www.aisi.gov.uk/blog", "format": "page_list",
+     "link": r"^https://www\.aisi\.gov\.uk/blog/[a-z0-9-]+$", "category": "policy", "ai_only": True,
+     "jurisdictions": ["GB"], "government": True},
     {"name": "Federal Register", "format": "federal_register", "category": "policy", "jurisdictions": ["US"],
      "ai_in_title": True, "government": True,
      "url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bterm%5D=%22artificial+intelligence%22"
