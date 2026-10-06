@@ -255,11 +255,13 @@ def story_tags(c: dict, in_stream: bool = False) -> list[str]:
     return list(dict.fromkeys(ordered))[:TAGS]
 
 
-def _band(hello: str) -> str:
-    """The short email's header: a navy row across the top of the card."""
+def _band(hello: str, daily: bool = True) -> str:
+    """The short email's header: a navy row across the top of the card ("AI Pulse daily" above it, but not for a
+    weekly reader, who gets only Sunday's)."""
     return (f'<tr><td style="background:{NAVY};color:#ffffff;padding:22px 20px 18px;border-radius:6px 6px 0 0">'
-            f'<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px">'
-            f'AI Pulse daily</div><div style="font-size:22px;font-weight:bold;line-height:1.3;color:#ffffff">'
+            + ('<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px">'
+               'AI Pulse daily</div>' if daily else "")
+            + f'<div style="font-size:22px;font-weight:bold;line-height:1.3;color:#ffffff">'
             f'{escape(hello)}</div></td></tr>')
 
 
@@ -440,40 +442,41 @@ def _new_stream(day: date, streams: list[str]) -> str:
 
 
 def _dossier(dossier: dict | None) -> tuple[list[str], str]:
-    """The Sunday email's note of a reader's weekly dossier (`dossier`: {"link", "week", "entries"}, from
-    weekly.note): one box and a button with the dossier's icon that opens it (the dossier itself lists the questions)."""
-    if not dossier or not dossier.get("entries"):
+    """The Sunday email's weekly dossier box, in every subscriber's email (`dossier`: {"ask": the reader's own form
+    at its question box}, and for a reader whose questions have a dossier, weekly.note's {"link", "week", "entries"}):
+    a line and a button with the dossier's icon: "Get my dossier" (to the form), or, once they have one, "Open your
+    weekly dossier"."""
+    if not dossier or not (dossier.get("entries") or dossier.get("ask")):
         return [], ""
     paper, line = "#f4f6fa", "#e3e5e8"  # the email's own colours
-    link, ask = dossier["link"], dossier.get("ask") or ""
-    text = [f"YOUR WEEKLY DOSSIER, {dossier['week']}",
-            *([f"Ask what you'd like to follow in the text box: {ask}"] if ask else []),
-            f"Open your weekly dossier: {link}"]
+    ask, has = dossier.get("ask") or "", bool(dossier.get("entries"))
+    pitch = "Ask what you want to follow in AI, and get last week's stories on it, picked just for you."
     icon = DOSSIER_ICON.read_bytes() if DOSSIER_ICON.exists() else b""
     if icon:
         INLINE[DOSSIER_CID] = icon
-    button = (f'<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:12px;border-collapse:separate">'
-              f'<tr><td style="background:#ffffff;border:2px solid {NAVY};border-radius:8px;padding:8px 14px 8px 10px;'
-              f'white-space:nowrap">'
-              f'<a href="{escape(link)}" style="text-decoration:none;color:{NAVY};font-size:15px;font-weight:bold">'
-              + (f'<img src="cid:{DOSSIER_CID}" width="30" height="30" alt="" style="display:inline-block;vertical-align:middle;'
-                 f'border:0;margin-right:8px">' if icon else "")
-              + '<span style="vertical-align:middle;white-space:nowrap">Open your weekly dossier&nbsp;→</span></a>'
-              '</td></tr></table>')
 
+    def button(href: str, words: str) -> str:
+        return (f'<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:12px;border-collapse:separate">'
+                f'<tr><td style="background:#ffffff;border:2px solid {NAVY};border-radius:8px;padding:8px 14px 8px 10px;'
+                f'white-space:nowrap">'
+                f'<a href="{escape(href)}" style="text-decoration:none;color:{NAVY};font-size:15px;font-weight:bold">'
+                + (f'<img src="cid:{DOSSIER_CID}" width="30" height="30" alt="" style="display:inline-block;vertical-align:middle;'
+                   f'border:0;margin-right:8px">' if icon else "")
+                + f'<span style="vertical-align:middle;white-space:nowrap">{words}&nbsp;→</span></a></td></tr></table>')
+
+    if has:
+        link = dossier["link"]
+        text = [f"YOUR WEEKLY DOSSIER, {dossier['week']}", f"Open your weekly dossier: {link}"]
+        kicker, title = f'WEEKLY DOSSIER · {escape(dossier["week"].upper())}', "This week on what you follow"
+        action = button(link, "Open your weekly dossier")
+    else:  # no questions yet: the button opens the reader's own form at its question box
+        text = ["YOUR WEEKLY DOSSIER", pitch, f"Get my dossier: {ask}"]
+        kicker, title, action = "WEEKLY DOSSIER", "Follow what you care about", button(ask, "Get my dossier")
     html = (f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 6px;background:{paper};'
             f'border:1px solid {line};border-collapse:collapse"><tr><td style="padding:14px 16px 16px">'
-            f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;color:{HEADLINE}">WEEKLY DOSSIER · '
-            f'{escape(dossier["week"].upper())}</div><div style="font-size:19px;font-weight:bold;line-height:1.25;color:{INK};'
-            f'margin:4px 0 2px">This week on what you follow</div>'
-            f'<div style="font-size:13.5px;line-height:1.45;color:#4a4f57">Ask what you\'d like to follow in the text box '
-            f'and get the week\'s stories on it, in one dossier.</div>'
-            # an email can't hold a real text box: this one looks like it and opens the reader's own form at its
-            # dossier box, ready to type in (`ask`: their link, from build)
-            + (f'<a href="{escape(ask)}" style="display:block;margin-top:10px;background:#ffffff;border:1px solid #c9ced6;'
-               f'border-top:3px solid {HEADLINE};border-radius:8px;padding:10px 12px;font-size:14px;color:{GREY};'
-               f'text-decoration:none">Type your question…</a>' if ask else "")
-            + f'{button}</td></tr></table>')
+            f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;color:{HEADLINE}">{kicker}</div>'
+            f'<div style="font-size:19px;font-weight:bold;line-height:1.25;color:{INK};margin:4px 0 2px">{title}</div>'
+            f'<div style="font-size:13.5px;line-height:1.45;color:#4a4f57">{escape(pitch)}</div>{action}</td></tr></table>')
     return text, html
 
 
@@ -806,11 +809,11 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     stop = unsubscribe or change
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
-        if dossier and unsubscribe:  # the dossier's text box opens the reader's own form at its question box
-            dossier = {**dossier, "ask": change + "&dossier"}
+        if weekly(day) and unsubscribe:  # every subscriber's Sunday email: the dossier's text box opens their own form
+            dossier = {**(dossier or {}), "ask": change + "&dossier"}  # at its question box
         open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left, dossier, (change, change_words))
         table_text, table_html = [], ""
-        page, band, top = PAGE, _band(open_text[0]), 16
+        page, band, top = PAGE, _band(open_text[0], (prefs or {}).get("often") != "weekly"), 16
     else:
         open_text, open_html = _opening(by_stream, cards, streams, day)
         table_text, table_html = _ledger(by_stream, streams, day)

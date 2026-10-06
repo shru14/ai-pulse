@@ -2501,7 +2501,14 @@ def test_dossiers_kept_per_interest_published_by_id_and_noted_on_sunday(tmp_path
     one_click = "https://projectaipulse.com/#unsubscribe=0f8fad5b-d9cb-469f-a165-70867728950e"
     _, text, html = digest.build([card], ["infra"], date(2026, 10, 3), one_click, dossier=note)
     ask = one_click.replace("#unsubscribe=", "#choices=") + "&dossier"  # their own form, at the dossier's box
-    assert f'href="{ask.replace("&", "&amp;")}"' in html and "Type your question…" in html and f"text box: {ask}" in text
+    assert "Change my questions" not in html and "Get my dossier" not in html  # a reader with a dossier: just the button to it
+    # every subscriber's Sunday email has the box, questions or not; not on other days, nor without their own link
+    _, new_text, new_html = digest.build([card], ["infra"], date(2026, 10, 3), one_click)
+    assert "Get my dossier" in new_html and f'href="{ask.replace("&", "&amp;")}"' in new_html and f"Get my dossier: {ask}" in new_text
+    assert "Open your weekly dossier" not in new_html and "Type your question" not in new_html
+    friday = {**card, "date": "2026-10-02"}
+    assert "Get my dossier" not in digest.build([friday], ["infra"], date(2026, 10, 2), one_click)[2]
+    assert "Get my dossier" not in digest.build([card], ["infra"], date(2026, 10, 3))[2]
     assert "YOUR WEEKLY DOSSIER, 28 Sep – 3 Oct" in text and "Data centre water cooling" not in text.split("YOUR WEEKLY")[1][:200]
     assert f'href="{link}"' in html and "Open your weekly dossier" in html and f"cid:{digest.DOSSIER_CID}" in html  # the button
     assert digest.INLINE[digest.DOSSIER_CID][:4] == b"\x89PNG"  # its icon, inside the email
@@ -2550,6 +2557,11 @@ def test_sunday_email_brings_the_week_and_skips_the_days_word_and_meme(monkeypat
     readers = {"d@x.org": (["news"], "", "", {"often": "daily"}), "w@x.org": (["news"], "", "", {"often": "weekly"})}
     assert list(digest.due(readers, date(2026, 10, 3))) == ["d@x.org", "w@x.org"]  # Sunday's email (a Saturday)
     assert list(digest.due(readers, date(2026, 10, 2))) == ["d@x.org"]
+    # a weekly reader's Sunday email isn't headed "AI Pulse daily"; a daily reader's still is
+    base = {"more": [], "less": [], "words": []}
+    for often, headed in (("weekly", False), ("daily", True)):
+        html = digest.build(cards, ["news"], date(2026, 10, 3), prefs={**base, "often": often})[2]
+        assert ("AI Pulse daily</div>" in html) is headed and "Your week in AI" in html
     # the other days stay as they were
     friday = digest.build(cards, ["releases", "news"], date(2026, 10, 1))
     assert friday[0] == "AI Pulse daily · Thursday, 1 October 2026" and "Word of the day" in friday[2]
