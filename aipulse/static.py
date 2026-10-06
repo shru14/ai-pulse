@@ -38,7 +38,7 @@ def search_text(conn) -> dict[str, str]:
 
 
 RECENT_DAYS = 92  # a little over the page's longest range short of "All time"
-DAILY_PAGES = 14  # days whose full email is published under daily/ (each email links to its day's page)
+DAILY_FROM = date(2026, 9, 28)  # the first daily email's day: every day since has its full email under daily/
 
 
 # Bots that gather pages to train AI models. Search engines may read everything; these may not, as AI Pulse only
@@ -111,6 +111,28 @@ def tracker_csv(cards: list[dict]) -> str:
     return out.getvalue()
 
 
+def daily_index(conn, total: int, days: list[date], out: Path) -> None:
+    """daily/: every day's email as a page, newest first, by month; Sunday's email (it covers the Saturday) also
+    brings the week in AI."""
+    from . import pages
+    months: dict[str, list[str]] = {}
+    for d in sorted(days, reverse=True):
+        sunday = " <span class=\"grp\">Sunday's email: the week in AI</span>" if digest.weekly(d) else ""
+        months.setdefault(f"{d:%B %Y}", []).append(
+            f'<li><a href="/daily/{d.isoformat()}.html">{digest.long_day(d)}</a>{sunday}</li>')
+    body = ('<h1>Daily editions</h1>\n<p class="intro">Every morning\'s email as a page: the day before in AI, every '
+            'story from every stream in one tagged table. On Sundays the email is the weekly edition: the week in AI '
+            '(Monday to Saturday), then Saturday\'s stories. <a href="/#subscribe">Get it in your inbox</a></p>\n'
+            + "\n".join(f'<h2>{m}</h2>\n<ul class="days">\n' + "\n".join(rows) + "\n</ul>" for m, rows in months.items()))
+    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI Pulse daily editions",
+            "url": f"{rss.SITE}daily/"}
+    pages.write_css(out)
+    (out / "daily" / "index.html").write_text(pages.page(
+        "Daily AI news, every edition · AI Pulse", "Every AI Pulse daily email as a page: the day's AI releases, "
+        "industry news, research, laws and policy in one table. On Sundays, the week in AI.", "daily/", body, data,
+        pages.frame(conn, total), ("/", "Back to AI Pulse")), encoding="utf-8")
+
+
 def build(conn, out: str | Path) -> int:
     """Write the static site into `out` (replaced). Returns how many cards it holds."""
     out = Path(out)
@@ -140,13 +162,14 @@ def build(conn, out: str | Path) -> int:
     # The newest is also daily/latest.html: the front page's "See yesterday's full table".
     today = datetime.now(timezone.utc).date()
     published = []
-    for back in range(DAILY_PAGES, 0, -1):
+    for back in range((today - DAILY_FROM).days, 0, -1):
         day = today - timedelta(days=back)
         page = digest.build(cards, list(rss.FEEDS), day, layout="full", web=True)
         if page:
             published.append(day)
             for name in (day.isoformat(), "latest"):
                 (out / "daily" / f"{name}.html").write_text(page[2], encoding="utf-8")
+    daily_index(conn, len(cards), published, out)  # daily/: every edition, by month
     for c in cards:
         c["s"] = text.get(c["id"], "")
         for k in ("added_at", "cluster"):
@@ -201,7 +224,7 @@ def build(conn, out: str | Path) -> int:
     places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
-    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + places), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/"] + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)

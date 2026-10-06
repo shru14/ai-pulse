@@ -653,7 +653,8 @@ def test_static_build_holds_every_card(tmp_path):
         assert f'{cat}: "{title}"' in page and f'href="/{path}/" data-go="{cat}"' in page
     # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
-    days = sorted(p.name for p in daily.iterdir() if p.name != "latest.html")
+    days = sorted(p.name for p in daily.iterdir() if p.name not in ("latest.html", "index.html"))
+    assert "<h1>Daily editions</h1>" in (daily / "index.html").read_text(encoding="utf-8")  # every edition, by month
     assert 'href="daily/latest.html"' in page
     assert not days or (daily / "latest.html").read_text(encoding="utf-8") == (daily / days[-1]).read_text(encoding="utf-8")
 
@@ -707,6 +708,9 @@ def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
     assert "<h2>AI bodies</h2>" in page and page.index("AI Act 3") < page.index("AI Act 1")  # newest first
     assert 'rel="canonical" href="https://projectaipulse.com/tracker/united-kingdom/"' in page
     assert 'href="/tracker/united-kingdom/"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
+    # labels for search engines: each bill is Legislation; tracker.csv is a Dataset (Google Dataset Search)
+    assert '"@type": "Legislation"' in page and '"legislationJurisdiction": "United Kingdom"' in page
+    assert '"@type": "Dataset"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8") and '"contentUrl": "https://projectaipulse.com/tracker.csv"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
     # the site's own masthead and footer, a plain way back, and each place's flag (copied beside the pages)
     assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="/#subscribe"' in page
     assert "← Back to the live Regulation tracker page" in page and 'src="flags/gb.svg"' in page
