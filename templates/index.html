@@ -369,12 +369,6 @@ header.top{gap:10px}
 @media (max-width:560px){.sec-hero{padding:16px}.sec-hero .ico{display:none}}
 .status{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
 .status b{color:var(--ink);font-weight:500}
-.health{text-align:left}
-.health summary{cursor:pointer;display:inline-block;color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn);border-radius:4px;padding:1px 8px;font:500 12px var(--mono)}
-.health summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.health ul{margin:6px 0 0;padding:8px 10px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;max-width:420px;font:12px var(--body);color:var(--ink)}
-.health li + li{margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
-.health li span{display:block;color:var(--muted);font-family:var(--mono)}
 
 .controls{position:sticky;top:var(--bar-h);z-index:5;background:var(--bg);padding-block:12px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
 /* One row: the chosen stream (click to clear), search and time range. */
@@ -771,7 +765,7 @@ const monthOf = d => new Date(d+"T00:00:00").toLocaleDateString(undefined,{month
 // pages them); counts: cards per tab; mapTally: proposals and laws per country for the tracker's map.
 const REGION_TABS = new Set(["all", ...CATS]);  // every page has the region filter
 const state = {cat:"home", place:null, region:null, regions:{}, q:"", range:30, items:[], page:0, total:0, hasMore:false, loading:false,
-               error:false, counts:{}, mapTally:null, stories:0, status:null, places:{}, failing:[]};
+               error:false, counts:{}, mapTally:null, stories:0, status:null, places:{}};
 const PER_PAGE = 40;
 try{ const s = JSON.parse(localStorage.getItem("aipulse-ui")||"{}"); if(s.range!=null) state.range=s.range; }catch(e){}
 
@@ -1102,7 +1096,7 @@ async function load(reset){
     state.items = reset ? data.items : state.items.concat(data.items);
     Object.assign(state, {page: data.page, total: data.total, hasMore: data.hasMore, counts: data.counts,
       mapTally: data.map || null, stories: data.stories, places: data.jurisdictions || state.places, regions: data.regions || state.regions,
-      failing: data.failingSources || [], status: data.lastRun ? {lastRun: data.lastRun.ran_at} : null, error: false});
+      status: data.lastRun ? {lastRun: data.lastRun.ran_at} : null, error: false});
   }catch(e){
     if(seq !== requestSeq) return;
     state.error = true;
@@ -1165,7 +1159,7 @@ function staticPayload(d, params){
   }
   const out = {items: list.slice((page-1)*perPage, page*perPage), page, perPage, total: list.length,
     hasMore: page*perPage < list.length, counts, stories: d.stories, lastRun: d.lastRun,
-    jurisdictions: d.jurisdictions, failingSources: d.failingSources, regions: d.regions};
+    jurisdictions: d.jurisdictions, regions: d.regions};
   if(cat === "regulation"){
     const national = {}, laws = {}; let n = 0;
     base.filter(c => c.category === "regulation" && c.action !== "expert").forEach(c => {
@@ -1239,20 +1233,6 @@ function renderStatus(){
     t.append(el("b", null, String(all)), document.createTextNode((all === 1 ? " story " : " stories ") + span));
     m.replaceChildren(t, el("div", null, last ? "Last update " + when(last) : "Not collected yet"));
   }
-  // Sources that failed several collections in a row; otherwise a dead feed would just go quiet.
-  const failing = state.failing || [];
-  if(failing.length){
-    const d = el("details","health");
-    d.append(el("summary",null,"⚠ "+failing.length+" source"+(failing.length===1?"":"s")+" failing"));
-    const ul = el("ul");
-    failing.forEach(f => {
-      const li = el("li",null,f.name);
-      li.append(el("span",null,f.failures+" runs in a row · last worked "+(f.last_success ? when(f.last_success) : "never")));
-      if(f.last_error) li.append(el("span",null,f.last_error));
-      ul.append(li);
-    });
-    d.append(ul); s.append(d);
-  }
 }
 
 // ---------- Front page: last week's stories, ranked as in the daily email (by how many outlets reported them) ----------
@@ -1266,8 +1246,7 @@ async function loadHomeCounts(){
   let d = null;
   try{ d = await fetchItems(new URLSearchParams({days: state.range, per_page: 1, page: 1})); }catch(e){}
   if(state.cat !== "home") return;  // the reader moved on to a stream's page, which has its own
-  Object.assign(state, {loading: false, counts: d ? d.counts : {all: 0}, status: d && d.lastRun ? {lastRun: d.lastRun.ran_at} : null,
-    failing: d ? d.failingSources || [] : []});
+  Object.assign(state, {loading: false, counts: d ? d.counts : {all: 0}, status: d && d.lastRun ? {lastRun: d.lastRun.ran_at} : null});
   renderStatus(); renderHome();
 }
 // The meme of the week: drawn by the build (memes.py) from last week's stories, Monday to Sunday as the word of the week.

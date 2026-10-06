@@ -453,9 +453,20 @@ def test_source_is_flagged_after_three_failed_runs(tmp_path):
     assert health["Dead feed"]["failures"] == 3 and "404" in health["Dead feed"]["last_error"]
     assert health["Dead feed"]["last_success"] == ""
     assert health["Good"]["failures"] == 0 and health["Good"]["entries"] == 3
-    # One good run clears the warning.
+    # The project inbox hears about it once: a table row with why; not again on the next runs
+    from aipulse.collect import source_alert
+    rows = store.newly_failing(conn, ["rss", "dead"])
+    subject, text, html = source_alert(rows)
+    assert subject == "AI Pulse: 1 source stopped working" and "Dead feed" in text and "404" in html and "<table" in html
+    store.mark_alerted(conn, ["dead"])
+    collect(conn, [bad], max_age_days=100000, fetcher=fetch, log=quiet)
+    assert store.newly_failing(conn, ["rss", "dead"]) == []
+    # One good run clears the warning, and a later failure is told again
     collect(conn, [bad], max_age_days=100000, fetcher=lambda u: (FIX / "sample_rss.xml").read_bytes(), log=quiet)
     assert not any(h["failing"] for h in store.source_health(conn))
+    for _ in range(3):
+        collect(conn, [bad], max_age_days=100000, fetcher=fetch, log=quiet)
+    assert [r["name"] for r in store.newly_failing(conn, ["rss", "dead"])] == ["Dead feed"]
 
 
 def test_command_line_entry_point_starts(tmp_path):

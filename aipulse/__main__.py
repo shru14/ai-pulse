@@ -49,6 +49,8 @@ def main():
     sub.add_parser("sources", help="show each source's health: last success, failures in a row, last error")
     sub.add_parser("regroup", help="regroup every stored story into cards (one card per event)")
     sub.add_parser("status", help="Markdown summary of the feed and failing sources (for the run page)")
+    sa = sub.add_parser("source-alert", help="email the project inbox about sources that just started failing (once each)")
+    sa.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     bf = sub.add_parser("backfill", help="one-time history: every stream back to --since (default 2023-01-01)")
     bf.add_argument("--since", default="2023-01-01", help="start date, YYYY-MM-DD")
     bf.add_argument("--only", action="append", choices=["feeds", "official", "research", "papers"],
@@ -176,6 +178,25 @@ def main():
     elif a.cmd == "status":
         from .collect import status_report
         print(status_report(store.connect(a.db)))
+    elif a.cmd == "source-alert":
+        # Sources failing store.FAILING_AFTER runs in a row, told once each (it resets when one works again)
+        from . import digest
+        from .collect import source_alert
+        from .sources import SOURCES
+        conn = store.connect(a.db)
+        rows = store.newly_failing(conn, [s["url"] for s in SOURCES])
+        if not rows:
+            print("No source has newly stopped working.")
+        elif a.dry_run:
+            open(a.dry_run, "w", encoding="utf-8").write(source_alert(rows)[2])
+            print(f"{len(rows)} newly failing -> wrote {a.dry_run}")
+        elif not os.environ.get("DIGEST_EMAIL"):
+            print(f"{len(rows)} newly failing; DIGEST_EMAIL isn't set, so nothing was sent")
+        else:
+            note = source_alert(rows)
+            digest.send(digest.sender(), *note)
+            store.mark_alerted(conn, [r["url"] for r in rows])
+            print(f"Sent to the project inbox: {note[0]}")
     elif a.cmd == "backfill":
         from datetime import date as _date
         from .backfill import run as backfill

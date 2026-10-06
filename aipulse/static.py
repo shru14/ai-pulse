@@ -17,7 +17,6 @@ from pathlib import Path
 from . import brands, classify, digest, glossary, jurisdictions, memegen, memes, photos, preferences, rss, store
 from . import subscribers
 from .server import EU_MEMBERS, TEMPLATE
-from .sources import SOURCES
 
 _WORD = re.compile(r"[^\W_]+")
 
@@ -87,12 +86,10 @@ def build(conn, out: str | Path) -> int:
     for year, year_cards in sorted(years.items(), reverse=True):
         (out / "archive" / f"{year}.json").write_text(json.dumps(year_cards, separators=(",", ":")), encoding="utf-8")
         archive.append({"file": f"archive/{year}.json", "cards": len(year_cards)})
-    health = store.source_health(conn, [s["url"] for s in SOURCES])
     data = {"built": datetime.now(timezone.utc).isoformat(timespec="seconds"), "cards": recent, "archive": archive,
             "stories": store.story_count(conn), "lastRun": store.last_run(conn),
             "jurisdictions": jurisdictions.meta(), "euMembers": sorted(EU_MEMBERS),
-            "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()}, "paperHomes": classify.paper_homes(),
-            "failingSources": [h for h in health if h["failing"]]}
+            "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()}, "paperHomes": classify.paper_homes()}
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
     (out / "glossary.json").write_text(json.dumps(glossary.payload(cards, today), separators=(",", ":")), encoding="utf-8")
     memegen.prepare(conn, cards, today)  # the week's Gemini meme, if the "memes" step made one (no call here)

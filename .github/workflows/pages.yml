@@ -74,6 +74,14 @@ jobs:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
         run: python -m aipulse --db aipulse.db collect ${{ github.event.schedule == '25,55 * * * *' && '--labs' || '' }}
 
+      # A source that has just started failing: one email to the project inbox (not shown on the site)
+      - name: Tell the project inbox about sources that stopped working
+        continue-on-error: true
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: python -m aipulse --db aipulse.db source-alert
+
       # Stored stories keep the category they got when collected; this applies rule fixes to them too.
       - name: Re-sort stored stories with the current rules
         if: github.event.schedule != '25,55 * * * *'

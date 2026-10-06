@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS sources (
     failures     INTEGER NOT NULL DEFAULT 0,  -- consecutive failed runs; reset by a success
     last_error   TEXT NOT NULL DEFAULT '',
     entries      INTEGER NOT NULL DEFAULT 0,  -- entries in the last successful fetch
-    added        INTEGER NOT NULL DEFAULT 0   -- new stories from the last successful fetch
+    added        INTEGER NOT NULL DEFAULT 0,  -- new stories from the last successful fetch
+    alerted      INTEGER NOT NULL DEFAULT 0   -- 1 once the project inbox was told it's failing; reset by a success
 );
 """
 
@@ -96,6 +97,8 @@ def connect(path: str | Path) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     rebuilt = _migrate(conn)
     conn.executescript(SCHEMA)
+    if "alerted" not in {r["name"] for r in conn.execute("PRAGMA table_info(sources)")}:
+        conn.execute("ALTER TABLE sources ADD COLUMN alerted INTEGER NOT NULL DEFAULT 0")
     conn.executescript(FTS_SCHEMA)
     from .bills import connect_tables  # bills.py imports this module
     connect_tables(conn)
@@ -236,7 +239,7 @@ def record_source(conn: sqlite3.Connection, name: str, url: str, ok: bool, error
     conn.execute("INSERT OR IGNORE INTO sources (url, name, last_attempt) VALUES (?, ?, ?)", (url, name, now))
     if ok:
         conn.execute("UPDATE sources SET name = ?, last_attempt = ?, last_success = ?, failures = 0, last_error = '',"
-                     " entries = ?, added = ? WHERE url = ?", (name, now, now, entries, added, url))
+                     " entries = ?, added = ?, alerted = 0 WHERE url = ?", (name, now, now, entries, added, url))
     else:
         conn.execute("UPDATE sources SET name = ?, last_attempt = ?, failures = failures + 1, last_error = ?"
                      " WHERE url = ?", (name, now, error[:300], url))
@@ -251,6 +254,16 @@ def source_health(conn: sqlite3.Connection, urls: list[str] | None = None) -> li
     for r in rows:
         r["failing"] = r["failures"] >= FAILING_AFTER
     return rows
+
+
+def newly_failing(conn: sqlite3.Connection, urls: list[str]) -> list[dict]:
+    """Sources (of these URLs) failing now that the project inbox hasn't been told about yet."""
+    return [r for r in source_health(conn, urls) if r["failing"] and not r["alerted"]]
+
+
+def mark_alerted(conn: sqlite3.Connection, urls: list[str]) -> None:
+    conn.executemany("UPDATE sources SET alerted = 1 WHERE url = ?", [(u,) for u in urls])
+    conn.commit()
 
 
 # --- Cards: one per event (its lead story plus the other outlets' versions), searched and paged in SQL ---

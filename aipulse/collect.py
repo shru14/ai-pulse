@@ -378,6 +378,30 @@ def status_report(conn) -> str:
     return "\n".join(lines) + "\n"
 
 
+def source_alert(rows: list[dict]) -> tuple[str, str, str]:
+    """(subject, text, html) of the project inbox's note that these sources stopped working: a row each, with how
+    long it has failed, when it last worked and why (store.newly_failing)."""
+    from html import escape
+    when = lambda iso: datetime.fromisoformat(iso).strftime("%d %b %Y, %H:%M UTC") if iso else "never"
+    n = len(rows)
+    subject = f"AI Pulse: {n} source{'s' if n > 1 else ''} stopped working"
+    text = [f"{n} source{'s have' if n > 1 else ' has'} failed {store.FAILING_AFTER} or more collections in a row:", ""]
+    for r in rows:
+        text += [r["name"], f"  failed {r['failures']} runs in a row; last worked {when(r['last_success'])}",
+                 f"  {r['last_error'] or 'no error recorded'}", f"  {r['url']}", ""]
+    text.append("You'll hear about each source once; it resets when the source works again.")
+    cell = 'style="padding:8px 10px;border-bottom:1px solid #e3e5e8;vertical-align:top;font-size:14px"'
+    html = ('<!doctype html><html><body style="margin:0;padding:16px;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a">'
+            f'<p style="font-size:15px">{escape(text[0])}</p>'
+            '<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:680px">'
+            + '<tr>' + "".join(f'<th align="left" {cell}>{h}</th>' for h in ("Source", "Failed runs", "Last worked", "Why")) + '</tr>'
+            + "".join(f'<tr><td {cell}><a href="{escape(r["url"])}" style="color:#1a4fd6">{escape(r["name"])}</a></td>'
+                      f'<td {cell}>{r["failures"]}</td><td {cell}>{escape(when(r["last_success"]))}</td>'
+                      f'<td {cell}>{escape(r["last_error"] or "no error recorded")}</td></tr>' for r in rows)
+            + f'</table><p style="font-size:13px;color:#5f6368">{escape(text[-1])}</p></body></html>')
+    return subject, "\n".join(text), html
+
+
 def fill_summary(item: dict) -> None:
     """Give a story whose feed has no description a short draft from its category, places and tags."""
     if not item["summary"]:
