@@ -609,7 +609,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -2500,7 +2500,7 @@ def test_dossiers_kept_per_interest_published_by_id_and_noted_on_sunday(tmp_path
             "category": "infra", "date": "2026-10-03", "added_at": "2026-10-03T10:00:00+00:00"}
     one_click = "https://projectaipulse.com/#unsubscribe=0f8fad5b-d9cb-469f-a165-70867728950e"
     _, text, html = digest.build([card], ["infra"], date(2026, 10, 3), one_click, dossier=note)
-    ask = one_click.replace("#unsubscribe=", "#choices=") + "&dossier"  # their own form, at the dossier's box
+    ask = "https://projectaipulse.com/ask.html#0f8fad5b-d9cb-469f-a165-70867728950e"  # their own dossier page
     assert "Change my questions" not in html and "Get my dossier" not in html  # a reader with a dossier: just the button to it
     # every subscriber's Sunday email has the box, questions or not; not on other days, nor without their own link
     _, new_text, new_html = digest.build([card], ["infra"], date(2026, 10, 3), one_click)
@@ -2508,14 +2508,15 @@ def test_dossiers_kept_per_interest_published_by_id_and_noted_on_sunday(tmp_path
     assert "Open your weekly dossier" not in new_html and "Type your question" not in new_html
     friday = {**card, "date": "2026-10-02"}
     assert "Get my dossier" not in digest.build([friday], ["infra"], date(2026, 10, 2), one_click)[2]
-    assert "Get my dossier" not in digest.build([card], ["infra"], date(2026, 10, 3))[2]
+    sample = digest.build([card], ["infra"], date(2026, 10, 3))[2]  # a sample, without a reader's link: to sign up
+    assert "Get my dossier" in sample and 'href="https://projectaipulse.com/#subscribe"' in sample
     assert "YOUR WEEKLY DOSSIER, 28 Sep – 3 Oct" in text and "Data centre water cooling" not in text.split("YOUR WEEKLY")[1][:200]
     assert f'href="{link}"' in html and "Open your weekly dossier" in html and f"cid:{digest.DOSSIER_CID}" in html  # the button
     assert digest.INLINE[digest.DOSSIER_CID][:4] == b"\x89PNG"  # its icon, inside the email
     msg = digest._message("a@b.c", "s", text, html)
     assert any(part.get_content_type() == "image/png" for part in msg.walk())
     digest.INLINE.clear()
-    assert "YOUR WEEKLY DOSSIER" not in digest.build([card], ["infra"], date(2026, 10, 3))[1]  # without one, no note
+    assert "Open your weekly dossier" not in digest.build([card], ["infra"], date(2026, 10, 3))[1]  # without one, no note
     # Monday's run: the same week, now with Sunday's story, under the same Monday (Sunday's links keep working)
     weekly.prepare(conn, mine, key, monday, log=lambda *_: None)
     assert weekly.kept(conn, monday)[ids[0]]["count"] == 2
