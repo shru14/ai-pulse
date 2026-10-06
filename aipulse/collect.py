@@ -329,7 +329,8 @@ def purge_disallowed(conn, log=print) -> int:
 
 # Sources dropped because they turned automated readers away: everything they gave is deleted, so nothing of
 # theirs stays on the site (source name -> the start of its addresses).
-DROPPED = {"Parliament of Canada": "https://www.parl.ca/"}  # 6 Oct 2026
+DROPPED = {"Parliament of Canada": "https://www.parl.ca/",  # 6 Oct 2026, each answering even robots.txt with a 403
+           "Rest of World": "https://restofworld.org/", "TechNode": "https://technode.com/"}
 
 
 def purge_dropped(conn, log=print) -> int:

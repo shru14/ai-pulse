@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 119 public sources (103 feeds, 16 official records and
+A free, non-commercial, worldwide briefing on AI. It reads 117 public sources (101 feeds, 16 official records and
 databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -51,7 +51,7 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 | Releases (feeds) | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama, Sakana AI, Character.AI, Stability AI; AI stories from the newsrooms of Microsoft, Meta, Apple and Amazon |
 | Releases (news pages, no feed) | Anthropic, Meta AI, DeepSeek, Cohere, MiniMax, Moonshot AI (Kimi) |
 | Releases (developer release notes) | xAI (docs.x.ai) and Perplexity (docs.perplexity.ai) |
-| Industry | **Global:** TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World · **Asia:** South China Morning Post, Pandaily, TechNode, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports · **Chips and servers:** Semiconductor Digest, ServeTheHome · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
+| Industry | **Global:** TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily · **Asia:** South China Morning Post, Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports · **Chips and servers:** Semiconductor Digest, ServeTheHome · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, DARPA, NSF, UK AI Security Institute |
