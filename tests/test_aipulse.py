@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -637,7 +637,8 @@ def test_static_build_holds_every_card(tmp_path):
     for private in ("dossier.html", "ask.html"):
         assert '<meta name="robots" content="noindex">' in (tmp_path / "site" / private).read_text(encoding="utf-8")
     sitemap = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
-    assert sitemap.count("<url>") == 1 + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name != "latest.html"])
+    tracker_pages = list((tmp_path / "site" / "tracker").glob("**/index.html"))
+    assert sitemap.count("<url>") == 1 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name != "latest.html"])
     # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
     days = sorted(p.name for p in daily.iterdir() if p.name != "latest.html")
@@ -652,6 +653,23 @@ def test_tracker_csv_holds_official_records_only():
     rows = tracker_csv([card("congress.gov", "H.R. 1: An AI bill, with a comma"), card("TechCrunch AI", "A headline")]).splitlines()
     assert rows == ["date,countries,type,title,source,link",
                     '2026-10-01,US,proposal,"H.R. 1: An AI bill, with a comma",congress.gov,https://e.com/congress.gov']
+
+
+def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
+    from datetime import date
+    from aipulse import countries
+    conn = store.connect(tmp_path / "t.db")
+    card = lambda i, source, code, action="proposal": {"category": "regulation", "source": source, "title": f"AI Act {i}",
+        "date": f"2026-0{i}-01", "jurisdictions": [code], "action": action, "url": f"https://e.com/{code}{i}", "bill": ""}
+    cards = ([card(i, "UK Parliament", "GB") for i in range(1, 4)] + [card(4, "OECD.AI", "GB", "body")]
+             + [card(i, "TechCrunch AI", "IN") for i in range(1, 6)] + [card(1, "Parliament of India", "IN")])
+    paths = countries.build(conn, cards, tmp_path, date(2026, 10, 6))
+    assert paths == ["tracker/", "tracker/united-kingdom/"]  # India: one official record, news stories don't count
+    page = (tmp_path / "tracker" / "united-kingdom" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>AI laws and bills in the United Kingdom</h1>" in page and "<h2>Proposals</h2>" in page
+    assert "<h2>AI bodies</h2>" in page and page.index("AI Act 3") < page.index("AI Act 1")  # newest first
+    assert 'rel="canonical" href="https://projectaipulse.com/tracker/united-kingdom/"' in page
+    assert 'href="/tracker/united-kingdom/"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
 
 
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
