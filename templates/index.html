@@ -300,6 +300,9 @@ header.top{gap:10px}
 .sub-act{display:flex;flex-direction:column;align-items:center;gap:8px}
 .sub-act small{font-size:12px;opacity:.8;white-space:nowrap}
 .sub-yesterday{font-size:13.5px;font-weight:600;color:inherit}
+.sub-all{font-weight:500;opacity:.85}
+.gl-tile-links{display:flex;flex-direction:column;align-items:center;gap:10px}
+.gl-all{font-size:14px;font-weight:600;color:inherit;text-decoration:underline;text-underline-offset:3px}
 .sub-strip .sub-tile-go{align-self:center;flex:none;font-size:16px;padding:12px 26px;background:#0072B2;color:#FFFFFF;box-shadow:3px 3px 0 #141925}
 .sub-strip .sub-tile-go:hover{filter:brightness(1.12)}
 @media (max-width:1100px){.sub-strip{grid-template-columns:1fr auto}.sub-steps{grid-column:1/-1;grid-row:2}.sub-hint{grid-column:1/-1;grid-row:3}.sub-head{grid-row:auto}}
@@ -724,7 +727,8 @@ header.top.home{height:auto;padding-top:10px}
         <p class="sub-hint">Steps 2–4 are optional: find them under <b>“+ Make it yours”</b> in the sign-up form.</p>
         <div class="sub-act"><button class="sub-tile-go" type="button" data-open="subscribe">Subscribe free →</button>
           <small>One email a day · unsubscribe in one click</small>
-          <a class="sub-yesterday" href="daily/latest.html" target="_blank" rel="noopener">See yesterday's full table →</a></div>
+          <a class="sub-yesterday" href="daily/latest.html" target="_blank" rel="noopener">See yesterday's full table →</a>
+          <a class="sub-yesterday sub-all" href="daily/">All past editions →</a></div>
       </div>
       <div class="mag-row">
         <article class="mag-cover" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
@@ -733,7 +737,8 @@ header.top.home{height:auto;padding-top:10px}
             <div class="gl-card"><span class="gl-kind">From the AI Pulse glossary</span><b id="gl-word"><mark>Glossary</mark></b>
               <p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p></div>
             <div class="gl-viz" id="gl-viz"></div></div>
-          <button class="gl-tile-go" type="button" data-open="glossary">Open the glossary →</button>
+          <div class="gl-tile-links"><button class="gl-tile-go" type="button" data-open="glossary">Open the glossary →</button>
+            <a class="gl-all" href="glossary/">Every word, A–Z →</a></div>
         </div>
         <div class="tile meme-tile" id="meme-tile" hidden>
           <div><span class="week-badge"><b>Meme of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="meme-label">Last week</span></span></div>
