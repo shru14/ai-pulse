@@ -41,6 +41,25 @@ RECENT_DAYS = 92  # a little over the page's longest range short of "All time"
 DAILY_PAGES = 14  # days whose full email is published under daily/ (each email links to its day's page)
 
 
+# Bots that gather pages to train AI models. Search engines may read everything; these may not, as AI Pulse only
+# reads sites that allow it and carries other publishers' headlines (Google-Extended doesn't affect Google Search).
+AI_TRAINING_BOTS = ("GPTBot", "Google-Extended", "CCBot", "ClaudeBot", "anthropic-ai", "Applebot-Extended",
+                    "meta-externalagent", "Bytespider", "cohere-training-data-crawler", "Amazonbot")
+
+
+def robots_txt() -> str:
+    """robots.txt: search engines read the site (not the readers' dossier data); AI-training bots read nothing."""
+    blocked = "".join(f"User-agent: {bot}\nDisallow: /\n\n" for bot in AI_TRAINING_BOTS)
+    return f"{blocked}User-agent: *\nDisallow: /dossier/\n\nSitemap: {rss.SITE}sitemap.xml\n"
+
+
+def sitemap(days: list[date], today: date) -> str:
+    """sitemap.xml: the pages search engines should index: the front page and each day's full edition."""
+    urls = [(rss.SITE, today)] + [(f"{rss.SITE}daily/{d.isoformat()}.html", d) for d in sorted(days, reverse=True)]
+    rows = "".join(f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod></url>\n" for u, d in urls)
+    return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{rows}</urlset>\n'
+
+
 def opml(title: str = "AI Pulse") -> str:
     """feeds/all.opml: every stream's RSS feed in one file, for a feed reader to import at once."""
     rows = "".join(f'    <outline type="rss" text="{escape(f"{title} · {name}")}" title="{escape(f"{title} · {name}")}" '
@@ -92,10 +111,12 @@ def build(conn, out: str | Path) -> int:
     (out / "daily").mkdir()
     # The newest is also daily/latest.html: the front page's "See yesterday's full table".
     today = datetime.now(timezone.utc).date()
+    published = []
     for back in range(DAILY_PAGES, 0, -1):
         day = today - timedelta(days=back)
         page = digest.build(cards, list(rss.FEEDS), day, layout="full", web=True)
         if page:
+            published.append(day)
             for name in (day.isoformat(), "latest"):
                 (out / "daily" / f"{name}.html").write_text(page[2], encoding="utf-8")
     for c in cards:
@@ -144,5 +165,8 @@ def build(conn, out: str | Path) -> int:
     (out / "ask.html").write_text(subscribers.fill((TEMPLATE.parent / "ask.html").read_text(encoding="utf-8")), encoding="utf-8")
     weekly.publish(conn, out, today)
     weekly.publish_vectors(conn, out, today)  # the dossier page's search by meaning, in the reader's browser
+    (out / "robots.txt").write_text(robots_txt(), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(published, today), encoding="utf-8")
+    shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)

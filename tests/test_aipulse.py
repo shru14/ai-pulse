@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -628,6 +628,16 @@ def test_static_build_holds_every_card(tmp_path):
     assert (tmp_path / "site" / "feeds" / "all.opml").read_text(encoding="utf-8").count("<outline ") == 6
     assert data["total"] == total  # the front page's all-time count, without the archive files
     assert (tmp_path / "site" / "tracker.csv").read_text(encoding="utf-8").startswith("date,countries,type,title,source,link")
+    # what search engines see: a description and a preview image; the sitemap lists each day's page; AI-training
+    # bots are kept out, and readers' own pages are never indexed
+    assert '<meta name="description"' in page and 'og:image" content="https://projectaipulse.com/og.png"' in page
+    robots = (tmp_path / "site" / "robots.txt").read_text(encoding="utf-8")
+    assert "User-agent: GPTBot\nDisallow: /" in robots and "Sitemap: https://projectaipulse.com/sitemap.xml" in robots
+    assert "User-agent: *\nDisallow: /dossier/" in robots
+    for private in ("dossier.html", "ask.html"):
+        assert '<meta name="robots" content="noindex">' in (tmp_path / "site" / private).read_text(encoding="utf-8")
+    sitemap = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
+    assert sitemap.count("<url>") == 1 + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name != "latest.html"])
     # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
     days = sorted(p.name for p in daily.iterdir() if p.name != "latest.html")

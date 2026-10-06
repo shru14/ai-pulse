@@ -1,7 +1,20 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Pulse</title>
+<title>AI Pulse · Daily AI news, laws and research from around the world</title>
+<!-- What search engines and link previews show (the image is our own drawing, templates/og.png) -->
+<meta name="description" content="A free daily briefing on AI worldwide: releases, industry, research, policy and an AI law tracker from 100+ public sources. No ads, no tracking.">
+<link rel="canonical" href="https://projectaipulse.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AI Pulse">
+<meta property="og:title" content="AI Pulse · Daily AI news, laws and research from around the world">
+<meta property="og:description" content="A free daily briefing on AI worldwide: releases, industry, research, policy and an AI law tracker from 100+ public sources. No ads, no tracking.">
+<meta property="og:url" content="https://projectaipulse.com/">
+<meta property="og:image" content="https://projectaipulse.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="AI Pulse: Your briefing on what's happening in AI worldwide. Releases, Industry, Research, Regulation tracker, Policy, Infra &amp; climate">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Releases" href="feeds/releases.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Industry" href="feeds/news.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Research" href="feeds/research.xml">
@@ -818,7 +831,7 @@ function showPage(){
   $("subscribe-open").hidden = $("glossary-open").hidden = home;
   // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
-  if(home){ document.title = "AI Pulse"; return loadHome(); }
+  if(home){ document.title = "AI Pulse · Daily AI news, laws and research from around the world"; return loadHome(); }
   if(state.allTime === undefined) loadHomeCounts();  // the masthead's all-time total
   const hero = $("sec-hero");
   hero.className = "sec-hero k-" + state.cat;
