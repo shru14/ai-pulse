@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css",
         "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -639,6 +639,7 @@ def test_static_build_holds_every_card(tmp_path):
         assert '<meta name="robots" content="noindex">' in (tmp_path / "site" / private).read_text(encoding="utf-8")
     sitemap = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
     tracker_pages = list((tmp_path / "site" / "tracker").glob("**/index.html"))
+    tracker_pages += list((tmp_path / "site" / "glossary").glob("**/index.html"))  # and the glossary's
     assert sitemap.count("<url>") == 1 + 7 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name != "latest.html"])
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
@@ -664,6 +665,29 @@ def test_tracker_csv_holds_official_records_only():
     rows = tracker_csv([card("congress.gov", "H.R. 1: An AI bill, with a comma"), card("TechCrunch AI", "A headline")]).splitlines()
     assert rows == ["date,countries,type,title,source,link",
                     '2026-10-01,US,proposal,"H.R. 1: An AI bill, with a comma",congress.gov,https://e.com/congress.gov']
+
+
+def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
+    from aipulse import glossary, glossary_pages
+    conn = store.connect(":memory:")
+    cards = [{"id": "a", "title": "A new MoE model", "summary": "35B-A3B, cheap to run", "date": "2026-10-05",
+              "category": "tool", "source": "X"}]
+    paths = glossary_pages.build(conn, cards, tmp_path, date(2026, 10, 6))
+    assert paths[0] == "glossary/" and len(paths) == 1 + len(glossary.ENTRIES)
+    page = (tmp_path / "glossary" / "mixture-of-experts" / "index.html").read_text(encoding="utf-8")
+    # the site's masthead and footer, the meaning with the other words in it linked, related terms, the stories
+    assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="site.css"' in page
+    assert '<h1>Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
+    assert "<h2>Related terms</h2>" in page and page.count('<li><div><a href="/glossary/') == glossary_pages.RELATED
+    assert "Mentioned in 1 story in the last 7 days." in page and 'href="/all/?q=Mixture%20of%20Experts"' in page
+    # what makes it worth a visit: the words in the same stories, and the week's words as a cloud on glossary/
+    assert "<h2>Often in the same stories</h2>" in page and 'href="/glossary/parameters/" style="font-size:' in page
+    assert '"@type": "DefinedTerm"' in page and 'rel="canonical" href="https://projectaipulse.com/glossary/mixture-of-experts/"' in page
+    index = (tmp_path / "glossary" / "index.html").read_text(encoding="utf-8")
+    assert index.count('<li><div><a href="/glossary/') == len(glossary.ENTRIES) and '<h2 id="A">A</h2>' in index
+    cloud = index[index.index('<div class="cloud"'):index.index("<h2>A to Z</h2>")]
+    assert cloud.count("<a ") == 2 and "Mixture of Experts</a>" in cloud  # this week's words only
+    assert (tmp_path / "site.css").is_file()
 
 
 def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
