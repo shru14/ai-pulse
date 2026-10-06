@@ -558,10 +558,10 @@ header.top{border-bottom:4px solid var(--ink)}
 .sec-hero h2::after{display:none}
 .sec-hero p{font-size:16px;max-width:60ch}
 .sec-hero .status{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px 14px;font-size:12px}
-/* the tracker's one extra button: its official records, a page per country (countries.py) */
-.by-country{display:inline-block;margin-top:10px;background:var(--ink);color:var(--bg);font:600 14px var(--body);padding:8px 14px;text-decoration:none;box-shadow:4px 4px 0 var(--cat-f,var(--ink))}
+/* the tracker's one extra button, beside its filters: its official records, a page per country (countries.py) */
+.by-country{text-decoration:none;white-space:nowrap}
 .by-country[hidden]{display:none}
-.by-country:hover{filter:brightness(1.2)}
+.by-country svg{width:16px;height:16px}
 .by-country:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .sec-hero .ico,.sec-hero .ico.sec{width:52px;height:52px;border-radius:0;border:3px solid var(--ink);background:var(--bg);color:var(--ink)}
 /* the masthead: name and buttons on top, every stream on its own ruled row below (never cut off) */
@@ -741,8 +741,7 @@ header.top.home{height:auto;padding-top:10px}
   <div class="sec-hero" id="sec-hero">
     <span class="art" id="sec-art" aria-hidden="true"></span>
     <span class="ico" id="sec-ico" aria-hidden="true"></span>
-    <div><h2 id="sec-title"></h2><p id="sec-desc"></p><div class="status" id="status">Loading feed…</div>
-      <a class="by-country" id="by-country" href="tracker/" hidden>AI laws by country →</a></div>
+    <div><h2 id="sec-title"></h2><p id="sec-desc"></p><div class="status" id="status">Loading feed…</div></div>
   </div>
 
   <div class="controls">
@@ -754,6 +753,10 @@ header.top.home{height:auto;padding-top:10px}
         <option value="90">90 days</option>
         <option value="0">All time</option>
       </select>
+      <a class="subscribe-btn cta by-country" id="by-country" href="tracker/" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+        <span>AI laws by country</span>
+      </a>
     </div>
     <div class="groups" id="placebar" hidden></div>
   </div>
