@@ -111,6 +111,35 @@ def tracker_csv(cards: list[dict]) -> str:
     return out.getvalue()
 
 
+SAMPLE_PER_STREAM = 4  # stories a section shows in the sample email (daily/sample.html)
+
+
+def sample_cards(cards: list[dict], day: date) -> list[dict]:
+    """A day's cards with every word of theirs replaced by a placeholder: the email's format, none of its content."""
+    seen: dict[str, int] = {}
+    out = []
+    for c in sorted((c for c in cards if (c.get("date") or "")[:10] == day.isoformat()), key=lambda c: c["id"]):
+        k = seen[c["category"]] = seen.get(c["category"], 0) + 1
+        if k <= SAMPLE_PER_STREAM:
+            out.append({**c, "title": "Example headline: what happened, as the outlet put it",
+                        "summary": "A line or two of summary, from the publisher's own description of the story.",
+                        "source": f"Outlet {'ABCD'[k - 1]}", "url": rss.SITE, "also": [], "tags": [], "jurisdictions": [],
+                        "authors": ""})
+    return out
+
+
+def sample_page(cards: list[dict], day: date) -> str | None:
+    """daily/sample.html: what the daily email looks like, with placeholder stories (the front page links to it)."""
+    page = digest.build(sample_cards(cards, day), list(rss.FEEDS), day, layout="full", web=True)
+    if not page:
+        return None
+    note = ('<div style="max-width:720px;margin:16px auto;padding:12px 16px;border:2px solid #000;background:#F0E442;'
+            'font:600 15px Arial,sans-serif;color:#000">A sample of the daily email: this is its format, and the stories '
+            'are placeholders. <a href="/#subscribe" style="color:#000">Subscribe to get the real one every morning →</a></div>')
+    html = page[2].replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+    return re.sub(r"<body[^>]*>", lambda m: m.group(0) + note, html, count=1)
+
+
 def daily_index(conn, total: int, days: list[date], out: Path) -> None:
     """daily/: every day's email as a page, newest first, by month; Sunday's email (it covers the Saturday) also
     brings the week in AI."""
@@ -169,6 +198,9 @@ def build(conn, out: str | Path) -> int:
             published.append(day)
             for name in (day.isoformat(), "latest"):
                 (out / "daily" / f"{name}.html").write_text(page[2], encoding="utf-8")
+    sample = next((s for d in reversed(published) if (s := sample_page(cards, d))), None)
+    if sample:  # the front page's "See what the email looks like"
+        (out / "daily" / "sample.html").write_text(sample, encoding="utf-8")
     daily_index(conn, len(cards), published, out)  # daily/: every edition, by month
     for c in cards:
         c["s"] = text.get(c["id"], "")

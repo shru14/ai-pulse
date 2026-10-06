@@ -655,7 +655,12 @@ def test_static_build_holds_every_card(tmp_path):
     daily = tmp_path / "site" / "daily"
     days = sorted(p.name for p in daily.iterdir() if p.name not in ("latest.html", "index.html"))
     assert "<h1>Daily editions</h1>" in (daily / "index.html").read_text(encoding="utf-8")  # every edition, by month
-    assert 'href="daily/latest.html"' in page
+    assert 'href="daily/sample.html"' in page and 'href="daily/"' not in page
+    # "See what the email looks like": its format with placeholder stories, none of the day's own
+    from aipulse.static import sample_cards
+    sample = sample_cards(cards, date.fromisoformat(cards[0]["date"][:10]))
+    assert sample and all(c["source"].startswith("Outlet ") and c["title"].startswith("Example headline") for c in sample)
+    assert not {c["title"] for c in cards} & {c["title"] for c in sample}
     assert not days or (daily / "latest.html").read_text(encoding="utf-8") == (daily / days[-1]).read_text(encoding="utf-8")
 
 
