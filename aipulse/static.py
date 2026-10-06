@@ -111,6 +111,46 @@ def tracker_csv(cards: list[dict]) -> str:
     return out.getvalue()
 
 
+SAMPLE_PER_STREAM = 4  # stories a section shows in the sample email (daily/sample.html)
+
+
+def sample_cards(cards: list[dict], day: date) -> list[dict]:
+    """A day's cards with every word of theirs replaced by a placeholder: the email's format, none of its content."""
+    seen: dict[str, int] = {}
+    out = []
+    for c in sorted((c for c in cards if (c.get("date") or "")[:10] == day.isoformat()), key=lambda c: c["id"]):
+        k = seen[c["category"]] = seen.get(c["category"], 0) + 1
+        if k <= SAMPLE_PER_STREAM:
+            out.append({**c, "title": "Example headline: what happened, as the outlet put it",
+                        "summary": "A line or two of summary, from the publisher's own description of the story.",
+                        "source": f"Outlet {'ABCD'[k - 1]}", "url": rss.SITE, "also": [], "tags": [], "jurisdictions": [],
+                        "authors": ""})
+    return out
+
+
+def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | None:
+    """daily/sample.html: what the daily email looks like, with placeholder stories (the front page links to it),
+    and the day's real meme of the day where the email has it (its picture saved beside the page, so search engines
+    can index it)."""
+    page = digest.build(sample_cards(cards, day), list(rss.FEEDS), day, layout="full", web=True)
+    if not page:
+        return None
+    note = ('<div style="max-width:720px;margin:16px auto;padding:12px 16px;border:2px solid #000;background:#F0E442;'
+            'font:600 15px Arial,sans-serif;color:#000">A sample of the daily email. '
+            '<a href="/#subscribe" style="color:#000">Subscribe to get the real one every morning →</a></div>')
+    html = re.sub(r"<body[^>]*>", lambda m: m.group(0) + note, page[2], count=1)
+    meme = memes.of_the_day(cards, day)
+    picture = meme and memes.render(meme)
+    if picture and out:
+        name = f"meme-of-the-day.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
+        (out / "daily" / name).write_bytes(picture)
+        block = (f'<div style="margin:0 0 14px"><div style="font-size:11px;font-weight:bold;letter-spacing:2px;'
+                 f'text-transform:uppercase;color:{digest.HEADLINE};margin-bottom:6px">Meme of the day</div>'
+                 f'{memes.html(meme, name, small=True)}</div>')
+        html = html.replace('20px 10px">', '20px 10px">' + block, 1)
+    return html
+
+
 def daily_index(conn, total: int, days: list[date], out: Path) -> None:
     """daily/: every day's email as a page, newest first, by month; Sunday's email (it covers the Saturday) also
     brings the week in AI."""
@@ -169,6 +209,14 @@ def build(conn, out: str | Path) -> int:
             published.append(day)
             for name in (day.isoformat(), "latest"):
                 (out / "daily" / f"{name}.html").write_text(page[2], encoding="utf-8")
+    for d in reversed(published):  # the day's Gemini meme, if the "memes" step made one (no call here)
+        memegen.prepare(conn, cards, today, day=d)
+        if (sample := sample_page(cards, d, out)):
+            break
+    else:
+        sample = None
+    if sample:  # the front page's "See what the email looks like"
+        (out / "daily" / "sample.html").write_text(sample, encoding="utf-8")
     daily_index(conn, len(cards), published, out)  # daily/: every edition, by month
     for c in cards:
         c["s"] = text.get(c["id"], "")
@@ -224,7 +272,7 @@ def build(conn, out: str | Path) -> int:
     places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
-    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/"] + places), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)
