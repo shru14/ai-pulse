@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Your AI Pulse dossier: your questions</title>
+<!-- The page the Sunday email's "Get my dossier" button opens (ask.html#<the reader's private token>, as their
+     unsubscribe link): their weekly dossier's questions, in the question box the sign-up form had (a question,
+     "+", and each one kept as a tag in a row). Saving sends the reader's other choices back unchanged (the sign-up
+     web app's "save", apps-script/Code.gs), so only the questions change. The look matches the dossier page. -->
+<style>
+  body{margin:0;background:#e9eef7;color:#1a1a1a;font-family:Arial,Helvetica,sans-serif}
+  .paper{max-width:680px;margin:12px auto 24px;background:#ffffff;border-radius:6px;overflow:hidden}
+  .band{background:#14213d;color:#fff;padding:22px 20px 18px}
+  .band .brand{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px}
+  .band h1{font-size:22px;line-height:1.3;margin:0}
+  .inner{padding:18px 20px 16px}
+  @media (max-width:520px){.paper{margin:0;border-radius:0}.inner{padding:16px 14px 12px}}
+  .lede{font-size:15px;line-height:1.5;color:#3c4043;margin:0 0 12px}
+  .row{display:flex;gap:6px;align-items:stretch}
+  .row[hidden]{display:none}
+  .ask{flex:1;min-width:0;box-sizing:border-box;border:1px solid #c9ced6;border-top:3px solid #1c3faa;border-radius:8px;
+    font:15px/1.45 Arial,Helvetica,sans-serif;padding:10px 12px;color:#1a1a1a}
+  .ask:focus{outline:2px solid #1c3faa;outline-offset:1px}
+  .more{flex:none;width:44px;border:1px solid #1a1a1a;border-radius:8px;background:#fff;font:bold 22px/1 Arial,sans-serif;cursor:pointer}
+  .asked,.samples{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .asked:empty{display:none}
+  .q,.sample{border:1px solid #1a1a1a;border-radius:6px;background:#fff;font:14px/1.3 Arial,sans-serif;padding:6px 10px;cursor:pointer;color:#1a1a1a;text-align:left}
+  .sample{border-color:#c9ced6}
+  .q:hover,.sample:hover,.more:hover{border-color:#1c3faa}
+  .hint{font-size:13px;color:#5f6368;margin:8px 0 0;line-height:1.5}
+  .go{display:block;width:100%;margin-top:16px;border:0;border-radius:8px;background:#14213d;color:#fff;font:bold 16px Arial,sans-serif;padding:13px;cursor:pointer}
+  .go:disabled{opacity:.6;cursor:default}
+  .msg{font-size:14px;line-height:1.5;margin:12px 0 0}
+  .msg:empty{display:none}
+  .msg.ok{background:#f4f6fa;border:1px solid #e3e5e8;border-radius:6px;padding:12px 14px}
+  .msg.error{color:#b3261e}
+  /* the reader's dossier, as the dossier page draws it (dossier.html) */
+  .dossier{margin-top:22px;padding-top:14px;border-top:1px solid #e3e5e8}
+  .dossier:empty{display:none}
+  .kicker{font-size:13px;font-weight:bold;letter-spacing:.5px;text-transform:uppercase;color:#5f6368;margin:6px 0 10px}
+  .interests{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .interest{display:flex;flex-direction:column;gap:6px;text-align:left;padding:12px 12px 12px;background:#f4f6fa;
+    border:1px solid #e3e5e8;border-top:4px solid #e3e5e8;border-radius:0;color:#1a1a1a;font:inherit;cursor:pointer}
+  .interest:hover{border-top-color:#1c3faa}
+  .interest[aria-pressed="true"]{background:#ffffff;border-color:#1a1a1a;border-top-color:#1c3faa}
+  .interest .topic{font-size:15px;font-weight:bold;line-height:1.3}
+  .interest .count{font-size:12px;color:#5f6368}
+  .note{font-size:14px;color:#5f6368}
+  .foot{margin-top:24px;padding-top:12px;border-top:1px solid #e3e5e8;color:#5f6368;font-size:13px;line-height:1.6}
+  .foot a{color:#5f6368}
+</style>
+</head>
+<body>
+<main class="paper">
+  <div class="band"><div class="brand">AI Pulse weekly dossier</div><h1>Follow what you care about</h1></div>
+  <div class="inner">
+    <p class="lede">Ask what you want to follow in AI, and get last week's stories on it, picked just for you.</p>
+    <form id="form" novalidate>
+      <div class="row" id="row">
+        <input class="ask" id="ask" type="text" maxlength="150" autocomplete="off" placeholder="How hospitals are using AI"
+          aria-label="Your question">
+        <button class="more" id="more" type="button" title="Add this question" aria-label="Add this question">+</button>
+      </div>
+      <div class="asked" id="asked" aria-live="polite"></div>
+      <p class="hint"><span id="left">Type a question and press +. You can ask 2 more.</span> Name the place, company or
+        subject you mean. Some to try:</p>
+      <div class="samples" id="samples">
+        <button type="button" class="sample">How hospitals are using AI</button>
+        <button type="button" class="sample">AI rules in the UK</button>
+        <button type="button" class="sample">Nvidia chips and China</button>
+        <button type="button" class="sample">AI in banking and fintech</button>
+      </div>
+      <button class="go" id="go" type="submit">Get my dossier</button>
+    </form>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    <div class="dossier" id="dossier"></div>
+    <p class="foot">AI Pulse is free and non-commercial · <a href="./">projectaipulse.com</a></p>
+  </div>
+</main>
+<script>
+const SIGNUP_URL = "__SIGNUP_URL__", MAX = 3;
+const $ = id => document.getElementById(id);
+const token = (location.hash.match(/^#([0-9a-f-]{36})$/) || [])[1];
+let asked = [], mine = null;  // mine: the reader's other choices, sent back as they are
+const clean = v => v.replace(/[|\s]+/g, " ").trim();
+const say = (words, kind) => { $("msg").textContent = words; $("msg").className = "msg" + (kind ? " " + kind : ""); };
+function render(){
+  const left = MAX - asked.length;
+  $("asked").replaceChildren(...asked.map((q, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "q"; b.textContent = q + " ×"; b.setAttribute("aria-label", "Remove: " + q);
+    b.addEventListener("click", () => { asked.splice(i, 1); render(); });
+    return b;
+  }));
+  $("row").hidden = left < 1;
+  $("left").textContent = left < 1 ? "That's 3 questions, the most for one dossier."
+    : asked.length ? "You can ask " + left + " more." : "Type a question and press +. You can ask " + (left - 1) + " more.";
+}
+function add(q){
+  q = clean(q);
+  if(q.length < 2 || asked.length >= MAX || asked.some(v => v.toLowerCase() === q.toLowerCase())) return false;
+  asked.push(q); render(); return true;
+}
+const keep = () => { if(add($("ask").value)) $("ask").value = ""; $("ask").focus(); };
+$("more").addEventListener("click", keep);
+$("ask").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); keep(); } });
+$("samples").addEventListener("click", e => { const b = e.target.closest(".sample"); if(b) add(b.textContent); });
+const post = fields => fetch(SIGNUP_URL, {method: "POST", body: new URLSearchParams({format: "json", ...fields})}).then(r => r.json());
+
+// The reader's dossier below the box (`ids`: their questions' ids, from the web app): a card per question, side
+// by side, and the chosen one's stories underneath, as the dossier page shows them (dossier.html)
+const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
+async function showDossier(ids){
+  const box = $("dossier");
+  ids = [...new Set((ids || "").split(".").filter(id => /^[0-9a-f]{24}$/.test(id)))].slice(0, MAX);
+  if(!ids.length) return box.replaceChildren();
+  const got = await Promise.all(ids.map(id => fetch(`dossier/${id}.json`, {cache: "no-cache"})
+    .then(r => r.ok ? r.json() : null).catch(() => null)));
+  const found = got.filter(Boolean);
+  const later = found.length < ids.length ? el("p", "note", (found.length ? "A new question's stories" : "Your dossier")
+    + " will be here soon, and in your Sunday email.") : null;
+  if(!found.length) return box.replaceChildren(el("div", "kicker", "Your weekly dossier"), later);
+  const cards = el("div", "interests"), section = el("div");
+  const show = k => {
+    cards.querySelectorAll(".interest").forEach((c, j) => c.setAttribute("aria-pressed", String(j === k)));
+    const d = found[k], head = document.createElement("div");
+    head.innerHTML = '<div style="margin-top:' + (found.length > 1 ? 28 : 8) + 'px;font-size:22px;font-weight:bold;line-height:1.25;'
+      + 'color:#1a1a1a"></div><div style="border-top:1px solid #1a1a1a;margin:10px 0 16px"></div>';
+    head.firstChild.textContent = d.topic;
+    const body = document.createElement("div");
+    body.innerHTML = d.html;  // the dossier's own HTML, made and escaped by aipulse/weekly.py
+    section.replaceChildren(head, body);
+  };
+  found.forEach((d, k) => {
+    const card = el("button", "interest");
+    card.type = "button";
+    card.append(el("span", "topic", d.topic),
+                el("span", "count", d.count + (d.count === 1 ? " story this week" : " stories this week")));
+    card.addEventListener("click", () => show(k));
+    cards.append(card);
+  });
+  const parts = found.length > 1 ? [el("div", "kicker", "Your questions · pick one"), cards, section]
+    : [el("div", "kicker", "Your weekly dossier"), section];
+  if(later) parts.push(later);
+  box.replaceChildren(...parts);
+  show(0);
+}
+
+render();
+if(!token){
+  $("form").hidden = true;
+  say("Open this page with the “Get my dossier” button in your Sunday AI Pulse email.", "error");
+} else {
+  $("go").disabled = true;
+  post({action: "choices", t: token}).then(r => {
+    if(!r.ok){ $("form").hidden = true; return say(r.text || "This link doesn't work any more.", "error"); }
+    mine = r; (r.interests || []).forEach(add); $("go").disabled = false; $("ask").focus();
+    showDossier(r.dossier);
+  }).catch(() => say("Couldn't reach AI Pulse. Please try again in a moment.", "error"));
+}
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  if(!mine) return;
+  if(add($("ask").value)) $("ask").value = "";  // a question typed but not yet added counts too
+  if(!asked.length) return say("Type a question, or pick one of the samples.", "error");
+  $("go").disabled = true; say("Saving…");
+  try{
+    const r = await post({action: "save", t: token, streams: (mine.streams || []).join(","),
+      more: (mine.more || []).join("|"), less: (mine.less || []).join("|"), words: (mine.words || []).join("|"),
+      often: mine.often || "daily", interests: asked.join("|")});
+    if(!r.ok) return say(r.error === "link" ? "This link doesn't work any more." : "Something went wrong. Please try again.", "error");
+    say("Saved. Your dossier comes with your Sunday email.", "ok");
+    mine.interests = r.interests || asked;
+    showDossier(r.dossier);
+  }catch(err){
+    say("Couldn't reach AI Pulse. Please try again in a moment.", "error");
+  }finally{
+    $("go").disabled = false;
+  }
+});
+</script>
+</body>
+</html>

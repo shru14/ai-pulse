@@ -54,6 +54,11 @@ def prefs_of(r: dict) -> dict[str, list[str]]:
     return prefs
 
 
+def ask_link(unsubscribe_link: str) -> str:
+    """The reader's dossier page (ask.html), where they ask their weekly dossier's questions: the same private token."""
+    return unsubscribe_link.replace("#unsubscribe=", "ask.html#")
+
+
 def choices_link(unsubscribe_link: str) -> str:
     """The reader's "Change my choices" link: the same private token as their unsubscribe link."""
     return unsubscribe_link.replace("#unsubscribe=", "#choices=")

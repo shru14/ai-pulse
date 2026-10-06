@@ -810,7 +810,7 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
         if weekly(day):  # every Sunday email: the dossier's button opens the reader's own form at its question box
-            dossier = {**(dossier or {}), "ask": unsubscribe.replace("#unsubscribe=", "#dossier=") if unsubscribe else change}  # (a sample: sign-up)
+            dossier = {**(dossier or {}), "ask": subscribers.ask_link(unsubscribe) if unsubscribe else change}  # (a sample: sign-up)
         open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left, dossier, (change, change_words))
         table_text, table_html = [], ""
         page, band, top = PAGE, _band(open_text[0], (prefs or {}).get("often") != "weekly"), 16

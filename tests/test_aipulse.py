@@ -609,7 +609,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -2500,7 +2500,7 @@ def test_dossiers_kept_per_interest_published_by_id_and_noted_on_sunday(tmp_path
             "category": "infra", "date": "2026-10-03", "added_at": "2026-10-03T10:00:00+00:00"}
     one_click = "https://projectaipulse.com/#unsubscribe=0f8fad5b-d9cb-469f-a165-70867728950e"
     _, text, html = digest.build([card], ["infra"], date(2026, 10, 3), one_click, dossier=note)
-    ask = one_click.replace("#unsubscribe=", "#dossier=")  # their own form, at the dossier's box (no "&": Gmail cuts it)
+    ask = "https://projectaipulse.com/ask.html#0f8fad5b-d9cb-469f-a165-70867728950e"  # their own dossier page
     assert "Change my questions" not in html and "Get my dossier" not in html  # a reader with a dossier: just the button to it
     # every subscriber's Sunday email has the box, questions or not; not on other days, nor without their own link
     _, new_text, new_html = digest.build([card], ["infra"], date(2026, 10, 3), one_click)
