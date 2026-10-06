@@ -240,7 +240,18 @@ def main():
                 print(f"Checked, no problems. Sent the {day} digest to {digest.send_all(emails)} of {len(readers)} subscribers "
                       f"({weekly_only} weekly only{'' if digest.weekly(day) else ', not today'}) {counts}")
             return
-        email = digest.build(cards, streams, day, layout=a.layout)
+        link, prefs, note = "", None, None
+        if os.environ.get("DIGEST_LIST_KEY") and a.to:
+            # a sample to a subscriber's own address (the project inbox): their own email, with their link, choices
+            # and dossier, as they'd get it; the address itself never appears in the log
+            from . import subscribers as sb, weekly as wk
+            key = os.environ["DIGEST_LIST_KEY"]
+            mine = sb.current(key, os.environ.get("DIGEST_SIGNUP_URL", "")).get(a.to.lower())
+            if mine:
+                streams, _, link, prefs = mine
+                note = wk.note(conn, key, prefs.get("interests") or [], day) if digest.weekly(day) else None
+            print(f"Sample as the subscriber's own email: {'yes' if mine else 'no, not subscribed'}")
+        email = digest.build(cards, streams, day, link, a.layout, prefs=prefs, dossier=note)
         if a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(digest.preview(email[2]))
             print(f"Checked, no problems: {email[0]} {counts} -> wrote {a.dry_run}")
