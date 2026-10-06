@@ -464,8 +464,8 @@ def _dossier(dossier: dict | None) -> tuple[list[str], str]:
                    f'border:0;margin-right:8px">' if icon else "")
                 + f'<span style="vertical-align:middle;white-space:nowrap">{words}&nbsp;→</span></a></td></tr></table>')
 
-    if has:
-        link = dossier["link"]
+    if has:  # the button opens the dossier page with the question box (ask.html), or, without it, the dossier
+        link = ask if ask.startswith(rss.SITE + "ask.html#") else dossier["link"]
         text = [f"YOUR WEEKLY DOSSIER, {dossier['week']}", f"Open your weekly dossier: {link}"]
         kicker, title = f'WEEKLY DOSSIER · {escape(dossier["week"].upper())}', "This week on what you follow"
         action = button(link, "Open your weekly dossier")

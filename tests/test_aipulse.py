@@ -2510,8 +2510,8 @@ def test_dossiers_kept_per_interest_published_by_id_and_noted_on_sunday(tmp_path
     assert "Get my dossier" not in digest.build([friday], ["infra"], date(2026, 10, 2), one_click)[2]
     sample = digest.build([card], ["infra"], date(2026, 10, 3))[2]  # a sample, without a reader's link: to sign up
     assert "Get my dossier" in sample and 'href="https://projectaipulse.com/#subscribe"' in sample
-    assert "YOUR WEEKLY DOSSIER, 28 Sep – 3 Oct" in text and "Data centre water cooling" not in text.split("YOUR WEEKLY")[1][:200]
-    assert f'href="{link}"' in html and "Open your weekly dossier" in html and f"cid:{digest.DOSSIER_CID}" in html  # the button
+    assert "YOUR WEEKLY DOSSIER, 28 Sep – 3 Oct" in text and "Data centre water cooling" not in text.split("YOUR WEEKLY")[1].split("\n\n")[0]
+    assert f'href="{ask}"' in html and f'href="{link}"' not in html and "Open your weekly dossier" in html and f"cid:{digest.DOSSIER_CID}" in html  # the button
     assert digest.INLINE[digest.DOSSIER_CID][:4] == b"\x89PNG"  # its icon, inside the email
     msg = digest._message("a@b.c", "s", text, html)
     assert any(part.get_content_type() == "image/png" for part in msg.walk())
