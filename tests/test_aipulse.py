@@ -2500,7 +2500,7 @@ def test_dossiers_kept_per_interest_published_by_id_and_noted_on_sunday(tmp_path
             "category": "infra", "date": "2026-10-03", "added_at": "2026-10-03T10:00:00+00:00"}
     one_click = "https://projectaipulse.com/#unsubscribe=0f8fad5b-d9cb-469f-a165-70867728950e"
     _, text, html = digest.build([card], ["infra"], date(2026, 10, 3), one_click, dossier=note)
-    ask = one_click.replace("#unsubscribe=", "#choices=") + "&dossier"  # their own form, at the dossier's box
+    ask = one_click.replace("#unsubscribe=", "#dossier=")  # their own form, at the dossier's box (no "&": Gmail cuts it)
     assert "Change my questions" not in html and "Get my dossier" not in html  # a reader with a dossier: just the button to it
     # every subscriber's Sunday email has the box, questions or not; not on other days, nor without their own link
     _, new_text, new_html = digest.build([card], ["infra"], date(2026, 10, 3), one_click)
