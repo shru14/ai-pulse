@@ -572,6 +572,12 @@ header.top{border-bottom:4px solid var(--ink)}
 .by-country a:hover{filter:brightness(1.08)}
 .by-country a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 @media (max-width:640px){.by-country{flex-direction:column;align-items:flex-start}}
+.word-filter{border-top-color:var(--accent)}
+.word-filter a.word-page{display:inline;height:auto;padding:0;background:none;border:0;color:var(--ink);font:inherit;font-weight:600;
+  text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px}
+.word-filter button{flex:none;height:40px;padding:0 16px;background:var(--bg);color:var(--ink);border:2px solid var(--ink);
+  font:600 15px var(--body);cursor:pointer;white-space:nowrap}
+.word-filter button:hover{background:var(--surface)}
 .sec-hero .ico,.sec-hero .ico.sec{width:52px;height:52px;border-radius:0;border:3px solid var(--ink);background:var(--bg);color:var(--ink)}
 /* the masthead: name and buttons on top, every stream on its own ruled row below (never cut off) */
 :root{--bar-h:104px}
@@ -773,6 +779,12 @@ header.top.home{height:auto;padding-top:10px}
       <p>Every AI bill, law, regulator and standard from official records, one page per country, with each bill's stages.</p></div>
     <a href="tracker/">Browse by country →</a>
   </div>
+  <!-- A glossary word's stories (?word=moe): those where the glossary marks that word -->
+  <div class="by-country word-filter" id="word-filter" hidden>
+    <div><b>Stories with the word “<span id="word-name"></span>”</b>
+      <p>Only the stories where the glossary marks this word. <a class="word-page" id="word-page" href="glossary/">What it means</a></p></div>
+    <button type="button" id="word-clear">× Show all stories</button>
+  </div>
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
@@ -826,7 +838,11 @@ const PAGE_TITLE = {all: "All AI stories, newest first", tool: "AI model and pro
   news: "AI industry news: companies, deals and markets", research: "New AI research papers",
   regulation: "AI regulation tracker: bills, laws and standards by country",
   policy: "AI policy news: governments, courts and politics", infra: "AI data centres, energy and climate"};
-const pageUrl = cat => (cat === "home" ? "/" : "/" + PATH[cat] + "/") + location.search;
+const pageUrl = cat => {  // the page's address, with a glossary word's filter (?word=moe) when one is on
+  const p = new URLSearchParams(location.search);
+  state.word && cat !== "home" ? p.set("word", state.word) : p.delete("word");
+  return (cat === "home" ? "/" : "/" + PATH[cat] + "/") + (String(p) ? "?" + p : "");
+};
 // An old link's #policy still opens Policy (and the address becomes /policy/); otherwise the path says which page.
 const hashCat = () => { const h = location.hash.slice(1);
   if(h === "all" || CATS.includes(h) || SOON.has(h) || h === "home") return h;
@@ -834,6 +850,9 @@ const hashCat = () => { const h = location.hash.slice(1);
 state.cat = hashCat();
 if(/^#(home|all|tool|news|research|regulation|policy|infra)$/.test(location.hash)) history.replaceState(null, "", pageUrl(state.cat));
 { const q = new URLSearchParams(location.search).get("q"); if(q){ state.q = q; if(state.cat === "home") state.cat = "all"; } }
+// /all/?word=moe (a glossary page's "See stories that mention it"): the stories where the glossary marks that word
+state.word = new URLSearchParams(location.search).get("word");
+if(state.word && state.cat === "home") state.cat = "all";
 
 const $ = id => document.getElementById(id);
 function saveUI(){
@@ -870,6 +889,7 @@ function showPage(){
   $("sec-title").textContent = state.cat === "all" ? "All stories" : STREAM_NAME[state.cat];
   $("sec-desc").textContent = SECTION_DESC[state.cat];
   $("by-country").hidden = state.cat !== "regulation";
+  wordBanner();
   $("sec-art").innerHTML = heroArt(state.cat);
   const hp = (PHOTOS[STREAM_PHOTO[state.cat]] || PHOTOS.business || [])[0];
   hero.style.setProperty("--hero-photo", hp ? 'url("photos/' + hp[0] + '")' : "none");
@@ -1136,11 +1156,13 @@ async function load(reset){
   const params = new URLSearchParams({page, per_page: PER_PAGE});
   if(state.cat !== "all") params.set("category", state.cat);
   if(state.q.trim()) params.set("q", state.q.trim());
+  if(state.word) params.set("word", state.word);
   if(state.range) params.set("days", state.range);
   if(state.cat === "regulation" && state.place) params.set("place", state.place);
   if(REGION_TABS.has(state.cat) && state.region) params.set("region", state.region);
   state.loading = true; render();
   try{
+    if(state.word) await GL.loaded;  // the word's ways of being written come with the glossary
     const data = await fetchItems(params);
     if(seq !== requestSeq) return;
     state.items = reset ? data.items : state.items.concat(data.items);
@@ -1196,7 +1218,9 @@ function staticPayload(d, params){
   const words = (fold(params.get("q") || "").match(/[\p{L}\p{N}]+/gu) || []).map(stem);
   let since = "";
   if(days){ const t = new Date(); t.setUTCDate(t.getUTCDate() - days); since = t.toISOString().slice(0, 10); }
-  const base = d.cards.filter(c => c.date >= since && words.every(w => c.s.includes(" "+w)));
+  const word = GL.byId[params.get("word")];  // as the card's underlines find it: in its headline or summary
+  const base = d.cards.filter(c => c.date >= since && words.every(w => c.s.includes(" "+w))
+    && (!word || word.re.test((c.title || "") + " " + (c.summary || ""))));
   const counts = {tool:0, news:0, policy:0, research:0, regulation:0, infra:0};
   base.forEach(c => { counts[c.category] = (counts[c.category] || 0) + 1; });
   counts.all = base.length;
@@ -1277,7 +1301,7 @@ function renderStatus(){
   // Nothing has arrived yet: say so, a row of zeros would read as an empty site.
   if(state.loading && state.counts.all === undefined){ s.append(el("div", null, "Loading…")); return; }
   const l1 = el("div"); l1.append(el("b",null,String(n)), document.createTextNode(
-    (n===1 ? " story " : " stories ") + (state.q.trim() ? "matching your search " : "") + span));
+    (n===1 ? " story " : " stories ") + (state.word ? "with this word " : state.q.trim() ? "matching your search " : "") + span));
   s.append(l1);  // the stream's own count; when it was last updated is in the masthead
 }
 // The masthead: every stream's stories of all time, whatever range or search is picked on a stream's page.
@@ -1575,7 +1599,19 @@ document.addEventListener("click", e => {
   e.preventDefault(); go(a.dataset.go);
 });
 // Back and Forward between pages (and an old #policy link typed in)
+// The strip over a glossary word's stories: its name, its page, and a way back to every story
+function wordBanner(){
+  $("word-filter").hidden = !state.word || state.cat === "home";
+  if(!state.word) return;
+  $("word-name").textContent = (GL.byId[state.word] || {}).term || state.word;
+  $("word-page").href = "glossary/" + state.word + "/";
+}
+$("word-clear").addEventListener("click", () => {
+  state.word = null; history.replaceState(null, "", pageUrl(state.cat)); wordBanner(); load(true);
+});
 const routed = () => {
+  const w = new URLSearchParams(location.search).get("word");
+  if(w !== state.word){ state.word = w; wordBanner(); if(hashCat() === state.cat) load(true); }
   const c = hashCat();
   if(c !== state.cat){ if(c !== "regulation") state.place = null; state.cat = c; state.region = null; showPage(); }
 };
@@ -1812,12 +1848,12 @@ $("sub-form").addEventListener("submit", async e => {
 // stories write it (regular expressions) and how many of this week's stories use it.
 const GL = {entries: [], byId: {}, groups: [], ready: false, group: null, pending: null};
 const MAX_WORDS = 3;  // underlined words per card, least common first: the ones a reader is least likely to know
-fetch("glossary.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
+GL.loaded = fetch("glossary.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
   const re = (e, flags) => new RegExp("(?<!\\w)(?:" + e.match.join("|") + ")(?![\\w])", flags);
   GL.entries = d.entries.map(e => ({...e, re: re(e, e.case ? "" : "i"), anyCase: re(e, "i")}));
   GL.byId = Object.fromEntries(GL.entries.map(e => [e.id, e]));
   GL.groups = d.groups; GL.ready = true;
-  render(); renderGlossary();
+  render(); renderGlossary(); wordBanner();
   if(GL.pending != null){ openGlossary(GL.pending); GL.pending = null; }
 }).catch(() => { $("gl-body").replaceChildren(el("p","gl-none","Couldn't load the glossary. Try reloading the page.")); });
 
@@ -1932,8 +1968,9 @@ function renderGlossary(){
     const h = el("h3",null,e.term); h.append(el("span","grp",e.group));
     const find = el("button","gl-find","Show stories that mention it →"); find.type="button";
     find.addEventListener("click", () => {
-      glDialog.close(); state.q = e.search; $("q").value = e.search;
-      if(state.cat === "home") go("all"); else load(true);
+      glDialog.close(); state.word = e.id; state.q = ""; $("q").value = "";
+      if(state.cat === "home") return go("all");
+      history.replaceState(null, "", pageUrl(state.cat)); wordBanner(); load(true);
     });
     d.append(h, el("p",null,e.def), find); body.append(d);
   });
@@ -1962,6 +1999,7 @@ document.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click"
 const SUB_PROMPT = "aipulse-sub-prompt";
 function promptSubscribe(){
   if(location.hash && !/^#(home|all|tool|news|research|regulation|policy|infra)?$/.test(location.hash)) return;
+  if(state.word || state.q) return;  // they came for a word's or a search's stories
   try{
     if(localStorage.getItem(SUB_PROMPT) === "subscribed" || sessionStorage.getItem(SUB_PROMPT)) return;
   }catch(e){ return; }  // without storage it would pop up on every page load

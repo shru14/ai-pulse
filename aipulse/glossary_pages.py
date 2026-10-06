@@ -10,7 +10,6 @@ from collections import Counter
 from datetime import date, timedelta
 from html import escape
 from pathlib import Path
-from urllib.parse import quote
 
 from . import glossary, pages, rss
 
@@ -100,7 +99,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 else "Not in the last 7 days' stories.")
         body = (f'<span class="kind">AI glossary · {escape(e["group"])}</span>\n<h1>{escape(e["term"])}</h1>\n'
                 f'<p class="def">{meaning}</p>\n<p class="intro">{seen}</p>\n'
-                f'<a class="search" href="/all/?q={quote(e["search"])}">See stories that mention it →</a>\n'
+                f'<a class="search" href="/all/?word={e["id"]}">See stories that mention it →</a>\n'
                 + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
                    f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'
                    + cloud([(by_id[i], k) for i, k in together[e["id"]].most_common(TOGETHER)], "Often in the same stories")
