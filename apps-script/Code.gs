@@ -196,10 +196,9 @@ function confirm(t) {
     props.deleteProperty("t:" + t);
     props.setProperty("u:" + rec.token, email);
     props.setProperty("s:" + email, JSON.stringify(rec));
-    notify(changed ? `AI Pulse: a subscriber changed streams (${count()} subscribers)`
-                   : `AI Pulse: new subscriber (${count()} subscribers)`,
-           `${email} ${changed ? "now gets" : "subscribed to"}: ${names(rec.streams)}.` +
-           (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
+    if (!changed)  // new subscribers only: the project inbox isn't told about changed streams or choices
+      notify(`AI Pulse: new subscriber (${count()} subscribers)`, `${email} subscribed to: ${names(rec.streams)}.` +
+             (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
     return {ok: true, title: changed ? "Your streams are changed" : "Welcome aboard, you're subscribed!",
             text: (weeklyOnly(rec.prefs) ? `${changed ? "From Sunday" : "Every Sunday"} you'll get the week in AI: ${names(rec.streams)}. `
                    : `${changed ? "From tomorrow" : "Every morning"} you'll get the day before in AI: ${names(rec.streams)}. `) +
@@ -263,8 +262,6 @@ function save(p) {
   } finally {
     lock.releaseLock();
   }
-  notify(`AI Pulse: a subscriber changed their choices (${count()} subscribers)`,
-         `${email} now gets: ${names(streams)}.` + (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
   return {ok: true, title: "Saved", text: `From ${weeklyOnly(rec.prefs) ? "Sunday's" : "tomorrow's"} email: ${names(streams)}` +
           (hasPrefs(rec.prefs) ? `; ${summary(rec.prefs)}.` : ".")};
 }
