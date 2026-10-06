@@ -54,8 +54,8 @@ def robots_txt() -> str:
 
 
 def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
-    """sitemap.xml: the pages search engines should index: the front page, the streams' and the tracker's pages by
-    country (`pages`, paths under the site) and each day's full edition."""
+    """sitemap.xml: the pages search engines should index: the front page, the streams', the tracker's pages by
+    country and the glossary's (`pages`, paths under the site) and each day's full edition."""
     urls = ([(rss.SITE, today)] + [(f"{rss.SITE}{p}", today) for p in pages]
             + [(f"{rss.SITE}daily/{d.isoformat()}.html", d) for d in sorted(days, reverse=True)])
     rows = "".join(f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod></url>\n" for u, d in urls)
@@ -199,6 +199,8 @@ def build(conn, out: str | Path) -> int:
     (out / "robots.txt").write_text(robots_txt(), encoding="utf-8")
     from . import countries
     places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
+    from . import glossary_pages
+    places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
