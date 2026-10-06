@@ -7,8 +7,11 @@ data.json in the browser instead of calling /api/items.
 
 from __future__ import annotations
 
+import csv
+import io
 import json
 import re
+from html import escape
 import shutil
 import unicodedata
 from datetime import date, datetime, timedelta, timezone
@@ -38,6 +41,29 @@ RECENT_DAYS = 92  # a little over the page's longest range short of "All time"
 DAILY_PAGES = 14  # days whose full email is published under daily/ (each email links to its day's page)
 
 
+def opml(title: str = "AI Pulse") -> str:
+    """feeds/all.opml: every stream's RSS feed in one file, for a feed reader to import at once."""
+    rows = "".join(f'    <outline type="rss" text="{escape(f"{title} · {name}")}" title="{escape(f"{title} · {name}")}" '
+                   f'xmlUrl="{rss.SITE}feeds/{key}.xml" htmlUrl="{rss.SITE}#{category}"/>\n'
+                   for key, (category, name, *_) in rss.FEEDS.items())
+    return (f'<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n  <head><title>{title}</title></head>\n'
+            f'  <body>\n{rows}  </body>\n</opml>\n')
+
+
+def tracker_csv(cards: list[dict]) -> str:
+    """tracker.csv: the Regulation tracker's official records only (legislatures, OECD.AI, ISO/IEC, IEEE): facts and
+    a link to each record, newest first. News outlets' stories in the tracker stay out: their headlines are theirs."""
+    from .bills import OFFICIAL_SOURCES
+    out = io.StringIO()
+    w = csv.writer(out, lineterminator="\n")
+    w.writerow(["date", "countries", "type", "title", "source", "link"])
+    for c in sorted((c for c in cards if c["category"] == "regulation" and c["source"] in OFFICIAL_SOURCES),
+                    key=lambda c: c["date"], reverse=True):
+        w.writerow([c["date"], " ".join(c.get("jurisdictions") or []), c.get("action") or "", c["title"].strip(),
+                    c["source"], c["url"]])
+    return out.getvalue()
+
+
 def build(conn, out: str | Path) -> int:
     """Write the static site into `out` (replaced). Returns how many cards it holds."""
     out = Path(out)
@@ -59,6 +85,8 @@ def build(conn, out: str | Path) -> int:
     (out / "feeds").mkdir()
     for name in rss.FEEDS:
         (out / "feeds" / f"{name}.xml").write_bytes(rss.feed_xml(name, cards))
+    (out / "feeds" / "all.opml").write_text(opml(), encoding="utf-8")  # every stream's feed in one file
+    (out / "tracker.csv").write_text(tracker_csv(cards), encoding="utf-8")
     # Each recent day's full email (every story, every stream, one tagged table) as a page: every daily email
     # links to it, whatever streams its reader chose.
     (out / "daily").mkdir()
@@ -88,7 +116,9 @@ def build(conn, out: str | Path) -> int:
     for year, year_cards in sorted(years.items(), reverse=True):
         (out / "archive" / f"{year}.json").write_text(json.dumps(year_cards, separators=(",", ":")), encoding="utf-8")
         archive.append({"file": f"archive/{year}.json", "cards": len(year_cards)})
+    # "total": every card of all time, so the front page's count needs no archive file
     data = {"built": datetime.now(timezone.utc).isoformat(timespec="seconds"), "cards": recent, "archive": archive,
+            "total": len(cards),
             "stories": store.story_count(conn), "lastRun": store.last_run(conn),
             "jurisdictions": jurisdictions.meta(), "euMembers": sorted(EU_MEMBERS),
             "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()}, "paperHomes": classify.paper_homes()}

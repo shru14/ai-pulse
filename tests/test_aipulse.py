@@ -620,16 +620,28 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
-    assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["infra.xml", "news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
+    assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["all.opml", "infra.xml", "news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
+    assert (tmp_path / "site" / "feeds" / "all.opml").read_text(encoding="utf-8").count("<outline ") == 6
+    assert data["total"] == total  # the front page's all-time count, without the archive files
+    assert (tmp_path / "site" / "tracker.csv").read_text(encoding="utf-8").startswith("date,countries,type,title,source,link")
     # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
     days = sorted(p.name for p in daily.iterdir() if p.name != "latest.html")
     assert 'href="daily/latest.html"' in page
     assert not days or (daily / "latest.html").read_text(encoding="utf-8") == (daily / days[-1]).read_text(encoding="utf-8")
+
+
+def test_tracker_csv_holds_official_records_only():
+    from aipulse.static import tracker_csv
+    card = lambda source, title: {"category": "regulation", "source": source, "title": title, "date": "2026-10-01",
+                                  "jurisdictions": ["US"], "action": "proposal", "url": f"https://e.com/{source}"}
+    rows = tracker_csv([card("congress.gov", "H.R. 1: An AI bill, with a comma"), card("TechCrunch AI", "A headline")]).splitlines()
+    assert rows == ["date,countries,type,title,source,link",
+                    '2026-10-01,US,proposal,"H.R. 1: An AI bill, with a comma",congress.gov,https://e.com/congress.gov']
 
 
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
