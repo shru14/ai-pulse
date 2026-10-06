@@ -8,8 +8,6 @@
   their events give the stages.
 - UK: the UK Parliament Bills API (no key; Open Parliament Licence). AI bills are found by title searches;
   their readings in each House give the stages.
-- Canada: LEGISinfo (Parliament of Canada; no key). Each session's bills with their reading dates. The
-  Speaker permits accurate, non-commercial reproduction that isn't presented as official.
 - Brazil: the Chamber of Deputies' open data API (no key; published for reuse in apps). AI bills are found by
   keyword and their Portuguese summary; bills attached to a lead bill ("tramitando em conjunto") move with it
   and aren't shown separately. Their procedural events give the stages.
@@ -47,7 +45,7 @@ from datetime import date, datetime, timedelta, timezone
 from . import feeds, store, translate
 
 # Cards made from official records; the keyword rules for news stories never re-sort them.
-OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament", "Parliament of Canada",
+OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament",
                     "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China",
                     "Parliament of India", "e-Gov (Japan)", "National Legal Database (Vietnam)", "Swiss Parliament", "Parliament of Malaysia",
                     "Legislative Yuan (Taiwan)", "National Law Information Center (Korea)",
@@ -548,59 +546,6 @@ def sync_uk(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
-# --- Canada (LEGISinfo) ---
-
-CA_API = "https://www.parl.ca/legisinfo/en/bills/json"
-# Past sessions, read once for the history since 2023, with the day each ended (bills not passed by then
-# died on the Order Paper; LEGISinfo leaves that date blank). The current session is read every time.
-CA_PAST_SESSIONS = {"44-1": "2025-01-06"}  # 44th Parliament, 1st session: prorogued 6 January 2025
-
-
-def ca_history(b: dict, session_end: str = "") -> list[dict]:
-    """Lifecycle from a LEGISinfo bill: first and third readings in each chamber, Royal Assent, and the end of
-    the session for a bill that didn't pass (it "dies on the Order Paper")."""
-    day = lambda k: d if (d := (b.get(k) or "")[:10]) > "1900" else ""  # "0001-01-01" means no date
-    first = [d for d in (day("PassedHouseFirstReadingDateTime"), day("PassedSenateFirstReadingDateTime")) if d]
-    third = [d for d in (day("PassedHouseThirdReadingDateTime"), day("PassedSenateThirdReadingDateTime")) if d]
-    history = []
-    if first:
-        history.append({"date": min(first), "stage": "introduced", "text": "First reading"})
-    if third:
-        history.append({"date": min(third), "stage": "passed_chamber", "text": "Third reading"})
-    if len(third) == 2:
-        history.append({"date": max(third), "stage": "passed_legislature", "text": "Third reading in both chambers"})
-    if day("ReceivedRoyalAssentDateTime"):
-        history.append({"date": day("ReceivedRoyalAssentDateTime"), "stage": "signed", "text": "Royal Assent"})
-    elif b.get("IsSessionOngoing") is False and history:
-        ended = session_end or day("LatestBillEventDateTime") or history[-1]["date"]
-        history.append({"date": ended, "stage": "withdrawn", "text": "Died on the Order Paper"})
-    return history
-
-
-def sync_canada(conn, fetcher=feeds.fetch, log=print) -> int:
-    """AI bills in the Parliament of Canada: the current session every time, past sessions once."""
-    connect_tables(conn)
-    past = list(CA_PAST_SESSIONS)  # one request each: re-read so their cards stay current
-    changed = 0
-    for session in [None, *past]:
-        url = CA_API + (f"?parlsession={session}" if session else "")
-        for b in _get_json(url, fetcher):
-            title = b.get("ShortTitleEn") or b.get("LongTitleEn") or ""
-            if not AI_TITLE.search(f"{b.get('LongTitleEn') or ''} {b.get('ShortTitleEn') or ''}"):
-                continue
-            s = f"{b['ParliamentNumber']}-{b['SessionNumber']}"
-            bill = {"key": f"CA-{s}-{b['NumberCode']}", "jurisdiction": "CA", "number": b["NumberCode"],
-                    "title": b.get("LongTitleEn") or title, "short_title": b.get("ShortTitleEn") or "",
-                    "url": f"https://www.parl.ca/legisinfo/en/bill/{s}/{b['NumberCode'].lower()}",
-                    "source": "Parliament of Canada", "history": ca_history(b, CA_PAST_SESSIONS.get(s, "")),
-                    "summary": describe(b.get("LongTitleEn") or "", title) if b.get("ShortTitleEn") else ""}
-            if bill["history"]:
-                changed += upsert(conn, bill)
-        conn.commit()
-        time.sleep(1)
-    return changed
-
-
 # --- Brazil (Câmara dos Deputados) ---
 
 BR_API = "https://dadosabertos.camara.leg.br/api/v2"
@@ -752,8 +697,8 @@ def sync_china(conn, fetcher=feeds.fetch, log=print) -> int:
 
 
 # --- Canada Gazette (the Government of Canada's official publication of regulations) ---
-# While parl.ca turns automated readers away (LEGISinfo above is still asked every run, and read again when it lets
-# us in), Canada's AI rules are followed here: proposed regulations (Part I, weekly) and registered ones (Part II,
+# Canada's AI rules are followed here (the Parliament of Canada's LEGISinfo was dropped on 6 Oct 2026: parl.ca turns
+# automated readers away): proposed regulations (Part I, weekly) and registered ones (Part II,
 # every other week). gazette.gc.ca has no robots.txt rules, and canada.ca's terms allow non-commercial reproduction
 # with the title and a link to the original (https://www.canada.ca/en/transparency/terms.html).
 
@@ -1377,7 +1322,6 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
     for name, url, fn in (("congress.gov API", CONGRESS_API, sync_congress),
                           ("European Parliament API", EP_API, sync_europarl),
                           ("UK Parliament Bills API", UK_API, sync_uk),
-                          ("Parliament of Canada LEGISinfo", CA_API, sync_canada),
                           ("Canada Gazette", CA_GAZETTE.format(part=1), sync_canada_gazette),
                           ("Câmara dos Deputados API", BR_API, sync_brazil),
                           ("Federal Register of Legislation API", AU_API, sync_australia),

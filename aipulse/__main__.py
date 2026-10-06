@@ -13,7 +13,7 @@ from .collect import collect, reclassify, resummarize, retag
 from .server import serve
 
 # `bills --only` keys, in the order `bills.sync()` runs them during collection.
-BILL_SOURCES = [("us", "US"), ("eu", "EU"), ("uk", "UK"), ("ca", "Canada"), ("br", "Brazil"), ("au", "Australia"),
+BILL_SOURCES = [("us", "US"), ("eu", "EU"), ("uk", "UK"), ("br", "Brazil"), ("au", "Australia"),
                 ("cn", "China"), ("in", "India"), ("jp", "Japan"), ("vn", "Vietnam"), ("ch", "Switzerland"),
                 ("my", "Malaysia"), ("tw", "Taiwan"), ("kr", "Korea"), ("oecd", "OECD.AI"),
                 ("std", "AI standards"), ("aiid", "AI Incident Database")]
@@ -147,7 +147,7 @@ def main():
         since = datetime.now(timezone.utc) - timedelta(days=a.us_days) if a.us_days else None
         years = list(range(a.eu_since, date.today().year + 1)) if a.eu_since else None
         results = {}
-        sync_fns = {"uk": bills.sync_uk, "ca": bills.sync_canada, "br": bills.sync_brazil, "au": bills.sync_australia,
+        sync_fns = {"uk": bills.sync_uk, "br": bills.sync_brazil, "au": bills.sync_australia,
                     "cn": bills.sync_china, "in": bills.sync_india, "jp": bills.sync_japan, "vn": bills.sync_vietnam,
                     "ch": bills.sync_switzerland, "my": bills.sync_malaysia, "tw": bills.sync_taiwan,
                     "kr": bills.sync_korea, "oecd": bills._oecd_sync,

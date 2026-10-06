@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 121 public sources (104 feeds, 17 official records and
+A free, non-commercial, worldwide briefing on AI. It reads 120 public sources (104 feeds, 16 official records and
 databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -64,7 +64,6 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 | United States | congress.gov API | Official API, free key; public domain |
 | European Union | European Parliament open data | Reuse with credit |
 | United Kingdom | UK Parliament Bills API | Open Parliament Licence v3.0 |
-| Canada | Parliament of Canada (LEGISinfo), when parl.ca allows automated readers | Non-commercial reproduction permitted |
 | Canada | Canada Gazette, Parts I and II | No robots.txt rules; non-commercial reproduction with credit |
 | Brazil | Câmara dos Deputados open data | Open data |
 | Australia | Federal Register of Legislation | CC BY 4.0 |
@@ -97,7 +96,7 @@ python -m pytest -q           # tests (run locally, not on GitHub)
 ## Credits and licences
 
 European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK and UK AI Security Institute: Open Government Licence v3.0. Federal Register,
-congress.gov, US Energy Information Administration, DARPA and NSF: US public domain. International Energy Agency: CC BY 4.0. ITU: non-commercial use with credit. ServeTheHome: short synopses as its copyright policy allows. Canada: reproduced with the Speaker's permission for non-commercial use; Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
+congress.gov, US Energy Information Administration, DARPA and NSF: US public domain. International Energy Agency: CC BY 4.0. ITU: non-commercial use with credit. ServeTheHome: short synopses as its copyright policy allows. Canada: Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
 Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. Korean laws: National
 Law Information Center (https://www.law.go.kr), Ministry of Government Legislation. Taiwanese laws:
 Legislative Yuan law system (https://lis.ly.gov.tw). Malaysian bills: Parliament of Malaysia

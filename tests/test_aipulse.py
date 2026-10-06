@@ -870,19 +870,6 @@ def test_uk_stages_from_parliament_readings():
     assert current(stalled)["stage"] == "withdrawn"
 
 
-def test_canada_stages_from_legisinfo():
-    from aipulse.bills import ca_history, current
-    died = {"PassedHouseFirstReadingDateTime": "2022-06-16T10:00:00", "PassedHouseSecondReadingDateTime": "2023-04-24",
-            "IsSessionOngoing": False, "LatestBillEventDateTime": "0001-01-01T00:00:00"}  # LEGISinfo's "no date"
-    assert [(h["stage"], h["date"]) for h in ca_history(died, "2025-01-06")] == [
-        ("introduced", "2022-06-16"), ("withdrawn", "2025-01-06")]
-    law = {"PassedSenateFirstReadingDateTime": "2024-02-01", "PassedSenateThirdReadingDateTime": "2024-03-01",
-           "PassedHouseFirstReadingDateTime": "2024-03-05", "PassedHouseThirdReadingDateTime": "2024-05-01",
-           "ReceivedRoyalAssentDateTime": "2024-06-20", "IsSessionOngoing": False}
-    assert current(ca_history(law))["stage"] == "signed"
-    assert [h["stage"] for h in ca_history(law)] == ["introduced", "passed_chamber", "passed_legislature", "signed"]
-
-
 def test_brazil_stages_from_chamber_events():
     from aipulse.bills import br_history, current
     ev = lambda d, what, situ="", desp="": {"dataHora": d + "T10:00", "descricaoTramitacao": what,
@@ -1368,6 +1355,23 @@ def test_a_practitioners_blog_is_never_a_release():
                         "url": "https://simonwillison.net/p1", "date": "2026-10-05"})
     reclassify(conn)
     assert conn.execute("SELECT category FROM items").fetchone()[0] == "news"
+
+
+def test_a_dropped_source_leaves_nothing_behind(tmp_path):
+    from aipulse import bills
+    from aipulse.collect import purge_dropped
+    conn = store.connect(tmp_path / "t.db")
+    bills.connect_tables(conn)
+    bill = {"key": "CA-45-1-C-277", "jurisdiction": "CA", "number": "C-277", "title": "An Act to regulate deepfakes",
+            "url": "https://www.parl.ca/legisinfo/en/bill/45-1/c-277", "source": "Parliament of Canada",
+            "history": [{"date": "2026-05-01", "stage": "introduced", "text": "First reading"}]}
+    bills.upsert(conn, bill)
+    store.insert(conn, {"id": "k1", "source": "Canada Gazette", "category": "regulation", "title": "Kept",
+                        "summary": "", "url": "https://gazette.gc.ca/k1", "date": "2026-05-01"})
+    assert purge_dropped(conn, log=lambda *_: None) >= 1
+    assert conn.execute("SELECT count(*) FROM bills").fetchone()[0] == 0
+    assert [r[0] for r in conn.execute("SELECT source FROM items")] == ["Canada Gazette"]  # other Canadian sources stay
+    assert purge_dropped(conn, log=lambda *_: None) == 0
 
 
 def test_people_leaving_comparisons_and_a_body_using_ai_are_not_misfiled():

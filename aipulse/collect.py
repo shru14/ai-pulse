@@ -177,6 +177,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
     added, errors = 0, []
     purge_disallowed(conn, log)
+    purge_dropped(conn, log)
 
     for src in sources:
         try:
@@ -323,6 +324,28 @@ def purge_disallowed(conn, log=print) -> int:
     if n:
         cluster.assign(conn, days=None)
         log(f"  removed {n} stories collected through Google News")
+    return n
+
+
+# Sources dropped because they turned automated readers away: everything they gave is deleted, so nothing of
+# theirs stays on the site (source name -> the start of its addresses).
+DROPPED = {"Parliament of Canada": "https://www.parl.ca/"}  # 6 Oct 2026
+
+
+def purge_dropped(conn, log=print) -> int:
+    """Delete every story, bill record, health row and saved state of a DROPPED source. Cheap when there is
+    nothing left, so it runs every collection (a database restored from the seed is cleaned too)."""
+    n = 0
+    for name, prefix in DROPPED.items():
+        n += conn.execute("DELETE FROM items WHERE source = ? OR url LIKE ?", (name, prefix + "%")).rowcount
+        conn.execute("DELETE FROM sources WHERE url LIKE ?", (prefix + "%",))
+        if conn.execute("SELECT 1 FROM sqlite_master WHERE name = 'bills'").fetchone():
+            conn.execute("DELETE FROM bills WHERE source = ? OR url LIKE ?", (name, prefix + "%"))
+    conn.execute("DELETE FROM meta WHERE key = 'canada_sessions'")  # LEGISinfo's sessions already read
+    if n:
+        conn.execute("UPDATE items SET cluster = id WHERE cluster NOT IN (SELECT id FROM items)")  # lead was deleted
+        log(f"  removed {n} stories from dropped sources")
+    conn.commit()
     return n
 
 
