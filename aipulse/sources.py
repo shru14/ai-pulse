@@ -151,7 +151,8 @@ SOURCES = [
 
     # --- Infra & climate: AI's data centres and what they draw on (power, water, land, emissions) ---
     # Checked 3 Oct 2026: each robots.txt allows reading and each publishes this feed; articles are free to read.
-    # Out: IRENA, Japan's METI, BNamericas and Dialogue Earth (robots.txt disallows); WRI, Ireland's CSO, AEMO and
+    # Out: IRENA, Japan's METI, BNamericas, Dialogue Earth and the IEA (robots.txt disallows; the IEA's, from GitHub's
+# servers, 6 Oct 2026); WRI, Ireland's CSO, AEMO and
     # Data Center Dynamics (bot checks); Eco-Business (its articles are marked subscriber-only). Only stories about
     # AI's infrastructure are kept (classify.is_infra).
     # Data-centre trade news, by region
@@ -176,9 +177,6 @@ SOURCES = [
      "infra_filter": True},
     {"name": "European Commission (Energy)", "url": "https://energy.ec.europa.eu/node/2/rss_en", "category": "infra",
      "infra_filter": True},
-    # IEA articles and news are CC BY 4.0 (iea.org/terms); no feed, so its news page is read (sources review, 6 Oct 2026)
-    {"name": "International Energy Agency", "url": "https://www.iea.org/news", "format": "page_list",
-     "link": r"^https://www\.iea\.org/news/[a-z0-9-]+$", "category": "infra", "infra_filter": True},
 
     # --- Policy and politics ---
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
