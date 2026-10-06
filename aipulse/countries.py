@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import jurisdictions, rss
+from . import jurisdictions, rss, store
 from .bills import LABELS, OFFICIAL_SOURCES
+from .server import TEMPLATE
 
 MIN_RECORDS = 3
 KINDS = [("law", "Laws adopted"), ("proposal", "Proposals"), ("body", "AI bodies"), ("standard", "Standards")]
@@ -46,52 +48,73 @@ def _history(conn, key: str) -> list[dict]:
     return json.loads(row[0]) if row and row[0] else []
 
 
+FLAGS = Path(__file__).resolve().parent.parent / "templates" / "flags"  # flag-icons (MIT), 4:3; intl.svg is our own
+
+
+def flag(code: str) -> str:
+    """The place's flag file under flags/: a US state's is the US flag; international bodies get a globe."""
+    return "intl.svg" if code == "INTL" else f"{code.split('-')[0].lower()}.svg"
+
+
 STYLE = """
-@font-face{font-family:'Archivo Black';font-weight:400;font-display:swap;src:url("/fonts/archivo-black-latin-400-normal.woff2") format("woff2")}
-@font-face{font-family:'Archivo';font-weight:400;font-display:swap;src:url("/fonts/archivo-latin-400-normal.woff2") format("woff2")}
-@font-face{font-family:'Archivo';font-weight:600;font-display:swap;src:url("/fonts/archivo-latin-600-normal.woff2") format("woff2")}
-:root{--ink:#000;--muted:#3B3B3B;--bg:#FFF;--line:#000;--tag:#D55E00;--link:#0072B2}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Archivo,Arial,sans-serif}
-.wrap{max-width:780px;margin:0 auto;padding:24px 16px 48px}
-header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--line);padding-bottom:12px}
-header a{color:var(--ink);text-decoration:none}
-.brand{font:400 22px 'Archivo Black',Arial,sans-serif}
-.back{font-weight:600;font-size:14px;text-decoration:underline;text-decoration-color:var(--tag);text-decoration-thickness:2px;text-underline-offset:4px}
-h1{font:400 clamp(28px,5vw,40px)/1.1 'Archivo Black',Arial,sans-serif;margin:28px 0 8px}
-.lead{color:var(--muted);margin:0 0 20px}
-.lead a{color:var(--link)}
-h2{font:600 15px Archivo,Arial,sans-serif;text-transform:uppercase;letter-spacing:.06em;margin:30px 0 4px;border-top:6px solid var(--tag);padding-top:10px}
-ul{list-style:none;margin:0;padding:0}
-li{padding:12px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 25%,transparent)}
-li a{color:var(--ink);font-weight:600;text-decoration:none}
-li a:hover,li a:focus-visible{text-decoration:underline}
-.meta{color:var(--muted);font-size:14px;margin-top:2px}
-.steps{color:var(--muted);font-size:13.5px;margin-top:2px}
-.places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:20px}
-.places a{display:block;border:2px solid var(--line);padding:12px 14px;color:var(--ink);font-weight:600;text-decoration:none}
-.places a:hover,.places a:focus-visible{background:color-mix(in srgb,var(--tag) 15%,transparent)}
-footer{margin-top:36px;font-size:14px;color:var(--muted)}
-footer a{color:var(--link)}
+.cp{max-width:780px;margin:0 auto;padding-bottom:12px}
+.cp .back{display:inline-block;margin-top:24px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:underline;text-decoration-color:#D55E00;text-decoration-thickness:2px;text-underline-offset:4px}
+.cp h1{display:flex;align-items:center;gap:16px;font:400 clamp(28px,5vw,40px)/1.1 var(--display);letter-spacing:0;margin:18px 0 8px}
+.cp .flag{flex:none;width:32px;height:24px;object-fit:cover;border:1px solid #000}
+.cp h1 .flag{width:60px;height:45px;border-width:2px}
+.cp .intro{color:var(--muted);margin:0 0 20px}
+.cp .intro a{color:#0072B2}
+.cp h2{font:600 15px var(--body);text-transform:uppercase;letter-spacing:.06em;margin:30px 0 4px;border-top:6px solid #D55E00;padding-top:10px}
+.cp ul{list-style:none;margin:0;padding:0}
+.cp li{padding:12px 0;border-bottom:1px solid color-mix(in srgb,#000 25%,transparent)}
+.cp li a{color:var(--ink);font-weight:600;text-decoration:none}
+.cp li a:hover,.cp li a:focus-visible{text-decoration:underline}
+.cp .meta{color:var(--muted);font-size:14px;margin-top:2px}
+.cp .steps{color:var(--muted);font-size:13.5px;margin-top:2px}
+.cp .places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:20px}
+.cp .places a{display:flex;align-items:center;gap:12px;border:2px solid #000;background:var(--bg);padding:12px 14px;color:var(--ink);font-weight:600;text-decoration:none}
+.cp .places a:hover,.cp .places a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
+.cp .note{margin-top:28px;font-size:14px;color:var(--muted)}
+.cp .note a{color:#0072B2}
+a.subscribe-btn{text-decoration:none}
 """
 
 
-def _page(title: str, description: str, path: str, body: str, data: dict) -> str:
+def _frame(total: int, last: str) -> tuple[str, str, str]:
+    """The site's own styles, masthead (no stream links; Subscribe and Glossary open on the front page) and footer."""
+    t = TEMPLATE.read_text(encoding="utf-8")
+    style = re.search(r"<style>(.*?)</style>", t, re.S).group(1)
+    header = re.search(r'<header class="top home">.*?</header>', t, re.S).group(0)
+    header = re.sub(r"\s*<!-- Each stream.*?</nav>", "", header, flags=re.S)
+    header = re.sub(r'<button class="(subscribe-btn[^"]*)" id="(\w+)-open" type="button" aria-haspopup="dialog"',
+                    r'<a class="\1" href="/#\2"', header).replace("</button>", "</a>")
+    when = (f'<div>Last update <time datetime="{escape(last)}">{escape(last[:16].replace("T", " "))} UTC</time></div>'
+            if last else "")
+    header = header.replace("Loading feed…", f"<div><b>{total}</b> stories in total</div>{when}")
+    footer = re.search(r'<footer class="site-foot">.*?</footer>', t, re.S).group(0)
+    return style, header, footer
+
+
+# the masthead's time in the reader's own time zone, as on the front page
+LOCAL_TIME = ('<script>document.querySelectorAll("time[datetime]").forEach(t => t.textContent = new Date(t.dateTime)'
+              '.toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))</script>')
+
+
+def _page(title: str, description: str, path: str, body: str, data: dict, frame: tuple[str, str, str]) -> str:
     url = f"{rss.SITE}{path}"
-    return (f'<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
-            f'<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+    style, header, footer = frame
+    return (f'<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8"><meta name="color-scheme" content="light">\n'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1">\n<base href="/">\n'
             f'<title>{escape(title)}</title>\n<meta name="description" content="{escape(description)}">\n'
             f'<link rel="canonical" href="{url}">\n<link rel="icon" href="/favicon.ico">\n'
             f'<meta property="og:title" content="{escape(title)}">\n<meta property="og:description" content="{escape(description)}">\n'
             f'<meta property="og:url" content="{url}">\n<meta property="og:image" content="{rss.SITE}og.png">\n'
             f'<meta name="twitter:card" content="summary_large_image">\n'
             f'<script type="application/ld+json">{json.dumps(data, ensure_ascii=False)}</script>\n'
-            f'<style>{STYLE}</style>\n</head>\n<body><div class="wrap">\n'
-            f'<header><a class="brand" href="/">AI Pulse</a><a class="back" href="/regulation/">Live Regulation tracker →</a></header>\n'
-            f'{body}\n<footer>Official records only, each linking to its source. '
-            f'<a href="/tracker.csv">Download them all (CSV)</a> · '
-            f'<a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a></footer>\n'
-            f'</div></body>\n</html>\n')
+            f'<style>{style}{STYLE}</style>\n</head>\n<body>\n<div class="wrap">\n{header}\n<main class="cp">\n'
+            f'<a class="back" href="/regulation/">← Back to the live Regulation tracker page</a>\n{body}\n'
+            f'<p class="note">Official records only, each linking to its source. '
+            f'<a href="/tracker.csv">Download them all (CSV)</a></p>\n</main>\n{footer}\n</div>\n{LOCAL_TIME}\n</body>\n</html>\n')
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
@@ -106,6 +129,11 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     places = sorted((code for code, items in by_place.items() if len(items) >= MIN_RECORDS),
                     key=lambda code: (code != "INTL", names[code]))
     updated = _day(today.isoformat())
+    last = (store.last_run(conn) or {}).get("ran_at") or ""
+    frame = _frame(len(cards), last)
+    (out / "flags").mkdir(parents=True, exist_ok=True)
+    for code in places:
+        shutil.copy(FLAGS / flag(code), out / "flags" / flag(code))
     paths = []
     for code in places:
         name, items = names[code], sorted(by_place[code], key=lambda c: c["date"], reverse=True)
@@ -131,14 +159,14 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         data = {"@context": "https://schema.org", "@type": "ItemList", "name": heading(code, name),
                 "itemListElement": [{"@type": "ListItem", "position": i + 1, "url": c["url"], "name": c["title"].strip()}
                                     for i, c in enumerate(items[:100])]}
-        body = (f'<h1>{escape(heading(code, name))}</h1>\n'
-                f'<p class="lead">Official records, newest first. Updated {updated}. '
+        body = (f'<h1><img class="flag" src="flags/{flag(code)}" alt="">{escape(heading(code, name))}</h1>\n'
+                f'<p class="intro">Official records, newest first. Updated {updated}. '
                 f'<a href="/tracker/">All places</a></p>\n' + "\n".join(sections))
         (out / path).mkdir(parents=True, exist_ok=True)
-        (out / path / "index.html").write_text(_page(title, description, path, body, data), encoding="utf-8")
+        (out / path / "index.html").write_text(_page(title, description, path, body, data, frame), encoding="utf-8")
         paths.append(path)
-    links = "\n".join(f'<a href="/tracker/{slug(names[code])}/">{escape(names[code])}</a>' for code in places)
-    body = (f'<h1>AI laws by country</h1>\n<p class="lead">The Regulation tracker\'s official records, a page per '
+    links = "\n".join(f'<a href="/tracker/{slug(names[code])}/"><img class="flag" src="flags/{flag(code)}" alt="">{escape(names[code])}</a>' for code in places)
+    body = (f'<h1>AI laws by country</h1>\n<p class="intro">The Regulation tracker\'s official records, a page per '
             f'place. Updated {updated}. Places with fewer records are on the live tracker.</p>\n'
             f'<div class="places">\n{links}\n</div>')
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI laws by country",
@@ -146,5 +174,5 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     (out / "tracker").mkdir(parents=True, exist_ok=True)
     (out / "tracker" / "index.html").write_text(
         _page("AI laws by country · AI Pulse", "AI bills, laws, regulators and standards by country, from official "
-              "records, updated every 6 hours.", "tracker/", body, data), encoding="utf-8")
+              "records, updated every 6 hours.", "tracker/", body, data, frame), encoding="utf-8")
     return ["tracker/", *paths]

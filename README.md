@@ -110,6 +110,6 @@ Federal Register of Legislation (CC BY 4.0); for the latest information go to ht
 AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
 (MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon. Fonts: Archivo Black, Archivo, Anton and IBM Plex Mono (SIL Open Font License 1.1), served
 from this site. Section icons: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).
-Meme templates: via [Imgflip](https://imgflip.com), used as parody and commentary.
+Meme templates: via [Imgflip](https://imgflip.com), used as parody and commentary. Flags: [flag-icons](https://github.com/lipis/flag-icons) (MIT, © 2013 Panayiotis Lipiridis), served from this site.
 Photos: 84 openly licensed photos from [Wikimedia Commons](https://commons.wikimedia.org) (CC BY, CC BY-SA, CC0 or public
 domain), chosen to illustrate a story's topic; each photo's author, licence and source are on the site's Photo credits page.

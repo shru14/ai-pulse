@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags",
         "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -677,10 +677,15 @@ def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
     paths = countries.build(conn, cards, tmp_path, date(2026, 10, 6))
     assert paths == ["tracker/", "tracker/united-kingdom/"]  # India: one official record, news stories don't count
     page = (tmp_path / "tracker" / "united-kingdom" / "index.html").read_text(encoding="utf-8")
-    assert "<h1>AI laws and bills in the United Kingdom</h1>" in page and "<h2>Proposals</h2>" in page
+    assert '<h1><img class="flag" src="flags/gb.svg" alt="">AI laws and bills in the United Kingdom</h1>' in page and "<h2>Proposals</h2>" in page
     assert "<h2>AI bodies</h2>" in page and page.index("AI Act 3") < page.index("AI Act 1")  # newest first
     assert 'rel="canonical" href="https://projectaipulse.com/tracker/united-kingdom/"' in page
     assert 'href="/tracker/united-kingdom/"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
+    # the site's own masthead and footer, a plain way back, and each place's flag (copied beside the pages)
+    assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="/#subscribe"' in page
+    assert "← Back to the live Regulation tracker page" in page and 'src="flags/gb.svg"' in page
+    assert 'src="flags/gb.svg"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
+    assert (tmp_path / "flags" / "gb.svg").is_file() and not (tmp_path / "flags" / "in.svg").exists()
 
 
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
