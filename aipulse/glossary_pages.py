@@ -48,7 +48,7 @@ STORIES_JS = r"""<script>
 
 RELATED = 6  # related terms per word: those its meaning names, those whose meanings name it, then its group's
 CLOUD = 30  # words in glossary/'s "In the news this week" cloud
-TOGETHER_DAYS, TOGETHER = 30, 8  # a word's page: the words most often in the same stories, over these days
+TOGETHER_DAYS, TOGETHER = 30, 14  # a word's page: the words most often in the same stories, over these days
 # a word's colour in a cloud, by its group: Okabe-Ito blue, vermillion, bluish green, and ink (colour-blind safe)
 CLOUD_COLOURS = ["#0072B2", "#D55E00", "#007A5A", "#000"]
 
@@ -84,19 +84,22 @@ def related(entry: dict, named: list[str]) -> list[dict]:
     return [by_id[i] for i in ids[:RELATED]]
 
 
-def cloud(counts: list[tuple[dict, int]], label: str) -> str:
-    """Words sized by how many stories use them (the busiest biggest), A to Z, each linking to its page."""
+def cloud(counts: list[tuple[dict, int]], label: str, small: bool = False) -> str:
+    """Words sized by how many stories use them (the busiest biggest), A to Z, each linking to its page. `small`:
+    smaller words in a roomier box (a word's page)."""
     if not counts:
         return ""
     top = max(n for _, n in counts)
+    lo, span = (13, 9) if small else (14, 14)
     words = []
     for e, n in sorted(counts, key=lambda x: x[0]["term"].lower()):
-        size = 14 + round(14 * (math.log(n) / math.log(top) if top > 1 else 1))
+        size = lo + round(span * (math.log(n) / math.log(top) if top > 1 else 1))
         colour = CLOUD_COLOURS[glossary.GROUPS.index(e["group"]) % len(CLOUD_COLOURS)]
         words.append(f'<a href="/glossary/{e["id"]}/" style="font-size:{size}px;color:{colour}"'
-                     f'{" class=big" if size >= 23 else ""} title="{n} {"story" if n == 1 else "stories"}">'
+                     f'{" class=big" if size >= (20 if small else 23) else ""} title="{n} {"story" if n == 1 else "stories"}">'
                      f'{escape(e["term"])}</a>')
-    return f'<div class="cloud" aria-label="{escape(label)}">' + "\n".join(words) + "</div>"
+    return (f'<div class="cloud{" roomy" if small else ""}" aria-label="{escape(label)}">' + "\n".join(words)
+            + "</div>")
 
 
 def _row(e: dict) -> str:
@@ -132,18 +135,20 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 else "Not in the last 7 days' stories.")
         body = (f'<span class="kind">AI glossary · {escape(e["group"])}</span>\n<h1>{escape(e["term"])}</h1>\n'
                 f'<p class="def">{meaning}</p>\n<p class="intro">{seen}</p>\n'
+                + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
+                   f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'
+                   + cloud([(by_id[i], k) for i, k in together[e["id"]].most_common(TOGETHER)], "Often in the same stories",
+                           small=True)
+                   if together[e["id"]] else "")
+                + f'<h2>Related terms</h2>\n<ul class="terms small">\n' + "\n".join(_row(r) for r in related(e, named))
+                + "\n</ul>\n"
                 f'<h2 id="stories">Latest stories with this word</h2>\n'
                 f'<p class="intro"><span id="stories-count">The stories</span> in the last 3 months where the glossary '
                 f'marks {escape(e["term"])}, from every stream, newest first.</p>\n'
                 f'<ul id="word-stories" data-match="{escape(json.dumps(e["match"]))}"{" data-case=1" if e["case"] else ""}>'
                 f'<li class="meta">Loading the stories…</li></ul>\n'
                 f'<button type="button" class="more-stories" id="more-stories" hidden>Show more stories</button>\n'
-                f'{STORIES_JS}\n'
-                + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
-                   f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'
-                   + cloud([(by_id[i], k) for i, k in together[e["id"]].most_common(TOGETHER)], "Often in the same stories")
-                   if together[e["id"]] else "")
-                + f'<h2>Related terms</h2>\n<ul class="terms">\n' + "\n".join(_row(r) for r in related(e, named)) + "\n</ul>")
+                f'{STORIES_JS}')
         data = {"@context": "https://schema.org", "@type": "DefinedTerm", "name": e["term"], "description": e["def"],
                 "url": f"{rss.SITE}{path}", "inDefinedTermSet": home}
         (out / path).mkdir(parents=True, exist_ok=True)

@@ -32,7 +32,7 @@ STYLE = """
 .cp .places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:20px}
 .cp .places a{display:flex;align-items:center;gap:12px;border:2px solid #000;background:var(--bg);padding:12px 14px;color:var(--ink);font-weight:600;text-decoration:none}
 .cp .places a:hover,.cp .places a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
-.cp .def{font-size:clamp(19px,2.4vw,22px);line-height:1.5;margin:10px 0 18px;max-width:62ch}
+.cp .def{font-size:17px;line-height:1.55;margin:10px 0 14px;max-width:64ch}
 .cp .def a{color:var(--ink);text-decoration:underline;text-decoration-color:#0072B2;text-decoration-thickness:2px;text-underline-offset:3px}
 .cp .more-stories{margin-top:14px;font:600 15px var(--body);color:#fff;background:#0072B2;border:2px solid #000;padding:9px 16px;cursor:pointer}
 .cp .more-stories[hidden]{display:none}
@@ -47,6 +47,10 @@ STYLE = """
 .cp .cloud a{font-weight:600;text-decoration:none}
 .cp .cloud a.big{font-family:var(--display);font-weight:400}
 .cp .cloud a:hover,.cp .cloud a:focus-visible{text-decoration:underline}
+.cp .cloud.roomy{gap:8px 16px;padding:26px 22px;min-height:150px;align-content:center;line-height:1.3}
+.cp .terms.small li{padding:9px 0}
+.cp .terms.small li a{font-size:14.5px}
+.cp .terms.small .short{font-size:13.5px}
 .cp .note{margin-top:28px;font-size:14px;color:var(--muted)}
 .cp .note a{color:#0072B2}
 a.subscribe-btn{text-decoration:none}
