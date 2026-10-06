@@ -133,7 +133,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         n = recent[e["id"]]
         seen = (f"Mentioned in {n} {'story' if n == 1 else 'stories'} in the last 7 days." if n
                 else "Not in the last 7 days' stories.")
-        body = (f'<span class="kind">AI glossary · {escape(e["group"])}</span>\n<h1>{escape(e["term"])}</h1>\n'
+        body = (f'<span class="kind">AI glossary · {escape(e["group"])}</span>\n<h1 class="word">{escape(e["term"])}</h1>\n'
                 f'<p class="def">{meaning}</p>\n<p class="intro">{seen}</p>\n'
                 + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
                    f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'

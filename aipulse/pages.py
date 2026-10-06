@@ -20,6 +20,7 @@ STYLE = """
 .cp h1 .flag{width:60px;height:45px;border-width:2px}
 .cp .kind{display:block;margin-top:22px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .cp .kind + h1{margin-top:8px}
+.cp h1.word{font-size:clamp(24px,3.6vw,30px)}
 .cp .intro{color:var(--muted);margin:0 0 20px}
 .cp .intro a{color:#0072B2}
 .cp h2{font:600 15px var(--body);text-transform:uppercase;letter-spacing:.06em;margin:30px 0 4px;border-top:6px solid #D55E00;padding-top:10px}

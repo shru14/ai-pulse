@@ -677,7 +677,7 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     page = (tmp_path / "glossary" / "mixture-of-experts" / "index.html").read_text(encoding="utf-8")
     # the site's masthead and footer, the meaning with the other words in it linked, related terms, the stories
     assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="site.css"' in page
-    assert '<h1>Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
+    assert '<h1 class="word">Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
     assert "<h2>Related terms</h2>" in page and page.count('<li><div><a href="/glossary/') == glossary_pages.RELATED
     assert "Mentioned in 1 story in the last 7 days." in page and '/all/?' not in page
     # its latest stories, found on the page itself (from data.json, as the site's underlines find them)
