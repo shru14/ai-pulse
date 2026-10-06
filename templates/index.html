@@ -816,6 +816,7 @@ function showPage(){
   // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
   if(home){ document.title = "AI Pulse"; return loadHome(); }
+  if(state.allTime === undefined) loadHomeCounts();  // the masthead's all-time total
   const hero = $("sec-hero");
   hero.className = "sec-hero k-" + state.cat;
   $("sec-title").textContent = state.cat === "all" ? "All stories" : STREAM_NAME[state.cat];
@@ -1213,41 +1214,44 @@ const barHeight = () => document.documentElement.style.setProperty("--bar-h", MA
 try{ new ResizeObserver(barHeight).observe(MAST); }catch(e){ addEventListener("resize", barHeight); }
 barHeight();
 function renderStatus(){
-  const s = $(state.cat === "home" ? "home-status" : "status");
+  renderMast();
+  if(state.cat === "home") return;
   // One card per event, however many outlets reported it, for the current time range and search: on a stream's
-  // page that stream's own, on the front page and All stories every stream's (the sum of the tiles' counts).
+  // page that stream's own, on All stories every stream's.
+  const s = $("status");
   const n = (CATS.includes(state.cat) ? state.counts[state.cat] : state.counts.all) ?? 0;
   const span = {7:"in the last 7 days", 30:"in the last 30 days", 90:"in the last 90 days", 0:"in total"}[state.range];
-  const last = state.status && state.status.lastRun;
-  const when = t => new Date(t).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
   s.replaceChildren();
   // Nothing has arrived yet: say so, a row of zeros would read as an empty site.
   if(state.loading && state.counts.all === undefined){ s.append(el("div", null, "Loading…")); return; }
   const l1 = el("div"); l1.append(el("b",null,String(n)), document.createTextNode(
-    (n===1 ? " story " : " stories ") + (state.q.trim() && state.cat !== "home" ? "matching your search " : "") + span));
-  const l2 = el("div", null, last ? "Last update "+when(last) : "Not collected yet");
-  if(state.cat === "home") s.append(l1, l2);
-  else s.append(l1);  // the stream's own count; when it was last updated is in the masthead
-  if(state.cat !== "home"){
-    const all = state.counts.all ?? 0, m = $("home-status"), t = el("div");
-    t.append(el("b", null, String(all)), document.createTextNode((all === 1 ? " story " : " stories ") + span));
-    m.replaceChildren(t, el("div", null, last ? "Last update " + when(last) : "Not collected yet"));
-  }
+    (n===1 ? " story " : " stories ") + (state.q.trim() ? "matching your search " : "") + span));
+  s.append(l1);  // the stream's own count; when it was last updated is in the masthead
+}
+// The masthead: every stream's stories of all time, whatever range or search is picked on a stream's page.
+function renderMast(){
+  const m = $("home-status");
+  if(state.allTime === undefined){ m.replaceChildren(el("div", null, "Loading…")); return; }
+  const last = state.status && state.status.lastRun;
+  const when = t => new Date(t).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+  const t = el("div"), n = state.allTime;
+  t.append(el("b", null, String(n)), document.createTextNode((n === 1 ? " story" : " stories") + " in total"));
+  m.replaceChildren(t, el("div", null, last ? "Last update " + when(last) : "Not collected yet"));
 }
 
 // ---------- Front page: last week's stories, ranked as in the daily email (by how many outlets reported them) ----------
 const HOME = {by: null, loading: false, error: false};
 const outlets = it => (it.also || []).length + 1;
 const byWeight = (a, b) => outlets(b) - outlets(a) || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0);
-// The front page's totals: every stream for the chosen time range (as on the stream pages, without a search),
-// read again each time the page opens, as the range may have changed on a stream's page.
+// The masthead's total: every stream of all time (no range, no search), read again each time the front page
+// opens, and once when the reader lands on a stream's page first.
 async function loadHomeCounts(){
-  state.loading = true; state.counts = {}; renderStatus();
   let d = null;
-  try{ d = await fetchItems(new URLSearchParams({days: state.range, per_page: 1, page: 1})); }catch(e){}
-  if(state.cat !== "home") return;  // the reader moved on to a stream's page, which has its own
-  Object.assign(state, {loading: false, counts: d ? d.counts : {all: 0}, status: d && d.lastRun ? {lastRun: d.lastRun.ran_at} : null});
-  renderStatus(); renderHome();
+  try{ d = await fetchItems(new URLSearchParams({days: 0, per_page: 1, page: 1})); }catch(e){}
+  state.allTime = d ? d.counts.all : 0;
+  if(d && d.lastRun && (state.cat === "home" || !state.status)) state.status = {lastRun: d.lastRun.ran_at};
+  renderMast();
+  if(state.cat === "home") renderHome();
 }
 // The meme of the week: drawn by the build (memes.py) from last week's stories, Monday to Sunday as the word of the week.
 async function loadMeme(){
