@@ -42,7 +42,7 @@ STYLE = """
 .cp .terms .short{color:var(--muted);font-size:15px}
 .cp .terms .grp{display:block;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
 @media (max-width:560px){.cp .terms li{grid-template-columns:1fr}}
-.cp .cloud{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:6px 18px;padding:22px 18px;border:2px solid #000;background:var(--bg);line-height:1.15}
+.cp .cloud{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:2px 12px;padding:12px 14px;border:2px solid #000;background:var(--bg);line-height:1.15}
 .cp .cloud a{font-weight:600;text-decoration:none}
 .cp .cloud a.big{font-family:var(--display);font-weight:400}
 .cp .cloud a:hover,.cp .cloud a:focus-visible{text-decoration:underline}

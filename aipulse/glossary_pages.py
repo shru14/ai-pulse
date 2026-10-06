@@ -14,7 +14,7 @@ from pathlib import Path
 from . import glossary, pages, rss
 
 RELATED = 6  # related terms per word: those its meaning names, those whose meanings name it, then its group's
-CLOUD = 40  # words in glossary/'s "In the news this week" cloud
+CLOUD = 30  # words in glossary/'s "In the news this week" cloud
 TOGETHER_DAYS, TOGETHER = 30, 8  # a word's page: the words most often in the same stories, over these days
 # a word's colour in a cloud, by its group: Okabe-Ito blue, vermillion, bluish green, and ink (colour-blind safe)
 CLOUD_COLOURS = ["#0072B2", "#D55E00", "#007A5A", "#000"]
@@ -58,10 +58,10 @@ def cloud(counts: list[tuple[dict, int]], label: str) -> str:
     top = max(n for _, n in counts)
     words = []
     for e, n in sorted(counts, key=lambda x: x[0]["term"].lower()):
-        size = 15 + round(25 * (math.log(n) / math.log(top) if top > 1 else 1))
+        size = 14 + round(14 * (math.log(n) / math.log(top) if top > 1 else 1))
         colour = CLOUD_COLOURS[glossary.GROUPS.index(e["group"]) % len(CLOUD_COLOURS)]
         words.append(f'<a href="/glossary/{e["id"]}/" style="font-size:{size}px;color:{colour}"'
-                     f'{" class=big" if size >= 28 else ""} title="{n} {"story" if n == 1 else "stories"}">'
+                     f'{" class=big" if size >= 23 else ""} title="{n} {"story" if n == 1 else "stories"}">'
                      f'{escape(e["term"])}</a>')
     return f'<div class="cloud" aria-label="{escape(label)}">' + "\n".join(words) + "</div>"
 
