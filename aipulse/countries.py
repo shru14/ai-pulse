@@ -55,6 +55,33 @@ def flag(code: str) -> str:
     return "intl.svg" if code == "INTL" else f"{code.split('-')[0].lower()}.svg"
 
 
+def record(c: dict, place_name: str) -> dict:
+    """A record as search engines' labels (schema.org): a law or a bill is Legislation, in force or not yet."""
+    kind = c.get("action") or "proposal"
+    item = {"@type": "Legislation" if kind in ("law", "proposal") else "CreativeWork", "name": c["title"].strip(),
+            "url": c["url"], "datePublished": c["date"][:10]}
+    if item["@type"] == "Legislation":
+        item.update(legislationJurisdiction=place_name, legislationDate=c["date"][:10],
+                    legislationLegalForce="InForce" if kind == "law" else "NotInForce")
+    return item
+
+
+def dataset(records: list[dict], places: list[str], today: date) -> dict:
+    """tracker.csv as a Dataset, for Google Dataset Search: what it holds, where and when, and the file."""
+    days = sorted({c["date"][:10] for c in records}) or [today.isoformat()]
+    return {"@type": "Dataset", "name": "AI Pulse Regulation tracker: AI laws, bills, bodies and standards",
+            "description": ("Official records of artificial intelligence laws, bills, regulators and technical "
+                            "standards worldwide, from legislatures, OECD.AI, ISO/IEC and IEEE: each record's date, "
+                            "countries, type, title, source and link. Updated every 6 hours."),
+            "url": f"{rss.SITE}tracker/", "isAccessibleForFree": True,
+            "keywords": ["artificial intelligence", "AI regulation", "AI law", "legislation", "AI standards"],
+            "creator": {"@type": "Organization", "name": "AI Pulse", "url": rss.SITE},
+            "license": "https://github.com/shru14/ai-pulse#credits-and-licences",
+            "spatialCoverage": places, "temporalCoverage": f"{days[0]}/{days[-1]}", "dateModified": today.isoformat(),
+            "distribution": [{"@type": "DataDownload", "encodingFormat": "text/csv",
+                              "contentUrl": f"{rss.SITE}tracker.csv"}]}
+
+
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write tracker/ and a page per place with MIN_RECORDS official records or more. Returns their paths."""
     names = {code: m["name"] for code, m in jurisdictions.meta().items()}
@@ -97,7 +124,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         description = (f"AI bills, laws, regulators and standards {'from international bodies' if code == 'INTL' else 'in ' + place(name)}"
                        f": official records with their stages and links to the sources, updated every 6 hours.")
         data = {"@context": "https://schema.org", "@type": "ItemList", "name": heading(code, name),
-                "itemListElement": [{"@type": "ListItem", "position": i + 1, "url": c["url"], "name": c["title"].strip()}
+                "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": record(c, name)}
                                     for i, c in enumerate(items[:100])]}
         body = (f'<h1><img class="flag" src="flags/{flag(code)}" alt="">{escape(heading(code, name))}</h1>\n'
                 f'<p class="intro">Official records, newest first. Updated {updated}. '
@@ -109,8 +136,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     body = (f'<h1>AI laws by country</h1>\n<p class="intro">The Regulation tracker\'s official records, a page per '
             f'place. Updated {updated}. Places with fewer records are on the live tracker.</p>\n'
             f'<div class="places">\n{links}\n</div>')
-    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI laws by country",
-            "url": f"{rss.SITE}tracker/"}
+    data = {"@context": "https://schema.org", "@graph": [
+        {"@type": "CollectionPage", "name": "AI laws by country", "url": f"{rss.SITE}tracker/"},
+        dataset([c for code in by_place for c in by_place[code]], [names[code] for code in places], today)]}
     (out / "tracker").mkdir(parents=True, exist_ok=True)
     (out / "tracker" / "index.html").write_text(
         pages.page("AI laws by country · AI Pulse", "AI bills, laws, regulators and standards by country, from official "

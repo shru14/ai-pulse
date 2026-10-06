@@ -653,7 +653,8 @@ def test_static_build_holds_every_card(tmp_path):
         assert f'{cat}: "{title}"' in page and f'href="/{path}/" data-go="{cat}"' in page
     # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
-    days = sorted(p.name for p in daily.iterdir() if p.name != "latest.html")
+    days = sorted(p.name for p in daily.iterdir() if p.name not in ("latest.html", "index.html"))
+    assert "<h1>Daily editions</h1>" in (daily / "index.html").read_text(encoding="utf-8")  # every edition, by month
     assert 'href="daily/latest.html"' in page
     assert not days or (daily / "latest.html").read_text(encoding="utf-8") == (daily / days[-1]).read_text(encoding="utf-8")
 
@@ -707,6 +708,9 @@ def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
     assert "<h2>AI bodies</h2>" in page and page.index("AI Act 3") < page.index("AI Act 1")  # newest first
     assert 'rel="canonical" href="https://projectaipulse.com/tracker/united-kingdom/"' in page
     assert 'href="/tracker/united-kingdom/"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
+    # labels for search engines: each bill is Legislation; tracker.csv is a Dataset (Google Dataset Search)
+    assert '"@type": "Legislation"' in page and '"legislationJurisdiction": "United Kingdom"' in page
+    assert '"@type": "Dataset"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8") and '"contentUrl": "https://projectaipulse.com/tracker.csv"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
     # the site's own masthead and footer, a plain way back, and each place's flag (copied beside the pages)
     assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="/#subscribe"' in page
     assert "← Back to the live Regulation tracker page" in page and 'src="flags/gb.svg"' in page
@@ -1308,6 +1312,66 @@ def test_malaysian_ai_bills_from_parliament(tmp_path):
     r = conn.execute("SELECT number, stage, stage_date, url FROM bills WHERE jurisdiction = 'MY'").fetchone()
     assert (r["number"], r["stage"], r["stage_date"]) == ("D.R.5/2027", "passed_chamber", "2027-03-10")
     assert r["url"].endswith("/Artificial%20Intelligence%20Governance%20Bill%202027.pdf")
+
+
+def test_irish_ai_bills_from_the_oireachtas(tmp_path, monkeypatch):
+    import json
+    from aipulse import bills
+    monkeypatch.setattr(bills.time, "sleep", lambda s: None)
+    stage = lambda name, house, day, done=True: {"event": {"showAs": name, "stageCompleted": done, "dates": [{"date": day}],
+                                                           "house": {"houseCode": house}, "chamber": {"showAs": house}}}
+    page = {"results": [
+        {"bill": {"billNo": "69", "billYear": "2026", "shortTitleEn": "Regulation of Artificial Intelligence Bill 2026",
+                  "longTitleEn": "<p>Bill entitled an Act to give effect to the EU AI Act.</p>", "status": "Enacted",
+                  "sponsors": [{"sponsor": {"by": {"showAs": "A Minister"}}}],
+                  "stages": [stage("First Stage", "dail", "2026-03-02"), stage("Fifth Stage", "dail", "2026-05-20"),
+                             stage("Fifth Stage", "seanad", "2026-07-08")],
+                  "act": {"actNo": "21", "actYear": "2026", "dateSigned": "2026-07-21"}}},
+        {"bill": {"billNo": "7", "billYear": "2026", "shortTitleEn": "Online Safety (Recommender Algorithms) Bill 2026",
+                  "status": "Defeated", "stages": [stage("First Stage", "dail", "2026-01-22")],
+                  "mostRecentStage": {"event": {"dates": [{"date": "2026-09-17"}]}}}},
+        {"bill": {"billNo": "8", "billYear": "2026", "shortTitleEn": "Planning Bill 2026", "status": "Current",
+                  "stages": [stage("First Stage", "dail", "2026-01-23")]}}]}
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_ireland(conn, lambda u: json.dumps(page).encode(), log=lambda *_: None) == 2  # not the Planning Bill
+    law = conn.execute("SELECT stage, stage_date, url, history FROM bills WHERE key = 'IE-2026-69'").fetchone()
+    assert (law["stage"], law["stage_date"]) == ("signed", "2026-07-21") and law["url"].endswith("/bills/bill/2026/69/")
+    assert [h["stage"] for h in json.loads(law["history"])] == ["introduced", "passed_chamber", "passed_legislature", "signed"]
+    assert conn.execute("SELECT stage FROM bills WHERE key = 'IE-2026-7'").fetchone()[0] == "vetoed"  # defeated
+    card = conn.execute("SELECT title, summary, source, action FROM items WHERE bill = 'IE-2026-69'").fetchone()
+    assert card["source"] == "Houses of the Oireachtas" and card["action"] == "law" and "Minister" not in card["summary"]
+
+
+def test_norwegian_ai_proposals_from_the_storting(tmp_path, monkeypatch):
+    import json
+    from aipulse import bills, translate
+    monkeypatch.setattr(bills.time, "sleep", lambda s: None)
+    monkeypatch.setattr(translate, "english", lambda conn, lang, texts: {})  # no model in tests
+    case = lambda title, ref: {"id": hash(title) % 1000, "korttittel": title, "tittel": title, "henvisning": ref,
+                               "forslagstiller_liste": [{"fornavn": "A", "foedselsdato": "/Date(0)/"}]}
+    steps = lambda *days: {"saksgang_steg_liste": [{"saksgang_hendelse_liste": [
+        {"id": "FREMSATT" if i == 0 else "X", "dato": f"{d} 00:00:00"} for i, d in enumerate(days)]}]}
+    cases = [case("Representantforslag om å forhindre juks med kunstig intelligens i skolen", "Dokument 8:241 S (2025-2026), Innst. 268 S"),
+             case("Representantforslag om KI-briller", "Dokument 8:8 S (2026-2027)"),
+             case("Riksrevisjonens undersøkelse av kunstig intelligens i staten", "Dokument 3:18 (2023-2024)"),
+             case("Representantforslag om ferjer", "Dokument 8:9 S (2026-2027)")]
+    details = {cases[0]["id"]: {"saksgang": steps("26.03.2026", "19.05.2026"), "ferdigbehandlet": True,
+                                "kortvedtak": "Stortinget vedtok å be regjeringen sørge for tiltak."},
+               cases[1]["id"]: {"saksgang": steps("05.10.2026", "01.01.0001"), "ferdigbehandlet": False}}
+    def fetch(url):
+        if "sesjoner" in url:
+            return json.dumps({"innevaerende_sesjon": {"id": "2026-2027"},
+                               "sesjoner_liste": [{"id": "2027-2028"}, {"id": "2026-2027"}]}).encode()
+        if "saker?" in url:
+            return json.dumps({"saker_liste": cases}).encode()
+        return json.dumps(details[int(url.rsplit("=", 2)[1].split("&")[0])]).encode()
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_norway(conn, fetch, log=lambda *_: None) == 2  # AI proposals only: not the audit report, not ferries
+    adopted = conn.execute("SELECT number, stage, stage_date FROM bills WHERE key = ?", (f"NO-{cases[0]['id']}",)).fetchone()
+    assert tuple(adopted) == ("Dokument 8:241 S (2025-2026)", "passed_legislature", "2026-05-19")
+    assert conn.execute("SELECT stage FROM bills WHERE key = ?", (f"NO-{cases[1]['id']}",)).fetchone()[0] == "introduced"
+    assert not conn.execute("SELECT 1 FROM items WHERE summary LIKE '%A %' OR title LIKE '%Date(%'").fetchone()  # no people
+    assert translate.AFTER["nb"][0][0].sub("AI", "a ban on KIC glasses") == "a ban on AI glasses"
 
 
 def test_fetch_trusts_bundled_intermediates_only_up_to_a_root():

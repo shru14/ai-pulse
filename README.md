@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 117 public sources (101 feeds, 16 official records and
+A free, non-commercial, worldwide briefing on AI. It reads 119 public sources (101 feeds, 18 official records and
 databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -78,6 +78,8 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 | Malaysia | Parliament of Malaysia | No robots.txt rules or restricting terms |
 | Vietnam | National Legal Database (vbpl.vn) | robots.txt allows; legal documents aren't copyrighted |
 | Switzerland | Swiss Parliament open data | Open use with source |
+| Ireland | Houses of the Oireachtas open data API | Oireachtas (Open Data) PSI Licence (CC BY 4.0) |
+| Norway | Stortinget open data | Norwegian Licence for Open Government Data (NLOD), Stortinget credited |
 | ~60 more countries and bodies (UN, UNESCO, G7, AU, ASEAN…) | OECD.AI Policy Observatory | CC BY 4.0 |
 | International AI standards | ISO/IEC and IEEE, kept by hand | Facts only (number, title, date, link) |
 
@@ -108,6 +110,9 @@ Observatory (https://oecd.ai): CC BY 4.0. Japanese laws: e-Gov Law Search (https
 Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI Pulse. Vietnamese legal
 documents: National Legal Database (https://vbpl.vn). Australian legislation: based on content from the
 Federal Register of Legislation (CC BY 4.0); for the latest information go to https://www.legislation.gov.au.
+Irish bills: Houses of the Oireachtas (https://www.oireachtas.ie), Oireachtas (Open Data) PSI Licence, which
+incorporates CC BY 4.0. Norwegian proposals: Stortinget (https://data.stortinget.no), Norwegian Licence for Open
+Government Data (NLOD); titles machine-translated by AI Pulse.
 AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
 (MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon. Fonts: Archivo Black, Archivo, Anton and IBM Plex Mono (SIL Open Font License 1.1), served
 from this site. Section icons: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).

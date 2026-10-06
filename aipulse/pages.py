@@ -52,6 +52,8 @@ STYLE = """
 .cp .terms.small li{padding:9px 0}
 .cp .terms.small li a{font-size:14.5px}
 .cp .terms.small .short{font-size:13.5px}
+.cp .days li a{font-size:16px}
+.cp .days .grp{margin-left:10px;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
 .cp .note{margin-top:28px;font-size:14px;color:var(--muted)}
 .cp .note a{color:#0072B2}
 a.subscribe-btn{text-decoration:none}

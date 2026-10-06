@@ -49,7 +49,7 @@ OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament",
                     "Câmara dos Deputados", "legislation.gov.au", "Cyberspace Administration of China",
                     "Parliament of India", "e-Gov (Japan)", "National Legal Database (Vietnam)", "Swiss Parliament", "Parliament of Malaysia",
                     "Legislative Yuan (Taiwan)", "National Law Information Center (Korea)",
-                    "OECD.AI", "ISO/IEC", "IEEE SA")
+                    "Houses of the Oireachtas", "Stortinget", "OECD.AI", "ISO/IEC", "IEEE SA")
 
 # Lifecycle, in order. A bill's stage is the furthest one reached; vetoed / withdrawn end it.
 STAGES = ["introduced", "passed_chamber", "passed_legislature", "signed", "in_force"]
@@ -85,6 +85,10 @@ LABELS = {
            "signed": "Promulgated", "in_force": "In force", "vetoed": "Rejected", "withdrawn": "Repealed"},
     "KR": {"introduced": "Introduced", "passed_chamber": "Passed", "passed_legislature": "Passed the National Assembly",
            "signed": "Promulgated", "in_force": "In force", "vetoed": "Rejected", "withdrawn": "Repealed"},
+    "IE": {"introduced": "Introduced", "passed_chamber": "Passed one House", "passed_legislature": "Passed both Houses",
+           "signed": "Signed into law", "in_force": "In force", "vetoed": "Defeated", "withdrawn": "Lapsed or withdrawn"},
+    "NO": {"introduced": "Put forward", "passed_chamber": "Debated", "passed_legislature": "Adopted by the Storting",
+           "signed": "Sanctioned", "in_force": "In force", "vetoed": "Not adopted", "withdrawn": "Withdrawn"},
     "AU": {"introduced": "Introduced", "passed_chamber": "Passed first House", "passed_legislature": "Passed Parliament",
            "signed": "Assented or made", "in_force": "In force", "vetoed": "Disallowed", "withdrawn": "Repealed"},
 }
@@ -631,7 +635,7 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
-_LANGS = {"BR": "pt", "CN": "zh", "JP": "ja", "VN": "vi", "CH": "de", "TW": "zh"}  # records whose titles are translated
+_LANGS = {"BR": "pt", "CN": "zh", "JP": "ja", "VN": "vi", "CH": "de", "TW": "zh", "NO": "nb"}  # records whose titles are translated
 
 
 def refresh_cards(conn) -> int:
@@ -1251,6 +1255,138 @@ def sync_australia(conn, fetcher=feeds.fetch, log=print) -> int:
     return changed
 
 
+# --- Ireland (Houses of the Oireachtas open data API) ---
+# Every bill since IE_SINCE from api.oireachtas.ie (its robots.txt allows it), under the Oireachtas (Open Data) PSI
+# Licence, which incorporates CC BY 4.0 (https://www.oireachtas.ie/en/open-data/license/); AI_TITLE keeps the AI
+# bills. Only the bill's own record is kept: title, long title, stages and link (not its sponsors).
+
+IE_API = "https://api.oireachtas.ie/v1/legislation"
+IE_SINCE = "2020-01-01"
+IE_PAGE = 500
+
+
+def ie_history(b: dict) -> list[dict]:
+    """Lifecycle from a bill's stages: First Stage, the Fifth Stage in each House, the Act signed; or how it ended."""
+    reached: dict[str, dict] = {}
+    passed: dict[str, str] = {}
+    for s in b.get("stages") or []:
+        e = s.get("event") or {}
+        dates = sorted(d["date"] for d in e.get("dates") or [] if d.get("date"))
+        if not dates:
+            continue
+        house = (e.get("house") or {}).get("houseCode") or ""
+        where = (e.get("chamber") or {}).get("showAs") or ""
+        if e.get("showAs") == "First Stage" and ("introduced" not in reached or dates[0] < reached["introduced"]["date"]):
+            reached["introduced"] = {"date": dates[0], "stage": "introduced", "text": f"First Stage, {where}".rstrip(", ")}
+        elif e.get("showAs") == "Fifth Stage" and e.get("stageCompleted") and house:
+            passed.setdefault(house, dates[-1])
+    if passed:
+        reached["passed_chamber"] = {"date": min(passed.values()), "stage": "passed_chamber", "text": "Fifth Stage"}
+        if len(passed) == 2:
+            reached["passed_legislature"] = {"date": max(passed.values()), "stage": "passed_legislature",
+                                             "text": "Passed by the Dáil and the Seanad"}
+    act = b.get("act") or {}
+    if act.get("dateSigned"):
+        reached["signed"] = {"date": act["dateSigned"][:10], "stage": "signed",
+                             "text": f"Signed into law: Act No. {act.get('actNo')} of {act.get('actYear')}"}
+    status = b.get("status") or ""
+    if status in ("Lapsed", "Withdrawn", "Defeated", "Rejected") and reached:
+        recent = [d["date"] for d in ((b.get("mostRecentStage") or {}).get("event") or {}).get("dates") or []
+                  if d.get("date")]
+        last = max(recent) if recent else (b.get("lastUpdated") or "")[:10]
+        stage = "withdrawn" if status in ("Lapsed", "Withdrawn") else "vetoed"
+        reached[stage] = {"date": max(last, max(h["date"] for h in reached.values())), "stage": stage, "text": status}
+    return sorted(reached.values(), key=lambda h: (h["date"], (STAGES + ENDED).index(h["stage"])))
+
+
+def sync_ireland(conn, fetcher=feeds.fetch, log=print) -> int:
+    """AI bills in the Oireachtas (Dáil and Seanad) since IE_SINCE, and their stages."""
+    connect_tables(conn)
+    found, skip = [], 0
+    while True:
+        page = _get_json(f"{IE_API}?date_start={IE_SINCE}&limit={IE_PAGE}&skip={skip}", fetcher).get("results") or []
+        found += [r["bill"] for r in page if AI_TITLE.search((r.get("bill") or {}).get("shortTitleEn") or "")]
+        if len(page) < IE_PAGE:
+            break
+        skip += IE_PAGE
+        time.sleep(0.5)
+    changed = 0
+    for b in found:
+        no, year = b.get("billNo"), b.get("billYear")
+        bill = {"key": f"IE-{year}-{no}", "jurisdiction": "IE", "number": f"Bill {no} of {year}",
+                "title": b["shortTitleEn"], "url": f"https://www.oireachtas.ie/en/bills/bill/{year}/{no}/",
+                "source": "Houses of the Oireachtas", "history": ie_history(b),
+                "summary": describe(b.get("longTitleEn") or "", b["shortTitleEn"])}
+        changed += upsert(conn, bill)
+        conn.commit()
+    return changed
+
+
+# --- Norway (Stortinget open data, data.stortinget.no) ---
+# The Storting's cases (saker) in the last NO_SESSIONS sessions, under the Norwegian Licence for Open Government
+# Data (NLOD; Stortinget credited as the source: https://data.stortinget.no/om-datatjenesten/bruksvilkar/; robots.txt
+# allows it, and a run makes a few calls of the 100 a minute allowed). NO_AI keeps the AI cases by title; for each,
+# only the case's own record is read (title, its steps and dates, the decision), never the people in it.
+
+NO_API = "https://data.stortinget.no/eksport"
+NO_SESSIONS = 4  # the current session and the three before it
+NO_AI = re.compile(r"kunstig intelligens|\bKI\b|algoritm|maskinlæring|deepfake|chatbot", re.I)
+_NO_DATE = re.compile(r"^(\d\d)\.(\d\d)\.(\d{4})")
+
+
+def _no_day(text: str) -> str:
+    m = _NO_DATE.match(text or "")
+    return f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m and m.group(3) != "0001" else ""
+
+
+def no_history(case: dict) -> list[dict]:
+    """Lifecycle from a case's steps: put forward (FREMSATT), then the Storting's decision once it's dealt with, as
+    its short decision says: "Stortinget vedtok …" (adopted) or "Forslaget ble ikke vedtatt" (not adopted)."""
+    events = [(h.get("id") or "", _no_day(h.get("dato")))
+              for step in (case.get("saksgang") or {}).get("saksgang_steg_liste") or []
+              for h in step.get("saksgang_hendelse_liste") or []]
+    days = sorted(d for _, d in events if d)
+    if not days:
+        return []
+    start = next((d for e, d in events if e == "FREMSATT" and d), days[0])
+    reached = {"introduced": {"date": start, "stage": "introduced", "text": "Put forward in the Storting"}}
+    if case.get("ferdigbehandlet"):
+        said = f"{case.get('kortvedtak') or ''} {case.get('vedtakstekst') or ''}"
+        adopted = re.search(r"\bvedtok\b", said) and not re.search(r"ikke vedtatt|bifalles ikke|vedlegges protokollen", said)
+        stage = "passed_legislature" if adopted else "vetoed"
+        reached[stage] = {"date": days[-1], "stage": stage,
+                          "text": "Adopted by the Storting" if adopted else "Not adopted by the Storting"}
+    return sorted(reached.values(), key=lambda h: (h["date"], (STAGES + ENDED).index(h["stage"])))
+
+
+def sync_norway(conn, fetcher=feeds.fetch, log=print) -> int:
+    """AI cases in the Storting over the last NO_SESSIONS sessions, and how they were decided."""
+    connect_tables(conn)
+    sessions = _get_json(f"{NO_API}/sesjoner?format=json", fetcher)
+    current = sessions["innevaerende_sesjon"]["id"]
+    ids = [s["id"] for s in sessions["sesjoner_liste"] if s["id"] <= current][:NO_SESSIONS]
+    found: dict[int, dict] = {}
+    for sid in ids:
+        for c in _get_json(f"{NO_API}/saker?sesjonid={sid}&format=json", fetcher).get("saker_liste") or []:
+            # proposals only: members' (Dokument 8) and the government's (Prop.), not reports or debates
+            if NO_AI.search(f"{c.get('korttittel') or ''} {c.get('tittel') or ''}") \
+                    and re.match(r"Dokument 8|Prop\.", c.get("henvisning") or ""):
+                found[c["id"]] = c
+        time.sleep(1)
+    translate.english(conn, "nb", [c.get("korttittel") or c["tittel"] for c in found.values()])
+    changed = 0
+    for case_id, c in found.items():
+        case = _get_json(f"{NO_API}/sak?sakid={case_id}&format=json", fetcher)
+        title = c.get("korttittel") or c["tittel"]
+        bill = {"key": f"NO-{case_id}", "jurisdiction": "NO", "number": (c.get("henvisning") or "").split(",")[0],
+                "title": title, "url": f"https://www.stortinget.no/no/Saker-og-publikasjoner/Saker/Sak/?p={case_id}",
+                "source": "Stortinget", "history": no_history(case), "lang": "nb"}
+        changed += upsert(conn, bill)
+        conn.commit()
+        time.sleep(1)
+    return changed
+
+
 # --- Attaching news to bills ---
 
 _CA_BILL = re.compile(r"\bBill ([CS])-(\d{1,4})\b")
@@ -1333,6 +1469,8 @@ def sync(conn, fetcher=feeds.fetch, log=print) -> int:
                           ("Parliament of Malaysia", MY_BILLS, sync_malaysia),
                           ("Legislative Yuan law system (Taiwan)", TW_LAWS, sync_taiwan),
                           ("National Law Information Center (Korea)", KR_SEARCH, sync_korea),
+                          ("Houses of the Oireachtas API (Ireland)", IE_API, sync_ireland),
+                          ("Stortinget open data (Norway)", NO_API, sync_norway),
                           ("OECD.AI policy database", _oecd_api(), _oecd_sync),
                           ("AI standards (ISO/IEC, IEEE; hand-kept list)", "https://www.iso.org/committee/6794475.html",
                            _standards_sync),
