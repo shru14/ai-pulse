@@ -42,7 +42,7 @@ Only legal, publicly accessible sources are used.
 5. **Credit and non-commercial use**, as the licences below require.
 6. **Readers' privacy:** the site and email load nothing from other servers and track no one. Questions: projectaipulse@gmail.com.
 
-Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
+Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. AI Pulse's own robots.txt lets search engines in and keeps AI-training bots out.
 
 ## Sources
 
