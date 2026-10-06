@@ -34,7 +34,8 @@ STYLE = """
 .cp .places a:hover,.cp .places a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
 .cp .def{font-size:clamp(19px,2.4vw,22px);line-height:1.5;margin:10px 0 18px;max-width:62ch}
 .cp .def a{color:var(--ink);text-decoration:underline;text-decoration-color:#0072B2;text-decoration-thickness:2px;text-underline-offset:3px}
-.cp .search{display:inline-block;font-weight:600;color:#fff;background:#0072B2;border:2px solid #000;padding:9px 14px;text-decoration:none}
+.cp .more-stories{margin-top:14px;font:600 15px var(--body);color:#fff;background:#0072B2;border:2px solid #000;padding:9px 16px;cursor:pointer}
+.cp .more-stories[hidden]{display:none}
 .cp .letters{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
 .cp .letters a{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:2px solid #000;color:var(--ink);font-weight:600;text-decoration:none}
 .cp .letters a:hover,.cp .letters a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}

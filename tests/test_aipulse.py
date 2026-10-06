@@ -679,7 +679,9 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="site.css"' in page
     assert '<h1>Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
     assert "<h2>Related terms</h2>" in page and page.count('<li><div><a href="/glossary/') == glossary_pages.RELATED
-    assert "Mentioned in 1 story in the last 7 days." in page and 'href="/all/?q=Mixture%20of%20Experts"' in page
+    assert "Mentioned in 1 story in the last 7 days." in page and '/all/?' not in page
+    # its latest stories, found on the page itself (from data.json, as the site's underlines find them)
+    assert '<h2 id="stories">Latest stories with this word</h2>' in page and 'data-match="[&quot;MoE&quot;' in page and 'data-case=1' in page
     # what makes it worth a visit: the words in the same stories, and the week's words as a cloud on glossary/
     assert "<h2>Often in the same stories</h2>" in page and 'href="/glossary/parameters/" style="font-size:' in page
     assert '"@type": "DefinedTerm"' in page and 'rel="canonical" href="https://projectaipulse.com/glossary/mixture-of-experts/"' in page

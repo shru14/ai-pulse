@@ -201,7 +201,7 @@ header.top{gap:10px}
 .gl-entry h3{font-family:var(--display);font-weight:500;font-size:17px;margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
 .gl-entry h3 .grp{font:11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .gl-entry p{margin:4px 0 0;font-size:15px;line-height:1.5}
-.gl-find{margin-top:6px;font:500 12px var(--mono);color:var(--accent);background:none;border:0;padding:0;cursor:pointer}
+.gl-find{display:inline-block;text-decoration:none;margin-top:6px;font:500 12px var(--mono);color:var(--accent);background:none;border:0;padding:0;cursor:pointer}
 .gl-find:hover{text-decoration:underline;text-underline-offset:3px}
 .gl-none{color:var(--muted);padding:18px 0}
 .gl{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:help;text-decoration:underline dotted;text-decoration-color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1.5px}
@@ -1930,11 +1930,8 @@ function renderGlossary(){
   shown.forEach(e => {
     const d = el("div","gl-entry"); d.id = "gl-" + e.id;
     const h = el("h3",null,e.term); h.append(el("span","grp",e.group));
-    const find = el("button","gl-find","Show stories that mention it →"); find.type="button";
-    find.addEventListener("click", () => {
-      glDialog.close(); state.q = e.search; $("q").value = e.search;
-      if(state.cat === "home") go("all"); else load(true);
-    });
+    const find = el("a","gl-find","Show stories that mention it →");  // on the word's own page (glossary_pages.py)
+    find.href = "glossary/" + e.id + "/#stories";
     d.append(h, el("p",null,e.def), find); body.append(d);
   });
   if(!shown.length) body.append(el("p","gl-none","No word matches. Try another spelling, or pick “All”."));

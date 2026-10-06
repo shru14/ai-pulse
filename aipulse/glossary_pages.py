@@ -1,18 +1,50 @@
 """The glossary as pages, like a dictionary: glossary/ lists every word A to Z, and glossary/<word>/ has its meaning
-(other glossary words in it linked), its related terms and a link to the stories that mention it. The meanings are
-our own writing, the part of AI Pulse search engines can rank; the site's Glossary panel stays as it is.
+(other glossary words in it linked), the latest stories that use it, its related terms. The meanings are our own
+writing, the part of AI Pulse search engines can rank; the site's Glossary panel stays as it is.
 """
 from __future__ import annotations
 
+import json
 import math
 import re
 from collections import Counter
 from datetime import date, timedelta
 from html import escape
 from pathlib import Path
-from urllib.parse import quote
 
 from . import glossary, pages, rss
+
+# A word's latest stories, found in the reader's browser in data.json (about the last 3 months) as the site's
+# underlines find them, newest first, 10 at a time: publishers' headlines stay out of the page itself, as on the
+# tracker's country pages.
+STORIES_JS = r"""<script>
+(() => {
+  const ul = document.getElementById("word-stories"), more = document.getElementById("more-stories");
+  const re = new RegExp("(?<!\\w)(?:" + JSON.parse(ul.dataset.match).join("|") + ")(?![\\w])", ul.dataset.case ? "" : "i");
+  const NAMES = {tool: "Releases", news: "Industry", research: "Research", regulation: "Regulation tracker",
+                 policy: "Policy", infra: "Infra & climate"};
+  const day = d => new Date(d.slice(0, 10) + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric", timeZone: "UTC"});
+  const note = text => { const li = document.createElement("li"); li.className = "meta"; li.textContent = text; ul.replaceChildren(li); };
+  let list = [], shown = 0;
+  const show = () => {
+    list.slice(shown, shown += 10).forEach(c => {
+      const li = document.createElement("li"), a = document.createElement("a"), meta = document.createElement("div");
+      a.href = c.url; a.rel = "noopener"; a.textContent = c.title.trim();
+      meta.className = "meta"; meta.textContent = [NAMES[c.category], day(c.date), c.source].filter(Boolean).join(" · ");
+      li.append(a, meta); ul.append(li);
+    });
+    more.hidden = shown >= list.length;
+  };
+  fetch("/data.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
+    list = d.cards.filter(c => re.test((c.title || "") + " " + (c.summary || "")))
+      .sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+    document.getElementById("stories-count").textContent = list.length + (list.length === 1 ? " story" : " stories");
+    if(!list.length) return note("No stories used this word in the last 3 months.");
+    ul.replaceChildren(); show();
+  }).catch(() => note("Couldn't load the stories. Try reloading the page."));
+  more.addEventListener("click", show);
+})();
+</script>"""
 
 RELATED = 6  # related terms per word: those its meaning names, those whose meanings name it, then its group's
 CLOUD = 30  # words in glossary/'s "In the news this week" cloud
@@ -100,7 +132,13 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 else "Not in the last 7 days' stories.")
         body = (f'<span class="kind">AI glossary · {escape(e["group"])}</span>\n<h1>{escape(e["term"])}</h1>\n'
                 f'<p class="def">{meaning}</p>\n<p class="intro">{seen}</p>\n'
-                f'<a class="search" href="/all/?q={quote(e["search"])}">See stories that mention it →</a>\n'
+                f'<h2 id="stories">Latest stories with this word</h2>\n'
+                f'<p class="intro"><span id="stories-count">The stories</span> in the last 3 months where the glossary '
+                f'marks {escape(e["term"])}, from every stream, newest first.</p>\n'
+                f'<ul id="word-stories" data-match="{escape(json.dumps(e["match"]))}"{" data-case=1" if e["case"] else ""}>'
+                f'<li class="meta">Loading the stories…</li></ul>\n'
+                f'<button type="button" class="more-stories" id="more-stories" hidden>Show more stories</button>\n'
+                f'{STORIES_JS}\n'
                 + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
                    f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'
                    + cloud([(by_id[i], k) for i, k in together[e["id"]].most_common(TOGETHER)], "Often in the same stories")
