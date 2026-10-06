@@ -20,14 +20,14 @@ Only legal, publicly accessible sources are used.
 
 ## Features
 
-- **Site:** a weekly front page (new each Monday): last week's story, word and meme, then each stream's top stories of that week; a page per stream; a link to yesterday's full table of stories; colour-blind-safe colours.
+- **Site:** a weekly front page (new each Monday): last week's story, word and meme, then each stream's top stories of that week; a page per stream; yesterday's full table; colour-blind-safe colours.
 - **Filters and search:** stream, region, country and time range; search back to 2023.
 - **English throughout:** the publisher's English version, else an offline translation (marked).
 - **One card per event:** the same story from several outlets is grouped.
 - **Glossary:** plain-English meanings of ~130 hard words.
 - **Memes:** on well-known templates via imgflip.com, as parody; captions checked (no politics, harm, people or invented numbers), else rule-based.
 - **RSS:** one feed per stream ([Releases](https://projectaipulse.com/feeds/releases.xml), [Industry](https://projectaipulse.com/feeds/news.xml), [Research](https://projectaipulse.com/feeds/research.xml), [Regulation tracker](https://projectaipulse.com/feeds/regulation.xml), [Policy](https://projectaipulse.com/feeds/policy.xml), [Infra & climate](https://projectaipulse.com/feeds/infra.xml)).
-- **Daily email:** the reader's streams: word and meme of the day (the word one of ~37 technical, medium-hard glossary words), the top 10 (the reader's choices first), the rest in brief; checked before sending, and every story's link opened first (a dead one is left out). A line asks readers to forward it. On Sundays, the week's story, word and meme instead. Daily, or weekly (Sundays only).
+- **Daily email:** the reader's streams: word and meme of the day, the top 10 (the reader's choices first), the rest in brief; checked before sending, dead links left out. On Sundays, the week's story, word and meme instead. Daily, or weekly (Sundays only).
 - **Weekly dossier:** up to 3 questions in the reader's own words, asked on its own page from the button in every Sunday email, answered there at once and each Sunday: the week's stories that answer them, found by an open model (BGE-base; offline for the email, in the reader's browser on the page) and the site's tags. It picks and links; it writes nothing.
 - **Make it yours:** more of, or leave out, any topic, company, place or scholar, plus up to 5 own words.
 - **Subscriptions:** confirm by one link, unsubscribe in one click. Addresses and questions stay in the project's Google account, never in this repository or its logs.
@@ -50,11 +50,11 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`.
 | Releases (feeds) | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama, Sakana AI, Character.AI, Stability AI; AI stories from the newsrooms of Microsoft, Meta, Apple and Amazon |
 | Releases (news pages, no feed) | Anthropic, Meta AI, DeepSeek, Cohere, MiniMax, Moonshot AI (Kimi) |
 | Releases (developer release notes) | xAI (docs.x.ai) and Perplexity (docs.perplexity.ai) |
-| Industry | **Global:** TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World · **Asia:** South China Morning Post, Pandaily, TechNode, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports · **Chips and servers:** Semiconductor Digest, ServeTheHome · **Practitioners and evaluators:** Simon Willison, Lil'Log (Lilian Weng), METR (commentary and evaluations, never Releases) |
+| Industry | **Global:** TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily, Rest of World · **Asia:** South China Morning Post, Pandaily, TechNode, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports · **Chips and servers:** Semiconductor Digest, ServeTheHome · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
-| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, DARPA, NSF, UK AI Security Institute (blog page, no feed) |
-| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, Energy Monitor, The Conversation (energy), Capacity Media, Data Center Knowledge, International Energy Agency (news page, no feed) · **Europe:** European Commission (energy), Data Centre Review · **Asia-Pacific:** W.Media, iTnews · **Africa:** ESI Africa · **North America:** US Energy Information Administration, Canary Media |
+| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, DARPA, NSF, UK AI Security Institute |
+| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, Energy Monitor, The Conversation (energy), Capacity Media, Data Center Knowledge, International Energy Agency · **Europe:** European Commission (energy), Data Centre Review · **Asia-Pacific:** W.Media, iTnews · **Africa:** ESI Africa · **North America:** US Energy Information Administration, Canary Media |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 
 ### Official records (Regulation tracker)
@@ -97,7 +97,7 @@ python -m pytest -q           # tests (run locally, not on GitHub)
 ## Credits and licences
 
 European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK and UK AI Security Institute: Open Government Licence v3.0. Federal Register,
-congress.gov, US Energy Information Administration, DARPA and NSF: US public domain. International Energy Agency: CC BY 4.0. ITU: used with acknowledgement for non-commercial purposes. ServeTheHome: synopses within its copyright policy (up to 300 characters, linking back). Canada: reproduced with the Speaker's permission for non-commercial use; Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
+congress.gov, US Energy Information Administration, DARPA and NSF: US public domain. International Energy Agency: CC BY 4.0. ITU: non-commercial use with credit. ServeTheHome: short synopses as its copyright policy allows. Canada: reproduced with the Speaker's permission for non-commercial use; Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
 Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. Korean laws: National
 Law Information Center (https://www.law.go.kr), Ministry of Government Legislation. Taiwanese laws:
 Legislative Yuan law system (https://lis.ly.gov.tw). Malaysian bills: Parliament of Malaysia
