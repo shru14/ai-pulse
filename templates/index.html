@@ -113,9 +113,9 @@ header.top{gap:10px}
 .sub-go:hover{filter:brightness(1.08)}
 .sub-go:disabled{opacity:.45;cursor:default}
 .sub-go:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.sub-msg{min-height:0;margin:10px 0 0;font-size:14px;line-height:1.45}
+.sub-msg{min-height:0;margin:10px 0 0;font-size:14px;line-height:1.5;white-space:pre-line}
 .sub-msg:empty{display:none}
-.sub-msg[data-kind="ok"]{background:var(--c-tool-soft);color:var(--ink);border-radius:8px;padding:9px 11px}
+.sub-msg[data-kind="ok"]{background:var(--c-tool-soft);color:var(--ink);border-radius:8px;padding:12px 14px}
 .sub-msg[data-kind="error"]{color:var(--c-reg)}
 .sub-small{font-size:13px;color:var(--muted);line-height:1.5;margin:10px 0 0}
 /* "Make it yours": a reader's own email. One picker over every label and tag the site shows; a mode switch says
@@ -683,7 +683,7 @@ header.top.home{height:auto;padding-top:10px}
           <p class="pref-limit" id="pref-words-seen" aria-live="polite"></p>
         </div>
       </details>
-      <!-- The weekly dossier (in testing): shown from a reader's own choices link with "&dossier" after it, or once
+      <!-- The weekly dossier: shown from the Sunday email's dossier button (#dossier=TOKEN), or once
            they have interests. Each interest is searched in the week's stories (aipulse/weekly.py). -->
       <div class="dossier-box" id="dossier-box" hidden>
         <label class="pref-words-label" for="dossier-ask">Your weekly dossier <span class="opt">(optional)</span></label>
@@ -1775,9 +1775,10 @@ async function openChoices(token){
     DOSSIER.on = EDIT.dossier || (r.interests || []).length > 0;
     $("dossier-box").hidden = !DOSSIER.on;
     if(DOSSIER.on) renderInterests(r.interests || []);
-    $("pref-box").open = true;
+    $("pref-box").open = !EDIT.dossier;  // from the Sunday email's dossier button: straight to the dossier box
     await loadPrefOptions();
     renderPrefs(); subMessage("");
+    if(EDIT.dossier){ $("dossier-box").scrollIntoView({block: "center"}); $("dossier-ask").focus({preventScroll: true}); }
   }catch(err){
     subMessage("Couldn't reach the sign-up service. Please try again in a moment.", "error");
   }
@@ -1798,7 +1799,10 @@ async function saveChoices(){
     $("subscribe-go").disabled = !chosenStreams().length;
   }
 }
-{ const m = location.hash.match(/^#choices=([0-9a-f-]{36})(&dossier)?$/); if(m){ EDIT.dossier = !!m[2]; openChoices(m[1]); } }
+// #dossier=TOKEN (the Sunday email's dossier button; no "&" in it, which mail apps' link wrappers cut off) opens
+// the same form at its dossier box; #choices=TOKEN&dossier is the older form of it
+{ const m = location.hash.match(/^#(choices|dossier)=([0-9a-f-]{36})(&dossier)?$/);
+  if(m){ EDIT.dossier = m[1] === "dossier" || !!m[3]; openChoices(m[2]); } }
 
 $("sub-form").addEventListener("submit", async e => {
   e.preventDefault();
@@ -1816,8 +1820,8 @@ $("sub-form").addEventListener("submit", async e => {
     if(r.ok){
       subMessage((r.change ? "Almost done: " : "Almost there: ") + "we've emailed a confirm link to " + email
         + ". Click it" + (r.change ? " and your streams change." : " and you're subscribed.")
-        + " Not in your inbox? Look in Spam or Promotions and mark it “Not spam”, and add " + DIGEST_SENDER
-        + " to your contacts so the daily email lands in your inbox.", "ok");
+        + "\n\nNot in your inbox? Look in Spam or Promotions and mark it “Not spam”."
+        + "\n\nAdd " + DIGEST_SENDER + " to your contacts so the daily email lands in your inbox.", "ok");
       $("sub-email").value = "";
       try{ localStorage.setItem("aipulse-sub-prompt", "subscribed"); }catch(err){}  // no more pop-ups
     } else {
