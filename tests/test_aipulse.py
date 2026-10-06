@@ -620,7 +620,8 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker",
+        "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -638,7 +639,17 @@ def test_static_build_holds_every_card(tmp_path):
         assert '<meta name="robots" content="noindex">' in (tmp_path / "site" / private).read_text(encoding="utf-8")
     sitemap = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
     tracker_pages = list((tmp_path / "site" / "tracker").glob("**/index.html"))
-    assert sitemap.count("<url>") == 1 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name != "latest.html"])
+    assert sitemap.count("<url>") == 1 + 7 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name != "latest.html"])
+    # each stream has its own address: the same page, with its own title, description, canonical link and heading
+    policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
+    assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
+    assert policy.count('content="What governments, courts and politicians do about AI, worldwide. Updated every 6 hours') == 2
+    assert 'rel="canonical" href="https://projectaipulse.com/policy/"' in policy and 'og:url" content="https://projectaipulse.com/policy/"' in policy
+    assert '<h2 id="sec-title">Policy</h2>' in policy and '<base href="/">' in policy and 'data-static="1"' in policy
+    assert "<loc>https://projectaipulse.com/infra/</loc>" in sitemap
+    from aipulse.static import STREAM_PAGES
+    for cat, (path, _, title, _) in STREAM_PAGES.items():  # the page sets the same titles
+        assert f'{cat}: "{title}"' in page and f'href="/{path}/" data-go="{cat}"' in page
     # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
     days = sorted(p.name for p in daily.iterdir() if p.name != "latest.html")

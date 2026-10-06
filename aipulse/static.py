@@ -54,12 +54,38 @@ def robots_txt() -> str:
 
 
 def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
-    """sitemap.xml: the pages search engines should index: the front page, the tracker's pages by country
-    (`pages`, paths under the site) and each day's full edition."""
+    """sitemap.xml: the pages search engines should index: the front page, the streams' and the tracker's pages by
+    country (`pages`, paths under the site) and each day's full edition."""
     urls = ([(rss.SITE, today)] + [(f"{rss.SITE}{p}", today) for p in pages]
             + [(f"{rss.SITE}daily/{d.isoformat()}.html", d) for d in sorted(days, reverse=True)])
     rows = "".join(f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod></url>\n" for u, d in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{rows}</urlset>\n'
+
+
+# Each stream's own address: the page, opened at that stream, with its own title and description for search engines
+# (the page sets the same titles, PAGE_TITLE).
+STREAM_PAGES = {
+    "all": ("all", "All stories", "All AI stories, newest first", "Every AI story from 100+ public sources, newest first."),
+    "tool": ("releases", "Releases", "AI model and product releases", rss.FEEDS["releases"][2]),
+    "news": ("industry", "Industry", "AI industry news: companies, deals and markets", rss.FEEDS["news"][2]),
+    "research": ("research", "Research", "New AI research papers", rss.FEEDS["research"][2]),
+    "regulation": ("regulation", "Regulation tracker", "AI regulation tracker: bills, laws and standards by country",
+                   rss.FEEDS["regulation"][2]),
+    "policy": ("policy", "Policy", "AI policy news: governments, courts and politics", rss.FEEDS["policy"][2]),
+    "infra": ("infra", "Infra & climate", "AI data centres, energy and climate", rss.FEEDS["infra"][2]),
+}
+
+
+def stream_page(page: str, cat: str) -> str:
+    """The front page as `cat`'s own page: its title, description and address, and its heading already written."""
+    path, name, title, desc = STREAM_PAGES[cat]
+    title, desc, url = escape(f"{title} · AI Pulse"), escape(f"{desc} Updated every 6 hours, free, no ads."), f"{rss.SITE}{path}/"
+    page = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", page, count=1)
+    page = re.sub(r'(<meta (?:name="description"|property="og:description") content=")[^"]*', rf"\g<1>{desc}", page)
+    page = re.sub(r'(<meta property="og:title" content=")[^"]*', rf"\g<1>{title}", page, count=1)
+    page = re.sub(r'(<link rel="canonical" href="|<meta property="og:url" content=")[^"]*', rf"\g<1>{url}", page)
+    return page.replace('<h2 id="sec-title"></h2><p id="sec-desc"></p>',
+                        f'<h2 id="sec-title">{escape(name)}</h2><p id="sec-desc">{escape(STREAM_PAGES[cat][3])}</p>', 1)
 
 
 def opml(title: str = "AI Pulse") -> str:
@@ -160,6 +186,9 @@ def build(conn, out: str | Path) -> int:
     page = page.replace("<html ", '<html data-static="1" ', 1)
     page = photos.fill(subscribers.fill(page))
     (out / "index.html").write_text(page, encoding="utf-8")
+    for cat, (path, *_) in STREAM_PAGES.items():  # /policy/ and the rest: the same page, opened at that stream
+        (out / path).mkdir()
+        (out / path / "index.html").write_text(stream_page(page, cat), encoding="utf-8")
     # readers' weekly dossiers: the page, and each interest's section the full run kept (weekly.prepare)
     from . import weekly
     (out / "dossier.html").write_text((TEMPLATE.parent / "dossier.html").read_text(encoding="utf-8"), encoding="utf-8")
@@ -170,7 +199,7 @@ def build(conn, out: str | Path) -> int:
     (out / "robots.txt").write_text(robots_txt(), encoding="utf-8")
     from . import countries
     places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
-    (out / "sitemap.xml").write_text(sitemap(published, today, places), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)
