@@ -20,14 +20,14 @@ Only legal, publicly accessible sources are used.
 
 ## Features
 
-- **Site:** a weekly front page (new each Monday): last week's story, word and meme, then each stream's top stories of that week; a page per stream; colour-blind-safe colours.
+- **Site:** a weekly front page (new each Monday): last week's story, word and meme, then each stream's top stories of that week; a page per stream; a link to yesterday's full email; colour-blind-safe colours.
 - **Filters and search:** stream, region, country and time range; search back to 2023.
 - **English throughout:** the publisher's English version, else an offline translation (marked).
 - **One card per event:** the same story from several outlets is grouped.
-- **Glossary:** plain-English meanings of ~120 hard words.
+- **Glossary:** plain-English meanings of ~130 hard words.
 - **Memes:** on well-known templates via imgflip.com, as parody; captions checked (no politics, harm, people or invented numbers), else rule-based.
 - **RSS:** one feed per stream ([Releases](https://projectaipulse.com/feeds/releases.xml), [Industry](https://projectaipulse.com/feeds/news.xml), [Research](https://projectaipulse.com/feeds/research.xml), [Regulation tracker](https://projectaipulse.com/feeds/regulation.xml), [Policy](https://projectaipulse.com/feeds/policy.xml), [Infra & climate](https://projectaipulse.com/feeds/infra.xml)).
-- **Daily email:** the reader's streams: word and meme of the day, the top 10 (the reader's choices first), the rest in brief; checked before sending. On Sundays, the week's story, word and meme instead. Daily, or weekly (Sundays only).
+- **Daily email:** the reader's streams: word and meme of the day (the word one of ~37 technical, medium-hard glossary words), the top 10 (the reader's choices first), the rest in brief; checked before sending, and every story's link opened first (a dead one is left out). A line asks readers to forward it. On Sundays, the week's story, word and meme instead. Daily, or weekly (Sundays only).
 - **Weekly dossier:** up to 3 questions in the reader's own words, asked on its own page from the button in every Sunday email, answered there at once and each Sunday: the week's stories that answer them, found by an open model (BGE-base; offline for the email, in the reader's browser on the page) and the site's tags. It picks and links; it writes nothing.
 - **Make it yours:** more of, or leave out, any topic, company, place or scholar, plus up to 5 own words.
 - **Subscriptions:** confirm by one link, unsubscribe in one click. Addresses and questions stay in the project's Google account, never in this repository or its logs.

@@ -10,15 +10,21 @@ What's checked, for every story in the chosen streams (the ones the email shows)
     every link a plain http(s) address;
   - an unusual day: a stream with far more stories than usual (a source misbehaving), or nothing at all.
 A thin day (a few stories) isn't a problem: it's sent, saying it was a quiet day.
+Then, before sending, every story's link is opened (dead_links): a story whose page is gone is left out of the
+email (not held; logged), so readers never click a dead link.
 """
 
 from __future__ import annotations
 
 import re
+import socket
 import statistics
+import urllib.error
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 
-from . import rss
+from . import feeds, rss
 from .classify import about_standards, is_ai_related, is_infra
 from .sources import SOURCES
 
@@ -109,6 +115,39 @@ def problems(by_stream: dict[str, list[dict]], cards: list[dict], day: date) -> 
     if not any(by_stream.values()):
         out.append(f"No stories at all on {day}: collection may have failed.")
     return out
+
+
+GONE = {404, 410}  # a page that is gone; 403, 429, 5xx and timeouts are a careful or busy site, not a dead link
+
+
+def link_dead(url: str, timeout: int = 15) -> bool:
+    """True when a story's page is gone (404 or 410 to a HEAD and then a GET, or its site's name no longer
+    resolves). Links whose robots.txt keeps us out aren't opened, and count as fine."""
+    try:
+        if not feeds.allowed(url):
+            return False
+        for method in ("HEAD", "GET"):  # some sites answer HEAD wrongly: a GET confirms
+            req = urllib.request.Request(url, method=method, headers={"User-Agent": feeds.USER_AGENT})
+            try:
+                with urllib.request.urlopen(req, timeout=timeout, context=feeds.TLS):
+                    return False
+            except urllib.error.HTTPError as e:
+                if e.code not in GONE:
+                    return False
+    except urllib.error.URLError as e:
+        return isinstance(e.reason, socket.gaierror)
+    except (OSError, ValueError):  # a timeout, a reset connection: can't tell, so not dead
+        return False
+    return True
+
+
+def dead_links(by_stream: dict[str, list[dict]]) -> list[dict]:
+    """The stories the email shows whose link is dead (link_dead), each link opened once."""
+    stories = [c for v in by_stream.values() for c in v]
+    urls = sorted({c["url"] for c in stories if c.get("url")})
+    with ThreadPoolExecutor(16) as pool:
+        dead = {u for u, gone in zip(urls, pool.map(link_dead, urls)) if gone}
+    return [c for c in stories if c.get("url") in dead]
 
 
 def total(by_stream: dict[str, list[dict]]) -> int:

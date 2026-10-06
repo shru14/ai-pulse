@@ -62,12 +62,14 @@ def build(conn, out: str | Path) -> int:
     # Each recent day's full email (every story, every stream, one tagged table) as a page: every daily email
     # links to it, whatever streams its reader chose.
     (out / "daily").mkdir()
+    # The newest is also daily/latest.html: the front page's "See yesterday's email".
     today = datetime.now(timezone.utc).date()
-    for back in range(1, DAILY_PAGES + 1):
+    for back in range(DAILY_PAGES, 0, -1):
         day = today - timedelta(days=back)
         page = digest.build(cards, list(rss.FEEDS), day, layout="full", web=True)
         if page:
-            (out / "daily" / f"{day.isoformat()}.html").write_text(page[2], encoding="utf-8")
+            for name in (day.isoformat(), "latest"):
+                (out / "daily" / f"{name}.html").write_text(page[2], encoding="utf-8")
     for c in cards:
         c["s"] = text.get(c["id"], "")
         for k in ("added_at", "cluster"):

@@ -299,11 +299,16 @@ def _leave_out(by_stream: dict[str, list[dict]], prefs: dict | None) -> tuple[di
 
 
 WORD_FROM = 5  # the word of the day comes from the day's 5 biggest stories in the reader's email
-# The glossary's technical sections: the word of the day is one of these, not a product name or a money word,
-# and not an everyday word (still in the glossary, but not worth a day)
-TECHNICAL = {"Models", "Training", "Agents & products", "Chips & compute", "Safety & security", "Research"}
-EVERYDAY = {"ai-agent", "llm", "gpt", "api", "cpu", "gpu", "open-source", "copilot", "data-center", "compute",
-            "machine-learning", "token"}
+# The word of the day is one of these hand-marked specialist words: technical and medium hard (not an everyday
+# word like Token or GPU, a product or money word, nor a niche one like JEPA; not chain of thought)
+SPECIALIST = {
+    "vlm", "vla", "world-model", "diffusion-model", "attention", "mixture-of-experts", "context-window", "embedding",
+    "lora", "reinforcement-learning", "rlhf", "distillation", "scaling-laws", "quantization",
+    "supervised-fine-tuning", "reward-model", "on-policy-distillation", "kl-divergence",
+    "computer-use-agent", "mcp", "rag", "vector-database",
+    "red-teaming", "prompt-injection", "interpretability", "recursive-self-improvement",
+    "tpu", "asic", "hbm", "cuda", "kv-cache", "speculative-decoding", "bf16-and-fp8", "rack-scale-system",
+    "test-time-compute", "swe-bench", "zero-shot-few-shot"}
 _TERMS: dict[str, frozenset[str]] = {}
 
 
@@ -326,13 +331,10 @@ def _text(c: dict) -> str:
     return f"{c.get('title') or ''} {c.get('summary') or ''}"
 
 
-_GROUP = {e["id"]: e["group"] for e in glossary.ENTRIES}
-
-
 def _hardest(stories: list[dict], cards: list[dict], avoid: set[str] = frozenset()) -> str | None:
-    """The hardest technical word these stories use (not an everyday one, nor one of `avoid`): the one used least
-    in the stories we have, the least familiar. None when they use none."""
-    found = {i for c in stories for i in _terms(c) if _GROUP[i] in TECHNICAL and i not in EVERYDAY and i not in avoid}
+    """The hardest specialist word these stories use (SPECIALIST, not one of `avoid`): the one used least in the
+    stories we have, the least familiar. None when they use none."""
+    found = {i for c in stories for i in _terms(c) if i in SPECIALIST and i not in avoid}
     if not found:
         return None
     seen = Counter(i for c in cards for i in _terms(c) & found)
@@ -352,9 +354,9 @@ def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: set[str] = fro
 
 def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
           tiers: list[list[dict]] | None = None) -> tuple[list[str], str]:
-    """The word of the day: the hardest technical word in the day's biggest stories in this reader's email, else
+    """The word of the day: the hardest specialist word in the day's biggest stories in this reader's email, else
     in their top 10, else anywhere in their email (`tiers`), and not one the week before gave; else
-    glossary.word_of_the_day. With its meaning, the story that used it (a headline that shows it first) and a
+    glossary.word_of_the_day among SPECIALIST. With its meaning, the story that used it (a headline that shows it first) and a
     link to it in the site's glossary."""
     streams = streams or list(rss.FEEDS)
     week = set()
@@ -362,7 +364,7 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
         by_day = _leave_out(by_streams(cards, streams, day - timedelta(days=back)), prefs)[0]
         week.add(_pick_word(cards, [_biggest(by_day, streams)])[0])
     wid, stories = _pick_word(cards, tiers or [], week - {None})
-    e = next(x for x in glossary.ENTRIES if x["id"] == wid) if wid else glossary.word_of_the_day(day)
+    e = next(x for x in glossary.ENTRIES if x["id"] == wid) if wid else glossary.word_of_the_day(day, SPECIALIST)
     if wid:
         used = [c for c in stories if wid in _terms(c)]
     else:
@@ -818,11 +820,15 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
         open_text, open_html = _opening(by_stream, cards, streams, day)
         table_text, table_html = _ledger(by_stream, streams, day)
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
+    # a reader's email asks them to pass it on; the friend signs up on the site
+    forward = f"Know someone who'd like this? Forward this email; they can sign up free at {rss.SITE}#subscribe"
     settings = (["Get AI Pulse daily in your inbox: " + change] if web else
-                [f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
+                [forward, f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
                  f"{change_words}: {change}", f"Unsubscribe: {stop}"])
     text = [*open_text, *table_text, "", *settings, f"AI Pulse is free and non-commercial: {rss.SITE}"]
     settings_html = (f'<a href="{escape(change)}" style="color:{GREY}">Get AI Pulse daily in your inbox</a><br>' if web else
+                     f'<span style="color:{INK}">Know someone who&#39;d like this? Forward this email; they can '
+                     f'<a href="{rss.SITE}#subscribe" style="color:{LINK}">sign up free</a>.</span><br>'
                      f'You chose: {escape(chose)}.<br>RSS: '
                      + " · ".join(f'<a href="{escape(url)}" style="color:{GREY}">{escape(name)}</a>' for name, url in feeds)
                      + f'<br><a href="{escape(change)}" style="color:{GREY}">{change_words}</a> · '

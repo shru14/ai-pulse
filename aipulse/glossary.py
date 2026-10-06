@@ -78,7 +78,7 @@ _ENTRIES = [
     ("Post-training", "Training", "Everything done after pre-training to make a model useful and safe: "
      "fine-tuning, reinforcement learning, safety training.", [r"post-?train(?:ing|ed)?"], False),
     ("Fine-tuning", "Training", "Training an existing model a little more on a specific set of examples, so it "
-     "gets better at one task or style.", [r"fine-?tun(?:e|es|ed|ing)", r"SFT"], False),
+     "gets better at one task or style.", [r"fine-?tun(?:e|es|ed|ing)"], False),
     ("LoRA", "Training", "Low-Rank Adaptation: a cheap way to fine-tune a big model by training a small add-on "
      "instead of changing every parameter.", [r"LoRAs?", r"QLoRA"], True),
     ("Reinforcement learning", "Training", "RL: training by trial and reward. The model tries, gets a score for the "
@@ -94,6 +94,18 @@ _ENTRIES = [
     ("Quantization", "Training", "Storing a model's numbers with less precision (e.g. 4 bits instead of 16) so it "
      "needs less memory and runs faster, usually losing a little quality.",
      [r"quanti[sz](?:ation|ed|ing)", r"FP4", r"GGUF"], False),
+    ("Supervised fine-tuning", "Training", "SFT: training a model on example questions paired with good answers "
+     "written or picked by people, usually the first step after pre-training.",
+     [r"SFT", r"[Ss]upervised [Ff]ine-?[Tt]uning"], True),
+    ("Reward model", "Training", "A model that scores another model's answers, standing in for human judges during "
+     "reinforcement learning.", [r"reward models?"], False),
+    ("On-policy distillation", "Training", "OPD: a student model writes its own answers and a bigger teacher model "
+     "grades each word, so the student learns from its own mistakes rather than only copying the teacher.",
+     [r"OPD", r"[Oo]n-[Pp]olicy [Dd]istillation"], True),
+    ("KL divergence", "Training", "A measure of how far one model's word choices drift from another's. Training often "
+     "caps it so a model learns new behaviour without forgetting what it knew.",
+     [r"KL[- ](?:divergence|constrained|regulari[sz]ed|penalty|objective|loss)", r"(?:reverse|forward|full)-KL",
+      r"Kullback[- ]Leibler"], True),
 
     # ---- Agents & products -------------------------------------------------------------------------------------
     ("AI agent", "Agents & products", "An AI system that doesn't just answer but takes actions on its own, step by "
@@ -151,6 +163,9 @@ _ENTRIES = [
      "whether it can help build a weapon.", [r"evals", r"(?:safety|model|capability|dangerous[- ]capability) evaluations?"], False),
     ("Interpretability", "Safety & security", "Research into what is happening inside a model: which parts do what, "
      "and why it gives the answers it gives.", [r"interpretab\w+", r"explainab\w+"], False),
+    ("Recursive self-improvement", "Safety & security", "RSI: an AI system that improves itself, or helps build its "
+     "own successor, so each version makes the next better faster. Safety researchers watch it closely.",
+     [r"RSI", r"[Rr]ecursive [Ss]elf-[Ii]mprov\w+"], True),
     ("Deepfake", "Safety & security", "A realistic fake video, image or voice made with AI, often of a real person.",
      [r"deep-?fakes?"], False),
     ("Watermarking", "Safety & security", "Hiding an invisible signal in AI-made text, images or audio so it can be "
@@ -182,6 +197,12 @@ _ENTRIES = [
      "every new word; managing it well makes long chats cheaper.", [r"KV[- ]cache\w*"], False),
     ("Speculative decoding", "Chips & compute", "A speed-up: a small model drafts several words ahead and the big "
      "model checks them in one go.", [r"speculative decoding"], False),
+    ("BF16 and FP8", "Chips & compute", "Number formats for a model's numbers: BF16 uses 16 bits each, FP8 8 bits. "
+     "Fewer bits mean less memory and faster chips, at some cost in accuracy.",
+     [r"BF16", r"FP(?:8|16|32)", r"INT[48]"], True),
+    ("Rack-scale system", "Chips & compute", "A whole server rack built to work as one computer, e.g. Nvidia's NVL72, "
+     "which links 72 GPUs so a giant model can run across all of them.",
+     [r"NVL\d+", r"[Rr]ack-scale"], True),
     ("FLOPs", "Chips & compute", "Floating-point operations: the count of basic sums a computer does. Some laws use "
      "training FLOPs (e.g. 10^25) to decide which models count as the most powerful.", [r"FLOPs?", r"FLOP/s"], True),
     ("Export controls", "Chips & compute", "Government rules limiting which countries can buy advanced chips or "
@@ -331,9 +352,11 @@ def mentions(entry_id: str, text: str) -> bool:
 ROTATION_START = date(2026, 9, 29)
 
 
-def word_of_the_day(day: date) -> dict:
-    """The rotation's word for a day (the daily email uses it when the day's biggest stories use no technical word)."""
-    order = sorted(ENTRIES, key=lambda e: hashlib.sha256(e["id"].encode()).hexdigest())
+def word_of_the_day(day: date, among: set[str] | None = None) -> dict:
+    """The rotation's word for a day, among these entry ids (all by default); the daily email uses it, among its
+    specialist words, when the day's stories use none."""
+    order = sorted((e for e in ENTRIES if among is None or e["id"] in among),
+                   key=lambda e: hashlib.sha256(e["id"].encode()).hexdigest())
     return order[(day - ROTATION_START).days % len(order)]
 
 

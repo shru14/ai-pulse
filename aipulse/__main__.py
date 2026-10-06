@@ -239,6 +239,15 @@ def main():
                 digest.send(digest.sender(), *note)
                 print(f"Alert sent to the project inbox: {note[0]}")
             sys.exit(HELD)
+        # A story whose link is dead is left out of every email (logged by headline)
+        dead = quality.dead_links(by_stream)
+        for c in dead:
+            print(f"Left out (dead link): {c['title']!r} ({c['source']})")
+        if dead:
+            gone = {c["url"] for c in dead}
+            cards = [c for c in cards if c.get("url") not in gone]
+            by_stream = digest.by_streams(cards, streams, day)
+            counts = {x: len(v) for x, v in by_stream.items()}
         if a.subscribers:
             from . import subscribers
             # Each confirmed reader gets their own streams and choices; nothing on a day their streams were empty.

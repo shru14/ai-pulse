@@ -625,6 +625,11 @@ def test_static_build_holds_every_card(tmp_path):
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
     assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["infra.xml", "news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
+    # "See yesterday's email" opens the newest day's page
+    daily = tmp_path / "site" / "daily"
+    days = sorted(p.name for p in daily.iterdir() if p.name != "latest.html")
+    assert 'href="daily/latest.html"' in page
+    assert not days or (daily / "latest.html").read_text(encoding="utf-8") == (daily / days[-1]).read_text(encoding="utf-8")
 
 
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
@@ -1952,6 +1957,54 @@ def test_word_of_the_day_rotates_through_the_glossary(monkeypatch):
     _, text, html = digest.build([card], ["news"], day)
     assert "WORD OF THE DAY: RAG" in text and "Where it came up: A RAG pipeline for support teams" in text
     assert "#glossary=rag" in html and "Word of the day</div>" in html
+
+
+def test_word_of_the_day_is_a_specialist_word(monkeypatch):
+    from datetime import date
+    from aipulse import digest, glossary
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    assert digest.SPECIALIST <= {e["id"] for e in glossary.ENTRIES} and "chain-of-thought" not in digest.SPECIALIST
+    day = date(2026, 10, 5)
+    card = lambda i, title: {"id": i, "title": title, "summary": "", "url": f"https://ex.com/{i}", "source": "S",
+                             "category": "news", "kind": "news", "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00"}
+    # an everyday word (Foundation model) is passed over for the specialist one (KV cache)
+    _, text, _ = digest.build([card("a", "A new foundation model trims its KV cache")], ["news"], day)
+    assert "WORD OF THE DAY: KV cache" in text
+    # a day with no specialist word: the rotation, among the specialist words only
+    _, text, _ = digest.build([card("b", "A foundation model for weather")], ["news"], day)
+    assert f"WORD OF THE DAY: {glossary.word_of_the_day(day, digest.SPECIALIST)['term']}" in text
+
+
+def test_email_asks_readers_to_forward_it(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = {"id": "f1", "title": "Story 1", "summary": "", "url": "https://ex.com/f1", "source": "S", "category": "news",
+            "kind": "news", "date": "2026-10-05", "added_at": "2026-10-05T10:00:00+00:00"}
+    _, text, html = digest.build([card], ["news"], date(2026, 10, 5))
+    assert "Forward this email" in text and "Forward this email" in html
+    _, text, _ = digest.build([card], ["news"], date(2026, 10, 5), layout="full", web=True)
+    assert "Forward this email" not in text  # the site's page asks visitors to sign up instead
+
+
+def test_dead_links_are_left_out_of_the_email(monkeypatch):
+    import io
+    import socket
+    import urllib.error
+    from aipulse import quality
+    monkeypatch.setattr(quality.feeds, "allowed", lambda url: "blocked" not in url)
+    def opener(req, timeout, context):
+        url = req.full_url
+        if "gone" in url:
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+        if "nosite" in url:
+            raise urllib.error.URLError(socket.gaierror("no such host"))
+        if "shy" in url:
+            raise urllib.error.HTTPError(url, 403, "Forbidden", {}, None)  # a careful site, not a dead link
+        return io.BytesIO(b"ok")
+    monkeypatch.setattr(quality.urllib.request, "urlopen", opener)
+    stories = [{"url": f"https://ex.com/{k}", "title": k} for k in ("fine", "gone", "nosite", "shy", "blocked-gone")]
+    assert [c["title"] for c in quality.dead_links({"news": stories})] == ["gone", "nosite"]
 
 
 def test_mojibake_is_repaired_and_real_accents_are_kept(tmp_path):
