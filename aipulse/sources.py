@@ -25,6 +25,8 @@ Optional per-source keys:
   jurisdictions regulation sources: codes to use when a story doesn't name a place (e.g. ["EU"])
   government    a government's own publications: always Policy (or the tracker for a bill or law), never
                 Industry or Releases, however little the text sounds like government
+  no_releases   a practitioner's or evaluator's blog: its posts are never Releases, however much they read like a
+                launch (they comment on others' launches)
   paged         the feed pages back in time (WordPress: ?paged=2, 3, ...); the history run reads it back to 2023
 
 Policy stories from any source move to the regulation tracker when they report a proposal or an
@@ -142,10 +144,10 @@ SOURCES = [
     {"name": "Semiconductor Digest", "url": "https://www.semiconductor-digest.com/feed/", "category": "news"},
     {"name": "ServeTheHome", "url": "https://www.servethehome.com/feed/", "category": "news"},
     # Practitioners and evaluators
-    {"name": "Simon Willison", "url": "https://simonwillison.net/atom/entries/", "category": "news"},
+    {"name": "Simon Willison", "url": "https://simonwillison.net/atom/entries/", "category": "news", "no_releases": True},
     {"name": "Lil'Log", "url": "https://lilianweng.github.io/index.xml", "category": "news", "ai_only": True,
-     "max_age_days": 60},  # a few long posts a year
-    {"name": "METR", "url": "https://metr.org/feed.xml", "category": "news", "ai_only": True},
+     "max_age_days": 60, "no_releases": True},  # a few long posts a year
+    {"name": "METR", "url": "https://metr.org/feed.xml", "category": "news", "ai_only": True, "no_releases": True},
 
     # --- Infra & climate: AI's data centres and what they draw on (power, water, land, emissions) ---
     # Checked 3 Oct 2026: each robots.txt allows reading and each publishes this feed; articles are free to read.

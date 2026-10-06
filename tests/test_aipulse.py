@@ -1353,6 +1353,23 @@ def test_a_study_reported_by_the_news_is_not_a_release():
     assert not c.launched("Financial AI startup Model ML nabs $75M investment", "The startup raised money for its model.")
 
 
+def test_a_practitioners_blog_is_never_a_release():
+    from aipulse.collect import stream_of, reclassify
+    from aipulse.sources import SOURCES
+    launch = ("Jev introduces a new shape of LLM - System One, aka Decision Models", "Jev released System One today.")
+    news = {"name": "E", "url": "https://e.com/feed", "category": "news"}
+    blog = {**news, "name": "Simon Willison", "no_releases": True}
+    assert stream_of(news, *launch, "https://e.com/1") == "tool"  # a newsroom reporting a launch: a release
+    assert stream_of(blog, *launch, "https://e.com/2") == "news"  # a practitioner writing about it: Industry
+    assert {s["name"] for s in SOURCES if s.get("no_releases")} >= {"Simon Willison", "Lil'Log", "METR"}
+    # one already stored as a release moves to Industry
+    conn = store.connect(":memory:")
+    store.insert(conn, {"id": "p1", "source": "Simon Willison", "category": "tool", "title": launch[0], "summary": launch[1],
+                        "url": "https://simonwillison.net/p1", "date": "2026-10-05"})
+    reclassify(conn)
+    assert conn.execute("SELECT category FROM items").fetchone()[0] == "news"
+
+
 def test_people_leaving_comparisons_and_a_body_using_ai_are_not_misfiled():
     from aipulse import classify as c, cluster
     # someone leaving is never a release, whatever the summary says was "released"

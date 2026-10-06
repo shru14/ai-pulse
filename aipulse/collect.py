@@ -436,6 +436,8 @@ def stream_of(src: dict, title: str, summary: str, url: str) -> str:
         return "infra"
     category = (blog_category(src, title, summary, url) if src["category"] == "tool"
                 else classify.categorize(title, summary, src["category"]))
+    if category == "tool" and src.get("no_releases"):
+        category = "news"  # a practitioner's commentary on a launch is not the launch (sources.py)
     return "infra" if category == "news" and classify.infra_story(title) else category
 
 
@@ -647,7 +649,9 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
             # Only that check is re-run: summaries are shorter now, so re-scoring would drop real releases.
             text = "" if brief.is_draft(it["summary"]) else it["summary"]
             now = it["category"]
-            if it["category"] == "tool" and classify.about_standards(it["title"]):
+            if it["category"] == "tool" and by_name.get(it["source"], {}).get("no_releases"):
+                now = "news"  # a practitioner's or evaluator's post is never a release (sources.py)
+            elif it["category"] == "tool" and classify.about_standards(it["title"]):
                 # What a standards body publishes or starts is policy or industry news, not a release.
                 now = classify.categorize(it["title"], text, "news")
             elif it["category"] == "tool" and streams.get(it["source"]) == "news" and not classify.launched(it["title"], text):
