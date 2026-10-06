@@ -10,6 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 from . import brands, glossary, jurisdictions, photos, preferences, rss, store, subscribers
 from .sources import SOURCES
 
+STREAM_PATHS = {"all", "releases", "industry", "research", "regulation", "policy", "infra"}
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
 
 PER_PAGE = 40
@@ -61,7 +62,7 @@ def make_handler(db_path: str):
             days = int(qs["days"]) if qs.get("days", "").isdigit() and qs["days"] != "0" else None
             conn = store.connect(db_path)
             try:
-                if url.path == "/":
+                if url.path == "/" or url.path.strip("/") in STREAM_PATHS:  # the front page and each stream's
                     self._send(photos.fill(subscribers.fill(TEMPLATE.read_text(encoding="utf-8"))).encode("utf-8"),
                                "text/html; charset=utf-8")
                 elif url.path == "/api/items":

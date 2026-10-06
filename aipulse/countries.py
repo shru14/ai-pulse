@@ -87,7 +87,7 @@ def _page(title: str, description: str, path: str, body: str, data: dict) -> str
             f'<meta name="twitter:card" content="summary_large_image">\n'
             f'<script type="application/ld+json">{json.dumps(data, ensure_ascii=False)}</script>\n'
             f'<style>{STYLE}</style>\n</head>\n<body><div class="wrap">\n'
-            f'<header><a class="brand" href="/">AI Pulse</a><a class="back" href="/#regulation">Live Regulation tracker →</a></header>\n'
+            f'<header><a class="brand" href="/">AI Pulse</a><a class="back" href="/regulation/">Live Regulation tracker →</a></header>\n'
             f'{body}\n<footer>Official records only, each linking to its source. '
             f'<a href="/tracker.csv">Download them all (CSV)</a> · '
             f'<a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a></footer>\n'
