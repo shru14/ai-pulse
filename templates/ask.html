@@ -4,55 +4,59 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Your AI Pulse dossier: your questions</title>
-<!-- The page the Sunday email's "Get my dossier" button opens (ask.html#<the reader's private token>, as their
-     unsubscribe link): their weekly dossier's questions, in the question box the sign-up form had (a question,
-     "+", and each one kept as a tag in a row). Saving sends the reader's other choices back unchanged (the sign-up
-     web app's "save", apps-script/Code.gs), so only the questions change. The look matches the dossier page. -->
+<title>Your AI Pulse dossier</title>
+<!-- The weekly dossier page, opened from the Sunday email's dossier button (ask.html#<the reader's private token>,
+     as their unsubscribe link). The reader writes up to 3 questions in their own words, each in its own box side
+     by side ("+ Add another"), and "Make my dossier" shows last week's stories on them right here: found in the
+     site's own stories (data.json) as aipulse/search.py finds them, by meaning (the same model, in the reader's
+     browser, with the site's vectors), words and tags, and drawn as the dossier draws them (aipulse/weekly.py
+     _body); "Dig deeper" does the same over the month before. With the reader's link, their questions are kept with their subscription (the sign-up web app's "save", their other choices sent back
+     unchanged), so the Sunday email brings them. -->
 <style>
   body{margin:0;background:#e9eef7;color:#1a1a1a;font-family:Arial,Helvetica,sans-serif}
-  .paper{max-width:680px;margin:12px auto 24px;background:#ffffff;border-radius:6px;overflow:hidden}
+  .paper{max-width:720px;margin:12px auto 24px;background:#ffffff;border-radius:6px;overflow:hidden}
   .band{background:#14213d;color:#fff;padding:22px 20px 18px}
   .band .brand{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px}
-  .band h1{font-size:22px;line-height:1.3;margin:0}
+  .band h1,.band h2{font-size:22px;line-height:1.3;margin:0}
+  .band .span{font-size:13px;color:#c9d3ef;margin-top:4px}
   .inner{padding:18px 20px 16px}
   @media (max-width:520px){.paper{margin:0;border-radius:0}.inner{padding:16px 14px 12px}}
   .lede{font-size:15px;line-height:1.5;color:#3c4043;margin:0 0 12px}
-  .row{display:flex;gap:6px;align-items:stretch}
-  .row[hidden]{display:none}
-  .ask{flex:1;min-width:0;box-sizing:border-box;border:1px solid #c9ced6;border-top:3px solid #1c3faa;border-radius:8px;
-    font:15px/1.45 Arial,Helvetica,sans-serif;padding:10px 12px;color:#1a1a1a}
-  .ask:focus{outline:2px solid #1c3faa;outline-offset:1px}
-  .more{flex:none;width:44px;border:1px solid #1a1a1a;border-radius:8px;background:#fff;font:bold 22px/1 Arial,sans-serif;cursor:pointer}
-  .asked,.samples{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .asked:empty{display:none}
-  .q,.sample{border:1px solid #1a1a1a;border-radius:6px;background:#fff;font:14px/1.3 Arial,sans-serif;padding:6px 10px;cursor:pointer;color:#1a1a1a;text-align:left}
-  .sample{border-color:#c9ced6}
-  .q:hover,.sample:hover,.more:hover{border-color:#1c3faa}
-  .hint{font-size:13px;color:#5f6368;margin:8px 0 0;line-height:1.5}
-  .go{display:block;width:100%;margin-top:16px;border:0;border-radius:8px;background:#14213d;color:#fff;font:bold 16px Arial,sans-serif;padding:13px;cursor:pointer}
+  /* the questions: a box each, side by side, and "+ Add another" until there are 3 */
+  .qs{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:8px}
+  @media (max-width:520px){.qs{grid-template-columns:1fr}}
+  .q{position:relative;display:flex}
+  .q textarea{flex:1;min-height:78px;resize:none;box-sizing:border-box;border:1px solid #c9ced6;border-top:3px solid #1c3faa;
+    border-radius:6px;font:15px/1.4 Arial,Helvetica,sans-serif;padding:9px 26px 9px 10px;color:#1a1a1a}
+  .q textarea:focus{outline:2px solid #1c3faa;outline-offset:1px}
+  .x{position:absolute;top:5px;right:5px;border:0;background:none;color:#5f6368;font-size:17px;line-height:1;cursor:pointer}
+  .add{min-height:78px;border:1px dashed #5f6368;border-radius:6px;background:#fff;color:#1c3faa;font:bold 14px Arial,sans-serif;cursor:pointer}
+  .add b{display:block;font-size:26px;line-height:1.1}
+  .add:hover{border-color:#1c3faa}
+  .try{font-size:13px;color:#5f6368;margin:10px 0 0;line-height:2}
+  .sample{border:1px solid #c9ced6;border-radius:6px;background:#fff;font:13px Arial,sans-serif;padding:5px 9px;margin-left:4px;cursor:pointer;color:#1a1a1a}
+  .sample:hover{border-color:#1c3faa}
+  .go{display:block;width:100%;margin-top:14px;border:0;border-radius:8px;background:#14213d;color:#fff;font:bold 16px Arial,sans-serif;padding:13px;cursor:pointer}
   .go:disabled{opacity:.6;cursor:default}
-  .msg{font-size:14px;line-height:1.5;margin:12px 0 0}
+  .msg{font-size:14px;line-height:1.5;margin:10px 0 0}
   .msg:empty{display:none}
-  .msg.ok{background:#f4f6fa;border:1px solid #e3e5e8;border-radius:6px;padding:12px 14px}
   .msg.error{color:#b3261e}
-  /* the reader's dossier, as the dossier page draws it (dossier.html) */
-  .dossier{margin-top:22px}
-  .dband{background:#14213d;color:#fff;padding:18px 20px 16px;margin:0 -20px 14px}
-  @media (max-width:520px){.dband{margin:0 -14px 14px;padding:16px 14px 14px}}
-  .dband .brand{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px}
-  .dband h2{font-size:22px;line-height:1.3;margin:0}
-  .dband .span{font-size:13px;color:#c9d3ef;margin-top:4px}
+  /* the dossier, as the dossier page draws it (dossier.html) */
   .dossier:empty{display:none}
+  .dossier .band{margin-top:6px}
   .kicker{font-size:13px;font-weight:bold;letter-spacing:.5px;text-transform:uppercase;color:#5f6368;margin:6px 0 10px}
   .interests{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-  .interest{display:flex;flex-direction:column;gap:6px;text-align:left;padding:12px 12px 12px;background:#f4f6fa;
+  .interest{display:flex;flex-direction:column;gap:6px;text-align:left;padding:12px;background:#f4f6fa;
     border:1px solid #e3e5e8;border-top:4px solid #e3e5e8;border-radius:0;color:#1a1a1a;font:inherit;cursor:pointer}
   .interest:hover{border-top-color:#1c3faa}
   .interest[aria-pressed="true"]{background:#ffffff;border-color:#1a1a1a;border-top-color:#1c3faa}
   .interest .topic{font-size:15px;font-weight:bold;line-height:1.3}
   .interest .count{font-size:12px;color:#5f6368}
   .note{font-size:14px;color:#5f6368}
+  .deep{margin:8px 0 4px}
+  .deeper{border:0;background:none;padding:0;cursor:pointer;font:bold 14px Arial,sans-serif;color:#1a4fd6}
+  .deeper span{font-weight:normal;font-size:12px;color:#5f6368}
+  .deeper:disabled{opacity:.6;cursor:default}
   .foot{margin-top:24px;padding-top:12px;border-top:1px solid #e3e5e8;color:#5f6368;font-size:13px;line-height:1.6}
   .foot a{color:#5f6368}
 </style>
@@ -63,129 +67,314 @@
   <div class="inner">
     <p class="lede">Ask what you want to follow in AI, and get last week's stories on it, picked just for you.</p>
     <form id="form" novalidate>
-      <div class="row" id="row">
-        <input class="ask" id="ask" type="text" maxlength="150" autocomplete="off" placeholder="How hospitals are using AI"
-          aria-label="Your question">
-        <button class="more" id="more" type="button" title="Add this question" aria-label="Add this question">+</button>
-      </div>
-      <div class="asked" id="asked" aria-live="polite"></div>
-      <p class="hint"><span id="left">Type a question and press +. You can ask 2 more.</span> Name the place, company or
-        subject you mean. Some to try:</p>
-      <div class="samples" id="samples">
-        <button type="button" class="sample">How hospitals are using AI</button>
-        <button type="button" class="sample">AI rules in the UK</button>
-        <button type="button" class="sample">Nvidia chips and China</button>
-        <button type="button" class="sample">AI in banking and fintech</button>
-      </div>
+      <div class="qs" id="qs"></div>
+      <p class="try" id="try" hidden>Try:</p>
       <button class="go" id="go" type="submit">Make my dossier</button>
     </form>
     <p class="msg" id="msg" role="status" aria-live="polite"></p>
-    <div class="dossier" id="dossier"></div>
-    <p class="foot">AI Pulse is free and non-commercial · <a href="./">projectaipulse.com</a></p>
   </div>
+  <div class="dossier" id="dossier"></div>
+  <div class="inner"><p class="foot">Picked by search over AI Pulse's stories, by meaning, by words and by the site's
+    tags; every line is the publisher's own. AI Pulse is free and non-commercial · <a href="./">projectaipulse.com</a></p></div>
 </main>
 <script>
 const SIGNUP_URL = "__SIGNUP_URL__", MAX = 3;
 const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
 const token = (location.hash.match(/^#([0-9a-f-]{36})$/) || [])[1];
-let asked = [], mine = null;  // mine: the reader's other choices, sent back as they are
 const clean = v => v.replace(/[|\s]+/g, " ").trim();
 const say = (words, kind) => { $("msg").textContent = words; $("msg").className = "msg" + (kind ? " " + kind : ""); };
-function render(){
-  const left = MAX - asked.length;
-  $("asked").replaceChildren(...asked.map((q, i) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "q"; b.textContent = q + " ×"; b.setAttribute("aria-label", "Remove: " + q);
-    b.addEventListener("click", () => { asked.splice(i, 1); render(); });
-    return b;
-  }));
-  $("row").hidden = left < 1;
-  $("left").textContent = left < 1 ? "That's 3 questions, the most for one dossier."
-    : asked.length ? "You can ask " + left + " more." : "Type a question and press +. You can ask " + (left - 1) + " more.";
-}
-function add(q){
-  q = clean(q);
-  if(q.length < 2 || asked.length >= MAX || asked.some(v => v.toLowerCase() === q.toLowerCase())) return false;
-  asked.push(q); render(); return true;
-}
-const keep = () => { if(add($("ask").value)) $("ask").value = ""; $("ask").focus(); };
-$("more").addEventListener("click", keep);
-$("ask").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); keep(); } });
-$("samples").addEventListener("click", e => { const b = e.target.closest(".sample"); if(b) add(b.textContent); });
-const post = fields => fetch(SIGNUP_URL, {method: "POST", body: new URLSearchParams({format: "json", ...fields})}).then(r => r.json());
 
-// The reader's dossier below the box (`ids`: their questions' ids, from the web app): a card per question, side
-// by side, and the chosen one's stories underneath, as the dossier page shows them (dossier.html)
-const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
-async function showDossier(ids){
-  const box = $("dossier");
-  ids = [...new Set((ids || "").split(".").filter(id => /^[0-9a-f]{24}$/.test(id)))].slice(0, MAX);
-  if(!ids.length) return box.replaceChildren();
-  const got = await Promise.all(ids.map(id => fetch(`dossier/${id}.json`, {cache: "no-cache"})
-    .then(r => r.ok ? r.json() : null).catch(() => null)));
-  const found = got.filter(Boolean);
-  const later = found.length < ids.length ? el("p", "note", (found.length ? "A new question's stories" : "Your dossier")
-    + " will be here soon, and in your Sunday email.") : null;
-  // the dossier's own heading, as yesterday's: "Last week on what you follow" and the week
-  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const day = iso => { const d = new Date(iso + "T00:00:00Z"); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()]; };
-  const band = el("div", "dband");
-  band.append(el("div", "brand", "AI Pulse weekly dossier"), el("h2", "", "Last week on what you follow"));
-  if(found.length) band.append(el("div", "span", `${day(found[0].from)} – ${day(found[0].to)} ${found[0].to.slice(0, 4)}`));
-  if(!found.length) return box.replaceChildren(band, later);
-  const cards = el("div", "interests"), section = el("div");
-  const show = k => {
-    cards.querySelectorAll(".interest").forEach((c, j) => c.setAttribute("aria-pressed", String(j === k)));
-    const d = found[k], head = document.createElement("div");
-    head.innerHTML = '<div style="margin-top:' + (found.length > 1 ? 28 : 8) + 'px;font-size:22px;font-weight:bold;line-height:1.25;'
-      + 'color:#1a1a1a"></div><div style="border-top:1px solid #1a1a1a;margin:10px 0 16px"></div>';
-    head.firstChild.textContent = d.topic;
-    const body = document.createElement("div");
-    body.innerHTML = d.html;  // the dossier's own HTML, made and escaped by aipulse/weekly.py
-    section.replaceChildren(head, body);
-  };
-  found.forEach((d, k) => {
-    const card = el("button", "interest");
-    card.type = "button";
-    card.append(el("span", "topic", d.topic),
-                el("span", "count", d.count + (d.count === 1 ? " story this week" : " stories this week")));
-    card.addEventListener("click", () => show(k));
-    cards.append(card);
+// ---------- the question boxes ----------
+// the samples: from last week's own stories, made by each site update (weekly.samples, in dossier/week.json)
+let HINTS = [];
+const values = () => [...$("qs").querySelectorAll("textarea")].map(t => t.value);
+function draw(list){
+  const box = $("qs");
+  list = (list.length ? list : [""]).slice(0, MAX);
+  box.replaceChildren();
+  list.forEach((v, k) => {
+    const card = el("div", "q"), t = el("textarea");
+    t.maxLength = 150; t.value = v; t.placeholder = HINTS[k] ? "e.g. " + HINTS[k] : "Type your question"; t.setAttribute("aria-label", "Question " + (k + 1));
+    t.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); $("form").requestSubmit(); } });
+    card.append(t);
+    if(list.length > 1){
+      const x = el("button", "x", "×"); x.type = "button"; x.setAttribute("aria-label", "Remove this question");
+      x.addEventListener("click", () => draw(values().filter((_, j) => j !== k)));
+      card.append(x);
+    }
+    box.append(card);
   });
-  const parts = found.length > 1 ? [band, el("div", "kicker", "Your questions · pick one"), cards, section] : [band, section];
-  if(later) parts.push(later);
-  box.replaceChildren(...parts);
-  show(0);
+  if(list.length < MAX){
+    const add = el("button", "add"); add.type = "button";
+    add.append(el("b", "", "+"), "Add another");
+    add.addEventListener("click", () => { draw([...values(), ""]); const ts = box.querySelectorAll("textarea"); ts[ts.length - 1].focus(); });
+    box.append(add);
+  }
+  box.style.setProperty("--n", String(Math.min(list.length + (list.length < MAX ? 1 : 0), MAX)));
+}
+function useSample(q){  // into the first empty box, or a new one
+  const vs = values(), at = vs.findIndex(v => !v.trim());
+  if(vs.some(v => clean(v).toLowerCase() === q.toLowerCase())) return;
+  if(at >= 0) vs[at] = q; else if(vs.length < MAX) vs.push(q); else return;
+  draw(vs);
+}
+const asked = () => { const out = [];
+  for(const v of values().map(clean)) if(v.length > 1 && !out.some(o => o.toLowerCase() === v.toLowerCase())) out.push(v);
+  return out.slice(0, MAX); };
+
+// ---------- last week's stories on a question, as aipulse/search.py finds them: by meaning, words and the site's tags ----------
+// Meaning: the same model as the weekly run (BGE-base-en-v1.5, MIT licence), run in the reader's browser by
+// transformers.js (Apache 2.0) from public files: no API, nothing billed. The stories' vectors are the site's
+// (dossier/week.json, weekly.publish_vectors). The rules and numbers below are search.py's.
+const STOP = new Set(`a an and are as at be by for from has have how in into is it its of on or that the this to was were
+what when where which who why will with about after over under than then there their they them we our you your
+new news latest week ai artificial intelligence
+i i'm im me my we us want wants know like interested follow following track anything everything something any all
+more most also just really things stuff much many lot would could should do does did doing can get see keep tell
+please happening update updates being`.split(/\s+/));
+const words = q => ((q || "").toLowerCase().match(/[^\W_][\w'.\-]*[^\W_]|[^\W_]/gu) || []).filter(w => !STOP.has(w));
+const stem = w => w.length > 5 ? w.slice(0, 5) : (w.replace(/s+$/, "") || w);
+const parts = q => (q || "").split(/(?<=[a-z]{2})\.+(?=\s|$)|[?!;\n]+|,?\s+and\s+(?=(?:what|how|whether|who|which|why|where|when)\b)/i)
+  .map(p => (p || "").trim().replace(/^,+|,+$/g, "")).filter(p => words(p).length);
+const BONUS = 0.05, OUTLET_BONUS = 0.01, OUTLETS = 5, MIN_SIMILARITY = 0.25, WORDS_FLOOR = 0.15, SHORT = 20, SHORT_EXTRA = 0.10;
+const PER_TOPIC = 8, LEAD_FROM = 3;
+const STREAM_WORDS = {tool: "Releases", news: "Industry", research: "Research", regulation: "Regulation", policy: "Policy", infra: "Infra climate"};
+// the places a question names, as the site tags stories with them (jurisdictions.py, its most asked-about ones)
+const PLACES = [["US", "United States", /\b(usa|u\.s\.a?\.?|united states|america|american|white house)(?!\w)/i],
+  ["GB", "United Kingdom", /\b(uk|u\.k\.|britain|british|united kingdom|england)(?!\w)/i],
+  ["EU", "European Union", /\b(eu|european union|brussels)(?!\w)/i], ["CN", "China", /\b(china|chinese|beijing)(?!\w)/i],
+  ["IN", "India", /\b(india|indian)(?!\w)/i], ["JP", "Japan", /\b(japan|japanese)(?!\w)/i], ["CA", "Canada", /\b(canada|canadian)(?!\w)/i],
+  ["DE", "Germany", /\b(germany|german)(?!\w)/i], ["FR", "France", /\b(france|french)(?!\w)/i],
+  ["KR", "South Korea", /\b(south korea|korea|korean)(?!\w)/i], ["AU", "Australia", /\b(australia|australian)(?!\w)/i],
+  ["BR", "Brazil", /\b(brazil|brazilian)(?!\w)/i], ["SG", "Singapore", /\bsingapore(?!\w)/i],
+  ["AE", "United Arab Emirates", /\b(uae|united arab emirates|dubai|abu dhabi)(?!\w)/i]];
+function lastWeek(){  // as weekly.last_week: on a Sunday, Monday to Saturday; any other day, the last whole week
+  const t = new Date(), day = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate()));
+  const wd = (day.getUTCDay() + 6) % 7, monday = new Date(day - wd * 864e5);
+  const iso = d => d.toISOString().slice(0, 10);
+  return wd === 6 ? [iso(monday), iso(day)] : [iso(new Date(monday - 7 * 864e5)), iso(monday)];
+}
+let STORIES = null, WEEK = null, MONTH = null, ENCODER = null;
+const stories = () => STORIES || (STORIES = fetch("data.json", {cache: "no-cache"}).then(r => r.json()).then(d => d.cards || []));
+const vectors = name => fetch(`dossier/${name}.json`, {cache: "no-cache"}).then(r => r.ok ? r.json() : null).then(w => {
+  if(!w) return null;
+  const b = atob(w.vec); w.D = w.mean.length; w.m = new Int8Array(b.length);
+  for(let i = 0; i < b.length; i++) w.m[i] = (b.charCodeAt(i) << 24) >> 24;
+  w.count = new Map(); for(const c of w.cards) w.count.set(c, (w.count.get(c) || 0) + 1);  // a card's stories: one per outlet
+  return w;
+}).catch(() => null);
+const week = () => WEEK || (WEEK = vectors("week"));     // last week's stories: the dossier
+const month = () => MONTH || (MONTH = vectors("month"));  // the 30 days before it: "Dig deeper", loaded only then
+const encoder = () => ENCODER || (ENCODER = import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0")
+  .then(t => t.pipeline("feature-extraction", "Xenova/bge-base-en-v1.5", {dtype: "q8", progress_callback: p => {
+    if(p.status === "progress" && /\.onnx$/.test(p.file || "")) say(`Getting the search ready (only the first time): ${Math.round(p.progress || 0)}%`);
+  }})));
+async function closeness(text, w){  // every card of the week: its closest outlet's cosine to the question, shared direction out
+  const out = await (await encoder())(w.query + text, {pooling: "cls", normalize: true});
+  const v = Float32Array.from(out.data);
+  let n = 0; for(let d = 0; d < w.D; d++){ v[d] -= w.mean[d]; n += v[d] * v[d]; } n = Math.sqrt(n) || 1;
+  const sim = new Map();
+  for(let r = 0; r < w.cards.length; r++){
+    let s = 0; const o = r * w.D;
+    for(let d = 0; d < w.D; d++) s += w.m[o + d] * v[d];
+    s /= 127 * n;
+    const c = w.cards[r]; if(!sim.has(c) || s > sim.get(c)) sim.set(c, s);
+  }
+  return sim;
+}
+const outlets = c => 1 + new Set((c.also || []).map(o => o.source).filter(s => s !== c.source)).size;
+async function find(cards, q, w, since, until, k = PER_TOPIC, lead = true){
+  const ws = words(q), asked = new Set(ws.map(stem)), several = ws.length > 1;
+  const inWeek = cards.filter(c => c.date >= since && c.date < until), byId = new Map(inWeek.map(c => [c.id, c]));
+  let sim = new Map();
+  if(w){
+    try{
+      sim = await closeness(q, w);
+      const pieces = parts(q);
+      if(pieces.length > 1){  // a request of several parts: halfway between the whole and its closest part
+        const each = []; for(const p of pieces) each.push(await closeness(p, w));
+        sim = new Map([...sim].map(([c, s]) => [c, (s + Math.max(...each.map(e => e.has(c) ? e.get(c) : -1))) / 2]));
+      }
+    }catch(err){ sim = new Map(); w = null; }
+  }
+  const re = x => new RegExp("(?<!\\w)" + x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const whole = new Set(ws.length ? inWeek.filter(c => { const t = ` ${c.title} ${c.summary || ""} `.toLowerCase();
+    return ws.every(x => re(x).test(t)); }).map(c => c.id) : []);
+  const named = new Set();
+  for(const c of inWeek) for(const t of c.tags || []){ const tw = words(t).map(stem); if(tw.length && tw.every(x => asked.has(x))) named.add(t); }
+  const streams = Object.keys(STREAM_WORDS).filter(k => words(STREAM_WORDS[k]).map(stem).some(x => asked.has(x)));
+  const tags = new Set(named.size || streams.length
+    ? inWeek.filter(c => (c.tags || []).some(t => named.has(t)) || streams.includes(c.category)).map(c => c.id) : []);
+  const S = c => sim.has(c) ? sim.get(c) : 0, n = c => (w && w.count.get(c)) || 1;
+  const ids = new Set([...sim.keys(), ...whole, ...tags]);
+  const score = new Map([...ids].map(c => [c, S(c) + BONUS * ((tags.has(c) ? 1 : 0) + (whole.has(c) ? 1 : 0))
+                                             + OUTLET_BONUS * Math.min(n(c) - 1, OUTLETS)]));
+  const byScore = (a, b) => score.get(b) - score.get(a);
+  let keep = w ? [...ids].filter(c => S(c) >= MIN_SIMILARITY || (whole.has(c) && several) || ((whole.has(c) || tags.has(c)) && S(c) >= WORDS_FLOOR))
+               : [...ids];  // without the model: what its words or tags found
+  keep.sort(byScore);
+  const backed = new Set([...tags, ...(several ? whole : [])]);
+  const place = PLACES.filter(([, , rx]) => rx.test(q));  // a question about a place: only stories about it
+  if(place.length && w) keep = [...score.keys()].filter(c => S(c) >= WORDS_FLOOR).sort(byScore);
+  const inPlace = c => place.some(([code, name, rx]) => (c.jurisdictions || []).includes(code) || (c.tags || []).includes(name)
+                                                        || rx.test(`${c.title} ${c.summary || ""}`));
+  const found = (place.length ? keep : keep.slice(0, PER_TOPIC * 4)).map(id => byId.get(id)).filter(Boolean)
+    .filter(c => !place.length || inPlace(c))
+    .filter(c => !w || backed.has(c.id) || !tags.size || S(c.id) >= MIN_SIMILARITY + SHORT_EXTRA
+                 || words(`${c.title} ${c.summary || ""}`).length >= SHORT)
+    .slice(0, k);
+  if(!lead) return found;  // the month's: closest first
+  if(!found.length) return [];
+  const first = found.slice(0, LEAD_FROM).reduce((a, b) => outlets(b) > outlets(a) ? b : a);  // the most widely reported of the best few
+  return [first, ...found.filter(c => c !== first).sort((a, b) => a.date < b.date ? -1 : 1)];
 }
 
-render();
-if(!token){
-  $("form").hidden = true;
-  say("Open this page with the “Get my dossier” button in your Sunday AI Pulse email.", "error");
-} else {
-  $("go").disabled = true;
+// ---------- drawn as the dossier draws a section (aipulse/weekly.py _event and _body) ----------
+const KIND = {news: ["News", "#e8eaf6", "#3949ab"], incident: ["AI-incident", "#fde7e9", "#c5221f"], study: ["Study", "#e6f4ea", "#137333"],
+  analysis: ["Opinion & analysis", "#fef7e0", "#8a5a00"], blog: ["Company blog", "#e8f0fe", "#1967d2"],
+  tutorial: ["Tutorial", "#f3e8fd", "#7b1fa2"], event: ["Event", "#e0f7fa", "#00737a"]};
+const STREAM = {tool: ["Release", "#0f9d76"], research: ["Research paper", "#9153d9"], regulation: ["Tracker", "#d6457e"],
+  policy: ["Policy", "#d9822b"], infra: ["Infra & climate", "#5c940d"]};
+const ACTION = {proposal: "Proposal", law: "Law adopted", body: "AI body", standard: "Standard"};
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[ch]));
+const short = (s, n) => !s || s.length <= n ? (s || "") : s.slice(0, n - 3).replace(/\s+\S*$/, "") + "…";
+function chip(c){
+  let label, bg, fg;
+  if(c.category === "news") [label, bg, fg] = KIND[c.kind || "news"] || KIND.news;
+  else if(c.category === "regulation") [label, bg, fg] = [ACTION[c.action] || "Tracker", "#fce4ec", "#ad1457"];
+  else { const [l, col] = STREAM[c.category] || ["Story", "#5f6368"]; [label, bg, fg] = [l, "#f1f3f4", col]; }
+  return `<span style="display:inline-block;padding:1px 8px;border-radius:10px;background:${bg};color:${fg};font-size:10.5px;font-weight:bold;line-height:1.6">${esc(label)}</span>`;
+}
+function event(c, lead){
+  const d = new Date(c.date + "T00:00:00Z"), more = outlets(c) - 1;
+  const wd = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][d.getUTCDay()];
+  const mon = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getUTCMonth()];
+  const summary = short(c.summary, lead ? 320 : 160);
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;background:#ffffff;border:1px solid #e3e5e8;${lead ? "border-left:4px solid #1c3faa" : "border-left:1px solid #e3e5e8"};margin:0 0 10px"><tr>`
+    + `<td width="60" align="center" valign="top" style="padding:12px 4px;background:#f4f6fa;border-right:1px solid #e3e5e8"><div style="font-size:10px;font-weight:bold;letter-spacing:1px;color:#5f6368">${wd}</div><div style="font-size:22px;font-weight:bold;line-height:1.15;color:#1a1a1a">${d.getUTCDate()}</div><div style="font-size:11px;color:#5f6368">${mon}</div></td>`
+    + `<td valign="top" style="padding:11px 14px 12px">` + (lead ? `<span style="font-size:10.5px;font-weight:bold;letter-spacing:1.5px;color:#1c3faa;margin-right:6px">THE LEAD</span>` : "")
+    + chip(c) + `<div style="margin-top:5px"><a href="${esc(c.url)}" style="color:#1a1a1a;text-decoration:none;font-size:${lead ? 19 : 16}px;font-weight:bold;line-height:1.3">${esc(c.title)}</a></div>`
+    + (summary ? `<div style="font-size:13.5px;line-height:1.45;color:#4a4f57;margin-top:5px">${esc(summary)}</div>` : "")
+    + `<div style="font-size:11.5px;color:#5f6368;margin-top:4px">${esc(c.source + (more ? ` +${more} outlet${more > 1 ? "s" : ""}` : ""))}</div></td></tr></table>`;
+}
+function body(cards){
+  if(!cards.length) return `<p style="font-size:14px;color:#5f6368;margin:0">Nothing on this in last week's stories. Try naming the company, place or subject in other words.</p>`;
+  const [lead, ...rest] = cards;
+  return event(lead, true) + (rest.length ? `<div style="margin:22px 0 10px"><div style="font-size:10.5px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#1c3faa;margin:0 0 8px">The rest of the week</div></div>` + rest.map(c => event(c)).join("") : "");
+}
+
+// the month's stories, listed as the dossier lists its earlier ones (aipulse/weekly.py _body), closest first
+function older(cards){
+  if(!cards.length) return `<p class="note" style="margin:10px 0 0">Nothing on this in the month before.</p>`;
+  const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  return `<div style="font-size:10.5px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#5f6368;margin:14px 0 8px">The month before · closest first</div>`
+    + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">` + cards.map(c => {
+      const d = new Date(c.date + "T00:00:00Z"), line = short(c.summary, 110);
+      return `<tr><td width="74" valign="top" style="padding:0 0 12px;font-size:12px;color:#5f6368;white-space:nowrap">${d.getUTCDate()} ${MONTHS[d.getUTCMonth()].slice(0, 3)}</td>`
+        + `<td valign="top" style="padding:0 0 12px"><a href="${esc(c.url)}" style="color:#1a1a1a;text-decoration:none;font-size:14px;font-weight:bold;line-height:1.3">${esc(c.title)}</a>`
+        + (line ? `<div style="font-size:12.5px;line-height:1.4;color:#4a4f57;margin-top:2px">${esc(line)}</div>` : "")
+        + `<div style="font-size:11px;color:#5f6368;margin-top:2px">${esc(c.source)}</div></td></tr>`;
+    }).join("") + `</table>`;
+}
+
+// ---------- the dossier, right here ----------
+let mine = null;  // the reader's other choices, sent back unchanged when their questions are saved
+async function show(questions){
+  const box = $("dossier"), w = await week(), [since, until] = w ? [w.from, w.until] : lastWeek();
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const when = iso => { const d = new Date(iso + "T00:00:00Z"); return d.getUTCDate() + " " + MON[d.getUTCMonth()]; };
+  const end = new Date(new Date(until + "T00:00:00Z") - 864e5).toISOString().slice(0, 10);
+  let cards;
+  try{ cards = await stories(); }catch(err){ return say("Couldn't load AI Pulse's stories. Please try again in a moment.", "error"); }
+  say("Finding last week's stories on your questions…");
+  const sections = [];
+  const mineIds = new Set();  // the stories on any of their questions, each once
+  for(const q of questions){ const found = await find(cards, q, w, since, until); found.forEach(c => mineIds.add(c.id));
+    sections.push({topic: q, count: found.length, html: body(found)}); }
+  const total = cards.filter(c => c.date >= since && c.date < until).length;  // the week's stories, as the Sunday email counts them
+  const n = (k, one, many) => `${k.toLocaleString("en")} ${k === 1 ? one : many}`;
+  // "Dig deeper": the same search over the 30 days before the week, shown under it on request
+  const day = (iso, n) => new Date(new Date(iso + "T00:00:00Z").getTime() + n * 864e5).toISOString().slice(0, 10);
+  const [mFrom, mTo] = [day(since, -30), day(since, -1)];
+  const deeper = q => {
+    const wrap = el("div", "deep"), btn = el("button", "deeper"), list = el("div", "older");
+    btn.type = "button"; btn.append("Dig deeper ↓ ", el("span", "", `the month before, ${when(mFrom)} – ${when(mTo)}`));
+    list.hidden = true;
+    let done = false;
+    btn.addEventListener("click", async () => {
+      if(done){ list.hidden = !list.hidden; return; }
+      btn.disabled = true; say("Finding the month before's stories on this…");
+      try{
+        const mw = await month();
+        const found = mw ? await find(cards, q, mw, mw.from, mw.until, 20, false) : [];
+        list.innerHTML = older(found);
+        done = true; list.hidden = false; say("");
+      }catch(err){
+        say("Couldn't load the month before. Please try again in a moment.", "error");
+      }finally{
+        btn.disabled = false;
+      }
+    });
+    wrap.append(btn, list);
+    return wrap;
+  };
+  const band = el("div", "band");
+  band.append(el("div", "brand", "AI Pulse weekly dossier"), el("h2", "", "Last week on what you follow"),
+              el("div", "span", `${when(since)} – ${when(end)} ${end.slice(0, 4)} · ${n(mineIds.size, "story", "stories")} on your `
+                 + `${questions.length === 1 ? "question" : "questions"}, of ${n(total, "story", "stories")} last week`));
+  const inner = el("div", "inner"), cardsRow = el("div", "interests"), section = el("div");
+  const pick = k => {
+    cardsRow.querySelectorAll(".interest").forEach((c, j) => c.setAttribute("aria-pressed", String(j === k)));
+    const head = document.createElement("div");
+    head.innerHTML = '<div style="margin-top:' + (sections.length > 1 ? 28 : 8) + 'px;font-size:22px;font-weight:bold;line-height:1.25;'
+      + 'color:#1a1a1a"></div><div style="border-top:1px solid #1a1a1a;margin:10px 0 16px"></div>';
+    head.firstChild.textContent = sections[k].topic;
+    const b = document.createElement("div"); b.innerHTML = sections[k].html;  // made and escaped here
+    section.replaceChildren(head, b, deeper(sections[k].topic));
+  };
+  sections.forEach((d, k) => {
+    const card = el("button", "interest"); card.type = "button";
+    card.append(el("span", "topic", d.topic), el("span", "count", d.count + (d.count === 1 ? " story last week" : " stories last week")));
+    card.addEventListener("click", () => pick(k));
+    cardsRow.append(card);
+  });
+  inner.append(...(sections.length > 1 ? [el("div", "kicker", "Your questions · pick one"), cardsRow, section] : [section]));
+  box.replaceChildren(band, inner);
+  pick(0);
+  say("");
+}
+
+const post = fields => fetch(SIGNUP_URL, {method: "POST", body: new URLSearchParams({format: "json", ...fields})}).then(r => r.json());
+draw([]);
+week().then(w => {
+  HINTS = (w && w.samples) || [];
+  const row = $("try");
+  HINTS.slice(0, 2).forEach(q => { const b = el("button", "sample", q); b.type = "button"; b.addEventListener("click", () => useSample(q)); row.append(b); });
+  row.hidden = !HINTS.length;
+  draw(values());  // the boxes' examples too
+});
+if(token){
   post({action: "choices", t: token}).then(r => {
-    if(!r.ok){ $("form").hidden = true; return say(r.text || "This link doesn't work any more.", "error"); }
-    mine = r; (r.interests || []).forEach(add); $("go").disabled = false; $("ask").focus();
-    showDossier(r.dossier);
-  }).catch(() => say("Couldn't reach AI Pulse. Please try again in a moment.", "error"));
+    if(!r.ok) return;
+    mine = r;
+    if((r.interests || []).length){ draw(r.interests); show(asked()); }
+  }).catch(() => {});
 }
 $("form").addEventListener("submit", async e => {
   e.preventDefault();
-  if(!mine) return;
-  if(add($("ask").value)) $("ask").value = "";  // a question typed but not yet added counts too
-  if(!asked.length) return say("Type a question, or pick one of the samples.", "error");
-  $("go").disabled = true; say("Saving…");
+  const qs = asked();
+  if(!qs.length) return say("Type a question, or pick one to try.", "error");
+  say(""); $("go").disabled = true;
   try{
-    const r = await post({action: "save", t: token, streams: (mine.streams || []).join(","),
-      more: (mine.more || []).join("|"), less: (mine.less || []).join("|"), words: (mine.words || []).join("|"),
-      often: mine.often || "daily", interests: asked.join("|")});
-    if(!r.ok) return say(r.error === "link" ? "This link doesn't work any more." : "Something went wrong. Please try again.", "error");
-    say("Saved. Your dossier comes with your Sunday email.", "ok");
-    mine.interests = r.interests || asked;
-    showDossier(r.dossier);
-  }catch(err){
-    say("Couldn't reach AI Pulse. Please try again in a moment.", "error");
+    if(mine && token){  // kept with their subscription, so the Sunday email brings it
+      post({action: "save", t: token, streams: (mine.streams || []).join(","), more: (mine.more || []).join("|"),
+            less: (mine.less || []).join("|"), words: (mine.words || []).join("|"), often: mine.often || "daily",
+            interests: qs.join("|")}).then(r => { if(r.ok) mine.interests = qs; })
+        .catch(() => {});
+    }
+    await show(qs);
+    $("dossier").scrollIntoView({behavior: "smooth", block: "start"});
   }finally{
     $("go").disabled = false;
   }

@@ -114,5 +114,6 @@ def build(conn, out: str | Path) -> int:
     # the Sunday email's "Get my dossier" button opens it, to ask the dossier's questions
     (out / "ask.html").write_text(subscribers.fill((TEMPLATE.parent / "ask.html").read_text(encoding="utf-8")), encoding="utf-8")
     weekly.publish(conn, out, today)
+    weekly.publish_vectors(conn, out, today)  # the dossier page's search by meaning, in the reader's browser
     (out / ".nojekyll").write_text("")
     return len(cards)

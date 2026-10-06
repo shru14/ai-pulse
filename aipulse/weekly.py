@@ -143,6 +143,66 @@ def kept(conn, day: date) -> dict[str, dict]:
         "SELECT id, topic, count, html FROM dossiers WHERE week = ?", (since.isoformat(),))}
 
 
+SAMPLES = 3  # sample questions on the dossier page: the first two to try, all three as the boxes' examples
+
+
+def samples(conn, index: search.Index, k: int = SAMPLES) -> list[str]:
+    """Sample questions for the dossier page, from the week's own stories, never readers' questions: the most
+    reported topic (one word), company and place that week, as a reader might ask about them ("AI safety",
+    "What Nvidia is building", "AI rules in China"), taking turns between the three kinds; one is kept only
+    if the dossier's search finds at least 3 stories for it that week."""
+    from .preferences import group_of
+    counts: dict[str, Counter] = {"Topics": Counter(), "Companies": Counter(), "Places": Counter()}
+    for (tags,) in conn.execute("SELECT tags FROM items WHERE id = cluster AND date >= ? AND date < ?",
+                                (index.since.isoformat(), index.until.isoformat())):
+        for t in filter(None, (tags or "").split(",")):
+            if (g := group_of(t)) in counts:
+                counts[g][t] += 1
+    streams = {w.lower() for name in search.STREAM_WORDS.values() for w in name.split()}  # "Research" is a stream
+    phrase = {"Topics": lambda t: f"AI {t.lower()}" if " " not in t and "&" not in t and t.lower() not in streams else None,
+              "Companies": lambda t: f"What {t} is building",
+              "Places": lambda t: f"AI rules in {'the ' if t.startswith('United') else ''}{t}"}
+    ranked = {g: [q for t, _ in c.most_common(6) if (q := phrase[g](t))] for g, c in counts.items()}
+    out, turn = [], 0
+    while len(out) < k and any(ranked.values()):
+        g = ("Topics", "Companies", "Places")[turn % 3]
+        turn += 1
+        while ranked[g]:
+            q = ranked[g].pop(0)
+            if len(search.search(conn, q, index.since, index.until, k=3, index=index)) >= 3:
+                out.append(q)
+                break
+    return out
+
+
+def publish_vectors(conn, out, day: date) -> int:
+    """Last week's story vectors as the site's dossier/week.json, for the dossier page (ask.html) to answer a new
+    question at once, in the reader's browser, by meaning as search.search does: each story's card, and its vector
+    with the shared direction taken out (search.Index) as int8 (x127, base64), with that direction (`mean`) for
+    the question's; and the HISTORY days before the week as dossier/month.json, for its "Dig deeper" (the page
+    loads it only then). Without the model's vectors, nothing is written. Returns how many stories of the week."""
+    import base64
+    from pathlib import Path
+    import numpy as np
+    from . import embed
+    since, until = last_week(day)
+    week = search.Index(conn, since, until)
+    if not len(week):
+        return 0
+    folder = Path(out) / "dossier"
+    folder.mkdir(parents=True, exist_ok=True)
+    def write(name: str, index: search.Index, **more) -> None:
+        q = np.clip(np.round(index.matrix * 127), -127, 127).astype(np.int8)
+        (folder / name).write_text(json.dumps(
+            {"model": embed.MODEL, "query": embed.QUERY, "from": index.since.isoformat(),
+             "to": (index.until - timedelta(days=1)).isoformat(), "until": index.until.isoformat(), **more,
+             "cards": [index.cluster[i] for i in index.ids], "mean": [round(float(x), 5) for x in index.mean],
+             "vec": base64.b64encode(q.tobytes()).decode("ascii")}, separators=(",", ":")), encoding="utf-8")
+    write("week.json", week, samples=samples(conn, week))
+    write("month.json", search.Index(conn, since - timedelta(days=HISTORY), since, mean=week.mean))
+    return len(week)
+
+
 def publish(conn, out, day: date) -> int:
     """The kept sections as the site's dossier/<id>.json files; returns how many."""
     from pathlib import Path

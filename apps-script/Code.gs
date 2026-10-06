@@ -244,18 +244,7 @@ function choices(t) {
                                       text: "Subscribe again with the Daily digest button."};
   const pr = rec.prefs || {more: [], less: [], words: []};
   return {ok: true, streams: rec.streams, more: pr.more, less: pr.less, words: pr.words, interests: pr.interests || [],
-          often: pr.often || "daily", dossier: dossierIds(pr.interests || [])};
-}
-
-// The reader's dossier, for the dossier page (ask.html): each question's id, as aipulse/weekly.py interest_id makes it
-// (HMAC-SHA256 with LIST_KEY of the question in lower case, the first 24 hex characters), joined by ".".
-function dossierIds(list) {
-  const key = store().getProperty("LIST_KEY");
-  if (!key || !list.length) return "";
-  const hex = bytes => bytes.map(b => ((b + 256) % 256).toString(16).padStart(2, "0")).join("");
-  const ids = list.map(t => hex(Utilities.computeHmacSha256Signature(
-    t.replace(/\s+/g, " ").trim().slice(0, INTEREST_MAX).trim().toLowerCase(), key, Utilities.Charset.UTF_8)).slice(0, 24));
-  return [...new Set(ids)].join(".");
+          often: pr.often || "daily"};
 }
 
 function save(p) {
@@ -276,7 +265,7 @@ function save(p) {
   }
   notify(`AI Pulse: a subscriber changed their choices (${count()} subscribers)`,
          `${email} now gets: ${names(streams)}.` + (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
-  return {ok: true, title: "Saved", interests: rec.prefs.interests || [], dossier: dossierIds(rec.prefs.interests || []), text: `From ${weeklyOnly(rec.prefs) ? "Sunday's" : "tomorrow's"} email: ${names(streams)}` +
+  return {ok: true, title: "Saved", text: `From ${weeklyOnly(rec.prefs) ? "Sunday's" : "tomorrow's"} email: ${names(streams)}` +
           (hasPrefs(rec.prefs) ? `; ${summary(rec.prefs)}.` : ".")};
 }
 
