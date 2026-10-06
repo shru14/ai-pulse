@@ -26,6 +26,7 @@ MODELS = {"pt": "https://argos-net.com/v1/translate-pt_en-1_9.argosmodel",
           "ja": "https://argos-net.com/v1/translate-ja_en-1_1.argosmodel",
           "vi": "https://argos-net.com/v1/translate-vi_en-1_9.argosmodel",
           "de": "https://argos-net.com/v1/translate-de_en-1_3.argosmodel",
+          "nb": "https://argos-net.com/v1/translate-nb_en-1_9.argosmodel",  # Norway's Storting records
           # for news in other languages (see detect): downloaded only when a story in that language appears
           "es": "https://argos-net.com/v1/translate-es_en-1_0.argosmodel",  # 1.9 uses another tokenizer
           "fr": "https://argos-net.com/v1/translate-fr_en-1_9.argosmodel",
@@ -33,7 +34,8 @@ MODELS = {"pt": "https://argos-net.com/v1/translate-pt_en-1_9.argosmodel",
           "ru": "https://argos-net.com/v1/translate-ru_en-1_9.argosmodel",
           "ar": "https://argos-net.com/v1/translate-ar_en-1_0.argosmodel"}
 LANGUAGE_NAMES = {"pt": "Portuguese", "zh": "Chinese", "ja": "Japanese", "vi": "Vietnamese", "de": "German",
-                  "es": "Spanish", "fr": "French", "ko": "Korean", "ru": "Russian", "ar": "Arabic"}
+                  "es": "Spanish", "fr": "French", "ko": "Korean", "ru": "Russian", "ar": "Arabic",
+                  "nb": "Norwegian"}
 VERSION = "2"  # part of each stored translation's key: bump it when the term fixes below change
 
 # Fixed terms, per language. BEFORE replaces a phrase in the original that the model mistranslates (only
@@ -41,7 +43,8 @@ VERSION = "2"  # part of each stored translation's key: bump it when the term fi
 # the English versions governments use ("办法" is "Measures", "意见" is "Opinions", "智能体" is "AI agents").
 BEFORE = {"zh": [("“人工智能+”", "“AI+”"), ("人工智能+", "AI+")],
           "vi": [("Trí tuệ nhân tạo", "AI"), ("trí tuệ nhân tạo", "AI")]}  # else "manic intelligence"
-AFTER = {"zh": [(re.compile(p), r) for p, r in (
+AFTER = {"nb": [(re.compile(r"\bKIC?\b"), "AI")],  # "KI" (kunstig intelligens), which the model leaves or mangles
+         "zh": [(re.compile(p), r) for p, r in (
     (r"^Circular on the issuance of (the )?", "Notice on issuing the "),
     (r"\b[Ii]nterim (approach|method)(es|s)? (to|for) (the )?management of\b", "Interim Measures for the Administration of"),
     (r"\b[Ii]nterim (approach|method)(es|s)?\b", "Interim Measures"),
