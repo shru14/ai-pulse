@@ -625,7 +625,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
     assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["infra.xml", "news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
-    # "See yesterday's email" opens the newest day's page
+    # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
     days = sorted(p.name for p in daily.iterdir() if p.name != "latest.html")
     assert 'href="daily/latest.html"' in page

@@ -20,7 +20,7 @@ Only legal, publicly accessible sources are used.
 
 ## Features
 
-- **Site:** a weekly front page (new each Monday): last week's story, word and meme, then each stream's top stories of that week; a page per stream; a link to yesterday's full email; colour-blind-safe colours.
+- **Site:** a weekly front page (new each Monday): last week's story, word and meme, then each stream's top stories of that week; a page per stream; a link to yesterday's full table of stories; colour-blind-safe colours.
 - **Filters and search:** stream, region, country and time range; search back to 2023.
 - **English throughout:** the publisher's English version, else an offline translation (marked).
 - **One card per event:** the same story from several outlets is grouped.
