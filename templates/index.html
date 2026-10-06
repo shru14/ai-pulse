@@ -558,6 +558,11 @@ header.top{border-bottom:4px solid var(--ink)}
 .sec-hero h2::after{display:none}
 .sec-hero p{font-size:16px;max-width:60ch}
 .sec-hero .status{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px 14px;font-size:12px}
+/* the tracker's one extra button: its official records, a page per country (countries.py) */
+.by-country{display:inline-block;margin-top:10px;background:var(--ink);color:var(--bg);font:600 14px var(--body);padding:8px 14px;text-decoration:none;box-shadow:4px 4px 0 var(--cat-f,var(--ink))}
+.by-country[hidden]{display:none}
+.by-country:hover{filter:brightness(1.2)}
+.by-country:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .sec-hero .ico,.sec-hero .ico.sec{width:52px;height:52px;border-radius:0;border:3px solid var(--ink);background:var(--bg);color:var(--ink)}
 /* the masthead: name and buttons on top, every stream on its own ruled row below (never cut off) */
 :root{--bar-h:104px}
@@ -736,7 +741,8 @@ header.top.home{height:auto;padding-top:10px}
   <div class="sec-hero" id="sec-hero">
     <span class="art" id="sec-art" aria-hidden="true"></span>
     <span class="ico" id="sec-ico" aria-hidden="true"></span>
-    <div><h2 id="sec-title"></h2><p id="sec-desc"></p><div class="status" id="status">Loading feed…</div></div>
+    <div><h2 id="sec-title"></h2><p id="sec-desc"></p><div class="status" id="status">Loading feed…</div>
+      <a class="by-country" id="by-country" href="tracker/" hidden>AI laws by country →</a></div>
   </div>
 
   <div class="controls">
@@ -837,6 +843,7 @@ function showPage(){
   hero.className = "sec-hero k-" + state.cat;
   $("sec-title").textContent = state.cat === "all" ? "All stories" : STREAM_NAME[state.cat];
   $("sec-desc").textContent = SECTION_DESC[state.cat];
+  $("by-country").hidden = state.cat !== "regulation";
   $("sec-art").innerHTML = heroArt(state.cat);
   const hp = (PHOTOS[STREAM_PHOTO[state.cat]] || PHOTOS.business || [])[0];
   hero.style.setProperty("--hero-photo", hp ? 'url("photos/' + hp[0] + '")' : "none");

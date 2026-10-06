@@ -53,9 +53,11 @@ def robots_txt() -> str:
     return f"{blocked}User-agent: *\nDisallow: /dossier/\n\nSitemap: {rss.SITE}sitemap.xml\n"
 
 
-def sitemap(days: list[date], today: date) -> str:
-    """sitemap.xml: the pages search engines should index: the front page and each day's full edition."""
-    urls = [(rss.SITE, today)] + [(f"{rss.SITE}daily/{d.isoformat()}.html", d) for d in sorted(days, reverse=True)]
+def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
+    """sitemap.xml: the pages search engines should index: the front page, the tracker's pages by country
+    (`pages`, paths under the site) and each day's full edition."""
+    urls = ([(rss.SITE, today)] + [(f"{rss.SITE}{p}", today) for p in pages]
+            + [(f"{rss.SITE}daily/{d.isoformat()}.html", d) for d in sorted(days, reverse=True)])
     rows = "".join(f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod></url>\n" for u, d in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{rows}</urlset>\n'
 
@@ -166,7 +168,9 @@ def build(conn, out: str | Path) -> int:
     weekly.publish(conn, out, today)
     weekly.publish_vectors(conn, out, today)  # the dossier page's search by meaning, in the reader's browser
     (out / "robots.txt").write_text(robots_txt(), encoding="utf-8")
-    (out / "sitemap.xml").write_text(sitemap(published, today), encoding="utf-8")
+    from . import countries
+    places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
+    (out / "sitemap.xml").write_text(sitemap(published, today, places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)
