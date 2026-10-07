@@ -866,10 +866,12 @@ def test_stories_from_google_news_are_removed_once(tmp_path):
     assert purge_disallowed(conn, log=lambda *_: None) == 0  # runs once per database
 
 
-def test_only_free_articles_of_a_paywalled_outlet_are_kept(tmp_path):
+def test_only_free_articles_of_a_paywalled_outlet_are_kept(tmp_path, monkeypatch):
+    from aipulse import collect
     from aipulse.collect import drop_subscriber_only
-    from aipulse.sources import SOURCES
-    assert [s["name"] for s in SOURCES if s.get("paywall_check")] == ["The Verge AI"]
+    # No source needs it since The Verge was dropped (7 Oct 2026 terms audit); a stand-in keeps the check tested.
+    monkeypatch.setattr(collect, "SOURCES", [{"name": "The Verge AI", "url": "https://www.theverge.com/rss",
+                                              "category": "news", "paywall_check": True}])
     paid = b'<script type="application/ld+json">{"@type":"NewsArticle","isAccessibleForFree":false}</script>'
     free = b'<script type="application/ld+json">{"@type":"NewsArticle","isAccessibleForFree":true}</script>'
     assert not feeds.free_to_read(paid) and feeds.free_to_read(free) and feeds.free_to_read(b"<html></html>")
@@ -1750,7 +1752,7 @@ def test_digest_is_checked_before_it_is_sent(monkeypatch):
         assert p in found, p
     assert "No stories at all" in "".join(quality.problems(digest.by_streams([], streams, day), [], day))
     # A general outlet's story that doesn't name AI is left out of the email, not a reason to hold it.
-    off = card(9, "news", source="South China Morning Post", title="Alibaba Cloud opens data centres in Europe", summary="")
+    off = card(9, "news", source="ZDNET AI", title="Alibaba Cloud opens data centres in Europe", summary="")
     assert off not in digest.by_streams([*good, off], streams, day)["news"] and digest.left_out([*good, off], streams, day) == [off]
     # A thin day is sent, saying so.
     _, text, _ = digest.build(good[:2], streams, day)
@@ -2890,3 +2892,18 @@ def test_a_question_about_a_place_keeps_to_that_place(tmp_path, monkeypatch):
     assert [c["title"] for c in search.search(conn, "data centre water cooling in the USA", since, until)] == ["US data centre water cooling rules"]
     uk = {c["title"] for c in search.search(conn, "data centre water cooling in the UK", since, until)}
     assert uk == {"UK data centre water cooling rules", "Data centre water cooling in Britain"}  # found as the site tags places
+
+
+def test_a_capped_source_keeps_only_its_newest_stories(tmp_path, monkeypatch):
+    from aipulse import collect
+    monkeypatch.setattr(collect, "SOURCES", [{"name": "ScienceDaily", "url": "https://www.sciencedaily.com/rss",
+                                              "category": "news", "keep_max": 2}])
+    conn = store.connect(tmp_path / "t.db")
+    for n in range(1, 5):
+        store.insert(conn, {"title": f"AI story {n}", "summary": "", "url": f"https://www.sciencedaily.com/{n}",
+                            "source": "ScienceDaily", "category": "news", "date": f"2026-09-0{n}", "tags": [], "authors": []})
+    store.insert(conn, {"title": "Other", "summary": "", "url": "https://ex.com/1", "source": "MIT News",
+                        "category": "news", "date": "2026-09-01", "tags": [], "authors": []})
+    collect.purge_dropped(conn, log=lambda *_: None)
+    assert sorted(r[0] for r in conn.execute("SELECT url FROM items")) == [
+        "https://ex.com/1", "https://www.sciencedaily.com/3", "https://www.sciencedaily.com/4"]

@@ -25,6 +25,8 @@ from pathlib import Path
 from . import brief, classify, glossary, jurisdictions, quality, rss, subscribers
 from .sources import SOURCES
 
+AS_PROVIDED = {s["name"] for s in SOURCES if s.get("as_provided")}  # shown as their feed gives them
+
 # Every story wears a tag saying what it is. Industry's are its sub-categories (classify.news_kind; AI-incidents
 # come from the AI Incident Database), in this order: label, tag background, tag text colour.
 KIND = {
@@ -128,7 +130,9 @@ def breakdown(day_cards: list[dict], stream: str) -> str:
                       for k, (label, _, _) in KIND.items() if counts[k]) or SECTION_NOTE[stream]
 
 
-def _short(summary: str, limit: int = SUMMARY) -> str:
+def _short(summary: str, limit: int = SUMMARY, source: str = "") -> str:
+    if source in AS_PROVIDED:  # its feed terms allow the description only unmodified (sources.py)
+        return summary
     return summary if len(summary) <= limit else summary[:limit - 3].rsplit(" ", 1)[0] + "…"
 
 
@@ -198,7 +202,7 @@ def _ledger(by_stream: dict[str, list[dict]], streams: list[str], day: date) -> 
             rows.append(f'<tr><td colspan="3" style="padding:8px;font-size:13px;color:{GREY}">{escape(note)}</td></tr>')
         for i, c in enumerate(day_cards[:PER_STREAM]):
             label, bg, fg = tag(c, n)
-            summary, others = _short(c.get("summary") or ""), _others(c)
+            summary, others = _short(c.get("summary") or "", source=c.get("source", "")), _others(c)
             text.append(f"• [{label}] {c['title']} ({c['source']})" + (f"\n  {summary}" if summary else "")
                         + (f"\n  Also reported by {', '.join(o['source'] for o in others)}" if others else "")
                         + f"\n  {c['url']}")
@@ -578,7 +582,7 @@ def _the_week(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[
         name = next((rss.FEEDS[n][1] for n in rss.FEEDS if rss.FEEDS[n][0] == story["category"]), "")
         more = _outlets(story) - 1
         by = story["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
-        summary = _short(story.get("summary") or "", 180)
+        summary = _short(story.get("summary") or "", 180, story.get("source", ""))
         text += ["STORY OF THE WEEK: " + story["title"], *([summary] if summary else []), f"{by}", story["url"], ""]
         html += (f'<div style="padding:12px 0 14px;border-top:4px solid {BRIGHT.get(next((n for n in rss.FEEDS if rss.FEEDS[n][0] == story["category"]), ""), NAVY)}">'
                  + label("Story of the week" + (f" · {name}" if name else ""))
@@ -702,7 +706,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     cells = []
     for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])
-        more, summary, tags = _outlets(c) - 1, _short(c.get("summary") or "", 100), story_tags(c)
+        more, summary, tags = _outlets(c) - 1, _short(c.get("summary") or "", 100, c.get("source", "")), story_tags(c)
         by = c["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
         yours = id(c) in picks
         lines += [f"• [{label}]{' [Your choice]' if yours else ''} {c['title']}", *([f"   {' '.join('#' + t for t in tags)}"] if tags else []), *([f"   {summary}"] if summary else []), f"   {by}", f"   {c['url']}"]

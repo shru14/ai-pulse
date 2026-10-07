@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 121 public sources (103 feeds, 18 official records and
+A free, non-commercial, worldwide briefing on AI. It reads 100 public sources (82 feeds, 18 official records and
 databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -40,11 +40,13 @@ Only legal, publicly accessible sources are used.
 ## How we keep it legal
 
 1. **robots.txt must allow us**, checked before every request; the only exceptions are official APIs whose terms allow programmatic use (arXiv, Wikidata, congress.gov, jsDelivr).
-2. **Terms must allow** showing a headline, a short description and a link.
+2. **Terms must allow** showing a headline, a short description and a link. A site whose terms forbid robots or scrapers, or allow personal use only, isn't read, even when its robots.txt lets us in. Where a feed's own terms allow its text only unmodified (TechCrunch, Engadget, ScienceDaily), it is shown exactly as the feed gives it, and ScienceDaily's stored headlines are capped at 40 as its terms ask.
 3. **No workarounds:** nothing behind a login, bot check or paywall; sites that block automated readers aren't read.
 4. **Only what's needed:** headline, short description, date and link. No personal data.
 5. **Credit and non-commercial use**, as the licences below require.
 6. **Readers' privacy:** the site and email load nothing from other servers and track no one. Questions: projectaipulse@gmail.com.
+
+Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, NVIDIA, Apple, AWS, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews and ESI Africa. A publisher that gives permission is added back, with the permission credited below.
 
 Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. AI Pulse's own robots.txt lets search engines in and keeps AI-training bots out.
 
@@ -52,14 +54,14 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 
 | Stream | Sources |
 |---|---|
-| Releases (feeds) | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Cloudflare, Ollama, Sakana AI, Character.AI, Stability AI; AI stories from the newsrooms of Microsoft, Meta, Apple and Amazon |
-| Releases (news pages, no feed) | Anthropic, Meta AI, DeepSeek, Cohere, MiniMax, Moonshot AI (Kimi) |
+| Releases (feeds) | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, Engineering at Meta, GitHub, Databricks, Cloudflare, Sakana AI, Character.AI; AI stories from the newsrooms of Microsoft, Meta and Amazon |
+| Releases (news pages, no feed) | Anthropic, Meta AI, MiniMax |
 | Releases (developer release notes) | xAI (docs.x.ai) and Perplexity (docs.perplexity.ai) |
-| Industry | **Global:** TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, Tech Xplore, ScienceDaily · **Asia:** South China Morning Post, Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, The Rio Times, Buenos Aires Times, LatinAmerica Reports · **Chips and servers:** Semiconductor Digest, ServeTheHome · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
+| Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, ScienceDaily · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
-| Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
+| Research | arXiv, Hugging Face Daily Papers |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, DARPA, NSF, UK AI Security Institute |
-| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, Energy Monitor, The Conversation (energy), Capacity Media, Data Center Knowledge · **Europe:** European Commission (energy), Data Centre Review · **Asia-Pacific:** W.Media, iTnews · **Africa:** ESI Africa · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists |
+| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, Energy Monitor, The Conversation (energy), Data Center Knowledge · **Europe:** European Commission (energy) · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 
 ### Official records (Regulation tracker)
@@ -105,7 +107,7 @@ python -m pytest -q           # tests (run locally, not on GitHub)
 ## Credits and licences
 
 European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK and UK AI Security Institute: Open Government Licence v3.0. Federal Register,
-congress.gov, US Energy Information Administration, DARPA and NSF: US public domain. ITU: non-commercial use with credit. ServeTheHome: short synopses as its copyright policy allows. Canada: Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
+congress.gov, US Energy Information Administration, DARPA and NSF: US public domain. ITU: non-commercial use with credit. Canada: Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
 Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. Korean laws: National
 Law Information Center (https://www.law.go.kr), Ministry of Government Legislation. Taiwanese laws:
 Legislative Yuan law system (https://lis.ly.gov.tw). Malaysian bills: Parliament of Malaysia
