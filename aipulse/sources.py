@@ -42,46 +42,26 @@ access (its robots.txt and terms): Google News and Bing News don't, so neither i
 # Dropped in the 7 Oct 2026 audit, their terms forbidding robots or allowing personal use only (collect.DROPPED):
 # SCMP, MIT Technology Review, The Verge, Ars Technica, NVIDIA, Apple, AWS, Tech Xplore, The Rio Times,
 # Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review,
-# Capacity Media, iTnews and ESI Africa. "as_provided": the feed's terms allow its text only unmodified.
+# Capacity Media, iTnews, ESI Africa, OpenAI, Anthropic, Meta (AI blog, newsroom, engineering), Amazon, Databricks,
+# GitHub Blog, Hugging Face Blog, Perplexity, ZDNET, Microsoft (Research and newsroom) and Energy Monitor. Each remaining source's evidence (terms page, what it says,
+# date checked) is in terms.py; `python -m aipulse audit` checks them all again. "as_provided": the feed's terms
+# allow its text only unmodified.
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
-    {"name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "category": "tool"},
-    # No feed: its news page (robots.txt allows all); posts without a description get their opening paragraph.
-    # Launches have their own page (/claude-sonnet-5-5), other posts are under /news/.
-    {"name": "Anthropic News", "url": "https://www.anthropic.com/news", "format": "anthropic", "category": "tool",
-     "page_lead": True, "max_age_days": 90, "launch_pages": r"^https://www\.anthropic\.com/(?!news/)"},
     {"name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/", "category": "tool"},
     {"name": "Google DeepMind Blog", "url": "https://deepmind.google/blog/rss.xml", "category": "tool"},
     {"name": "Google Research Blog", "url": "https://research.google/blog/rss/", "category": "tool", "page_lead": True},
-    {"name": "Hugging Face Blog", "url": "https://huggingface.co/blog/feed.xml", "category": "tool", "page_lead": True},
     {"name": "Mistral AI", "url": "https://mistral.ai/rss.xml", "category": "tool"},
-    {"name": "Microsoft Research", "url": "https://www.microsoft.com/en-us/research/feed/", "category": "tool",
-     "ai_only": False, "paged": True},
-    {"name": "Engineering at Meta", "url": "https://engineering.fb.com/feed/", "category": "tool", "ai_only": False,
-     "ai_in_title": True, "paged": True},
-    {"name": "GitHub Blog", "url": "https://github.blog/ai-and-ml/feed/", "category": "tool"},
-    {"name": "Databricks Blog", "url": "https://www.databricks.com/feed", "category": "tool", "ai_only": False},
     {"name": "Cloudflare Blog", "url": "https://blog.cloudflare.com/tag/ai/rss/", "category": "tool"},
     {"name": "Sakana AI", "url": "https://sakana.ai/feed.xml", "category": "tool", "english_only": True},
     {"name": "Character.AI", "url": "https://blog.character.ai/rss/", "category": "tool"},
     # Labs with no feed: their news page lists posts; each new post's page is read once (collect.page_list_entries).
-    {"name": "Meta AI", "url": "https://ai.meta.com/blog/", "format": "page_list",
-     "link": r"^https://ai\.meta\.com/blog/[a-z0-9-]+/$", "category": "tool"},
     {"name": "MiniMax", "url": "https://www.minimax.io/news", "format": "page_list",
      "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
     # Labs whose news pages block automated readers: their developer release notes (robots.txt allows them),
     # keeping only launches of their own products ("keep").
     {"name": "xAI", "url": "https://docs.x.ai/developers/release-notes", "format": "page_list", "notes": "xai_notes",
      "keep": r"^(?:Grok|SpaceXAI|xAI)\b", "category": "tool"},
-    {"name": "Perplexity", "url": "https://docs.perplexity.ai/changelog", "format": "page_list",
-     "notes": "perplexity_notes", "keep": r"\b(?:Perplexity|Sonar|Comet)\b", "category": "tool"},
-    # Company-wide newsrooms: only their stories that name AI in the headline.
-    {"name": "Microsoft", "url": "https://blogs.microsoft.com/feed/", "category": "tool", "ai_only": False,
-     "ai_in_title": True},
-    {"name": "Meta Newsroom", "url": "https://about.fb.com/feed/", "category": "tool", "ai_only": False,
-     "ai_in_title": True},
-    {"name": "Amazon", "url": "https://www.aboutamazon.com/rss/news.xml", "category": "tool", "ai_only": False,
-     "ai_in_title": True},
 
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",
@@ -89,7 +69,6 @@ SOURCES = [
     {"name": "The Decoder", "url": "https://the-decoder.com/feed/", "category": "news", "paged": True},
     {"name": "SiliconANGLE AI", "url": "https://siliconangle.com/category/ai/feed/", "category": "news", "paged": True},
     {"name": "MarkTechPost", "url": "https://www.marktechpost.com/feed/", "category": "news", "ai_only": True, "paged": True},
-    {"name": "ZDNET AI", "url": "https://www.zdnet.com/topic/artificial-intelligence/rss.xml", "category": "news"},
     {"name": "404 Media", "url": "https://www.404media.co/rss/", "category": "news"},
     {"name": "Engadget", "url": "https://www.engadget.com/rss.xml", "category": "news", "ai_in_title": True,
      "as_provided": True},
@@ -140,7 +119,6 @@ SOURCES = [
     {"name": "Climate Home News", "url": "https://www.climatechangenews.com/feed/", "category": "infra", "infra_filter": True,
      "paged": True},
     {"name": "Mongabay", "url": "https://news.mongabay.com/feed/", "category": "infra", "infra_filter": True, "paged": True},
-    {"name": "Energy Monitor", "url": "https://www.energymonitor.ai/feed/", "category": "infra", "infra_filter": True, "paged": True},
     {"name": "The Conversation (Energy)", "url": "https://theconversation.com/global/topics/energy-72/articles.atom",
      "category": "infra", "infra_filter": True},
     {"name": "Canary Media", "url": "https://www.canarymedia.com/rss", "category": "infra", "infra_filter": True},  # North America
@@ -152,6 +130,17 @@ SOURCES = [
     {"name": "Union of Concerned Scientists", "url": "https://blog.ucsusa.org/tag/data-centers/feed/", "category": "infra",
      "infra_filter": True, "paged": True},  # North America
     # Official energy bodies
+    # GOV.UK's search for data centres (Open Government Licence v3.0): planning directions, environmental permits,
+    # statistics and announcements since 2023. Only news and official records: never pages about a person or
+    # tribunal decisions, which name private individuals.
+    {"name": "GOV.UK (data centres)", "format": "govuk", "category": "infra", "infra_filter": True, "jurisdictions": ["GB"],
+     "max_age_days": 1400,
+     "url": "https://www.gov.uk/api/search.json?q=%22data+centre%22&order=-public_timestamp&count=1000"
+            "&fields=title,link,description,public_timestamp&filter_public_timestamp=from:2023-01-01"
+            + "".join(f"&filter_content_store_document_type={t}" for t in (
+                "press_release", "news_story", "speech", "notice", "decision", "research", "official_statistics",
+                "national_statistics", "policy_paper", "open_consultation", "closed_consultation", "consultation_outcome",
+                "detailed_guide", "guidance"))},
     {"name": "US Energy Information Administration", "url": "https://www.eia.gov/rss/press_rss.xml", "category": "infra",
      "infra_filter": True},
     {"name": "European Commission (Energy)", "url": "https://energy.ec.europa.eu/node/2/rss_en", "category": "infra",

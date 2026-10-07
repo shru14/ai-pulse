@@ -1752,7 +1752,7 @@ def test_digest_is_checked_before_it_is_sent(monkeypatch):
         assert p in found, p
     assert "No stories at all" in "".join(quality.problems(digest.by_streams([], streams, day), [], day))
     # A general outlet's story that doesn't name AI is left out of the email, not a reason to hold it.
-    off = card(9, "news", source="ZDNET AI", title="Alibaba Cloud opens data centres in Europe", summary="")
+    off = card(9, "news", source="404 Media", title="Alibaba Cloud opens data centres in Europe", summary="")
     assert off not in digest.by_streams([*good, off], streams, day)["news"] and digest.left_out([*good, off], streams, day) == [off]
     # A thin day is sent, saying so.
     _, text, _ = digest.build(good[:2], streams, day)
@@ -1970,7 +1970,8 @@ def test_anthropic_news_page_and_its_launches():
         ("Claude discovers a novel enzyme system", "/news/claude-discovers-novel-enzyme-system", "2026-09-23"),
         ("Improving our alignment and security efforts", "/news/improving-alignment-security-efforts", "2026-08-31")]
     assert posts[0]["summary"] == "A clear upgrade over Sonnet 5." and posts[1]["summary"] == ""  # undated links skipped
-    src = next(s for s in SOURCES if s["name"] == "Anthropic News")
+    # Anthropic News was dropped (7 Oct 2026 terms audit); its old settings keep the reader tested.
+    src = {"name": "Anthropic News", "category": "tool", "launch_pages": r"^https://www\.anthropic\.com/(?!news/)"}
     # A launch has its own page; other posts are judged by the headline, not by launch words in their description.
     assert col.blog_category(src, posts[0]["title"], posts[0]["summary"], posts[0]["url"]) == "tool"
     assert col.blog_category(src, posts[1]["title"], "We're introducing a new life sciences research group", posts[1]["url"]) == "news"
@@ -1987,7 +1988,7 @@ def test_quick_run_reads_only_lab_blogs(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["aipulse", "--db", str(tmp_path / "t.db"), "collect", "--labs"])
     cli.main()
     assert seen["sources"] and {s["category"] for s in seen["sources"]} == {"tool"}
-    assert "Anthropic News" in {s["name"] for s in seen["sources"]}
+    assert "Google DeepMind Blog" in {s["name"] for s in seen["sources"]}
 
 
 def test_labs_without_a_feed_are_read_from_their_news_page(tmp_path):
@@ -2041,7 +2042,9 @@ def test_release_notes_keep_only_the_labs_own_launches(tmp_path):
     assert [e["title"] for e in feeds.parse_perplexity_notes(pplx)] == ["Claude Opus 5.5", "Introducing New and Improved Sonar Models"]
     conn = store.connect(tmp_path / "t.db")
     pages = {"https://docs.x.ai/developers/release-notes": xai, "https://docs.perplexity.ai/changelog": pplx}
-    labs = [s for s in SOURCES if s["name"] in ("xAI", "Perplexity")]
+    labs = [s for s in SOURCES if s["name"] == "xAI"] + [  # Perplexity dropped (7 Oct 2026 terms audit), reader kept tested
+        {"name": "Perplexity", "url": "https://docs.perplexity.ai/changelog", "format": "page_list",
+         "notes": "perplexity_notes", "keep": r"\b(?:Perplexity|Sonar|Comet)\b", "category": "tool"}]
     for src in labs:
         assert col.page_list_entries(conn, src, pages.get) == []  # first read: remembered only
         conn.execute("INSERT OR REPLACE INTO meta VALUES (?, '[]')", (f"page_list:{src['name']}",))  # as if all were new
@@ -2907,3 +2910,40 @@ def test_a_capped_source_keeps_only_its_newest_stories(tmp_path, monkeypatch):
     collect.purge_dropped(conn, log=lambda *_: None)
     assert sorted(r[0] for r in conn.execute("SELECT url FROM items")) == [
         "https://ex.com/1", "https://www.sciencedaily.com/3", "https://www.sciencedaily.com/4"]
+
+
+def test_every_source_has_legal_evidence():
+    # Each site read has its terms page, what it says and the kind of permission recorded (aipulse/terms.py).
+    from urllib.parse import urlsplit
+    from aipulse.sources import SOURCES
+    from aipulse.terms import TERMS
+    kinds = {"official", "licence", "feed terms", "terms read", "no terms", "unconfirmed"}
+    hosts = {urlsplit(s["url"]).netloc.lower() for s in SOURCES}
+    assert sorted(hosts - set(TERMS)) == []  # a new source needs its evidence first
+    assert all(TERMS[h][0] in kinds and TERMS[h][2] for h in hosts)
+
+
+def test_no_source_is_read_on_unconfirmed_terms():
+    # A site whose terms page refuses automated readers is read only after someone has read its terms by hand.
+    from urllib.parse import urlsplit
+    from aipulse.sources import SOURCES
+    from aipulse.terms import TERMS
+    assert sorted(s["name"] for s in SOURCES if TERMS[urlsplit(s["url"]).netloc.lower()][0] == "unconfirmed") == []
+
+
+def test_the_audit_reports_changed_terms_and_blocks(tmp_path, monkeypatch):
+    from aipulse import audit
+    monkeypatch.setattr(audit, "SOURCES", [{"name": "Site", "url": "https://site.test/feed"},
+                                           {"name": "Gone", "url": "https://gone.test/feed"}])
+    monkeypatch.setattr(audit, "TERMS", {"site.test": ("terms read", "https://site.test/terms", "fine"),
+                                         "gone.test": ("no terms", "", "none")})
+    pages = {"https://site.test/feed": b"<rss/>", "https://site.test/terms": b"<p>Be kind to each other always.</p>"}
+    def fetch(url):
+        if url not in pages:
+            raise feeds.Disallowed(url)
+        return pages[url]
+    saved = tmp_path / "audit.json"
+    assert audit.run(fetch, log=lambda *_: None, saved=saved) == ["Gone: robots.txt no longer allows https://gone.test/feed"]
+    pages["https://site.test/terms"] = b"<p>You may not use any robot or scraper to access the Site.</p>"
+    problems = audit.run(fetch, log=lambda *_: None, saved=saved)
+    assert any(p.startswith("Site: terms changed since") and "robot or scraper" in p for p in problems)
