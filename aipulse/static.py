@@ -115,7 +115,9 @@ def tracker_csv(cards: list[dict]) -> str:
 
 
 SAMPLE_PER_STREAM = 4  # stories a section shows in the sample email (daily/sample.html)
-# the sample's placeholder stories, by stream: the kind of story each section carries, never a real one
+# the sample's placeholder stories, by stream: the kind of story each section carries, never a real one (each
+# labelled as its row's type: Industry's as news, the tracker's in this order)
+SAMPLE_ACTIONS = ("proposal", "law", "body", "standard")
 SAMPLE_STORIES = {
     "tool": [("A lab releases a new model", "What it does better, and who can use it."),
              ("An app adds an AI feature", "What changes for its users."),
@@ -129,10 +131,10 @@ SAMPLE_STORIES = {
                  ("A new benchmark tests what models can't do", "What it measures, and how today's models score."),
                  ("A study looks at AI in the workplace", "What the authors found."),
                  ("A paper makes models smaller and faster", "How, and at what cost to accuracy.")],
-    "regulation": [("A bill on AI passes a vote", "Where it is now, and what's next."),
-                   ("A regulator publishes AI guidance", "Who it applies to, and from when."),
-                   ("A new AI law comes into force", "What it requires."),
-                   ("A standards body updates an AI standard", "What changed in this version.")],
+    "regulation": [("A bill on AI is introduced", "Where it is now, and what's next."),
+                   ("A new AI law is adopted", "What it requires, and from when."),
+                   ("A country sets up an AI office", "What it will oversee."),
+                   ("A standards body publishes an AI standard", "What it covers.")],
     "policy": [("A government sets out its AI plan", "The main points, as announced."),
                ("A court rules in an AI case", "What was decided, and what it means."),
                ("Lawmakers question a tech company", "What they asked, and what it said."),
@@ -152,7 +154,9 @@ def sample_cards(cards: list[dict], day: date) -> list[dict]:
         k = seen[c["category"]] = seen.get(c["category"], 0) + 1
         if k <= SAMPLE_PER_STREAM:
             title, summary = SAMPLE_STORIES.get(c["category"], SAMPLE_STORIES["news"])[k - 1]
-            out.append({**c, "title": title, "summary": summary, "source": f"Outlet {'ABCD'[k - 1]}", "url": rss.SITE, "also": [], "tags": [], "jurisdictions": [],
+            out.append({**c, "title": title, "summary": summary, "source": f"Outlet {'ABCD'[k - 1]}",
+                        "kind": "news" if c["category"] == "news" else c.get("kind"),
+                        "action": SAMPLE_ACTIONS[k - 1] if c["category"] == "regulation" else c.get("action"), "url": rss.SITE, "also": [], "tags": [], "jurisdictions": [],
                         "authors": ""})
     return out
 
@@ -168,6 +172,7 @@ def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | 
             'font:600 15px Arial,sans-serif;color:#000">A sample of the daily email. '
             '<a href="/#subscribe" style="color:#000">Subscribe to get the real one every morning →</a></div>')
     html = re.sub(r"<body[^>]*>", lambda m: m.group(0) + note, page[2], count=1)
+    html = re.sub(r"We read \d+ stor(y|ies) from \d+ sources?", "We read the day's stories from 100+ sources", html)
     meme = memes.of_the_day(cards, day)
     picture = meme and memes.render(meme)
     if picture and out:
