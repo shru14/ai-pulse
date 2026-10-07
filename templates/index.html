@@ -577,7 +577,10 @@ header.top{border-bottom:4px solid var(--ink)}
   border:2px solid var(--ink);font:600 15px var(--body);text-decoration:none;white-space:nowrap}
 .by-country a:hover{filter:brightness(1.08)}
 .by-country a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.by-country-go{flex:none;display:flex;flex-wrap:wrap;gap:8px}
+/* the words keep a readable width; buttons that don't fit beside them go on their own row below */
+.by-country{flex-wrap:wrap}
+.by-country > div:first-child{flex:1 1 340px;min-width:0}
+.by-country-go{flex:0 1 auto;display:flex;flex-wrap:wrap;gap:8px}
 @media (max-width:640px){.by-country{flex-direction:column;align-items:flex-start}}
 .sec-hero .ico,.sec-hero .ico.sec{width:52px;height:52px;border-radius:0;border:3px solid var(--ink);background:var(--bg);color:var(--ink)}
 /* the masthead: name and buttons on top, every stream on its own ruled row below (never cut off) */
