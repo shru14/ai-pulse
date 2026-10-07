@@ -96,6 +96,23 @@ LABELS = {
 
 AI_TITLE = re.compile(r"artificial intelligence|\bAI\b|machine learning|algorithm|deepfake|automated decision|"
                       r"chatbot|digital replica|2024/1689", re.I)
+# Each place's main data protection law (the data AI is built on), by its title in the place's own source, kept
+# beside its AI records: the law itself and the bills amending it, never every privacy bill. (A Vietnamese
+# document by its address; Brazil's LGPD and the EU's older data laws are looked up by number, BR_DATA, EU_DATA.)
+DATA_LAWS = {code: re.compile(p, re.I) for code, p in {
+    "IN": r"digital personal data protection",
+    "GB": r"^Data Protection\b|^Data \(Use and Access\)",
+    "EU": r"\((General Data Protection Regulation|Data Governance Act|Data Act)\)|Regulation \(EU\) 2016/679",
+    "IE": r"^Data Protection\b",
+    "AU": r"^Privacy\b.*\bAct \d{4}$",  # the Privacy Act 1988 and the Acts amending it
+    "NO": r"personopplysningsloven",
+    "CH": r"^Datenschutzgesetz|Datenschutzgesetz\w* anpassen|Präzisierung des Datenschutzgesetzes",
+    "JP": r"^個人情報の保護に関する法律(施行令|施行規則)?$",
+    "KR": r"^개인정보 보호법( 시행령| 시행규칙)?$",
+    "TW": r"^個人資料保護法$",
+    "CN": r"个人信息保护法|数据安全法|网络数据安全管理条例",
+    "VN": r"bao-ve-du-lieu-ca-nhan",
+}.items()}
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS bills (
@@ -446,6 +463,9 @@ EP_API = "https://data.europarl.europa.eu/api/v2"
 EP_FORMAT = "format=application%2Fld%2Bjson"
 
 
+EU_DATA = ("2012-0011", "2020-0340", "2022-0047")  # the GDPR, the Data Governance Act and the Data Act
+
+
 def _procedure(proc_id: str, fetcher=feeds.fetch) -> dict:
     return _get_json(f"{EP_API}/procedures/{proc_id}?{EP_FORMAT}", fetcher)["data"][0]
 
@@ -465,9 +485,19 @@ def sync_europarl(conn, fetcher=feeds.fetch, years: list[int] | None = None, log
                 continue
             full = _procedure(pid, fetcher)
             title = (full.get("process_title") or {}).get("en") or ""
-            conn.execute("INSERT OR REPLACE INTO eu_procedures VALUES (?,?,?)", (pid, title, int(bool(AI_TITLE.search(title)))))
+            conn.execute("INSERT OR REPLACE INTO eu_procedures VALUES (?,?,?)",
+                         (pid, title, int(bool(AI_TITLE.search(title) or DATA_LAWS["EU"].search(title)))))
             conn.commit()
             time.sleep(0.2)
+    for pid, title in conn.execute("SELECT id, title FROM eu_procedures WHERE is_ai = 0").fetchall():
+        if DATA_LAWS["EU"].search(title):  # read before data laws were kept
+            conn.execute("UPDATE eu_procedures SET is_ai = 1 WHERE id = ?", (pid,))
+    for pid in EU_DATA:
+        if not conn.execute("SELECT 1 FROM eu_procedures WHERE id = ? AND is_ai = 1", (pid,)).fetchone():
+            title = (_procedure(pid, fetcher).get("process_title") or {}).get("en") or ""
+            conn.execute("INSERT OR REPLACE INTO eu_procedures VALUES (?,?,1)", (pid, title))
+            time.sleep(0.2)
+    conn.commit()
     for pid, title in conn.execute("SELECT id, title FROM eu_procedures WHERE is_ai = 1").fetchall():
         full = _procedure(pid, fetcher)
         ref = full.get("label") or pid.replace("-", "/", 1)
@@ -491,7 +521,8 @@ def _eu_short_title(title: str) -> str:
 
 UK_API = "https://bills-api.parliament.uk/api/v1"
 # The API's search matches bill titles; AI_TITLE then keeps only AI bills.
-UK_SEARCHES = ("artificial intelligence", "algorithm", "automated decision", "deepfake", "machine learning", "chatbot")
+UK_SEARCHES = ("artificial intelligence", "algorithm", "automated decision", "deepfake", "machine learning", "chatbot",
+               "data protection", "data use and access")
 
 
 def uk_history(bill: dict, stages: list[dict]) -> list[dict]:
@@ -530,7 +561,7 @@ def sync_uk(conn, fetcher=feeds.fetch, log=print) -> int:
         data = _get_json(f"{UK_API}/Bills?SearchTerm={term.replace(' ', '%20')}&SortOrder=DateUpdatedDescending"
                          f"&Take=100", fetcher)
         for b in data.get("items", []):
-            if AI_TITLE.search(b.get("shortTitle") or ""):
+            if AI_TITLE.search(b.get("shortTitle") or "") or DATA_LAWS["GB"].search(b.get("shortTitle") or ""):
                 found[b["billId"]] = b
         time.sleep(0.5)
     changed = 0
@@ -558,6 +589,7 @@ BR_KEYWORD = "intelig%C3%AAncia%20artificial"
 BR_AI = re.compile(r"intelig[êe]ncia artificial|\bIA\b|algor[íi]tm|deep ?fakes?|aprendizado de m[áa]quina|"
                    r"decis[õo]es automatizadas", re.I)
 BR_ATTACHED = ("Tramitando em Conjunto", "Aguardando Apensação")
+BR_DATA = (("PL", 4060, 2012),)  # the bill that became the LGPD (Law 13.709/2018), Brazil's data protection law
 # Stages from an event's own description and dispatch. (The API stamps every event's "situation" with the
 # bill's current status, so it says nothing about when a stage was reached.) First match wins.
 _BR_RULES = [
@@ -612,6 +644,9 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
             break
         page += 1
         time.sleep(0.5)
+    for kind, number, year in BR_DATA:
+        if not conn.execute("SELECT 1 FROM bills WHERE key = ?", (f"BR-{kind}-{number}-{year}",)).fetchone():
+            found += _get_json(f"{BR_API}/proposicoes?siglaTipo={kind}&numero={number}&ano={year}", fetcher).get("dados", [])
     translate.english(conn, "pt", [(p.get("ementa") or "").strip() for p in found])
     changed = 0
     for p in found:
@@ -683,7 +718,7 @@ def sync_china(conn, fetcher=feeds.fetch, log=print) -> int:
     for path in CN_LISTS:
         page = fetcher(f"{CN_SITE}/wxzw/zcfg/{path}index_1.htm").decode("utf-8", "replace")
         for href, title, day in _CN_ITEM.findall(page):
-            if CN_AI.search(title):
+            if CN_AI.search(title) or DATA_LAWS["CN"].search(title):
                 url = "https:" + href if href.startswith("//") else href
                 found[url] = (title.strip(), day)
         time.sleep(1)
@@ -763,8 +798,6 @@ def sync_canada_gazette(conn, fetcher=feeds.fetch, log=print) -> int:
 IN_API = "https://sansad.in/api_rs/legislation/getBills"
 IN_SEARCHES = ("artificial intelligence", "deepfake", "algorithm", "machine learning", "automated decision",
                "digital personal data protection")
-# India's data protection law (the DPDP Act 2023 and bills amending it) governs the data AI is built on, so it's kept too
-IN_TITLE = re.compile(f"{AI_TITLE.pattern}|digital personal data protection", re.I)
 _IN_QUERY = ("loksabha=&sessionNo=&house=&ministryName=&billType=&billCategory=&billStatus=&introductionDateFrom="
              "&introductionDateTo=&passedInLsDateFrom=&passedInLsDateTo=&passedInRsDateFrom=&passedInRsDateTo="
              "&page=1&size=50&locale=en&sortOn=billIntroducedDate&sortBy=desc")
@@ -798,7 +831,7 @@ def sync_india(conn, fetcher=feeds.fetch, log=print) -> int:
     for term in IN_SEARCHES:
         data = _get_json(f"{IN_API}?billName={term.replace(' ', '%20')}&{_IN_QUERY}", get)
         for b in data.get("records") or []:
-            if IN_TITLE.search(b.get("billName") or ""):
+            if AI_TITLE.search(b.get("billName") or "") or DATA_LAWS["IN"].search(b.get("billName") or ""):
                 house = "LS" if (b.get("billIntroducedInHouse") or "").startswith("Lok") else "RS"
                 found[f"IN-{house}-{b.get('billYear')}-{b.get('billNumber')}"] = b
         time.sleep(1)
@@ -817,6 +850,7 @@ def sync_india(conn, fetcher=feeds.fetch, log=print) -> int:
 
 JP_API = "https://laws.e-gov.go.jp/api/2/laws"
 JP_SEARCHES = ("人工知能", "生成ＡＩ", "ディープフェイク")
+JP_DATA = "個人情報の保護に関する法律"  # the APPI: its search also finds laws that only name it, so DATA_LAWS picks
 # e-Gov's law number types, as Japan's official English translations name them.
 _JP_TYPES = {"Act": "Act", "CabinetOrder": "Cabinet Order", "ImperialOrder": "Imperial Order",
              "MinisterialOrdinance": "Ministerial Ordinance", "Rule": "Rule"}
@@ -841,9 +875,11 @@ def sync_japan(conn, fetcher=feeds.fetch, log=print) -> int:
     connect_tables(conn)
     from urllib.parse import quote
     found = {}
-    for term in JP_SEARCHES:
+    for term in (*JP_SEARCHES, JP_DATA):
         for law in _get_json(f"{JP_API}?law_title={quote(term)}", fetcher).get("laws") or []:
-            found[law["law_info"]["law_id"]] = law
+            title = (law.get("current_revision_info") or law.get("revision_info") or {}).get("law_title") or ""
+            if term != JP_DATA or DATA_LAWS["JP"].search(title):
+                found[law["law_info"]["law_id"]] = law
         time.sleep(1)
     titles = {lid: ((law.get("current_revision_info") or law.get("revision_info") or {}).get("law_title") or "")
               for lid, law in found.items()}
@@ -872,6 +908,7 @@ VN_SITE = "https://vbpl.vn"
 VN_AI = re.compile(r"tri-tue-nhan-tao")
 _VN_TYPES = {"luat": "Law", "nghi-dinh": "Decree", "nghi-quyet": "Resolution", "thong-tu": "Circular",
              "quyet-dinh": "Decision", "chi-thi": "Directive", "phap-lenh": "Ordinance"}
+_VN_NAMES = "Nghị định|Nghị quyết|Thông tư|Quyết định|Chỉ thị|Pháp lệnh"  # document types of two words
 VN_REFRESH_DAYS = 7
 
 
@@ -892,7 +929,7 @@ def sync_vietnam(conn, fetcher=feeds.fetch, log=print) -> int:
     urls = []
     for sitemap in re.findall(r"<loc>(.*?)</loc>", national)[1:]:  # the first lists the site's own pages
         urls += [u for u in re.findall(r"<loc>(.*?)</loc>", fetcher(sitemap).decode("utf-8", "replace"))
-                 if "/van-ban/chi-tiet/" in u and VN_AI.search(u)]
+                 if "/van-ban/chi-tiet/" in u and (VN_AI.search(u) or DATA_LAWS["VN"].search(u))]
         time.sleep(1)
     known = {r[0] for r in conn.execute("SELECT url FROM bills WHERE jurisdiction = 'VN'")}
     records = []
@@ -903,14 +940,15 @@ def sync_vietnam(conn, fetcher=feeds.fetch, log=print) -> int:
         page = fetcher(url).decode("utf-8", "replace")
         time.sleep(1)
         # "Tra cứu Luật 134/2025/QH15, LUẬT TRÍ TUỆ NHÂN TẠO SỐ 134/2025/QH15. Xem toàn văn và hiệu lực."
-        m = re.match(r"Tra cứu \S+ (\S+), (.*?)(?: SỐ \S+)?\. Xem", _vn_meta(page, "description"))
+        # (or "Tra cứu Nghị định 13/2023/NĐ-CP, Nghị định số 13/2023/NĐ-CP Bảo vệ dữ liệu cá nhân. Xem ...")
+        m = re.match(rf"Tra cứu (?:{_VN_NAMES}|\S+) (\S+), (.*?)(?: (?:SỐ|số) \S+)?\. Xem", _vn_meta(page, "description"), re.S)
         issued = _vn_meta(page, "article:published_time")
         if not (m and issued):
             continue
         day = (datetime.fromisoformat(issued.replace("Z", "+00:00")) + timedelta(hours=7)).date().isoformat()
         slug = url.rsplit("/", 1)[1]
         kind = next((v for k, v in _VN_TYPES.items() if slug.startswith(k + "-")), "")
-        title = m.group(2).strip()
+        title = re.sub(rf"^(?:{_VN_NAMES}) số \S+\s+", "", re.sub(r"\s+", " ", m.group(2)).strip())
         title = title[0] + title[1:].lower() if title.isupper() else title
         records.append({"key": key, "jurisdiction": "VN", "number": f"{kind} No. {m.group(1)}" if kind else m.group(1),
                         "title": title, "url": url, "source": "National Legal Database (Vietnam)", "lang": "vi",
@@ -926,7 +964,7 @@ def sync_vietnam(conn, fetcher=feeds.fetch, log=print) -> int:
 # --- Switzerland (Swiss Parliament open data, ws.parlament.ch) ---
 
 CH_API = "https://ws.parlament.ch/odata.svc/Business"
-CH_SEARCHES = ("künstliche Intelligenz", "Künstliche Intelligenz", "KI", "Deepfake", "Algorithm")
+CH_SEARCHES = ("künstliche Intelligenz", "Künstliche Intelligenz", "KI", "Deepfake", "Algorithm", "Datenschutzgesetz")
 # Items that ask for a law go to the tracker; postulates (a request for a government report) to Policy.
 # Interpellations and questions are only questions, so they're left out.
 _CH_TYPES = {"Motion": "Motion", "Parlamentarische Initiative": "Parliamentary initiative",
@@ -951,7 +989,8 @@ def ch_history(r: dict) -> list[dict]:
     history = [{"date": _ch_date(r.get("SubmissionDate")), "stage": "introduced",
                 "text": f"Submitted in the {council}" if council else "Submitted"}]
     status, day = r.get("BusinessStatusText") or "", _ch_date(r.get("BusinessStatusDate"))
-    stage = ("passed_legislature" if status.startswith(("Überwiesen an den Bundesrat", "Erfüllt"))
+    bill = r.get("BusinessTypeName") == "Geschäft des Bundesrates"  # "Erledigt": Parliament is done with it (final vote)
+    stage = ("passed_legislature" if status.startswith(("Überwiesen an den Bundesrat", "Erfüllt")) or (bill and status == "Erledigt")
              else "passed_chamber" if "Erstrat angenommen" in status
              else "vetoed" if "abgelehnt" in status.lower()
              else "withdrawn" if status.startswith(("Erledigt", "Abgeschrieben", "Zurückgezogen")) else None)
@@ -979,6 +1018,8 @@ def sync_switzerland(conn, fetcher=feeds.fetch, log=print) -> int:
         data = _get_json(f"{CH_API}?$filter={query}&$select={_CH_SELECT}&$format=json&$top=500", fetcher)["d"]
         for r in data["results"] if isinstance(data, dict) else data:
             if term == "KI" and not re.search(r"\bKI\b", r["Title"]):
+                continue
+            if term == "Datenschutzgesetz" and not DATA_LAWS["CH"].search(r["Title"]):
                 continue
             if r["BusinessTypeName"] in _CH_TYPES or r["BusinessTypeName"] in _CH_POLICY:
                 found[r["ID"]] = r
@@ -1061,7 +1102,7 @@ def sync_malaysia(conn, fetcher=feeds.fetch, log=print) -> int:
 # --- Taiwan (Legislative Yuan law system, lis.ly.gov.tw) ---
 
 TW_LAWS = "https://lis.ly.gov.tw/lglawc/lglawkm"
-TW_SEARCHES = ("人工智慧",)  # "artificial intelligence", in law names
+TW_SEARCHES = ("人工智慧", "個人資料保護法")  # "artificial intelligence" in law names; the Personal Data Protection Act
 # The system's result links last one session, so a card links to the law's name on the national law database
 # (a link for readers; that site's robots.txt closes it to automated reading, so it's never fetched).
 TW_LINK = "https://law.moj.gov.tw/Law/LawSearchResult.aspx?ty=ONEBAR&kw="
@@ -1107,7 +1148,8 @@ def sync_taiwan(conn, fetcher=None, log=print, opener=None) -> int:
         page = opener.open("https://lis.ly.gov.tw" + action, data=urllib.parse.urlencode(fields).encode(),
                            timeout=30).read().decode("utf-8", "replace")
         for name, passed, promulgated in tw_laws(page):
-            found[name] = (passed, promulgated)
+            if "人工智慧" in name or DATA_LAWS["TW"].search(name):
+                found[name] = (passed, promulgated)
         time.sleep(1)
     from urllib.parse import quote
     translate.english(conn, "zh", list(found))
@@ -1128,7 +1170,7 @@ KR_SEARCH = "https://www.law.go.kr/LSW/lsScListR.do"
 KR_LINK = "https://www.law.go.kr/법령/"  # the centre's permanent address for a law, by name
 KR_REFRESH_DAYS = 7
 # Each version of a law is listed as "NAME[시행 2026. 1. 22.] [법률 제20676호, 2025. 1. 21., 제정]".
-_KR_ITEM = re.compile(r'title="([^"\[]*인공지능[^"\[]*)\[시행 (\d{4})\. ?(\d{1,2})\. ?(\d{1,2})\.\] '
+_KR_ITEM = re.compile(r'title="([^"\[]*)\[시행 (\d{4})\. ?(\d{1,2})\. ?(\d{1,2})\.\] '
                       r'\[([^\]]*?) 제(\d+)호, (\d{4})\. ?(\d{1,2})\. ?(\d{1,2})\., ([^\]]+)\]"')
 _KR_TYPES = {"법률": "Act", "대통령령": "Presidential Decree", "총리령": "Prime Minister's Decree"}
 # English names (as the government translates them) and what each does. Korea's offline translation model
@@ -1151,6 +1193,10 @@ KR_NAMES = {
     "국가인공지능전략위원회의 설치 및 운영에 관한 규정": (
         "Regulation on the National AI Strategy Committee",
         "Set up the presidential committee that coordinates national AI strategy."),
+    "개인정보 보호법": (
+        "Personal Information Protection Act",
+        "Korea's data protection law: how personal information may be collected, used and shared, and people's "
+        "rights over theirs."),
 }
 
 
@@ -1169,6 +1215,8 @@ def kr_laws(page: str) -> dict[str, dict]:
     laws = {}
     for m in _KR_ITEM.finditer(page):
         name, kind = m.group(1).strip(), m.group(10).strip()
+        if "인공지능" not in name and not DATA_LAWS["KR"].search(name):
+            continue
         effective = f"{m.group(2)}-{int(m.group(3)):02d}-{int(m.group(4)):02d}"
         promulgated = f"{m.group(7)}-{int(m.group(8)):02d}-{int(m.group(9)):02d}"
         law = laws.setdefault(name, {"versions": []})
@@ -1199,11 +1247,13 @@ def sync_korea(conn, fetcher=None, log=print) -> int:
     import urllib.request
     if not feeds.allowed(KR_SEARCH):
         raise feeds.Disallowed(KR_SEARCH)
-    form = urllib.parse.urlencode({"q": "인공지능", "query": "인공지능", "section": "lawNm", "outmax": "100",
-                                   "pg": "1"}).encode()
-    req = urllib.request.Request(KR_SEARCH, data=form, headers={"User-Agent": feeds.USER_AGENT})
-    with urllib.request.urlopen(req, timeout=40, context=feeds.TLS) as resp:
-        page = resp.read().decode("utf-8", "replace")
+    page = ""
+    for term in ("인공지능", "개인정보 보호법"):  # AI; the Personal Information Protection Act
+        form = urllib.parse.urlencode({"q": term, "query": term, "section": "lawNm", "outmax": "100", "pg": "1"}).encode()
+        req = urllib.request.Request(KR_SEARCH, data=form, headers={"User-Agent": feeds.USER_AGENT})
+        with urllib.request.urlopen(req, timeout=40, context=feeds.TLS) as resp:
+            page += resp.read().decode("utf-8", "replace")
+        time.sleep(1)
     from urllib.parse import quote
     changed = 0
     for name, law in kr_laws(page).items():
@@ -1220,7 +1270,8 @@ def sync_korea(conn, fetcher=None, log=print) -> int:
 # --- Australia (Federal Register of Legislation) ---
 
 AU_API = "https://api.prod.legislation.gov.au/v1/titles"
-AU_SEARCHES = ("artificial intelligence", "deepfake", "automated decision", "algorithm", "machine learning")
+AU_SEARCHES = ("artificial intelligence", "deepfake", "automated decision", "algorithm", "machine learning",
+               "Privacy Act", "Privacy Amendment", "Privacy Legislation Amendment", "Privacy and Other Legislation")
 
 
 def au_history(t: dict) -> list[dict]:
@@ -1245,7 +1296,8 @@ def sync_australia(conn, fetcher=feeds.fetch, log=print) -> int:
     for term in AU_SEARCHES:
         data = _get_json(f"{AU_API}?$filter=contains(name,'{term.replace(' ', '%20')}')&$top=100", fetcher)
         for t in data.get("value", []):
-            if AI_TITLE.search(t.get("name") or ""):
+            if AI_TITLE.search(t.get("name") or "") or (  # a privacy Act still in force
+                    DATA_LAWS["AU"].search(t.get("name") or "") and t.get("status") != "Repealed"):
                 found[t["id"]] = t
         time.sleep(0.5)
     changed = 0
@@ -1269,6 +1321,7 @@ def sync_australia(conn, fetcher=feeds.fetch, log=print) -> int:
 IE_API = "https://api.oireachtas.ie/v1/legislation"
 IE_SINCE = "2020-01-01"
 IE_PAGE = 500
+IE_DATA_YEARS = (2018,)  # the Data Protection Act 2018's bill, from before IE_SINCE
 
 
 def ie_history(b: dict) -> list[dict]:
@@ -1311,11 +1364,16 @@ def sync_ireland(conn, fetcher=feeds.fetch, log=print) -> int:
     found, skip = [], 0
     while True:
         page = _get_json(f"{IE_API}?date_start={IE_SINCE}&limit={IE_PAGE}&skip={skip}", fetcher).get("results") or []
-        found += [r["bill"] for r in page if AI_TITLE.search((r.get("bill") or {}).get("shortTitleEn") or "")]
+        found += [r["bill"] for r in page if AI_TITLE.search((r.get("bill") or {}).get("shortTitleEn") or "")
+                  or DATA_LAWS["IE"].search((r.get("bill") or {}).get("shortTitleEn") or "")]
         if len(page) < IE_PAGE:
             break
         skip += IE_PAGE
         time.sleep(0.5)
+    for year in IE_DATA_YEARS:
+        page = _get_json(f"{IE_API}?bill_year={year}&limit={IE_PAGE}", fetcher).get("results") or []
+        found += [r["bill"] for r in page if DATA_LAWS["IE"].search((r.get("bill") or {}).get("shortTitleEn") or "")]
+    found = list({(b.get("billYear"), b.get("billNo")): b for b in found}.values())
     changed = 0
     for b in found:
         no, year = b.get("billNo"), b.get("billYear")
@@ -1336,6 +1394,7 @@ def sync_ireland(conn, fetcher=feeds.fetch, log=print) -> int:
 
 NO_API = "https://data.stortinget.no/eksport"
 NO_SESSIONS = 4  # the current session and the three before it
+NO_DATA_FROM = "2017-2018"  # data protection cases from this session on: the Personal Data Act 2018 and its amendments
 NO_AI = re.compile(r"kunstig intelligens|\bKI\b|algoritm|maskinlæring|deepfake|chatbot", re.I)
 _NO_DATE = re.compile(r"^(\d\d)\.(\d\d)\.(\d{4})")
 
@@ -1358,7 +1417,8 @@ def no_history(case: dict) -> list[dict]:
     reached = {"introduced": {"date": start, "stage": "introduced", "text": "Put forward in the Storting"}}
     if case.get("ferdigbehandlet"):
         said = f"{case.get('kortvedtak') or ''} {case.get('vedtakstekst') or ''}"
-        adopted = re.search(r"\bvedtok\b", said) and not re.search(r"ikke vedtatt|bifalles ikke|vedlegges protokollen", said)
+        adopted = not re.search(r"ikke vedtatt|bifalles ikke|vedlegges protokollen", said) and (
+            re.search(r"\bvedtok\b|\bhar vedtatt\b", said) or "Lovvedtak" in (case.get("henvisning") or ""))  # a law decision
         stage = "passed_legislature" if adopted else "vetoed"
         reached[stage] = {"date": days[-1], "stage": stage,
                           "text": "Adopted by the Storting" if adopted else "Not adopted by the Storting"}
@@ -1370,12 +1430,13 @@ def sync_norway(conn, fetcher=feeds.fetch, log=print) -> int:
     connect_tables(conn)
     sessions = _get_json(f"{NO_API}/sesjoner?format=json", fetcher)
     current = sessions["innevaerende_sesjon"]["id"]
-    ids = [s["id"] for s in sessions["sesjoner_liste"] if s["id"] <= current][:NO_SESSIONS]
+    ids = [s["id"] for s in sessions["sesjoner_liste"] if NO_DATA_FROM <= s["id"] <= current]
     found: dict[int, dict] = {}
     for sid in ids:
         for c in _get_json(f"{NO_API}/saker?sesjonid={sid}&format=json", fetcher).get("saker_liste") or []:
             # proposals only: members' (Dokument 8) and the government's (Prop.), not reports or debates
-            if NO_AI.search(f"{c.get('korttittel') or ''} {c.get('tittel') or ''}") \
+            said = f"{c.get('korttittel') or ''} {c.get('tittel') or ''}"
+            if ((sid in ids[:NO_SESSIONS] and NO_AI.search(said)) or DATA_LAWS["NO"].search(said)) \
                     and re.match(r"Dokument 8|Prop\.", c.get("henvisning") or ""):
                 found[c["id"]] = c
         time.sleep(1)
