@@ -1,7 +1,7 @@
 """Published AI standards for the regulation tracker: ISO/IEC (JTC 1/SC 42, the joint AI committee) and IEEE.
 
 Neither publisher can be read automatically within this project's rules: iso.org sits behind a bot check and
-IEEE's robots.txt disallows its feeds. So this is a hand-kept list of facts: each standard's number, title,
+IEEE's robots.txt disallows its feeds. So this is a hand-kept list of facts: each standard's number, title (shortened where long),
 publication date and official page, every one checked against that page (ISO/IEC 42006's date against the
 DIN Media record, as its ISO page wouldn't load). Nothing of a standard's text is copied; the one-line
 summaries are our own. A new standard appears when it's added here.
@@ -26,10 +26,10 @@ STANDARDS = [
     (ISO, "ISO/IEC 42005:2025", "AI system impact assessment", "2025-05-01", "https://www.iso.org/standard/42005",
      "Guidance on assessing how an AI system and its foreseeable uses may affect individuals, groups and society, "
      "across the system's life cycle."),
-    (ISO, "ISO/IEC 42006:2025", "Requirements for bodies providing audit and certification of AI management systems",
+    (ISO, "ISO/IEC 42006:2025", "Audit and certification of AI management systems",
      "2025-07-01", "https://www.iso.org/standard/42006",
      "What audit and certification bodies need in order to certify organisations against ISO/IEC 42001."),
-    (ISO, "ISO/IEC 23894:2023", "AI — Guidance on risk management", "2023-02-01", "https://www.iso.org/standard/77304.html",
+    (ISO, "ISO/IEC 23894:2023", "AI risk management", "2023-02-01", "https://www.iso.org/standard/77304.html",
      "How organisations that develop, deploy or use AI can manage its risks, adapting general risk management "
      "(ISO 31000) to AI."),
     (ISO, "ISO/IEC 22989:2022", "AI concepts and terminology", "2022-07-01", "https://www.iso.org/standard/74296.html",
@@ -42,40 +42,40 @@ STANDARDS = [
      "Processes for defining, controlling and improving each stage of an AI system's life cycle."),
     (ISO, "ISO/IEC 5339:2024", "Guidance for AI applications", "2024-01-01", "https://www.iso.org/standard/81120.html",
      "Guidance for identifying the context, opportunities and stakeholders of AI applications."),
-    (ISO, "ISO/IEC 38507:2022", "Governance implications of the use of AI by organizations", "2022-04-01",
+    (ISO, "ISO/IEC 38507:2022", "Governance of AI use in organisations", "2022-04-01",
      "https://www.iso.org/standard/56641.html",
      "Guidance for boards and governing bodies on overseeing their organisation's use of AI."),
     (ISO, "ISO/IEC TR 24028:2020", "Overview of trustworthiness in AI", "2020-05-01",
      "https://www.iso.org/standard/77608.html",
      "A technical report surveying what makes AI trustworthy: transparency, robustness, reliability, safety, "
      "security and privacy."),
-    (ISO, "ISO/IEC TR 24027:2021", "Bias in AI systems and AI aided decision making", "2021-11-01",
+    (ISO, "ISO/IEC TR 24027:2021", "Bias in AI systems and AI-aided decisions", "2021-11-01",
      "https://www.iso.org/standard/77607.html",
      "A technical report on sources of bias in AI systems and ways to measure and address it."),
-    (ISO, "ISO/IEC TR 24029-1:2021", "Assessment of the robustness of neural networks — Part 1: Overview", "2021-03-01",
+    (ISO, "ISO/IEC TR 24029-1:2021", "Robustness of neural networks, Part 1: Overview", "2021-03-01",
      "https://www.iso.org/standard/77609.html",
      "A technical report on methods for assessing how robust neural networks are."),
     (ISO, "ISO/IEC 25059:2023", "Quality model for AI systems", "2023-06-01", "https://www.iso.org/standard/80655.html",
      "Extends the software quality model (SQuaRE) with characteristics specific to AI systems."),
     (ISO, "ISO/IEC 8183:2023", "Data life cycle framework", "2023-07-01", "https://www.iso.org/standard/83002.html",
      "The stages data goes through in AI systems, from collection and preparation to use and decommissioning."),
-    (ISO, "ISO/IEC 5259-1:2024", "Data quality for analytics and machine learning — Part 1: Overview, terminology, and examples",
+    (ISO, "ISO/IEC 5259-1:2024", "Data quality for analytics and ML, Part 1: Overview",
      "2024-07-01", "https://www.iso.org/standard/81088.html",
      "The first part of the series on data quality for analytics and machine learning: concepts, terms and examples."),
-    (IEEE, "IEEE 7000-2021", "Model Process for Addressing Ethical Concerns during System Design", "2021-09-15",
+    (IEEE, "IEEE 7000-2021", "Ethical concerns in system design", "2021-09-15",
      "https://standards.ieee.org/ieee/7000/6781/",
      "A process for identifying stakeholders' values and ethical concerns and building them into system design."),
-    (IEEE, "IEEE 7001-2021", "Transparency of Autonomous Systems", "2022-03-04",
+    (IEEE, "IEEE 7001-2021", "Transparency of autonomous systems", "2022-03-04",
      "https://standards.ieee.org/ieee/7001/6929/",
      "Measurable, testable levels of transparency for autonomous systems, for users, overseers and investigators."),
-    (IEEE, "IEEE 7003-2024", "Algorithmic Bias Considerations", "2025-01-24",
+    (IEEE, "IEEE 7003-2024", "Algorithmic bias", "2025-01-24",
      "https://standards.ieee.org/ieee/7003/11357/",
      "Processes for identifying and reducing unwanted bias when creating algorithms, including AI systems."),
 ]
 
 
 def cards() -> list[dict]:
-    return [{"title": f"{number} — {title}", "summary": what, "url": url, "source": publisher,
+    return [{"title": f"{number} - {title}", "summary": what, "url": url, "source": publisher,
              "category": "regulation", "action": "standard", "date": published, "jurisdictions": ["INTL"],
              "authors": [], "tags": ["Standards"], "_key": MARK + number.split(":")[0].split("-20")[0].replace(" ", "-")}
             for publisher, number, title, published, url, what in STANDARDS]

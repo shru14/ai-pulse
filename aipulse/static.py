@@ -53,11 +53,14 @@ def robots_txt() -> str:
     return f"{blocked}User-agent: *\nDisallow: /dossier/\n\nSitemap: {rss.SITE}sitemap.xml\n"
 
 
+UNDATED = ("standards/",)  # pages without a date of their own: they change only when an entry is added
+
+
 def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
     """sitemap.xml: the pages search engines should index: the front page, the streams', the tracker's pages by
     country and the glossary's (`pages`, paths under the site) and each day's full edition. A glossary word's page
-    has no date: its meaning, written by hand, rarely changes."""
-    word = lambda p: p.startswith("glossary/") and p != "glossary/"
+    has no date: its meaning, written by hand, rarely changes; nor has a page in UNDATED."""
+    word = lambda p: p in UNDATED or p.startswith("glossary/") and p != "glossary/"
     urls = ([(rss.SITE, today)] + [(f"{rss.SITE}{p}", None if word(p) else today) for p in pages]
             + [(f"{rss.SITE}daily/{d.isoformat()}.html", d) for d in sorted(days, reverse=True)])
     rows = "".join(f"  <url><loc>{u}</loc>" + (f"<lastmod>{d.isoformat()}</lastmod>" if d else "") + "</url>\n"
@@ -304,6 +307,7 @@ def build(conn, out: str | Path) -> int:
     (out / "robots.txt").write_text(robots_txt(), encoding="utf-8")
     from . import countries
     places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
+    places += countries.standards_page(conn, cards, out)  # every AI standard on the tracker (standards/)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")

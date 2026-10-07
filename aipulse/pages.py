@@ -30,6 +30,7 @@ STYLE = """
 .cp li a:hover,.cp li a:focus-visible{text-decoration:underline}
 .cp .meta{color:var(--muted);font-size:14px;margin-top:2px}
 .cp .steps{color:var(--muted);font-size:13.5px;margin-top:2px}
+.cp .what{font-size:15px;margin-top:4px;max-width:64ch}
 .cp .places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:20px}
 .cp .places a{display:flex;align-items:center;gap:12px;border:2px solid #000;background:var(--bg);padding:12px 14px;color:var(--ink);font-weight:600;text-decoration:none}
 .cp .places a:hover,.cp .places a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}

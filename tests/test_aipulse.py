@@ -730,6 +730,26 @@ def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
     assert (tmp_path / "flags" / "gb.svg").is_file() and not (tmp_path / "flags" / "in.svg").exists()
 
 
+def test_standards_have_one_page_without_a_date(tmp_path):
+    from datetime import date
+    from aipulse import countries, standards
+    from aipulse.static import sitemap
+    conn = store.connect(tmp_path / "t.db")
+    cards = standards.cards() + [{"category": "regulation", "source": "OECD.AI", "title": "Australian AI standard",
+                                  "date": "2024-05-01", "jurisdictions": ["AU"], "action": "standard",
+                                  "url": "https://e.com/au", "summary": "OECD's words"},
+                                 {"category": "regulation", "source": "TechCrunch AI", "title": "A story on a standard",
+                                  "date": "2025-01-01", "jurisdictions": ["INTL"], "action": "standard", "url": "https://e.com/n"}]
+    assert countries.standards_page(conn, cards, tmp_path) == ["standards/"]
+    page = (tmp_path / "standards" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>AI standards</h1>" in page and "<h2>International: ISO/IEC</h2>" in page and "<h2>National</h2>" in page
+    assert "ISO/IEC 42001:2023" in page and "Published Dec 2023" in page and "Organisations can be certified" in page
+    assert "Australia" in page and "OECD's words" not in page and "A story on a standard" not in page  # official only
+    assert "Updated" not in page and 'href="/standards/"' in (countries.build(conn, cards, tmp_path, date(2026, 10, 6)) and
+                                                               (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8"))
+    assert "<url><loc>https://projectaipulse.com/standards/</loc></url>" in sitemap([], date(2026, 10, 6), ["standards/"])
+
+
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
     import json
     from datetime import date

@@ -1,5 +1,5 @@
 """The Regulation tracker by country: a plain page per place (tracker/<place>/) that search engines can index,
-and tracker/ listing them. Official records only (legislatures, OECD.AI, ISO/IEC, IEEE), as in tracker.csv: news
+and tracker/ listing them; and standards/, every AI standard on the tracker in one place. Official records only (legislatures, OECD.AI, ISO/IEC, IEEE), as in tracker.csv: news
 outlets' stories stay on the live tracker, their headlines being theirs. A place gets a page once it has
 MIN_RECORDS records, so no page is near empty; the live tracker has the rest.
 """
@@ -134,7 +134,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         paths.append(path)
     links = "\n".join(f'<a href="/tracker/{slug(names[code])}/"><img class="flag" src="flags/{flag(code)}" alt="">{escape(names[code])}</a>' for code in places)
     body = (f'<h1>AI laws by country</h1>\n<p class="intro">The Regulation tracker\'s official records, a page per '
-            f'place. Updated {updated}. Places with fewer records are on the live tracker.</p>\n'
+            f'place. Updated {updated}. Places with fewer records are on the live tracker. '
+            f'<a href="/standards/">AI standards</a></p>\n'
             f'<div class="places">\n{links}\n</div>')
     data = {"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "name": "AI laws by country", "url": f"{rss.SITE}tracker/"},
@@ -144,3 +145,53 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         pages.page("AI laws by country · AI Pulse", "AI bills, laws, regulators and standards by country, from official "
               "records, updated every 6 hours.", "tracker/", body, data, parts, back, note), encoding="utf-8")
     return ["tracker/", *paths]
+
+
+def _month(c: dict) -> str:
+    """ISO gives only a standard's month of publication (standards.py dates it the 1st)."""
+    d = date.fromisoformat(c["date"][:10])
+    return f"{d:%b %Y}" if c["source"] == "ISO/IEC" else _day(c["date"])
+
+
+def standards_page(conn, cards: list[dict], out: Path) -> list[str]:
+    """standards/: the tracker's published AI standards, ISO/IEC's and IEEE's (with our own line on what each
+    covers) and national ones (OECD.AI), newest first, each linking to its official page. No date of its own:
+    the list changes only when a standard is added."""
+    from .standards import SOURCES
+    names = {code: m["name"] for code, m in jurisdictions.meta().items()}
+    items = sorted((c for c in cards if c["category"] == "regulation" and c.get("action") == "standard"
+                    and c["source"] in OFFICIAL_SOURCES), key=lambda c: c["date"], reverse=True)
+    if not items:
+        return []
+    groups = [(f"International: {src}", [c for c in items if c["source"] == src]) for src in SOURCES]
+    groups.append(("National", [c for c in items if c["source"] not in SOURCES]))
+    sections = []
+    for label, rows in groups:
+        if not rows:
+            continue
+        lines = []
+        for c in rows:
+            where = ", ".join(names.get(code, code) for code in c.get("jurisdictions") or [] if code != "INTL")
+            meta = " · ".join(x for x in (f"Published {_month(c)}", c["source"], where) if x)
+            lines.append(f'<li><a href="{escape(c["url"])}">{escape(c["title"].strip())}</a>'
+                         f'<div class="meta">{escape(meta)}</div>'
+                         + (f'<div class="what">{escape(c["summary"])}</div>' if c["source"] in SOURCES and c.get("summary") else "")
+                         + "</li>")
+        sections.append(f"<h2>{escape(label)}</h2>\n<ul>\n" + "\n".join(lines) + "\n</ul>")
+    parts = pages.frame(conn, len(cards))
+    back = ("/regulation/", "Back to the live Regulation tracker page")
+    note = 'Official records only, each linking to its source. <a href="/tracker.csv">Download them all (CSV)</a>'
+    body = ('<h1>AI standards</h1>\n<p class="intro">Published standards for AI from ISO/IEC, IEEE and national '
+            'bodies, newest first, each linking to its official page. <a href="/tracker/">AI laws by country</a></p>\n'
+            + "\n".join(sections))
+    data = {"@context": "https://schema.org", "@graph": [
+        {"@type": "CollectionPage", "name": "AI standards", "url": f"{rss.SITE}standards/"},
+        {"@type": "ItemList", "name": "AI standards", "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "item": record(c, "International")} for i, c in enumerate(items)]}]}
+    (out / "standards").mkdir(parents=True, exist_ok=True)
+    (out / "standards" / "index.html").write_text(pages.page(
+        "AI standards: ISO/IEC, IEEE and national · AI Pulse",
+        "Published AI standards from ISO/IEC (JTC 1/SC 42), IEEE and national standards bodies: what each covers, "
+        "when it was published and a link to its official page.", "standards/", body, data, parts, back, note),
+        encoding="utf-8")
+    return ["standards/"]
