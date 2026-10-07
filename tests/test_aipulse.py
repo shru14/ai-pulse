@@ -2131,7 +2131,7 @@ def test_every_email_links_to_the_days_full_email(monkeypatch):
     cards = [card(i, "research") for i in range(3)] + [card(9, "tool")]
     _, text, html = digest.build(cards, ["research"], date(2026, 9, 28))  # a Research-only reader
     assert "https://projectaipulse.com/daily/2026-09-28.html" in text + html
-    assert "https://projectaipulse.com/#glossary" in text and "#glossary" in html  # every email points to the glossary
+    assert "https://projectaipulse.com/glossary/" in text and "/glossary/\"" in html  # every email points to the glossary
     assert "A lighter day in your streams: 3 stories" in text and "Here are all 3 stories of the day." in text
     # the page itself: every stream, the full table, a sign-up line instead of a reader's own settings
     _, text, html = digest.build(cards, ["releases", "news", "research", "regulation", "policy"], date(2026, 9, 28),
@@ -2192,7 +2192,7 @@ def test_word_of_the_day_rotates_through_the_glossary(monkeypatch):
             "source": "S", "category": "news", "kind": "news", "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00"}
     _, text, html = digest.build([card], ["news"], day)
     assert "WORD OF THE DAY: RAG" in text and "Where it came up: A RAG pipeline for support teams" in text
-    assert "#glossary=rag" in html and "Word of the day</div>" in html
+    assert "https://projectaipulse.com/glossary/\"" in html and "Word of the day</div>" in html
 
 
 def test_word_of_the_day_is_a_specialist_word(monkeypatch):

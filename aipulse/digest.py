@@ -372,7 +372,7 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
         used = [c for c in cards if since <= (c.get("date") or "") <= day.isoformat() and glossary.mentions(e["id"], _text(c))]
     # A headline that shows the word beats one whose summary does; then the latest, then the most reported
     story = max(used, key=lambda c: (glossary.mentions(e["id"], c.get("title") or ""), c["date"], _outlets(c)), default=None)
-    more = f"{rss.SITE}#glossary={e['id']}"  # the site opens its glossary at this word
+    more = f"{rss.SITE}glossary/"  # the glossary page, every word A to Z
     text = ["WORD OF THE DAY: " + e["term"], e["def"], *([f"Where it came up: {story['title']} {story['url']}"] if story else []),
             f"More words in the AI Pulse glossary: {more}"]
     html = (f'<div style="margin:14px 0 12px;padding:14px 16px;background:#eef2ff;border-left:4px solid {NAVY};border-radius:4px">'
@@ -591,7 +591,7 @@ def _the_week(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[
         e = next(x for x in glossary.ENTRIES if x["id"] == wid)
         used = sorted([c for c in week if glossary.mentions(wid, _text(c))],
                       key=lambda c: (1 + len(c.get("also") or []), c.get("date") or ""), reverse=True)
-        more = f"{rss.SITE}#glossary={e['id']}"
+        more = f"{rss.SITE}glossary/"
         text += ["WORD OF THE WEEK: " + e["term"], e["def"], f"It came up in {len(used)} of the week's stories, like:",
                  *(f"  {c['title']} {c['url']}" for c in used[:2]), f"More words in the AI Pulse glossary: {more}", ""]
         html += (f'<div style="margin:12px 0;padding:14px 16px;background:#eef2ff;border-left:4px solid {NAVY};border-radius:4px">'
