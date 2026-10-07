@@ -134,8 +134,26 @@ SOURCES = [
     # republishing), Uptime Institute (no republishing), Latitude Media (robots.txt disallows).
     {"name": "POWER Magazine", "url": "https://www.powermag.com/category/data-centers/feed/", "category": "infra",
      "infra_filter": True, "paged": True},  # North America: power for data centres
-    {"name": "Union of Concerned Scientists", "url": "https://blog.ucsusa.org/tag/data-centers/feed/", "category": "infra",
+    {"name": "Union of Concerned Scientists", "url": "https://blog.ucsusa.org/feed/", "category": "infra",
      "infra_filter": True, "paged": True},  # North America
+    # Added 7 Oct 2026 for AI's environmental impact and wider data-centre coverage (evidence in terms.py): the Union of
+    # Concerned Scientists' whole blog (it replaces its data-centre tag), environmental groups and research, and
+    # data-centre trade news in the UK, the US and Africa.
+    {"name": "Southern Environmental Law Center", "url": "https://www.selc.org/news/feed/", "category": "infra",
+     "infra_filter": True, "paged": True},  # US South: data centres' gas turbines and pollution
+    {"name": "Food & Water Watch", "url": "https://www.foodandwaterwatch.org/feed/", "category": "infra", "infra_filter": True,
+     "paged": True},
+    {"name": "Energy Innovation", "url": "https://energyinnovation.org/feed/", "category": "infra", "infra_filter": True,
+     "paged": True},
+    {"name": "Greenpeace International", "url": "https://www.greenpeace.org/international/feed/", "category": "infra",
+     "infra_filter": True, "paged": True},
+    {"name": "Global Energy Monitor", "url": "https://globalenergymonitor.org/rss.xml", "category": "infra", "infra_filter": True},
+    {"name": "Data Center POST", "url": "https://datacenterpost.com/feed/", "category": "infra", "infra_filter": True,
+     "paged": True},
+    {"name": "Techerati", "url": "https://www.techerati.com/feed/", "category": "infra", "infra_filter": True, "paged": True},
+    {"name": "DCNN", "url": "https://dcnnmagazine.com/feed/", "category": "infra", "infra_filter": True, "paged": True},  # UK
+    {"name": "Africa Data Centres Association", "url": "https://africadca.org/en/feed", "category": "infra",
+     "infra_filter": True},
     # Official energy bodies
     # GOV.UK's search for data centres (Open Government Licence v3.0): planning directions, environmental permits,
     # statistics and announcements since 2023. Only news and official records: never pages about a person or
@@ -382,6 +400,11 @@ SOURCES += [
      "url": arxiv_rss_url(ARXIV_ETHICS_CATEGORIES), "category": "research", "ai_only": True, "max_age_days": 14,
      "pause": 3.5,
      "professors": [n for n, _, _ in EXPERTS]},
+    # Papers on AI's own footprint (its energy, carbon, water and power), by anyone (classify.ai_footprint_paper), tagged
+    # Infra & climate. Added 7 Oct 2026 so the stream's climate side has research behind it; arXiv's metadata is CC0.
+    {"name": "arXiv", "label": "arXiv new papers: AI's footprint", "format": "arxiv_rss",
+     "url": arxiv_rss_url(["cs.LG", "cs.AI", "cs.CL", "cs.DC", "cs.AR", "cs.PF", "cs.CY"]), "category": "research",
+     "ai_only": True, "max_age_days": 14, "pause": 3.5, "footprint": True},
 ]
 
 SOURCES += [
