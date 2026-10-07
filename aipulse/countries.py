@@ -135,7 +135,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         paths.append(path)
     links = "\n".join(f'<a href="/tracker/{slug(names[code])}/"><img class="flag" src="flags/{flag(code)}" alt="">{escape(names[code])}</a>' for code in places)
     body = (f'<h1>AI laws by country</h1>\n<p class="intro">The Regulation tracker\'s official records, a page per '
-            f'place. Places with fewer records are on the live tracker. '
+            f'place. Places with fewer records are on the live tracker.<br>'
             f'<a href="/standards/">AI standards</a></p>\n'
             f'<div class="places">\n{links}\n</div>')
     data = {"@context": "https://schema.org", "@graph": [
