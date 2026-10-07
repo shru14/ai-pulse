@@ -27,7 +27,9 @@ Optional per-source keys:
                 Industry or Releases, however little the text sounds like government
   no_releases   a practitioner's or evaluator's blog: its posts are never Releases, however much they read like a
                 launch (they comment on others' launches)
-  lab           "github_repos": the lab's name in headlines ("Qwen publishes Qwen-Image-2.1 on GitHub")
+  lab           "github_repos", "hf_models" and the labs' APIs: the lab's name in headlines ("Qwen publishes
+                Qwen-Image-2.1 on GitHub")
+  key_env       the environment variable holding the project's API key for the source; skipped when unset
   paged         the feed pages back in time (WordPress: ?paged=2, 3, ...); the history run reads it back to 2023
 
 Policy stories from any source move to the regulation tracker when they report a proposal or an
@@ -50,6 +52,8 @@ access (its robots.txt and terms): Google News and Bing News don't, so neither i
 # allow its text only unmodified.
 GITHUB_ORG = "https://api.github.com/orgs/{}/repos?sort=created&direction=desc&per_page=100&type=public"
 GITHUB_REPO = r"^https://github\.com/"  # every new repository that passes the star test is a release (collect.blog_category)
+HF_ORG = "https://huggingface.co/api/models?author={}&sort=likes&direction=-1&limit=500"
+HF_MODEL = r"^https://huggingface\.co/"  # every model family that passes the likes test is a release
 
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
@@ -104,6 +108,71 @@ SOURCES = [
      "url": GITHUB_ORG.format("baidu"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
     {"name": "Ant Group (inclusionAI) on GitHub", "lab": "Ant Group", "format": "github_repos", "category": "tool",
      "url": GITHUB_ORG.format("inclusionAI"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    # Labs' open models, from their Hugging Face organisations through its public API (the terms of huggingface.co
+    # don't restrict it; terms.py). One story per release (its sizes and variants together), only releases 300+
+    # people liked, back to 2023 (feeds.parse_hf_models).
+    {"name": "OpenAI on Hugging Face", "lab": "OpenAI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("openai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Meta Llama on Hugging Face", "lab": "Meta Llama", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("meta-llama"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Meta on Hugging Face", "lab": "Meta", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("facebook"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Google on Hugging Face", "lab": "Google", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("google"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Microsoft on Hugging Face", "lab": "Microsoft", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("microsoft"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "NVIDIA on Hugging Face", "lab": "NVIDIA", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("nvidia"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Apple on Hugging Face", "lab": "Apple", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("apple"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Amazon on Hugging Face", "lab": "Amazon", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("amazon"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "IBM Granite on Hugging Face", "lab": "IBM Granite", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ibm-granite"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Mistral AI on Hugging Face", "lab": "Mistral AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("mistralai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "xAI on Hugging Face", "lab": "xAI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("xai-org"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "DeepSeek on Hugging Face", "lab": "DeepSeek", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("deepseek-ai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Qwen on Hugging Face", "lab": "Qwen", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Qwen"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Moonshot AI on Hugging Face", "lab": "Moonshot AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("moonshotai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "MiniMax on Hugging Face", "lab": "MiniMax", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("MiniMaxAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Z.ai on Hugging Face", "lab": "Z.ai", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("zai-org"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "StepFun on Hugging Face", "lab": "StepFun", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("stepfun-ai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Tencent on Hugging Face", "lab": "Tencent", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("tencent"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "ByteDance Seed on Hugging Face", "lab": "ByteDance Seed", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ByteDance-Seed"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Baidu on Hugging Face", "lab": "Baidu", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("baidu"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Ant Group (inclusionAI) on Hugging Face", "lab": "Ant Group", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("inclusionAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Cohere Labs on Hugging Face", "lab": "Cohere Labs", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("CohereLabs"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Hugging Face on Hugging Face", "lab": "Hugging Face", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("HuggingFaceTB"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Black Forest Labs on Hugging Face", "lab": "Black Forest Labs", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("black-forest-labs"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Stability AI on Hugging Face", "lab": "Stability AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("stabilityai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Ai2 on Hugging Face", "lab": "Ai2", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("allenai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Liquid AI on Hugging Face", "lab": "Liquid AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("LiquidAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    # The labs' own model lists, through their APIs with the project's free keys (their terms allow access through
+    # the API; terms.py): every model they serve, closed ones too. Skipped until the key is set (feeds.API_KEYS).
+    {"name": "Anthropic API models", "lab": "Anthropic", "format": "anthropic_models", "category": "tool",
+     "url": "https://api.anthropic.com/v1/models?limit=1000", "key_env": "ANTHROPIC_API_KEY", "max_age_days": 1400,
+     "launch_pages": r"^https://docs\.claude\.com/"},
+    {"name": "OpenAI API models", "lab": "OpenAI", "format": "openai_models", "category": "tool",
+     "url": "https://api.openai.com/v1/models", "key_env": "OPENAI_API_KEY", "max_age_days": 1400,
+     "launch_pages": r"^https://platform\.openai\.com/docs/models/"},
 
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",

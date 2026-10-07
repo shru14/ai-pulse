@@ -135,6 +135,9 @@ def fetch(url: str, timeout: int = 20, attempts: int = ATTEMPTS) -> bytes:
     headers = {"User-Agent": USER_AGENT}
     if urlsplit(url).netloc.lower() == "api.github.com" and os.environ.get("GITHUB_TOKEN"):
         headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
+    if urlsplit(url).netloc.lower() in API_KEYS:
+        env, auth = API_KEYS[urlsplit(url).netloc.lower()]
+        headers.update(auth(os.environ.get(env, "")))
     req = urllib.request.Request(url, headers=headers)
     for attempt in range(attempts):
         try:
@@ -332,6 +335,104 @@ def parse_github_repos(json_bytes: bytes, lab: str = "") -> list[dict]:
             for r in json.loads(json_bytes)
             if not r.get("fork") and r.get("stargazers_count", 0) >= GITHUB_MIN_STARS
             and not _GITHUB_NOISE.search(f"{r['name']} {(r.get('description') or '')[:40]}")]
+
+
+# A lab's models on Hugging Face (huggingface.co/api/models?author=<org>&sort=likes): the open models it publishes
+# (Llama, Gemma, Qwen3, DeepSeek-V4, gpt-oss). A release comes as many repositories (sizes, base and instruct, its
+# own quantised copies), so they are one story: a family is the name without sizes and variant words, and its
+# repositories created within 30 days of the first count as one launch. Compressed copies (FP8, GGUF...) are never a
+# launch, and are how NVIDIA republishes other labs' models. Only families one of whose repositories 300+ people
+# liked count (as GitHub's 300 stars), under the day the first was created, linked to that one.
+HF_MIN_LIKES = 300
+HF_GROUP_DAYS = 30
+_HF_VARIANT = re.compile(r"^(?:\d+(?:\.\d+)?[bmkt]|a\d+(?:\.\d+)?b|e\d+b|\d+e|\d+x\d+(?:\.\d+)?b|instruct|chat|base|"
+                         r"it|pt|hf|bf16|preview|eagle|original)$", re.I)
+_HF_COPY = re.compile(r"(?:^|[-_.])(?:gguf|awq|gptq|fp8|fp4|nvfp4|mxfp4|int4|int8|w4a16|w8a8|w4a8|bnb|4bit|8bit|mlx|"
+                      r"onnx|qat|q4_0|q8_0|quantized)(?=$|[-_.])", re.I)
+_HF_TASK = {"text-generation": "text", "image-text-to-text": "vision-language", "text-to-image": "image",
+            "text-to-speech": "speech", "automatic-speech-recognition": "speech recognition",
+            "text-to-video": "video", "image-to-video": "video", "feature-extraction": "embedding",
+            "sentence-similarity": "embedding", "any-to-any": "multimodal"}
+
+
+def _hf_family(name: str) -> str:
+    """"Llama-3.1-8B-Instruct" -> "Llama-3.1" (the name a release goes by)."""
+    return "-".join(t for t in re.split(r"[-_ ]", name) if t and not _HF_VARIANT.match(t)) or name
+
+
+def parse_hf_models(json_bytes: bytes, lab: str = "") -> list[dict]:
+    """Hugging Face API: a lab's model families that people took up, as "<lab> publishes <model> on Hugging Face"."""
+    groups: list[list[dict]] = []
+    open_groups: dict[str, list[dict]] = {}
+    models = sorted((m for m in json.loads(json_bytes) if m.get("createdAt") and "/" in m.get("id", "")
+                     and not _HF_COPY.search(m["id"].split("/", 1)[1])), key=lambda m: m["createdAt"])
+    for m in models:
+        key = _hf_family(m["id"].split("/", 1)[1]).lower()
+        group = open_groups.get(key)
+        if group and (parse_date(m["createdAt"]) - parse_date(group[0]["createdAt"])).days <= HF_GROUP_DAYS:
+            group.append(m)
+        else:
+            open_groups[key] = [m]
+            groups.append(open_groups[key])
+    entries = []
+    for group in groups:
+        top = max(group, key=lambda m: m.get("likes", 0))
+        if top.get("likes", 0) < HF_MIN_LIKES:
+            continue
+        first, name = group[0], top["id"].split("/", 1)[1]
+        name = _hf_family(name) if len(group) > 1 else name
+        task = _HF_TASK.get(top.get("pipeline_tag") or "", "")
+        versions = f" in {len(group)} versions" if len(group) > 1 else ""
+        entries.append({"title": f"{lab or first['id'].split('/')[0]} publishes {name} on Hugging Face",
+                        "url": "https://huggingface.co/" + first["id"],
+                        "summary": f"{(task + ' model').capitalize() if task else 'Model'} weights published on Hugging Face{versions}.",
+                        "published": _hf_released(first), "authors": []})
+    return entries
+
+
+_HF_MONTH_TAG = re.compile(r"-(2[3-9])(0[1-9]|1[0-2])$")  # Mistral-Small-4-119B-2603: released March 2026
+
+
+def _hf_released(model: dict) -> datetime:
+    """When a model came out: the day its repository was created, which a lab may do privately long before the
+    launch; a name that carries its release month (Mistral's "-2603") is dated no earlier than that month."""
+    created = parse_date(model["createdAt"])
+    tag = _HF_MONTH_TAG.search(model["id"])
+    if tag:
+        created = max(created, datetime(2000 + int(tag[1]), int(tag[2]), 1, tzinfo=timezone.utc))
+    return created
+
+
+# The labs' own model lists, read with the project's free API keys (Actions secrets; a source whose key isn't set is
+# skipped, collect.collect): each model the API serves, under the day the lab says it was created. Models a lab has
+# retired are no longer listed, so their launches aren't there.
+API_KEYS = {"api.anthropic.com": ("ANTHROPIC_API_KEY", lambda k: {"x-api-key": k, "anthropic-version": "2023-06-01"}),
+            "api.openai.com": ("OPENAI_API_KEY", lambda k: {"Authorization": "Bearer " + k})}
+ANTHROPIC_MODELS_PAGE = "https://docs.claude.com/en/docs/about-claude/models/overview?model="
+
+
+def parse_anthropic_models(json_bytes: bytes, lab: str = "Anthropic") -> list[dict]:
+    """Anthropic API /v1/models: "Anthropic releases Claude Sonnet 4.5 in its API"."""
+    return [{"title": f"{lab} releases {m.get('display_name') or m['id']} in its API",
+             "url": ANTHROPIC_MODELS_PAGE + m["id"], "summary": f"Model ID {m['id']}.",
+             "published": parse_date(m.get("created_at")), "authors": []}
+            for m in json.loads(json_bytes).get("data") or [] if m.get("id")]
+
+
+_SNAPSHOT = re.compile(r"-(?:\d{4}-\d{2}-\d{2}|\d{4})$")  # gpt-4o-2024-08-06, gpt-4-0613
+
+
+def parse_openai_models(json_bytes: bytes, lab: str = "OpenAI") -> list[dict]:
+    """OpenAI API /v1/models: OpenAI's own models (not an account's fine-tunes), as "OpenAI releases gpt-5 in its
+    API". A dated snapshot of a model also listed by its plain name is the same launch, so only the name counts."""
+    models = [m for m in json.loads(json_bytes).get("data") or []
+              if m.get("id") and ":" not in m["id"] and m.get("owned_by", "").startswith(("openai", "system"))
+              and not m["id"].endswith("-latest")]
+    ids = {m["id"] for m in models}
+    return [{"title": f"{lab} releases {m['id']} in its API", "url": "https://platform.openai.com/docs/models/" + m["id"],
+             "summary": "", "published": datetime.fromtimestamp(m["created"], timezone.utc) if m.get("created") else None,
+             "authors": []}
+            for m in models if not (_SNAPSHOT.search(m["id"]) and _SNAPSHOT.sub("", m["id"]) in ids)]
 
 
 # Korea's Ministry of Science and ICT: its English press releases list writes each row's title and date in
@@ -570,4 +671,5 @@ def page_meta(page_bytes: bytes) -> dict:
 
 PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk,
-           "github_repos": parse_github_repos}
+           "github_repos": parse_github_repos, "hf_models": parse_hf_models,
+           "anthropic_models": parse_anthropic_models, "openai_models": parse_openai_models}

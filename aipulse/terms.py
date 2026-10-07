@@ -32,6 +32,16 @@ TERMS: dict[str, tuple[str, str, str]] = {
                        "information is limited only for spam and selling personal data, and the API must not be "
                        "overloaded (one request per lab per run, with the project's token). github.com pages are "
                        "never read: scraping the website is allowed only for research or archiving (feeds.API_ONLY)"),
+    "api.anthropic.com": ("terms read", "https://www.anthropic.com/legal/commercial-terms",
+                          "Commercial Terms (effective 17 June 2025) 'govern Customer's use of Anthropic API keys'; they "
+                          "allow using the Services and restrict only competing products, reselling and reverse "
+                          "engineering. The consumer terms' ban on crawling is 'Except when you are accessing our "
+                          "Services via an Anthropic API Key'. Listing models costs nothing; no robots.txt"),
+    "api.openai.com": ("terms read", "https://openai.com/policies/services-agreement/",
+                       "Services Agreement (v.010126) bans '(f) extract data from the Services other than as permitted "
+                       "through the Services': the models list is one of the API's own endpoints. The consumer terms' "
+                       "ban on programmatic extraction is 'except as permitted through the API'. Listing models costs "
+                       "nothing; no robots.txt"),
     "mistral.ai": ("terms read", "https://legal.mistral.ai/terms",
                    "Terms cover Mistral's products only; no terms for the website"),
     "blog.cloudflare.com": ("terms read", "https://www.cloudflare.com/website-terms/",
@@ -146,7 +156,10 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "rss.arxiv.org": ("licence", "https://info.arxiv.org/help/api/tou.html",
                       "arXiv's terms for its feeds and API; metadata is CC0"),
     "huggingface.co": ("terms read", "https://huggingface.co/terms-of-service",
-                       "Daily Papers is a public API listing others' papers (arXiv), not Hugging Face's own material"),
+                       "Says nothing against robots, scrapers or automated access, and allows commercial use; robots.txt "
+                       "allows /api/. Its one limit, 'You may not alter, reproduce, republish, license any of our "
+                       "proprietary materials', doesn't touch what is read: Daily Papers lists others' papers (arXiv), "
+                       "and the model lists give only a model's name, date and likes (no model card text)"),
 }
 
 # Everything else the platform reads or shows: the regulation tracker's official records (bills.py, oecd.py,
