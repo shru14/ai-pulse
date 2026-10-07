@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 119 public sources (101 feeds, 18 official records and
+A free, non-commercial, worldwide briefing on AI. It reads 121 public sources (103 feeds, 18 official records and
 databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -59,7 +59,7 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, DARPA, NSF, UK AI Security Institute |
-| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, Energy Monitor, The Conversation (energy), Capacity Media, Data Center Knowledge · **Europe:** European Commission (energy), Data Centre Review · **Asia-Pacific:** W.Media, iTnews · **Africa:** ESI Africa · **North America:** US Energy Information Administration, Canary Media |
+| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, Energy Monitor, The Conversation (energy), Capacity Media, Data Center Knowledge · **Europe:** European Commission (energy), Data Centre Review · **Asia-Pacific:** W.Media, iTnews · **Africa:** ESI Africa · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 
 ### Official records (Regulation tracker)

@@ -168,6 +168,13 @@ SOURCES = [
     {"name": "The Conversation (Energy)", "url": "https://theconversation.com/global/topics/energy-72/articles.atom",
      "category": "infra", "infra_filter": True},
     {"name": "Canary Media", "url": "https://www.canarymedia.com/rss", "category": "infra", "infra_filter": True},  # North America
+    # Added 7 Oct 2026 for history back to 2023: each robots.txt allows reading; POWER's terms and UCS's pages say nothing
+    # against feeds or automated reading. Out: Grist (RSS for private use only), Inside Climate News (no automatic
+    # republishing), Uptime Institute (no republishing), Latitude Media (robots.txt disallows).
+    {"name": "POWER Magazine", "url": "https://www.powermag.com/category/data-centers/feed/", "category": "infra",
+     "infra_filter": True, "paged": True},  # North America: power for data centres
+    {"name": "Union of Concerned Scientists", "url": "https://blog.ucsusa.org/tag/data-centers/feed/", "category": "infra",
+     "infra_filter": True, "paged": True},  # North America
     {"name": "ESI Africa", "url": "https://www.esi-africa.com/feed/", "category": "infra", "infra_filter": True, "paged": True},
     # Official energy bodies
     {"name": "US Energy Information Administration", "url": "https://www.eia.gov/rss/press_rss.xml", "category": "infra",
