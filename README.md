@@ -64,6 +64,8 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 
 ### Official records (Regulation tracker)
 
+AI laws and bills, and each place's main data protection law with the bills amending it (not every privacy bill).
+
 | Place | Source | Legal basis |
 |---|---|---|
 | United States | congress.gov API | Official API, free key; public domain |
@@ -73,7 +75,7 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 | Brazil | Câmara dos Deputados open data | Open data |
 | Australia | Federal Register of Legislation | CC BY 4.0 |
 | China | Cyberspace Administration of China | Title, date and link only; regulations aren't copyrighted |
-| India | Parliament of India (sansad.in): AI bills and the Digital Personal Data Protection Act | Public API; no restriction on automated use |
+| India | Parliament of India (sansad.in) | Public API; no restriction on automated use |
 | Japan | e-Gov law API | Government of Japan Standard Terms of Use 2.0 |
 | South Korea | National Law Information Center (law.go.kr) | robots.txt allows; laws aren't copyrighted |
 | Taiwan | Legislative Yuan law system | No robots.txt rules; laws aren't copyrighted |

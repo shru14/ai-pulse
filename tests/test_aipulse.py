@@ -1263,6 +1263,38 @@ def test_vietnam_ai_laws_from_the_sitemap(tmp_path):
     assert bills.sync_vietnam(conn, fetch, log=lambda *_: None) == 0  # read at most weekly
 
 
+def test_each_place_keeps_its_data_protection_law_not_every_privacy_bill(tmp_path):
+    from aipulse import bills
+    D = bills.DATA_LAWS
+    assert D["GB"].search("Data Protection Act 2018") and D["GB"].search("Data (Use and Access) Act 2025")
+    assert not D["GB"].search("Protection of Children (Digital Safety and Data Protection) Bill")
+    assert D["AU"].search("Privacy Amendment (Notifiable Data Breaches) Act 2017") and D["AU"].search("Privacy Act 1988")
+    assert not D["AU"].search("My Health Records Amendment (Strengthening Privacy) Act 2018")
+    assert not D["AU"].search("Privacy (Credit Reporting) Code 2025")
+    assert D["JP"].search("個人情報の保護に関する法律施行令") and not D["JP"].search("行政機関の保有する個人情報の保護に関する法律")
+    assert D["EU"].search("Protection of individuals with regard to the processing of personal data, and the free "
+                          "movement of such data (General Data Protection Regulation)")
+    assert D["CN"].search("中华人民共和国个人信息保护法") and not D["CN"].search("个人信息出境认证办法")
+    # a Vietnamese decree (two-word type, a line break in its description); a Norwegian law decision; a Swiss bill done
+    decree = "https://vbpl.vn/van-ban/chi-tiet/nghi-dinh-so-356-2025-nd-cp-bao-ve-du-lieu-ca-nhan--187276"
+    pages = {"https://vbpl.vn/sitemap.xml": "<loc>https://vbpl.vn/sitemap/0.xml</loc><loc>https://vbpl.vn/sitemap/1.xml</loc>",
+             "https://vbpl.vn/sitemap/1.xml": f"<loc>{decree}</loc>",
+             decree: '<meta name="description" content="Tra cứu Nghị định 356/2025/NĐ-CP, Nghị định số 356/2025/NĐ-CP '
+                     'Quy định chi tiết \nLuật Bảo vệ dữ liệu cá nhân. Xem toàn văn và hiệu lực."/>'
+                     '<meta property="article:published_time" content="2025-12-30T17:00:00.000Z"/>'}
+    conn = store.connect(tmp_path / "t.db")
+    assert bills.sync_vietnam(conn, lambda u: pages[u].encode(), log=lambda *_: None) == 1
+    row = conn.execute("SELECT number, title FROM bills WHERE jurisdiction = 'VN'").fetchone()
+    assert tuple(row) == ("Decree No. 356/2025/NĐ-CP", "Quy định chi tiết Luật Bảo vệ dữ liệu cá nhân")
+    case = {"ferdigbehandlet": True, "henvisning": "Prop. 115 L (2017-2018), Innst. 80 L (2018-2019), Lovvedtak 14 (2018-2019)",
+            "saksgang": {"saksgang_steg_liste": [{"saksgang_hendelse_liste": [{"id": "FREMSATT", "dato": "07.09.2018"},
+                                                                               {"id": "X", "dato": "20.12.2018"}]}]}}
+    assert bills.no_history(case)[-1]["stage"] == "passed_legislature"
+    swiss = {"BusinessTypeName": "Geschäft des Bundesrates", "BusinessStatusText": "Erledigt",
+             "SubmissionDate": "/Date(1505433600000)/", "BusinessStatusDate": "/Date(1600992000000)/"}
+    assert [h["stage"] for h in bills.ch_history(swiss)] == ["introduced", "passed_legislature"]
+
+
 def test_every_country_is_recognised_but_names_of_people_and_states_are_not():
     from aipulse import jurisdictions as J
     assert len(J.JURISDICTIONS) > 180
