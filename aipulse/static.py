@@ -164,6 +164,29 @@ def sample_cards(cards: list[dict], day: date) -> list[dict]:
     return out
 
 
+def web_edition(html: str, path: str, description: str, title: str | None = None) -> str:
+    """A daily email made a page search engines read well (the email itself is unchanged): its description, its
+    one address (daily/latest.html points to the dated page), the link preview, and its opening line as the heading."""
+    url = f"{rss.SITE}{path}"
+    if title:
+        html = re.sub(r"<title>.*?</title>", lambda m: f"<title>{escape(title)}</title>", html, count=1)
+    title = re.search(r"<title>(.*?)</title>", html).group(1)
+    head = (f'<meta name="description" content="{escape(description)}"><link rel="canonical" href="{url}">'
+            f'<meta property="og:title" content="{title}"><meta property="og:description" content="{escape(description)}">'
+            f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og.png">'
+            f'<meta name="twitter:card" content="summary_large_image">')
+    html = html.replace("</title>", "</title>" + head, 1)
+    return re.sub(r'<div style="(font-size:22px;font-weight:bold;line-height:1.3;margin:0 0 8px)">(.*?)</div>',
+                  r'<h1 style="\1">\2</h1>', html, count=1)
+
+
+def edition_description(html: str, day: date) -> str:
+    """A day's page description: the day, how many stories, the streams."""
+    read = re.search(r"We read (\d+ stor(?:y|ies) from \d+ sources?)", html)
+    return (f"AI Pulse daily, {digest.long_day(day)}: " + (f"{read.group(1)} " if read else "stories ")
+            + "on AI releases, industry, research, laws, policy and infrastructure.")
+
+
 def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | None:
     """daily/sample.html: what the daily email looks like, with placeholder stories (the front page links to it),
     and the day's real meme of the day where the email has it (its picture saved beside the page, so search engines
@@ -185,7 +208,9 @@ def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | 
                  f'text-transform:uppercase;color:{digest.HEADLINE};margin-bottom:6px">Meme of the day</div>'
                  f'{memes.html(meme, name, small=True)}</div>')
         html = html.replace('20px 10px">', '20px 10px">' + block, 1)
-    return html
+    return web_edition(html, "daily/sample.html", "What the AI Pulse daily email looks like: the day's AI releases, "
+                       "industry news, research, laws, policy and infrastructure in one table, with sample stories.",
+                       "Sample daily email · AI Pulse")
 
 
 def daily_index(conn, total: int, days: list[date], out: Path) -> None:
@@ -244,8 +269,9 @@ def build(conn, out: str | Path) -> int:
         page = digest.build(cards, list(rss.FEEDS), day, layout="full", web=True)
         if page:
             published.append(day)
+            html = web_edition(page[2], f"daily/{day.isoformat()}.html", edition_description(page[2], day))
             for name in (day.isoformat(), "latest"):
-                (out / "daily" / f"{name}.html").write_text(page[2], encoding="utf-8")
+                (out / "daily" / f"{name}.html").write_text(html, encoding="utf-8")
     for d in reversed(published):  # the day's Gemini meme, if the "memes" step made one (no call here)
         memegen.prepare(conn, cards, today, day=d)
         if (sample := sample_page(cards, d, out)):
