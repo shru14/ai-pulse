@@ -27,6 +27,11 @@ TERMS: dict[str, tuple[str, str, str]] = {
                     "(for example, robots.txt)'; robots.txt allows us"),
     "deepmind.google": ("terms read", "https://policies.google.com/terms", "Google's terms, as for blog.google"),
     "research.google": ("terms read", "https://policies.google.com/terms", "Google's terms, as for blog.google"),
+    "api.github.com": ("terms read", "https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies",
+                       "'Scraping does not refer to the collection of information through our API'; use of its "
+                       "information is limited only for spam and selling personal data, and the API must not be "
+                       "overloaded (one request per lab per run, with the project's token). github.com pages are "
+                       "never read: scraping the website is allowed only for research or archiving (feeds.API_ONLY)"),
     "mistral.ai": ("terms read", "https://legal.mistral.ai/terms",
                    "Terms cover Mistral's products only; no terms for the website"),
     "blog.cloudflare.com": ("terms read", "https://www.cloudflare.com/website-terms/",

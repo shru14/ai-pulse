@@ -1,7 +1,7 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 105 public sources (87 feeds, 18 official records and
-databases), keeps only AI stories, sorts them into six streams and links every card to the original.
+A free, non-commercial, worldwide briefing on AI. It reads 122 public sources (87 feeds, 17 AI labs' GitHub
+organisations, 18 official records and databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
 
@@ -39,14 +39,14 @@ Only legal, publicly accessible sources are used.
 
 ## How we keep it legal
 
-1. **robots.txt must allow us**, checked before every request; the only exceptions are official APIs whose terms allow programmatic use (arXiv, Wikidata, congress.gov, jsDelivr).
+1. **robots.txt must allow us**, checked before every request; the only exceptions are official APIs whose terms allow programmatic use (arXiv, Wikidata, congress.gov, jsDelivr). The reverse holds for GitHub: its robots.txt lets us read its pages, but its terms allow scraping them only for research or archiving, so github.com pages are never read and only its API is used.
 2. **Terms must allow** showing a headline, a short description and a link. A site whose terms forbid robots or scrapers, or allow personal use only, isn't read, even when its robots.txt lets us in. Where a feed's own terms allow its text only unmodified (TechCrunch, Engadget, ScienceDaily), it is shown exactly as the feed gives it, and ScienceDaily's stored headlines are capped at 40 as its terms ask.
 3. **No workarounds:** nothing behind a login, bot check or paywall; sites that block automated readers aren't read.
 4. **Only what's needed:** headline, short description, date and link. No personal data.
 5. **Credit and non-commercial use**, as the licences below require.
 6. **Readers' privacy:** the site and email load nothing from other servers and track no one. What the daily email keeps, why and for how long is on the [privacy page](https://projectaipulse.com/privacy.html). Questions: projectaipulse@gmail.com.
 
-Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, ZDNET, NVIDIA, Apple, AWS, Microsoft, OpenAI, Anthropic, Meta, Amazon, Databricks, GitHub, Hugging Face's blog, Perplexity, xAI, Character.AI, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews, ESI Africa and Energy Monitor. A publisher that gives permission is added back, with the permission credited below.
+Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, ZDNET, NVIDIA, Apple, AWS, Microsoft, OpenAI, Anthropic, Meta, Amazon, Databricks, GitHub, Hugging Face's blog, Perplexity, xAI, Character.AI, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews, ESI Africa and Energy Monitor. A publisher that gives permission is added back, with the permission credited below. Meanwhile the labs' new open models and tools are tracked through GitHub's API, which GitHub's terms allow ("Scraping does not refer to the collection of information through our API").
 
 The evidence for every source, and for the official records, icons, photos and data the platform uses (its terms page, what it says and the date it was read), is kept in `aipulse/terms.py`; a source without it can't be added. `python -m aipulse audit` reads every terms page again and reports any that changed; it runs monthly and before any new source.
 
@@ -58,6 +58,7 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 |---|---|
 | Releases (feeds) | Google AI, Google DeepMind, Google Research, Mistral, Cloudflare, Sakana AI, PyTorch, Together AI, ElevenLabs |
 | Releases (news pages, no feed) | MiniMax |
+| Releases (GitHub API: a lab's new repositories that 300+ people starred, back to 2023) | OpenAI, Anthropic, Meta Llama, Hugging Face, NVIDIA, Mistral AI, xAI, DeepSeek, Qwen, Moonshot AI, MiniMax, Z.ai, StepFun, Tencent Hunyuan, ByteDance Seed, Baidu, Ant Group (inclusionAI) |
 | Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation (AI), Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv (listed professors and scholars, and papers on AI's own energy, carbon, water and power, tagged Infra & climate), Hugging Face Daily Papers |

@@ -2914,6 +2914,33 @@ def test_a_capped_source_keeps_only_its_newest_stories(tmp_path, monkeypatch):
         "https://ex.com/1", "https://www.sciencedaily.com/3", "https://www.sciencedaily.com/4"]
 
 
+def test_a_labs_new_github_repositories_people_took_up_are_releases():
+    import json
+    repos = [{"name": "Kimi-K3", "description": "Open Frontier Intelligence model weights", "fork": False,
+              "stargazers_count": 8899, "created_at": "2026-07-27T08:00:00Z", "html_url": "https://github.com/MoonshotAI/Kimi-K3",
+              "owner": {"login": "MoonshotAI"}},
+             {"name": "kimi-internal-tool", "description": "An internal component", "fork": False, "stargazers_count": 12,
+              "created_at": "2026-07-28T08:00:00Z", "html_url": "https://github.com/MoonshotAI/kimi-internal-tool",
+              "owner": {"login": "MoonshotAI"}},
+             {"name": "awesome-kimi", "description": "A list", "fork": False, "stargazers_count": 900,
+              "created_at": "2026-07-28T08:00:00Z", "html_url": "https://github.com/MoonshotAI/awesome-kimi",
+              "owner": {"login": "MoonshotAI"}},
+             {"name": "vllm", "description": "A fork", "fork": True, "stargazers_count": 5000,
+              "created_at": "2026-07-28T08:00:00Z", "html_url": "https://github.com/MoonshotAI/vllm", "owner": {"login": "MoonshotAI"}}]
+    entries = feeds.parse_github_repos(json.dumps(repos).encode(), lab="Moonshot AI")
+    assert [e["title"] for e in entries] == ["Moonshot AI publishes Kimi-K3 on GitHub"]
+    assert entries[0]["published"].date() == date(2026, 7, 27)
+
+
+def test_github_pages_are_never_read_only_its_api():
+    assert not feeds.allowed("https://github.com/MoonshotAI/Kimi-K3")  # its terms: scraping only for research or archives
+    try:
+        feeds.fetch("https://github.com/MoonshotAI/Kimi-K3")
+        assert False, "fetched a github.com page"
+    except feeds.Disallowed:
+        pass
+
+
 def test_every_source_has_legal_evidence():
     # Each site read has its terms page, what it says and the kind of permission recorded (aipulse/terms.py).
     from urllib.parse import urlsplit

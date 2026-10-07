@@ -44,7 +44,7 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
     for attempt in range(EMPTY_RETRIES if src.get("expect_entries") else 1):
         if attempt:
             time.sleep(EMPTY_WAIT * attempt)
-        entries = parse(fetcher(src["url"]))
+        entries = parse(fetcher(src["url"]), **({"lab": src["lab"]} if src.get("lab") else {}))
         if entries or not src.get("expect_entries"):
             return entries
     raise EmptyFeed(f"no entries after {EMPTY_RETRIES} tries")
