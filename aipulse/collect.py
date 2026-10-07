@@ -216,7 +216,9 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                     continue
             source = src["name"]
             title = brief.clean_title(e["title"], source)
-            if "arxiv.org/abs/" in e["url"]:  # a paper: what it covers, from its abstract
+            if src.get("as_provided"):  # its feed terms allow the headline and description only unmodified
+                title, summary = " ".join(e["title"].split()), " ".join((e["summary"] or "").split())
+            elif "arxiv.org/abs/" in e["url"]:  # a paper: what it covers, from its abstract
                 summary = brief.paper_summary(e["summary"], title)
             else:
                 summary = brief.clean_summary(e["summary"], title, source)
@@ -330,7 +332,19 @@ def purge_disallowed(conn, log=print) -> int:
 # Sources dropped because they turned automated readers away: everything they gave is deleted, so nothing of
 # theirs stays on the site (source name -> the start of its addresses).
 DROPPED = {"Parliament of Canada": "https://www.parl.ca/",  # 6 Oct 2026, each answering even robots.txt with a 403
-           "Rest of World": "https://restofworld.org/", "TechNode": "https://technode.com/"}
+           "Rest of World": "https://restofworld.org/", "TechNode": "https://technode.com/",
+           # 7 Oct 2026 terms audit: their terms forbid robots and scrapers, or allow personal use only
+           "South China Morning Post": "https://www.scmp.com/", "MIT Technology Review AI": "https://www.technologyreview.com/",
+           "The Verge AI": "https://www.theverge.com/", "Ars Technica AI": "https://arstechnica.com/",
+           "NVIDIA Blog": "https://blogs.nvidia.com/", "Apple Newsroom": "https://www.apple.com/newsroom/",
+           "Apple Machine Learning Research": "https://machinelearning.apple.com/",
+           "AWS Machine Learning Blog": "https://aws.amazon.com/blogs/machine-learning/",
+           "Capacity Media": "https://www.capacitymedia.com/", "iTnews": "https://www.itnews.com.au/",
+           "Data Centre Review": "https://www.datacentrereview.com/", "ESI Africa": "https://www.esi-africa.com/",
+           "Semiconductor Digest": "https://www.semiconductor-digest.com/", "Tech Xplore": "https://techxplore.com/",
+           "The Rio Times": "https://www.riotimesonline.com/", "Stability AI": "https://stability.ai/",
+           "Ollama Blog": "https://ollama.com/", "DeepSeek": "https://api-docs.deepseek.com/", "Cohere": "https://cohere.com/",
+           "Moonshot AI (Kimi)": "https://www.kimi.ai/", "ServeTheHome": "https://www.servethehome.com/"}
 
 
 def purge_dropped(conn, log=print) -> int:
@@ -343,6 +357,10 @@ def purge_dropped(conn, log=print) -> int:
         if conn.execute("SELECT 1 FROM sqlite_master WHERE name = 'bills'").fetchone():
             conn.execute("DELETE FROM bills WHERE source = ? OR url LIKE ?", (name, prefix + "%"))
     conn.execute("DELETE FROM meta WHERE key = 'canada_sessions'")  # LEGISinfo's sessions already read
+    for src in SOURCES:  # a source whose terms cap how many of its stories may be stored keeps only its newest
+        if src.get("keep_max"):
+            n += conn.execute("DELETE FROM items WHERE source = ? AND id NOT IN (SELECT id FROM items WHERE source = ? "
+                              "ORDER BY date DESC, id DESC LIMIT ?)", (src["name"], src["name"], src["keep_max"])).rowcount
     if n:
         conn.execute("UPDATE items SET cluster = id WHERE cluster NOT IN (SELECT id FROM items)")  # lead was deleted
         log(f"  removed {n} stories from dropped sources")
@@ -432,11 +450,14 @@ def fill_summary(item: dict) -> None:
         item["summary"] = brief.draft(item, PLACE_NAMES)
 
 
+AS_PROVIDED = {s["name"] for s in SOURCES if s.get("as_provided")}  # shown as their feed gives them (sources.py)
+
+
 def resummarize(conn, log=print) -> int:
     """Re-clean stored headlines and summaries and fill in headline-only stories. Returns how many changed."""
     changed = 0
     for it in store.query(conn, None, None, None, limit=100000):
-        if it.get("bill") or "arxiv.org/abs/" in it["url"]:
+        if it.get("bill") or "arxiv.org/abs/" in it["url"] or it["source"] in AS_PROVIDED:
             continue  # official records and papers have summaries of their own (bills.py, paper_summary)
         title = brief.clean_title(it["title"], it["source"])
         # Drafts are rebuilt from scratch so they reflect the story's current sorting.
@@ -585,7 +606,7 @@ def resummarize_papers(conn, fetcher=feeds.fetch, limit: int = 3000, log=print) 
 
 # Feeds once taken whole as AI-only whose AI sections turned out to carry other science too (quantum computing,
 # physics): their stored stories must name AI, like everything they send from now on (sources.py).
-AI_RECHECKED = ("ScienceDaily", "Tech Xplore")
+AI_RECHECKED = ("ScienceDaily",)
 
 
 LEADS_PER_RUN = 20  # stored headline-only releases whose pages one run reads

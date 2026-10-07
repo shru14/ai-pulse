@@ -36,9 +36,13 @@ Add, remove or edit entries freely. Any RSS 2.0 or Atom feed works, as long as t
 access (its robots.txt and terms): Google News and Bing News don't, so neither is used.
 """
 
-# Every source below was checked (September 2026): its robots.txt allows fetching it and its terms don't
-# restrict showing headlines with a short description and a link. Feeds that forbid that (BBC News: no
-# modified feeds) or whose terms couldn't be confirmed (NYT, The Guardian, Wired) are left out.
+# Every source below was checked (September 2026; every terms page audited again on 7 Oct 2026): its robots.txt
+# allows fetching it and its terms don't restrict showing headlines with a short description and a link. Feeds that
+# forbid that (BBC News: no modified feeds) or whose terms couldn't be confirmed (NYT, The Guardian, Wired) are left out.
+# Dropped in the 7 Oct 2026 audit, their terms forbidding robots or allowing personal use only (collect.DROPPED):
+# SCMP, MIT Technology Review, The Verge, Ars Technica, NVIDIA, Apple, AWS, Tech Xplore, The Rio Times,
+# Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review,
+# Capacity Media, iTnews and ESI Africa. "as_provided": the feed's terms allow its text only unmodified.
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
     {"name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "category": "tool"},
@@ -53,29 +57,18 @@ SOURCES = [
     {"name": "Mistral AI", "url": "https://mistral.ai/rss.xml", "category": "tool"},
     {"name": "Microsoft Research", "url": "https://www.microsoft.com/en-us/research/feed/", "category": "tool",
      "ai_only": False, "paged": True},
-    {"name": "NVIDIA Blog", "url": "https://blogs.nvidia.com/feed/", "category": "tool", "ai_only": False,
-     "ai_in_title": True, "paged": True},
-    {"name": "AWS Machine Learning Blog", "url": "https://aws.amazon.com/blogs/machine-learning/feed/", "category": "tool"},
     {"name": "Engineering at Meta", "url": "https://engineering.fb.com/feed/", "category": "tool", "ai_only": False,
      "ai_in_title": True, "paged": True},
     {"name": "GitHub Blog", "url": "https://github.blog/ai-and-ml/feed/", "category": "tool"},
     {"name": "Databricks Blog", "url": "https://www.databricks.com/feed", "category": "tool", "ai_only": False},
     {"name": "Cloudflare Blog", "url": "https://blog.cloudflare.com/tag/ai/rss/", "category": "tool"},
-    {"name": "Ollama Blog", "url": "https://ollama.com/blog/rss.xml", "category": "tool"},
     {"name": "Sakana AI", "url": "https://sakana.ai/feed.xml", "category": "tool", "english_only": True},
     {"name": "Character.AI", "url": "https://blog.character.ai/rss/", "category": "tool"},
-    {"name": "Stability AI", "url": "https://stability.ai/news-updates?format=rss", "category": "tool"},
     # Labs with no feed: their news page lists posts; each new post's page is read once (collect.page_list_entries).
-    {"name": "DeepSeek", "url": "https://api-docs.deepseek.com/sitemap.xml", "format": "page_list",
-     "link": r"^https://api-docs\.deepseek\.com/news/news\d+$", "category": "tool"},
     {"name": "Meta AI", "url": "https://ai.meta.com/blog/", "format": "page_list",
      "link": r"^https://ai\.meta\.com/blog/[a-z0-9-]+/$", "category": "tool"},
-    {"name": "Cohere", "url": "https://cohere.com/blog", "format": "page_list",
-     "link": r"^https://cohere\.com/blog/[a-z0-9-]+$", "category": "tool"},
     {"name": "MiniMax", "url": "https://www.minimax.io/news", "format": "page_list",
      "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
-    {"name": "Moonshot AI (Kimi)", "url": "https://www.moonshot.ai/news", "format": "page_list",
-     "link": r"^https://www\.kimi\.ai/blog/[a-z0-9-]+$", "category": "tool"},
     # Labs whose news pages block automated readers: their developer release notes (robots.txt allows them),
     # keeping only launches of their own products ("keep").
     {"name": "xAI", "url": "https://docs.x.ai/developers/release-notes", "format": "page_list", "notes": "xai_notes",
@@ -87,34 +80,25 @@ SOURCES = [
      "ai_in_title": True},
     {"name": "Meta Newsroom", "url": "https://about.fb.com/feed/", "category": "tool", "ai_only": False,
      "ai_in_title": True},
-    {"name": "Apple Newsroom", "url": "https://www.apple.com/newsroom/rss-feed.rss", "category": "tool",
-     "ai_only": False, "ai_in_title": True},
     {"name": "Amazon", "url": "https://www.aboutamazon.com/rss/news.xml", "category": "tool", "ai_only": False,
      "ai_in_title": True},
 
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",
-     "paged": True},
-    # Many Verge articles need a subscription: each is read once and kept only when the page says it's free.
-    {"name": "The Verge AI", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "category": "news",
-     "paywall_check": True},
-    {"name": "Ars Technica AI", "url": "https://arstechnica.com/ai/feed/", "category": "news", "paged": True},
-    {"name": "MIT Technology Review AI", "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
-     "category": "news", "paged": True},
+     "paged": True, "as_provided": True},
     {"name": "The Decoder", "url": "https://the-decoder.com/feed/", "category": "news", "paged": True},
     {"name": "SiliconANGLE AI", "url": "https://siliconangle.com/category/ai/feed/", "category": "news", "paged": True},
     {"name": "MarkTechPost", "url": "https://www.marktechpost.com/feed/", "category": "news", "ai_only": True, "paged": True},
     {"name": "ZDNET AI", "url": "https://www.zdnet.com/topic/artificial-intelligence/rss.xml", "category": "news"},
     {"name": "404 Media", "url": "https://www.404media.co/rss/", "category": "news"},
-    {"name": "Engadget", "url": "https://www.engadget.com/rss.xml", "category": "news", "ai_in_title": True},
+    {"name": "Engadget", "url": "https://www.engadget.com/rss.xml", "category": "news", "ai_in_title": True,
+     "as_provided": True},
     {"name": "MIT News", "url": "https://news.mit.edu/topic/mitartificial-intelligence2-rss.xml", "category": "news",
      "ai_only": True},
-    # Their AI sections also carry quantum computing, robotics and other science: each story must name AI.
-    {"name": "Tech Xplore", "url": "https://techxplore.com/rss-feed/machine-learning-ai-news/", "category": "news"},
+    # Its AI section also carries quantum computing, robotics and other science: each story must name AI.
     {"name": "ScienceDaily", "url": "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml",
-     "category": "news"},
+     "category": "news", "as_provided": True, "keep_max": 40},  # its RSS terms: about 40 stored headlines at most
     # Beyond the US: Asia, Africa and the rest of the world.
-    {"name": "South China Morning Post", "url": "https://www.scmp.com/rss/320663/feed", "category": "news"},
     {"name": "TechCabal", "url": "https://techcabal.com/feed/", "category": "news", "paged": True},
     # China's AI labs and launches (DeepSeek, Qwen, Kimi...)
     {"name": "Pandaily", "url": "https://pandaily.com/feed/", "category": "news"},
@@ -128,18 +112,14 @@ SOURCES = [
     {"name": "ITWeb", "url": "https://www.itweb.co.za/rss", "category": "news", "ai_in_title": True},
     {"name": "Wamda", "url": "https://www.wamda.com/feed", "category": "news", "ai_in_title": True},
     {"name": "MercoPress", "url": "https://en.mercopress.com/rss/", "category": "news", "ai_in_title": True},
-    # Latin America (The Rio Times' terms allow brief excerpts with credit and a link back)
-    {"name": "The Rio Times", "url": "https://www.riotimesonline.com/feed/", "category": "news", "ai_in_title": True},
+    # Latin America
     {"name": "Buenos Aires Times", "url": "https://www.batimes.com.ar/feed", "category": "news", "ai_in_title": True},
     {"name": "LatinAmerica Reports", "url": "https://latinamericareports.com/feed/", "category": "news", "ai_in_title": True},
     # Africa
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
     # Added from the sources review (6 Oct 2026): robots.txt allows each feed and no terms forbid headlines with a short
-    # description and a link (ServeTheHome's copyright policy allows a synopsis of up to 300 characters; ours are 240).
-    # Chips and servers
-    {"name": "Semiconductor Digest", "url": "https://www.semiconductor-digest.com/feed/", "category": "news"},
-    {"name": "ServeTheHome", "url": "https://www.servethehome.com/feed/", "category": "news"},
+    # description and a link.
     # Practitioners and evaluators
     {"name": "Simon Willison", "url": "https://simonwillison.net/atom/entries/", "category": "news", "no_releases": True},
     {"name": "Lil'Log", "url": "https://lilianweng.github.io/index.xml", "category": "news", "ai_only": True,
@@ -155,10 +135,6 @@ SOURCES = [
     # Data-centre trade news, by region
     {"name": "Data Center Knowledge", "url": "https://www.datacenterknowledge.com/rss.xml", "category": "infra", "infra_filter": True},
     {"name": "W.Media", "url": "https://w.media/feed/", "category": "infra", "infra_filter": True, "paged": True},  # Asia-Pacific
-    {"name": "Data Centre Review", "url": "https://www.datacentrereview.com/feed/", "category": "infra", "infra_filter": True,
-     "paged": True},  # UK and Europe
-    {"name": "Capacity Media", "url": "https://www.capacitymedia.com/rss", "category": "infra", "infra_filter": True},
-    {"name": "iTnews", "url": "https://www.itnews.com.au/RSS/rss.ashx", "category": "infra", "infra_filter": True},  # Australia
     # Energy, climate and environment newsrooms, worldwide
     {"name": "Carbon Brief", "url": "https://www.carbonbrief.org/feed/", "category": "infra", "infra_filter": True, "paged": True},
     {"name": "Climate Home News", "url": "https://www.climatechangenews.com/feed/", "category": "infra", "infra_filter": True,
@@ -175,7 +151,6 @@ SOURCES = [
      "infra_filter": True, "paged": True},  # North America: power for data centres
     {"name": "Union of Concerned Scientists", "url": "https://blog.ucsusa.org/tag/data-centers/feed/", "category": "infra",
      "infra_filter": True, "paged": True},  # North America
-    {"name": "ESI Africa", "url": "https://www.esi-africa.com/feed/", "category": "infra", "infra_filter": True, "paged": True},
     # Official energy bodies
     {"name": "US Energy Information Administration", "url": "https://www.eia.gov/rss/press_rss.xml", "category": "infra",
      "infra_filter": True},
@@ -410,7 +385,4 @@ SOURCES += [
     {"name": "Hugging Face Daily Papers", "url": "https://huggingface.co/api/daily_papers?limit=100",
      "format": "hf_daily", "category": "research", "ai_only": True, "max_age_days": 7, "companies": True,
      "expect_entries": True},
-    # Apple publishes its research papers as a feed.
-    {"name": "Apple Machine Learning Research", "url": "https://machinelearning.apple.com/rss.xml",
-     "category": "research", "ai_only": True, "max_age_days": 30, "org": "Apple"},
 ]
