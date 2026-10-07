@@ -659,7 +659,10 @@ def test_static_build_holds_every_card(tmp_path):
     # "See what the email looks like": its format with placeholder stories, none of the day's own
     from aipulse.static import sample_cards
     sample = sample_cards(cards, date.fromisoformat(cards[0]["date"][:10]))
-    assert sample and all(c["source"].startswith("Outlet ") and c["title"].startswith("Example headline") for c in sample)
+    from aipulse.static import SAMPLE_STORIES
+    placeholders = {t for rows in SAMPLE_STORIES.values() for t, _ in rows}
+    assert sample and all(c["source"].startswith("Outlet ") and c["title"] in placeholders for c in sample)
+    assert len({c["title"] for c in sample}) == len(sample)  # no placeholder repeated
     assert not {c["title"] for c in cards} & {c["title"] for c in sample}
     if daily_sample:  # indexed, in the sitemap, with the day's real meme of the day as a picture beside it
         html = (daily / "sample.html").read_text(encoding="utf-8")
