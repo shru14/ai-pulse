@@ -782,6 +782,12 @@ header.top.home{height:auto;padding-top:10px}
       <p>Every AI bill, law, regulator and standard from official records, one page per country, with each bill's stages.</p></div>
     <div class="by-country-go"><a href="tracker/">Browse by country →</a><a href="standards/">All AI standards →</a></div>
   </div>
+  <!-- Industry only: its kinds of story, a page each (aipulse/kind_pages.py) -->
+  <div class="by-country" id="by-kind" hidden>
+    <div><b>Looking for one kind of story?</b>
+      <p>Opinion, company blogs, studies, AI incidents, tutorials and events, each on its own page.</p></div>
+    <div class="by-country-go"><a href="industry/opinion/">Opinion →</a><a href="industry/company-blogs/">Company blogs →</a><a href="industry/studies/">Studies →</a><a href="industry/ai-incidents/">AI incidents →</a><a href="industry/tutorials/">Tutorials →</a><a href="industry/events/">Events →</a></div>
+  </div>
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
@@ -879,6 +885,7 @@ function showPage(){
   $("sec-title").textContent = state.cat === "all" ? "All stories" : STREAM_NAME[state.cat];
   $("sec-desc").textContent = SECTION_DESC[state.cat];
   $("by-country").hidden = state.cat !== "regulation";
+  $("by-kind").hidden = state.cat !== "news";
   $("sec-art").innerHTML = heroArt(state.cat);
   const hp = (PHOTOS[STREAM_PHOTO[state.cat]] || PHOTOS.business || [])[0];
   hero.style.setProperty("--hero-photo", hp ? 'url("photos/' + hp[0] + '")' : "none");
