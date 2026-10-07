@@ -231,10 +231,9 @@ SOURCES = [
     # Governments' own publications (US federal records and GOV.UK are public-domain / Open Government Licence).
     {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"],
      "government": True},
-    # Added 7 Oct 2026 (US public domain): AI policy at the commerce department's telecoms agency, AI security at CISA
+    # Added 7 Oct 2026 (US public domain): AI policy at the commerce department's telecoms agency (CISA, added the same day, was dropped: it
+    # refuses even its robots.txt to GitHub's servers)
     {"name": "NTIA", "url": "https://www.ntia.gov/rss.xml", "category": "policy", "jurisdictions": ["US"],
-     "ai_in_title": True, "government": True},
-    {"name": "CISA", "url": "https://www.cisa.gov/news.xml", "category": "policy", "jurisdictions": ["US"],
      "ai_in_title": True, "government": True},
     {"name": "DARPA", "url": "https://www.darpa.mil/rss/news.xml", "category": "policy", "jurisdictions": ["US"],
      "government": True},

@@ -336,6 +336,7 @@ def purge_disallowed(conn, log=print) -> int:
 # theirs stays on the site (source name -> the start of its addresses).
 DROPPED = {"Parliament of Canada": "https://www.parl.ca/",  # 6 Oct 2026, each answering even robots.txt with a 403
            "Rest of World": "https://restofworld.org/", "TechNode": "https://technode.com/",
+           "CISA": "https://www.cisa.gov/",  # 7 Oct 2026: refuses even its robots.txt to GitHub's servers
            # 7 Oct 2026 terms audit: their terms forbid robots and scrapers, or allow personal use only
            "South China Morning Post": "https://www.scmp.com/", "MIT Technology Review AI": "https://www.technologyreview.com/",
            "The Verge AI": "https://www.theverge.com/", "Ars Technica AI": "https://arstechnica.com/",

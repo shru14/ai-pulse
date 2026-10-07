@@ -122,7 +122,6 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "partnershiponai.org": ("no terms", "", "Only a privacy policy; no terms page"),
     "smartafrica.org": ("terms read", "https://smartafrica.org/terms-and-conditions/", "Nothing on feeds, robots or personal use"),
     "www.ntia.gov": ("official", "https://www.ntia.gov/page/web-policies", "US government work, public domain"),
-    "www.cisa.gov": ("official", "https://www.cisa.gov/about/policies-plans", "US government work, public domain"),
     "cltc.berkeley.edu": ("no terms", "", "No terms page linked from the site"),
     "www.itu.int": ("official", "https://www.itu.int/en/about/Pages/terms-of-use.aspx",
                     "Personal, educational or non-commercial use with the source acknowledged"),

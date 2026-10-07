@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 122 public sources (87 feeds, 17 AI labs' GitHub
+A free, non-commercial, worldwide briefing on AI. It reads 121 public sources (86 feeds, 17 AI labs' GitHub
 organisations, 18 official records and databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -62,7 +62,7 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 | Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation (AI), Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv (listed professors and scholars, and papers on AI's own energy, carbon, water and power, tagged Infra & climate), Hugging Face Daily Papers |
-| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, Partnership on AI, Smart Africa, NTIA, CISA, DARPA, NSF, UK AI Security Institute |
+| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, Partnership on AI, Smart Africa, NTIA, DARPA, NSF, UK AI Security Institute |
 | Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, The Conversation (energy), Data Center Knowledge, Data Center POST, Greenpeace International, Global Energy Monitor · **Europe:** European Commission (energy) · **United Kingdom:** GOV.UK (data centres: planning, permits, statistics), Techerati, DCNN · **Africa:** Africa Data Centres Association · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists, Southern Environmental Law Center, Food & Water Watch, Energy Innovation |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 
