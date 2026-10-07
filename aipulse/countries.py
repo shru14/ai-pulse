@@ -111,9 +111,11 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 steps = _history(conn, c.get("bill", ""))
                 now = steps[-1] if steps else None
                 stage = (LABELS.get(code, LABELS["US"]).get(now["stage"], "") if now else "")
-                meta = " · ".join(x for x in (stage, _day(c["date"]), c["source"]) if x)
                 trail = (" → ".join(f'{escape(s.get("text") or s["stage"])} ({_day(s["date"])})' for s in steps)
                          if len(steps) > 1 else "")
+                # the stages end on the latest date already: the line above them doesn't say it again
+                said = trail and _day(now["date"]) == _day(c["date"])
+                meta = " · ".join(x for x in (stage, "" if said else _day(c["date"]), c["source"]) if x)
                 rows.append(f'<li><a href="{escape(c["url"])}">{escape(c["title"].strip())}</a>'
                             f'<div class="meta">{escape(meta)}</div>'
                             + (f'<div class="steps">{trail}</div>' if trail else "") + "</li>")
