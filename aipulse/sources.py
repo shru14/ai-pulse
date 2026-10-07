@@ -55,6 +55,11 @@ SOURCES = [
     {"name": "Mistral AI", "url": "https://mistral.ai/rss.xml", "category": "tool"},
     {"name": "Cloudflare Blog", "url": "https://blog.cloudflare.com/tag/ai/rss/", "category": "tool"},
     {"name": "Sakana AI", "url": "https://sakana.ai/feed.xml", "category": "tool", "english_only": True},
+    # Added 7 Oct 2026 (evidence in terms.py): PyTorch's blog is the Linux Foundation's, CC BY; Together AI's and
+    # ElevenLabs' terms say nothing against reading their feeds.
+    {"name": "PyTorch Blog", "url": "https://pytorch.org/blog/feed.xml", "category": "tool"},
+    {"name": "Together AI", "url": "https://www.together.ai/blog/rss.xml", "category": "tool"},
+    {"name": "ElevenLabs", "url": "https://elevenlabs.io/blog/rss.xml", "category": "tool"},
     # Labs with no feed: their news page lists posts; each new post's page is read once (collect.page_list_entries).
     {"name": "MiniMax", "url": "https://www.minimax.io/news", "format": "page_list",
      "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
@@ -66,6 +71,10 @@ SOURCES = [
     {"name": "SiliconANGLE AI", "url": "https://siliconangle.com/category/ai/feed/", "category": "news", "paged": True},
     {"name": "MarkTechPost", "url": "https://www.marktechpost.com/feed/", "category": "news", "ai_only": True, "paged": True},
     {"name": "404 Media", "url": "https://www.404media.co/rss/", "category": "news"},
+    # Added 7 Oct 2026: The Conversation (Creative Commons BY-ND), Quanta Magazine (no terms restrict it)
+    {"name": "The Conversation (AI)", "url": "https://theconversation.com/global/topics/artificial-intelligence-ai-90/articles.atom",
+     "category": "news", "ai_only": True},
+    {"name": "Quanta Magazine", "url": "https://www.quantamagazine.org/feed/", "category": "news", "ai_in_title": True},
     {"name": "Engadget", "url": "https://www.engadget.com/rss.xml", "category": "news", "ai_in_title": True,
      "as_provided": True},
     {"name": "MIT News", "url": "https://news.mit.edu/topic/mitartificial-intelligence2-rss.xml", "category": "news",
@@ -86,6 +95,8 @@ SOURCES = [
     {"name": "TechCentral", "url": "https://techcentral.co.za/feed/", "category": "news", "ai_in_title": True},
     {"name": "ITWeb", "url": "https://www.itweb.co.za/rss", "category": "news", "ai_in_title": True},
     {"name": "Wamda", "url": "https://www.wamda.com/feed", "category": "news", "ai_in_title": True},
+    # Global Voices (Creative Commons BY): citizen reporting from around the world
+    {"name": "Global Voices", "url": "https://globalvoices.org/-/topics/technology/feed/", "category": "news", "ai_in_title": True},
     {"name": "MercoPress", "url": "https://en.mercopress.com/rss/", "category": "news", "ai_in_title": True},
     # Latin America
     {"name": "Buenos Aires Times", "url": "https://www.batimes.com.ar/feed", "category": "news", "ai_in_title": True},
@@ -155,9 +166,17 @@ SOURCES = [
     # Added from the sources review (6 Oct 2026). ITU allows non-commercial use with credit (itu.int terms of use).
     {"name": "CLTC (UC Berkeley)", "url": "https://cltc.berkeley.edu/feed/", "category": "policy"},
     {"name": "ITU", "url": "https://www.itu.int/hub/feed/", "category": "policy"},
+    # Added 7 Oct 2026: Partnership on AI and Smart Africa (no terms restrict their feeds)
+    {"name": "Partnership on AI", "url": "https://partnershiponai.org/feed/", "category": "policy", "ai_only": True},
+    {"name": "Smart Africa", "url": "https://smartafrica.org/feed/", "category": "policy", "ai_in_title": True},
     # Governments' own publications (US federal records and GOV.UK are public-domain / Open Government Licence).
     {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"],
      "government": True},
+    # Added 7 Oct 2026 (US public domain): AI policy at the commerce department's telecoms agency, AI security at CISA
+    {"name": "NTIA", "url": "https://www.ntia.gov/rss.xml", "category": "policy", "jurisdictions": ["US"],
+     "ai_in_title": True, "government": True},
+    {"name": "CISA", "url": "https://www.cisa.gov/news.xml", "category": "policy", "jurisdictions": ["US"],
+     "ai_in_title": True, "government": True},
     {"name": "DARPA", "url": "https://www.darpa.mil/rss/news.xml", "category": "policy", "jurisdictions": ["US"],
      "government": True},
     {"name": "NSF", "url": "https://www.nsf.gov/rss/rss_www_news.xml", "category": "policy", "jurisdictions": ["US"],
