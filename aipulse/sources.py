@@ -27,6 +27,7 @@ Optional per-source keys:
                 Industry or Releases, however little the text sounds like government
   no_releases   a practitioner's or evaluator's blog: its posts are never Releases, however much they read like a
                 launch (they comment on others' launches)
+  lab           "github_repos": the lab's name in headlines ("Qwen publishes Qwen-Image-2.1 on GitHub")
   paged         the feed pages back in time (WordPress: ?paged=2, 3, ...); the history run reads it back to 2023
 
 Policy stories from any source move to the regulation tracker when they report a proposal or an
@@ -47,6 +48,9 @@ access (its robots.txt and terms): Google News and Bing News don't, so neither i
 # Character.AI. Each remaining source's evidence (terms page, what it says,
 # date checked) is in terms.py; `python -m aipulse audit` checks them all again. "as_provided": the feed's terms
 # allow its text only unmodified.
+GITHUB_ORG = "https://api.github.com/orgs/{}/repos?sort=created&direction=desc&per_page=100&type=public"
+GITHUB_REPO = r"^https://github\.com/"  # every new repository that passes the star test is a release (collect.blog_category)
+
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
     {"name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/", "category": "tool"},
@@ -63,6 +67,43 @@ SOURCES = [
     # Labs with no feed: their news page lists posts; each new post's page is read once (collect.page_list_entries).
     {"name": "MiniMax", "url": "https://www.minimax.io/news", "format": "page_list",
      "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
+    # Labs' new open models and tools, from their GitHub organisations through GitHub's API, whose terms allow it
+    # (terms.py; the labs' own sites may not be read: OpenAI, Anthropic, Meta, Hugging Face, NVIDIA, DeepSeek...).
+    # Only repositories 300+ people starred, back to 2023 (feeds.parse_github_repos); github.com pages are never read.
+    {"name": "OpenAI on GitHub", "lab": "OpenAI", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("openai"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Anthropic on GitHub", "lab": "Anthropic", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("anthropics"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Meta Llama on GitHub", "lab": "Meta Llama", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("meta-llama"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Hugging Face on GitHub", "lab": "Hugging Face", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("huggingface"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "NVIDIA on GitHub", "lab": "NVIDIA", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("nvidia"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Mistral AI on GitHub", "lab": "Mistral AI", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("mistralai"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "xAI on GitHub", "lab": "xAI", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("xai-org"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "DeepSeek on GitHub", "lab": "DeepSeek", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("deepseek-ai"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Qwen on GitHub", "lab": "Qwen", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("QwenLM"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Moonshot AI on GitHub", "lab": "Moonshot AI", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("MoonshotAI"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "MiniMax on GitHub", "lab": "MiniMax", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("MiniMax-AI"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Z.ai on GitHub", "lab": "Z.ai", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("zai-org"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "StepFun on GitHub", "lab": "StepFun", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("stepfun-ai"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Tencent Hunyuan on GitHub", "lab": "Tencent Hunyuan", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("Tencent-Hunyuan"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "ByteDance Seed on GitHub", "lab": "ByteDance Seed", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("ByteDance-Seed"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Baidu on GitHub", "lab": "Baidu", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("baidu"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    {"name": "Ant Group (inclusionAI) on GitHub", "lab": "Ant Group", "format": "github_repos", "category": "tool",
+     "url": GITHUB_ORG.format("inclusionAI"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
 
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",

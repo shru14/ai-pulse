@@ -5,6 +5,7 @@ from __future__ import annotations
 import gzip
 import html
 import json
+import os
 import re
 import ssl
 import threading
@@ -57,6 +58,12 @@ def _retry_after(err: urllib.error.HTTPError) -> float | None:
 #   api.congress.gov  the Library of Congress's API (https://api.congress.gov; US government works)
 #   cdn.jsdelivr.net  the npm package CDN serving Simple Icons (CC0; https://www.jsdelivr.com/terms)
 API_HOSTS = {"export.arxiv.org", "www.wikidata.org", "api.congress.gov", "cdn.jsdelivr.net"}
+# and the reverse: sites whose robots.txt allows their pages but whose terms allow only their API. GitHub's policy
+# (https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies) allows scraping the
+# website only for research or archiving, and says "Scraping does not refer to the collection of information through
+# our API": github.com pages are never fetched, api.github.com is (no robots.txt; GITHUB_TOKEN on Actions, so its
+# rate limit is the project's own).
+API_ONLY = {"github.com"}
 
 
 class Disallowed(Exception):
@@ -92,6 +99,8 @@ def allowed(url: str) -> bool:
     host = parts.netloc.lower()
     if host in API_HOSTS:
         return True
+    if host in API_ONLY:
+        return False
     with _robots_lock:
         rules = _robots.get(host) or _rules(parts.scheme or "https", host)
     return rules.can_fetch(ROBOT_NAME, url)
@@ -123,7 +132,10 @@ def fetch(url: str, timeout: int = 20, attempts: int = ATTEMPTS) -> bytes:
     timeouts with backoff."""
     if not allowed(url):
         raise Disallowed(f"robots.txt of {urlsplit(url).netloc} doesn't allow fetching {url}")
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    headers = {"User-Agent": USER_AGENT}
+    if urlsplit(url).netloc.lower() == "api.github.com" and os.environ.get("GITHUB_TOKEN"):
+        headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
+    req = urllib.request.Request(url, headers=headers)
     for attempt in range(attempts):
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=TLS) as resp:
@@ -301,6 +313,25 @@ def parse_govuk(json_bytes: bytes) -> list[dict]:
              "summary": clean_text(r.get("description") or ""), "published": parse_date(r.get("public_timestamp")),
              "authors": []}
             for r in json.loads(json_bytes).get("results") or [] if r.get("link")]
+
+
+# A lab's GitHub organisation: its newest public repositories (api.github.com/orgs/<org>/repos?sort=created). A new
+# repository is how labs publish open models and tools (Kimi-K3, GLM-5, Codex Security), but most are demos and
+# internal parts: only repositories that 300+ people have starred count, and not forks, mirrors or starter kits. Each
+# run reads the list again, so a launch counts on the run its stars pass 300, under the day it was created.
+GITHUB_MIN_STARS = 300
+_GITHUB_NOISE = re.compile(r"awesome|homebrew|cookbook|demo|sample|example|template|tutorial|playground|hackathon|"
+                           r"quickstart|starter|mirror|\.github", re.I)
+
+
+def parse_github_repos(json_bytes: bytes, lab: str = "") -> list[dict]:
+    """GitHub API: a lab's new repositories that people took up, as "<lab> publishes <name> on GitHub"."""
+    return [{"title": f"{lab or r['owner']['login']} publishes {r['name']} on GitHub", "url": r["html_url"],
+             "summary": clean_text(r.get("description") or ""), "published": parse_date(r.get("created_at")),
+             "authors": []}
+            for r in json.loads(json_bytes)
+            if not r.get("fork") and r.get("stargazers_count", 0) >= GITHUB_MIN_STARS
+            and not _GITHUB_NOISE.search(f"{r['name']} {(r.get('description') or '')[:40]}")]
 
 
 # Korea's Ministry of Science and ICT: its English press releases list writes each row's title and date in
@@ -538,4 +569,5 @@ def page_meta(page_bytes: bytes) -> dict:
 
 
 PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
-           "federal_register": parse_federal_register, "govuk": parse_govuk}
+           "federal_register": parse_federal_register, "govuk": parse_govuk,
+           "github_repos": parse_github_repos}

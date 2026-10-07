@@ -72,6 +72,7 @@ jobs:
       - name: Collect
         env:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub API: labs' new repositories (sources.py)
         run: python -m aipulse --db aipulse.db collect ${{ github.event.schedule == '25,55 * * * *' && '--labs' || '' }}
 
       # A source that has just started failing: one email to the project inbox (not shown on the site)
