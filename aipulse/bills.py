@@ -17,6 +17,7 @@
   (Copyright Law, Article 5). The national law database (flk.npc.gov.cn) forbids automated access and
   gov.cn's search is closed to it, so neither is used.
 - India: the Parliament of India's legislation API (sansad.in, the one its own bill pages use; no key).
+  AI bills, and the Digital Personal Data Protection Act 2023 with the bills amending it.
   Bills in both Houses with their introduction, passing and assent dates. India Code, MeitY and PIB turn
   away automated requests, so they aren't used.
 - Japan: the e-Gov law API (Digital Agency; no key). Laws and cabinet orders with 人工知能 (AI) in the
@@ -760,7 +761,10 @@ def sync_canada_gazette(conn, fetcher=feeds.fetch, log=print) -> int:
 # --- India (Parliament of India, sansad.in) ---
 
 IN_API = "https://sansad.in/api_rs/legislation/getBills"
-IN_SEARCHES = ("artificial intelligence", "deepfake", "algorithm", "machine learning", "automated decision")
+IN_SEARCHES = ("artificial intelligence", "deepfake", "algorithm", "machine learning", "automated decision",
+               "digital personal data protection")
+# India's data protection law (the DPDP Act 2023 and bills amending it) governs the data AI is built on, so it's kept too
+IN_TITLE = re.compile(f"{AI_TITLE.pattern}|digital personal data protection", re.I)
 _IN_QUERY = ("loksabha=&sessionNo=&house=&ministryName=&billType=&billCategory=&billStatus=&introductionDateFrom="
              "&introductionDateTo=&passedInLsDateFrom=&passedInLsDateTo=&passedInRsDateFrom=&passedInRsDateTo="
              "&page=1&size=50&locale=en&sortOn=billIntroducedDate&sortBy=desc")
@@ -769,7 +773,9 @@ _IN_QUERY = ("loksabha=&sessionNo=&house=&ministryName=&billType=&billCategory=&
 def in_history(b: dict) -> list[dict]:
     """Introduction, passing in each House and assent. (Lapsed or withdrawn bills have no date for it, so
     they stay at their last dated stage.)"""
-    day = lambda k: (b.get(k) or "")[:10]
+    def day(k):  # "2023-08-03 00:00:00.0", or "11/08/2023" (day first) for some assent dates
+        d = (b.get(k) or "")[:10]
+        return f"{d[6:]}-{d[3:5]}-{d[:2]}" if re.fullmatch(r"\d\d/\d\d/\d{4}", d) else d
     history = []
     if day("billIntroducedDate"):
         history.append({"date": day("billIntroducedDate"), "stage": "introduced",
@@ -792,7 +798,7 @@ def sync_india(conn, fetcher=feeds.fetch, log=print) -> int:
     for term in IN_SEARCHES:
         data = _get_json(f"{IN_API}?billName={term.replace(' ', '%20')}&{_IN_QUERY}", get)
         for b in data.get("records") or []:
-            if AI_TITLE.search(b.get("billName") or ""):
+            if IN_TITLE.search(b.get("billName") or ""):
                 house = "LS" if (b.get("billIntroducedInHouse") or "").startswith("Lok") else "RS"
                 found[f"IN-{house}-{b.get('billYear')}-{b.get('billNumber')}"] = b
         time.sleep(1)

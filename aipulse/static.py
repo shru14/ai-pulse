@@ -55,10 +55,13 @@ def robots_txt() -> str:
 
 def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
     """sitemap.xml: the pages search engines should index: the front page, the streams', the tracker's pages by
-    country and the glossary's (`pages`, paths under the site) and each day's full edition."""
-    urls = ([(rss.SITE, today)] + [(f"{rss.SITE}{p}", today) for p in pages]
+    country and the glossary's (`pages`, paths under the site) and each day's full edition. A glossary word's page
+    has no date: its meaning, written by hand, rarely changes."""
+    word = lambda p: p.startswith("glossary/") and p != "glossary/"
+    urls = ([(rss.SITE, today)] + [(f"{rss.SITE}{p}", None if word(p) else today) for p in pages]
             + [(f"{rss.SITE}daily/{d.isoformat()}.html", d) for d in sorted(days, reverse=True)])
-    rows = "".join(f"  <url><loc>{u}</loc><lastmod>{d.isoformat()}</lastmod></url>\n" for u, d in urls)
+    rows = "".join(f"  <url><loc>{u}</loc>" + (f"<lastmod>{d.isoformat()}</lastmod>" if d else "") + "</url>\n"
+                   for u, d in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{rows}</urlset>\n'
 
 
@@ -112,6 +115,35 @@ def tracker_csv(cards: list[dict]) -> str:
 
 
 SAMPLE_PER_STREAM = 4  # stories a section shows in the sample email (daily/sample.html)
+# the sample's placeholder stories, by stream: the kind of story each section carries, never a real one (each
+# labelled as its row's type: Industry's as news, the tracker's in this order)
+SAMPLE_ACTIONS = ("proposal", "law", "body", "standard")
+SAMPLE_STORIES = {
+    "tool": [("A lab releases a new model", "What it does better, and who can use it."),
+             ("An app adds an AI feature", "What changes for its users."),
+             ("An open-source model gets an update", "Where to get it, and under what licence."),
+             ("A developer tool ships a new version", "What's new in this release.")],
+    "news": [("A company raises funding for its AI work", "How much, from whom, and what it's for."),
+             ("Two firms sign an AI deal", "What each side gets."),
+             ("A chipmaker reports its results", "How AI demand shaped the quarter."),
+             ("A startup changes its leadership", "Who's in, who's out, and why.")],
+    "research": [("A paper proposes a new training method", "The idea in a sentence, from the abstract."),
+                 ("A new benchmark tests what models can't do", "What it measures, and how today's models score."),
+                 ("A study looks at AI in the workplace", "What the authors found."),
+                 ("A paper makes models smaller and faster", "How, and at what cost to accuracy.")],
+    "regulation": [("A bill on AI is introduced", "Where it is now, and what's next."),
+                   ("A new AI law is adopted", "What it requires, and from when."),
+                   ("A country sets up an AI office", "What it will oversee."),
+                   ("A standards body publishes an AI standard", "What it covers.")],
+    "policy": [("A government sets out its AI plan", "The main points, as announced."),
+               ("A court rules in an AI case", "What was decided, and what it means."),
+               ("Lawmakers question a tech company", "What they asked, and what it said."),
+               ("Countries agree on AI cooperation", "Who signed, and what they agreed.")],
+    "infra": [("A new data centre is announced", "Where, how big, and how it will be powered."),
+              ("A report counts AI's energy use", "The headline figure, and how it was measured."),
+              ("A grid operator plans for AI demand", "What it expects, and by when."),
+              ("A cloud firm signs a clean power deal", "How much power, and from where.")],
+}
 
 
 def sample_cards(cards: list[dict], day: date) -> list[dict]:
@@ -121,9 +153,10 @@ def sample_cards(cards: list[dict], day: date) -> list[dict]:
     for c in sorted((c for c in cards if (c.get("date") or "")[:10] == day.isoformat()), key=lambda c: c["id"]):
         k = seen[c["category"]] = seen.get(c["category"], 0) + 1
         if k <= SAMPLE_PER_STREAM:
-            out.append({**c, "title": "Example headline: what happened, as the outlet put it",
-                        "summary": "A line or two of summary, from the publisher's own description of the story.",
-                        "source": f"Outlet {'ABCD'[k - 1]}", "url": rss.SITE, "also": [], "tags": [], "jurisdictions": [],
+            title, summary = SAMPLE_STORIES.get(c["category"], SAMPLE_STORIES["news"])[k - 1]
+            out.append({**c, "title": title, "summary": summary, "source": f"Outlet {'ABCD'[k - 1]}",
+                        "kind": "news" if c["category"] == "news" else c.get("kind"),
+                        "action": SAMPLE_ACTIONS[k - 1] if c["category"] == "regulation" else c.get("action"), "url": rss.SITE, "also": [], "tags": [], "jurisdictions": [],
                         "authors": ""})
     return out
 
@@ -139,6 +172,7 @@ def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | 
             'font:600 15px Arial,sans-serif;color:#000">A sample of the daily email. '
             '<a href="/#subscribe" style="color:#000">Subscribe to get the real one every morning →</a></div>')
     html = re.sub(r"<body[^>]*>", lambda m: m.group(0) + note, page[2], count=1)
+    html = re.sub(r"We read \d+ stor(y|ies) from \d+ sources?", "We read the day's stories from 100+ sources", html)
     meme = memes.of_the_day(cards, day)
     picture = meme and memes.render(meme)
     if picture and out:
