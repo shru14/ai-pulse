@@ -44,11 +44,11 @@ Only legal, publicly accessible sources are used.
 3. **No workarounds:** nothing behind a login, bot check or paywall; sites that block automated readers aren't read.
 4. **Only what's needed:** headline, short description, date and link. No personal data.
 5. **Credit and non-commercial use**, as the licences below require.
-6. **Readers' privacy:** the site and email load nothing from other servers and track no one. Questions: projectaipulse@gmail.com.
+6. **Readers' privacy:** the site and email load nothing from other servers and track no one. What the daily email keeps, why and for how long is on the [privacy page](https://projectaipulse.com/privacy.html). Questions: projectaipulse@gmail.com.
 
 Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, ZDNET, NVIDIA, Apple, AWS, Microsoft, OpenAI, Anthropic, Meta, Amazon, Databricks, GitHub, Hugging Face's blog, Perplexity, xAI, Character.AI, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews, ESI Africa and Energy Monitor. A publisher that gives permission is added back, with the permission credited below.
 
-The evidence for every source (its terms page, what it says and the date it was read) is kept in `aipulse/terms.py`; a source without it can't be added. `python -m aipulse audit` reads every terms page again and reports any that changed; it runs monthly and before any new source.
+The evidence for every source, and for the official records, icons, photos and data the platform uses (its terms page, what it says and the date it was read), is kept in `aipulse/terms.py`; a source without it can't be added. `python -m aipulse audit` reads every terms page again and reports any that changed; it runs monthly and before any new source.
 
 Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. AI Pulse's own robots.txt lets search engines in and keeps AI-training bots out.
 
@@ -122,8 +122,8 @@ Irish bills: Houses of the Oireachtas (https://www.oireachtas.ie), Oireachtas (O
 incorporates CC BY 4.0. Norwegian proposals: Stortinget (https://data.stortinget.no), Norwegian Licence for Open
 Government Data (NLOD); titles machine-translated by AI Pulse.
 AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
-(MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) or the brand's own site icon. Fonts: Archivo Black, Archivo, Anton and IBM Plex Mono (SIL Open Font License 1.1), served
+(MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) (no icons are fetched from brands' own sites). Fonts: Archivo Black, Archivo, Anton and IBM Plex Mono (SIL Open Font License 1.1), served
 from this site. Section icons: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).
 Meme templates: via [Imgflip](https://imgflip.com), used as parody and commentary. Flags: [flag-icons](https://github.com/lipis/flag-icons) (MIT, © 2013 Panayiotis Lipiridis), served from this site.
 Photos: 84 openly licensed photos from [Wikimedia Commons](https://commons.wikimedia.org) (CC BY, CC BY-SA, CC0 or public
-domain), chosen to illustrate a story's topic; each photo's author, licence and source are on the site's Photo credits page.
+domain), chosen to illustrate a story's topic, resized and recoloured; each photo's author, licence and source are on the site's Photo credits page.
