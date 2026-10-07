@@ -12,6 +12,7 @@ Kinds:
   terms read    the terms page was read in full and says nothing against reading the feed
   no terms      no terms page is linked from the site
   unconfirmed   the terms page refuses automated readers: someone has to read it in a browser before it counts
+  owner's choice  (PLATFORM only) a risk the project owner accepted knowingly
 """
 
 from __future__ import annotations
@@ -119,4 +120,41 @@ TERMS: dict[str, tuple[str, str, str]] = {
                       "arXiv's terms for its feeds and API; metadata is CC0"),
     "huggingface.co": ("terms read", "https://huggingface.co/terms-of-service",
                        "Daily Papers is a public API listing others' papers (arXiv), not Hugging Face's own material"),
+}
+
+# Everything else the platform reads or shows: the regulation tracker's official records (bills.py, oecd.py,
+# incidents.py), and the icons, photos, fonts and data it uses. Same kinds; "owner's choice" marks a risk the
+# project owner accepted knowingly (7 Oct 2026). The audit reads these terms pages too.
+PLATFORM: dict[str, tuple[str, str, str]] = {
+    "api.congress.gov": ("official", "https://www.loc.gov/legal/", "Official API with the project's own free key; public domain"),
+    "data.europarl.europa.eu": ("official", "https://www.europarl.europa.eu/legal-notice/en", "Reuse with acknowledgement"),
+    "oeil.secure.europarl.europa.eu": ("official", "https://www.europarl.europa.eu/legal-notice/en", "Reuse with acknowledgement"),
+    "bills-api.parliament.uk": ("official", "", "Open Parliament Licence v3.0 (its page is closed to robots)"),
+    "gazette.gc.ca": ("official", "https://www.canada.ca/en/transparency/terms.html", "Non-commercial reproduction with credit"),
+    "dadosabertos.camara.leg.br": ("official", "https://dadosabertos.camara.leg.br/", "Open data"),
+    "api.prod.legislation.gov.au": ("official", "https://www.legislation.gov.au/", "CC BY 4.0"),
+    "www.cac.gov.cn": ("official", "", "Title, date and link only; regulations aren't copyrighted"),
+    "sansad.in": ("official", "", "Public API; no terms restrict automated use"),
+    "laws.e-gov.go.jp": ("official", "https://www.digital.go.jp/en/copyright-policy",
+                         "Government of Japan Standard Terms of Use 2.0; credit and machine translation marked"),
+    "www.law.go.kr": ("official", "", "robots.txt allows; laws aren't copyrighted"),
+    "lis.ly.gov.tw": ("official", "", "No robots.txt rules; laws aren't copyrighted"),
+    "law.moj.gov.tw": ("official", "", "Laws aren't copyrighted"),
+    "www.parlimen.gov.my": ("official", "", "No robots.txt rules or restricting terms"),
+    "vbpl.vn": ("official", "", "robots.txt allows; legal documents aren't copyrighted"),
+    "ws.parlament.ch": ("official", "", "Swiss Parliament open data: open use with the source named"),
+    "api.oireachtas.ie": ("official", "https://www.oireachtas.ie/en/open-data/license/", "Oireachtas (Open Data) PSI Licence, CC BY 4.0"),
+    "data.stortinget.no": ("official", "https://data.stortinget.no/", "Norwegian Licence for Open Government Data, credited"),
+    "api.oecdai.org": ("licence", "https://oecd.ai/en/terms", "OECD.AI data, CC BY 4.0"),
+    "incidentdatabase.ai": ("licence", "https://incidentdatabase.ai/terms-of-use/",
+                            "Incident data CC BY-SA 4.0; only 'high-volume' bots are banned, and we read it once per run"),
+    "www.wikidata.org": ("licence", "https://www.wikidata.org/wiki/Wikidata:Licensing", "CC0; its API allows programmatic use"),
+    "cdn.jsdelivr.net": ("licence", "https://www.jsdelivr.com/terms", "Serves Simple Icons (CC0) for brand logos"),
+    "commons.wikimedia.org": ("licence", "https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia",
+                              "84 photos, each CC0, public domain, CC BY or CC BY-SA, credited on photos/credits.html"),
+    "imgflip.com": ("owner's choice", "", "Meme templates (copyrighted pictures) used as parody and commentary on a "
+                    "non-commercial site; kept by the owner's decision of 7 Oct 2026"),
+    "generativelanguage.googleapis.com": ("owner's choice", "https://ai.google.dev/gemini-api/terms",
+                                          "Gemini free tier for meme captions; its terms ask for paid use when an app "
+                                          "is offered to EU/UK users: we read it as a background job, not an app"),
 }

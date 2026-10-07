@@ -5,9 +5,9 @@ Nothing is listed by hand. For each name in a headline (a run of capitalised wor
 
 1. Simple Icons (~3,000 brands, CC0, simpleicons.org): a vector logo in the brand's colour. The index
    is downloaded to data/brands.json and refreshed weekly.
-2. Wikidata: if the name is an entity described as a company or product with an official website,
-   that website's own icon (its /favicon.ico, when the site's robots.txt allows it). This covers brands Simple Icons had to remove,
-   like Slack and Salesforce.
+2. Nothing else. Website icons (a brand's own /favicon.ico) were used until the 7 Oct 2026 terms audit: many
+   companies' site terms forbid robots, so no icon is fetched from a brand's site, and those fetched are deleted
+   (drop_site_icons). A brand Simple Icons doesn't have shows its card's topic symbol.
 
 A plain one-word name ("Astra", "Make") must also be a company or product on Wikidata under exactly
 that name, since such words are often something else. Results, including misses, are cached under
@@ -79,17 +79,12 @@ def _get(url: str, timeout: int = 10) -> bytes:
         return resp.read()
 
 
-# Image types a website icon may come as, by their first bytes.
-_ICON_TYPES = ((b"\x00\x00\x01\x00", "ico"), (b"\x89PNG", "png"), (b"\xff\xd8\xff", "jpg"), (b"GIF8", "gif"))
-
-
-def site_icon(host: str) -> tuple[bytes, str]:
-    """(image, extension) of a website's own /favicon.ico, if its robots.txt allows fetching it (_get checks)."""
-    data = _get(f"https://{host}/favicon.ico")
-    ext = next((e for magic, e in _ICON_TYPES if data.startswith(magic)), None)
-    if not ext:
-        raise ValueError(f"{host}/favicon.ico isn't an image")
-    return data, ext
+def drop_site_icons() -> int:
+    """Delete website icons fetched before the terms audit (own-*, site-*); returns how many."""
+    gone = [f for pattern in ("own-*", "site-*") for f in ICON_DIR.glob(pattern)] if ICON_DIR.exists() else []
+    for f in gone:
+        f.unlink()
+    return len(gone)
 
 
 # ---------- Simple Icons ----------
@@ -170,44 +165,21 @@ def _lookup(name: str) -> dict:
 
 
 def wikidata(name: str, budget: list[int]) -> dict | None:
-    """Cached {brand, site, icon} for `name` (icon: a file in ICON_DIR with the website's icon), or None
-    when it isn't cached and the budget of new lookups is spent. Misses are re-checked after 30 days."""
+    """Cached {brand, site} for `name`, or None when it isn't cached and the budget of new lookups is spent.
+    Misses are re-checked after 30 days."""
     cache = _wd_cache()
     hit = cache.get(name)
-    if hit and (hit.get("icon") or "").startswith("site-"):  # from Google's favicon service, no longer used
-        (ICON_DIR / hit["icon"]).unlink(missing_ok=True)
-        if budget[0] <= 0:
-            return dict(hit, icon=None)  # fetched from the site itself on a later call
-        budget[0] -= 1
-        hit["icon"] = _save_icon(name, hit["site"]) if hit.get("site") else None
-        return hit
     if hit and (hit.get("brand") or time.time() - hit.get("checked", 0) < RECHECK_MISSES):
-        if hit.get("icon") and not (ICON_DIR / hit["icon"]).exists():
-            return dict(hit, icon=None)
         return hit
     if budget[0] <= 0:
         return None
     budget[0] -= 1
     try:
-        entry = dict(_lookup(name), checked=int(time.time()), icon=None)
+        entry = dict(_lookup(name), checked=int(time.time()))
     except Exception:
         return None  # network trouble: try again next time
-    if entry["site"]:
-        entry["icon"] = _save_icon(name, entry["site"])
     cache[name] = entry
     return entry
-
-
-def _save_icon(name: str, host: str) -> str | None:
-    """Download the website's icon into ICON_DIR; its file name, or None if there's none we may use."""
-    try:
-        data, ext = site_icon(host)
-    except Exception:
-        return None
-    ICON_DIR.mkdir(parents=True, exist_ok=True)
-    icon = f"own-{slug(name)}.{ext}"
-    (ICON_DIR / icon).write_bytes(data)
-    return icon
 
 
 # ---------- Finding the brand in a headline ----------
@@ -255,14 +227,13 @@ def names(title: str, common: set[str]) -> list[str]:
 
 
 def logo_for(title: str, tags: list[str], common: set[str], budget: list[int]) -> dict | None:
-    """{name, hex, path} (Simple Icons) or {name, src} (website icon) for a card, or None."""
+    """{name, hex, path} (Simple Icons) for a card, or None."""
     if any(t.lower() in _CURATED for t in tags):
         return None  # the page has its own logo for these
     si = si_index()
     for name in names(title, common):
         if name.lower() in _CURATED:
             return None
-        wd = None
         if not distinctive(name):  # "Astra", "Make": only if Wikidata knows a company or product by that name
             wd = wikidata(name, budget)
             if not wd or not wd["brand"]:
@@ -271,9 +242,6 @@ def logo_for(title: str, tags: list[str], common: set[str], budget: list[int]) -
         path = brand and si_path(brand["slug"])
         if path:
             return {"name": brand["title"], "hex": "#" + brand["hex"], "path": path}
-        wd = wd or wikidata(name, budget)
-        if wd and wd.get("icon"):
-            return {"name": name, "src": f"brand-icons/{wd['icon']}"}
     return None
 
 
@@ -286,6 +254,7 @@ def add_logos(conn, cards: list[dict], lookups: int = 60) -> None:
     n = conn.execute("SELECT COUNT(*) FROM items").fetchone()[0]
     if _common_cache[0] != n:  # the lowercase vocabulary only changes when stories are added
         _common_cache = (n, common_words(f"{r[0]} {r[1]}" for r in conn.execute("SELECT title, summary FROM items")))
+    drop_site_icons()
     budget = [lookups]
     for c in cards:
         logo = logo_for(c["title"], c.get("tags") or [], _common_cache[1], budget)

@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html",
         "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -817,7 +817,7 @@ def test_brand_logo_needs_confirmation_for_plain_words(monkeypatch):
              "Astra": {"brand": False, "site": None, "icon": None}, "Ando": {"brand": False, "site": None, "icon": None}}
     monkeypatch.setattr(brands, "wikidata", lambda name, budget: known.get(name))
     logo = lambda title, tags=(): brands.logo_for(title, list(tags), set(), [10])
-    assert logo("Ando wants to take on Slack")["src"] == "brand-icons/own-slack.ico"
+    assert logo("Ando wants to take on Slack") is None  # no icon from a brand's own site (7 Oct 2026 terms audit)
     assert logo("Astra and Opus just passed Turing's test") is None  # a plain word Wikidata doesn't call a brand
     assert logo("YouTube promises custom feeds")["hex"] == "#FF0000"  # distinctive: no confirmation needed
     assert logo("Meta's new glasses use Slack", ["Meta"]) is None  # the page's own AI-company logos come first
@@ -2939,6 +2939,7 @@ def test_the_audit_reports_changed_terms_and_blocks(tmp_path, monkeypatch):
                                            {"name": "Gone", "url": "https://gone.test/feed"}])
     monkeypatch.setattr(audit, "TERMS", {"site.test": ("terms read", "https://site.test/terms", "fine"),
                                          "gone.test": ("no terms", "", "none")})
+    monkeypatch.setattr(audit, "PLATFORM", {})
     pages = {"https://site.test/feed": b"<rss/>", "https://site.test/terms": b"<p>Be kind to each other always.</p>"}
     def fetch(url):
         if url not in pages:

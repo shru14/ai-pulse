@@ -20,7 +20,7 @@ from urllib.parse import urlsplit
 
 from . import feeds
 from .sources import SOURCES
-from .terms import TERMS
+from .terms import PLATFORM, TERMS
 
 SAVED = Path(__file__).resolve().parent.parent / "data" / "terms-audit.json"
 RED_FLAGS = re.compile(r"\brobots?\b|spider|scrap|crawl|automat\w* (?:means|process|system|device|access|tool)|"
@@ -65,8 +65,9 @@ def run(fetcher=feeds.fetch, log=print, saved: Path = SAVED) -> list[str]:
             continue
         try:
             sentences = flagged(page_text(fetcher(terms_url)))
-        except Exception as e:
-            problems.append(f"{names}: terms page {terms_url} unreadable ({getattr(e, 'code', type(e).__name__)})")
+        except Exception as e:  # a page closed to robots (MarkTechPost's) is read by a person each audit instead
+            problems.append(f"{names}: terms page {terms_url} closed to our reader "
+                            f"({getattr(e, 'code', type(e).__name__)}): read it in a browser")
             continue
         digest = hashlib.sha256("\n".join(sentences).encode()).hexdigest()[:16]
         now[host] = {"terms": terms_url, "checked": date.today().isoformat(), "hash": digest, "sentences": sentences}
@@ -75,6 +76,19 @@ def run(fetcher=feeds.fetch, log=print, saved: Path = SAVED) -> list[str]:
             new = [x for x in sentences if x not in old.get("sentences", [])]
             problems.append(f"{names}: terms changed since {old['checked']}; read {terms_url}"
                             + "".join(f"\n      new: {x}" for x in new[:5]))
+    for host, (kind, terms_url, _) in sorted(PLATFORM.items()):  # official records, icons, photos, data
+        if not terms_url:
+            continue
+        try:
+            sentences = flagged(page_text(fetcher(terms_url)))
+        except Exception as e:
+            problems.append(f"{host}: terms page {terms_url} unreadable ({getattr(e, 'code', type(e).__name__)})")
+            continue
+        digest = hashlib.sha256("\n".join(sentences).encode()).hexdigest()[:16]
+        old = before.get(host)
+        now[host] = {"terms": terms_url, "checked": date.today().isoformat(), "hash": digest, "sentences": sentences}
+        if old and old.get("hash") != digest:
+            problems.append(f"{host}: terms changed since {old['checked']}; read {terms_url}")
     saved.parent.mkdir(parents=True, exist_ok=True)
     saved.write_text(json.dumps({**before, **now}, ensure_ascii=False, indent=1), encoding="utf-8")
     for p in problems:

@@ -94,6 +94,46 @@ def stream_page(page: str, cat: str) -> str:
                         f'<h2 id="sec-title">{escape(name)}</h2><p id="sec-desc">{escape(STREAM_PAGES[cat][3])}</p>', 1)
 
 
+# What the daily email's sign-up keeps and why (EU GDPR, Art. 13); kept in step with apps-script/Code.gs.
+PRIVACY_ROWS = [
+    ("Your email address", "To send the emails you asked for", "Until you unsubscribe; an unconfirmed sign-up, 7 days"),
+    ("The streams and how often you chose", "To send only those", "Until you unsubscribe"),
+    ("Your optional choices: labels to see more or less of, words, up to 3 questions for the weekly dossier",
+     "To pick and order your stories; the dossier answers each question without saying who asked it",
+     "Until you change them or unsubscribe"),
+    ("Random codes for your confirm, choices and unsubscribe links, and a count of confirm emails sent today",
+     "So only you can change your choices, and nobody can flood an inbox", "Until you unsubscribe"),
+]
+
+
+def privacy_page() -> str:
+    """The privacy notice: the site keeps nothing about visitors; the daily email keeps only what it needs."""
+    rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>" for a, b, c in PRIVACY_ROWS)
+    mail = '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a>'
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            '<title>Privacy · AI Pulse</title><style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
+            'padding:24px 16px;color:#222;background:#fff}h1{font-size:20px;font-weight:600;margin:0 0 6px}'
+            'h2{font-size:16px;font-weight:600;margin:22px 0 6px}p{margin:0 0 12px;color:#333}'
+            'table{border-collapse:collapse;width:100%;margin:0 0 12px}th,td{text-align:left;vertical-align:top;'
+            'padding:6px 8px;border-top:1px solid #ddd}th{font-weight:600}a{color:#0072B2}'
+            '@media(max-width:600px){td,th{display:block;border:0;padding:2px 0}tr{display:block;border-top:1px solid #ddd;'
+            'padding:6px 0}thead{display:none}}</style></head><body>'
+            f'<h1>Privacy</h1><p>AI Pulse is a free, non-commercial project. Responsible for your data: AI Pulse, {mail}. '
+            '<a href="./">Back to AI Pulse</a></p>'
+            '<h2>The site</h2><p>No cookies, no analytics, no ads, and nothing loaded from other servers. Your browser '
+            'remembers, on your own device only, your last time range and whether it has already shown you the '
+            'sign-up prompt. The site is hosted on GitHub Pages; GitHub '
+            'may log visitors’ IP addresses to keep its service secure (see GitHub’s privacy statement).</p>'
+            '<h2>The daily email</h2><p>Only if you sign up and confirm by email: your consent, which you can withdraw at '
+            'any time with the unsubscribe link in every email or your mail app’s unsubscribe button.</p>'
+            f'<table><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
+            '<p>It is kept in the project’s Google account (a Google Apps Script web app), and the emails are sent from its '
+            'Gmail address, so Google processes it for us. The project inbox gets a short note when someone subscribes; '
+            'ask and it is deleted. Nothing is sold or shared with anyone else.</p>'
+            '<h2>Your rights</h2><p>You can ask to see, correct or delete what we keep, or object to its use: email '
+            f'{mail}. You can also complain to your data protection authority.</p></body></html>')
+
+
 def opml(title: str = "AI Pulse") -> str:
     """feeds/all.opml: every stream's RSS feed in one file, for a feed reader to import at once."""
     rows = "".join(f'    <outline type="rss" text="{escape(f"{title} · {name}")}" title="{escape(f"{title} · {name}")}" '
@@ -253,6 +293,7 @@ def build(conn, out: str | Path) -> int:
     shutil.copytree(TEMPLATE.parent / "fonts", out / "fonts")  # the page's own fonts (no Google Fonts)
     shutil.copytree(TEMPLATE.parent / "photos", out / "photos")  # the stories' photos (Wikimedia Commons, credited)
     (out / "photos" / "credits.html").write_text(photos.credits_page(), encoding="utf-8")
+    (out / "privacy.html").write_text(privacy_page(), encoding="utf-8")
     (out / "feeds").mkdir()
     for name in rss.FEEDS:
         (out / "feeds" / f"{name}.xml").write_bytes(rss.feed_xml(name, cards))

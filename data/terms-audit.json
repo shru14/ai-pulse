@@ -346,5 +346,109 @@
   "checked": "2026-10-07",
   "hash": "e3b0c44298fc1c14",
   "sentences": []
+ },
+ "api.congress.gov": {
+  "terms": "https://www.loc.gov/legal/",
+  "checked": "2026-10-07",
+  "hash": "48ade51b5d0e7c6e",
+  "sentences": [
+   "We reserve the right to block IP addresses that fail to honor our websites’ robot.txt files, or submit requests at a rate that negatively impacts service delivery to patrons."
+  ]
+ },
+ "api.oecdai.org": {
+  "terms": "https://oecd.ai/en/terms",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "api.oireachtas.ie": {
+  "terms": "https://www.oireachtas.ie/en/open-data/license/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "api.prod.legislation.gov.au": {
+  "terms": "https://www.legislation.gov.au/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "cdn.jsdelivr.net": {
+  "terms": "https://www.jsdelivr.com/terms",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "commons.wikimedia.org": {
+  "terms": "https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia",
+  "checked": "2026-10-07",
+  "hash": "e15be6eb02bfb7c4",
+  "sentences": [
+   "it is common for publishers to take public domain works and republish them under their own copyright."
+  ]
+ },
+ "dadosabertos.camara.leg.br": {
+  "terms": "https://dadosabertos.camara.leg.br/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "data.europarl.europa.eu": {
+  "terms": "https://www.europarl.europa.eu/legal-notice/en",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "data.stortinget.no": {
+  "terms": "https://data.stortinget.no/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "gazette.gc.ca": {
+  "terms": "https://www.canada.ca/en/transparency/terms.html",
+  "checked": "2026-10-07",
+  "hash": "9611f4e964c8693e",
+  "sentences": [
+   "exercise due diligence in ensuring the accuracy of the materials reproduced indicate both the complete title of the materials reproduced, as well as the author (where available) indicate that the reproduction is a copy of the version available at [ URL where original document is available] Commercial reproduction Unless otherwise specified, you may not reproduce materials on this site, in whole or"
+  ]
+ },
+ "generativelanguage.googleapis.com": {
+  "terms": "https://ai.google.dev/gemini-api/terms",
+  "checked": "2026-10-07",
+  "hash": "9f64c4ef0e49b17b",
+  "sentences": [
+   "For clarity, Grounded Results, Search Suggestions, and Links are intended to be used in combination to respond to a given end user prompt and it is a violation of these terms to use Grounding with Google Search to extract or collect one or more of these components for another purpose (for example, using programmatic or automated means to collect Links, using Links to build an index, or using Links",
+   "Hardware Safety The following additional terms apply to models that can be used to control robots or other robotic hardware (\" Robotics Models \").",
+   "scrape or export any Google Maps Data;"
+  ]
+ },
+ "incidentdatabase.ai": {
+  "terms": "https://incidentdatabase.ai/terms-of-use/",
+  "checked": "2026-10-07",
+  "hash": "f2fb2fac4a4122af",
+  "sentences": [
+   "“High-volume” means of accessing the Site, including but not limited to bots and spiders, are prohibited."
+  ]
+ },
+ "laws.e-gov.go.jp": {
+  "terms": "https://www.digital.go.jp/en/copyright-policy",
+  "checked": "2026-10-07",
+  "hash": "6c4c341aedbeabda",
+  "sentences": [
+   "(+81) 3-4477-6775 CorporateNumber：8000012010038 Site Policy Privacy policy SNS Policy Accessibility Contact Us Site map RSS Feeds © Digital Agency, Government of Japan"
+  ]
+ },
+ "oeil.secure.europarl.europa.eu": {
+  "terms": "https://www.europarl.europa.eu/legal-notice/en",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.wikidata.org": {
+  "terms": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
  }
 }
