@@ -86,6 +86,7 @@ def main():
     ds = sub.add_parser("dossiers", help="the week's dossier for every reader's question, kept for the site and the "
                                          "Sunday email (offline model; reads the questions with DIGEST_LIST_KEY)")
     ds.add_argument("--interest", action="append", help="these instead of the readers' (testing)")
+    sub.add_parser("audit", help="check every source's robots.txt and terms again (on a PC, monthly; see aipulse/terms.py)")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
 
@@ -129,6 +130,9 @@ def main():
     elif a.cmd == "evaluate":
         from .evaluate import evaluate, print_report
         print_report(evaluate())
+    elif a.cmd == "audit":
+        from .audit import run as audit
+        return 1 if audit() else 0
     elif a.cmd == "sources":
         from .sources import SOURCES
         rows = store.source_health(store.connect(a.db), [s["url"] for s in SOURCES])

@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 100 public sources (82 feeds, 18 official records and
+A free, non-commercial, worldwide briefing on AI. It reads 85 public sources (67 feeds, 18 official records and
 databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -46,7 +46,9 @@ Only legal, publicly accessible sources are used.
 5. **Credit and non-commercial use**, as the licences below require.
 6. **Readers' privacy:** the site and email load nothing from other servers and track no one. Questions: projectaipulse@gmail.com.
 
-Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, NVIDIA, Apple, AWS, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews and ESI Africa. A publisher that gives permission is added back, with the permission credited below.
+Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, ZDNET, NVIDIA, Apple, AWS, Microsoft, OpenAI, Anthropic, Meta, Amazon, Databricks, GitHub, Hugging Face's blog, Perplexity, xAI, Character.AI, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews, ESI Africa and Energy Monitor. A publisher that gives permission is added back, with the permission credited below.
+
+The evidence for every source (its terms page, what it says and the date it was read) is kept in `aipulse/terms.py`; a source without it can't be added. `python -m aipulse audit` reads every terms page again and reports any that changed; it runs monthly and before any new source.
 
 Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. AI Pulse's own robots.txt lets search engines in and keeps AI-training bots out.
 
@@ -54,14 +56,13 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 
 | Stream | Sources |
 |---|---|
-| Releases (feeds) | OpenAI, Google AI, Google DeepMind, Google Research, Hugging Face, Mistral, Microsoft Research, Engineering at Meta, GitHub, Databricks, Cloudflare, Sakana AI, Character.AI; AI stories from the newsrooms of Microsoft, Meta and Amazon |
-| Releases (news pages, no feed) | Anthropic, Meta AI, MiniMax |
-| Releases (developer release notes) | xAI (docs.x.ai) and Perplexity (docs.perplexity.ai) |
-| Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, ZDNET, 404 Media, Engadget, MIT News, ScienceDaily · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
+| Releases (feeds) | Google AI, Google DeepMind, Google Research, Mistral, Cloudflare, Sakana AI |
+| Releases (news pages, no feed) | MiniMax |
+| Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, DARPA, NSF, UK AI Security Institute |
-| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, Energy Monitor, The Conversation (energy), Data Center Knowledge · **Europe:** European Commission (energy) · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists |
+| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, The Conversation (energy), Data Center Knowledge · **Europe:** European Commission (energy) · **United Kingdom:** GOV.UK (data centres: planning, permits, statistics) · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 
 ### Official records (Regulation tracker)
@@ -94,6 +95,7 @@ AI laws and bills, and each place's main data protection law with the bills amen
 ```bash
 python -m aipulse collect     # fetch every source into aipulse.db
 python -m aipulse serve       # http://127.0.0.1:8000
+python -m aipulse audit       # robots.txt and terms of every source, again (monthly, on a PC)
 python -m pytest -q           # tests (run locally, not on GitHub)
 ```
 

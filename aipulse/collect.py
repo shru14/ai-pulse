@@ -344,7 +344,15 @@ DROPPED = {"Parliament of Canada": "https://www.parl.ca/",  # 6 Oct 2026, each a
            "Semiconductor Digest": "https://www.semiconductor-digest.com/", "Tech Xplore": "https://techxplore.com/",
            "The Rio Times": "https://www.riotimesonline.com/", "Stability AI": "https://stability.ai/",
            "Ollama Blog": "https://ollama.com/", "DeepSeek": "https://api-docs.deepseek.com/", "Cohere": "https://cohere.com/",
-           "Moonshot AI (Kimi)": "https://www.kimi.ai/", "ServeTheHome": "https://www.servethehome.com/"}
+           "Moonshot AI (Kimi)": "https://www.kimi.ai/", "ServeTheHome": "https://www.servethehome.com/",
+           "OpenAI News": "https://openai.com/", "Anthropic News": "https://www.anthropic.com/",
+           "Meta AI": "https://ai.meta.com/", "Meta Newsroom": "https://about.fb.com/",
+           "Engineering at Meta": "https://engineering.fb.com/", "Amazon": "https://www.aboutamazon.com/",
+           "Databricks Blog": "https://www.databricks.com/", "GitHub Blog": "https://github.blog/",
+           "Hugging Face Blog": "https://huggingface.co/blog/", "Perplexity": "https://docs.perplexity.ai/",
+           "ZDNET AI": "https://www.zdnet.com/", "Microsoft Research": "https://www.microsoft.com/en-us/research/",
+           "Microsoft": "https://blogs.microsoft.com/", "Energy Monitor": "https://www.energymonitor.ai/",
+           "xAI": "https://docs.x.ai/", "Character.AI": "https://blog.character.ai/"}
 
 
 def purge_dropped(conn, log=print) -> int:

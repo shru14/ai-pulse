@@ -1,0 +1,350 @@
+{
+ "api.io.canada.ca": {
+  "terms": "https://www.canada.ca/en/transparency/terms.html",
+  "checked": "2026-10-07",
+  "hash": "9611f4e964c8693e",
+  "sentences": [
+   "exercise due diligence in ensuring the accuracy of the materials reproduced indicate both the complete title of the materials reproduced, as well as the author (where available) indicate that the reproduction is a copy of the version available at [ URL where original document is available] Commercial reproduction Unless otherwise specified, you may not reproduce materials on this site, in whole or"
+  ]
+ },
+ "blog.cloudflare.com": {
+  "terms": "https://www.cloudflare.com/website-terms/",
+  "checked": "2026-10-07",
+  "hash": "a2c47b51ca9abef8",
+  "sentences": [
+   "ARTIFICIAL INTELLIGENCE RESTRICTION You may not use automated bots to access, scan, scrape, data mine, copy, or use the materials or content on this website for developing, training, fine-tuning, or otherwise contributing to or improving a machine learning model or artificial intelligence (AI) system or the operation thereof, unless your bot’s user agent is (i) explicitly permitted (“allowed”) to "
+  ]
+ },
+ "blog.google": {
+  "terms": "https://policies.google.com/terms",
+  "checked": "2026-10-07",
+  "hash": "b37e447c88e81efc",
+  "sentences": [
+   "This includes using automated systems and algorithms to analyze your content:",
+   "consumer An individual who uses Google services for personal, non-commercial purposes outside of their trade, business, craft, or profession.",
+   "phishing creating fake accounts or content, including fake reviews misleading others into thinking that generative AI content was created by a human providing services that appear to originate from you (or someone else) when they actually originate from us providing services that appear to originate from us when they do not using our services (including the content they provide) to violate anyone’",
+   "you materially or repeatedly breach these terms, service-specific additional terms, or policies we’re required to do so to comply with a legal requirement or a court order we reasonably believe that your conduct causes harm or liability to a user, third party, or Google — for example, by hacking, phishing, harassing, spamming, misleading others, or scraping content that doesn’t belong to you For m"
+  ]
+ },
+ "cset.georgetown.edu": {
+  "terms": "https://cset.georgetown.edu/policies/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "deepmind.google": {
+  "terms": "https://policies.google.com/terms",
+  "checked": "2026-10-07",
+  "hash": "b37e447c88e81efc",
+  "sentences": [
+   "This includes using automated systems and algorithms to analyze your content:",
+   "consumer An individual who uses Google services for personal, non-commercial purposes outside of their trade, business, craft, or profession.",
+   "phishing creating fake accounts or content, including fake reviews misleading others into thinking that generative AI content was created by a human providing services that appear to originate from you (or someone else) when they actually originate from us providing services that appear to originate from us when they do not using our services (including the content they provide) to violate anyone’",
+   "you materially or repeatedly breach these terms, service-specific additional terms, or policies we’re required to do so to comply with a legal requirement or a court order we reasonably believe that your conduct causes harm or liability to a user, third party, or Google — for example, by hacking, phishing, harassing, spamming, misleading others, or scraping content that doesn’t belong to you For m"
+  ]
+ },
+ "digital-strategy.ec.europa.eu": {
+  "terms": "https://commission.europa.eu/legal-notice_en",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "e.vnexpress.net": {
+  "terms": "https://e.vnexpress.net/rss",
+  "checked": "2026-10-07",
+  "hash": "93243f78cadc4dad",
+  "sentences": [
+   "090 293 9644 RSS Download App International Subsidiary of VnExpress License number:",
+   "Go The most read Vietnamese newspaper Vietnamese Edition | Contact us | Follow us on News Politics Education Environment Traffic Crime Brainteaser Business DataSpeaks Property Billionaires Markets Companies Economy Money Quiz Tech Tech news Enterprises Personalities Vietnam innovation Challenge hub Travel Places Food Guide Visa Puzzle Life Trend Arts Celebrities Vogue Love Wellness Sports Football",
+   "RSS - Báo VnExpress The most read Vietnamese newspaper Follow us on Edition:"
+  ]
+ },
+ "energy.ec.europa.eu": {
+  "terms": "https://commission.europa.eu/legal-notice_en",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "huggingface.co": {
+  "terms": "https://huggingface.co/terms-of-service",
+  "checked": "2026-10-07",
+  "hash": "6d1ab3eb7805c5d4",
+  "sentences": [
+   "You may not alter, reproduce, republish, license any of our proprietary materials, unless we expressly give you a written permission to do so."
+  ]
+ },
+ "mistral.ai": {
+  "terms": "https://legal.mistral.ai/terms",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "news.mit.edu": {
+  "terms": "https://news.mit.edu/terms-of-use",
+  "checked": "2026-10-07",
+  "hash": "b875acc08bbd14f7",
+  "sentences": [
+   "Abdul Latif Jameel Poverty Action Lab (J-PAL) Picower Institute for Learning and Memory Media Lab Lincoln Laboratory Schools School of Architecture + Planning School of Engineering School of Humanities, Arts, and Social Sciences Sloan School of Management School of Science MIT Schwarzman College of Computing View all news coverage of MIT in the media → Listen to audio content from MIT News → Subsc",
+   "About the MIT News Office MIT News Press Center Terms of Use Press Inquiries Filming Guidelines RSS Feeds Tools:",
+   "All MIT News stories republished on third-party sites must include:",
+   "News organizations All MIT News stories republished in print must include:"
+  ]
+ },
+ "news.mongabay.com": {
+  "terms": "https://www.mongabay.com/terms",
+  "checked": "2026-10-07",
+  "hash": "ed5b99aaebe8e4fd",
+  "sentences": [
+   "Invade the privacy of any person, including posting personally identifying or otherwise private or sensitive information about a person without their consent or harvesting personally identifiable information about mongabay.com users through the website.",
+   "Quick updates Daily topic-based news alerts news digest Republish You may republish Mongabay content in your publication at no cost .",
+   "Social channels Instagram LinkedIn YouTube Facebook Videos Mastodon RSS / XML Android mobile app Apple News Information About Mongabay Copyright & Terms of Use Privacy Policy Advertising Ethereum Code Contact Us © 2026 Copyright Environmental News",
+   "You may not use, copy, reproduce, republish, upload, post, transmit, distribute, or modify Mongabay marks in any way, including in advertising or publicity pertaining to distribution of materials on this site, without Mongabay’s prior written consent."
+  ]
+ },
+ "research.google": {
+  "terms": "https://policies.google.com/terms",
+  "checked": "2026-10-07",
+  "hash": "b37e447c88e81efc",
+  "sentences": [
+   "This includes using automated systems and algorithms to analyze your content:",
+   "consumer An individual who uses Google services for personal, non-commercial purposes outside of their trade, business, craft, or profession.",
+   "phishing creating fake accounts or content, including fake reviews misleading others into thinking that generative AI content was created by a human providing services that appear to originate from you (or someone else) when they actually originate from us providing services that appear to originate from us when they do not using our services (including the content they provide) to violate anyone’",
+   "you materially or repeatedly breach these terms, service-specific additional terms, or policies we’re required to do so to comply with a legal requirement or a court order we reasonably believe that your conduct causes harm or liability to a user, third party, or Google — for example, by hacking, phishing, harassing, spamming, misleading others, or scraping content that doesn’t belong to you For m"
+  ]
+ },
+ "rss.arxiv.org": {
+  "terms": "https://info.arxiv.org/help/api/tou.html",
+  "checked": "2026-10-07",
+  "hash": "c8682de4708bf1a2",
+  "sentences": [
+   "Note that a very small subset of arXiv e-prints are submitted with licenses that permit redistribution.",
+   "Our APIs include our OAI-PMH interface , RSS feeds , the legacy arXiv API , bulk data downloads , and SWORD bulk deposit API .",
+   "Retrieve, store, and use the content of arXiv e-prints for your own personal use, or for research purposes.",
+   "Terms of Use for arXiv APIs - arXiv info | arXiv e-print repository Skip to content arXiv is now an independent nonprofit! Learn more × arXiv info arXiv info Terms of Use for arXiv APIs Initializing search GitHub arXiv info GitHub Home About About Who we are Governance Governance Board of Directors Operational Guidelines arXiv Advisory Board Science Advisory Council Editorial Advisory Council Inst",
+   "The redistribution of e-prints requires permission from the copyright holder, which may be the author(s) or publisher.",
+   "When using the legacy APIs (including OAI-PMH, RSS, and the arXiv API), make no more than one request every three seconds, and limit requests to a single connection at a time."
+  ]
+ },
+ "siliconangle.com": {
+  "terms": "https://siliconangle.com/terms-of-use/",
+  "checked": "2026-10-07",
+  "hash": "a1b4a8aaaf1cea5a",
+  "sentences": [
+   "(unless content is specifically made for redistribution).",
+   "Republish material from http://www.siliconangle.com Sell, rent or sub-license material from http://www.siliconangle.com Reproduce, duplicate or copy material from http://www.siliconangle.com Redistribute content from SiliconANGLE Media Inc.",
+   "You may view and/or print pages from http://www.siliconangle.com for your own personal use subject to restrictions set in these terms and conditions."
+  ]
+ },
+ "simonwillison.net": {
+  "terms": "https://simonwillison.net/about/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "techcabal.com": {
+  "terms": "https://techcabal.com/terms/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "techcrunch.com": {
+  "terms": "https://techcrunch.com/rss-terms-of-use/",
+  "checked": "2026-10-07",
+  "hash": "3791b3595d3fa9f6",
+  "sentences": [
+   "Click on our feed to add it to your favorite RSS Reader.",
+   "Close TechCrunch Desktop Logo TechCrunch Mobile Logo Latest Startups Venture Apple Security AI Apps Disrupt 2026 Events Podcasts Newsletters Search Submit Site Search Toggle Mega Menu Toggle Topics Latest AI Amazon Apps Biotech & Health Climate Cloud Computing Commerce Crypto Enterprise EVs Fintech Fundraising Gadgets Gaming Google Government & Policy Hardware Instagram Layoffs Media & Entertainme",
+   "If you choose to use a TechCrunch RSS feed, you are only permitted to display the content that is provided in the feed, with attribution to TechCrunch, and you must link to the full article on TechCrunch.",
+   "RSS Terms of Use | TechCrunch –:–:–:– Last day to exhibit your breakthrough to 10,000+ tech leaders at Disrupt is on Oct 2 .",
+   "TechCrunch reserves the right to discontinue any RSS feeds at any time and to require anyone to cease use of a TechCrunch RSS feed at any time for any reason.",
+   "Use of any RSS feeds provided by TechCrunch is subject to these terms of use.",
+   "X LinkedIn Facebook Instagram youTube Mastodon Threads Bluesky TechCrunch Staff Contact Us Advertise Site Map Terms of Service Privacy Policy RSS Terms of Use Code of Conduct OpenAI Hugging Face Flock Startup Battlefield Disrupt 2026 Tech Layoffs ChatGPT © 2026 TechCrunch Media LLC.",
+   "You may not incorporate advertising into any TechCrunch RSS feed."
+  ]
+ },
+ "the-decoder.com": {
+  "terms": "https://the-decoder.com/tos",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "theconversation.com": {
+  "terms": "https://theconversation.com/global/republishing-guidelines",
+  "checked": "2026-10-07",
+  "hash": "9fb6e89c00f39e62",
+  "sentences": [
+   "1) the referring URL, so we know what site republished the article, and 2) the browser user-agent version, so we can exclude traffic from bots.",
+   "Checking the page counter Once you have published the piece, you can verify you have included the page counter by contacting our audience development team globalrepublish@theconversation.com to check.",
+   "EPS Primary Logo (EPS) Primary Logo Reversed (EPS) Stacked Logo (EPS) Icon (EPS) Icon Reversed (EPS) PNG Primary Logo (PNG) Primary Logo Reversed (PNG) Stacked Logo (PNG) Icon (PNG) Icon Reversed (PNG) Editorial Policies Community standards Republishing guidelines Analytics Our feeds Get newsletter Who we are Our charter Our team Partners and funders Resource for media Contact us Privacy policy Te",
+   "Global Africa Australia Brasil Canada Canada (français) Català España Europe France Indonesia New Zealand United Kingdom United States Newsletters Become an author Sign up as a reader Sign in Academic rigour, journalistic flair Search analysis, research, academics… Republishing guidelines | The Conversation Top stories Republishing guidelines We believe in the free flow of information and so publi",
+   "If you need it on its own, the page counter can be accessed by clicking Republish then the Advanced tab.",
+   "If you use the Republish button, you will be capturing the page counter.",
+   "If you use the “republish” button that accompanies each article you'll include our page counter.",
+   "Page counter troubleshooting The page counter is an invisible 1x1 pixel image that allows us and our authors to know when and where our content is republished.",
+   "Republishing guidelines | The Conversation Skip to content Search analysis, research, academics… Home Edition :",
+   "Some images, such as those from commercial providers, don't allow their images to be republished without permission or payment.",
+   "The page view counter is a 1 pixel by 1 pixel invisible image that allows us and our authors to know when and where content is republished.",
+   "This means you can republish our articles online or in print for free, provided you follow these guidelines:",
+   "This might be useful for republishers who:",
+   "We would appreciate it if you would send an image of the republished article to globalrepublish@theconversation.com so that we can share it with the author.",
+   "You can't systematically republish all of our articles.",
+   "You have to confirm you're licensed to republish images in our articles.",
+   "You must use our page view counter when republishing online."
+  ]
+ },
+ "w.media": {
+  "terms": "https://w.media/terms-conditions/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.aisi.gov.uk": {
+  "terms": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.carbonbrief.org": {
+  "terms": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "checked": "2026-10-07",
+  "hash": "8c18150e6dc6cbd4",
+  "sentences": [
+   "Share — copy and redistribute the material in any medium or format The licensor cannot revoke these freedoms as long as you follow the license terms."
+  ]
+ },
+ "www.climatechangenews.com": {
+  "terms": "https://www.climatechangenews.com/terms-of-use/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.darpa.mil": {
+  "terms": "https://www.darpa.mil/policies/usage-policy",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.datacenterknowledge.com": {
+  "terms": "https://www.informatechtarget.com/terms-and-conditions",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.edpb.europa.eu": {
+  "terms": "https://www.edpb.europa.eu/copyright_en",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.eff.org": {
+  "terms": "https://www.eff.org/copyright",
+  "checked": "2026-10-07",
+  "hash": "f19c0a4159caa2fb",
+  "sentences": [
+   "All material that is not original to EFF may require permission from the copyright holder to redistribute.",
+   "If you redistribute something you got from the EFF site, it is appreciated if you make it known where the file originated, so people can get more info or updated versions."
+  ]
+ },
+ "www.eia.gov": {
+  "terms": "https://www.eia.gov/about/copyrights_reuse.php",
+  "checked": "2026-10-07",
+  "hash": "d4a279bc9117ac49",
+  "sentences": [
+   "Department of Energy Stay Connected Facebook X Youtube LinkedIn Email Updates RSS Feeds Statistics Analysis Tools Education News Petroleum & Other Liquids Crude oil, gasoline, heating oil, diesel, propane, and other liquids including biofuels and natural gas liquids.",
+   "Email Updates Sign up for email subscriptions to receive messages about specific EIA products RSS Feeds Subscribe to feeds for updates on EIA products including Today in Energy and What's New."
+  ]
+ },
+ "www.engadget.com": {
+  "terms": "https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html",
+  "checked": "2026-10-07",
+  "hash": "9c07438f3bddecd8",
+  "sentences": [
+   "Each of our products or services may also have more specific terms of use for related Yahoo RSS Feeds.",
+   "If you use an RSS feed provided by us (each, a “Yahoo RSS Feed”), you are only permitted to display the content that is provided in the feed, without modification, and you must provide attribution to our source website and link to the full article on Yahoo RSS Feed content.",
+   "We reserve the right to discontinue any Yahoo RSS Feed at any time and to require anyone to cease use of a Yahoo RSS Feed at any time for any reason.",
+   "You may not incorporate advertising into any Yahoo RSS Feed.",
+   "access or collect data, or attempt to access or collect data, from our Services using any automated means, devices, programs, algorithms or methodologies, including but not limited to robots, spiders, scrapers, data mining tools, or data gathering or extraction tools, for any purpose without our express, prior permission."
+  ]
+ },
+ "www.federalregister.gov": {
+  "terms": "https://www.federalregister.gov/reader-aids/developer-resources",
+  "checked": "2026-10-07",
+  "hash": "0796805c10334ee5",
+  "sentences": [
+   "Request Access Request Access Due to aggressive automated scraping of FederalRegister.gov and eCFR.gov, programmatic access to these sites is limited to access to our extensive developer APIs."
+  ]
+ },
+ "www.gov.uk": {
+  "terms": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.itu.int": {
+  "terms": "https://www.itu.int/en/about/Pages/terms-of-use.aspx",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.nist.gov": {
+  "terms": "https://www.nist.gov/copyrights-disclaimers",
+  "checked": "2026-10-07",
+  "hash": "2f6e0b5852ba5f80",
+  "sentences": [
+   "Copyright Law by emailing siirt [at] nist.gov (siirt) copyrights [at] nist.gov (@nist.gov) Information technology Created September 20, 2021, Updated June 2, 2026 Was this page helpful? HEADQUARTERS 100 Bureau Drive Gaithersburg, MD 20899 301-975-2000 Webmaster | Contact Us | Our Other Offices X.com Facebook LinkedIn Instagram YouTube Giphy RSS Feed Mailing List How are we doing? Feedback Site Pri"
+  ]
+ },
+ "www.nsf.gov": {
+  "terms": "https://www.nsf.gov/policies",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.powermag.com": {
+  "terms": "https://www.powermag.com/privacy-policy-terms-conditions/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.sciencedaily.com": {
+  "terms": "https://www.sciencedaily.com/terms.htm",
+  "checked": "2026-10-07",
+  "hash": "6d1d9f4497290421",
+  "sentences": [
+   "Additionally, Science Daily reserves the right to revoke RSS syndication privileges at any time, for any reason or for no reason.",
+   "All ownership rights and intellectual property rights in and to the RSS Feeds shall remain with Science Daily and no part thereof shall be deemed assigned or licensed to you.",
+   "Any other uses, including without limitation the incorporation of advertising or other promotional content into, or the placement of advertising associated with or targeted towards the RSS Content, are strictly prohibited.",
+   "Attribution/Link to Science Daily You agree to use the RSS Service only to provide headlines and summaries as provided by Science Daily, each with a functional link to the full story on the Science Daily website that shall display the full content immediately.",
+   "Copyright/Ownership All RSS Feeds are protected by the copyright laws of the United States and international copyright treaties.",
+   "Email Newsletter RSS Feeds Follow Us Keep up to date with the latest news from ScienceDaily via social networks:",
+   "Examples of prohibited uses for NewsDaily’s RSS feed include, but are not limited to, any publicly displayed website, blog or any commercial application.",
+   "However, you are not permitted to use more content than what is provided through the RSS feed.",
+   "If you do not agree to all of the terms, do not use this Site’s RSS Feed.",
+   "NewsDaily RSS For Personal Use Only Newsfeeds from the NewsDaily.com website are for personal use only.",
+   "Or view our many newsfeeds in your RSS reader:",
+   "Personal use of ScienceDaily and affiliated sites is free of charge at this time.",
+   "RSS Feeds Newsletter New! Sign up for our free email newsletter .",
+   "RSS Terms of Use Through its RSS (really simple syndication) service, ScienceDaily.com offers feeds of story headlines and brief summaries in XML format (\"RSS Content\") to its users with RSS aggregators.",
+   "Right to Discontinue Feeds Science Daily may modify or remove the list of available RSS feeds (or the content in the feeds) at any time without notifying you.",
+   "Science Daily / University of Toronto Permission is also granted to place ScienceDaily's linked headlines and summaries on your web site through the use of the RSS feed available through this link:",
+   "Science Daily assumes no liability for the accuracy of the information in the feed, your activities in connection with the RSS feeds, or for any consequences resulting from your use of the information therein.",
+   "Science Daily reserves all rights in and to any Science Daily logos, trademarks or trade names contained in any RSS feed, and your right to use these Science Daily logos, trademarks or trade names is limited to providing attribution in connection with these RSS feeds.",
+   "ScienceDaily’s images are for personal use only, not commercial use.",
+   "See RSS Terms of Use for details.",
+   "The use of the RSS service is subject to this User Agreement.",
+   "Use of RSS Feeds Science Daily encourages the use of the RSS feeds to augment content on your own site or blog, provided that you do not publish the full text of our stories.",
+   "Users may download material from this Service for personal use.",
+   "Users of ScienceDaily.com’s RSS feeds content cannot charge additional fees or licenses for the RSS feed content.",
+   "You agree not to associate any Science Daily RSS feeds with any content that might harm the reputation of Science Daily, its affiliated sites, authors, employees, contributors or partners.",
+   "You further agree not to frame or otherwise control the browser window (if any) in which our content opens, including limiting the size or position of such window, or to insert any interstitial pages, or other content between the RSS link and the web page.",
+   "You must also provide proper attribution (included in each RSS feed) by listing “Science Daily” in text as the source for each article.",
+   "You must use the RSS feeds as provided by Science Daily, and you may not edit or modify the text, content or links supplied by Science Daily."
+  ]
+ },
+ "www.wamda.com": {
+  "terms": "https://www.wamda.com/legal",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ }
+}
