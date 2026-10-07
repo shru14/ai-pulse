@@ -450,5 +450,64 @@
   "checked": "2026-10-07",
   "hash": "e3b0c44298fc1c14",
   "sentences": []
+ },
+ "elevenlabs.io": {
+  "terms": "https://elevenlabs.io/terms-of-use",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "globalvoices.org": {
+  "terms": "https://globalvoices.org/about/global-voices-attribution-policy/",
+  "checked": "2026-10-07",
+  "hash": "5d2b409fa0c57fed",
+  "sentences": [
+   "Both authors and Global Voices have permanent and irrevocable permission to republish the content as long as the original is attributed as described above, to meet the conditions of our CC-BY license.",
+   "How to republish Global Voices content When you share, republish or translate our stories, you must include a link to the original Global Voices story and the name of the author at the top of the republished post.",
+   "If you would like to republish our stories regularly or under special terms, please contact us.",
+   "Learn why » Donate English Ελληνικά Español Italiano русский عربي Igbo Català 日本語 Português Maayat'aan Nederlands Yorùbá Français українська Română srpski македонски বাংলা Aymara Esperanto Malagasy ᱥᱟᱱᱛᱟᱲᱤ Hrvatski नेपाली 繁體中文 हिन्दी bahasa Indonesia Қазақша Български Deutsch Filipino ਪੰਜਾਬੀ Shqip فارسی 简体中文 한국어 Magyar polski اردو Dansk ଓଡ଼ିଆ Swahili čeština Türkçe Svenska Ўзбекча አማርኛ كوردی မြန်မ",
+   "Please let us know when you republish our stories by either commenting on the original with a link, or sending a note to the Managing Editor using our Contact form.",
+   "Please read our attribution policy to learn about freely redistributing our work Some Rights Reserved --> --> action_wp_footer_to_output_deferred_contents() for header_site_translations --> Other languages Aymara Català Dansk Deutsch English Español Esperanto Filipino Français Hrvatski Igbo Italiano Maayat'aan Magyar Malagasy Nederlands Português Română Shqip Svenska Swahili Tetun Türkçe Yorùbá ba",
+   "Republishing Guidelines · Global Voices display_groups_css()--> Skip to main content WE NEED YOUR HELP Global Voices is at a critical moment.",
+   "Share — copy and redistribute the material in any medium or format Adapt — remix, transform, and build upon the material for any purpose, even commercially As long as they meet the key condition of the license:",
+   "This radically “open” license encourages redistribution of Global Voices content as widely as possible, as a public good.",
+   "Updated 9 April 2025 Also in What Is Global Voices? Global Voices Manifesto Editorial Code Frequently Asked Questions (FAQ) Corrections and Edit Requests Global Voices Policy on AI Diversity Policy Projects Summits Annual Reports Republishing Guidelines Media Archive Logos & Badges Jobs Other sections What Is Global Voices? Join Us! Contact Sponsors Lingua Special Coverage Donate Our People RSS Fe",
+   "We also do not have the ability to alter or remove public bylines and stories that have been republished on other sites, under the terms of our CC license.",
+   "You must seek permission directly from creators to republish their work."
+  ]
+ },
+ "pytorch.org": {
+  "terms": "https://www.linuxfoundation.org/legal/terms",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "smartafrica.org": {
+  "terms": "https://smartafrica.org/terms-and-conditions/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.cisa.gov": {
+  "terms": "https://www.cisa.gov/about/policies-plans",
+  "checked": "2026-10-07",
+  "hash": "07cb6950e2a03b18",
+  "sentences": [
+   "Read more Additional Resources Reporting Employee and Contractor Misconduct Equal Employment Opportunity Reasonable Accommodation Program No FEAR Act Return to top Topics Spotlight Resources & Tools News & Events Careers About Cybersecurity & Infrastructure Security Agency Facebook X LinkedIn YouTube Instagram RSS CISA Central 1-844-Say-CISA contact@cisa.dhs.gov DHS Seal CISA.gov An official websi"
+  ]
+ },
+ "www.ntia.gov": {
+  "terms": "https://www.ntia.gov/page/web-policies",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.together.ai": {
+  "terms": "https://www.together.ai/terms-of-service",
+  "checked": "2026-10-07",
+  "hash": "b196ab1010309115",
+  "sentences": [
+   "This indemnification does not apply to any claims arising out of your noncompliance or violation of any third-party terms imposed by your use, modification, or redistribution of third-party models that may be provided by the Services."
+  ]
  }
 }
