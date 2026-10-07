@@ -17,7 +17,7 @@ import unicodedata
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, classify, digest, glossary, jurisdictions, memegen, memes, photos, preferences, rss, store
+from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, photos, preferences, rss, store
 from . import subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
@@ -53,7 +53,7 @@ def robots_txt() -> str:
     return f"{blocked}User-agent: *\nDisallow: /dossier/\n\nSitemap: {rss.SITE}sitemap.xml\n"
 
 
-UNDATED = ("standards/",)  # pages without a date of their own: they change only when an entry is added
+UNDATED = ("standards/", *map(kind_pages.path, kind_pages.KINDS))  # pages without a date of their own: they change only when an entry is added
 
 
 def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
@@ -308,6 +308,7 @@ def build(conn, out: str | Path) -> int:
     from . import countries
     places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
     places += countries.standards_page(conn, cards, out)  # every AI standard on the tracker (standards/)
+    places += kind_pages.build(conn, len(cards), out)  # Industry's kinds of story, a page each (industry/<kind>/)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")

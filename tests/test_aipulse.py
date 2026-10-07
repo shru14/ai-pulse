@@ -640,6 +640,11 @@ def test_static_build_holds_every_card(tmp_path):
     sitemap = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
     tracker_pages = list((tmp_path / "site" / "tracker").glob("**/index.html"))
     tracker_pages += list((tmp_path / "site" / "glossary").glob("**/index.html"))  # and the glossary's
+    tracker_pages += list((tmp_path / "site" / "industry").glob("*/index.html"))  # and Industry's kinds, a page each
+    assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
+    tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>AI tutorials</h1>" in tutorials and 'data-kind="tutorial"' in tutorials and "Updated" not in tutorials
+    assert 'href="industry/tutorials/"' in (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert sitemap.count("<url>") == 1 + 7 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")

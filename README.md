@@ -31,6 +31,7 @@ Only legal, publicly accessible sources are used.
 - **Weekly dossier:** up to 3 questions in the reader's own words, asked on its own page from the button in every Sunday email, answered there at once and each Sunday: the week's stories that answer them, found by an open model (BGE-base; offline for the email, in the reader's browser on the page) and the site's tags. It picks and links; it writes nothing.
 - **AI laws by country:** a [page per country](https://projectaipulse.com/tracker/) of the tracker's official records, with each bill's stages.
 - **AI standards:** [one page](https://projectaipulse.com/standards/) of every AI standard on the tracker (ISO/IEC, IEEE, national), with what each covers.
+- **Industry by kind:** a page each for [opinion](https://projectaipulse.com/industry/opinion/), company blogs, studies, AI incidents, tutorials and events (the last 3 months, newest first).
 - **AI glossary:** a [page per word](https://projectaipulse.com/glossary/) (130 words, written by hand), with related terms, the words often in the same stories and its latest stories.
 - **Open data:** the tracker's official records as a [CSV](https://projectaipulse.com/tracker.csv): date, country, type, title, source and link.
 - **Make it yours:** more of, or leave out, any topic, company, place or scholar, plus up to 5 own words.
