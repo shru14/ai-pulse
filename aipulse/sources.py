@@ -43,7 +43,8 @@ access (its robots.txt and terms): Google News and Bing News don't, so neither i
 # SCMP, MIT Technology Review, The Verge, Ars Technica, NVIDIA, Apple, AWS, Tech Xplore, The Rio Times,
 # Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review,
 # Capacity Media, iTnews, ESI Africa, OpenAI, Anthropic, Meta (AI blog, newsroom, engineering), Amazon, Databricks,
-# GitHub Blog, Hugging Face Blog, Perplexity, ZDNET, Microsoft (Research and newsroom) and Energy Monitor. Each remaining source's evidence (terms page, what it says,
+# GitHub Blog, Hugging Face Blog, Perplexity, ZDNET, Microsoft (Research and newsroom), Energy Monitor, xAI and
+# Character.AI. Each remaining source's evidence (terms page, what it says,
 # date checked) is in terms.py; `python -m aipulse audit` checks them all again. "as_provided": the feed's terms
 # allow its text only unmodified.
 SOURCES = [
@@ -54,14 +55,9 @@ SOURCES = [
     {"name": "Mistral AI", "url": "https://mistral.ai/rss.xml", "category": "tool"},
     {"name": "Cloudflare Blog", "url": "https://blog.cloudflare.com/tag/ai/rss/", "category": "tool"},
     {"name": "Sakana AI", "url": "https://sakana.ai/feed.xml", "category": "tool", "english_only": True},
-    {"name": "Character.AI", "url": "https://blog.character.ai/rss/", "category": "tool"},
     # Labs with no feed: their news page lists posts; each new post's page is read once (collect.page_list_entries).
     {"name": "MiniMax", "url": "https://www.minimax.io/news", "format": "page_list",
      "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
-    # Labs whose news pages block automated readers: their developer release notes (robots.txt allows them),
-    # keeping only launches of their own products ("keep").
-    {"name": "xAI", "url": "https://docs.x.ai/developers/release-notes", "format": "page_list", "notes": "xai_notes",
-     "keep": r"^(?:Grok|SpaceXAI|xAI)\b", "category": "tool"},
 
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",

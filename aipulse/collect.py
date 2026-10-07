@@ -351,7 +351,8 @@ DROPPED = {"Parliament of Canada": "https://www.parl.ca/",  # 6 Oct 2026, each a
            "Databricks Blog": "https://www.databricks.com/", "GitHub Blog": "https://github.blog/",
            "Hugging Face Blog": "https://huggingface.co/blog/", "Perplexity": "https://docs.perplexity.ai/",
            "ZDNET AI": "https://www.zdnet.com/", "Microsoft Research": "https://www.microsoft.com/en-us/research/",
-           "Microsoft": "https://blogs.microsoft.com/", "Energy Monitor": "https://www.energymonitor.ai/"}
+           "Microsoft": "https://blogs.microsoft.com/", "Energy Monitor": "https://www.energymonitor.ai/",
+           "xAI": "https://docs.x.ai/", "Character.AI": "https://blog.character.ai/"}
 
 
 def purge_dropped(conn, log=print) -> int:

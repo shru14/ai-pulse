@@ -2042,7 +2042,9 @@ def test_release_notes_keep_only_the_labs_own_launches(tmp_path):
     assert [e["title"] for e in feeds.parse_perplexity_notes(pplx)] == ["Claude Opus 5.5", "Introducing New and Improved Sonar Models"]
     conn = store.connect(tmp_path / "t.db")
     pages = {"https://docs.x.ai/developers/release-notes": xai, "https://docs.perplexity.ai/changelog": pplx}
-    labs = [s for s in SOURCES if s["name"] == "xAI"] + [  # Perplexity dropped (7 Oct 2026 terms audit), reader kept tested
+    labs = [  # both dropped (7 Oct 2026 terms audit); their readers stay tested
+        {"name": "xAI", "url": "https://docs.x.ai/developers/release-notes", "format": "page_list", "notes": "xai_notes",
+         "keep": r"^(?:Grok|SpaceXAI|xAI)\b", "category": "tool"},
         {"name": "Perplexity", "url": "https://docs.perplexity.ai/changelog", "format": "page_list",
          "notes": "perplexity_notes", "keep": r"\b(?:Perplexity|Sonar|Comet)\b", "category": "tool"}]
     for src in labs:

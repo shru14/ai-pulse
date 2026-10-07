@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 87 public sources (69 feeds, 18 official records and
+A free, non-commercial, worldwide briefing on AI. It reads 85 public sources (67 feeds, 18 official records and
 databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -46,7 +46,7 @@ Only legal, publicly accessible sources are used.
 5. **Credit and non-commercial use**, as the licences below require.
 6. **Readers' privacy:** the site and email load nothing from other servers and track no one. Questions: projectaipulse@gmail.com.
 
-Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, ZDNET, NVIDIA, Apple, AWS, Microsoft, OpenAI, Anthropic, Meta, Amazon, Databricks, GitHub, Hugging Face's blog, Perplexity, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews, ESI Africa and Energy Monitor. A publisher that gives permission is added back, with the permission credited below.
+Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, ZDNET, NVIDIA, Apple, AWS, Microsoft, OpenAI, Anthropic, Meta, Amazon, Databricks, GitHub, Hugging Face's blog, Perplexity, xAI, Character.AI, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews, ESI Africa and Energy Monitor. A publisher that gives permission is added back, with the permission credited below.
 
 The evidence for every source (its terms page, what it says and the date it was read) is kept in `aipulse/terms.py`; a source without it can't be added. `python -m aipulse audit` reads every terms page again and reports any that changed; it runs monthly and before any new source.
 
@@ -56,9 +56,8 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 
 | Stream | Sources |
 |---|---|
-| Releases (feeds) | Google AI, Google DeepMind, Google Research, Mistral, Cloudflare, Sakana AI, Character.AI |
+| Releases (feeds) | Google AI, Google DeepMind, Google Research, Mistral, Cloudflare, Sakana AI |
 | Releases (news pages, no feed) | MiniMax |
-| Releases (developer release notes) | xAI (docs.x.ai) |
 | Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers |
