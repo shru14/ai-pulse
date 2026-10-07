@@ -163,7 +163,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     sections = "\n".join(f'<h2 id="{"num" if k == "#" else k}">{k}</h2>\n<ul class="terms">\n' + "\n".join(_row(e) for e in es)
                          + "\n</ul>" for k, es in letters.items())
     body = (f'<h1>AI glossary</h1>\n<p class="intro">The hard words in AI news, in plain English: {len(words)} words, '
-            f'A to Z. Updated {today.day} {today:%b %Y}.</p>\n'
+            f'A to Z.</p>\n'
             + (f'<h2>In the news this week</h2>\n<p class="intro">The glossary words in the last 7 days\' stories; '
                f'the bigger the word, the more stories used it.</p>\n'
                + cloud([(by_id[i], n) for i, n in recent.most_common(CLOUD)], "In the news this week") if recent else "")

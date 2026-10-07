@@ -93,7 +93,6 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                     by_place.setdefault(code, []).append(c)
     places = sorted((code for code, items in by_place.items() if len(items) >= MIN_RECORDS),
                     key=lambda code: (code != "INTL", names[code]))
-    updated = _day(today.isoformat())
     parts = pages.frame(conn, len(cards))
     pages.write_css(out)
     back = ("/regulation/", "Back to the live Regulation tracker page")
@@ -112,9 +111,11 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 steps = _history(conn, c.get("bill", ""))
                 now = steps[-1] if steps else None
                 stage = (LABELS.get(code, LABELS["US"]).get(now["stage"], "") if now else "")
-                meta = " · ".join(x for x in (stage, _day(c["date"]), c["source"]) if x)
                 trail = (" → ".join(f'{escape(s.get("text") or s["stage"])} ({_day(s["date"])})' for s in steps)
                          if len(steps) > 1 else "")
+                # the stages end on the latest date already: the line above them doesn't say it again
+                said = trail and _day(now["date"]) == _day(c["date"])
+                meta = " · ".join(x for x in (stage, "" if said else _day(c["date"]), c["source"]) if x)
                 rows.append(f'<li><a href="{escape(c["url"])}">{escape(c["title"].strip())}</a>'
                             f'<div class="meta">{escape(meta)}</div>'
                             + (f'<div class="steps">{trail}</div>' if trail else "") + "</li>")
@@ -127,14 +128,14 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": record(c, name)}
                                     for i, c in enumerate(items[:100])]}
         body = (f'<h1><img class="flag" src="flags/{flag(code)}" alt="">{escape(heading(code, name))}</h1>\n'
-                f'<p class="intro">Official records, newest first. Updated {updated}. '
+                f'<p class="intro">Official records, newest first.<br>'
                 f'<a href="/tracker/">All places</a></p>\n' + "\n".join(sections))
         (out / path).mkdir(parents=True, exist_ok=True)
         (out / path / "index.html").write_text(pages.page(title, description, path, body, data, parts, back, note), encoding="utf-8")
         paths.append(path)
     links = "\n".join(f'<a href="/tracker/{slug(names[code])}/"><img class="flag" src="flags/{flag(code)}" alt="">{escape(names[code])}</a>' for code in places)
     body = (f'<h1>AI laws by country</h1>\n<p class="intro">The Regulation tracker\'s official records, a page per '
-            f'place. Updated {updated}. Places with fewer records are on the live tracker. '
+            f'place. Places with fewer records are on the live tracker.<br>'
             f'<a href="/standards/">AI standards</a></p>\n'
             f'<div class="places">\n{links}\n</div>')
     data = {"@context": "https://schema.org", "@graph": [
