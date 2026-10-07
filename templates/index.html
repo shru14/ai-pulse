@@ -577,6 +577,7 @@ header.top{border-bottom:4px solid var(--ink)}
   border:2px solid var(--ink);font:600 15px var(--body);text-decoration:none;white-space:nowrap}
 .by-country a:hover{filter:brightness(1.08)}
 .by-country a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.by-country-go{flex:none;display:flex;flex-wrap:wrap;gap:8px}
 @media (max-width:640px){.by-country{flex-direction:column;align-items:flex-start}}
 .sec-hero .ico,.sec-hero .ico.sec{width:52px;height:52px;border-radius:0;border:3px solid var(--ink);background:var(--bg);color:var(--ink)}
 /* the masthead: name and buttons on top, every stream on its own ruled row below (never cut off) */
@@ -779,7 +780,7 @@ header.top.home{height:auto;padding-top:10px}
   <div class="by-country" id="by-country" hidden>
     <div><b>Looking for one country?</b>
       <p>Every AI bill, law, regulator and standard from official records, one page per country, with each bill's stages.</p></div>
-    <a href="tracker/">Browse by country →</a>
+    <div class="by-country-go"><a href="tracker/">Browse by country →</a><a href="standards/">All AI standards →</a></div>
   </div>
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
