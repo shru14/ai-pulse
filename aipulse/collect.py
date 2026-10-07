@@ -214,6 +214,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 matched = [professors[k] for a in authors if (k := classify.name_key(a)) in professors]
                 if professors and not matched:
                     continue
+            if src.get("footprint") and not classify.ai_footprint_paper(e["title"]):
+                continue  # only papers on AI's own energy, carbon, water or power (sources.py)
             source = src["name"]
             title = brief.clean_title(e["title"], source)
             if src.get("as_provided"):  # its feed terms allow the headline and description only unmodified
@@ -256,7 +258,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             if src["category"] == "research":
                 # Papers are tagged only with the people (and a scholar's field) and companies behind them.
                 fields = [EXPERT_FIELDS[p] for p in matched if p in EXPERT_FIELDS]
-                item["tags"] = list(dict.fromkeys([*matched, *fields, *companies, *filter(None, [src.get("org")]), RESEARCH_TAG]))
+                item["tags"] = list(dict.fromkeys([*matched, *fields, *companies, *filter(None, [src.get("org")]), RESEARCH_TAG,
+                                                   *([classify.INFRA_TAG] if src.get("footprint") else [])]))
 
             if src.get("government"):
                 item["category"] = "policy"  # a government's own publication (sources.py)

@@ -2950,3 +2950,14 @@ def test_the_audit_reports_changed_terms_and_blocks(tmp_path, monkeypatch):
     pages["https://site.test/terms"] = b"<p>You may not use any robot or scraper to access the Site.</p>"
     problems = audit.run(fetch, log=lambda *_: None, saved=saved)
     assert any(p.startswith("Site: terms changed since") and "robot or scraper" in p for p in problems)
+
+
+def test_papers_on_ai_footprint_are_told_from_ai_for_energy():
+    from aipulse.classify import ai_footprint_paper
+    assert ai_footprint_paper("Measuring the Carbon Footprint of LLM Inference")
+    assert ai_footprint_paper("Energy-Efficient Training of Transformers on GPUs")
+    assert ai_footprint_paper("Water Consumption of AI Data Centers")
+    assert ai_footprint_paper("Carbon-Aware Scheduling of Machine Learning Workloads")
+    assert not ai_footprint_paper("Energy Consumption Forecasting for Buildings with Deep Learning")  # AI for energy
+    assert not ai_footprint_paper("Neural Networks Forecast Solar Output")
+    assert not ai_footprint_paper("Energy-Based Models for Image Generation")  # a kind of model, not its energy

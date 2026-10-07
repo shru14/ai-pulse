@@ -422,6 +422,29 @@ INFRA_TOPICS = {
                           r"cooling|accelerators?|compute capacity|\bTPUs?\b|Blackwell|Vera Rubin|Grace Hopper|semiconductor|networking",
 }
 _infra_topics = {k: re.compile(v, re.I) for k, v in INFRA_TOPICS.items()}
+# A paper about AI's own footprint, judged on its title: a cost (energy, carbon, water, power) of AI's computing
+# ("Measuring the Carbon Footprint of LLM Inference"), not AI used for energy ("Neural networks forecast solar output").
+_FOOTPRINT_COST = re.compile(r"energy[- ](?:consumption|use|usage|cost|footprint|efficien\w*|demand|budget)|energy[- ]aware|"
+                             r"carbon (?:footprint|emissions?|intensity|cost)|carbon[- ]aware|emissions|\bCO2\b|"
+                             r"water (?:use|usage|consumption|footprint)|environmental (?:impact|cost|footprint)|"
+                             r"power (?:consumption|draw|usage|demand)|sustainab\w*|green AI|\bjoules?\b|\bwatts?\b", re.I)
+_FOOTPRINT_SUBJECT = re.compile(r"\bLLMs?\b|language models?|\binference\b|\btraining\b|\bGPUs?\b|data ?cent(?:er|re)s?|"
+                                r"accelerators?|foundation models?|generative|transformers?|\bML workloads?|"
+                                r"machine learning (?:models?|workloads?|systems?)|neural network training", re.I)
+# Broader words that also name AI used *for* energy ("Deep learning forecasts building energy use"): they count only
+# when the title isn't about forecasting or running a power system.
+_FOOTPRINT_LOOSE = re.compile(r"\bAI\b|deep learning|machine learning|neural networks?", re.I)
+_AI_FOR_ENERGY = re.compile(r"forecast\w*|predict\w*|buildings?|smart (?:grid|meter)s?|households?|HVAC|solar|wind|"
+                            r"batter(?:y|ies)|electric vehicles?|power systems?|microgrids?", re.I)
+
+
+def ai_footprint_paper(title: str) -> bool:
+    """A paper on the energy, carbon, water or power that AI's computing costs (see above)."""
+    if not _FOOTPRINT_COST.search(title) or "energy-based" in title.lower():
+        return False
+    return bool(_FOOTPRINT_SUBJECT.search(title) or (_FOOTPRINT_LOOSE.search(title) and not _AI_FOR_ENERGY.search(title)))
+
+
 # What an infrastructure story's own tags already say: the stream's subject itself, and the general topics the
 # finer ones above replace (a reader's saved choice of these still matches: preferences.labels).
 INFRA_SAYS = {"Compute & Data Centers": INFRA_TAG, "Energy": "Power & grid", "Climate": "Emissions & climate",

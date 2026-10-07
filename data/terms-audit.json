@@ -509,5 +509,25 @@
   "sentences": [
    "This indemnification does not apply to any claims arising out of your noncompliance or violation of any third-party terms imposed by your use, modification, or redistribution of third-party models that may be provided by the Services."
   ]
+ },
+ "energyinnovation.org": {
+  "terms": "https://energyinnovation.org/legal/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.foodandwaterwatch.org": {
+  "terms": "https://www.foodandwaterwatch.org/learn/legal/",
+  "checked": "2026-10-07",
+  "hash": "e3b0c44298fc1c14",
+  "sentences": []
+ },
+ "www.greenpeace.org": {
+  "terms": "https://www.greenpeace.org/international/copyright/",
+  "checked": "2026-10-07",
+  "hash": "5c6cf71d997a1224",
+  "sentences": [
+   "Greenpeace International Worldwide site list Greenpeace International A Africa English • Français Aotearoa Argentina Australia Austria B Belgium Français • Nederlands Brazil Bulgaria C Canada English • Français Chile Colombia Croatia Czech Republic D Denmark E East Asia 中文简体 • 繁體 • 正體 • 한국어 • English European Union F Finland France G Germany Greece H Hungary I India English • Hindi Indonesia Israe"
+  ]
  }
 }
