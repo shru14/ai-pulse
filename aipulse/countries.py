@@ -128,7 +128,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": record(c, name)}
                                     for i, c in enumerate(items[:100])]}
         body = (f'<h1><img class="flag" src="flags/{flag(code)}" alt="">{escape(heading(code, name))}</h1>\n'
-                f'<p class="intro">Official records, newest first. '
+                f'<p class="intro">Official records, newest first.<br>'
                 f'<a href="/tracker/">All places</a></p>\n' + "\n".join(sections))
         (out / path).mkdir(parents=True, exist_ok=True)
         (out / path / "index.html").write_text(pages.page(title, description, path, body, data, parts, back, note), encoding="utf-8")
