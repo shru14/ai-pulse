@@ -46,7 +46,7 @@ Only legal, publicly accessible sources are used.
 5. **Credit and non-commercial use**, as the licences below require.
 6. **Readers' privacy:** the site and email load nothing from other servers and track no one. What the daily email keeps, why and for how long is on the [privacy page](https://projectaipulse.com/privacy.html). Questions: projectaipulse@gmail.com.
 
-Every source's robots.txt and terms were audited on 7 October 2026. Dropped then, with every story they gave: South China Morning Post, MIT Technology Review, The Verge, Ars Technica, ZDNET, NVIDIA, Apple, AWS, Microsoft, OpenAI, Anthropic, Meta, Amazon, Databricks, GitHub, Hugging Face's blog, Perplexity, xAI, Character.AI, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review, Capacity Media, iTnews, ESI Africa and Energy Monitor. A publisher that gives permission is added back, with the permission credited below. Meanwhile the labs' new open models and tools are tracked through GitHub's API, which GitHub's terms allow ("Scraping does not refer to the collection of information through our API").
+Every source's robots.txt and terms were audited on 7 October 2026. 
 
 The evidence for every source, and for the official records, icons, photos and data the platform uses (its terms page, what it says and the date it was read), is kept in `aipulse/terms.py`; a source without it can't be added. `python -m aipulse audit` reads every terms page again and reports any that changed; it runs monthly and before any new source.
 
