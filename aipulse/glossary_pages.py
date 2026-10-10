@@ -1,5 +1,6 @@
-"""The glossary as pages, like a dictionary: glossary/ lists every word A to Z, and glossary/<word>/ has its meaning
-(other glossary words in it linked), the latest stories that use it, its related terms. The meanings are our own
+"""The glossary as pages, like a dictionary: glossary/ lists the newest words, then every word A to Z (Everyday or
+Technical, to show one level only), and glossary/<word>/ has its meaning (other glossary words in it linked), its
+level, the latest stories that use it, its related terms. The meanings are our own
 writing, the part of AI Pulse search engines can rank; the site's Glossary panel stays as it is.
 """
 from __future__ import annotations
@@ -102,9 +103,33 @@ def cloud(counts: list[tuple[dict, int]], label: str, small: bool = False) -> st
             + "</div>")
 
 
-def _row(e: dict) -> str:
-    return (f'<li><div><a href="/glossary/{e["id"]}/">{escape(e["term"])}</a><span class="grp">{escape(e["group"])}</span></div>'
+def _row(e: dict, added: bool = False) -> str:
+    """A word in a list: its name, group and level (or the day it was added), and its meaning's first sentence."""
+    label = f'Added {_day(e["added"])}' if added else f'{e["group"]} · {e["level"]}'
+    return (f'<li data-level="{e["level"]}"><div><a href="/glossary/{e["id"]}/">{escape(e["term"])}</a>'
+            f'<span class="grp">{escape(label)}</span></div>'
             f'<div class="short">{escape(_first_sentence(e["def"]))}</div></li>')
+
+
+def _day(iso: str) -> str:
+    d = date.fromisoformat(iso)
+    return f"{d.day} {d:%b %Y}"
+
+
+# glossary/: the level buttons show one level's words (and only the letters that have some); all words without script.
+LEVELS_JS = """<script>
+(() => {
+  const nav = document.getElementById("levels");
+  nav.hidden = false;
+  nav.addEventListener("click", ev => {
+    const b = ev.target.closest("button");
+    if(!b) return;
+    nav.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelectorAll("#az li[data-level]").forEach(li => li.hidden = !!b.dataset.level && li.dataset.level !== b.dataset.level);
+    document.querySelectorAll("#az section").forEach(sec => sec.hidden = !sec.querySelector("li:not([hidden])"));
+  });
+})();
+</script>"""
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
@@ -133,8 +158,10 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         n = recent[e["id"]]
         seen = (f"Mentioned in {n} {'story' if n == 1 else 'stories'} in the last 7 days." if n
                 else "Not in the last 7 days' stories.")
-        body = (f'<span class="kind">AI glossary · {escape(e["group"])}</span>\n<h1 class="word">{escape(e["term"])}</h1>\n'
-                f'<p class="def">{meaning}</p>\n<p class="intro">{seen}</p>\n'
+        if e["added"] > glossary.LAUNCH.isoformat():
+            seen += f" Added to the glossary on {_day(e['added'])}."
+        body = (f'<span class="kind">AI glossary · {escape(e["group"])} · {e["level"]}</span>\n'
+                f'<h1 class="word">{escape(e["term"])}</h1>\n<p class="def">{meaning}</p>\n<p class="intro">{seen}</p>\n'
                 + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
                    f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'
                    + cloud([(by_id[i], k) for i, k in together[e["id"]].most_common(TOGETHER)], "Often in the same stories",
@@ -160,14 +187,26 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     for e in words:
         letters.setdefault(e["term"][0].upper() if e["term"][0].isalpha() else "#", []).append(e)
     jump = "".join(f'<a href="/glossary/#{"num" if k == "#" else k}">{k}</a>' for k in letters)
-    sections = "\n".join(f'<h2 id="{"num" if k == "#" else k}">{k}</h2>\n<ul class="terms">\n' + "\n".join(_row(e) for e in es)
-                         + "\n</ul>" for k, es in letters.items())
+    sections = "\n".join(f'<section><h2 id="{"num" if k == "#" else k}">{k}</h2>\n<ul class="terms">\n'
+                         + "\n".join(_row(e) for e in es) + "\n</ul></section>" for k, es in letters.items())
+    new = sorted((e for e in words if e["added"] > glossary.LAUNCH.isoformat()
+                  and e["added"] >= (today - timedelta(days=glossary.NEW_DAYS)).isoformat()),
+                 key=lambda e: (e["added"], e["term"].lower()), reverse=True)
+    levels = ('<nav class="levels" id="levels" aria-label="Show one level" hidden>'
+              '<button type="button" aria-pressed="true">All words</button>'
+              '<button type="button" data-level="Everyday" aria-pressed="false">Everyday</button>'
+              '<button type="button" data-level="Technical" aria-pressed="false">Technical</button></nav>\n'
+              '<p class="intro">Everyday words come up in any AI story; Technical ones are how models are built, '
+              'trained and run.</p>\n')
     body = (f'<h1>AI glossary</h1>\n<p class="intro">The hard words in AI news, in plain English: {len(words)} words, '
-            f'A to Z.</p>\n'
+            f'A to Z. New words are added as new stories use them.</p>\n'
+            + (f'<h2>New this month</h2>\n<ul class="terms">\n' + "\n".join(_row(e, added=True) for e in new)
+               + "\n</ul>\n" if new else "")
             + (f'<h2>In the news this week</h2>\n<p class="intro">The glossary words in the last 7 days\' stories; '
                f'the bigger the word, the more stories used it.</p>\n'
                + cloud([(by_id[i], n) for i, n in recent.most_common(CLOUD)], "In the news this week") if recent else "")
-            + f'<h2>A to Z</h2>\n<nav class="letters" aria-label="Jump to a letter">{jump}</nav>\n' + sections)
+            + f'<h2>A to Z</h2>\n{levels}<nav class="letters" aria-label="Jump to a letter">{jump}</nav>\n'
+            + f'<div id="az">\n{sections}\n</div>\n{LEVELS_JS}')
     data = {"@context": "https://schema.org", "@type": "DefinedTermSet", "name": "AI Pulse glossary", "url": home,
             "hasDefinedTerm": [{"@type": "DefinedTerm", "name": e["term"], "url": f"{rss.SITE}glossary/{e['id']}/"}
                                for e in words]}

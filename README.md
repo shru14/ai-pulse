@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 208 public sources, keeps only AI stories, sorts them into
+A free, non-commercial, worldwide briefing on AI. It reads 234 public sources, keeps only AI stories, sorts them into
 six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -23,12 +23,13 @@ six streams and links every card to the original.
 - **Daily or weekly email** of the streams you pick, with a word and meme of the day.
 - **Weekly dossier:** your own questions, answered with the week's stories.
 - **Pages:** [AI laws by country](https://projectaipulse.com/tracker/), [AI standards](https://projectaipulse.com/standards/), [glossary](https://projectaipulse.com/glossary/).
+- **Glossary:** 146 words in plain English, marked Everyday or Technical, each with its newest story. Each run lists words 3+ outlets use that it lacks (`python -m aipulse glossary`); they are written up by hand.
 - **RSS:** one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
 
 ## How we keep it legal
 
 1. **robots.txt must allow us**, checked before every request. github.com pages are never read, only GitHub's API.
-2. **Terms:** news and other sites are read only if their terms don't forbid robots or limit use to personal use. AI labs' and companies' own blogs: robots.txt decides.
+2. **Terms:** news and other sites are read only if their terms don't forbid robots or limit use to personal use. AI labs' and companies' own blogs, and news sites whose terms pages our reader can't open: robots.txt decides.
 3. **No workarounds:** nothing behind a login, bot check or paywall.
 4. **Only what's needed:** headline, short description, date and link.
 5. **Credit and non-commercial use**, as the licences ask.
@@ -45,8 +46,10 @@ Every source's robots.txt and terms were audited on 7 October 2026. The evidence
 | Releases (newsrooms and release notes) | Microsoft, Meta, Amazon, Apple, xAI, Perplexity |
 | Releases (GitHub API) | 17 labs: OpenAI, Anthropic, Meta Llama, Hugging Face, NVIDIA, Mistral AI, xAI, DeepSeek, Qwen, Moonshot AI, MiniMax, Z.ai, StepFun, Tencent Hunyuan, ByteDance Seed, Baidu, Ant Group |
 | Releases (Hugging Face API) | 47 labs: OpenAI, Meta, Google, Microsoft, NVIDIA, Apple, Amazon, IBM, Mistral AI, xAI, DeepSeek, Qwen, Moonshot AI, MiniMax, Z.ai, StepFun, Tencent, ByteDance Seed, Baidu, Ant Group, Cohere, Hugging Face, Black Forest Labs, Stability AI, Ai2, Liquid AI, Xiaomi MiMo, Aleph Alpha, Sarvam AI, Nous Research, Kyutai, AI21 Labs, OpenBMB, LG AI Research, Upstage, Meituan, Lightricks, Wan, TII Falcon, Salesforce, ServiceNow, Prime Intellect, Nari Labs, Sesame, Resemble AI, Swiss AI |
+| Releases (Hugging Face trending) | New models from verified organisations we don't follow by name: 200+ likes, created in the last 60 days, no quantised copies, adapters or merges |
+| Releases (GitHub releases) | Major and minor versions (no patches or betas) of 15 open-source projects: vLLM, Ollama, Transformers, PyTorch, Diffusers, TensorRT-LLM, Open WebUI, MLX, JAX, TRL, PEFT, MCP Python SDK, OpenAI Agents SDK, DeepSpeed, Keras |
 | Releases (labs' APIs) | Anthropic, OpenAI |
-| Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation, Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International, The Elec, BusinessKorea · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports, Contxto · **Practitioners:** Simon Willison, Lil'Log, METR · **Incidents:** AI Incident Database (CC BY-SA 4.0) |
+| Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation, Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International, The Elec, BusinessKorea · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports, Contxto · **Spanish and Portuguese (translated offline):** Xataka (Spain), DPL News, FayerWayer, TeleSemana (Latin America), Olhar Digital, Tecnoblog (Brazil) · **More Asia and MENA:** Dawn (Pakistan), Japan Today, CNA (Singapore), Saudi Gazette · **Practitioners:** Simon Willison, Lil'Log, METR · **Incidents:** AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma, ISED Canada, CLTC (UC Berkeley), ITU, Partnership on AI, Smart Africa, NTIA, DARPA, NSF, UK AI Security Institute |
 | Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, The Conversation, Data Center Knowledge, Data Center POST, Greenpeace International, Global Energy Monitor · **Europe:** European Commission (energy) · **UK:** GOV.UK, Techerati, DCNN · **Africa:** Africa Data Centres Association · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists, Southern Environmental Law Center, Food & Water Watch, Energy Innovation |

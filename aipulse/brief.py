@@ -31,6 +31,8 @@ _BOILERPLATE = re.compile(
     r"has a degree in|\bis a (senior |staff |contributing )?(reporter|writer|editor|journalist|correspondent)\b|"
     r"follow us on|share this article|cookies",
     re.I)
+_WP_FOOTER = re.compile(r"\s*\b(?:The post|O post|El post|La entrada) .{1,300}? (?:appeared first on|apareceu primeiro em|"
+                        r"apareció primero en) .{1,80}$")
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z\"'“‘(])")
 # A period after these (or after a single initial) doesn't end a sentence: "Gov. Tina Kotek", "U.S. Sen."
 _ABBREV = re.compile(r"(\b[A-Z]|\b(Gov|Sen|Rep|Rev|Dr|Mr|Mrs|Ms|Prof|Gen|Lt|Col|Sgt|St|Jr|Sr|Inc|Corp|Co|Ltd|"
@@ -75,6 +77,8 @@ def clean_title(title: str, source: str = "") -> str:
 
 def clean_summary(text: str, title: str, source: str = "") -> str:
     text = re.sub(r"\s+", " ", text or "").strip()
+    # WordPress's footer, often with no full stop before it: "The post <headline> appeared first on <site>."
+    text = _WP_FOOTER.sub("", text).strip()
     if not text:
         return ""
     # "<headline> <publisher>": nothing to add.

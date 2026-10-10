@@ -45,7 +45,8 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
     for attempt in range(EMPTY_RETRIES if src.get("expect_entries") else 1):
         if attempt:
             time.sleep(EMPTY_WAIT * attempt)
-        entries = parse(fetcher(src["url"]), **({"lab": src["lab"]} if src.get("lab") else {}))
+        entries = parse(fetcher(src["url"]), **({"lab": src["lab"]} if src.get("lab") else {}),
+                        **({"fetcher": fetcher} if src.get("format") in feeds.FETCHING else {}))
         if entries or not src.get("expect_entries"):
             return entries
     raise EmptyFeed(f"no entries after {EMPTY_RETRIES} tries")
@@ -93,6 +94,9 @@ def in_english(conn, title: str, summary: str, url: str = "", source: str = "",
     if not any(langs):
         return title, summary, url
     lang = next(l for l in langs if l)
+    # a short headline may not show its language when its summary does ("China restringe chatbots que simulam
+    # namoros"): it is translated too, unless it reads as English
+    langs = [l or (lang if t and not translate.reads_english(t) else None) for l, t in zip(langs, (title, summary))]
     name = translate.LANGUAGE_NAMES[lang]
     if fetcher and url:
         found = english_version(url, fetcher)
@@ -424,6 +428,11 @@ def status_report(conn) -> str:
     lines = ["### AI Pulse",
              f"- **Stories:** {total:,} in total, {week:,} from the last 7 days",
              f"- **Failing sources:** {', '.join(failing) if failing else 'none'}"]
+    from . import glossary
+    words = glossary.candidates(store.cards(conn, days=glossary.CANDIDATE_DAYS, limit=10**6)[0], top=15)
+    if words:  # new words in the news for the glossary, to write up by hand
+        lines.append("- **Glossary candidates** (outlets, stories): "
+                     + ", ".join(f"{w['word']} ({w['outlets']}, {w['stories']})" for w in words))
     return "\n".join(lines) + "\n"
 
 

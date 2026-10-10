@@ -14,7 +14,8 @@ Kinds:
   unconfirmed   the terms page refuses automated readers: someone has to read it in a browser before it counts
   robots.txt    an AI lab's or company's own blog, read because its robots.txt allows it (the owner's rule for these
                 blogs, 10 Oct 2026: robots.txt decides, and a site without one may be read); what its terms say, if
-                read, is noted
+                read, is noted; also, since the same day, a news site whose terms page refuses or hides from our
+                reader (the owner's rule: robots.txt decides there too)
   owner's choice  (PLATFORM only) a risk the project owner accepted knowingly
 """
 
@@ -130,7 +131,26 @@ TERMS: dict[str, tuple[str, str, str]] = {
                                 "Copyright policy (Korean), as The Elec's: no reproduction without consent; nothing on "
                                 "robots, feeds or personal use; checked 10 Oct 2026"),
     "contxto.com": ("no terms", "", "No terms page linked from the site; checked 10 Oct 2026"),
+    "dplnews.com": ("terms read", "https://dplnews.com/aviso-legal/",
+                    "Aviso legal (Spanish): no reproduction or commercial use of its content without consent; nothing on "
+                    "robots, feeds or personal use; checked 10 Oct 2026"),
+    "olhardigital.com.br": ("terms read", "https://olhardigital.com.br/termos-de-uso/",
+                            "Termos de uso e privacidade (Portuguese): about readers' data; nothing on robots, feeds, "
+                            "reproduction or personal use; checked 10 Oct 2026"),
+    "www.xataka.com": ("licence", "https://www.weblogssl.com/contenidos",
+                       "Webedia España's sites: Creative Commons, non-commercial use with attribution by a direct link "
+                       "(no nofollow) to the original; checked 10 Oct 2026"),
     "www.wamda.com": ("licence", "https://www.wamda.com/legal", "Creative Commons Attribution-NonCommercial-NoDerivatives"),
+    # Added 10 Oct 2026 under the owner's rule for news sites whose terms pages refuse or hide from our reader
+    # (kind "robots.txt"): robots.txt allows the feed; checked 10 Oct 2026
+    "tecnoblog.net": ("robots.txt", "", "robots.txt allows the feed; its site and terms pages answer our reader 403"),
+    "www.fayerwayer.com": ("robots.txt", "", "robots.txt allows the feed; no terms page linked or found"),
+    "www.telesemana.com": ("robots.txt", "", "robots.txt allows the feed; no terms page linked or found"),
+    "www.dawn.com": ("robots.txt", "", "robots.txt allows the feed; its terms page answers our reader 403"),
+    "japantoday.com": ("robots.txt", "https://japantoday.com/terms", "robots.txt allows the feed; its terms page is "
+                       "blank to our reader"),
+    "www.channelnewsasia.com": ("robots.txt", "", "robots.txt allows the feed; no terms page linked or found"),
+    "saudigazette.com.sa": ("robots.txt", "", "robots.txt allows the feed; no terms page linked or found"),
     "en.mercopress.com": ("no terms", "", "No terms page linked from the site"),
     "www.batimes.com.ar": ("no terms", "", "No terms page linked from the site"),
     "latinamericareports.com": ("no terms", "", "No terms page linked from the site"),

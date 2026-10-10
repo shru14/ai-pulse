@@ -280,6 +280,25 @@ SOURCES = [
      "url": HF_ORG.format("ResembleAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
     {"name": "Swiss AI on Hugging Face", "lab": "Swiss AI", "format": "hf_models", "category": "tool",
      "url": HF_ORG.format("swiss-ai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    # And everyone else's: new models from verified organisations on Hugging Face's trending list, 200+ likes, no
+    # copies (feeds.parse_hf_trending). Added 10 Oct 2026; the list is today's, so it has no history.
+    {"name": "Hugging Face trending", "format": "hf_trending", "category": "tool",
+     "url": "https://huggingface.co/api/models?sort=trendingScore&direction=-1&limit=200", "max_age_days": 60,
+     "launch_pages": HF_MODEL},
+    # Open-source AI projects' major and minor releases through GitHub's API (feeds.parse_github_releases), back to 2023.
+    # Added 10 Oct 2026; projects that number releases by build (llama.cpp) or date (OpenClaw), or ship a minor
+    # version weekly (ComfyUI), are left out.
+    *({"name": f"{lab} releases", "lab": lab, "format": "github_releases", "category": "tool",
+       "url": f"https://api.github.com/repos/{repo}/releases?per_page=100", "max_age_days": 1400,
+       "launch_pages": GITHUB_REPO}
+      for lab, repo in [("vLLM", "vllm-project/vllm"), ("Ollama", "ollama/ollama"),
+                        ("Hugging Face Transformers", "huggingface/transformers"), ("PyTorch", "pytorch/pytorch"),
+                        ("Hugging Face Diffusers", "huggingface/diffusers"), ("TensorRT-LLM", "NVIDIA/TensorRT-LLM"),
+                        ("Open WebUI", "open-webui/open-webui"), ("Apple MLX", "ml-explore/mlx"), ("JAX", "jax-ml/jax"),
+                        ("Hugging Face TRL", "huggingface/trl"), ("Hugging Face PEFT", "huggingface/peft"),
+                        ("MCP Python SDK", "modelcontextprotocol/python-sdk"),
+                        ("OpenAI Agents SDK", "openai/openai-agents-python"), ("DeepSpeed", "deepspeedai/DeepSpeed"),
+                        ("Keras", "keras-team/keras")]),
     # The labs' own model lists, through their APIs with the project's free keys (their terms allow access through
     # the API; terms.py): every model they serve, closed ones too. Skipped until the key is set (feeds.API_KEYS).
     {"name": "Anthropic API models", "lab": "Anthropic", "format": "anthropic_models", "category": "tool",
@@ -332,6 +351,20 @@ SOURCES = [
     {"name": "Buenos Aires Times", "url": "https://www.batimes.com.ar/feed", "category": "news", "ai_in_title": True},
     {"name": "LatinAmerica Reports", "url": "https://latinamericareports.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Contxto", "url": "https://contxto.com/en/feed/", "category": "news", "ai_in_title": True},  # added 10 Oct 2026
+    # Spanish and Portuguese, translated offline (translate.py) before the AI test; added 10 Oct 2026
+    {"name": "DPL News", "url": "https://dplnews.com/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Olhar Digital", "url": "https://olhardigital.com.br/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Xataka", "url": "https://www.xataka.com/feedburner.xml", "category": "news", "ai_in_title": True},
+    # Outlets whose terms pages our reader can't read: robots.txt decides (the owner's rule, 10 Oct 2026; terms.py)
+    {"name": "Tecnoblog", "url": "https://tecnoblog.net/feed/", "category": "news", "ai_in_title": True},
+    {"name": "FayerWayer", "url": "https://www.fayerwayer.com/arc/outboundfeeds/rss/?outputType=xml", "category": "news",
+     "ai_in_title": True},
+    {"name": "TeleSemana", "url": "https://www.telesemana.com/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Dawn", "url": "https://www.dawn.com/feeds/home", "category": "news", "ai_in_title": True},
+    {"name": "Japan Today", "url": "https://japantoday.com/feed", "category": "news", "ai_in_title": True},
+    {"name": "CNA", "url": "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml", "category": "news",
+     "ai_in_title": True},
+    {"name": "Saudi Gazette", "url": "https://saudigazette.com.sa/rssFeed/74", "category": "news", "ai_in_title": True},
     # Africa
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
