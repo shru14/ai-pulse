@@ -355,6 +355,16 @@ SOURCES = [
     {"name": "DPL News", "url": "https://dplnews.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Olhar Digital", "url": "https://olhardigital.com.br/feed/", "category": "news", "ai_in_title": True},
     {"name": "Xataka", "url": "https://www.xataka.com/feedburner.xml", "category": "news", "ai_in_title": True},
+    # Outlets whose terms pages our reader can't read: robots.txt decides (the owner's rule, 10 Oct 2026; terms.py)
+    {"name": "Tecnoblog", "url": "https://tecnoblog.net/feed/", "category": "news", "ai_in_title": True},
+    {"name": "FayerWayer", "url": "https://www.fayerwayer.com/arc/outboundfeeds/rss/?outputType=xml", "category": "news",
+     "ai_in_title": True},
+    {"name": "TeleSemana", "url": "https://www.telesemana.com/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Dawn", "url": "https://www.dawn.com/feeds/home", "category": "news", "ai_in_title": True},
+    {"name": "Japan Today", "url": "https://japantoday.com/feed", "category": "news", "ai_in_title": True},
+    {"name": "CNA", "url": "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml", "category": "news",
+     "ai_in_title": True},
+    {"name": "Saudi Gazette", "url": "https://saudigazette.com.sa/rssFeed/74", "category": "news", "ai_in_title": True},
     # Africa
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
