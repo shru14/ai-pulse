@@ -127,7 +127,12 @@ def privacy_page() -> str:
 
 def about_page(page: str) -> str:
     """The site's page opened at About (the template holds its text): its own title, description and address."""
-    title, desc, url = "About · AI Pulse", "What AI Pulse is, where its stories come from and how it is made.", f"{rss.SITE}/about/"
+    return page_at(page, "about", "About · AI Pulse", "What AI Pulse is, where its stories come from and how it is made.")
+
+
+def page_at(page: str, path: str, title: str, desc: str) -> str:
+    """The site's page with its own title, description and address (/about/, /discussing/)."""
+    url = f"{rss.SITE}/{path}/"
     page = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", page, count=1)
     page = re.sub(r'(<meta (?:name="description"|property="og:description") content=")[^"]*', rf"\g<1>{desc}", page)
     page = re.sub(r'(<meta property="og:title" content=")[^"]*', rf"\g<1>{title}", page, count=1)
@@ -366,6 +371,9 @@ def build(conn, out: str | Path) -> int:
     (out / "index.html").write_text(page, encoding="utf-8")
     (out / "about").mkdir()
     (out / "about" / "index.html").write_text(about_page(page), encoding="utf-8")  # the same page, opened at About
+    (out / "discussing").mkdir()
+    (out / "discussing" / "index.html").write_text(page_at(page, "discussing", "People are discussing · AI Pulse",
+        "The most-discussed AI threads on Hacker News in the last two days."), encoding="utf-8")
     for cat, (path, *_) in STREAM_PAGES.items():  # /policy/ and the rest: the same page, opened at that stream
         (out / path).mkdir()
         (out / path / "index.html").write_text(stream_page(page, cat), encoding="utf-8")
@@ -383,7 +391,7 @@ def build(conn, out: str | Path) -> int:
     places += kind_pages.build(conn, len(cards), out)  # Industry's kinds of story, a page each (industry/<kind>/)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
-    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)
