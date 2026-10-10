@@ -655,7 +655,7 @@ header.top.home{height:auto;padding-top:10px}
 .today-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(250px,1fr);gap:20px;align-items:stretch}
 .today-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
 .tcard{display:flex;flex-direction:column;border:3px solid var(--ink);background:var(--surface);color:var(--ink);text-decoration:none;min-width:0}
-.tcard .timg{aspect-ratio:16/9;border:0!important;border-bottom:3px solid var(--ink)!important;border-radius:0}
+.tcard .timg{aspect-ratio:21/9;border:0!important;border-bottom:3px solid var(--ink)!important;border-radius:0}
 .tcard .timg .mchip{position:absolute;left:8px;top:8px}
 .tcard .srcs{position:absolute;left:8px;bottom:8px;background:var(--ink);color:var(--bg);font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 7px}
 .tcard .tb{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px}
@@ -1776,7 +1776,6 @@ function renderToday(top){
     // Today ranks by how many outlets carry a story, so each card says how many, on its picture
     if(outlets(it) > 1) pic.append(el("span","srcs", outlets(it) + " sources"));
     body.append(shortKicker(it), el("h3", null, it.title));
-    if(it.summary) body.append(el("p", null, it.summary));
     card.append(pic, body); box.append(card);
   });
 }
@@ -1787,7 +1786,7 @@ async function loadSocial(){
     const d = await (await fetch("social.json", {cache: "no-cache"})).json();
     if(!d.threads || !d.threads.length) return;
     const rows = $("social-rows");
-    rows.replaceChildren(...d.threads.slice(0, 5).map(t => {
+    rows.replaceChildren(...d.threads.slice(0, 3).map(t => {
       const tr = el("tr"), a = el("a", null, t.title), td = el("td"), hn = el("a", null, t.comments.toLocaleString());
       a.href = t.hn; a.target = "_blank"; a.rel = "noopener"; a.title = domainOf(t.url);
       hn.href = t.hn; hn.target = "_blank"; hn.rel = "noopener"; hn.title = "comments on Hacker News";
