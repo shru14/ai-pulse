@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "social.json",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "social.json", "today", "today.json",
         "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -645,7 +645,7 @@ def test_static_build_holds_every_card(tmp_path):
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and 'data-kind="tutorial"' in tutorials and "Updated" not in tutorials
     assert 'href="industry/tutorials/"' in (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
-    assert sitemap.count("<url>") == 1 + 7 + 2 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/
+    assert sitemap.count("<url>") == 1 + 7 + 3 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -655,7 +655,8 @@ def test_static_build_holds_every_card(tmp_path):
     assert "<loc>https://projectaipulse.com/infra/</loc>" in sitemap
     from aipulse.static import STREAM_PAGES
     for cat, (path, _, title, _) in STREAM_PAGES.items():  # the page sets the same titles
-        assert f'{cat}: "{title}"' in page and f'href="/{path}/" data-go="{cat}"' in page
+        assert f'{cat}: "{title}"' in page
+        assert (f'href="/{path}/" data-go="{cat}"' in page) == (cat != "all")  # All stories: no menu link, a tag or search lands there
     # "See yesterday's full table" opens the newest day's page
     daily = tmp_path / "site" / "daily"
     days = sorted(p.name for p in daily.iterdir() if p.name not in ("latest.html", "index.html", "sample.html") and p.suffix == ".html")
@@ -696,8 +697,8 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     # the site's masthead and footer, the meaning with the other words in it linked, related terms, the stories
     assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="site.css"' in page
     assert '<h1 class="word">Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
-    assert "<h2>Related terms</h2>" in page and page.count('"><div><a href="/glossary/') == glossary_pages.RELATED
-    assert '<span class="kind">AI glossary · Models · Technical</span>' in page and "Added to the glossary" not in page
+    assert "<h2>Related terms</h2>" in page and page.count('<li><div><a href="/glossary/') == glossary_pages.RELATED
+    assert '<span class="kind">AI glossary · Models</span>' in page and "Added to the glossary" not in page
     assert "Mentioned in 1 story in the last 7 days." in page and '/all/?' not in page
     # its latest stories, found on the page itself (from data.json, as the site's underlines find them)
     assert '<h2 id="stories">Latest stories with this word</h2>' in page and 'data-match="[&quot;MoE&quot;' in page and 'data-case=1' in page
@@ -706,14 +707,13 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     assert '"@type": "DefinedTerm"' in page and 'rel="canonical" href="https://projectaipulse.com/glossary/mixture-of-experts/"' in page
     index = (tmp_path / "glossary" / "index.html").read_text(encoding="utf-8")
     az = index[index.index("<h2>A to Z</h2>"):]
-    assert az.count('"><div><a href="/glossary/') == len(glossary.ENTRIES) and '<h2 id="A">A</h2>' in az
-    assert az.count('<li data-level="Technical">') == len(glossary.TECHNICAL) and 'id="levels"' in az  # Everyday / Technical
-    # words added in the last 30 days first, newest first, with the day each was added
-    new = index[index.index("<h2>New this month</h2>"):index.index("<h2>A to Z</h2>")]
-    assert new.count("<li ") == sum(e["added"] > "2026-09-29" for e in glossary.ENTRIES) and "Added 10 Oct 2026" in new
+    assert az.count('<li><div><a href="/glossary/') == len(glossary.ENTRIES) and '<h2 id="A">A</h2>' in az
+    assert 'id="levels"' not in index and "Everyday" not in index  # no levels: one list, A to Z, each word with its group
+    # no "New this month" list (a new word has its "New" tag and its added day on its own page)
+    assert "New this month" not in index and index.index("<h2>In the news · past 7 days</h2>") < index.index("<h2>A to Z</h2>")
     assert "Added to the glossary on 10 Oct 2026." in (tmp_path / "glossary" / "synthid" / "index.html").read_text(encoding="utf-8")
     cloud = index[index.index('<div class="cloud"'):index.index("<h2>A to Z</h2>")]
-    assert cloud.count("<a ") == 2 and "Mixture of Experts</a>" in cloud  # this week's words only
+    assert cloud.count("<a ") == 2 and "Mixture of Experts</a>" in cloud  # the past 7 days' words only
     assert (tmp_path / "site.css").is_file()
 
 
@@ -2733,6 +2733,16 @@ def test_each_days_meme_template_comes_back_only_after_5_days():
     weekly = [memes.template_of_week(m) for m in mondays]
     assert all(a != b for a, b in zip(weekly, weekly[1:])) and set(weekly[:4]) == set(memes.WEEK_ROTATION)
     assert not set(memes.WEEK_ROTATION) & memes.TALL  # only wide ones, readable in the site's tile
+    # the site's meme of the week: the past 7 days (today and the 6 days before), the next template each day
+    days7 = [date(2026, 10, 10) + timedelta(days=k) for k in range(8)]
+    assert all(memes.template_of_7_days(a) != memes.template_of_7_days(b) for a, b in zip(days7, days7[1:]))
+    today = date(2026, 10, 10)
+    cards = [{"title": f"Story {k}", "summary": "", "url": f"https://e.com/{k}", "source": "E", "category": "news",
+              "kind": "news", "date": (today - timedelta(days=k)).isoformat(), "also": [], "tags": []} for k in range(9)]
+    assert [c["title"] for c in memes.last_7_days(cards, today)] == [f"Story {k}" for k in range(7)]
+    p = memes.payload(cards, today)
+    assert (p["from"], p["to"], p["week"]) == ("2026-10-04", "2026-10-10", 7)
+    assert p["image"] == "memes/7days-2026-10-10.jpg" and p["format"] == memes.template_of_7_days(today)
 
 
 # ---------- The weekly briefing (in testing): vectors, hybrid search, the briefing ----------
@@ -3163,3 +3173,51 @@ def test_hacker_news_keeps_recent_ai_threads_only(tmp_path):
     assert social.hacker_news(conn, fetcher=fetcher, now=now) == 1
     (t,) = social.payload(conn)["threads"]
     assert t["title"] == "OpenAI releases a new model" and t["hn"] == "https://news.ycombinator.com/item?id=1" and t["comments"] == 120
+
+
+def test_todays_board_keeps_the_days_start_and_top_3(tmp_path):
+    from datetime import date
+    from aipulse import today as board
+    conn = store.connect(tmp_path / "b.db")
+    day = date(2026, 10, 11)
+    def card(i, n, d="2026-10-11", cat="news"):
+        return {"id": i, "date": d, "category": cat, "also": [{}] * (n - 1)}
+    # the week's cover (most outlets in 7 days) is left out; older than yesterday and other streams too
+    cards = [card("cover", 20, "2026-10-06"), card("a", 9), card("b", 5, "2026-10-10"), card("c", 5), card("d", 2),
+             card("old", 3, "2026-10-09"), card("x", 50, cat="other")]
+    assert board.ranking(cards, day) == ["a", "c", "b", "d"]  # ties: the newer first
+    first = board.record(conn, cards, day)
+    assert first["start"] == {"a": 1, "c": 2, "b": 3, "d": 4} and first["peak"] == {"a": 1, "c": 2, "b": 3}
+    # later that day: "d" climbs to the top, "e" is new; the start stays, the best ranks too
+    later = [card("d", 12), card("e", 10)] + [c for c in cards if c["id"] != "d"]
+    board.record(conn, later, day)
+    p = board.payload(conn, later, day)
+    assert p["ids"] == ["d", "e", "a", "c", "b"] and p["start"] == {"a": 1, "c": 2, "b": 3, "d": 4}
+    assert p["peak"] == {"a": 1, "c": 2, "b": 3, "d": 1, "e": 2}
+    # the next day starts afresh
+    assert board.record(conn, later, date(2026, 10, 12))["start"]["d"] == 1
+
+
+def test_todays_board_breaks_ties_by_buzz():
+    from datetime import date
+    from aipulse import today as board
+    day = date(2026, 10, 10)
+    def card(i, title, n=1, d="2026-10-09"):
+        return {"id": i, "date": d, "category": "news", "title": title, "also": [{}] * (n - 1)}
+    cards = [card("rimac", "Rimac, Ecoblox develop data centre power", 2), card("jev", "Maker of Jev valued at $7.5B", 2),
+             card("big", "OpenAI offers a new service", 2), card("cover", "The week's biggest story", 9, "2026-10-06")]
+    cards += [card(f"j{k}", f"A guide to Jev, part {k}", d="2026-09-20") for k in range(5)]
+    cards += [card(f"o{k}", f"OpenAI story {k}", d="2026-09-20") for k in range(board.BIG + 1)]  # always in the news
+    cards += [card("m", "The Model of the year"), card("m2", "a model of data")]  # "Model" is a word, not a name
+    loud = board.buzz(cards, day)
+    assert loud["jev"] == 6 and loud["rimac"] == 1 and loud["big"] == 0 and loud["m"] == 0
+    assert board.ranking(cards, day)[:3] == ["jev", "rimac", "big"]  # 2 outlets each: Jev's buzz first
+
+
+def test_glossary_note_lists_the_branchs_new_words_to_approve():
+    from aipulse import glossary
+    e = {"term": "Vision-language model", "group": "Models", "def": "An AI model that reads pictures and text."}
+    subject, text, html = glossary.note([e], "glossary/2026-10-11")
+    assert subject == "AI Pulse glossary: 1 new word to approve"
+    assert "not on the site yet" in text and "merge glossary/2026-10-11" in text
+    assert "<th align" in html and "<b>Vision-language model</b>" in html  # a table: word, group, meaning

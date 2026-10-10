@@ -18,12 +18,12 @@ six streams and links every card to the original.
 
 ## Features
 
-- **Site:** a front page (a ticker of the latest stories, Today in AI, the week's story, word and meme, each stream's top three, and what people are discussing), a page per stream, filters and search back to 2023, dark mode, an [About page](https://projectaipulse.com/about/) and [what people are discussing](https://projectaipulse.com/discussing/).
+- **Site:** a front page (a ticker of the latest stories, Today in AI as a leaderboard ranked by sources, with the [full list](https://projectaipulse.com/today/), the past 7 days' story, word and meme, each stream's top three (all updated every day), and what people are discussing), a page per stream, filters and search back to 2023, dark mode, an [About page](https://projectaipulse.com/about/) and [what people are discussing](https://projectaipulse.com/discussing/).
 - **One card per event**, in English (offline translation where needed).
 - **Daily or weekly email** of the streams you pick, with a word and meme of the day.
 - **Weekly dossier:** your own questions, answered with the week's stories.
 - **Pages:** [AI laws by country](https://projectaipulse.com/tracker/), [AI standards](https://projectaipulse.com/standards/), [glossary](https://projectaipulse.com/glossary/).
-- **Glossary:** 146 words in plain English, marked Everyday or Technical, each with its newest story. Each run lists words 3+ outlets use that it lacks (`python -m aipulse glossary`); they are written up by hand.
+- **Glossary:** 146 words in plain English, each with its newest story. Each run lists words 3+ outlets use that it lacks (`python -m aipulse glossary`); they are written up by hand.
 - **RSS:** one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
 
 ## How we keep it legal

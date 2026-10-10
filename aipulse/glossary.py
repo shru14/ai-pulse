@@ -3,7 +3,7 @@
 Each entry: the term, its group, a short definition and `match`, the ways stories write it (regular expressions
 that work in both Python and the browser; `case` makes them case-sensitive, for acronyms like RAG or MoE).
 The site marks the first few terms in each card's summary and lists them all behind the Glossary button;
-build() adds how many recent stories mention each term, so the panel can show what's in the news this week, and
+build() adds how many recent stories mention each term, so the panel can show what's in the news in the past 7 days, and
 the newest story that uses it, as an example. Each entry has the day it was added (ADDED) and a level: Technical
 for the words specialists use (TECHNICAL), Everyday for the rest.
 New words come from new stories: candidates() finds the acronyms, hyphenated words and technical phrases that 3+
@@ -507,6 +507,31 @@ def _names() -> set[str]:
 
 
 _NAME = re.compile("|".join(f"(?:{_PATTERNS[e['id']].pattern})" for e in ENTRIES if e["group"] == "Names"), re.I)
+
+
+REPO = "https://github.com/shru14/ai-pulse"
+
+
+def note(new: list[dict], branch: str) -> tuple[str, str, str]:
+    """(subject, text, html) of the project inbox's note: the words a glossary/<day> branch adds, a row each (word,
+    group, meaning), and how to publish them (they go live only once approved)."""
+    from html import escape
+    n = len(new)
+    subject = f"AI Pulse glossary: {n} new word{'s' if n > 1 else ''} to approve"
+    lead = f"Drafted today on the branch {branch}, not on the site yet:"
+    tail = f"To publish them, tell Claude: merge {branch}. To change one, say which. Changes: {REPO}/compare/main...{branch}"
+    text = [lead, ""] + [f"{e['term']} ({e['group']})\n  {e['def']}\n" for e in new] + [tail]
+    cell = 'style="padding:8px 10px;border-bottom:1px solid #e3e5e8;vertical-align:top;font-size:14px"'
+    html = ('<!doctype html><html><body style="margin:0;padding:16px;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a">'
+            f'<p style="font-size:15px">{escape(lead)}</p>'
+            '<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:680px">'
+            + '<tr>' + "".join(f'<th align="left" {cell}>{h}</th>' for h in ("Word", "Group", "Meaning")) + '</tr>'
+            + "".join(f'<tr><td {cell}><b>{escape(e["term"])}</b></td><td {cell}>{escape(e["group"])}</td>'
+                      f'<td {cell}>{escape(e["def"])}</td></tr>' for e in new)
+            + f'</table><p style="font-size:13px;color:#5f6368">To publish them, tell Claude: merge {escape(branch)}. '
+            f'To change one, say which. <a href="{REPO}/compare/main...{escape(branch)}" style="color:#1a4fd6">See the changes</a></p>'
+            '</body></html>')
+    return subject, "\n".join(text), html
 
 
 def candidates(cards: list[dict], today: date | None = None, top: int = 30) -> list[dict]:
