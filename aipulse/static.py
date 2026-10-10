@@ -96,13 +96,9 @@ def stream_page(page: str, cat: str) -> str:
 
 # What the daily email's sign-up keeps and why (EU GDPR, Art. 13); kept in step with apps-script/Code.gs.
 PRIVACY_ROWS = [
-    ("Your email address", "To send the emails you asked for", "Until you unsubscribe; an unconfirmed sign-up, 7 days"),
-    ("The streams and how often you chose", "To send only those", "Until you unsubscribe"),
-    ("Your optional choices: labels to see more or less of, words, up to 3 questions for the weekly dossier",
-     "To pick and order your stories; the dossier answers each question without saying who asked it",
-     "Until you change them or unsubscribe"),
-    ("Random codes for your confirm, choices and unsubscribe links, and a count of confirm emails sent today",
-     "So only you can change your choices, and nobody can flood an inbox", "Until you unsubscribe"),
+    ("Your email address", "To send your email", "Until you unsubscribe (unconfirmed: 7 days)"),
+    ("Your choices: streams, how often, topics, words, questions", "To pick your stories", "Until you unsubscribe"),
+    ("Codes in your links", "So only you can change them", "Until you unsubscribe"),
 ]
 
 
@@ -118,20 +114,15 @@ def privacy_page() -> str:
             'padding:6px 8px;border-top:1px solid #ddd}th{font-weight:600}a{color:#0072B2}'
             '@media(max-width:600px){td,th{display:block;border:0;padding:2px 0}tr{display:block;border-top:1px solid #ddd;'
             'padding:6px 0}thead{display:none}}</style></head><body>'
-            f'<h1>Privacy</h1><p>AI Pulse is a free, non-commercial project. Responsible for your data: AI Pulse, {mail}. '
+            f'<h1>Privacy</h1><p>AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}. '
             '<a href="./">Back to AI Pulse</a></p>'
-            '<h2>The site</h2><p>No cookies, no analytics, no ads, and nothing loaded from other servers. Your browser '
-            'remembers, on your own device only, your last time range and whether it has already shown you the '
-            'sign-up prompt. The site is hosted on GitHub Pages; GitHub '
-            'may log visitors’ IP addresses to keep its service secure (see GitHub’s privacy statement).</p>'
-            '<h2>The daily email</h2><p>Only if you sign up and confirm by email: your consent, which you can withdraw at '
-            'any time with the unsubscribe link in every email or your mail app’s unsubscribe button.</p>'
+            '<h2>The site</h2><p>No cookies, analytics or ads. Your settings stay in your own browser. GitHub Pages, '
+            'which hosts the site, may log IP addresses for security.</p>'
+            '<h2>The email</h2><p>Only if you sign up and confirm, and you can unsubscribe from any email.</p>'
             f'<table><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
-            '<p>It is kept in the project’s Google account (a Google Apps Script web app), and the emails are sent from its '
-            'Gmail address, so Google processes it for us. The project inbox gets a short note when someone subscribes; '
-            'ask and it is deleted. Nothing is sold or shared with anyone else.</p>'
-            '<h2>Your rights</h2><p>You can ask to see, correct or delete what we keep, or object to its use: email '
-            f'{mail}. You can also complain to your data protection authority.</p></body></html>')
+            '<p>Kept in the project’s Google account and sent from its Gmail. Never sold or shared.</p>'
+            f'<h2>Your rights</h2><p>Ask to see, correct or delete your data: {mail}. You can also complain to your data '
+            'protection authority.</p></body></html>')
 
 
 def opml(title: str = "AI Pulse") -> str:
