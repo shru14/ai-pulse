@@ -657,6 +657,7 @@ header.top.home{height:auto;padding-top:10px}
 .tcard{display:flex;flex-direction:column;border:3px solid var(--ink);background:var(--surface);color:var(--ink);text-decoration:none;min-width:0}
 .tcard .timg{aspect-ratio:16/9;border:0!important;border-bottom:3px solid var(--ink)!important;border-radius:0}
 .tcard .timg .mchip{position:absolute;left:8px;top:8px}
+.tcard .srcs{position:absolute;left:8px;bottom:8px;background:var(--ink);color:var(--bg);font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 7px}
 .tcard .tb{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px}
 .tcard h3{font:400 16px/1.25 var(--head);margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .tcard .tb p{margin:0;font-size:13.5px;line-height:1.45;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -1738,6 +1739,8 @@ function renderToday(top){
     const card = el("a","tcard k-" + it.category), pic = el("div","thumb timg"), body = el("div","tb");
     card.href = it.url; card.target = "_blank"; card.rel = "noopener";
     pic.append(storyArt(it), el("span","mchip", CAT_LABEL[it.category]));
+    // Today ranks by how many outlets carry a story, so each card says how many, on its picture
+    if(outlets(it) > 1) pic.append(el("span","srcs", outlets(it) + " sources"));
     body.append(shortKicker(it), el("h3", null, it.title));
     if(it.summary) body.append(el("p", null, it.summary));
     card.append(pic, body); box.append(card);
