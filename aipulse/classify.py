@@ -28,12 +28,15 @@ POLICY_TERMS = [
     r"\bAI Act\b", r"European Commission", r"\bEU\b", r"executive order", r"white house", r"ministry",
     r"government", r"lawsuit", r"\bsue[sd]?\b", r"court", r"ruling", r"antitrust", r"\bFTC\b", r"\bDOJ\b",
     r"copyright", r"export control", r"sanction", r"privacy regulator", r"\bGDPR\b", r"data protection",
-    r"(?<!Ray-)\bban\b", r"\bbans\b", r"safety institute",  # not "Ray-Ban Meta" glasses r"\bAISI\b", r"summit", r"treaty", r"election",
+    r"(?<!Ray-)\bban\b", r"\bbans\b", r"safety institute",  # not "Ray-Ban Meta" glasses
+    r"\bAISI\b", r"\btreaty\b", r"\belections?\b", r"\belectoral\b",
+    # a summit of governments, not a trade event ("AI ROI in Contact Center Summit", "TechCrunch Founder Summit")
+    r"\b(?:G7|G20|BRICS|NATO|ASEAN|UN|AI (?:Safety|Action|Impact|Seoul)|Trump-Xi|leaders['’]?)(?: [A-Z][a-z]+){0,2} summit\b",
     # "governance", but not enterprise products' "identity / data / runtime governance" (Collibra, Vanderbilt's IAM)
     r"policy", r"(?<!identity )(?<!data )(?<!runtime )(?<!access )(?<!cloud )(?<!security )(?<!model )governance",
     r"lawmakers", r"minister", r"president",
     # regulators, investigations and the executive branch
-    r"investigat", r"\bprobes?\b", r"scrutin", r"regulators?\b", r"watchdog", r"\bgovernor\b", r"\bgov\.",
+    r"(?<!threat )(?<!incident )(?<!agent )(?<!Agent )(?<!fraud )investigat", r"\bprobes?\b", r"scrutin", r"regulators?\b", r"watchdog", r"\bgovernor\b", r"\bgov\.",
     r"\bMPs?\b", r"\bcabinet\b", r"\bNIST\b", r"attorneys? general", r"administration\b", r"\badmin\b(?! (?:plugin|console|panel|tools?|controls?|settings|dashboard|roles?|access|users?|api)\b)",
 ]
 
@@ -86,7 +89,7 @@ _BLOG_LAUNCH = re.compile(r"\b[A-Z][\w.-]*[ -](?:v|R)?\d+(?:\.\d+)*\b(?<!\b(?:19
                           r"(?i:^access\b|\bupdates? (?:the )?[\w -]{0,40}\bwith\b|\bnow (?:supports?|available|lets)\b)")
 # ...and posts that aren't launches even when they "announce" or "introduce": deals, people, programmes,
 # customer stories and guides ("How Ramp engineers ..."), podcasts.
-_NOT_RELEASE = re.compile(r"^how\b|^why\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat|\bacquir|\bjoins?\b|\binitiative\b|\bprogram(?:me)?s?\b|"
+_NOT_RELEASE = re.compile(r"^how\b|^why\b|\bdonat|\bthe latest [^.]{0,25}\bnews\b|^see what\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat|\bacquir|\bjoins?\b|\binitiative\b|\bprogram(?:me)?s?\b|"
                           r"\bpodcast\b|\btrailer\b|\bepisode\b|\bfor (?:countries|governments|nonprofits)\b|"
                           r"\bletter\b|\bstate of\b|\broundup\b|\bweek\b|\bcourses?\b", re.I)
 
@@ -109,7 +112,10 @@ _EVENT = re.compile(r"\bwhat to expect (at|during)\b|\btheCUBE\b|\bwebinar\b|\bl
 
 # A customer's results with a product: "Proaction boosts sales 60% and saves 75+ hours with Codex".
 _CUSTOMER = re.compile(r"\b(boosts?|cuts?|saves?|reduces?|doubles?|triples?|speeds? up|turns?|scales?|resolves?)\b"
-                       r"[^.]{0,60}\b(with|using)\b", re.I)
+                       r"[^.]{0,60}\b(with|using)\b|"
+                       # a partner's app in a lab's product: "Radisson Hotel Group brings hotel discovery into ChatGPT"
+                       r"^(?!OpenAI|Anthropic|Google|ChatGPT|Claude|Gemini)[^:]{0,40}\bbrings\b[^.]{0,60}\b(?:into|to) "
+                       r"(?:ChatGPT|Claude|Gemini)\b", re.I)
 
 
 # Reporting of a study's or researchers' findings: "AI models show a willingness to harm humans ...", told by

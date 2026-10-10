@@ -74,6 +74,13 @@ SOURCES = [
     # labs' and companies' own blogs (10 Oct 2026): robots.txt decides, and a site without one may be read
     # (terms.py "robots.txt").
     {"name": "Sarvam AI", "url": "https://www.sarvam.ai/rss.xml", "category": "tool"},
+    # Gemini's own section of Google's blog: model launches (Gemini 4 Argon) and the Gemini app's features, which the
+    # AI feed above leaves out
+    {"name": "Google Gemini Blog", "url": "https://blog.google/products/gemini/rss/", "category": "tool"},
+    # Runway (now runway.com): its sitemap lists its posts; the section pages (/news/customers ...) aren't posts
+    {"name": "Runway", "url": "https://runwayml.com/sitemap.xml", "format": "page_list", "category": "tool",
+     "link": r"^https://runway\.com/(?:news/(?!(?:customers|company-news|safety|research|engineering|developers)$)"
+             r"|research/(?!(?:publications|rna-sessions)$))[a-z0-9-]+$"},
     {"name": "Google Cloud Blog (AI)", "url": "https://cloudblog.withgoogle.com/products/ai-machine-learning/rss/",
      "category": "tool"},
     {"name": "Thinking Machines", "url": "https://thinkingmachines.ai/blog/index.xml", "category": "tool",

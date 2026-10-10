@@ -64,6 +64,7 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "thinkingmachines.ai": ("robots.txt", "https://thinkingmachines.ai/legal/terms/",
                             "robots.txt allows the feed; checked 10 Oct 2026. Its terms cover its API service; nothing on robots, scrapers or feeds"),
     "updates.midjourney.com": ("robots.txt", "", "robots.txt allows the feed; checked 10 Oct 2026. Its terms page refuses automated readers"),
+    "runwayml.com": ("robots.txt", "", "robots.txt allows the sitemap and its runway.com posts; checked 10 Oct 2026"),
     "bfl.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
     "www.liquid.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
     "reflection.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),

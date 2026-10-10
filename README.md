@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 203 public sources (121 feeds and news pages, 17 AI labs' GitHub
+A free, non-commercial, worldwide briefing on AI. It reads 205 public sources (123 feeds and news pages, 17 AI labs' GitHub
 organisations, 47 AI labs' Hugging Face organisations, 18 official records and databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -56,8 +56,8 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 
 | Stream | Sources |
 |---|---|
-| Releases (feeds) | OpenAI, Hugging Face, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Ollama, Character.AI, Stability AI, Google AI, Google DeepMind, Google Research, Google Cloud (AI), Mistral, Cloudflare, Sakana AI, PyTorch, Together AI, ElevenLabs, Sarvam AI, Thinking Machines, Midjourney (not its weekly changelogs) |
-| Releases (news pages, no feed) | Anthropic, Meta AI, DeepSeek, Cohere, Moonshot AI, MiniMax, Google Developers Blog, Black Forest Labs, Liquid AI, Reflection AI, Cognition, Poolside, Reka, Figure |
+| Releases (feeds) | OpenAI, Hugging Face, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Ollama, Character.AI, Stability AI, Google AI, Google Gemini, Google DeepMind, Google Research, Google Cloud (AI), Mistral, Cloudflare, Sakana AI, PyTorch, Together AI, ElevenLabs, Sarvam AI, Thinking Machines, Midjourney (not its weekly changelogs) |
+| Releases (news pages, no feed) | Anthropic, Meta AI, DeepSeek, Cohere, Moonshot AI, MiniMax, Runway, Google Developers Blog, Black Forest Labs, Liquid AI, Reflection AI, Cognition, Poolside, Reka, Figure |
 | Releases (GitHub API: a lab's new repositories that 300+ people starred, back to 2023) | OpenAI, Anthropic, Meta Llama, Hugging Face, NVIDIA, Mistral AI, xAI, DeepSeek, Qwen, Moonshot AI, MiniMax, Z.ai, StepFun, Tencent Hunyuan, ByteDance Seed, Baidu, Ant Group (inclusionAI) |
 | Releases (Hugging Face API: a lab's open models, one story per release with all its sizes, only releases 300+ people liked, back to 2023) | OpenAI, Meta Llama, Meta, Google, Microsoft, NVIDIA, Apple, Amazon, IBM Granite, Mistral AI, xAI, DeepSeek, Qwen, Moonshot AI, MiniMax, Z.ai, StepFun, Tencent, ByteDance Seed, Baidu, Ant Group (inclusionAI), Cohere Labs, Hugging Face, Black Forest Labs, Stability AI, Ai2, Liquid AI, Xiaomi MiMo, Aleph Alpha, Sarvam AI, Nous Research, Kyutai, AI21 Labs, OpenBMB, LG AI Research, Upstage, Meituan LongCat, Lightricks, Wan (Alibaba), TII Falcon, Salesforce, ServiceNow, Prime Intellect, Nari Labs, Sesame, Resemble AI, Swiss AI |
 | Releases (developer release notes: only the lab's own launches) | xAI, Perplexity |

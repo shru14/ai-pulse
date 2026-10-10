@@ -1801,6 +1801,29 @@ def test_standards_news_is_never_a_release():
     assert categorize("OpenAI launches GPT-6 with new API features", "", "news") == "tool"  # releases unaffected
 
 
+def test_lab_blog_posts_that_launch_nothing_and_what_counts_as_policy():
+    # Seen on the labs' blogs restored on 10 Oct 2026: how-tos, roundups, donations and customer stories aren't releases,
+    # and a security team's investigation isn't a regulator's.
+    from aipulse.classify import categorize
+    for title in ["Best practices guide for customizing Gemini models via Reinforcement Learning (RL)",
+                  "Why your startup needs open models alongside frontier APIs",
+                  "The latest AI news we announced in September 2026",
+                  "See what 4 builders are making with Gemini 3.8 Flash",
+                  "Meta Donates 1,000 AI Glasses to Singapore's Disability Community",
+                  "Radisson Hotel Group brings hotel discovery into ChatGPT",
+                  "Sophos cuts threat investigation time by 96% with OpenAI Daybreak",
+                  "Automate remediation post AWS DevOps Agent investigation"]:
+        assert categorize(title, "", "tool") == "news", title
+    assert categorize("OpenAI brings GPT-6 to ChatGPT", "", "tool") == "tool"
+    assert categorize("Gemini 4 Argon: our next era of frontier intelligence", "", "tool") == "tool"
+    assert categorize("FTC opens investigation into OpenAI", "", "news") == "policy"
+    # summits of governments and elections are policy; trade events and "Selection" aren't
+    assert categorize("Balancing the AI revolution: Lessons from BRICS New Delhi Summit", "", "news") == "policy"
+    assert categorize("Containment is dead: Five takeaways from the AI ROI in Contact Center Summit", "", "news") == "news"
+    assert categorize("Kenyan political operator used Claude to mass-produce election propaganda", "", "news") == "policy"
+    assert categorize("Selection Result Announced for the AI Foundation Model Programme", "", "news") != "policy"
+
+
 def test_translation_note_is_not_a_place():
     from aipulse.classify import tags_for
     note = " Machine-translated from Portuguese; the official text is linked."
