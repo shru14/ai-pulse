@@ -354,14 +354,14 @@ def build(conn, out: str | Path) -> int:
             "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()}, "paperHomes": classify.paper_homes()}
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
     (out / "glossary.json").write_text(json.dumps(glossary.payload(cards, today), separators=(",", ":")), encoding="utf-8")
-    memegen.prepare(conn, cards, today)  # the week's Gemini meme, if the "memes" step made one (no call here)
+    memegen.prepare(conn, cards, today)  # the past 7 days' Gemini meme, if the "memes" step made one (no call here)
     meme = memes.payload(cards, today)
     (out / "meme.json").write_text(json.dumps(meme, separators=(",", ":")), encoding="utf-8")
-    if meme["image"]:  # the finished picture: the template with last week's captions written on
-        monday = date.fromisoformat(meme["from"])
+    if meme["image"]:  # the finished picture: the template with the past 7 days' captions written on
         (out / "memes").mkdir(exist_ok=True)
-        (out / meme["image"]).write_bytes(memes.render(memes.of_the_week(cards, monday)))
-    from . import social
+        (out / meme["image"]).write_bytes(memes.render(memes.of_the_7_days(cards, date.fromisoformat(meme["to"]))))
+    from . import social, today as board
+    (out / "today.json").write_text(json.dumps(board.payload(conn, recent, today), separators=(",", ":")), encoding="utf-8")
     (out / "social.json").write_text(json.dumps(social.payload(conn), separators=(",", ":")), encoding="utf-8")
     (out / "tags.json").write_text(json.dumps(preferences.options(cards, today), separators=(",", ":")), encoding="utf-8")
 
@@ -374,6 +374,9 @@ def build(conn, out: str | Path) -> int:
     (out / "discussing").mkdir()
     (out / "discussing" / "index.html").write_text(page_at(page, "discussing", "People are discussing · AI Pulse",
         "The most-discussed AI threads on Hacker News in the last two days."), encoding="utf-8")
+    (out / "today").mkdir()
+    (out / "today" / "index.html").write_text(page_at(page, "today", "Today in AI · AI Pulse",
+        "Today's AI stories, ranked by how many outlets carry them."), encoding="utf-8")
     for cat, (path, *_) in STREAM_PAGES.items():  # /policy/ and the rest: the same page, opened at that stream
         (out / path).mkdir()
         (out / path / "index.html").write_text(stream_page(page, cat), encoding="utf-8")
@@ -391,7 +394,7 @@ def build(conn, out: str | Path) -> int:
     places += kind_pages.build(conn, len(cards), out)  # Industry's kinds of story, a page each (industry/<kind>/)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
-    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)

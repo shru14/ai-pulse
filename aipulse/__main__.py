@@ -1,6 +1,7 @@
 """Command line: python -m aipulse {collect,serve,run,build,prune}"""
 
 import argparse
+import json
 import os
 import sys
 import threading
@@ -79,7 +80,13 @@ def main():
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     dg.add_argument("--layout", choices=["short", "full"], default="short",
                     help="short (the daily email): the ten that mattered most, then headlines; full: every story in one table")
-    sub.add_parser("glossary", help="words recent stories use that the glossary doesn't explain yet (to write up by hand)")
+    gl = sub.add_parser("glossary", help="words recent stories use that the glossary doesn't explain yet (to write up by hand)")
+    gl.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json instead of the database")
+    gn = sub.add_parser("glossary-note", help="email the project inbox the words a glossary/ branch adds, to approve")
+    gn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/glossary.py, to compare with")
+    gn.add_argument("--branch", required=True, help="the branch the words are on (glossary/<day>)")
+    gn.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
+    sub.add_parser("board", help="keep today's leaderboard ranks (the start of the day's and each story's best)")
     sub.add_parser("memes", help="ask Gemini (GEMINI_API_KEY, free tier) for last week's meme once and keep it")
     em = sub.add_parser("embed", help="story vectors for the weekly dossier's search (offline model; new or changed stories)")
     em.add_argument("--limit", type=int, help="at most this many stories this run (the first run has them all to do)")
@@ -177,13 +184,19 @@ def main():
         cluster.assign(conn, days=None)
         tracked = conn.execute("SELECT jurisdiction, stage, COUNT(*) FROM bills GROUP BY 1, 2 ORDER BY 1, 2").fetchall()
         print("Bills changed stage: " + "; ".join(f"{label}: {results.get(k, 'skipped')}" for k, label in BILL_SOURCES) + ". Tracking: " + ", ".join(f"{j} {s} {n}" for j, s, n in tracked))
+    elif a.cmd == "board":
+        from . import today
+        conn = store.connect(a.db)
+        cards, _ = store.cards(conn, days=today.BUZZ_DAYS + 1, limit=10**6)
+        day = today.record(conn, cards)
+        print(f"Today's board: {len(day['start'])} starting ranks, {len(day['peak'])} stories in the top {today.TOP}")
     elif a.cmd == "memes":
         from . import memegen
         conn = store.connect(a.db)
         cards, _ = store.cards(conn, days=16, limit=10**6)
         memegen.prepare(conn, cards, make=True)
         from . import memes
-        print("Meme of the week:", "by Gemini" if any(k[0] == "week" for k in memes.GENERATED) else "rule-based")
+        print("Meme of the week:", "by Gemini" if any(k[0] == "7days" for k in memes.GENERATED) else "rule-based")
     elif a.cmd == "build":
         from .static import build
         print(f"Wrote {build(store.connect(a.db), a.out)} cards to {a.out}/")
@@ -302,11 +315,33 @@ def main():
             print(f"Checked, no problems. Sent: {email[0]} {counts}")
     elif a.cmd == "glossary":
         from . import glossary
-        recent, _ = store.cards(store.connect(a.db), days=glossary.CANDIDATE_DAYS, limit=10**6)
+        if a.data:  # the site's own data.json (the daily glossary job has no database)
+            recent = json.load(open(a.data, encoding="utf-8"))["cards"]
+        else:
+            recent, _ = store.cards(store.connect(a.db), days=glossary.CANDIDATE_DAYS, limit=10**6)
         print(f"{len(glossary.ENTRIES)} entries. Not explained yet, used in the last {glossary.CANDIDATE_DAYS} days "
               f"by {glossary.CANDIDATE_OUTLETS}+ outlets (outlets, stories, a headline):")
         for w in glossary.candidates(recent):
             print(f"  {w['word']} ({w['outlets']}, {w['stories']}): {w['examples'][0]}")
+    elif a.cmd == "glossary-note":
+        # A glossary/<day> branch's new words, to the project inbox for approval (.github/workflows/glossary-note.yml)
+        import importlib.util
+        from . import digest, glossary
+        spec = importlib.util.spec_from_file_location("base_glossary", a.base)
+        base = importlib.util.module_from_spec(spec); spec.loader.exec_module(base)
+        had = {e["term"] for e in base.ENTRIES}
+        new = [e for e in glossary.ENTRIES if e["term"] not in had]
+        if not new:
+            print("No new glossary words on this branch.")
+        elif a.dry_run:
+            open(a.dry_run, "w", encoding="utf-8").write(glossary.note(new, a.branch)[2])
+            print(f"{len(new)} new words -> wrote {a.dry_run}")
+        elif not os.environ.get("DIGEST_EMAIL"):
+            print(f"{len(new)} new words; DIGEST_EMAIL isn't set, so nothing was sent")
+        else:
+            note = glossary.note(new, a.branch)
+            digest.send(digest.sender(), *note)
+            print(f"Sent to the project inbox: {note[0]}")
     elif a.cmd == "embed":
         from . import embed
         embed.update(store.connect(a.db), limit=a.limit)

@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 from . import brands, glossary, jurisdictions, photos, preferences, rss, store, subscribers
 from .sources import SOURCES
 
-STREAM_PATHS = {"all", "releases", "industry", "research", "regulation", "policy", "infra", "about", "discussing"}
+STREAM_PATHS = {"all", "releases", "industry", "research", "regulation", "policy", "infra", "about", "discussing", "today"}
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
 
 PER_PAGE = 40
@@ -78,6 +78,10 @@ def make_handler(db_path: str):
                     from . import memegen
                     memegen.prepare(conn, recent)  # only what the "memes" command already made (no Gemini call here)
                     self._send(json.dumps(memes.payload(recent)).encode(), "application/json")
+                elif url.path == "/today.json":
+                    from . import today
+                    recent, _ = store.cards(conn, days=today.BUZZ_DAYS + 1, limit=10**6, eu_members=EU_MEMBERS)
+                    self._send(json.dumps(today.payload(conn, recent)).encode(), "application/json")
                 elif url.path == "/social.json":
                     from . import social
                     self._send(json.dumps(social.payload(conn)).encode(), "application/json")
@@ -98,13 +102,13 @@ def make_handler(db_path: str):
                 elif url.path.startswith("/fonts/") and url.path.endswith(".woff2") and "/" not in url.path[7:] \
                         and (TEMPLATE.parent / "fonts" / url.path[7:]).is_file():
                     self._send((TEMPLATE.parent / "fonts" / url.path[7:]).read_bytes(), "font/woff2")
-                elif url.path.startswith("/memes/week-") and url.path.endswith(".jpg"):
+                elif url.path.startswith("/memes/7days-") and url.path.endswith(".jpg"):
                     from . import memegen, memes
                     from datetime import date as _date
                     recent, _ = store.cards(conn, days=16, limit=10**6, eu_members=EU_MEMBERS)
                     memegen.prepare(conn, recent)
                     try:
-                        meme = memes.of_the_week(recent, _date.fromisoformat(url.path[12:-4]))
+                        meme = memes.of_the_7_days(recent, _date.fromisoformat(url.path[13:-4]))
                     except ValueError:
                         meme = None
                     picture = meme and memes.render(meme)

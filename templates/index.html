@@ -210,7 +210,6 @@ header.top{gap:10px}
 .gl-search:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
 .gl-groups{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .gl-groups .group[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
-.gl-levels{margin-top:6px}
 .gl-entry .gl-new{font:600 10.5px var(--mono);color:#000;background:#F0E442;padding:1px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
 .gl-entry p.gl-ex{font-size:13.5px;color:var(--muted);margin-top:6px}
 .gl-entry p.gl-ex a{color:var(--ink)}
@@ -285,7 +284,7 @@ header.top{gap:10px}
 .mag-cover .sart .logo{top:50%}
 .mag-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch}
 @media (max-width:1000px){.mag-row{grid-template-columns:1fr}}
-/* Meme of the week (memes.py): a joke format drawn in plain HTML, filled from last week's stories */
+/* Meme of the week (memes.py): a joke format drawn in plain HTML, filled from the past 7 days' stories */
 .meme-tile{background:var(--p-meme);color:#141925;border:0;display:flex;flex-direction:column;gap:12px}
 .meme-tile[hidden]{display:none}
 .meme-tile .viz-note{opacity:1;margin:0 0 6px}
@@ -326,7 +325,8 @@ header.top{gap:10px}
 .sub-act small{font-size:12px;opacity:.8;white-space:nowrap}
 .sub-yesterday{font-size:13.5px;font-weight:600;color:inherit}
 .gl-tile-links{display:flex;flex-direction:column;align-items:center;gap:10px}
-.gl-all{font-size:14px;font-weight:600;color:inherit;text-decoration:underline;text-underline-offset:3px}
+.az-btn{text-decoration:none}
+.az-btn svg{display:none}  /* the words alone; the icon only on phones, where the words don't fit */
 .sub-strip .sub-tile-go{align-self:center;flex:none;font-size:16px;padding:12px 26px;background:#0072B2;color:#FFFFFF;box-shadow:3px 3px 0 #141925}
 .sub-strip .sub-tile-go:hover{filter:brightness(1.12)}
 @media (max-width:1100px){.sub-strip{grid-template-columns:1fr auto}.sub-steps{grid-column:1/-1;grid-row:2}.sub-hint{grid-column:1/-1;grid-row:3}.sub-head{grid-row:auto}}
@@ -625,8 +625,9 @@ header.top.home{height:auto;padding-top:10px}
   .item .side .sart{width:100%;aspect-ratio:16/9}  /* on a phone the photo runs across the card, its label under it */
   header.top .brand h1{font-size:17px}
   header.top .brand{gap:8px}
-  header.top .gl-open span{display:none}
-  header.top .gl-open{width:38px;padding:0;justify-content:center}
+  header.top .gl-open span,header.top .az-btn span{display:none}
+  header.top .az-btn svg{display:block}
+  header.top .gl-open,header.top .az-btn{width:38px;padding:0;justify-content:center}
   header.top .subscribe-btn.cta{padding:0 10px}
   header.top .subscribe-btn.cta svg{display:none}  /* the word alone, so the top row fits a phone */
   header.top{gap:8px}
@@ -692,6 +693,22 @@ header.top.home{height:auto;padding-top:10px}
 .social-t a:hover{text-decoration:underline}
 .social-t td:last-child a{display:inline-flex;align-items:center;gap:3px;font:500 12px var(--mono);color:var(--muted)}
 .social-t .ci svg{width:13px;height:13px;display:block}
+.today-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+/* Today's leaderboard (today.py): ranks 4 to 10 under the cards, and any story that was in the top 3 today */
+.board-t{width:100%;border-collapse:collapse;font-size:14px;line-height:1.3}
+.board-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 8px 6px 0}
+.board-t td{border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 8px 8px 0;vertical-align:top}
+.board-t td:first-child,.board-t th:first-child{width:1%;white-space:nowrap;font:600 14px var(--mono)}
+.board-t td:nth-child(n+3),.board-t th:nth-child(n+3){width:1%;white-space:nowrap;text-align:right;font:500 13px var(--mono);color:var(--muted);padding-left:10px}
+.board-t td:last-child,.board-t th:last-child{padding-right:0}
+.board-t td:nth-child(2) a{color:var(--ink);font-weight:600;text-decoration:none}
+.board-t td:nth-child(2) a:hover{text-decoration:underline}
+.board-t small{display:block;margin-top:3px;font:500 12px var(--mono);color:var(--muted)}
+.board-t .was{font-weight:700;color:var(--ink)}
+.board-t .up{color:var(--ink);font-weight:700}
+.today-main .hn-more{margin-top:0}
+.hn-go{margin-top:auto;align-self:flex-start;text-decoration:none;font-size:14px!important;padding:9px 18px!important;
+  border:2px solid var(--ink)!important;box-shadow:4px 4px 0 #E69F00!important}  /* Dig deeper: a button, in HN's orange */
 .hn-more{margin-top:auto;padding-top:10px;align-self:flex-start;font:600 14px var(--body);color:var(--ink);text-decoration:underline;text-decoration-color:#E69F00;text-decoration-thickness:3px;text-underline-offset:4px}
 .disc-t{width:100%;border-collapse:collapse;font-size:15px}
 .disc-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
@@ -717,6 +734,11 @@ header.top.home{height:auto;padding-top:10px}
 .about-page[hidden]{display:none}
 .about-lede{font:400 20px/1.35 var(--head);margin:0}
 .about-text{margin:0;font-size:16px;line-height:1.55;color:var(--muted);max-width:720px}
+/* About: the text, and the site's own link-preview picture (og.png) in the space to its right */
+.about-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}
+.about-copy{display:grid;gap:18px}
+.about-art{width:100%;height:auto;display:block}
+@media (max-width:760px){.about-row{grid-template-columns:1fr}.about-art{max-width:440px}}
 .about-t{width:100%;border-collapse:collapse;font-size:15px}
 .about-t td{border-top:1px solid var(--line);padding:9px 14px 9px 0;vertical-align:top}
 .about-t td:first-child{white-space:nowrap;font-weight:600;width:1%}
@@ -759,7 +781,7 @@ header.top.home{height:auto;padding-top:10px}
   header.top{gap:6px}
   header.top .brand{margin-right:auto}
   header.top .subscribe-btn.cta{padding:0 8px}
-  header.top .gl-open,.theme-btn{width:34px}
+  header.top .gl-open,header.top .az-btn,.theme-btn{width:34px}
 }
 </style>
 </head><body>
@@ -772,10 +794,10 @@ header.top.home{height:auto;padding-top:10px}
     </a>
     <div class="mast-line" id="mast-line"><p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
       <div class="status home-status" id="home-status">Loading feed…</div></div>
-    <!-- Each stream is its own page (/releases/, /industry/…); the brand goes back to the front page. -->
+    <!-- Each stream is its own page (/releases/, /industry/…); the brand goes back to the front page. All stories
+         (/all/) has no link here: it's where a tag or a search lands, every stream at once. -->
     <nav class="secnav" id="secnav" aria-label="Streams">
       <a href="/about/" data-go="about" class="nav-about">About</a>
-      <a href="/all/" data-go="all" class="k-all">All stories</a>
       <a href="/releases/" data-go="tool" class="k-tool">Releases</a>
       <a href="/industry/" data-go="news" class="k-news">Industry</a>
       <a href="/research/" data-go="research" class="k-research">Research</a>
@@ -791,6 +813,12 @@ header.top.home{height:auto;padding-top:10px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5 2.5 2.5 0 0 0 6.5 24"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H19"/><path d="M9 7h6M9 10.5h4"/></svg>
       <span>Glossary</span>
     </button>
+    <!-- every glossary word, a page each (glossary/), on the front page only (in place of the Glossary button), beside the
+         dark mode button: hidden until the front page shows it, so the other pages that share this header never do -->
+    <a class="subscribe-btn az-btn" id="az-open" href="glossary/" title="Every glossary word, A to Z" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18 7 6l4 12M4.3 14h5.4M14 7h7l-7 11h7"/></svg>
+      <span>Every word (A–Z)</span>
+    </a>
     <button class="subscribe-btn theme-btn" id="theme-toggle" type="button" aria-pressed="false" title="Dark mode">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
@@ -804,10 +832,9 @@ header.top.home{height:auto;padding-top:10px}
       <p class="sub-lede">What the words in these stories mean, in plain English. In a story, a word with a dotted
         underline opens its meaning.</p>
       <a class="gl-page" href="/glossary/"><span>Open the full glossary page
-        <small>Every word A–Z, this week's word cloud, and each word's latest stories</small></span><span aria-hidden="true">→</span></a>
+        <small>Every word A–Z, the past 7 days' word cloud, and each word's latest stories</small></span><span aria-hidden="true">→</span></a>
       <input class="gl-search" id="gl-q" type="search" placeholder="Look up a word: MoE, RAG, inference…" aria-label="Look up a word">
       <div class="gl-groups" id="gl-groups" role="group" aria-label="Show one group"></div>
-      <div class="gl-groups gl-levels" id="gl-levels" role="group" aria-label="Show one level"></div>
     </div>
     <div class="gl-body" id="gl-body"><p class="gl-none">Loading…</p></div>
   </dialog>
@@ -817,7 +844,7 @@ header.top.home{height:auto;padding-top:10px}
     <form class="sub-form" id="sub-form" novalidate>
       <h2 id="subscribe-title">Get the daily digest in your inbox</h2>
       <p class="sub-lede">Every morning, the day before in AI in one email: every story tagged with what it is, a line of
-        summary and a link to the original. Free, no ads, no tracking. <a href="privacy.html">Privacy</a></p>
+        summary and a link to the original. Free, no ads, no tracking.<br><a href="privacy.html">Privacy</a></p>
       <label class="sub-label" for="sub-email">Your email</label>
       <input class="sub-email" id="sub-email" type="email" autocomplete="email" placeholder="you@example.com" required>
       <input class="sub-trap" name="website" id="sub-website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -861,11 +888,8 @@ header.top.home{height:auto;padding-top:10px}
       </details>
       <button class="sub-go" id="subscribe-go" type="submit">Subscribe</button>
       <p class="sub-msg" id="sub-msg" role="status" aria-live="polite"></p>
-      <p class="sub-small">We'll email you a link to confirm; nothing is sent until you click it. Already subscribed?
-        Enter your email with new streams to change them. Every digest has a one-click unsubscribe.</p>
-      <p class="sub-small">We keep only your email address, the streams you chose and what you picked under “Make
-        it yours”, in the project's Google account, to send you the digest. Nothing is shared, tracked or sold. Unsubscribing deletes your address. Questions or a request about your data:
-        projectaipulse@gmail.com.</p>
+      <p class="sub-small">We'll email you a link to confirm. Already subscribed? Enter your email with new streams to
+        change them. One-click unsubscribe in every email.</p>
     </form>
   </dialog>
   <dialog class="subscribe" id="sub-action" aria-labelledby="sub-action-title">
@@ -895,24 +919,29 @@ header.top.home{height:auto;padding-top:10px}
       <!-- Today in AI: the last two days' biggest stories, by how many outlets carry them -->
       <section class="today" id="today"><div class="band-head"><h2>Today in AI</h2><span class="kicker">The most reported, last 2 days</span></div>
         <div class="today-row">
-          <div class="today-cards" id="today-grid"><p class="tile-note">Loading today's stories…</p></div>
+          <div class="today-main">
+            <div class="today-cards" id="today-grid"><p class="tile-note">Loading today's stories…</p></div>
+            <!-- the leaderboard: ranks 4 to 10, and any story that was in the top 3 earlier today -->
+            <table class="board-t" id="board" hidden><thead><tr><th>#</th><th>Story</th><th>Sources</th><th title="Places moved since the day began (00:00 UTC)">Today</th></tr></thead>
+              <tbody id="board-rows"></tbody></table>
+            <a class="hn-more" href="/today/" data-go="today">See the full list →</a>
+          </div>
           <!-- People are discussing: the most-discussed AI threads on Hacker News (aipulse/social.py) -->
           <aside class="hn-box" id="social" hidden><div class="hn-head"><b>People are discussing</b><span>on Hacker News</span></div>
             <table class="social-t"><tbody id="social-rows"></tbody></table>
-            <a class="hn-more" href="/discussing/" data-go="discussing">Dig deeper →</a></aside>
+            <a class="gl-tile-go hn-go" href="/discussing/" data-go="discussing">Dig deeper →</a></aside>
         </div></section>
       <div class="mag-row">
-        <article class="mag-cover" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
+        <article class="mag-cover" id="hero"><p class="tile-note">Loading the past 7 days' stories…</p></article>
         <div class="tile gl-tile">
-          <div><span class="week-badge"><b>Word of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="gl-label">Last week</span></span>
+          <div><span class="week-badge"><b>Word of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="gl-label">Past 7 days</span></span>
             <div class="gl-card"><span class="gl-kind">From the AI Pulse glossary</span><b id="gl-word"><mark>Glossary</mark></b>
               <p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p></div>
             <div class="gl-viz" id="gl-viz"></div></div>
-          <div class="gl-tile-links"><button class="gl-tile-go" type="button" data-open="glossary">Open the glossary →</button>
-            <a class="gl-all" href="glossary/">Every word, A–Z →</a></div>
+          <div class="gl-tile-links"><button class="gl-tile-go" type="button" data-open="glossary">Open the glossary →</button></div>
         </div>
         <div class="tile meme-tile" id="meme-tile" hidden>
-          <div><span class="week-badge"><b>Meme of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="meme-label">Last week</span></span></div>
+          <div><span class="week-badge"><b>Meme of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="meme-label">Past 7 days</span></span></div>
           <div class="meme" id="meme"></div>
           <div class="meme-more" id="meme-more"></div>
           <button class="gl-tile-go meme-go" type="button" data-open="subscribe">Get a meme every day →</button>
@@ -924,12 +953,24 @@ header.top.home{height:auto;padding-top:10px}
 
   <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
-    <div class="band-head"><h2>About AI Pulse</h2><span class="kicker">Free · non-commercial · no ads, no tracking</span></div>
-    <p class="about-lede">What is happening in AI worldwide, from 200+ public sources.</p>
-    <p class="about-text">Headlines and the publishers’ own summaries, each linked to the original. No AI writes them, and only sites that allow automated reading are used.</p>
+    <div class="band-head"><h2>About</h2><span class="kicker">Free · non-commercial · no ads, no tracking</span></div>
+    <div class="about-row">
+      <div class="about-copy">
+        <p class="about-lede">What is happening in AI worldwide, from 200+ public sources.</p>
+        <p class="about-text">Headlines and the publishers’ own summaries, each linked to the original. No AI writes them, and only sites that allow automated reading are used.</p>
+      </div>
+      <img class="about-art" src="og.png" alt="AI Pulse: Releases, Industry, Research, Regulation tracker, Policy, Infra &amp; climate" width="1200" height="630">
+    </div>
   </section>
 
-  <!-- People are discussing, in full: every AI thread kept from Hacker News (the front page shows three) -->
+  <!-- Today in AI, in full: every story of the last two days, by how many outlets carry it (the front page shows ten) -->
+  <section class="about-page" id="today-page" hidden>
+    <div class="band-head"><h2>Today in AI</h2><span class="kicker">Every story of the last 2 days, most reported first</span></div>
+    <table class="board-t"><thead><tr><th>#</th><th>Story</th><th>Sources</th><th title="Places moved since the day began (00:00 UTC)">Today</th></tr></thead>
+      <tbody id="today-rows"></tbody></table>
+  </section>
+
+  <!-- People are discussing, in full: every AI thread kept from Hacker News (the front page shows five) -->
   <section class="about-page" id="discussing-page" hidden>
     <div class="band-head"><h2>People are discussing</h2><span class="kicker">AI threads on Hacker News, last 2 days</span></div>
     <table class="disc-t"><thead><tr><th>Thread</th><th>Comments</th><th>Points</th></tr></thead><tbody id="disc-rows"></tbody></table>
@@ -1016,7 +1057,7 @@ const SECTION_DESC = {
 // A section being designed (docs: AI Pulse Discover): its page and tile are in place, its stories come later.
 const SOON = new Set();
 // Each stream's address (/policy/…): static.build writes a page there for search engines, with its own title.
-const PATH = {all: "all", tool: "releases", news: "industry", research: "research", regulation: "regulation", policy: "policy", infra: "infra", about: "about", discussing: "discussing"};
+const PATH = {all: "all", tool: "releases", news: "industry", research: "research", regulation: "regulation", policy: "policy", infra: "infra", about: "about", discussing: "discussing", today: "today"};
 const PAGE_TITLE = {all: "All AI stories, newest first", tool: "AI model and product releases",
   news: "AI industry news: companies, deals and markets", research: "New AI research papers",
   regulation: "AI regulation tracker: bills, laws and standards by country",
@@ -1053,12 +1094,13 @@ function heroArt(cat){
     return `<svg viewBox="0 0 256 256" fill="currentColor" style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;rotate:${tilt}deg"><path d="${ART_PATH[n]}"/></svg>`; }).join("");
 }
 function showPage(){
-  const home = state.cat === "home", about = state.cat === "about", disc = state.cat === "discussing";
-  $("front").hidden = !home; $("section").hidden = home || about || disc;
-  $("about-page").hidden = !about; $("discussing-page").hidden = !disc;
-  $("subscribe-open").hidden = $("glossary-open").hidden = home;
+  const home = state.cat === "home", about = state.cat === "about", disc = state.cat === "discussing", tday = state.cat === "today";
+  $("front").hidden = !home; $("section").hidden = home || about || disc || tday;
+  $("about-page").hidden = !about; $("discussing-page").hidden = !disc; $("today-page").hidden = !tday;
+  $("subscribe-open").hidden = $("glossary-open").hidden = home; $("az-open").hidden = !home;
   // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
+  if(tday){ document.title = "Today in AI · AI Pulse"; renderTodayPage(); loadHome(); return; }
   if(about || disc){ document.title = (about ? "About" : "People are discussing") + " · AI Pulse";
     if(state.allTime === undefined) loadHomeCounts(); return; }
   if(home){ document.title = "AI Pulse · Daily AI news, laws and research from around the world"; return loadHome(); }
@@ -1505,7 +1547,7 @@ function renderMast(){
   m.replaceChildren(el("div", null, last ? "Updated " + when(last) + " · every 6 hours" : "Not collected yet"));
 }
 
-// ---------- Front page: last week's stories, ranked as in the daily email (by how many outlets reported them) ----------
+// ---------- Front page: the past 7 days' stories, ranked as in the daily email (by how many outlets reported them) ----------
 const HOME = {by: null, loading: false, error: false};
 const outlets = it => (it.also || []).length + 1;
 const byWeight = (a, b) => outlets(b) - outlets(a) || (b.date > a.date ? 1 : b.date < a.date ? -1 : 0);
@@ -1522,13 +1564,14 @@ async function loadHomeCounts(){
   renderMast();
   if(state.cat === "home") renderHome();
 }
-// The meme of the week: drawn by the build (memes.py) from last week's stories, Monday to Sunday as the word of the week.
+// The meme of the week: drawn by the build (memes.py) from the past 7 days' stories (today and the 6 days before, UTC),
+// as the word of the week; a new one each day.
 async function loadMeme(){
   try{
     const m = await (await fetch("meme.json", {cache:"no-cache"})).json();
     if(!m.html) return;
     const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
-    $("meme-label").textContent = "Last week · " + fmt(m.from) + " – " + fmt(m.to);
+    $("meme-label").textContent = "Past 7 days · " + fmt(m.from) + " – " + fmt(m.to);
     $("meme").innerHTML = m.html;  // our own markup, built from escaped text
     // a click opens the meme full size
     const pic = $("meme").querySelector("img");
@@ -1538,14 +1581,14 @@ async function loadMeme(){
     const more = $("meme-more"); more.replaceChildren();
     if(m.week){  // how much news went into it, boxed as the word of the week's count
       const stat = el("div","gl-stat"), num = el("div","gl-num", m.week.toLocaleString());
-      num.append(el("small", null, "stories last week"));
+      num.append(el("small", null, "stories in 7 days"));
       stat.append(num, el("div","meme-stat", "→ one meme"));
       more.append(stat);
     }
     if((m.stories || []).length){
       more.append(el("div","viz-note","The news behind it"), srcLinks(m.stories));
     }
-    more.append(el("p","meme-next","A new meme every Monday, from the week before."));  // the button below offers the daily one
+    more.append(el("p","meme-next","A new meme every day, from the past 7 days."));  // the button below offers the daily one
     $("meme-tile").hidden = false;
     const shown = $("meme").querySelector("img");
     if(shown && !shown.complete) shown.addEventListener("load", fitMeme); else fitMeme();
@@ -1572,16 +1615,19 @@ async function loadHome(){
   HOME.loading = true; HOME.error = false; renderHome();
   try{
     loadMeme();
-    // last week's stories (the word of the week looks 3 weeks further back)
+    const board = loadBoard();
+    // the past 7 days' stories (the word of the week looks 3 weeks further back)
     const recent = await fetchItems(new URLSearchParams({days: 36, per_page: 100000, page: 1}));
     const [from, to] = lastWeek();
     HOME.lastWeek = recent.items.filter(it => it.date >= from && it.date < to);
     HOME.recent = recent.items;
+    await board;
     // every part of the front page covers the same week: each stream's sections too, not just the three tiles
     HOME.by = Object.fromEntries(CATS.map(c => [c, HOME.lastWeek.filter(it => it.category === c).sort(byWeight)]));
     if(recent.jurisdictions) state.places = recent.jurisdictions;
   }catch(e){ HOME.error = true; }
   HOME.loading = false; renderHome();
+  if(state.cat === "today") renderTodayPage();
 }
 // The week's three tiles name their stories the same way: one boxed link a story, named by its outlet (numbered
 // when one outlet has two), the headline on hover; `more` adds a "+N more" box.
@@ -1597,22 +1643,22 @@ function srcLinks(stories, more = 0){
 function storyLink(it, cls){
   const a = el("a", cls, it.title); a.href = it.url; a.target = "_blank"; a.rel = "noopener"; return a;
 }
-// The word of the week changes each Monday: the glossary word that came up in the most of last week's stories
-// (Monday to Sunday, UTC), shown with how many of them used it each day (one bar a day, day and count on hover)
-// and the two biggest stories it came from. The whole week sees the same word.
-// It's never the word of the week before: worked out from 4 weeks back, each week skipping the word before it.
+// The word of the week can change each day: the glossary word that came up in the most of the past 7 days' stories
+// (today and the 6 days before, UTC), shown with how many of them used it each day (one bar a day, day and count on hover)
+// and the two biggest stories it came from.
+// It's never the word of the 7 days before: worked out from 4 weeks back, each week skipping the word before it.
 function lastWeek(n = 1){
   const d = new Date(); d.setUTCHours(0, 0, 0, 0);
-  d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7 - 7 * (n - 1));  // this Monday, or n - 1 weeks before it
+  d.setUTCDate(d.getUTCDate() + 1 - 7 * (n - 1));  // tomorrow (the 7 days end with today), or n - 1 weeks before it
   const to = d.toISOString().slice(0, 10);
   d.setUTCDate(d.getUTCDate() - 7);
   return [d.toISOString().slice(0, 10), to];
 }
-// "Last week · 28 Sept – 4 Oct", on each of the week's three tiles
+// "Past 7 days · 4 – 10 Oct", on each of the three tiles
 function weekLabel(){
   const [from] = lastWeek(), end = new Date(from + "T12:00:00Z"); end.setUTCDate(end.getUTCDate() + 6);
   const fmt = d => d.toLocaleDateString(undefined, {timeZone: "UTC", day: "numeric", month: "short"});
-  return "Last week · " + fmt(new Date(from + "T12:00:00Z")) + " – " + fmt(end);
+  return "Past 7 days · " + fmt(new Date(from + "T12:00:00Z")) + " – " + fmt(end);
 }
 const mentions = (e, its) => its.filter(it => e.re.test(it.title + " " + (it.summary || "")));
 function pickWord(){
@@ -1642,7 +1688,7 @@ function renderWord(){
   const used = mentions(e, HOME.lastWeek);
   const per = days.map(d => used.filter(it => it.date === d).length), max = Math.max(1, ...per);
   const bars = el("div","bars"); bars.setAttribute("role","img");
-  bars.setAttribute("aria-label", e.term + " came up in " + used.length + " stories last week: " +
+  bars.setAttribute("aria-label", e.term + " came up in " + used.length + " stories in the past 7 days: " +
     days.map((d, i) => fmt(d, {weekday: "short"}) + " " + per[i]).join(", "));
   days.forEach((d, i) => {
     const day = fmt(d, {weekday: "short", day: "numeric", month: "short"});
@@ -1654,7 +1700,7 @@ function renderWord(){
     bars.append(col);
   });
   const stat = el("div","gl-stat"), num = el("div","gl-num", used.length.toLocaleString());
-  num.append(el("small", null, (used.length === 1 ? "story" : "stories") + " last week"));
+  num.append(el("small", null, (used.length === 1 ? "story" : "stories") + " in 7 days"));
   stat.append(num, bars); box.append(stat);
   box.append(el("div","viz-note","Seen in"), srcLinks([...used].sort(byWeight).slice(0, 3)));
 }
@@ -1708,10 +1754,10 @@ function renderHome(){
   const hero = $("hero"), tiles = $("stream-tiles");
   if(!HOME.by){
     hero.className = "mag-cover";
-    hero.replaceChildren(el("p","tile-note", HOME.error ? "Couldn't load this week's stories. Try reloading the page." : "Loading this week's stories…"));
+    hero.replaceChildren(el("p","tile-note", HOME.error ? "Couldn't load the past 7 days' stories. Try reloading the page." : "Loading the past 7 days' stories…"));
     return;
   }
-  // the story of the week: last week's (Monday to Sunday, UTC), as the word and the meme of the week
+  // the story of the week: the past 7 days' (today and the 6 days before, UTC), as the word and the meme of the week
   const top = (HOME.lastWeek || []).filter(it => CATS.includes(it.category)).sort(byWeight)[0];
   hero.replaceChildren();
   if(top){
@@ -1739,25 +1785,25 @@ function renderHome(){
     badge.append(el("b", null, "Story of the week"));
     head.append(badge, when);
     hero.append(head, art, copy);  // as the other two: badge and week on the tile, the picture boxed below them
-  } else hero.append(el("p","tile-note","No stories last week."));
+  } else hero.append(el("p","tile-note","No stories in the past 7 days."));
   renderToday(top);
   renderWord();
   requestAnimationFrame(fitMeme);  // the row's height may have changed
-  // Each stream: its name, last week's count and its description, then last week's three biggest stories, newest
-  // first (the same Monday to Sunday as the three tiles above).
+  // Each stream: its name, the past 7 days' count and its description, then their three biggest stories, newest
+  // first (the same 7 days as the three tiles above).
   tiles.replaceChildren();
   CATS.forEach(c => {
     const name = STREAM_NAME[c], sec = el("section","mag-sec k-" + c);
     const head = el("a","stream-head"); head.href = "#" + c; head.dataset.go = c;
     const n = HOME.by[c].length;
-    const badge = el("span","n", n.toLocaleString() + (n === 1 ? " story" : " stories") + " last week");
+    const badge = el("span","n", n.toLocaleString() + (n === 1 ? " story" : " stories") + " · past 7 days");
     badge.title = weekLabel();
     head.append(el("h2", null, name), badge);
     sec.append(head, el("div","rule"));
     // the week's three most reported, shown newest first (picked by importance, read in order of date)
     const list = HOME.by[c].filter(it => !top || it.id !== top.id).slice(0, 3)
       .sort((a, b) => b.date.localeCompare(a.date) || byWeight(a, b));
-    if(!list.length) sec.append(el("p","tile-note","Nothing last week."));
+    if(!list.length) sec.append(el("p","tile-note","Nothing in the past 7 days."));
     else {
       const more = el("div","mag-list");
       list.forEach(it => more.append(magItem(it, false)));
@@ -1786,32 +1832,74 @@ function shortKicker(it){
   const places = (it.jurisdictions || []).filter(c => !c.startsWith("US-")).slice(0, 2);
   return el("span","kicker", [...places, fmtShort(it.date), it.source || domainOf(it.url)].join(" · "));
 }
-// Today in AI: the last two days' most reported stories (not the story of the week again): the first over its
-// picture, three more beside it.
+// Today's leaderboard (today.json, aipulse/today.py): the order, each story's rank when the day began (00:00 UTC)
+// and the stories that reached the top 3 today. Without it (or a day old), the page ranks the stories itself.
+async function loadBoard(){
+  try{ HOME.board = await (await fetch("today.json", {cache:"no-cache"})).json(); }catch(e){ HOME.board = null; }
+}
+// The last two days' stories, most reported first (not the story of the week again), each with its rank, its rank
+// when the day began and its best rank today (when in the top 3)
+function todayBoard(top){
+  const b = HOME.board && HOME.board.date === new Date().toISOString().slice(0, 10) ? HOME.board : null;
+  const since = new Date(Date.now() - 864e5).toISOString().slice(0, 10), byId = new Map((HOME.recent || []).map(it => [it.id, it]));
+  const list = (b ? b.ids.map(i => byId.get(i)).filter(Boolean) : (HOME.recent || []).filter(it => it.date >= since).sort(byWeight))
+    .filter(it => CATS.includes(it.category) && (!top || it.id !== top.id));
+  const started = !!(b && Object.keys(b.start).length);
+  return list.map((it, i) => ({it, rank: i + 1, start: started ? b.start[it.id] || 0 : null, peak: b && b.peak[it.id]}));
+}
+// How far a story has moved since the day began: "▲ 2", "▼ 1", "new" (not in the first 30 then); nothing if it hasn't
+function moved(r){
+  if(r.start === null) return "";
+  if(!r.start) return "new";
+  const d = r.start - r.rank;
+  return d > 0 ? "▲ " + d : d < 0 ? "▼ " + -d : "";
+}
+function boardRows(rows){
+  return rows.map(r => {
+    const tr = el("tr"), td = el("td"), m = moved(r), mv = el("td", m.startsWith("▲") || m === "new" ? "up" : null, m);
+    td.append(storyLink(r.it), el("small", null, [CAT_LABEL[r.it.category], r.it.source || domainOf(r.it.url)].join(" · ")));
+    if(r.peak && r.peak < r.rank) td.lastChild.append(" · ", el("span","was","was #" + r.peak + " today"));
+    tr.append(el("td", null, String(r.rank)), td, el("td", null, String(outlets(r.it))), mv);
+    return tr;
+  });
+}
+// Today in AI: the top 3 as picture cards, ranks 4 to 10 in a table under them, and any story that was in the top 3
+// earlier today and has fallen further, so a big story never drops out of sight the same day. The table lists only
+// stories carried by 2 or more outlets; as many outlets, the one with more buzz first (today.py).
 function renderToday(top){
-  const box = $("today-grid"), since = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
-  const list = (HOME.recent || []).filter(it => CATS.includes(it.category) && it.date >= since && (!top || it.id !== top.id))
-    .sort(byWeight).slice(0, 3);
+  const box = $("today-grid"), rows = todayBoard(top), list = rows.slice(0, 3);
   box.replaceChildren();
+  const rest = rows.slice(3).filter(r => outlets(r.it) >= 2 && (r.rank <= 10 || r.peak));  // only stories 2+ outlets carry
+  $("board-rows").replaceChildren(...boardRows(rest)); $("board").hidden = !rest.length;
   if(!list.length){ box.append(el("p","tile-note","Nothing yet today.")); return; }
-  list.forEach(it => {
+  list.forEach(r => {
+    const it = r.it;
     const card = el("a","tcard k-" + it.category), pic = el("div","thumb timg"), body = el("div","tb");
     card.href = it.url; card.target = "_blank"; card.rel = "noopener";
     pic.append(storyArt(it), el("span","mchip", CAT_LABEL[it.category]));
     // Today ranks by how many outlets carry a story, so each card says how many, on its picture
-    if(outlets(it) > 1) pic.append(el("span","srcs", outlets(it) + " sources"));
+    const m = moved(r), was = r.peak && r.peak < r.rank ? "was #" + r.peak : "";
+    if(outlets(it) > 1 || m || was) pic.append(el("span","srcs", ["#" + r.rank, outlets(it) > 1 ? outlets(it) + " sources" : "", m, was].filter(Boolean).join(" · ")));
     body.append(shortKicker(it), el("h3", null, it.title));
     card.append(pic, body); box.append(card);
   });
 }
 const commentIcon = () => { const i = el("span","ci"); i.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg>'; return i; };
+// Today in AI's own page: every story of the last two days, ranked as on the front page
+function renderTodayPage(){
+  const tb = $("today-rows");
+  if(!HOME.by){ const tr = el("tr"); tr.append(el("td"), el("td", null, HOME.error ? "Couldn't load today's stories. Try reloading the page." : "Loading today's stories…"));
+    tb.replaceChildren(tr); return; }
+  const top = (HOME.lastWeek || []).filter(it => CATS.includes(it.category)).sort(byWeight)[0];
+  tb.replaceChildren(...boardRows(todayBoard(top).slice(0, 200)));
+}
 // People are discussing: Hacker News' most-discussed AI threads (social.json, fetched with each full update).
 async function loadSocial(){
   try{
     const d = await (await fetch("social.json", {cache: "no-cache"})).json();
     if(!d.threads || !d.threads.length) return;
     const rows = $("social-rows");
-    rows.replaceChildren(...d.threads.slice(0, 3).map(t => {
+    rows.replaceChildren(...d.threads.slice(0, 5).map(t => {
       const tr = el("tr"), a = el("a", null, t.title), td = el("td"), hn = el("a", null, t.comments.toLocaleString());
       a.href = t.hn; a.target = "_blank"; a.rel = "noopener"; a.title = domainOf(t.url);
       hn.href = t.hn; hn.target = "_blank"; hn.rel = "noopener"; hn.title = "comments on Hacker News";
@@ -2107,7 +2195,7 @@ $("sub-form").addEventListener("submit", async e => {
   }
 });
 // Glossary: plain-English meanings written by hand (aipulse/glossary.py). glossary.json has every entry, the ways
-// stories write it (regular expressions), how many of this week's stories use it, its level (Everyday or Technical),
+// stories write it (regular expressions), how many of the past 7 days' stories use it, its level (Everyday or Technical),
 // whether it is new, and the newest story that uses it (its example).
 const GL = {entries: [], byId: {}, groups: [], levels: [], ready: false, group: null, level: null, pending: null};
 const MAX_WORDS = 3;  // underlined words per card, least common first: the ones a reader is least likely to know
@@ -2115,7 +2203,7 @@ fetch("glossary.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.
   const re = (e, flags) => new RegExp("(?<!\\w)(?:" + e.match.join("|") + ")(?![\\w])", flags);
   GL.entries = d.entries.map(e => ({...e, re: re(e, e.case ? "" : "i"), anyCase: re(e, "i")}));
   GL.byId = Object.fromEntries(GL.entries.map(e => [e.id, e]));
-  GL.groups = d.groups; GL.levels = d.levels || []; GL.ready = true;
+  GL.groups = d.groups; GL.ready = true;
   render(); renderGlossary();
   if(GL.pending != null){ openGlossary(GL.pending); GL.pending = null; }
 }).catch(() => { $("gl-body").replaceChildren(el("p","gl-none","Couldn't load the glossary. Try reloading the page.")); });
@@ -2191,10 +2279,10 @@ document.addEventListener("click", ev => {
 document.addEventListener("keydown", ev => { if(ev.key === "Escape" && popFor){ const b = popFor; closePop(); b.focus(); } });
 addEventListener("resize", closePop);
 
-// The glossary panel: this week's most-used words, then every entry A to Z; a search box and one chip per group.
+// The glossary panel: the past 7 days' most-used words, then every entry A to Z; a search box and one chip per group.
 const glDialog = $("glossary");
 function openGlossary(id){
-  if(id){ $("gl-q").value = ""; GL.group = GL.level = null; }
+  if(id){ $("gl-q").value = ""; GL.group = null; }
   renderGlossary();
   if(!glDialog.open) glDialog.showModal();
   const row = id && document.getElementById("gl-" + id);
@@ -2204,46 +2292,33 @@ function openGlossary(id){
 function renderGlossary(){
   if(!GL.ready) return;
   const groups = $("gl-groups");
-  if(!groups.childElementCount) [null, ...GL.groups].forEach(g => {
-    const b = el("button","group", g || "All"); b.type="button"; b.dataset.g = g || "";
-    b.addEventListener("click", () => { GL.group = g; renderGlossary(); });
+  // each group a toggle: tap to show only it, tap again for every word (no "All" button)
+  if(!groups.childElementCount) GL.groups.forEach(g => {
+    const b = el("button","group", g); b.type="button"; b.dataset.g = g;
+    b.addEventListener("click", () => { GL.group = GL.group === g ? null : g; renderGlossary(); });
     groups.append(b);
   });
   groups.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.g || null) === GL.group)));
-  const levels = $("gl-levels");
-  if(!levels.childElementCount) [null, ...GL.levels].forEach(l => {
-    const b = el("button","group", l || "Every level"); b.type="button"; b.dataset.l = l || "";
-    b.addEventListener("click", () => { GL.level = l; renderGlossary(); });
-    levels.append(b);
-  });
-  levels.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.l || null) === GL.level)));
   const raw = $("gl-q").value.trim(), q = fold(raw);
   const body = $("gl-body"); body.replaceChildren();
-  if(!q && !GL.group && !GL.level){
-    const fresh = GL.entries.filter(e => e.new).sort((a, b) => a.added < b.added ? 1 : -1);
-    if(fresh.length){
-      const list = el("div","gl-hot-list");
-      fresh.forEach(e => {
-        const b = el("button",null,e.term); b.type="button"; b.addEventListener("click", () => openGlossary(e.id)); list.append(b);
-      });
-      body.append(el("div","gl-hot","New this month"), list);
-    }
+  if(!q && !GL.group){
+    // (new words are listed on the glossary's own page, glossary/, after the A to Z)
     const hot = GL.entries.filter(e => e.recent).sort((a, b) => b.recent - a.recent).slice(0, 10);
     if(hot.length){
       const list = el("div","gl-hot-list");
       hot.forEach(e => {
-        const b = el("button",null,e.term); b.type="button"; b.title = e.recent + (e.recent === 1 ? " story" : " stories") + " this week";
+        const b = el("button",null,e.term); b.type="button"; b.title = e.recent + (e.recent === 1 ? " story" : " stories") + " in the past 7 days";
         b.append(el("span","n",e.recent)); b.addEventListener("click", () => openGlossary(e.id)); list.append(b);
       });
-      body.append(el("div","gl-hot","In the news this week"), list);
+      body.append(el("div","gl-hot","In the news · past 7 days"), list);
     }
   }
-  const shown = GL.entries.filter(e => (!GL.group || e.group === GL.group) && (!GL.level || e.level === GL.level)
+  const shown = GL.entries.filter(e => (!GL.group || e.group === GL.group)
     && (!q || fold(e.term + " " + e.def).includes(q) || e.anyCase.test(raw)))
     .sort((a, b) => a.term.localeCompare(b.term, undefined, {sensitivity: "base"}));
   shown.forEach(e => {
     const d = el("div","gl-entry"); d.id = "gl-" + e.id;
-    const h = el("h3",null,e.term); h.append(el("span","grp",e.group + (e.level ? " · " + e.level : "")));
+    const h = el("h3",null,e.term); h.append(el("span","grp",e.group));
     if(e.new) h.append(el("span","gl-new","New"));
     d.append(h, el("p",null,e.def));
     if(e.example){  // the newest story that uses the word (last 30 days)
@@ -2256,7 +2331,7 @@ function renderGlossary(){
     find.href = "glossary/" + e.id + "/#stories";
     d.append(find); body.append(d);
   });
-  if(!shown.length) body.append(el("p","gl-none","No word matches. Try another spelling, or pick “All” and “Every level”."));
+  if(!shown.length) body.append(el("p","gl-none","No word matches. Try another spelling, or tap the chosen group again to clear it."));
 }
 $("glossary-open").addEventListener("click", () => openGlossary());
 $("gl-q").addEventListener("input", renderGlossary);

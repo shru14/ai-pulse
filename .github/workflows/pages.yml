@@ -4,6 +4,9 @@
 # The database is carried from run to run in the Actions cache; the first run (or one after the cache
 # was evicted) starts from data/seed.db.gz. The "v2" in the cache key marks the seed with history back to
 # 2023 (python -m aipulse backfill); bump it whenever a new seed should replace the saved database.
+# A push to main (a change to the code or the page) only rebuilds and publishes the site from the saved database, in
+# a few minutes: no collecting, re-sorting, memes or dossiers (the next scheduled run does those, and "Run workflow"
+# by hand does everything at once).
 name: Collect and publish
 
 on:
@@ -61,6 +64,7 @@ jobs:
         run: pip install --quiet ctranslate2 sentencepiece certifi pillow  # pillow: writes the meme's captions onto its template
 
       - name: Restore the translation model
+        if: github.event_name != 'push'
         uses: actions/cache@v4
         with:
           path: data/translate-models
@@ -70,6 +74,7 @@ jobs:
         run: "[ -f aipulse.db ] || gunzip -c data/seed.db.gz > aipulse.db"
 
       - name: Collect
+        if: github.event_name != 'push'
         env:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub API: labs' new repositories (sources.py)
@@ -79,6 +84,7 @@ jobs:
 
       # A source that has just started failing: one email to the project inbox (not shown on the site)
       - name: Tell the project inbox about sources that stopped working
+        if: github.event_name != 'push'
         continue-on-error: true
         env:
           DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
@@ -87,18 +93,19 @@ jobs:
 
       # Stored stories keep the category they got when collected; this applies rule fixes to them too.
       - name: Re-sort stored stories with the current rules
-        if: github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
         run: python -m aipulse --db aipulse.db reclassify
 
       # A new stream's history back to 2023 (Infra & climate, added 3 Oct 2026): its sources'
       # archives, about 12 minutes a full run, carrying on where the last run stopped until every source is done.
       - name: History for a new stream
-        if: github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
         run: python -m aipulse --db aipulse.db history --stream infra --minutes 12
 
-      # Gemini (free tier, the project's only AI model, for memes only) writes last week's meme once; it is kept in the
+      # Gemini (free tier, the project's only AI model, for memes only) writes the past 7 days' meme once a day; it is kept in the
       # database, so later runs reuse it. Without the secret, or on any error, the rule-based meme is used.
       - name: Meme of the week
+        if: github.event_name != 'push'
         continue-on-error: true
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -109,23 +116,29 @@ jobs:
       # last 45 days' stories (last week and the month before), at most 4,000 a run, newest first. Then each interest
       # readers follow is searched in last week's stories and kept in the database, for the site and the Monday email.
       - name: Restore the embedding model
-        if: github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
         uses: actions/cache@v4
         with:
           path: data/embed-models
           key: embed-models-bge-base-en-v1.5-2de9369
 
       - name: Story vectors
-        if: github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
         continue-on-error: true
         run: python -m aipulse --db aipulse.db embed --limit 4000
 
       - name: Weekly dossiers
-        if: github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
         continue-on-error: true
         env:
           DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the interests (never who follows them) from the sign-up web app
         run: python -m aipulse --db aipulse.db dossiers
+
+      # Today in AI's leaderboard: each story's rank at the day's first run and its best rank so far (aipulse/today.py),
+      # kept in the database before it is saved, so the board's arrows and "was #N today" survive between runs
+      - name: Today's leaderboard
+        continue-on-error: true
+        run: python -m aipulse --db aipulse.db board
 
       - name: Fold the write-ahead log into the database file
         if: always()
