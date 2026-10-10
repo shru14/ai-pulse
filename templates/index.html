@@ -512,7 +512,7 @@ header.top{gap:10px}
 .more button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .empty{margin-top:40px;color:var(--muted);text-align:center}
 /* The footer: the header's full column on every page, three columns that stack on a phone */
-.site-foot{display:grid;grid-template-columns:1.4fr 1.6fr 1fr;gap:20px 40px;margin-top:48px;padding:22px 0 30px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--muted)}
+.site-foot{display:grid;grid-template-columns:1.6fr 1fr;gap:20px 40px;margin-top:48px;padding:22px 0 30px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--muted)}
 .site-foot h5{margin:0 0 8px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
 .site-foot p{margin:0;max-width:48ch}
 .site-foot ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px}
@@ -636,8 +636,6 @@ header.top.home{height:auto;padding-top:10px}
 .ticker{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font:500 13.5px var(--body)}
 .ticker[hidden]{display:none}
 .ticker .live{flex:none;display:inline-flex;align-items:center;gap:6px;font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase}
-.ticker .live::before{content:"";width:8px;height:8px;border-radius:50%;background:#D55E00;animation:blink 1.6s ease-in-out infinite}
-@keyframes blink{50%{opacity:.25}}
 .tk-view{flex:1;min-width:0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent)}
 .tk-track{display:inline-flex;gap:32px;white-space:nowrap;animation:tick var(--tk-dur,120s) linear infinite}
 .ticker:hover .tk-track,.ticker:focus-within .tk-track{animation-play-state:paused}
@@ -647,7 +645,7 @@ header.top.home{height:auto;padding-top:10px}
 .tk-item time{font:500 11.5px var(--mono);color:var(--muted)}
 .tk-item a{color:var(--ink);text-decoration:none}
 .tk-item a:hover{text-decoration:underline}
-@media (prefers-reduced-motion: reduce){.tk-track{animation:none}.tk-view{overflow-x:auto}.ticker .live::before{animation:none}}
+@media (prefers-reduced-motion: reduce){.tk-track{animation:none}.tk-view{overflow-x:auto}}
 /* Today in AI, People are discussing: a heading band like the streams' */
 .band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;border-bottom:4px solid var(--ink);padding-bottom:6px;margin-bottom:16px}
 .band-head h2{font:400 26px/1.1 var(--head);margin:0}
@@ -702,6 +700,7 @@ header.top.home{height:auto;padding-top:10px}
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
 .about-lede{font:400 20px/1.35 var(--head);margin:0}
+.about-text{margin:0;font-size:16px;line-height:1.55;color:var(--muted);max-width:720px}
 .about-t{width:100%;border-collapse:collapse;font-size:15px}
 .about-t td{border-top:1px solid var(--line);padding:9px 14px 9px 0;vertical-align:top}
 .about-t td:first-child{white-space:nowrap;font-weight:600;width:1%}
@@ -757,8 +756,8 @@ header.top.home{height:auto;padding-top:10px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
   </header>
-  <!-- Live: the newest stories as they arrive, gliding past (still for readers who turn motion off) -->
-  <div class="ticker" id="ticker" hidden><span class="live">Live</span><div class="tk-view" role="region" aria-label="Latest stories"><div class="tk-track" id="tk-track"></div></div></div>
+  <!-- Latest: the newest stories as they arrived (with each update), gliding past (still for readers who turn motion off) -->
+  <div class="ticker" id="ticker" hidden><span class="live">Latest</span><div class="tk-view" role="region" aria-label="Latest stories"><div class="tk-track" id="tk-track"></div></div></div>
   <dialog class="subscribe glossary" id="glossary" aria-labelledby="glossary-title">
     <form method="dialog" class="sub-close-form"><button class="sub-close" aria-label="Close">×</button></form>
     <div class="gl-head">
@@ -885,12 +884,8 @@ header.top.home{height:auto;padding-top:10px}
   <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
     <div class="band-head"><h2>About AI Pulse</h2><span class="kicker">Free · non-commercial · no ads, no tracking</span></div>
-    <p class="about-lede">What is happening in AI worldwide, from 200+ public sources, every 6 hours.</p>
-    <table class="about-t"><tbody>
-      <tr><td>Stories</td><td>Headlines and the publishers’ own summaries, each linked to the original; no AI writes them</td></tr>
-      <tr><td>Sources</td><td>Only sites that allow automated reading; <a href="https://github.com/shru14/ai-pulse#sources">full list</a></td></tr>
-      <tr><td>Contact</td><td><a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></td></tr>
-    </tbody></table>
+    <p class="about-lede">What is happening in AI worldwide, from 200+ public sources.</p>
+    <p class="about-text">Headlines and the publishers’ own summaries, each linked to the original. No AI writes them, and only sites that allow automated reading are used.</p>
   </section>
 
   <!-- A stream's own page (or All stories): its name, then the filters and the stories, as before. -->
@@ -931,7 +926,6 @@ header.top.home{height:auto;padding-top:10px}
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
   </section>
   <footer class="site-foot">
-    <div><h5>About</h5><p>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="about/">About AI Pulse</a></p></div>
     <div><h5>Daily RSS</h5><ul><li><a href="feeds/releases.xml">Releases</a></li><li><a href="feeds/news.xml">Industry</a></li><li><a href="feeds/research.xml">Research</a></li>
       <li><a href="feeds/regulation.xml">Regulation tracker</a></li><li><a href="feeds/policy.xml">Policy</a></li><li><a href="feeds/infra.xml">Infra &amp; climate</a></li>
       <li><a href="feeds/all.opml">All feeds (OPML)</a></li></ul></div>
@@ -1787,11 +1781,12 @@ async function loadTicker(){
     const items = (d.items || []).filter(it => CATS.includes(it.category))
       .sort((a, b) => (b.added_at || b.date).localeCompare(a.added_at || a.date)).slice(0, 24);
     if(items.length < 3) return;
-    const today = new Date().toDateString();
+    // how long ago each arrived: stories come with each update (every 6 hours, labs every 30 minutes), so a
+    // clock time would read as "live" when it isn't
     const when = it => {
       if(!it.added_at) return fmtShort(it.date);
-      const t = new Date(it.added_at), hm = t.toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit"});
-      return t.toDateString() === today ? hm : "Yesterday " + hm;
+      const min = Math.max(0, Math.round((Date.now() - new Date(it.added_at)) / 6e4));
+      return min < 60 ? min + " min ago" : min < 1440 ? Math.round(min / 60) + " h ago" : Math.round(min / 1440) + " d ago";
     };
     const copy = hidden => items.map(it => {
       const span = el("span","tk-item k-" + it.category), a = el("a", null, it.title);

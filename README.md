@@ -18,7 +18,7 @@ six streams and links every card to the original.
 
 ## Features
 
-- **Site:** a front page (a live ticker of the newest stories, Today in AI, the week's story, word and meme, each stream's top three, and what people are discussing), a page per stream, filters and search back to 2023, dark mode, an [About page](https://projectaipulse.com/about/).
+- **Site:** a front page (a ticker of the latest stories, Today in AI, the week's story, word and meme, each stream's top three, and what people are discussing), a page per stream, filters and search back to 2023, dark mode, an [About page](https://projectaipulse.com/about/).
 - **One card per event**, in English (offline translation where needed).
 - **Daily or weekly email** of the streams you pick, with a word and meme of the day.
 - **Weekly dossier:** your own questions, answered with the week's stories.
