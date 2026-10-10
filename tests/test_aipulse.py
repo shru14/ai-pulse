@@ -848,7 +848,8 @@ def test_no_source_or_lookup_uses_sites_that_forbid_automated_access():
     for host in ("news.google.com", "bing.com", "google.com/s2"):
         assert host not in code, host
     from aipulse.sources import SOURCES
-    assert not [s["url"] for s in SOURCES if "google.com" in s["url"].split("/")[2] and "blog.google" not in s["url"]]
+    assert not [s["url"] for s in SOURCES if "google.com" in s["url"].split("/")[2] and "blog.google" not in s["url"]
+                   and s["url"].split("/")[2] != "cloudblog.withgoogle.com"]  # Google Cloud's blog, Google's terms
 
 
 def test_stories_from_google_news_are_removed_once(tmp_path):
@@ -2989,7 +2990,7 @@ def test_every_source_has_legal_evidence():
     from urllib.parse import urlsplit
     from aipulse.sources import SOURCES
     from aipulse.terms import TERMS
-    kinds = {"official", "licence", "feed terms", "terms read", "no terms", "unconfirmed"}
+    kinds = {"official", "licence", "feed terms", "terms read", "no terms", "unconfirmed", "robots.txt"}
     hosts = {urlsplit(s["url"]).netloc.lower() for s in SOURCES}
     assert sorted(hosts - set(TERMS)) == []  # a new source needs its evidence first
     assert all(TERMS[h][0] in kinds and TERMS[h][2] for h in hosts)

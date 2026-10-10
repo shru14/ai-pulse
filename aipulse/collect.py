@@ -227,6 +227,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 summary = brief.paper_summary(e["summary"], title)
             else:
                 summary = brief.clean_summary(e["summary"], title, source)
+            if src.get("skip") and re.search(src["skip"], title):
+                continue
             if src.get("english_only") and translate.detect(title):
                 continue  # the same post in Japanese (Sakana AI posts both): the English one is kept
             title, summary, url = in_english(conn, title, summary, e["url"], source, fetcher)

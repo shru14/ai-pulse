@@ -12,6 +12,9 @@ Kinds:
   terms read    the terms page was read in full and says nothing against reading the feed
   no terms      no terms page is linked from the site
   unconfirmed   the terms page refuses automated readers: someone has to read it in a browser before it counts
+  robots.txt    an AI lab's or company's own blog, read because its robots.txt allows it (the owner's rule for these
+                blogs, 10 Oct 2026: robots.txt decides, and a site without one may be read); what its terms say, if
+                read, is noted
   owner's choice  (PLATFORM only) a risk the project owner accepted knowingly
 """
 
@@ -52,6 +55,22 @@ TERMS: dict[str, tuple[str, str, str]] = {
                     "Linux Foundation site content is Creative Commons Attribution 3.0"),
     "www.together.ai": ("terms read", "https://www.together.ai/terms-of-service", "Nothing on feeds, robots or personal use"),
     "elevenlabs.io": ("terms read", "https://elevenlabs.io/terms-of-use", "Nothing on feeds, robots or personal use"),
+    # Added 10 Oct 2026 under the owner's rule for labs' blogs (kind "robots.txt")
+    "cloudblog.withgoogle.com": ("terms read", "https://policies.google.com/terms", "Google's terms, as for blog.google"),
+    "developers.googleblog.com": ("terms read", "https://developers.google.com/terms/site-terms",
+                                  "Google Developers site terms (feedback only) and Google's terms, as for blog.google"),
+    "www.sarvam.ai": ("robots.txt", "https://www.sarvam.ai/terms-of-service",
+                      "robots.txt allows the feed; checked 10 Oct 2026. Its terms cover its AI products; nothing on robots, scrapers or feeds"),
+    "thinkingmachines.ai": ("robots.txt", "https://thinkingmachines.ai/legal/terms/",
+                            "robots.txt allows the feed; checked 10 Oct 2026. Its terms cover its API service; nothing on robots, scrapers or feeds"),
+    "updates.midjourney.com": ("robots.txt", "", "robots.txt allows the feed; checked 10 Oct 2026. Its terms page refuses automated readers"),
+    "bfl.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "www.liquid.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "reflection.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "cognition.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "poolside.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "reka.ai": ("robots.txt", "", "robots.txt allows the news page and posts; checked 10 Oct 2026 (it shuts out only AI crawlers)"),
+    "www.figure.ai": ("robots.txt", "", "robots.txt allows the news page and posts; checked 10 Oct 2026"),
     # --- Industry news ---
     "techcrunch.com": ("feed terms", "https://techcrunch.com/rss-terms-of-use/",
                        "RSS terms: display the feed's content with attribution and a link; may not modify it"),

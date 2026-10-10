@@ -348,7 +348,7 @@ HF_GROUP_DAYS = 30
 _HF_VARIANT = re.compile(r"^(?:\d+(?:\.\d+)?[bmkt]|a\d+(?:\.\d+)?b|e\d+b|\d+e|\d+x\d+(?:\.\d+)?b|instruct|chat|base|"
                          r"it|pt|hf|bf16|preview|eagle|original)$", re.I)
 _HF_COPY = re.compile(r"(?:^|[-_.])(?:gguf|awq|gptq|fp8|fp4|nvfp4|mxfp4|int4|int8|w4a16|w8a8|w4a8|bnb|4bit|8bit|mlx|"
-                      r"onnx|qat|q4_0|q8_0|quantized)(?=$|[-_.])", re.I)
+                      r"onnx|qat|q4_0|q8_0|quantized|diffusers)(?=$|[-_.])", re.I)
 _HF_TASK = {"text-generation": "text", "image-text-to-text": "vision-language", "text-to-image": "image",
             "text-to-speech": "speech", "automatic-speech-recognition": "speech recognition",
             "text-to-video": "video", "image-to-video": "video", "feature-extraction": "embedding",
@@ -663,6 +663,7 @@ def page_meta(page_bytes: bytes) -> dict:
         title = html.unescape(re.sub(r"\s+", " ", (re.search(r"<title[^>]*>(.*?)</title>", page, re.S) or [None, ""])[1]))
         title = re.sub(r"\s+-\s+[^-]{1,25}$", "", title.strip())
     title = re.sub(r"\s+[|–—]\s+[^|–—]{1,40}$", "", title.strip())
+    title = re.sub(r"(?<=\S)- [A-Z][^-]{1,30}$", "", title)  # "EmbeddingGemma 2: The Developer Guide- Google Developers Blog"
     when = _meta(page, "article:published_time", "datePublished", "date") or (
         re.search(r'"datePublished"\s*:\s*"([^"]+)"', page) or [None, ""])[1]
     summary = _meta(page, "og:description", "description", "twitter:description") or article_lead(page_bytes)

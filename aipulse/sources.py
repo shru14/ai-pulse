@@ -30,6 +30,7 @@ Optional per-source keys:
   lab           "github_repos", "hf_models" and the labs' APIs: the lab's name in headlines ("Qwen publishes
                 Qwen-Image-2.1 on GitHub")
   key_env       the environment variable holding the project's API key for the source; skipped when unset
+  skip          a pattern: posts whose headline matches it are never stories (Midjourney's weekly changelogs)
   paged         the feed pages back in time (WordPress: ?paged=2, 3, ...); the history run reads it back to 2023
 
 Policy stories from any source move to the regulation tracker when they report a proposal or an
@@ -71,6 +72,33 @@ SOURCES = [
     # Labs with no feed: their news page lists posts; each new post's page is read once (collect.page_list_entries).
     {"name": "MiniMax", "url": "https://www.minimax.io/news", "format": "page_list",
      "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
+    # Added 10 Oct 2026 for the labs whose launches reached us only through news outlets. The owner's rule for AI
+    # labs' and companies' own blogs (10 Oct 2026): robots.txt decides, and a site without one may be read
+    # (terms.py "robots.txt").
+    {"name": "Sarvam AI", "url": "https://www.sarvam.ai/rss.xml", "category": "tool"},
+    {"name": "Google Cloud Blog (AI)", "url": "https://cloudblog.withgoogle.com/products/ai-machine-learning/rss/",
+     "category": "tool"},
+    {"name": "Thinking Machines", "url": "https://thinkingmachines.ai/blog/index.xml", "category": "tool",
+     "max_age_days": 60},  # a few posts a year
+    {"name": "Midjourney", "url": "https://updates.midjourney.com/rss/", "category": "tool",
+     "skip": r"(?i)^alpha changelog\b"},  # its weekly changelogs aren't launches
+    # Its feed gives no dates, so its blog page is read like a lab without a feed (each post's page has its date).
+    {"name": "Google Developers Blog", "url": "https://developers.googleblog.com/", "format": "page_list",
+     "link": r"^https://developers\.googleblog\.com/[a-z0-9][a-z0-9-]{8,}/$", "category": "tool"},
+    {"name": "Black Forest Labs", "url": "https://bfl.ai/blog", "format": "page_list",
+     "link": r"^https://bfl\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Liquid AI", "url": "https://www.liquid.ai/blog", "format": "page_list",
+     "link": r"^https://www\.liquid\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Reflection AI", "url": "https://reflection.ai/blog", "format": "page_list",
+     "link": r"^https://reflection\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Cognition", "url": "https://cognition.ai/blog", "format": "page_list",
+     "link": r"^https://cognition\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Poolside", "url": "https://poolside.ai/blog", "format": "page_list",
+     "link": r"^https://poolside\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Reka", "url": "https://reka.ai/news", "format": "page_list",
+     "link": r"^https://reka\.ai/news/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Figure", "url": "https://www.figure.ai/news", "format": "page_list",
+     "link": r"^https://www\.figure\.ai/news/[a-z0-9-]+$", "category": "tool"},
     # Labs' new open models and tools, from their GitHub organisations through GitHub's API, whose terms allow it
     # (terms.py; the labs' own sites may not be read: OpenAI, Anthropic, Meta, Hugging Face, NVIDIA, DeepSeek...).
     # Only repositories 300+ people starred, back to 2023 (feeds.parse_github_repos); github.com pages are never read.
@@ -165,6 +193,47 @@ SOURCES = [
      "url": HF_ORG.format("allenai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
     {"name": "Liquid AI on Hugging Face", "lab": "Liquid AI", "format": "hf_models", "category": "tool",
      "url": HF_ORG.format("LiquidAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    # Added 10 Oct 2026: more labs whose open models people like (same API, same 300+ likes test)
+    {"name": "Xiaomi MiMo on Hugging Face", "lab": "Xiaomi MiMo", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("XiaomiMiMo"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Aleph Alpha on Hugging Face", "lab": "Aleph Alpha", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Aleph-Alpha"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Sarvam AI on Hugging Face", "lab": "Sarvam AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("sarvamai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Nous Research on Hugging Face", "lab": "Nous Research", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("NousResearch"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Kyutai on Hugging Face", "lab": "Kyutai", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("kyutai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "AI21 Labs on Hugging Face", "lab": "AI21 Labs", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ai21labs"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "OpenBMB on Hugging Face", "lab": "OpenBMB", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("openbmb"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "LG AI Research on Hugging Face", "lab": "LG AI Research", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("LGAI-EXAONE"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Upstage on Hugging Face", "lab": "Upstage", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("upstage"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Meituan LongCat on Hugging Face", "lab": "Meituan LongCat", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("meituan-longcat"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Lightricks on Hugging Face", "lab": "Lightricks", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Lightricks"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Wan (Alibaba) on Hugging Face", "lab": "Wan (Alibaba)", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Wan-AI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "TII Falcon on Hugging Face", "lab": "TII Falcon", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("tiiuae"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Salesforce on Hugging Face", "lab": "Salesforce", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Salesforce"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "ServiceNow on Hugging Face", "lab": "ServiceNow", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ServiceNow-AI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Prime Intellect on Hugging Face", "lab": "Prime Intellect", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("PrimeIntellect"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Nari Labs on Hugging Face", "lab": "Nari Labs", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("nari-labs"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Sesame on Hugging Face", "lab": "Sesame", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("sesame"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Resemble AI on Hugging Face", "lab": "Resemble AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ResembleAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Swiss AI on Hugging Face", "lab": "Swiss AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("swiss-ai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
     # The labs' own model lists, through their APIs with the project's free keys (their terms allow access through
     # the API; terms.py): every model they serve, closed ones too. Skipped until the key is set (feeds.API_KEYS).
     {"name": "Anthropic API models", "lab": "Anthropic", "format": "anthropic_models", "category": "tool",
