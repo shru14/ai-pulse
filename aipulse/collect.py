@@ -94,6 +94,9 @@ def in_english(conn, title: str, summary: str, url: str = "", source: str = "",
     if not any(langs):
         return title, summary, url
     lang = next(l for l in langs if l)
+    # a short headline may not show its language when its summary does ("China restringe chatbots que simulam
+    # namoros"): it is translated too, unless it reads as English
+    langs = [l or (lang if t and not translate.reads_english(t) else None) for l, t in zip(langs, (title, summary))]
     name = translate.LANGUAGE_NAMES[lang]
     if fetcher and url:
         found = english_version(url, fetcher)

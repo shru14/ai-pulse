@@ -130,6 +130,15 @@ TERMS: dict[str, tuple[str, str, str]] = {
                                 "Copyright policy (Korean), as The Elec's: no reproduction without consent; nothing on "
                                 "robots, feeds or personal use; checked 10 Oct 2026"),
     "contxto.com": ("no terms", "", "No terms page linked from the site; checked 10 Oct 2026"),
+    "dplnews.com": ("terms read", "https://dplnews.com/aviso-legal/",
+                    "Aviso legal (Spanish): no reproduction or commercial use of its content without consent; nothing on "
+                    "robots, feeds or personal use; checked 10 Oct 2026"),
+    "olhardigital.com.br": ("terms read", "https://olhardigital.com.br/termos-de-uso/",
+                            "Termos de uso e privacidade (Portuguese): about readers' data; nothing on robots, feeds, "
+                            "reproduction or personal use; checked 10 Oct 2026"),
+    "www.xataka.com": ("licence", "https://www.weblogssl.com/contenidos",
+                       "Webedia España's sites: Creative Commons, non-commercial use with attribution by a direct link "
+                       "(no nofollow) to the original; checked 10 Oct 2026"),
     "www.wamda.com": ("licence", "https://www.wamda.com/legal", "Creative Commons Attribution-NonCommercial-NoDerivatives"),
     "en.mercopress.com": ("no terms", "", "No terms page linked from the site"),
     "www.batimes.com.ar": ("no terms", "", "No terms page linked from the site"),

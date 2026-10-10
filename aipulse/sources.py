@@ -351,6 +351,10 @@ SOURCES = [
     {"name": "Buenos Aires Times", "url": "https://www.batimes.com.ar/feed", "category": "news", "ai_in_title": True},
     {"name": "LatinAmerica Reports", "url": "https://latinamericareports.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Contxto", "url": "https://contxto.com/en/feed/", "category": "news", "ai_in_title": True},  # added 10 Oct 2026
+    # Spanish and Portuguese, translated offline (translate.py) before the AI test; added 10 Oct 2026
+    {"name": "DPL News", "url": "https://dplnews.com/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Olhar Digital", "url": "https://olhardigital.com.br/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Xataka", "url": "https://www.xataka.com/feedburner.xml", "category": "news", "ai_in_title": True},
     # Africa
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},

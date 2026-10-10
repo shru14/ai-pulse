@@ -2104,6 +2104,16 @@ def test_every_story_is_shown_in_english(monkeypatch, tmp_path):
     assert col.in_english(conn, "Ley de IA: el Senado aprueba la regulación", "", "https://ex.es/ley") == (
         "AI Law: The Senate approves the regulation", "Machine-translated from Spanish; the original is linked.",
         "https://ex.es/ley")
+    # A headline too short to show its language is translated with its summary, unless it reads as English
+    made.update({"China restringe chatbots que simulam namoros": "China restricts chatbots that simulate dating",
+                 "As regras exigem avisos aos usuários e proíbem parceiros virtuais para menores, em uma tentativa de conter a dependência":
+                 "Chinese rules require user notices and ban virtual partners for minors"})
+    assert col.in_english(conn, "China restringe chatbots que simulam namoros",
+                          "As regras exigem avisos aos usuários e proíbem parceiros virtuais para menores, em uma tentativa de conter a dependência")[:2] == (
+        "China restricts chatbots that simulate dating",
+        "Chinese rules require user notices and ban virtual partners for minors Machine-translated from Portuguese; the original is linked.")
+    assert translate.reads_english("OpenAI fires 3 safety researchers in a dispute over the risks")
+    assert not translate.reads_english("China restringe chatbots que simulam namoros")
     # The publisher's own English version wins, and the card links to it ("-ja" dropped from the address).
     pages = {"https://huggingface.co/blog/nvidia/nemotron-personas-japan":
              b'<meta property="og:title" content="Nemotron-Personas-Japan: Synthesized Data for Sovereign AI">'
@@ -3041,12 +3051,14 @@ def test_open_source_projects_major_and_minor_releases_are_releases():
     releases = [r("v0.31.0", "## Highlights\n\nThis release features 717 commits from 307 contributors (96 new)!"),
                 r("v0.31.1"), r("v0.32.0rc1"), r("v0.32.0", pre=True), r("b11552"),
                 r("jax-v0.11.0", "* Added a doc on defining custom derivative rules with the experimental\n  `custom_vjp` API.\n"),
-                r("v2.0", "![logo](x.png)\n[Full Changelog](https://x)\nShort.\n- Ollama now runs models on MLX on Apple Silicon by default")]
+                r("v2.0", "![logo](x.png)\n[Full Changelog](https://x)\nShort.\n- Ollama now runs models on MLX on Apple Silicon by default"),
+                r("v3.0", "A few defaults changed in this release, so skim these first:\n\n☎️ Realtime voice calls, in any chat, with any model.")]
     entries = feeds.parse_github_releases(json.dumps(releases).encode(), lab="vLLM")
     assert [(e["title"], e["summary"]) for e in entries] == [
         ("vLLM releases version 0.31", "This release features 717 commits from 307 contributors (96 new)!"),
         ("vLLM releases version 0.11", "Added a doc on defining custom derivative rules with the experimental custom_vjp API."),
-        ("vLLM releases version 2.0", "Ollama now runs models on MLX on Apple Silicon by default")]
+        ("vLLM releases version 2.0", "Ollama now runs models on MLX on Apple Silicon by default"),
+        ("vLLM releases version 3.0", "Realtime voice calls, in any chat, with any model.")]
 
 
 def test_the_labs_own_model_lists_name_each_model_once():

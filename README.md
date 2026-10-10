@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 224 public sources, keeps only AI stories, sorts them into
+A free, non-commercial, worldwide briefing on AI. It reads 227 public sources, keeps only AI stories, sorts them into
 six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -49,7 +49,7 @@ Every source's robots.txt and terms were audited on 7 October 2026. The evidence
 | Releases (Hugging Face trending) | New models from verified organisations we don't follow by name: 200+ likes, created in the last 60 days, no quantised copies, adapters or merges |
 | Releases (GitHub releases) | Major and minor versions (no patches or betas) of 15 open-source projects: vLLM, Ollama, Transformers, PyTorch, Diffusers, TensorRT-LLM, Open WebUI, MLX, JAX, TRL, PEFT, MCP Python SDK, OpenAI Agents SDK, DeepSpeed, Keras |
 | Releases (labs' APIs) | Anthropic, OpenAI |
-| Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation, Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International, The Elec, BusinessKorea · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports, Contxto · **Practitioners:** Simon Willison, Lil'Log, METR · **Incidents:** AI Incident Database (CC BY-SA 4.0) |
+| Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation, Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International, The Elec, BusinessKorea · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports, Contxto · **Spanish and Portuguese (translated offline):** Xataka (Spain), DPL News (Latin America), Olhar Digital (Brazil) · **Practitioners:** Simon Willison, Lil'Log, METR · **Incidents:** AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma, ISED Canada, CLTC (UC Berkeley), ITU, Partnership on AI, Smart Africa, NTIA, DARPA, NSF, UK AI Security Institute |
 | Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, The Conversation, Data Center Knowledge, Data Center POST, Greenpeace International, Global Energy Monitor · **Europe:** European Commission (energy) · **UK:** GOV.UK, Techerati, DCNN · **Africa:** Africa Data Centres Association · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists, Southern Environmental Law Center, Food & Water Watch, Energy Innovation |

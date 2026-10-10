@@ -470,8 +470,10 @@ def _notes_lead(body: str) -> str:
         line = re.sub(r"!\[[^\]]*\]\([^)]*\)|<[^>]+>", "", line).strip()
         line = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line)  # [text](link) -> text
         line = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", line).replace("**", "").replace("`", "").strip()
-        if (len(line) >= 40 and not line.startswith(("#", "|", ">")) and not re.match(r"(?i)(?:full changelog|"
-                r"what's changed|new contributors|thanks|@)", line) and "http" not in line):
+        line = re.sub(r"^[^\w#|>@(\"']+", "", line)  # a leading emoji ("☎️ Realtime voice calls")
+        if (len(line) >= 40 and not line.startswith(("#", "|", ">")) and not line.endswith(":")
+                and not re.match(r"(?i)(?:full changelog|what's changed|new contributors|thanks|@|during the v)", line)
+                and "http" not in line):
             return clean_text(line, 300)
     return ""
 
