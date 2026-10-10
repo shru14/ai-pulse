@@ -73,6 +73,8 @@ jobs:
         env:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub API: labs' new repositories (sources.py)
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}  # free model list only; skipped while unset
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # free model list only; skipped while unset
         run: python -m aipulse --db aipulse.db collect ${{ github.event.schedule == '25,55 * * * *' && '--labs' || '' }}
 
       # A source that has just started failing: one email to the project inbox (not shown on the site)

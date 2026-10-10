@@ -1,7 +1,7 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 121 public sources (86 feeds, 17 AI labs' GitHub
-organisations, 18 official records and databases), keeps only AI stories, sorts them into six streams and links every card to the original.
+A free, non-commercial, worldwide briefing on AI. It reads 205 public sources (123 feeds and news pages, 17 AI labs' GitHub
+organisations, 47 AI labs' Hugging Face organisations, 18 official records and databases), keeps only AI stories, sorts them into six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
 
@@ -11,7 +11,7 @@ Only legal, publicly accessible sources are used.
 
 | Stream | What's in it | Updated |
 |---|---|---|
-| **Releases** | New models, products and open-source launches | Lab and company blogs every 30 min; the rest every 6 h |
+| **Releases** | New models, products and open-source launches | Lab and company blogs and model lists every 30 min; the rest every 6 h |
 | **Industry** | Company news, deals and market moves, labelled **News**, **AI-incident**, **Study**, **Opinion & analysis**, **Company blog**, **Tutorial** or **Event** | Every 6 h |
 | **Research** | Papers only: by ~120 leading AI and AI-ethics scholars, and big labs | Every 6 h (arXiv publishes on weekdays) |
 | **Regulation tracker** | AI proposals, laws, bodies and standards, by country | Every 6 h; Korea, Vietnam and OECD.AI weekly; standards by hand |
@@ -40,7 +40,7 @@ Only legal, publicly accessible sources are used.
 ## How we keep it legal
 
 1. **robots.txt must allow us**, checked before every request; the only exceptions are official APIs whose terms allow programmatic use (arXiv, Wikidata, congress.gov, jsDelivr). The reverse holds for GitHub: its robots.txt lets us read its pages, but its terms allow scraping them only for research or archiving, so github.com pages are never read and only its API is used.
-2. **Terms must allow** showing a headline, a short description and a link. A site whose terms forbid robots or scrapers, or allow personal use only, isn't read, even when its robots.txt lets us in. Where a feed's own terms allow its text only unmodified (TechCrunch, Engadget, ScienceDaily), it is shown exactly as the feed gives it, and ScienceDaily's stored headlines are capped at 40 as its terms ask.
+2. **Terms must allow** showing a headline, a short description and a link. A site whose terms forbid robots or scrapers, or allow personal use only, isn't read, even when its robots.txt lets us in. AI labs' and companies' own blogs follow the owner's rule for them instead (from 10 October 2026): robots.txt decides, and a blog without one may be read. Where a feed's own terms allow its text only unmodified (TechCrunch, Engadget, ScienceDaily), it is shown exactly as the feed gives it, and ScienceDaily's stored headlines are capped at 40 as its terms ask.
 3. **No workarounds:** nothing behind a login, bot check or paywall; sites that block automated readers aren't read.
 4. **Only what's needed:** headline, short description, date and link. No personal data.
 5. **Credit and non-commercial use**, as the licences below require.
@@ -56,12 +56,16 @@ Requests go one at a time with pauses and identify themselves as `AIPulse/1.0`. 
 
 | Stream | Sources |
 |---|---|
-| Releases (feeds) | Google AI, Google DeepMind, Google Research, Mistral, Cloudflare, Sakana AI, PyTorch, Together AI, ElevenLabs |
-| Releases (news pages, no feed) | MiniMax |
+| Releases (feeds) | OpenAI, Hugging Face, Microsoft Research, NVIDIA, AWS Machine Learning, Engineering at Meta, GitHub, Databricks, Ollama, Character.AI, Stability AI, Google AI, Google Gemini, Google DeepMind, Google Research, Google Cloud (AI), Mistral, Cloudflare, Sakana AI, PyTorch, Together AI, ElevenLabs, Sarvam AI, Thinking Machines, Midjourney (not its weekly changelogs) |
+| Releases (news pages, no feed) | Anthropic, Meta AI, DeepSeek, Cohere, Moonshot AI, MiniMax, Runway, Google Developers Blog, Black Forest Labs, Liquid AI, Reflection AI, Cognition, Poolside, Reka, Figure |
 | Releases (GitHub API: a lab's new repositories that 300+ people starred, back to 2023) | OpenAI, Anthropic, Meta Llama, Hugging Face, NVIDIA, Mistral AI, xAI, DeepSeek, Qwen, Moonshot AI, MiniMax, Z.ai, StepFun, Tencent Hunyuan, ByteDance Seed, Baidu, Ant Group (inclusionAI) |
+| Releases (Hugging Face API: a lab's open models, one story per release with all its sizes, only releases 300+ people liked, back to 2023) | OpenAI, Meta Llama, Meta, Google, Microsoft, NVIDIA, Apple, Amazon, IBM Granite, Mistral AI, xAI, DeepSeek, Qwen, Moonshot AI, MiniMax, Z.ai, StepFun, Tencent, ByteDance Seed, Baidu, Ant Group (inclusionAI), Cohere Labs, Hugging Face, Black Forest Labs, Stability AI, Ai2, Liquid AI, Xiaomi MiMo, Aleph Alpha, Sarvam AI, Nous Research, Kyutai, AI21 Labs, OpenBMB, LG AI Research, Upstage, Meituan LongCat, Lightricks, Wan (Alibaba), TII Falcon, Salesforce, ServiceNow, Prime Intellect, Nari Labs, Sesame, Resemble AI, Swiss AI |
+| Releases (developer release notes: only the lab's own launches) | xAI, Perplexity |
+| Releases (company newsrooms: only stories that name AI in the headline) | Microsoft, Meta, Amazon, Apple |
+| Releases (labs' own APIs: every model they serve, once the key is set) | Anthropic, OpenAI |
 | Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation (AI), Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports · **Practitioners and evaluators:** Simon Willison, Lil'Log, METR |
 | AI incidents (Industry) | AI Incident Database (CC BY-SA 4.0) |
-| Research | arXiv (listed professors and scholars, and papers on AI's own energy, carbon, water and power, tagged Infra & climate), Hugging Face Daily Papers |
+| Research | arXiv (listed professors and scholars, and papers on AI's own energy, carbon, water and power, tagged Infra & climate), Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma (English news), Innovation, Science and Economic Development Canada, CLTC (UC Berkeley), ITU, Partnership on AI, Smart Africa, NTIA, DARPA, NSF, UK AI Security Institute |
 | Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, The Conversation (energy), Data Center Knowledge, Data Center POST, Greenpeace International, Global Energy Monitor · **Europe:** European Commission (energy) · **United Kingdom:** GOV.UK (data centres: planning, permits, statistics), Techerati, DCNN · **Africa:** Africa Data Centres Association · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists, Southern Environmental Law Center, Food & Water Watch, Energy Innovation |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |

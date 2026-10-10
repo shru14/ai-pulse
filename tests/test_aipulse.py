@@ -848,7 +848,8 @@ def test_no_source_or_lookup_uses_sites_that_forbid_automated_access():
     for host in ("news.google.com", "bing.com", "google.com/s2"):
         assert host not in code, host
     from aipulse.sources import SOURCES
-    assert not [s["url"] for s in SOURCES if "google.com" in s["url"].split("/")[2] and "blog.google" not in s["url"]]
+    assert not [s["url"] for s in SOURCES if "google.com" in s["url"].split("/")[2] and "blog.google" not in s["url"]
+                   and s["url"].split("/")[2] != "cloudblog.withgoogle.com"]  # Google Cloud's blog, Google's terms
 
 
 def test_stories_from_google_news_are_removed_once(tmp_path):
@@ -1798,6 +1799,29 @@ def test_standards_news_is_never_a_release():
     assert categorize("NIST releases a tool for testing AI model risk", "", "news") == "policy"
     assert categorize("Acme achieves ISO/IEC 42001 certification for its AI platform", "", "tool") == "news"
     assert categorize("OpenAI launches GPT-6 with new API features", "", "news") == "tool"  # releases unaffected
+
+
+def test_lab_blog_posts_that_launch_nothing_and_what_counts_as_policy():
+    # Seen on the labs' blogs restored on 10 Oct 2026: how-tos, roundups, donations and customer stories aren't releases,
+    # and a security team's investigation isn't a regulator's.
+    from aipulse.classify import categorize
+    for title in ["Best practices guide for customizing Gemini models via Reinforcement Learning (RL)",
+                  "Why your startup needs open models alongside frontier APIs",
+                  "The latest AI news we announced in September 2026",
+                  "See what 4 builders are making with Gemini 3.8 Flash",
+                  "Meta Donates 1,000 AI Glasses to Singapore's Disability Community",
+                  "Radisson Hotel Group brings hotel discovery into ChatGPT",
+                  "Sophos cuts threat investigation time by 96% with OpenAI Daybreak",
+                  "Automate remediation post AWS DevOps Agent investigation"]:
+        assert categorize(title, "", "tool") == "news", title
+    assert categorize("OpenAI brings GPT-6 to ChatGPT", "", "tool") == "tool"
+    assert categorize("Gemini 4 Argon: our next era of frontier intelligence", "", "tool") == "tool"
+    assert categorize("FTC opens investigation into OpenAI", "", "news") == "policy"
+    # summits of governments and elections are policy; trade events and "Selection" aren't
+    assert categorize("Balancing the AI revolution: Lessons from BRICS New Delhi Summit", "", "news") == "policy"
+    assert categorize("Containment is dead: Five takeaways from the AI ROI in Contact Center Summit", "", "news") == "news"
+    assert categorize("Kenyan political operator used Claude to mass-produce election propaganda", "", "news") == "policy"
+    assert categorize("Selection Result Announced for the AI Foundation Model Programme", "", "news") != "policy"
 
 
 def test_translation_note_is_not_a_place():
@@ -2932,6 +2956,49 @@ def test_a_labs_new_github_repositories_people_took_up_are_releases():
     assert entries[0]["published"].date() == date(2026, 7, 27)
 
 
+def test_a_labs_hugging_face_release_is_one_story_for_all_its_sizes():
+    import json
+    models = [{"id": "Qwen/Qwen3-8B", "createdAt": "2025-04-27T03:00:00Z", "likes": 900, "pipeline_tag": "text-generation"},
+              {"id": "Qwen/Qwen3-0.6B-Base", "createdAt": "2025-04-27T02:00:00Z", "likes": 200},
+              {"id": "Qwen/Qwen3-235B-A22B", "createdAt": "2025-04-28T00:00:00Z", "likes": 1200, "pipeline_tag": "text-generation"},
+              {"id": "Qwen/Qwen3-8B-GGUF", "createdAt": "2025-04-20T00:00:00Z", "likes": 400},  # a compressed copy
+              {"id": "Qwen/Qwen3-Coder-480B-A35B-Instruct", "createdAt": "2025-07-22T00:00:00Z", "likes": 1500},
+              {"id": "Qwen/Qwen-tiny-test", "createdAt": "2025-08-01T00:00:00Z", "likes": 12},
+              {"id": "Qwen/Qwen3.6-2603", "createdAt": "2025-12-01T00:00:00Z", "likes": 500}]
+    entries = feeds.parse_hf_models(json.dumps(models).encode(), lab="Qwen")
+    assert [(e["title"], e["url"], e["published"].date()) for e in entries] == [
+        ("Qwen publishes Qwen3 on Hugging Face", "https://huggingface.co/Qwen/Qwen3-0.6B-Base", date(2025, 4, 27)),
+        ("Qwen publishes Qwen3-Coder-480B-A35B-Instruct on Hugging Face",
+         "https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct", date(2025, 7, 22)),
+        ("Qwen publishes Qwen3.6-2603 on Hugging Face", "https://huggingface.co/Qwen/Qwen3.6-2603", date(2026, 3, 1))]
+    assert entries[0]["summary"] == "Text model weights published on Hugging Face in 3 versions."
+
+
+def test_the_labs_own_model_lists_name_each_model_once():
+    import json
+    anthropic = {"data": [{"type": "model", "id": "claude-sonnet-4-5-20250929", "display_name": "Claude Sonnet 4.5",
+                           "created_at": "2025-09-29T00:00:00Z"}]}
+    [a] = feeds.parse_anthropic_models(json.dumps(anthropic).encode())
+    assert (a["title"], a["published"].date()) == ("Anthropic releases Claude Sonnet 4.5 in its API", date(2025, 9, 29))
+    openai = {"data": [{"id": "gpt-4o", "created": 1715367049, "owned_by": "system"},
+                       {"id": "gpt-4o-2024-08-06", "created": 1722814719, "owned_by": "system"},  # a snapshot of gpt-4o
+                       {"id": "o1-2024-12-17", "created": 1734326976, "owned_by": "system"},  # only listed dated
+                       {"id": "ft:gpt-4o:acme::abc", "created": 1730000000, "owned_by": "user-acme"},
+                       {"id": "chatgpt-4o-latest", "created": 1723515131, "owned_by": "system"}]}
+    assert [e["title"] for e in feeds.parse_openai_models(json.dumps(openai).encode())] == [
+        "OpenAI releases gpt-4o in its API", "OpenAI releases o1-2024-12-17 in its API"]
+
+
+def test_a_source_whose_api_key_isnt_set_is_skipped(tmp_path, monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    conn = store.connect(tmp_path / "t.db")
+    asked = []
+    src = {"name": "OpenAI API models", "lab": "OpenAI", "format": "openai_models", "category": "tool",
+           "url": "https://api.openai.com/v1/models", "key_env": "OPENAI_API_KEY"}
+    assert collect(conn, [src], fetcher=lambda u: asked.append(u) or b"{}", log=lambda *a: None) == 0
+    assert asked == [] and conn.execute("SELECT COUNT(*) FROM sources").fetchone()[0] == 0
+
+
 def test_github_pages_are_never_read_only_its_api():
     assert not feeds.allowed("https://github.com/MoonshotAI/Kimi-K3")  # its terms: scraping only for research or archives
     try:
@@ -2946,7 +3013,7 @@ def test_every_source_has_legal_evidence():
     from urllib.parse import urlsplit
     from aipulse.sources import SOURCES
     from aipulse.terms import TERMS
-    kinds = {"official", "licence", "feed terms", "terms read", "no terms", "unconfirmed"}
+    kinds = {"official", "licence", "feed terms", "terms read", "no terms", "unconfirmed", "robots.txt"}
     hosts = {urlsplit(s["url"]).netloc.lower() for s in SOURCES}
     assert sorted(hosts - set(TERMS)) == []  # a new source needs its evidence first
     assert all(TERMS[h][0] in kinds and TERMS[h][2] for h in hosts)

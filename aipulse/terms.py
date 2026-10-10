@@ -12,6 +12,9 @@ Kinds:
   terms read    the terms page was read in full and says nothing against reading the feed
   no terms      no terms page is linked from the site
   unconfirmed   the terms page refuses automated readers: someone has to read it in a browser before it counts
+  robots.txt    an AI lab's or company's own blog, read because its robots.txt allows it (the owner's rule for these
+                blogs, 10 Oct 2026: robots.txt decides, and a site without one may be read); what its terms say, if
+                read, is noted
   owner's choice  (PLATFORM only) a risk the project owner accepted knowingly
 """
 
@@ -32,6 +35,16 @@ TERMS: dict[str, tuple[str, str, str]] = {
                        "information is limited only for spam and selling personal data, and the API must not be "
                        "overloaded (one request per lab per run, with the project's token). github.com pages are "
                        "never read: scraping the website is allowed only for research or archiving (feeds.API_ONLY)"),
+    "api.anthropic.com": ("terms read", "https://www.anthropic.com/legal/commercial-terms",
+                          "Commercial Terms (effective 17 June 2025) 'govern Customer's use of Anthropic API keys'; they "
+                          "allow using the Services and restrict only competing products, reselling and reverse "
+                          "engineering. The consumer terms' ban on crawling is 'Except when you are accessing our "
+                          "Services via an Anthropic API Key'. Listing models costs nothing; no robots.txt"),
+    "api.openai.com": ("terms read", "https://openai.com/policies/services-agreement/",
+                       "Services Agreement (v.010126) bans '(f) extract data from the Services other than as permitted "
+                       "through the Services': the models list is one of the API's own endpoints. The consumer terms' "
+                       "ban on programmatic extraction is 'except as permitted through the API'. Listing models costs "
+                       "nothing; no robots.txt"),
     "mistral.ai": ("terms read", "https://legal.mistral.ai/terms",
                    "Terms cover Mistral's products only; no terms for the website"),
     "blog.cloudflare.com": ("terms read", "https://www.cloudflare.com/website-terms/",
@@ -42,6 +55,46 @@ TERMS: dict[str, tuple[str, str, str]] = {
                     "Linux Foundation site content is Creative Commons Attribution 3.0"),
     "www.together.ai": ("terms read", "https://www.together.ai/terms-of-service", "Nothing on feeds, robots or personal use"),
     "elevenlabs.io": ("terms read", "https://elevenlabs.io/terms-of-use", "Nothing on feeds, robots or personal use"),
+    # Added 10 Oct 2026 under the owner's rule for labs' blogs (kind "robots.txt")
+    "cloudblog.withgoogle.com": ("terms read", "https://policies.google.com/terms", "Google's terms, as for blog.google"),
+    "developers.googleblog.com": ("terms read", "https://developers.google.com/terms/site-terms",
+                                  "Google Developers site terms (feedback only) and Google's terms, as for blog.google"),
+    "www.sarvam.ai": ("robots.txt", "https://www.sarvam.ai/terms-of-service",
+                      "robots.txt allows the feed; checked 10 Oct 2026. Its terms cover its AI products; nothing on robots, scrapers or feeds"),
+    "thinkingmachines.ai": ("robots.txt", "https://thinkingmachines.ai/legal/terms/",
+                            "robots.txt allows the feed; checked 10 Oct 2026. Its terms cover its API service; nothing on robots, scrapers or feeds"),
+    "updates.midjourney.com": ("robots.txt", "", "robots.txt allows the feed; checked 10 Oct 2026. Its terms page refuses automated readers"),
+    "runwayml.com": ("robots.txt", "", "robots.txt allows the sitemap and its runway.com posts; checked 10 Oct 2026"),
+    "bfl.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "www.liquid.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "reflection.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "cognition.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "poolside.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),
+    "reka.ai": ("robots.txt", "", "robots.txt allows the news page and posts; checked 10 Oct 2026 (it shuts out only AI crawlers)"),
+    "www.figure.ai": ("robots.txt", "", "robots.txt allows the news page and posts; checked 10 Oct 2026"),
+    # Back on 10 Oct 2026 under the owner's rule for labs' and companies' own blogs: robots.txt decides
+    "openai.com": ("robots.txt", "", "OpenAI's terms cover 'associated software applications and websites'; robots.txt allows its news feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban automated extraction"),
+    "www.anthropic.com": ("robots.txt", "", "Anthropic's consumer terms cover 'associated apps, software, and websites'; robots.txt allows its news pages; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban crawling"),
+    "www.microsoft.com": ("robots.txt", "", "Microsoft's terms of use; robots.txt allows its research feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban scraping"),
+    "blogs.microsoft.com": ("robots.txt", "", "Microsoft Services Agreement; robots.txt allows its feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because it bans 'impermissible scraping'"),
+    "blogs.nvidia.com": ("robots.txt", "", "NVIDIA's terms of use; robots.txt allows its feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban robots and scrapers"),
+    "aws.amazon.com": ("robots.txt", "", "AWS site terms; robots.txt allows its machine-learning feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban robots and data mining"),
+    "www.aboutamazon.com": ("robots.txt", "", "Amazon's conditions of use; robots.txt allows its news feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban robots and data mining"),
+    "engineering.fb.com": ("robots.txt", "", "Meta's terms; robots.txt allows its feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban automated collection without permission"),
+    "about.fb.com": ("robots.txt", "", "Meta's terms; robots.txt allows its feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban automated collection without permission"),
+    "ai.meta.com": ("robots.txt", "", "Meta's terms; robots.txt allows its blog page and posts; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban automated collection without permission"),
+    "github.blog": ("robots.txt", "", "GitHub's terms; robots.txt allows its AI feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they allow scraping only for research or archiving"),
+    "www.databricks.com": ("robots.txt", "", "Databricks' website terms; robots.txt allows its feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban scraping"),
+    "ollama.com": ("robots.txt", "", "Ollama's terms; robots.txt allows its blog feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban scrapers"),
+    "blog.character.ai": ("robots.txt", "", "Character.AI's terms (couldn't be read automatically); robots.txt allows its feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because its terms couldn't be confirmed"),
+    "stability.ai": ("robots.txt", "", "Stability AI's terms; robots.txt allows its news feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban robots and scrapers"),
+    "api-docs.deepseek.com": ("robots.txt", "", "DeepSeek's terms; robots.txt allows its docs sitemap and news posts; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban crawlers"),
+    "cohere.com": ("robots.txt", "", "Cohere's terms; robots.txt allows its blog page and posts; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban scraping"),
+    "www.moonshot.ai": ("robots.txt", "", "Moonshot AI's terms; robots.txt allows its news page; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban crawlers"),
+    "docs.x.ai": ("robots.txt", "", "xAI's terms; robots.txt allows its release notes; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban bots on its websites"),
+    "docs.perplexity.ai": ("robots.txt", "", "Perplexity's terms; robots.txt allows its changelog; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban scraping"),
+    "www.apple.com": ("robots.txt", "", "Apple's website terms; robots.txt allows its newsroom feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they allow personal use only"),
+    "machinelearning.apple.com": ("robots.txt", "", "Apple's website terms; robots.txt allows its research feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they allow personal use only"),
     # --- Industry news ---
     "techcrunch.com": ("feed terms", "https://techcrunch.com/rss-terms-of-use/",
                        "RSS terms: display the feed's content with attribution and a link; may not modify it"),
@@ -146,7 +199,10 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "rss.arxiv.org": ("licence", "https://info.arxiv.org/help/api/tou.html",
                       "arXiv's terms for its feeds and API; metadata is CC0"),
     "huggingface.co": ("terms read", "https://huggingface.co/terms-of-service",
-                       "Daily Papers is a public API listing others' papers (arXiv), not Hugging Face's own material"),
+                       "Says nothing against robots, scrapers or automated access, and allows commercial use; robots.txt "
+                       "allows /api/. Its one limit, 'You may not alter, reproduce, republish, license any of our "
+                       "proprietary materials', doesn't touch what is read: Daily Papers lists others' papers (arXiv), "
+                       "and the model lists give only a model's name, date and likes (no model card text)"),
 }
 
 # Everything else the platform reads or shows: the regulation tracker's official records (bills.py, oecd.py,

@@ -27,7 +27,10 @@ Optional per-source keys:
                 Industry or Releases, however little the text sounds like government
   no_releases   a practitioner's or evaluator's blog: its posts are never Releases, however much they read like a
                 launch (they comment on others' launches)
-  lab           "github_repos": the lab's name in headlines ("Qwen publishes Qwen-Image-2.1 on GitHub")
+  lab           "github_repos", "hf_models" and the labs' APIs: the lab's name in headlines ("Qwen publishes
+                Qwen-Image-2.1 on GitHub")
+  key_env       the environment variable holding the project's API key for the source; skipped when unset
+  skip          a pattern: posts whose headline matches it are never stories (Midjourney's weekly changelogs)
   paged         the feed pages back in time (WordPress: ?paged=2, 3, ...); the history run reads it back to 2023
 
 Policy stories from any source move to the regulation tracker when they report a proposal or an
@@ -41,15 +44,15 @@ access (its robots.txt and terms): Google News and Bing News don't, so neither i
 # allows fetching it and its terms don't restrict showing headlines with a short description and a link. Feeds that
 # forbid that (BBC News: no modified feeds) or whose terms couldn't be confirmed (NYT, The Guardian, Wired) are left out.
 # Dropped in the 7 Oct 2026 audit, their terms forbidding robots or allowing personal use only (collect.DROPPED):
-# SCMP, MIT Technology Review, The Verge, Ars Technica, NVIDIA, Apple, AWS, Tech Xplore, The Rio Times,
-# Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review,
-# Capacity Media, iTnews, ESI Africa, OpenAI, Anthropic, Meta (AI blog, newsroom, engineering), Amazon, Databricks,
-# GitHub Blog, Hugging Face Blog, Perplexity, ZDNET, Microsoft (Research and newsroom), Energy Monitor, xAI and
-# Character.AI. Each remaining source's evidence (terms page, what it says,
-# date checked) is in terms.py; `python -m aipulse audit` checks them all again. "as_provided": the feed's terms
+# SCMP, MIT Technology Review, The Verge, Ars Technica, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome,
+# Data Centre Review, Capacity Media, iTnews, ESI Africa, ZDNET and Energy Monitor. The labs' and companies' own blogs
+# dropped then are back since 10 Oct 2026 under the owner's rule for them: robots.txt decides. Each source's evidence
+# (terms page, what it says, date checked) is in terms.py; `python -m aipulse audit` checks them all again. "as_provided": the feed's terms
 # allow its text only unmodified.
 GITHUB_ORG = "https://api.github.com/orgs/{}/repos?sort=created&direction=desc&per_page=100&type=public"
 GITHUB_REPO = r"^https://github\.com/"  # every new repository that passes the star test is a release (collect.blog_category)
+HF_ORG = "https://huggingface.co/api/models?author={}&sort=likes&direction=-1&limit=500"
+HF_MODEL = r"^https://huggingface\.co/"  # every model family that passes the likes test is a release
 
 SOURCES = [
     # --- Labs and product blogs (mostly releases) ---
@@ -67,6 +70,81 @@ SOURCES = [
     # Labs with no feed: their news page lists posts; each new post's page is read once (collect.page_list_entries).
     {"name": "MiniMax", "url": "https://www.minimax.io/news", "format": "page_list",
      "link": r"^https://www\.minimax\.io/(?:news|blog)/[a-z0-9-]+$", "category": "tool"},
+    # Added 10 Oct 2026 for the labs whose launches reached us only through news outlets. The owner's rule for AI
+    # labs' and companies' own blogs (10 Oct 2026): robots.txt decides, and a site without one may be read
+    # (terms.py "robots.txt").
+    {"name": "Sarvam AI", "url": "https://www.sarvam.ai/rss.xml", "category": "tool"},
+    # Gemini's own section of Google's blog: model launches (Gemini 4 Argon) and the Gemini app's features, which the
+    # AI feed above leaves out
+    {"name": "Google Gemini Blog", "url": "https://blog.google/products/gemini/rss/", "category": "tool"},
+    # Runway (now runway.com): its sitemap lists its posts; the section pages (/news/customers ...) aren't posts
+    {"name": "Runway", "url": "https://runwayml.com/sitemap.xml", "format": "page_list", "category": "tool",
+     "link": r"^https://runway\.com/(?:news/(?!(?:customers|company-news|safety|research|engineering|developers)$)"
+             r"|research/(?!(?:publications|rna-sessions)$))[a-z0-9-]+$"},
+    {"name": "Google Cloud Blog (AI)", "url": "https://cloudblog.withgoogle.com/products/ai-machine-learning/rss/",
+     "category": "tool"},
+    {"name": "Thinking Machines", "url": "https://thinkingmachines.ai/blog/index.xml", "category": "tool",
+     "max_age_days": 60},  # a few posts a year
+    {"name": "Midjourney", "url": "https://updates.midjourney.com/rss/", "category": "tool",
+     "skip": r"(?i)^alpha changelog\b"},  # its weekly changelogs aren't launches
+    # Its feed gives no dates, so its blog page is read like a lab without a feed (each post's page has its date).
+    {"name": "Google Developers Blog", "url": "https://developers.googleblog.com/", "format": "page_list",
+     "link": r"^https://developers\.googleblog\.com/[a-z0-9][a-z0-9-]{8,}/$", "category": "tool"},
+    {"name": "Black Forest Labs", "url": "https://bfl.ai/blog", "format": "page_list",
+     "link": r"^https://bfl\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Liquid AI", "url": "https://www.liquid.ai/blog", "format": "page_list",
+     "link": r"^https://www\.liquid\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Reflection AI", "url": "https://reflection.ai/blog", "format": "page_list",
+     "link": r"^https://reflection\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Cognition", "url": "https://cognition.ai/blog", "format": "page_list",
+     "link": r"^https://cognition\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Poolside", "url": "https://poolside.ai/blog", "format": "page_list",
+     "link": r"^https://poolside\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Reka", "url": "https://reka.ai/news", "format": "page_list",
+     "link": r"^https://reka\.ai/news/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Figure", "url": "https://www.figure.ai/news", "format": "page_list",
+     "link": r"^https://www\.figure\.ai/news/[a-z0-9-]+$", "category": "tool"},
+    # The labs' and companies' own blogs dropped in the 7 Oct 2026 audit, back on 10 Oct 2026 (robots.txt allows each).
+    {"name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "category": "tool"},
+    # No feed: its news page. Launches have their own page (/claude-sonnet-5-5), other posts are under /news/.
+    {"name": "Anthropic News", "url": "https://www.anthropic.com/news", "format": "anthropic", "category": "tool",
+     "page_lead": True, "max_age_days": 90, "launch_pages": r"^https://www\.anthropic\.com/(?!news/)"},
+    {"name": "Hugging Face Blog", "url": "https://huggingface.co/blog/feed.xml", "category": "tool", "page_lead": True},
+    {"name": "Microsoft Research", "url": "https://www.microsoft.com/en-us/research/feed/", "category": "tool",
+     "ai_only": False, "paged": True},
+    {"name": "NVIDIA Blog", "url": "https://blogs.nvidia.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True, "paged": True},
+    {"name": "AWS Machine Learning Blog", "url": "https://aws.amazon.com/blogs/machine-learning/feed/", "category": "tool"},
+    {"name": "Engineering at Meta", "url": "https://engineering.fb.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True, "paged": True},
+    {"name": "GitHub Blog", "url": "https://github.blog/ai-and-ml/feed/", "category": "tool"},
+    {"name": "Databricks Blog", "url": "https://www.databricks.com/feed", "category": "tool", "ai_only": False},
+    {"name": "Ollama Blog", "url": "https://ollama.com/blog/rss.xml", "category": "tool"},
+    {"name": "Character.AI", "url": "https://blog.character.ai/rss/", "category": "tool"},
+    {"name": "Stability AI", "url": "https://stability.ai/news-updates?format=rss", "category": "tool"},
+    {"name": "DeepSeek", "url": "https://api-docs.deepseek.com/sitemap.xml", "format": "page_list",
+     "link": r"^https://api-docs\.deepseek\.com/news/news\d+$", "category": "tool"},
+    {"name": "Meta AI", "url": "https://ai.meta.com/blog/", "format": "page_list",
+     "link": r"^https://ai\.meta\.com/blog/[a-z0-9-]+/$", "category": "tool"},
+    {"name": "Cohere", "url": "https://cohere.com/blog", "format": "page_list",
+     "link": r"^https://cohere\.com/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Moonshot AI (Kimi)", "url": "https://www.moonshot.ai/news", "format": "page_list",
+     "link": r"^https://www\.kimi\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    # Labs whose news pages block automated readers: their developer release notes (robots.txt allows them),
+    # keeping only launches of their own products ("keep").
+    {"name": "xAI", "url": "https://docs.x.ai/developers/release-notes", "format": "page_list", "notes": "xai_notes",
+     "keep": r"^(?:Grok|SpaceXAI|xAI)\b", "category": "tool"},
+    {"name": "Perplexity", "url": "https://docs.perplexity.ai/changelog", "format": "page_list",
+     "notes": "perplexity_notes", "keep": r"\b(?:Perplexity|Sonar|Comet)\b", "category": "tool"},
+    # Company-wide newsrooms: only their stories that name AI in the headline.
+    {"name": "Microsoft", "url": "https://blogs.microsoft.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
+    {"name": "Meta Newsroom", "url": "https://about.fb.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
+    {"name": "Amazon", "url": "https://www.aboutamazon.com/rss/news.xml", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
+    {"name": "Apple Newsroom", "url": "https://www.apple.com/newsroom/rss-feed.rss", "category": "tool",
+     "ai_only": False, "ai_in_title": True},
     # Labs' new open models and tools, from their GitHub organisations through GitHub's API, whose terms allow it
     # (terms.py; the labs' own sites may not be read: OpenAI, Anthropic, Meta, Hugging Face, NVIDIA, DeepSeek...).
     # Only repositories 300+ people starred, back to 2023 (feeds.parse_github_repos); github.com pages are never read.
@@ -104,6 +182,112 @@ SOURCES = [
      "url": GITHUB_ORG.format("baidu"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
     {"name": "Ant Group (inclusionAI) on GitHub", "lab": "Ant Group", "format": "github_repos", "category": "tool",
      "url": GITHUB_ORG.format("inclusionAI"), "max_age_days": 1400, "launch_pages": GITHUB_REPO},
+    # Labs' open models, from their Hugging Face organisations through its public API (the terms of huggingface.co
+    # don't restrict it; terms.py). One story per release (its sizes and variants together), only releases 300+
+    # people liked, back to 2023 (feeds.parse_hf_models).
+    {"name": "OpenAI on Hugging Face", "lab": "OpenAI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("openai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Meta Llama on Hugging Face", "lab": "Meta Llama", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("meta-llama"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Meta on Hugging Face", "lab": "Meta", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("facebook"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Google on Hugging Face", "lab": "Google", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("google"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Microsoft on Hugging Face", "lab": "Microsoft", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("microsoft"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "NVIDIA on Hugging Face", "lab": "NVIDIA", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("nvidia"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Apple on Hugging Face", "lab": "Apple", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("apple"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Amazon on Hugging Face", "lab": "Amazon", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("amazon"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "IBM Granite on Hugging Face", "lab": "IBM Granite", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ibm-granite"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Mistral AI on Hugging Face", "lab": "Mistral AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("mistralai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "xAI on Hugging Face", "lab": "xAI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("xai-org"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "DeepSeek on Hugging Face", "lab": "DeepSeek", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("deepseek-ai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Qwen on Hugging Face", "lab": "Qwen", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Qwen"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Moonshot AI on Hugging Face", "lab": "Moonshot AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("moonshotai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "MiniMax on Hugging Face", "lab": "MiniMax", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("MiniMaxAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Z.ai on Hugging Face", "lab": "Z.ai", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("zai-org"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "StepFun on Hugging Face", "lab": "StepFun", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("stepfun-ai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Tencent on Hugging Face", "lab": "Tencent", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("tencent"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "ByteDance Seed on Hugging Face", "lab": "ByteDance Seed", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ByteDance-Seed"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Baidu on Hugging Face", "lab": "Baidu", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("baidu"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Ant Group (inclusionAI) on Hugging Face", "lab": "Ant Group", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("inclusionAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Cohere Labs on Hugging Face", "lab": "Cohere Labs", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("CohereLabs"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Hugging Face on Hugging Face", "lab": "Hugging Face", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("HuggingFaceTB"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Black Forest Labs on Hugging Face", "lab": "Black Forest Labs", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("black-forest-labs"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Stability AI on Hugging Face", "lab": "Stability AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("stabilityai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Ai2 on Hugging Face", "lab": "Ai2", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("allenai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Liquid AI on Hugging Face", "lab": "Liquid AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("LiquidAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    # Added 10 Oct 2026: more labs whose open models people like (same API, same 300+ likes test)
+    {"name": "Xiaomi MiMo on Hugging Face", "lab": "Xiaomi MiMo", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("XiaomiMiMo"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Aleph Alpha on Hugging Face", "lab": "Aleph Alpha", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Aleph-Alpha"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Sarvam AI on Hugging Face", "lab": "Sarvam AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("sarvamai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Nous Research on Hugging Face", "lab": "Nous Research", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("NousResearch"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Kyutai on Hugging Face", "lab": "Kyutai", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("kyutai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "AI21 Labs on Hugging Face", "lab": "AI21 Labs", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ai21labs"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "OpenBMB on Hugging Face", "lab": "OpenBMB", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("openbmb"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "LG AI Research on Hugging Face", "lab": "LG AI Research", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("LGAI-EXAONE"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Upstage on Hugging Face", "lab": "Upstage", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("upstage"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Meituan LongCat on Hugging Face", "lab": "Meituan LongCat", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("meituan-longcat"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Lightricks on Hugging Face", "lab": "Lightricks", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Lightricks"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Wan (Alibaba) on Hugging Face", "lab": "Wan (Alibaba)", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Wan-AI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "TII Falcon on Hugging Face", "lab": "TII Falcon", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("tiiuae"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Salesforce on Hugging Face", "lab": "Salesforce", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("Salesforce"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "ServiceNow on Hugging Face", "lab": "ServiceNow", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ServiceNow-AI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Prime Intellect on Hugging Face", "lab": "Prime Intellect", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("PrimeIntellect"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Nari Labs on Hugging Face", "lab": "Nari Labs", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("nari-labs"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Sesame on Hugging Face", "lab": "Sesame", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("sesame"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Resemble AI on Hugging Face", "lab": "Resemble AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("ResembleAI"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    {"name": "Swiss AI on Hugging Face", "lab": "Swiss AI", "format": "hf_models", "category": "tool",
+     "url": HF_ORG.format("swiss-ai"), "max_age_days": 1400, "launch_pages": HF_MODEL},
+    # The labs' own model lists, through their APIs with the project's free keys (their terms allow access through
+    # the API; terms.py): every model they serve, closed ones too. Skipped until the key is set (feeds.API_KEYS).
+    {"name": "Anthropic API models", "lab": "Anthropic", "format": "anthropic_models", "category": "tool",
+     "url": "https://api.anthropic.com/v1/models?limit=1000", "key_env": "ANTHROPIC_API_KEY", "max_age_days": 1400,
+     "launch_pages": r"^https://docs\.claude\.com/"},
+    {"name": "OpenAI API models", "lab": "OpenAI", "format": "openai_models", "category": "tool",
+     "url": "https://api.openai.com/v1/models", "key_env": "OPENAI_API_KEY", "max_age_days": 1400,
+     "launch_pages": r"^https://platform\.openai\.com/docs/models/"},
 
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",
@@ -452,4 +636,7 @@ SOURCES += [
     {"name": "Hugging Face Daily Papers", "url": "https://huggingface.co/api/daily_papers?limit=100",
      "format": "hf_daily", "category": "research", "ai_only": True, "max_age_days": 7, "companies": True,
      "expect_entries": True},
+    # Apple's own papers (back 10 Oct 2026, under the owner's rule for labs' blogs)
+    {"name": "Apple Machine Learning Research", "url": "https://machinelearning.apple.com/rss.xml",
+     "category": "research", "ai_only": True, "max_age_days": 30, "org": "Apple"},
 ]
