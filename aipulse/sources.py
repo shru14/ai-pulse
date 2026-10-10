@@ -317,6 +317,12 @@ SOURCES = [
     {"name": "Focus Taiwan", "url": "https://feeds.feedburner.com/rsscna/engnews/", "category": "news", "ai_in_title": True},
     {"name": "Bernama", "url": "https://www.bernama.com/en/rssfeed.php", "category": "news", "ai_in_title": True},
     {"name": "VnExpress International", "url": "https://e.vnexpress.net/rss/news.rss", "category": "news", "ai_in_title": True},
+    # Added 10 Oct 2026 (regional search): Korea and Japan in English; their terms reserve copyright but ban neither
+    # robots nor anything beyond personal use (terms.py)
+    {"name": "The Elec", "url": "https://www.thelec.net/rss/allArticle.xml", "category": "news", "ai_in_title": True},
+    {"name": "BusinessKorea", "url": "https://www.businesskorea.co.kr/rss/allArticle.xml", "category": "news", "ai_in_title": True,
+     "english_only": True},  # its feed is mostly Korean
+    {"name": "BRIDGE", "url": "https://thebridge.jp/en/feed", "category": "news", "ai_in_title": True},
     {"name": "TechCentral", "url": "https://techcentral.co.za/feed/", "category": "news", "ai_in_title": True},
     {"name": "ITWeb", "url": "https://www.itweb.co.za/rss", "category": "news", "ai_in_title": True},
     {"name": "Wamda", "url": "https://www.wamda.com/feed", "category": "news", "ai_in_title": True},
@@ -326,6 +332,7 @@ SOURCES = [
     # Latin America
     {"name": "Buenos Aires Times", "url": "https://www.batimes.com.ar/feed", "category": "news", "ai_in_title": True},
     {"name": "LatinAmerica Reports", "url": "https://latinamericareports.com/feed/", "category": "news", "ai_in_title": True},
+    {"name": "Contxto", "url": "https://contxto.com/en/feed/", "category": "news", "ai_in_title": True},  # added 10 Oct 2026
     # Africa
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},
