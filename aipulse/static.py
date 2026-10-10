@@ -125,6 +125,47 @@ def privacy_page() -> str:
             'protection authority.</p></body></html>')
 
 
+# The About page: what AI Pulse is and how it's made. Each stream, one line (lists as tables).
+ABOUT_STREAMS = [
+    ("Releases", "New models, products and open-source launches, from the labs' own blogs, Hugging Face and GitHub"),
+    ("Industry", "Company news, deals, market moves and AI incidents, from newsrooms worldwide"),
+    ("Research", "New papers, from arXiv and Hugging Face Daily Papers"),
+    ("Regulation tracker", "AI bills, laws, bodies and standards, from official records, by country"),
+    ("Policy", "What governments, regulators, courts and think tanks do about AI"),
+    ("Infra & climate", "Data centres, chips, energy and water, and AI's footprint"),
+]
+
+
+def about_page() -> str:
+    """What AI Pulse is, where its stories come from and how it's made (signed AI Pulse, no name)."""
+    rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in ABOUT_STREAMS)
+    mail = '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a>'
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            '<title>About · AI Pulse</title><meta name="description" content="What AI Pulse is, where its stories come from and how it is made.">'
+            f'<link rel="canonical" href="{rss.SITE}/about/">'
+            '<style>body{font:15px/1.55 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
+            'padding:24px 16px;color:#222;background:#fff}h1{font-size:22px;font-weight:600;margin:0 0 6px}'
+            'h2{font-size:16px;font-weight:600;margin:22px 0 6px}p{margin:0 0 12px;color:#333}'
+            'table{border-collapse:collapse;width:100%;margin:0 0 12px}th,td{text-align:left;vertical-align:top;'
+            'padding:6px 8px;border-top:1px solid #ddd}th{font-weight:600}a{color:#0072B2}'
+            '@media(prefers-color-scheme:dark){body{background:#0F1115;color:#F2F2F2}p{color:#D0D3DA}th,td{border-color:#333}a{color:#56B4E9}}'
+            '@media(max-width:600px){td,th{display:block;border:0;padding:2px 0}tr{display:block;border-top:1px solid #ddd;'
+            'padding:6px 0}thead{display:none}}</style></head><body>'
+            '<h1>About AI Pulse</h1><p>A free, non-commercial briefing on what is happening in AI worldwide: no ads, no '
+            'tracking. <a href="../">Back to AI Pulse</a></p>'
+            f'<table><thead><tr><th>Stream</th><th>What is in it</th></tr></thead><tbody>{rows}</tbody></table>'
+            '<h2>How it works</h2><p>AI Pulse reads more than 200 public sources every 6 hours, and the labs’ blogs every '
+            '30 minutes. It keeps only AI stories, joins the same story from several outlets into one card, and sorts each '
+            'into its stream by written rules. No AI model writes or summarises the stories: summaries are the publishers’ '
+            'own descriptions, and every card links to the original.</p>'
+            '<h2>Sources</h2><p>Only sources whose robots.txt and terms allow automated reading are used, each credited on '
+            'its stories. A source that blocks us is removed. The full list, with each one’s terms, is in the '
+            '<a href="https://github.com/shru14/ai-pulse#sources">project’s README</a>; the code is open on GitHub.</p>'
+            '<h2>The email</h2><p>A daily email at about 05:15 UTC (or weekly on Sundays) with the stories that mattered '
+            'most, in the streams you pick. Free; one click to unsubscribe. <a href="../privacy.html">Privacy</a></p>'
+            f'<h2>Contact</h2><p>Mistakes, ideas or a source to suggest: {mail}</p></body></html>')
+
+
 def opml(title: str = "AI Pulse") -> str:
     """feeds/all.opml: every stream's RSS feed in one file, for a feed reader to import at once."""
     rows = "".join(f'    <outline type="rss" text="{escape(f"{title} · {name}")}" title="{escape(f"{title} · {name}")}" '
@@ -285,6 +326,8 @@ def build(conn, out: str | Path) -> int:
     shutil.copytree(TEMPLATE.parent / "photos", out / "photos")  # the stories' photos (Wikimedia Commons, credited)
     (out / "photos" / "credits.html").write_text(photos.credits_page(), encoding="utf-8")
     (out / "privacy.html").write_text(privacy_page(), encoding="utf-8")
+    (out / "about").mkdir()
+    (out / "about" / "index.html").write_text(about_page(), encoding="utf-8")
     (out / "feeds").mkdir()
     for name in rss.FEEDS:
         (out / "feeds" / f"{name}.xml").write_bytes(rss.feed_xml(name, cards))
@@ -315,8 +358,9 @@ def build(conn, out: str | Path) -> int:
     daily_index(conn, len(cards), published, out)  # daily/: every edition, by month
     for c in cards:
         c["s"] = text.get(c["id"], "")
-        for k in ("added_at", "cluster"):
-            c.pop(k, None)
+        c.pop("cluster", None)
+        if c["date"] < (today - timedelta(days=2)).isoformat():  # arrival times only for the ticker's two days
+            c.pop("added_at", None)
     # The page loads data.json at once (the 7, 30 and 90-day views); older cards go into one file per
     # year under archive/, fetched only when someone picks "All time".
     recent_since = (datetime.now(timezone.utc).date() - timedelta(days=RECENT_DAYS)).isoformat()
@@ -346,6 +390,8 @@ def build(conn, out: str | Path) -> int:
         monday = date.fromisoformat(meme["from"])
         (out / "memes").mkdir(exist_ok=True)
         (out / meme["image"]).write_bytes(memes.render(memes.of_the_week(cards, monday)))
+    from . import social
+    (out / "social.json").write_text(json.dumps(social.payload(conn), separators=(",", ":")), encoding="utf-8")
     (out / "tags.json").write_text(json.dumps(preferences.options(cards, today), separators=(",", ":")), encoding="utf-8")
 
     page = TEMPLATE.read_text(encoding="utf-8")
@@ -369,7 +415,7 @@ def build(conn, out: str | Path) -> int:
     places += kind_pages.build(conn, len(cards), out)  # Industry's kinds of story, a page each (industry/<kind>/)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
-    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)

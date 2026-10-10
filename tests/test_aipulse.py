@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "social.json",
         "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -645,7 +645,7 @@ def test_static_build_holds_every_card(tmp_path):
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and 'data-kind="tutorial"' in tutorials and "Updated" not in tutorials
     assert 'href="industry/tutorials/"' in (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
-    assert sitemap.count("<url>") == 1 + 7 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())
+    assert sitemap.count("<url>") == 1 + 7 + 1 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -3055,3 +3055,24 @@ def test_papers_on_ai_footprint_are_told_from_ai_for_energy():
     assert not ai_footprint_paper("Energy Consumption Forecasting for Buildings with Deep Learning")  # AI for energy
     assert not ai_footprint_paper("Neural Networks Forecast Solar Output")
     assert not ai_footprint_paper("Energy-Based Models for Image Generation")  # a kind of model, not its energy
+
+
+def test_hacker_news_keeps_recent_ai_threads_only(tmp_path):
+    import json
+    from aipulse import social
+    conn = store.connect(tmp_path / "t.db")
+    now = 1_800_000_000
+    items = {1: {"id": 1, "type": "story", "title": "OpenAI releases a new model", "url": "https://x.com/a", "score": 300,
+                 "descendants": 120, "time": now - 3600},
+             2: {"id": 2, "type": "story", "title": "Show HN: my bread recipe", "score": 900, "descendants": 400, "time": now - 60},
+             3: {"id": 3, "type": "story", "title": "LLM agents in production", "score": 50, "descendants": 10,
+                 "time": now - 5 * 86400},  # too old
+             4: {"id": 4, "type": "job", "title": "AI startup hiring", "time": now - 60}}
+    def fetcher(url):
+        if url.endswith("topstories.json"):
+            return json.dumps(list(items)).encode()
+        return json.dumps(items[int(url.rsplit("/", 1)[1][:-5])]).encode()
+    assert social.payload(conn)["threads"] == []
+    assert social.hacker_news(conn, fetcher=fetcher, now=now) == 1
+    (t,) = social.payload(conn)["threads"]
+    assert t["title"] == "OpenAI releases a new model" and t["hn"] == "https://news.ycombinator.com/item?id=1" and t["comments"] == 120

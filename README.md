@@ -18,7 +18,7 @@ six streams and links every card to the original.
 
 ## Features
 
-- **Site:** a weekly front page, a page per stream, filters and search back to 2023.
+- **Site:** a front page (a live ticker of the newest stories, Today in AI, the week's story, word and meme, each stream's top three, and what people are discussing), a page per stream, filters and search back to 2023, dark mode, an [About page](https://projectaipulse.com/about/).
 - **One card per event**, in English (offline translation where needed).
 - **Daily or weekly email** of the streams you pick, with a word and meme of the day.
 - **Weekly dossier:** your own questions, answered with the week's stories.
@@ -50,6 +50,7 @@ Every source's robots.txt and terms were audited on 7 October 2026. The evidence
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma, ISED Canada, CLTC (UC Berkeley), ITU, Partnership on AI, Smart Africa, NTIA, DARPA, NSF, UK AI Security Institute |
 | Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, The Conversation, Data Center Knowledge, Data Center POST, Greenpeace International, Global Energy Monitor · **Europe:** European Commission (energy) · **UK:** GOV.UK, Techerati, DCNN · **Africa:** Africa Data Centres Association · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists, Southern Environmental Law Center, Food & Water Watch, Energy Innovation |
+| People are discussing (front page) | Hacker News, through its [official API](https://github.com/HackerNews/API) (robots.txt allows its .json files): the most-discussed AI threads of the last 2 days, titles and comment counts only, every 6 h |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 
 ### Official records (Regulation tracker)

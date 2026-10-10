@@ -100,6 +100,12 @@ def main():
         from .sources import SOURCES
         sources = [x for x in SOURCES if x["category"] == "tool"] if a.labs else SOURCES
         print(f"[{datetime.now():%Y-%m-%d %H:%M}] Added {collect(conn, sources, max_age_days=a.max_age_days)} new stories.")
+        if not a.labs:  # the front page's "People are discussing" (Hacker News), once per full run
+            from . import social
+            try:
+                print(f"Hacker News: {social.hacker_news(conn)} AI threads")
+            except Exception as e:
+                print(f"Hacker News: not read ({e})")
     elif a.cmd == "serve":
         store.connect(a.db).close()
         serve(a.db, a.host, a.port)

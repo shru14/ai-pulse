@@ -78,6 +78,12 @@ def make_handler(db_path: str):
                     from . import memegen
                     memegen.prepare(conn, recent)  # only what the "memes" command already made (no Gemini call here)
                     self._send(json.dumps(memes.payload(recent)).encode(), "application/json")
+                elif url.path in ("/about", "/about/"):
+                    from .static import about_page
+                    self._send(about_page().encode(), "text/html; charset=utf-8")
+                elif url.path == "/social.json":
+                    from . import social
+                    self._send(json.dumps(social.payload(conn)).encode(), "application/json")
                 elif url.path == "/glossary.json":
                     recent, _ = store.cards(conn, days=8, limit=10**6, eu_members=EU_MEMBERS)
                     self._send(json.dumps(glossary.payload(recent)).encode(), "application/json")
