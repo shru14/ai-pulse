@@ -703,15 +703,9 @@ header.top.home{height:auto;padding-top:10px}
 .about-page[hidden]{display:none}
 .about-lede{font:400 20px/1.35 var(--head);margin:0}
 .about-t{width:100%;border-collapse:collapse;font-size:15px}
-.about-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
 .about-t td{border-top:1px solid var(--line);padding:9px 14px 9px 0;vertical-align:top}
-.about-t td:first-child{white-space:nowrap}
-.about-t td:first-child a{color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:var(--cat-f);text-decoration-thickness:3px;text-underline-offset:4px}
-.about-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 28px}
-.about-cols h3{font:400 18px var(--head);margin:0 0 6px;padding-top:10px;border-top:4px solid var(--ink)}
-.about-cols p{margin:0;line-height:1.55;color:var(--muted)}
-.about-cols a,.about-page p a{color:var(--accent)}
-@media (max-width:760px){.about-cols{grid-template-columns:1fr}.about-t td:first-child{white-space:normal}}
+.about-t td:first-child{white-space:nowrap;font-weight:600;width:1%}
+.about-page a{color:var(--accent)}
 .mag-row>.tile{display:flex;flex-direction:column}
 .mag-row .gl-tile-links,.mag-row .meme-go{margin-top:auto}  /* the three buttons at the tiles' feet */
 @media (max-width:1100px){.mag-sections{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -891,21 +885,12 @@ header.top.home{height:auto;padding-top:10px}
   <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
     <div class="band-head"><h2>About AI Pulse</h2><span class="kicker">Free · non-commercial · no ads, no tracking</span></div>
-    <p class="about-lede">A briefing on what is happening in AI worldwide, in six streams.</p>
-    <table class="about-t"><thead><tr><th>Stream</th><th>What is in it</th></tr></thead><tbody>
-      <tr><td><a href="/releases/" data-go="tool" class="k-tool">Releases</a></td><td>New models, products and open-source launches, from the labs’ own blogs, Hugging Face and GitHub</td></tr>
-      <tr><td><a href="/industry/" data-go="news" class="k-news">Industry</a></td><td>Company news, deals, market moves and AI incidents, from newsrooms worldwide</td></tr>
-      <tr><td><a href="/research/" data-go="research" class="k-research">Research</a></td><td>New papers, from arXiv and Hugging Face Daily Papers</td></tr>
-      <tr><td><a href="/regulation/" data-go="regulation" class="k-regulation">Regulation tracker</a></td><td>AI bills, laws, bodies and standards, from official records, by country</td></tr>
-      <tr><td><a href="/policy/" data-go="policy" class="k-policy">Policy</a></td><td>What governments, regulators, courts and think tanks do about AI</td></tr>
-      <tr><td><a href="/infra/" data-go="infra" class="k-infra">Infra &amp; climate</a></td><td>Data centres, chips, energy and water, and AI’s footprint</td></tr>
+    <p class="about-lede">What is happening in AI worldwide, from 200+ public sources, every 6 hours.</p>
+    <table class="about-t"><tbody>
+      <tr><td>Stories</td><td>Headlines and the publishers’ own summaries, each linked to the original; no AI writes them</td></tr>
+      <tr><td>Sources</td><td>Only sites that allow automated reading; <a href="https://github.com/shru14/ai-pulse#sources">full list</a></td></tr>
+      <tr><td>Contact</td><td><a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a> · <a href="privacy.html">Privacy</a></td></tr>
     </tbody></table>
-    <div class="about-cols">
-      <div><h3>How it works</h3><p>AI Pulse reads more than 200 public sources every 6 hours, and the labs’ blogs every 30 minutes. It keeps only AI stories, joins the same story from several outlets into one card, and sorts each into its stream by written rules. No AI model writes or summarises the stories: summaries are the publishers’ own descriptions, and every card links to the original.</p></div>
-      <div><h3>Sources</h3><p>Only sources whose robots.txt and terms allow automated reading are used, each credited on its stories. A source that blocks us is removed. The full list, with each one’s terms, is in the <a href="https://github.com/shru14/ai-pulse#sources">project’s README</a>; the code is open on GitHub.</p></div>
-      <div><h3>The email</h3><p>A daily email at about 05:15 UTC (or weekly on Sundays) with the stories that mattered most, in the streams you pick. Free; one click to unsubscribe. <a href="privacy.html">Privacy</a></p></div>
-      <div><h3>Contact</h3><p>Mistakes, ideas or a source to suggest: <a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></p></div>
-    </div>
   </section>
 
   <!-- A stream's own page (or All stories): its name, then the filters and the stories, as before. -->
