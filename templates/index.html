@@ -512,7 +512,7 @@ header.top{gap:10px}
 .more button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .empty{margin-top:40px;color:var(--muted);text-align:center}
 /* The footer: the header's full column on every page, three columns that stack on a phone */
-.site-foot{display:grid;grid-template-columns:1.4fr 1.6fr 1fr;gap:20px 40px;margin-top:48px;padding:22px 0 30px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--muted)}
+.site-foot{display:grid;grid-template-columns:1.6fr 1fr;gap:20px 40px;margin-top:48px;padding:22px 0 30px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--muted)}
 .site-foot h5{margin:0 0 8px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
 .site-foot p{margin:0;max-width:48ch}
 .site-foot ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px}
@@ -702,6 +702,7 @@ header.top.home{height:auto;padding-top:10px}
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
 .about-lede{font:400 20px/1.35 var(--head);margin:0}
+.about-text{margin:0;font-size:16px;line-height:1.55;color:var(--muted);max-width:720px}
 .about-t{width:100%;border-collapse:collapse;font-size:15px}
 .about-t td{border-top:1px solid var(--line);padding:9px 14px 9px 0;vertical-align:top}
 .about-t td:first-child{white-space:nowrap;font-weight:600;width:1%}
@@ -885,11 +886,8 @@ header.top.home{height:auto;padding-top:10px}
   <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
     <div class="band-head"><h2>About AI Pulse</h2><span class="kicker">Free · non-commercial · no ads, no tracking</span></div>
-    <p class="about-lede">What is happening in AI worldwide, from 200+ public sources, every 6 hours.</p>
-    <table class="about-t"><tbody>
-      <tr><td>Stories</td><td>Headlines and the publishers’ own summaries, each linked to the original; no AI writes them</td></tr>
-      <tr><td>Sources</td><td>Only sites that allow automated reading; <a href="https://github.com/shru14/ai-pulse#sources">full list</a></td></tr>
-    </tbody></table>
+    <p class="about-lede">What is happening in AI worldwide, from 200+ public sources.</p>
+    <p class="about-text">Headlines and the publishers’ own summaries, each linked to the original. No AI writes them, and only sites that allow automated reading are used.</p>
   </section>
 
   <!-- A stream's own page (or All stories): its name, then the filters and the stories, as before. -->
@@ -930,7 +928,6 @@ header.top.home{height:auto;padding-top:10px}
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
   </section>
   <footer class="site-foot">
-    <div><h5>About</h5><p>Summaries are the publishers’ own descriptions; follow the source link for the full story. <a href="about/">About AI Pulse</a></p></div>
     <div><h5>Daily RSS</h5><ul><li><a href="feeds/releases.xml">Releases</a></li><li><a href="feeds/news.xml">Industry</a></li><li><a href="feeds/research.xml">Research</a></li>
       <li><a href="feeds/regulation.xml">Regulation tracker</a></li><li><a href="feeds/policy.xml">Policy</a></li><li><a href="feeds/infra.xml">Infra &amp; climate</a></li>
       <li><a href="feeds/all.opml">All feeds (OPML)</a></li></ul></div>
