@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 234 public sources, keeps only AI stories, sorts them into
+A free, non-commercial, worldwide briefing on AI. It reads 200+ public sources, keeps only AI stories, sorts them into
 six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)

@@ -71,7 +71,7 @@ def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
 # Each stream's own address: the page, opened at that stream, with its own title and description for search engines
 # (the page sets the same titles, PAGE_TITLE).
 STREAM_PAGES = {
-    "all": ("all", "All stories", "All AI stories, newest first", "Every AI story from 100+ public sources, newest first."),
+    "all": ("all", "All stories", "All AI stories, newest first", "Every AI story from 200+ public sources, newest first."),
     "tool": ("releases", "Releases", "AI model and product releases", rss.FEEDS["releases"][2]),
     "news": ("industry", "Industry", "AI industry news: companies, deals and markets", rss.FEEDS["news"][2]),
     "research": ("research", "Research", "New AI research papers", rss.FEEDS["research"][2]),
@@ -243,7 +243,7 @@ def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | 
             'font:600 15px Arial,sans-serif;color:#000">A sample of the daily email. '
             '<a href="/#subscribe" style="color:#000">Subscribe to get the real one every morning →</a></div>')
     html = re.sub(r"<body[^>]*>", lambda m: m.group(0) + note, page[2], count=1)
-    html = re.sub(r"We read \d+ stor(y|ies) from \d+ sources?", "We read the day's stories from 100+ sources", html)
+    html = re.sub(r"We read \d+ stor(y|ies) from \d+ sources?", "We read the day's stories from 200+ sources", html)
     meme = memes.of_the_day(cards, day)
     picture = meme and memes.render(meme)
     if picture and out:
