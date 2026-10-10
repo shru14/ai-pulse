@@ -96,7 +96,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     parts = pages.frame(conn, len(cards))
     pages.write_css(out)
     back = ("/regulation/", "Back to the live Regulation tracker page")
-    note = 'Official records only, each linking to its source. <a href="/tracker.csv">Download them all (CSV)</a>'
+    note = 'Official records only, each linking to its source.'
     (out / "flags").mkdir(parents=True, exist_ok=True)
     for code in places:
         shutil.copy(FLAGS / flag(code), out / "flags" / flag(code))
@@ -181,7 +181,7 @@ def standards_page(conn, cards: list[dict], out: Path) -> list[str]:
         sections.append(f"<h2>{escape(label)}</h2>\n<ul>\n" + "\n".join(lines) + "\n</ul>")
     parts = pages.frame(conn, len(cards))
     back = ("/regulation/", "Back to the live Regulation tracker page")
-    note = 'Official records only, each linking to its source. <a href="/tracker.csv">Download them all (CSV)</a>'
+    note = 'Official records only, each linking to its source.'
     body = ('<h1>AI standards</h1>\n<p class="intro">Published standards for AI from ISO/IEC, IEEE and national '
             'bodies, newest first, each linking to its official page. <a href="/tracker/">AI laws by country</a></p>\n'
             + "\n".join(sections))
