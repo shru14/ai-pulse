@@ -44,12 +44,10 @@ access (its robots.txt and terms): Google News and Bing News don't, so neither i
 # allows fetching it and its terms don't restrict showing headlines with a short description and a link. Feeds that
 # forbid that (BBC News: no modified feeds) or whose terms couldn't be confirmed (NYT, The Guardian, Wired) are left out.
 # Dropped in the 7 Oct 2026 audit, their terms forbidding robots or allowing personal use only (collect.DROPPED):
-# SCMP, MIT Technology Review, The Verge, Ars Technica, NVIDIA, Apple, AWS, Tech Xplore, The Rio Times,
-# Semiconductor Digest, ServeTheHome, Stability AI, Ollama, DeepSeek, Cohere, Moonshot AI, Data Centre Review,
-# Capacity Media, iTnews, ESI Africa, OpenAI, Anthropic, Meta (AI blog, newsroom, engineering), Amazon, Databricks,
-# GitHub Blog, Hugging Face Blog, Perplexity, ZDNET, Microsoft (Research and newsroom), Energy Monitor, xAI and
-# Character.AI. Each remaining source's evidence (terms page, what it says,
-# date checked) is in terms.py; `python -m aipulse audit` checks them all again. "as_provided": the feed's terms
+# SCMP, MIT Technology Review, The Verge, Ars Technica, Tech Xplore, The Rio Times, Semiconductor Digest, ServeTheHome,
+# Data Centre Review, Capacity Media, iTnews, ESI Africa, ZDNET and Energy Monitor. The labs' and companies' own blogs
+# dropped then are back since 10 Oct 2026 under the owner's rule for them: robots.txt decides. Each source's evidence
+# (terms page, what it says, date checked) is in terms.py; `python -m aipulse audit` checks them all again. "as_provided": the feed's terms
 # allow its text only unmodified.
 GITHUB_ORG = "https://api.github.com/orgs/{}/repos?sort=created&direction=desc&per_page=100&type=public"
 GITHUB_REPO = r"^https://github\.com/"  # every new repository that passes the star test is a release (collect.blog_category)
@@ -99,6 +97,47 @@ SOURCES = [
      "link": r"^https://reka\.ai/news/[a-z0-9-]+$", "category": "tool"},
     {"name": "Figure", "url": "https://www.figure.ai/news", "format": "page_list",
      "link": r"^https://www\.figure\.ai/news/[a-z0-9-]+$", "category": "tool"},
+    # The labs' and companies' own blogs dropped in the 7 Oct 2026 audit, back on 10 Oct 2026 (robots.txt allows each).
+    {"name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "category": "tool"},
+    # No feed: its news page. Launches have their own page (/claude-sonnet-5-5), other posts are under /news/.
+    {"name": "Anthropic News", "url": "https://www.anthropic.com/news", "format": "anthropic", "category": "tool",
+     "page_lead": True, "max_age_days": 90, "launch_pages": r"^https://www\.anthropic\.com/(?!news/)"},
+    {"name": "Hugging Face Blog", "url": "https://huggingface.co/blog/feed.xml", "category": "tool", "page_lead": True},
+    {"name": "Microsoft Research", "url": "https://www.microsoft.com/en-us/research/feed/", "category": "tool",
+     "ai_only": False, "paged": True},
+    {"name": "NVIDIA Blog", "url": "https://blogs.nvidia.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True, "paged": True},
+    {"name": "AWS Machine Learning Blog", "url": "https://aws.amazon.com/blogs/machine-learning/feed/", "category": "tool"},
+    {"name": "Engineering at Meta", "url": "https://engineering.fb.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True, "paged": True},
+    {"name": "GitHub Blog", "url": "https://github.blog/ai-and-ml/feed/", "category": "tool"},
+    {"name": "Databricks Blog", "url": "https://www.databricks.com/feed", "category": "tool", "ai_only": False},
+    {"name": "Ollama Blog", "url": "https://ollama.com/blog/rss.xml", "category": "tool"},
+    {"name": "Character.AI", "url": "https://blog.character.ai/rss/", "category": "tool"},
+    {"name": "Stability AI", "url": "https://stability.ai/news-updates?format=rss", "category": "tool"},
+    {"name": "DeepSeek", "url": "https://api-docs.deepseek.com/sitemap.xml", "format": "page_list",
+     "link": r"^https://api-docs\.deepseek\.com/news/news\d+$", "category": "tool"},
+    {"name": "Meta AI", "url": "https://ai.meta.com/blog/", "format": "page_list",
+     "link": r"^https://ai\.meta\.com/blog/[a-z0-9-]+/$", "category": "tool"},
+    {"name": "Cohere", "url": "https://cohere.com/blog", "format": "page_list",
+     "link": r"^https://cohere\.com/blog/[a-z0-9-]+$", "category": "tool"},
+    {"name": "Moonshot AI (Kimi)", "url": "https://www.moonshot.ai/news", "format": "page_list",
+     "link": r"^https://www\.kimi\.ai/blog/[a-z0-9-]+$", "category": "tool"},
+    # Labs whose news pages block automated readers: their developer release notes (robots.txt allows them),
+    # keeping only launches of their own products ("keep").
+    {"name": "xAI", "url": "https://docs.x.ai/developers/release-notes", "format": "page_list", "notes": "xai_notes",
+     "keep": r"^(?:Grok|SpaceXAI|xAI)\b", "category": "tool"},
+    {"name": "Perplexity", "url": "https://docs.perplexity.ai/changelog", "format": "page_list",
+     "notes": "perplexity_notes", "keep": r"\b(?:Perplexity|Sonar|Comet)\b", "category": "tool"},
+    # Company-wide newsrooms: only their stories that name AI in the headline.
+    {"name": "Microsoft", "url": "https://blogs.microsoft.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
+    {"name": "Meta Newsroom", "url": "https://about.fb.com/feed/", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
+    {"name": "Amazon", "url": "https://www.aboutamazon.com/rss/news.xml", "category": "tool", "ai_only": False,
+     "ai_in_title": True},
+    {"name": "Apple Newsroom", "url": "https://www.apple.com/newsroom/rss-feed.rss", "category": "tool",
+     "ai_only": False, "ai_in_title": True},
     # Labs' new open models and tools, from their GitHub organisations through GitHub's API, whose terms allow it
     # (terms.py; the labs' own sites may not be read: OpenAI, Anthropic, Meta, Hugging Face, NVIDIA, DeepSeek...).
     # Only repositories 300+ people starred, back to 2023 (feeds.parse_github_repos); github.com pages are never read.
@@ -590,4 +629,7 @@ SOURCES += [
     {"name": "Hugging Face Daily Papers", "url": "https://huggingface.co/api/daily_papers?limit=100",
      "format": "hf_daily", "category": "research", "ai_only": True, "max_age_days": 7, "companies": True,
      "expect_entries": True},
+    # Apple's own papers (back 10 Oct 2026, under the owner's rule for labs' blogs)
+    {"name": "Apple Machine Learning Research", "url": "https://machinelearning.apple.com/rss.xml",
+     "category": "research", "ai_only": True, "max_age_days": 30, "org": "Apple"},
 ]

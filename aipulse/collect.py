@@ -342,26 +342,15 @@ def purge_disallowed(conn, log=print) -> int:
 DROPPED = {"Parliament of Canada": "https://www.parl.ca/",  # 6 Oct 2026, each answering even robots.txt with a 403
            "Rest of World": "https://restofworld.org/", "TechNode": "https://technode.com/",
            "CISA": "https://www.cisa.gov/",  # 7 Oct 2026: refuses even its robots.txt to GitHub's servers
-           # 7 Oct 2026 terms audit: their terms forbid robots and scrapers, or allow personal use only
+           # 7 Oct 2026 terms audit: their terms forbid robots and scrapers, or allow personal use only (the labs' and
+           # companies' own blogs dropped then are back since 10 Oct 2026: for them robots.txt decides)
            "South China Morning Post": "https://www.scmp.com/", "MIT Technology Review AI": "https://www.technologyreview.com/",
            "The Verge AI": "https://www.theverge.com/", "Ars Technica AI": "https://arstechnica.com/",
-           "NVIDIA Blog": "https://blogs.nvidia.com/", "Apple Newsroom": "https://www.apple.com/newsroom/",
-           "Apple Machine Learning Research": "https://machinelearning.apple.com/",
-           "AWS Machine Learning Blog": "https://aws.amazon.com/blogs/machine-learning/",
            "Capacity Media": "https://www.capacitymedia.com/", "iTnews": "https://www.itnews.com.au/",
            "Data Centre Review": "https://www.datacentrereview.com/", "ESI Africa": "https://www.esi-africa.com/",
            "Semiconductor Digest": "https://www.semiconductor-digest.com/", "Tech Xplore": "https://techxplore.com/",
-           "The Rio Times": "https://www.riotimesonline.com/", "Stability AI": "https://stability.ai/",
-           "Ollama Blog": "https://ollama.com/", "DeepSeek": "https://api-docs.deepseek.com/", "Cohere": "https://cohere.com/",
-           "Moonshot AI (Kimi)": "https://www.kimi.ai/", "ServeTheHome": "https://www.servethehome.com/",
-           "OpenAI News": "https://openai.com/", "Anthropic News": "https://www.anthropic.com/",
-           "Meta AI": "https://ai.meta.com/", "Meta Newsroom": "https://about.fb.com/",
-           "Engineering at Meta": "https://engineering.fb.com/", "Amazon": "https://www.aboutamazon.com/",
-           "Databricks Blog": "https://www.databricks.com/", "GitHub Blog": "https://github.blog/",
-           "Hugging Face Blog": "https://huggingface.co/blog/", "Perplexity": "https://docs.perplexity.ai/",
-           "ZDNET AI": "https://www.zdnet.com/", "Microsoft Research": "https://www.microsoft.com/en-us/research/",
-           "Microsoft": "https://blogs.microsoft.com/", "Energy Monitor": "https://www.energymonitor.ai/",
-           "xAI": "https://docs.x.ai/", "Character.AI": "https://blog.character.ai/"}
+           "The Rio Times": "https://www.riotimesonline.com/", "ServeTheHome": "https://www.servethehome.com/",
+           "ZDNET AI": "https://www.zdnet.com/", "Energy Monitor": "https://www.energymonitor.ai/"}
 
 
 def purge_dropped(conn, log=print) -> int:

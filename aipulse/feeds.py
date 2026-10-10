@@ -380,7 +380,8 @@ def parse_hf_models(json_bytes: bytes, lab: str = "") -> list[dict]:
         if top.get("likes", 0) < HF_MIN_LIKES:
             continue
         first, name = group[0], top["id"].split("/", 1)[1]
-        name = _hf_family(name) if len(group) > 1 else name
+        if len(group) > 1 and re.search(r"\d", _hf_family(name)):  # "Llama-3.1"; but not a bare "sarvam"
+            name = _hf_family(name)
         task = _HF_TASK.get(top.get("pipeline_tag") or "", "")
         versions = f" in {len(group)} versions" if len(group) > 1 else ""
         entries.append({"title": f"{lab or first['id'].split('/')[0]} publishes {name} on Hugging Face",

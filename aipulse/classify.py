@@ -86,7 +86,7 @@ _BLOG_LAUNCH = re.compile(r"\b[A-Z][\w.-]*[ -](?:v|R)?\d+(?:\.\d+)*\b(?<!\b(?:19
                           r"(?i:^access\b|\bupdates? (?:the )?[\w -]{0,40}\bwith\b|\bnow (?:supports?|available|lets)\b)")
 # ...and posts that aren't launches even when they "announce" or "introduce": deals, people, programmes,
 # customer stories and guides ("How Ramp engineers ..."), podcasts.
-_NOT_RELEASE = re.compile(r"^how\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat|\bacquir|\bjoins?\b|\binitiative\b|\bprogram(?:me)?s?\b|"
+_NOT_RELEASE = re.compile(r"^how\b|^why\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat|\bacquir|\bjoins?\b|\binitiative\b|\bprogram(?:me)?s?\b|"
                           r"\bpodcast\b|\btrailer\b|\bepisode\b|\bfor (?:countries|governments|nonprofits)\b|"
                           r"\bletter\b|\bstate of\b|\broundup\b|\bweek\b|\bcourses?\b", re.I)
 
@@ -95,7 +95,7 @@ _NOT_RELEASE = re.compile(r"^how\b|\bhow (?:they|we|it|i)\b|\bpartner|collaborat
 # event previews and podcasts, and a company's own blog posts that aren't launches.
 _TUTORIAL = re.compile(r"^(a |an )?(coding |step[- ]by[- ]step |hands[- ]on |practical |complete |beginner'?s? )?"
                        r"(guide|tutorial|walkthrough)\b|^how to\b|\bcoding guide\b|\bfor beginners\b|\btutorial\b|"
-                       r"\bstep[- ]by[- ]step\b|^build(ing)? (a|an|your)\b|"
+                       r"\bstep[- ]by[- ]step\b|^build(ing)? (a|an|your)\b|\bbest practices\b|\bdeveloper guide\b|"
                        # Cloud how-tos: "Deploying real-time speech with Qwen3-TTS on Amazon SageMaker AI"
                        r"^(deploying|running|fine-?tuning|scaling|optimizing|accelerating|implementing|automating|"
                        r"serving|hosting|migrating|orchestrating|evaluating|monitoring|securing)\b.{0,120}\b"
