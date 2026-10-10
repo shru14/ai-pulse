@@ -22,7 +22,7 @@ six streams and links every card to the original.
 - **One card per event**, in English (offline translation where needed).
 - **Daily or weekly email** of the streams you pick, with a word and meme of the day.
 - **Weekly dossier:** your own questions, answered with the week's stories.
-- **Pages:** [AI laws by country](https://projectaipulse.com/tracker/), [AI standards](https://projectaipulse.com/standards/), [glossary](https://projectaipulse.com/glossary/), [tracker data (CSV)](https://projectaipulse.com/tracker.csv).
+- **Pages:** [AI laws by country](https://projectaipulse.com/tracker/), [AI standards](https://projectaipulse.com/standards/), [glossary](https://projectaipulse.com/glossary/).
 - **RSS:** one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
 
 ## How we keep it legal
