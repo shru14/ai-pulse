@@ -210,6 +210,10 @@ header.top{gap:10px}
 .gl-search:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
 .gl-groups{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .gl-groups .group[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.gl-levels{margin-top:6px}
+.gl-entry .gl-new{font:600 10.5px var(--mono);color:#000;background:#F0E442;padding:1px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.gl-entry p.gl-ex{font-size:13.5px;color:var(--muted);margin-top:6px}
+.gl-entry p.gl-ex a{color:var(--ink)}
 .gl-body{overflow-y:auto;padding:4px 22px 18px}
 .gl-hot{margin:14px 0 4px;font:500 12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .gl-hot-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
@@ -803,6 +807,7 @@ header.top.home{height:auto;padding-top:10px}
         <small>Every word A–Z, this week's word cloud, and each word's latest stories</small></span><span aria-hidden="true">→</span></a>
       <input class="gl-search" id="gl-q" type="search" placeholder="Look up a word: MoE, RAG, inference…" aria-label="Look up a word">
       <div class="gl-groups" id="gl-groups" role="group" aria-label="Show one group"></div>
+      <div class="gl-groups gl-levels" id="gl-levels" role="group" aria-label="Show one level"></div>
     </div>
     <div class="gl-body" id="gl-body"><p class="gl-none">Loading…</p></div>
   </dialog>
@@ -2102,14 +2107,15 @@ $("sub-form").addEventListener("submit", async e => {
   }
 });
 // Glossary: plain-English meanings written by hand (aipulse/glossary.py). glossary.json has every entry, the ways
-// stories write it (regular expressions) and how many of this week's stories use it.
-const GL = {entries: [], byId: {}, groups: [], ready: false, group: null, pending: null};
+// stories write it (regular expressions), how many of this week's stories use it, its level (Everyday or Technical),
+// whether it is new, and the newest story that uses it (its example).
+const GL = {entries: [], byId: {}, groups: [], levels: [], ready: false, group: null, level: null, pending: null};
 const MAX_WORDS = 3;  // underlined words per card, least common first: the ones a reader is least likely to know
 fetch("glossary.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
   const re = (e, flags) => new RegExp("(?<!\\w)(?:" + e.match.join("|") + ")(?![\\w])", flags);
   GL.entries = d.entries.map(e => ({...e, re: re(e, e.case ? "" : "i"), anyCase: re(e, "i")}));
   GL.byId = Object.fromEntries(GL.entries.map(e => [e.id, e]));
-  GL.groups = d.groups; GL.ready = true;
+  GL.groups = d.groups; GL.levels = d.levels || []; GL.ready = true;
   render(); renderGlossary();
   if(GL.pending != null){ openGlossary(GL.pending); GL.pending = null; }
 }).catch(() => { $("gl-body").replaceChildren(el("p","gl-none","Couldn't load the glossary. Try reloading the page.")); });
@@ -2188,7 +2194,7 @@ addEventListener("resize", closePop);
 // The glossary panel: this week's most-used words, then every entry A to Z; a search box and one chip per group.
 const glDialog = $("glossary");
 function openGlossary(id){
-  if(id){ $("gl-q").value = ""; GL.group = null; }
+  if(id){ $("gl-q").value = ""; GL.group = GL.level = null; }
   renderGlossary();
   if(!glDialog.open) glDialog.showModal();
   const row = id && document.getElementById("gl-" + id);
@@ -2204,9 +2210,24 @@ function renderGlossary(){
     groups.append(b);
   });
   groups.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.g || null) === GL.group)));
+  const levels = $("gl-levels");
+  if(!levels.childElementCount) [null, ...GL.levels].forEach(l => {
+    const b = el("button","group", l || "Every level"); b.type="button"; b.dataset.l = l || "";
+    b.addEventListener("click", () => { GL.level = l; renderGlossary(); });
+    levels.append(b);
+  });
+  levels.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.l || null) === GL.level)));
   const raw = $("gl-q").value.trim(), q = fold(raw);
   const body = $("gl-body"); body.replaceChildren();
-  if(!q && !GL.group){
+  if(!q && !GL.group && !GL.level){
+    const fresh = GL.entries.filter(e => e.new).sort((a, b) => a.added < b.added ? 1 : -1);
+    if(fresh.length){
+      const list = el("div","gl-hot-list");
+      fresh.forEach(e => {
+        const b = el("button",null,e.term); b.type="button"; b.addEventListener("click", () => openGlossary(e.id)); list.append(b);
+      });
+      body.append(el("div","gl-hot","New this month"), list);
+    }
     const hot = GL.entries.filter(e => e.recent).sort((a, b) => b.recent - a.recent).slice(0, 10);
     if(hot.length){
       const list = el("div","gl-hot-list");
@@ -2217,17 +2238,25 @@ function renderGlossary(){
       body.append(el("div","gl-hot","In the news this week"), list);
     }
   }
-  const shown = GL.entries.filter(e => (!GL.group || e.group === GL.group)
+  const shown = GL.entries.filter(e => (!GL.group || e.group === GL.group) && (!GL.level || e.level === GL.level)
     && (!q || fold(e.term + " " + e.def).includes(q) || e.anyCase.test(raw)))
     .sort((a, b) => a.term.localeCompare(b.term, undefined, {sensitivity: "base"}));
   shown.forEach(e => {
     const d = el("div","gl-entry"); d.id = "gl-" + e.id;
-    const h = el("h3",null,e.term); h.append(el("span","grp",e.group));
+    const h = el("h3",null,e.term); h.append(el("span","grp",e.group + (e.level ? " · " + e.level : "")));
+    if(e.new) h.append(el("span","gl-new","New"));
+    d.append(h, el("p",null,e.def));
+    if(e.example){  // the newest story that uses the word (last 30 days)
+      const ex = el("p","gl-ex","In the news: "), a = el("a",null,e.example.title);
+      a.href = e.example.url; a.rel = "noopener"; a.target = "_blank";
+      ex.append(a, " · " + [e.example.source, e.example.date].filter(Boolean).join(", "));
+      d.append(ex);
+    }
     const find = el("a","gl-find","Show stories that mention it →");  // on the word's own page (glossary_pages.py)
     find.href = "glossary/" + e.id + "/#stories";
-    d.append(h, el("p",null,e.def), find); body.append(d);
+    d.append(find); body.append(d);
   });
-  if(!shown.length) body.append(el("p","gl-none","No word matches. Try another spelling, or pick “All”."));
+  if(!shown.length) body.append(el("p","gl-none","No word matches. Try another spelling, or pick “All” and “Every level”."));
 }
 $("glossary-open").addEventListener("click", () => openGlossary());
 $("gl-q").addEventListener("input", renderGlossary);

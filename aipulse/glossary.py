@@ -3,9 +3,12 @@
 Each entry: the term, its group, a short definition and `match`, the ways stories write it (regular expressions
 that work in both Python and the browser; `case` makes them case-sensitive, for acronyms like RAG or MoE).
 The site marks the first few terms in each card's summary and lists them all behind the Glossary button;
-build() adds how many recent stories mention each term, so the panel can show what's in the news this week.
-`python -m aipulse glossary` lists short capitalised words that recent stories use often but the glossary
-doesn't explain yet: candidates to write up by hand.
+build() adds how many recent stories mention each term, so the panel can show what's in the news this week, and
+the newest story that uses it, as an example. Each entry has the day it was added (ADDED) and a level: Technical
+for the words specialists use (TECHNICAL), Everyday for the rest.
+New words come from new stories: candidates() finds the acronyms, hyphenated words and technical phrases that 3+
+outlets used lately and no entry explains. `python -m aipulse glossary` and each run's summary list them; each is
+written up by hand and goes live only once approved.
 """
 from __future__ import annotations
 
@@ -34,13 +37,21 @@ _ENTRIES = [
     ("Multimodal", "Models", "Able to take in or produce more than one kind of data, such as text, images, audio "
      "and video, in the same model.", [r"multi-?modal", r"MLLMs?"], False),
     ("VLM", "Models", "Vision-language model: a model that understands pictures (or video) and text together, "
-     "e.g. describing a photo or reading a chart.", [r"VLMs?", r"vision[- ]language models?"], True),
+     "e.g. describing a photo or reading a chart.", [r"VLMs?", r"[Vv]ision[- ][Ll]anguage [Mm]odels?"], True),
     ("VLA", "Models", "Vision-language-action model: a model that sees, reads an instruction and outputs actions, "
-     "used to control robots.", [r"VLAs?", r"vision[- ]language[- ]action"], True),
+     "used to control robots.", [r"VLAs?", r"[Vv]ision[- ][Ll]anguage[- ][Aa]ction"], True),
     ("Reasoning model", "Models", "A model that works through a problem step by step before answering, spending "
      "more computing time to get harder questions right.", [r"reasoning models?", r"LRMs?"], False),
     ("World model", "Models", "A model that learns how an environment behaves (objects, physics, cause and effect) "
      "so it can predict what happens next; used for robots, games and video.", [r"world models?"], False),
+    ("World action model", "Models", "WAM: a world model for robots that predicts both what will happen next in a "
+     "scene and the actions to take, in one model, instead of planning and acting separately.",
+     [r"WAMs?", r"[Ww]orld [Aa]ction [Mm]odel\w*"], True),
+    ("Decision model", "Models", "A model that answers a set question with a choice and how sure it is (a probability) "
+     "instead of writing text, so it is much faster and cheaper than an LLM for yes/no or pick-one tasks. TypeSafe's Jev "
+     "and Microsoft's Decision-1 are examples.", [r"decision models?"], False),
+    ("Text-to-image model", "Models", "A model that makes a picture from a written description; text-to-video models do "
+     "the same for short videos. Most are diffusion models.", [r"text-to-(?:image|video)"], False),
     ("Diffusion model", "Models", "A type of model that creates images, video or audio by starting from random noise "
      "and removing it step by step until a picture appears.", [r"diffusion models?", r"diffusion transformers?"], False),
     ("Transformer", "Models", "The neural-network design behind almost all modern language models (the T in GPT). "
@@ -102,6 +113,15 @@ _ENTRIES = [
     ("On-policy distillation", "Training", "OPD: a student model writes its own answers and a bigger teacher model "
      "grades each word, so the student learns from its own mistakes rather than only copying the teacher.",
      [r"OPD", r"[Oo]n-[Pp]olicy [Dd]istillation"], True),
+    ("On-policy learning", "Training", "Reinforcement learning from the model's own fresh attempts, rather than from "
+     "older attempts or another model's (off-policy). Usually slower, but steadier.", [r"[Oo]n-[Pp]olicy(?! [Dd]istillation)",
+     r"[Oo]ff-[Pp]olicy"], True),
+    ("Self-supervised learning", "Training", "Training where the data supplies its own answers, e.g. hiding part of a "
+     "sentence or picture and asking the model to fill it in. It lets models learn from huge amounts of unlabelled data.",
+     [r"self-supervised"], False),
+    ("In-context learning", "Training", "A model picking up a new task from examples or instructions in its prompt, "
+     "without retraining: its weights don't change, and it forgets once the conversation ends.",
+     [r"in-context(?: learning)?"], False),
     ("KL divergence", "Training", "A measure of how far one model's word choices drift from another's. Training often "
      "caps it so a model learns new behaviour without forgetting what it knew.",
      [r"KL[- ](?:divergence|constrained|regulari[sz]ed|penalty|objective|loss)", r"(?:reverse|forward|full)-KL",
@@ -139,6 +159,22 @@ _ENTRIES = [
      "TTS (text-to-speech) does the reverse.", [r"ASR", r"TTS", r"speech recognition", r"text-to-speech"], False),
     ("OCR", "Agents & products", "Optical character recognition: reading the text in images or scanned documents.",
      [r"OCR"], True),
+    ("Long-horizon task", "Agents & products", "A task that takes an AI agent many steps over a long time (hours, "
+     "hundreds of actions), where an early mistake can spoil the end. A hard test for today's agents.",
+     [r"long-horizon"], False),
+    ("Multi-turn", "Agents & products", "Over several back-and-forth exchanges: a conversation, or a task where an agent "
+     "acts, sees the result and acts again. Many models do worse the more turns there are.", [r"multi-turn"], False),
+    ("Self-improving agent", "Agents & products", "An AI agent that gets better from its own experience (keeping notes, "
+     "rewriting its own tools or prompts, training on its successful attempts) without a person retraining it.",
+     [r"[Ss]elf-[Ii]mprov(?:ing|ement)", r"[Ss]elf-[Ee]volving"], True),
+    ("Full-duplex voice model", "Agents & products", "A voice AI that listens and speaks at the same time, so you can "
+     "interrupt it mid-sentence as you would a person, instead of taking strict turns.", [r"full[- ]duplex"], False),
+    ("Speech-to-speech model", "Agents & products", "A voice model that hears speech and answers in speech directly, "
+     "without turning it into text in between: replies come faster and keep the tone of voice.",
+     [r"speech-to-speech", r"speech-native"], False),
+    ("Model Hardware Standard", "Agents & products", "MHS: Anthropic's proposed shared specification (a research preview "
+     "since Aug 2026) that lets AI agents find and safely operate physical devices such as robotic arms and lab "
+     "instruments, as MCP does for software.", [r"Model Hardware Standard", r"MHS"], True),
 
     # ---- Safety & security -------------------------------------------------------------------------------------
     ("Alignment", "Safety & security", "Making an AI system do what its makers and users actually intend, and hold "
@@ -171,6 +207,9 @@ _ENTRIES = [
     ("Watermarking", "Safety & security", "Hiding an invisible signal in AI-made text, images or audio so it can be "
      "recognised as AI-made later. Content provenance (e.g. C2PA) records where a file came from.",
      [r"watermark\w*", r"provenance", r"C2PA"], False),
+    ("SynthID", "Safety & security", "Google DeepMind's invisible watermark for AI-made images, video, audio and text, "
+     "and the detector that finds it; since Oct 2026 anyone can check a file on Google's SynthID website.",
+     [r"SynthID"], True),
     ("AI Safety Institute", "Safety & security", "A government body that tests advanced AI models for risks (the UK, "
      "US, Japan, Korea and others have one; some were renamed, e.g. the UK AI Security Institute).",
      [r"AISIs?", r"AI (?:Safety|Security) Institutes?", r"CAISI"], False),
@@ -194,7 +233,7 @@ _ENTRIES = [
     ("Data center", "Chips & compute", "A building full of servers. AI data centers hold tens of thousands of chips "
      "and can use as much power as a small city.", [r"data cent(?:er|re)s?", r"datacent(?:er|re)s?"], False),
     ("KV cache", "Chips & compute", "Memory a model keeps of the conversation so far so it doesn't recompute it for "
-     "every new word; managing it well makes long chats cheaper.", [r"KV[- ]cache\w*"], False),
+     "every new word; managing it well makes long chats cheaper.", [r"KV(?:[- ]cach\w*)?"], False),
     ("Speculative decoding", "Chips & compute", "A speed-up: a small model drafts several words ahead and the big "
      "model checks them in one go.", [r"speculative decoding"], False),
     ("BF16 and FP8", "Chips & compute", "Number formats for a model's numbers: BF16 uses 16 bits each, FP8 8 bits. "
@@ -280,6 +319,12 @@ _ENTRIES = [
     ("Latent", "Research", "Hidden: a model's internal representation of data (a \"latent space\"), rather than the "
      "words or pixels you see.", [r"latent(?: space)?"], False),
 
+    ("Training-free method", "Research", "A way to improve or adapt a model with no further training: it changes how "
+     "the model is used (its prompt, decoding or inputs), not its weights.", [r"training-free"], False),
+    ("Millennium Prize problems", "Research", "Seven famous maths problems, each with a $1 million prize from the Clay "
+     "Mathematics Institute (2000); only one, the Poincaré conjecture, is solved. OpenAI says its AI solved a second, "
+     "Navier-Stokes, which is not yet confirmed.", [r"Millennium Prize(?: [Pp]roblems?)?", r"Navier[-–]Stokes",
+                                                     r"Hodge conjecture"], False),
     # ---- Names: companies' products and model families that headlines use without explaining -------------------
     ("Character.AI", "Names", "c.ai: an app for chatting and role-playing with AI characters. Its \"Chat Styles\" "
      "(such as PipSqueak and ShortSqueak) are the different AI models a user can pick to power a chat.",
@@ -309,6 +354,8 @@ _ENTRIES = [
     ("Seedance", "Names", "ByteDance's video-generation model (ByteDance owns TikTok).", [r"Seedance"], True),
     ("Hugging Face", "Names", "The main website for sharing AI models and datasets, like GitHub for AI; also a company "
      "that builds open tools.", [r"Hugging ?Face"], True),
+    ("OpenClaw", "Names", "A popular open-source AI agent that runs around the clock, connected to a person's apps "
+     "and chats, doing the tasks it's given. Microsoft's Copilot Autopilot is built on it.", [r"OpenClaw"], True),
     ("Cloud AI platforms", "Names", "Amazon Bedrock, Google Vertex AI and Microsoft Foundry: services where companies "
      "rent many different AI models through one cloud account.", [r"Bedrock", r"Vertex AI", r"(?:Azure )?AI Foundry"], True),
 ]
@@ -327,7 +374,31 @@ SEARCH = {"AI agent": "agent", "Open-weight model": "open-weight", "Parameters":
           "Algorithmic bias": "bias", "High-risk AI": "high-risk", "Test-time compute": "test-time",
           "Computer-use agent": "computer use", "Chain of thought": "chain of thought", "State of the art": "state-of-the-art"}
 
-ENTRIES = [{"id": _key(t), "term": t, "group": g, "def": d, "match": m, "case": cs, "search": SEARCH.get(t, t)}
+# The day each entry went live: the first 123 on 29 Sep 2026 (LAUNCH), later ones as listed. Words added in the last
+# NEW_DAYS days are "New" on the site.
+LAUNCH = date(2026, 9, 29)
+ADDED = {**dict.fromkeys(["Supervised fine-tuning", "Reward model", "On-policy distillation", "KL divergence",
+                          "Recursive self-improvement", "BF16 and FP8", "Rack-scale system"], date(2026, 10, 6)),
+         **dict.fromkeys(["World action model", "Decision model", "Text-to-image model", "On-policy learning",
+                          "Self-supervised learning", "In-context learning", "Long-horizon task", "Multi-turn",
+                          "Self-improving agent", "Full-duplex voice model", "Speech-to-speech model",
+                          "Model Hardware Standard", "SynthID", "Training-free method", "Millennium Prize problems",
+                          "OpenClaw"], date(2026, 10, 10))}
+NEW_DAYS = 30
+
+# Technical: the words specialists use (how models are built, trained and run); every other entry is Everyday.
+TECHNICAL = {"VLM", "VLA", "World model", "Diffusion model", "Transformer", "Attention", "Mixture of Experts",
+             "Dense model", "Tokenizer", "Context window", "Embedding", "Checkpoint", "Pre-training", "Post-training",
+             "Fine-tuning", "LoRA", "Reinforcement learning", "RLHF", "Distillation", "Synthetic data", "Scaling laws",
+             "Quantization", "Supervised fine-tuning", "Reward model", "On-policy distillation", "KL divergence",
+             "Computer-use agent", "MCP", "RAG", "Vector database", "SDK", "Latency", "Red teaming", "Prompt injection",
+             "Sandbox", "Evals", "Interpretability", "Recursive self-improvement", "TPU", "NPU", "ASIC", "HBM", "CUDA",
+             "KV cache", "Speculative decoding", "BF16 and FP8", "Rack-scale system", "FLOPs", "Test-time compute",
+             "SWE-bench", "Zero-shot / few-shot", "JEPA", "Latent", "World action model", "On-policy learning",
+             "Self-supervised learning", "In-context learning", "Training-free method"}
+
+ENTRIES = [{"id": _key(t), "term": t, "group": g, "def": d, "match": m, "case": cs, "search": SEARCH.get(t, t),
+            "added": ADDED.get(t, LAUNCH).isoformat(), "level": "Technical" if t in TECHNICAL else "Everyday"}
            for t, g, d, m, cs in _ENTRIES]
 
 
@@ -361,20 +432,117 @@ def word_of_the_day(day: date, among: set[str] | None = None) -> dict:
 
 
 def payload(cards: list[dict], today: date | None = None, days: int = 7) -> dict:
-    """glossary.json: every entry, plus how many of the last `days` days' cards mention each (for "In the news")."""
-    since = ((today or date.today()) - timedelta(days=days)).isoformat()
-    seen = Counter(t for c in cards if (c.get("date") or "") >= since
-                   for t in terms_in(f"{c.get('title') or ''} {c.get('summary') or ''}"))
-    return {"groups": GROUPS, "days": days,
-            "entries": [{**e, "recent": seen.get(e["id"], 0)} for e in ENTRIES]}
+    """glossary.json: every entry, plus how many of the last `days` days' cards mention each (for "In the news"),
+    an example of it in the news (the last EXAMPLE_DAYS days' best card using it: one with the word in its headline,
+    then a news story over a paper, then the newest) and whether it is new (added in the last NEW_DAYS days)."""
+    today = today or date.today()
+    since, recent = (today - timedelta(days=days)).isoformat(), (today - timedelta(days=EXAMPLE_DAYS)).isoformat()
+    seen, example, rank = Counter(), {}, {}
+    for c in cards:
+        if (c.get("date") or "") < recent:
+            continue
+        title = c.get("title") or ""
+        ids = terms_in(f"{title} {c.get('summary') or ''}")
+        if c["date"] >= since:
+            seen.update(ids)
+        for i in ids:
+            r = (mentions(i, title), c.get("category") != "research", c["date"])
+            if i not in rank or r > rank[i]:
+                rank[i], example[i] = r, {"title": title.strip(), "url": c.get("url") or "",
+                                          "source": c.get("source") or "", "date": c["date"][:10]}
+    new_since = (today - timedelta(days=NEW_DAYS)).isoformat()
+    return {"groups": GROUPS, "days": days, "levels": ["Everyday", "Technical"],
+            "entries": [{**e, "recent": seen.get(e["id"], 0), "example": example.get(e["id"]),
+                         "new": LAUNCH.isoformat() < e["added"] and e["added"] >= new_since} for e in ENTRIES]}
 
 
-def missing(cards: list[dict], top: int = 40) -> list[tuple[str, int]]:
-    """Short capitalised words (acronyms) that many cards use but no entry explains: candidates to write up."""
-    known = re.compile("|".join(f"(?:{p.pattern})" for p in _PATTERNS.values()))
-    skip = {"AI", "US", "UK", "EU", "UN", "CEO", "CFO", "CTO", "VP", "IT", "PC", "PCs", "TV", "OS", "UI", "PDF", "PDFs",
-            "URL", "ID", "HR", "PR", "QA", "CNN", "CNBC", "WIRED", "FBI", "FTC", "FAA", "UAE", "MIT", "LLC", "IBM",
-            "AMD", "AWS", "NVIDIA", "HPE", "HP", "Q1", "Q2", "Q3", "Q4", "II", "III", "OR", "GO", "UP", "DATA", "JSON", "CLI"}
-    n = Counter(w for c in cards for w in set(re.findall(r"\b[A-Z][A-Z0-9]{1,6}s?\b", f"{c.get('title') or ''} {c.get('summary') or ''}"))
-                if w not in skip and w.rstrip("s") not in skip and not known.fullmatch(w))
-    return n.most_common(top)
+EXAMPLE_DAYS = 30  # a word's example story: the newest of this many days
+
+# candidates(): what the glossary may still need, found as AI stories write such words: acronyms and names with
+# capitals inside (KV, SynthID), hyphenated words (long-horizon) and phrases ending in a technical noun (world action
+# model). Counted once per story (its other outlets too); only those in 2+ stories from 3+ outlets, so one paper's
+# coinage, one launch or one outlet's habit stays out.
+CANDIDATE_OUTLETS, CANDIDATE_DAYS = 3, 45
+_HEAD = (r"(?:model|models|learning|attention|agents?|inference|training|tuning|decoding|benchmarks?|architecture|"
+         r"distillation|alignment|reasoning|retrieval|embeddings?|quantization|tokens?|window|cache|networks?|"
+         r"transformers?|diffusion|optimization|sampling|memory|protocol|evals?|interpretability|hallucinations?)")
+_PHRASE = re.compile(rf"\b((?:[a-z][a-z0-9]+(?:-[a-z0-9]+)* )?[a-z][a-z0-9]+(?:-[a-z0-9]+)* {_HEAD})\b")
+_HYPHEN = re.compile(r"(?<![\w-])([A-Za-z][a-z]+(?:-[A-Za-z][a-z]+){1,3})(?![\w-])")
+_ACRONYM = re.compile(r"(?<![\w.-])([A-Z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)(?![\w-])")
+# Not glossary words: plain words before a phrase, everyday hyphenated words, common acronyms and names
+_PLAIN = set("a an the new its their our his her this that these those latest first open large ai own more most best "
+             "top major leading key next other such based using via generative frontier small big real global agentic "
+             "smarter better faster single multiple many several some any every each powerful advanced custom native "
+             "popular enterprise one two three".split())
+_JOINS = {"and", "or", "of", "for", "to", "with", "in", "on", "by", "as", "at", "from", "face"}  # "Hugging Face text model"
+_EVERYDAY = re.compile(r"^(?:ai-.*|.*-(?:old|based|powered|driven|enabled|ready|native|focused|related|friendly|backed|"
+                       r"owned|led|made|wide|level|scale|quality|term|time|world|purpose|performance|grade|class|step|"
+                       r"source|sources|house|on|in|up|out|off|founder|founders|being|design|way|year|day|week|month)|"
+                       r"co-.*|re-.*|non-.*|anti-.*|pre-.*|post-.*|multi-(?:billion|million|year|cloud)|"
+                       r"high-.*|low-.*|well-.*|state-of-the-art|end-to-end|hands-.*|follow-up|start-up|"
+                       r"t-shirt|e-mail|e-commerce|x-ray|mid-.*|on-device|open-sources?|open-sourced|cutting-edge|"
+                       r"long-(?:form|running|standing|awaited)|full-stack|next-gen|machine-translated)$")
+_ACRONYM_SKIP = {"AI", "US", "UK", "EU", "UN", "CEO", "CFO", "CTO", "COO", "VP", "IT", "PC", "TV", "OS", "UI", "UX",
+                 "PDF", "URL", "ID", "HR", "PR", "QA", "CNN", "CNBC", "WIRED", "FBI", "FTC", "FAA", "FDA", "SEC", "DOJ",
+                 "DOD", "DoD", "UAE", "MIT", "LLC", "IBM", "AMD", "AWS", "NVIDIA", "HPE", "HP", "II", "III", "IV", "OR",
+                 "GO", "UP", "DATA", "JSON", "CLI", "MW", "GW", "TWh", "GWh", "MWh", "KW", "kW", "USD", "GDP", "NASDAQ",
+                 "NYSE", "ICYMI", "FAQ", "ROI", "B2B", "SaaS", "IoT", "SME", "NGO", "ICT", "DNA", "RGB", "FX", "TL",
+                 "DR", "PhD", "MSc", "OpenAI", "ChatGPT", "GitHub", "DeepMind", "WhatsApp", "YouTube", "LinkedIn",
+                 "TikTok", "iPhone", "iOS", "macOS", "SpaceX", "PyTorch"}
+
+
+def _names() -> set[str]:
+    """Company and product names (data/brands.json, the site's brand icons) and the outlets we read, in lower case:
+    not words to explain."""
+    import json
+    from pathlib import Path
+    from .sources import SOURCES
+    names = {s["name"].lower() for s in SOURCES}
+    try:
+        names |= {b["title"].lower() for b in json.loads(
+            (Path(__file__).resolve().parent.parent / "data" / "brands.json").read_text(encoding="utf-8"))}
+    except (OSError, ValueError):
+        pass
+    return names
+
+
+_NAME = re.compile("|".join(f"(?:{_PATTERNS[e['id']].pattern})" for e in ENTRIES if e["group"] == "Names"), re.I)
+
+
+def candidates(cards: list[dict], today: date | None = None, top: int = 30) -> list[dict]:
+    """Words recent stories use that no entry explains, most outlets first: {"word", "stories", "outlets",
+    "examples" (up to two headlines)}. To write up by hand; nothing here reaches the site."""
+    since = ((today or date.today()) - timedelta(days=CANDIDATE_DAYS)).isoformat()
+    names, found = _names(), {}
+    for c in cards:
+        if (c.get("date") or "") < since:
+            continue
+        title = (c.get("title") or "").strip()
+        text = f"{title} {c.get('summary') or ''}"
+        words = set()
+        for m in _PHRASE.finditer(text.lower()):
+            w = m.group(1).split()
+            while w and w[0] in _PLAIN:
+                w = w[1:]
+            if len(w) >= 2 and not _JOINS & set(w):
+                words.add(" ".join(w[:-1] + [w[-1][:-1] if w[-1].endswith("s") else w[-1]]))  # one key for "models"
+        words |= {m.group(1).lower() for m in _HYPHEN.finditer(text) if not _EVERYDAY.match(m.group(1).lower())}
+        for m in _ACRONYM.finditer(text):
+            a = m.group(1)
+            near = text[max(0, m.start() - 30):m.end() + 30]
+            if (len(a) <= 12 and a not in _ACRONYM_SKIP and a.rstrip("s") not in _ACRONYM_SKIP
+                    and not re.fullmatch(r"[A-Z]{1,2}\d+(?:\.\d+)?|[A-Z]\d[A-Z]?\d?", a)  # V4, K3, H100: versions
+                    and len(re.findall(r"\b[A-Z]{3,}\b", near)) < 3):  # a headline in capitals ("KUALA LUMPUR")
+                words.add(a)
+        for w in words:
+            if (w.lower() in names or any(x in names or _NAME.fullmatch(x) for x in w.lower().split()[:-1])  # "Gemini model"
+                    or any(p.search(w) for p in _PATTERNS.values())):
+                continue
+            f = found.setdefault(w.lower(), {"word": w, "stories": 0, "outlets": set(), "examples": []})
+            f["stories"] += 1
+            f["outlets"] |= {c.get("source") or ""} | {x.get("source") or "" for x in c.get("also") or []}
+            if len(f["examples"]) < 2 and title not in f["examples"]:
+                f["examples"].append(title)
+    out = [{**f, "outlets": len(f["outlets"])} for f in found.values()
+           if len(f["outlets"]) >= CANDIDATE_OUTLETS and f["stories"] >= 2]
+    return sorted(out, key=lambda f: (-f["outlets"], -f["stories"], f["word"].lower()))[:top]

@@ -79,7 +79,7 @@ def main():
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     dg.add_argument("--layout", choices=["short", "full"], default="short",
                     help="short (the daily email): the ten that mattered most, then headlines; full: every story in one table")
-    sub.add_parser("glossary", help="acronyms recent stories use often that the glossary doesn't explain yet")
+    sub.add_parser("glossary", help="words recent stories use that the glossary doesn't explain yet (to write up by hand)")
     sub.add_parser("memes", help="ask Gemini (GEMINI_API_KEY, free tier) for last week's meme once and keep it")
     em = sub.add_parser("embed", help="story vectors for the weekly dossier's search (offline model; new or changed stories)")
     em.add_argument("--limit", type=int, help="at most this many stories this run (the first run has them all to do)")
@@ -302,10 +302,11 @@ def main():
             print(f"Checked, no problems. Sent: {email[0]} {counts}")
     elif a.cmd == "glossary":
         from . import glossary
-        recent, _ = store.cards(store.connect(a.db), days=90, limit=10**6)
-        print(f"{len(glossary.ENTRIES)} entries; not explained yet, by how many of the last 90 days' cards use them:")
-        for word, n in glossary.missing(recent):
-            print(f"  {word}: {n}")
+        recent, _ = store.cards(store.connect(a.db), days=glossary.CANDIDATE_DAYS, limit=10**6)
+        print(f"{len(glossary.ENTRIES)} entries. Not explained yet, used in the last {glossary.CANDIDATE_DAYS} days "
+              f"by {glossary.CANDIDATE_OUTLETS}+ outlets (outlets, stories, a headline):")
+        for w in glossary.candidates(recent):
+            print(f"  {w['word']} ({w['outlets']}, {w['stories']}): {w['examples'][0]}")
     elif a.cmd == "embed":
         from . import embed
         embed.update(store.connect(a.db), limit=a.limit)

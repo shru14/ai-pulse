@@ -45,6 +45,10 @@ STYLE = """
 .cp .terms .short{color:var(--muted);font-size:15px}
 .cp .terms .grp{display:block;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
 @media (max-width:560px){.cp .terms li{grid-template-columns:1fr}}
+.cp .levels{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.cp .levels button{font:500 13px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer}
+.cp .levels button[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.cp .levels button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cp .cloud{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:2px 12px;padding:12px 14px;border:2px solid #000;background:var(--bg);line-height:1.15}
 .cp .cloud a{font-weight:600;text-decoration:none}
 .cp .cloud a.big{font-family:var(--display);font-weight:400}
