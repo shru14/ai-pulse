@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="color-scheme" content="light">
+<html lang="en"><head><meta charset="utf-8"><meta name="color-scheme" content="light dark">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- The stream pages (/policy/…) are this page too: every relative link and file is from the site's root -->
 <base href="/">
@@ -23,6 +23,8 @@
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Regulation tracker" href="feeds/regulation.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Policy" href="feeds/policy.xml">
 <link rel="alternate" type="application/rss+xml" title="AI Pulse · Infra & climate" href="feeds/infra.xml">
+<!-- Dark or light before the first paint: the reader's own pick (the header's moon button), else their device's -->
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("aipulse-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){}</script>
 <style>
 /* The fonts are served from this site (templates/fonts, SIL Open Font License), not Google Fonts: loading them from
    Google would send every reader's IP address to Google without their consent (GDPR; LG München I, 20 Jan 2022). */
@@ -70,6 +72,20 @@
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
 .wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(0px,2vw,24px)}
 /* Sticky brand bar; the filter bar below sticks right under it (--bar-h). */
+:root[data-theme="dark"]{
+  /* Dark mode: the same Okabe-Ito hues at full strength as text, tinted a tenth over the page for their soft
+     backgrounds (every text pair 4.5:1 or more). The coloured tiles keep their own fixed colours. */
+  --bg:#0F1115; --surface:#181B21; --ink:#F2F2F2; --muted:#B4B9C4; --line:#F2F2F2;
+  --accent:#56B4E9; --accent-soft:#152430;
+  --c-tool:#009E73; --c-tool-soft:#0E1F1E;
+  --c-news:#56B4E9; --c-news-soft:#152430;
+  --c-policy:#E69F00; --c-policy-soft:#252111;
+  --c-research:#C85BC3; --c-research-soft:#221826;
+  --c-reg:#E36A12; --c-reg-soft:#241913; --c-infra:#8BEC8B; --c-infra-soft:#1C2A21; --c-all:#F0E442; --c-all-soft:#28291A;
+  --warn:#E69F00; --warn-soft:#252111;
+  --poster-grid:rgba(255,255,255,.05);
+  color-scheme:dark;
+}
 :root{--bar-h:56px}
 header.top{position:sticky;top:0;z-index:6;background:var(--bg);height:var(--bar-h);display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--line)}
 .brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;margin-right:auto}
@@ -99,6 +115,7 @@ header.top{gap:10px}
 .subscribe-btn.cta{background:var(--accent);border-color:var(--accent);color:var(--surface);box-shadow:0 0 0 4px var(--accent-soft)}
 .subscribe-btn.cta:hover{filter:brightness(1.08)}
 .subscribe-btn.gl-open{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.theme-btn{width:36px;padding:0;justify-content:center}
 @media (max-width:980px){
   :root{--bar-h:100px}
   header.top{flex-wrap:wrap;align-content:space-evenly}
@@ -609,9 +626,17 @@ header.top.home{height:auto;padding-top:10px}
   header.top .subscribe-btn.cta{padding:0 10px}
   header.top .subscribe-btn.cta svg{display:none}  /* the word alone, so the top row fits a phone */
   header.top{gap:8px}
+  header.top .secnav{flex-wrap:wrap;overflow:visible}  /* every stream in sight: two rows rather than a hidden scroll */
+  header.top .secnav a{margin-right:4px;padding-right:8px;font-size:13.5px}
   .sec-hero{min-height:0;padding:20px 16px}
   header.top.home{position:static}  /* the tall masthead scrolls away on a phone... */
   .controls{top:0}  /* ...and the filters stick to the top instead */
+}
+@media (max-width:400px){  /* the smallest phones: name and all three buttons still on one row */
+  header.top{gap:6px}
+  header.top .brand{margin-right:auto}
+  header.top .subscribe-btn.cta{padding:0 8px}
+  header.top .gl-open,.theme-btn{width:34px}
 }
 </style>
 </head><body>
@@ -641,6 +666,9 @@ header.top.home{height:auto;padding-top:10px}
     <button class="subscribe-btn gl-open" id="glossary-open" type="button" aria-haspopup="dialog" title="What the words in these stories mean">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5 2.5 2.5 0 0 0 6.5 24"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H19"/><path d="M9 7h6M9 10.5h4"/></svg>
       <span>Glossary</span>
+    </button>
+    <button class="subscribe-btn theme-btn" id="theme-toggle" type="button" aria-pressed="false" title="Dark mode">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
   </header>
   <dialog class="subscribe glossary" id="glossary" aria-labelledby="glossary-title">
@@ -1280,6 +1308,22 @@ function renderPlaceBar(show){
   });
 }
 
+// Dark mode: the moon button flips the page and remembers the pick in this browser; until a reader picks, the
+// page follows their device (the script in <head> set it before the first paint).
+const themeBtn = $("theme-toggle");
+const showTheme = () => themeBtn.setAttribute("aria-pressed", String(document.documentElement.dataset.theme === "dark"));
+themeBtn.addEventListener("click", () => {
+  const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = t;
+  try{ localStorage.setItem("aipulse-theme", t); }catch(e){}
+  showTheme();
+});
+try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+  if(localStorage.getItem("aipulse-theme")) return;
+  document.documentElement.dataset.theme = e.matches ? "dark" : "light"; showTheme();
+}); }catch(e){}
+showTheme();
+
 const MAST = document.querySelector("header.top");
 const barHeight = () => document.documentElement.style.setProperty("--bar-h", MAST.offsetHeight + "px");
 try{ new ResizeObserver(barHeight).observe(MAST); }catch(e){ addEventListener("resize", barHeight); }
@@ -1307,7 +1351,10 @@ function renderMast(){
   const when = t => new Date(t).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
   const t = el("div"), n = state.allTime;
   t.append(el("b", null, String(n)), document.createTextNode((n === 1 ? " story" : " stories") + " in total"));
-  m.replaceChildren(t, el("div", null, last ? "Last update " + when(last) : "Not collected yet"));
+  // When it runs (pages.yml, digest.yml), the email's time in the reader's own clock
+  const mail = new Date(Date.UTC(2000, 0, 1, 5, 15)).toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+  m.replaceChildren(t, el("div", null, last ? "Last update " + when(last) : "Not collected yet"),
+    el("div", null, "Updated every 6 hours, lab blogs every 30 minutes; daily email about " + mail));
 }
 
 // ---------- Front page: last week's stories, ranked as in the daily email (by how many outlets reported them) ----------
