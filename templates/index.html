@@ -651,8 +651,22 @@ header.top.home{height:auto;padding-top:10px}
 /* Today in AI, People are discussing: a heading band like the streams' */
 .band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;border-bottom:4px solid var(--ink);padding-bottom:6px;margin-bottom:16px}
 .band-head h2{font:400 26px/1.1 var(--head);margin:0}
-.today-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px}
-.today-grid .mag-list{margin-top:0;align-content:space-between}  /* first row level with the picture's top, last with its foot */
+/* Today: three picture cards, the Hacker News highlight as the fourth column, all one height */
+.today-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(250px,1fr);gap:20px;align-items:stretch}
+.today-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.tcard{display:flex;flex-direction:column;border:3px solid var(--ink);background:var(--surface);color:var(--ink);text-decoration:none;min-width:0}
+.tcard .timg{aspect-ratio:16/9;border:0!important;border-bottom:3px solid var(--ink)!important;border-radius:0}
+.tcard .timg .mchip{position:absolute;left:8px;top:8px}
+.tcard .tb{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px}
+.tcard h3{font:400 16px/1.25 var(--head);margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tcard .tb p{margin:0;font-size:13.5px;line-height:1.45;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tcard:hover h3{text-decoration:underline;text-decoration-color:var(--cat-f);text-underline-offset:3px}
+.tcard .kicker{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hn-box{border:3px solid var(--ink);border-top:8px solid #E69F00;background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;min-width:0}
+.hn-box[hidden]{display:none}
+.hn-head{display:flex;flex-direction:column;margin-bottom:6px}
+.hn-head b{font:400 17px/1.2 var(--head)}
+.hn-head span{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .kicker{white-space:normal}
 .mitem .kicker{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Streams: compact cards, three to a row, three headlines each */
@@ -666,17 +680,35 @@ header.top.home{height:auto;padding-top:10px}
 .mag-sec .mitem h4{font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .mag-sec .go{margin-top:auto;padding-top:16px;align-self:flex-start}  /* "All Releases →" level along the row */
 @media (min-width:761px){.mag-sec .mitem h4{min-height:3.9em}}  /* each headline a 3-line slot: rows level across the cards */
-.social-t{width:100%;border-collapse:collapse;font-size:15px}
-.social-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
-.social-t td{border-top:1px solid var(--line);padding:9px 12px 9px 0;vertical-align:top}
-.social-t td:last-child,.social-t th:last-child{white-space:nowrap;padding-right:0;text-align:right}
+.social-t{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.3}
+.social-t td{border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:7px 8px 7px 0;vertical-align:top}
+.social-t td:first-child a{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.social-t td:last-child{white-space:nowrap;padding-right:0;text-align:right}
 .social-t a{color:var(--ink);text-decoration:none;font-weight:600}
 .social-t a:hover{text-decoration:underline}
-.social-t small{display:block;color:var(--muted);font:500 11.5px var(--mono)}
-.about-strip{display:block;border:3px solid var(--ink);padding:14px 18px;color:var(--ink);text-decoration:none;font:400 17px var(--head)}
-.about-strip:hover{background:var(--surface);text-decoration:underline}
+.social-t td:last-child a{display:inline-flex;align-items:center;gap:3px;font:500 12px var(--mono);color:var(--muted)}
+.social-t .ci svg{width:13px;height:13px;display:block}
+/* the week's three tiles, trimmed: no figures, "also covered by" or tags; shorter pictures */
+.mag-row .tile,.mag-row .mag-cover{padding:16px!important;gap:10px}
+.mag-cover .also,.mag-cover .tags,.mag-cover .sum,.gl-viz,.meme-tile .meme-more,.meme-tile .meme-next{display:none!important}
+.mag-cover h2{font-size:19px!important}
+.mag-cover .sart{height:110px!important}
+.gl-card b{font-size:26px!important}
+.gl-card{margin-top:10px;padding:10px 12px 12px!important;box-shadow:5px 5px 0 #000!important}
+.mag-row .gl-tile-go{min-width:0!important;padding:9px 18px!important;font-size:14px!important}
+.meme-tile #meme img{max-height:170px;object-fit:contain;width:100%}
+.nav-about{margin-left:auto}
+.mag-row>.tile{display:flex;flex-direction:column}
+.mag-row .gl-tile-links,.mag-row .meme-go{margin-top:auto}  /* the three buttons at the tiles' feet */
 @media (max-width:1100px){.mag-sections{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:760px){.today-grid,.mag-sections{grid-template-columns:1fr}}
+@media (max-width:1100px){.today-row{grid-template-columns:1fr}}
+@media (max-width:760px){.mag-sections{grid-template-columns:1fr}
+  .today-cards{grid-template-columns:1fr;gap:12px}
+  .tcard{display:grid;grid-template-columns:120px 1fr}
+  .tcard .timg{aspect-ratio:auto;min-height:100%;border-bottom:0!important;border-right:3px solid var(--ink)!important}
+  .tcard .tb{min-width:0}
+  .nav-about{display:none}  /* phones: About is in the footer, so the menu keeps two rows */
+  .tcard .timg .mchip{display:none}}
 @media (max-width:400px){  /* the smallest phones: name and all three buttons still on one row */
   header.top{gap:6px}
   header.top .brand{margin-right:auto}
@@ -703,6 +735,7 @@ header.top.home{height:auto;padding-top:10px}
       <a href="/regulation/" data-go="regulation" class="k-regulation">Regulation tracker</a>
       <a href="/policy/" data-go="policy" class="k-policy">Policy</a>
       <a href="/infra/" data-go="infra" class="k-infra">Infra &amp; climate</a>
+      <a href="/about/" class="nav-about">About</a>
     </nav>
     <button class="subscribe-btn cta" id="subscribe-open" type="button" aria-haspopup="dialog" title="Get the daily digest in your inbox">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
@@ -799,7 +832,12 @@ header.top.home{height:auto;padding-top:10px}
     <div class="mag">
       <!-- Today in AI: the last two days' biggest stories, by how many outlets carry them -->
       <section class="today" id="today"><div class="band-head"><h2>Today in AI</h2><span class="kicker">The most reported, last 2 days</span></div>
-        <div class="today-grid" id="today-grid"><p class="tile-note">Loading today's stories…</p></div></section>
+        <div class="today-row">
+          <div class="today-cards" id="today-grid"><p class="tile-note">Loading today's stories…</p></div>
+          <!-- People are discussing: the most-discussed AI threads on Hacker News (aipulse/social.py) -->
+          <aside class="hn-box" id="social" hidden><div class="hn-head"><b>People are discussing</b><span>on Hacker News</span></div>
+            <table class="social-t"><tbody id="social-rows"></tbody></table></aside>
+        </div></section>
       <div class="tile sub-tile sub-strip">
         <div class="sub-head"><span class="label">Daily email · free</span><h2>Yesterday in AI, every morning</h2>
           <ul class="sub-inside" aria-label="In every email"><li>The 10 that mattered</li><li>The rest in brief</li>
@@ -833,10 +871,6 @@ header.top.home{height:auto;padding-top:10px}
         </div>
       </div>
       <div class="mag-sections" id="stream-tiles"></div>
-      <!-- People are discussing: the most-discussed AI threads on Hacker News (aipulse/social.py) -->
-      <section class="social" id="social" hidden><div class="band-head"><h2>People are discussing</h2><span class="kicker">On Hacker News, last 2 days</span></div>
-        <table class="social-t"><thead><tr><th>Thread</th><th>Discussion</th></tr></thead><tbody id="social-rows"></tbody></table></section>
-      <a class="about-strip" href="about/">About AI Pulse: what it is, where the stories come from and how it's made →</a>
     </div>
   </section>
 
@@ -1697,28 +1731,31 @@ function shortKicker(it){
 function renderToday(top){
   const box = $("today-grid"), since = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
   const list = (HOME.recent || []).filter(it => CATS.includes(it.category) && it.date >= since && (!top || it.id !== top.id))
-    .sort(byWeight).slice(0, 4);
+    .sort(byWeight).slice(0, 3);
   box.replaceChildren();
   if(!list.length){ box.append(el("p","tile-note","Nothing yet today.")); return; }
-  const first = list[0], lead = el("a","lead k-" + first.category);
-  lead.href = first.url; lead.target = "_blank"; lead.rel = "noopener";
-  const txt = el("div","txt"); txt.append(shortKicker(first), el("h3", null, first.title));
-  lead.append(storyArt(first), el("div","shade"), el("span","mchip", CAT_LABEL[first.category]), txt);
-  const more = el("div","mag-list");
-  list.slice(1).forEach(it => more.append(magItem(it, true)));
-  box.append(lead, more);
+  list.forEach(it => {
+    const card = el("a","tcard k-" + it.category), pic = el("div","thumb timg"), body = el("div","tb");
+    card.href = it.url; card.target = "_blank"; card.rel = "noopener";
+    pic.append(storyArt(it), el("span","mchip", CAT_LABEL[it.category]));
+    body.append(shortKicker(it), el("h3", null, it.title));
+    if(it.summary) body.append(el("p", null, it.summary));
+    card.append(pic, body); box.append(card);
+  });
 }
+const commentIcon = () => { const i = el("span","ci"); i.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg>'; return i; };
 // People are discussing: Hacker News' most-discussed AI threads (social.json, fetched with each full update).
 async function loadSocial(){
   try{
     const d = await (await fetch("social.json", {cache: "no-cache"})).json();
     if(!d.threads || !d.threads.length) return;
     const rows = $("social-rows");
-    rows.replaceChildren(...d.threads.map(t => {
-      const tr = el("tr"), a = el("a", null, t.title), td = el("td"), hn = el("a", null, t.comments.toLocaleString() + " comments");
-      a.href = t.url; a.target = "_blank"; a.rel = "noopener";
-      hn.href = t.hn; hn.target = "_blank"; hn.rel = "noopener";
-      td.append(a, el("small", null, domainOf(t.url)));
+    rows.replaceChildren(...d.threads.slice(0, 5).map(t => {
+      const tr = el("tr"), a = el("a", null, t.title), td = el("td"), hn = el("a", null, t.comments.toLocaleString());
+      a.href = t.hn; a.target = "_blank"; a.rel = "noopener"; a.title = domainOf(t.url);
+      hn.href = t.hn; hn.target = "_blank"; hn.rel = "noopener"; hn.title = "comments on Hacker News";
+      hn.prepend(commentIcon());
+      td.append(a);
       const tdc = el("td"); tdc.append(hn);
       tr.append(td, tdc);
       return tr;
