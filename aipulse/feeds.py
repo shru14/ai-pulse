@@ -57,7 +57,9 @@ def _retry_after(err: urllib.error.HTTPError) -> float | None:
 # and official services with no robots.txt of their own (the request for one is refused):
 #   api.congress.gov  the Library of Congress's API (https://api.congress.gov; US government works)
 #   cdn.jsdelivr.net  the npm package CDN serving Simple Icons (CC0; https://www.jsdelivr.com/terms)
-API_HOSTS = {"export.arxiv.org", "www.wikidata.org", "api.congress.gov", "cdn.jsdelivr.net"}
+#   hacker-news.firebaseio.com  Hacker News' official API: its robots.txt allows "/*.json$", a wildcard rule Python's
+#                     robots parser can't read (it would fall through to "Disallow: /"); only .json files are fetched
+API_HOSTS = {"export.arxiv.org", "www.wikidata.org", "api.congress.gov", "cdn.jsdelivr.net", "hacker-news.firebaseio.com"}
 # and the reverse: sites whose robots.txt allows their pages but whose terms allow only their API. GitHub's policy
 # (https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies) allows scraping the
 # website only for research or archiving, and says "Scraping does not refer to the collection of information through

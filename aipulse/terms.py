@@ -219,6 +219,10 @@ TERMS: dict[str, tuple[str, str, str]] = {
 # incidents.py), and the icons, photos, fonts and data it uses. Same kinds; "owner's choice" marks a risk the
 # project owner accepted knowingly (7 Oct 2026). The audit reads these terms pages too.
 PLATFORM: dict[str, tuple[str, str, str]] = {
+    "hacker-news.firebaseio.com": ("official", "https://github.com/HackerNews/API",
+                                   "Hacker News' official API ('making the public Hacker News data available'); robots.txt "
+                                   "allows its .json files; Y Combinator's terms say nothing on robots; titles, points and "
+                                   "comment counts only; checked 10 Oct 2026"),
     "api.congress.gov": ("official", "https://www.loc.gov/legal/", "Official API with the project's own free key; public domain"),
     "data.europarl.europa.eu": ("official", "https://www.europarl.europa.eu/legal-notice/en", "Reuse with acknowledgement"),
     "oeil.secure.europarl.europa.eu": ("official", "https://www.europarl.europa.eu/legal-notice/en", "Reuse with acknowledgement"),

@@ -125,6 +125,15 @@ def privacy_page() -> str:
             'protection authority.</p></body></html>')
 
 
+def about_page(page: str) -> str:
+    """The site's page opened at About (the template holds its text): its own title, description and address."""
+    title, desc, url = "About · AI Pulse", "What AI Pulse is, where its stories come from and how it is made.", f"{rss.SITE}/about/"
+    page = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", page, count=1)
+    page = re.sub(r'(<meta (?:name="description"|property="og:description") content=")[^"]*', rf"\g<1>{desc}", page)
+    page = re.sub(r'(<meta property="og:title" content=")[^"]*', rf"\g<1>{title}", page, count=1)
+    return re.sub(r'(<link rel="canonical" href="|<meta property="og:url" content=")[^"]*', rf"\g<1>{url}", page)
+
+
 def opml(title: str = "AI Pulse") -> str:
     """feeds/all.opml: every stream's RSS feed in one file, for a feed reader to import at once."""
     rows = "".join(f'    <outline type="rss" text="{escape(f"{title} · {name}")}" title="{escape(f"{title} · {name}")}" '
@@ -315,8 +324,9 @@ def build(conn, out: str | Path) -> int:
     daily_index(conn, len(cards), published, out)  # daily/: every edition, by month
     for c in cards:
         c["s"] = text.get(c["id"], "")
-        for k in ("added_at", "cluster"):
-            c.pop(k, None)
+        c.pop("cluster", None)
+        if c["date"] < (today - timedelta(days=2)).isoformat():  # arrival times only for the ticker's two days
+            c.pop("added_at", None)
     # The page loads data.json at once (the 7, 30 and 90-day views); older cards go into one file per
     # year under archive/, fetched only when someone picks "All time".
     recent_since = (datetime.now(timezone.utc).date() - timedelta(days=RECENT_DAYS)).isoformat()
@@ -346,12 +356,16 @@ def build(conn, out: str | Path) -> int:
         monday = date.fromisoformat(meme["from"])
         (out / "memes").mkdir(exist_ok=True)
         (out / meme["image"]).write_bytes(memes.render(memes.of_the_week(cards, monday)))
+    from . import social
+    (out / "social.json").write_text(json.dumps(social.payload(conn), separators=(",", ":")), encoding="utf-8")
     (out / "tags.json").write_text(json.dumps(preferences.options(cards, today), separators=(",", ":")), encoding="utf-8")
 
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
     page = photos.fill(subscribers.fill(page))
     (out / "index.html").write_text(page, encoding="utf-8")
+    (out / "about").mkdir()
+    (out / "about" / "index.html").write_text(about_page(page), encoding="utf-8")  # the same page, opened at About
     for cat, (path, *_) in STREAM_PAGES.items():  # /policy/ and the rest: the same page, opened at that stream
         (out / path).mkdir()
         (out / path / "index.html").write_text(stream_page(page, cat), encoding="utf-8")
@@ -369,7 +383,7 @@ def build(conn, out: str | Path) -> int:
     places += kind_pages.build(conn, len(cards), out)  # Industry's kinds of story, a page each (industry/<kind>/)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
-    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
     return len(cards)
