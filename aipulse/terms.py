@@ -129,9 +129,6 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "www.businesskorea.co.kr": ("terms read", "https://www.businesskorea.co.kr/com/copyright.html",
                                 "Copyright policy (Korean), as The Elec's: no reproduction without consent; nothing on "
                                 "robots, feeds or personal use; checked 10 Oct 2026"),
-    "thebridge.jp": ("terms read", "https://thebridge.jp/terms",
-                     "Terms (Japanese), art. 2: no use beyond what copyright law allows without consent; nothing on "
-                     "robots, feeds or personal use; checked 10 Oct 2026"),
     "contxto.com": ("no terms", "", "No terms page linked from the site; checked 10 Oct 2026"),
     "www.wamda.com": ("licence", "https://www.wamda.com/legal", "Creative Commons Attribution-NonCommercial-NoDerivatives"),
     "en.mercopress.com": ("no terms", "", "No terms page linked from the site"),

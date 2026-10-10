@@ -340,6 +340,7 @@ def purge_disallowed(conn, log=print) -> int:
 # Sources dropped because they turned automated readers away: everything they gave is deleted, so nothing of
 # theirs stays on the site (source name -> the start of its addresses).
 DROPPED = {"Parliament of Canada": "https://www.parl.ca/",  # 6 Oct 2026, each answering even robots.txt with a 403
+           "BRIDGE": "https://thebridge.jp/",  # 10 Oct 2026: its robots.txt refuses us from GitHub's servers
            "Rest of World": "https://restofworld.org/", "TechNode": "https://technode.com/",
            "CISA": "https://www.cisa.gov/",  # 7 Oct 2026: refuses even its robots.txt to GitHub's servers
            # 7 Oct 2026 terms audit: their terms forbid robots and scrapers, or allow personal use only (the labs' and
