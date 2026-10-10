@@ -696,7 +696,8 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     # the site's masthead and footer, the meaning with the other words in it linked, related terms, the stories
     assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="site.css"' in page
     assert '<h1 class="word">Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
-    assert "<h2>Related terms</h2>" in page and page.count('<li><div><a href="/glossary/') == glossary_pages.RELATED
+    assert "<h2>Related terms</h2>" in page and page.count('"><div><a href="/glossary/') == glossary_pages.RELATED
+    assert '<span class="kind">AI glossary · Models · Technical</span>' in page and "Added to the glossary" not in page
     assert "Mentioned in 1 story in the last 7 days." in page and '/all/?' not in page
     # its latest stories, found on the page itself (from data.json, as the site's underlines find them)
     assert '<h2 id="stories">Latest stories with this word</h2>' in page and 'data-match="[&quot;MoE&quot;' in page and 'data-case=1' in page
@@ -704,7 +705,13 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     assert "<h2>Often in the same stories</h2>" in page and 'href="/glossary/parameters/" style="font-size:' in page
     assert '"@type": "DefinedTerm"' in page and 'rel="canonical" href="https://projectaipulse.com/glossary/mixture-of-experts/"' in page
     index = (tmp_path / "glossary" / "index.html").read_text(encoding="utf-8")
-    assert index.count('<li><div><a href="/glossary/') == len(glossary.ENTRIES) and '<h2 id="A">A</h2>' in index
+    az = index[index.index("<h2>A to Z</h2>"):]
+    assert az.count('"><div><a href="/glossary/') == len(glossary.ENTRIES) and '<h2 id="A">A</h2>' in az
+    assert az.count('<li data-level="Technical">') == len(glossary.TECHNICAL) and 'id="levels"' in az  # Everyday / Technical
+    # words added in the last 30 days first, newest first, with the day each was added
+    new = index[index.index("<h2>New this month</h2>"):index.index("<h2>A to Z</h2>")]
+    assert new.count("<li ") == sum(e["added"] > "2026-09-29" for e in glossary.ENTRIES) and "Added 10 Oct 2026" in new
+    assert "Added to the glossary on 10 Oct 2026." in (tmp_path / "glossary" / "synthid" / "index.html").read_text(encoding="utf-8")
     cloud = index[index.index('<div class="cloud"'):index.index("<h2>A to Z</h2>")]
     assert cloud.count("<a ") == 2 and "Mixture of Experts</a>" in cloud  # this week's words only
     assert (tmp_path / "site.css").is_file()
@@ -2197,6 +2204,7 @@ def test_glossary_explains_the_hard_words_in_stories():
     from aipulse import glossary
     assert len({e["id"] for e in glossary.ENTRIES}) == len(glossary.ENTRIES)
     assert {e["group"] for e in glossary.ENTRIES} <= set(glossary.GROUPS)
+    assert glossary.TECHNICAL | set(glossary.ADDED) <= {e["term"] for e in glossary.ENTRIES}  # spelled as the entries
     assert glossary.terms_in("introducing PipSqueak 3, ShortSqueak, and (c.ai) lite") == ["character-ai"]
     assert glossary.terms_in("Holo4 comes in 27B dense and 35B-A3B Mixture of Experts") == ["parameters", "mixture-of-experts"]
     assert "parameters" not in glossary.terms_in("Instinct raises $1B Series C at a $10B valuation")  # money, not model size
@@ -2204,10 +2212,34 @@ def test_glossary_explains_the_hard_words_in_stories():
     cards = [{"date": "2026-09-28", "title": "A RAG pipeline for agents", "summary": ""},
              {"date": "2026-08-01", "title": "An old RAG story", "summary": ""}]
     rag = next(e for e in glossary.payload(cards, date(2026, 9, 29))["entries"] if e["id"] == "rag")
-    assert rag["recent"] == 1 and rag["search"] == "RAG" and rag["match"]
+    assert rag["recent"] == 1 and rag["search"] == "RAG" and rag["match"] and rag["level"] == "Technical"
+    # each word's example: the newest story using it, in the last 30 days (the older one is too old)
+    assert rag["example"]["title"] == "A RAG pipeline for agents" and rag["example"]["date"] == "2026-09-28"
+    assert not rag["new"] and rag["added"] == "2026-09-29"
+    entries = {e["id"]: e for e in glossary.payload(cards, date(2026, 10, 12))["entries"]}
+    assert entries["synthid"]["new"] and entries["kl-divergence"]["new"]  # both added after launch
+    assert not glossary.payload(cards, date(2026, 11, 20))["entries"][0]["new"]
+    # the words they spell differently in headlines
+    assert glossary.terms_in("Self-Evolving Vision-Language Models") == ["vlm", "self-improving-agent"]
+    assert glossary.terms_in("KV compression for long chats") == ["kv-cache"]
     page = Path("templates/index.html").read_text(encoding="utf-8")
     assert 'id="glossary-open"' in page and page.index('id="subscribe-open"') < page.index('id="glossary-open"') and 'id="theme"' not in page  # one light theme
     assert 'fetch("glossary.json"' in page
+
+
+def test_glossary_candidates_are_new_words_several_outlets_use():
+    from aipulse import glossary
+    card = lambda src, title, also=(): {"date": "2026-10-08", "title": title, "summary": "", "source": src,
+                                        "also": [{"source": a} for a in also]}
+    cards = [card("A", "Agents get HyperFlow"), card("B", "HyperFlow beats baselines", ["C"]),
+             card("D", "Real-time AI-powered tools from OpenAI"), card("E", "Real-time AI-powered tools"),
+             card("F", "Real-time AI-powered tools"), card("G", "One more MoE model"), card("H", "MoE again"),
+             card("I", "MoE at last"), card("J", "KUALA LUMPUR WINS DATA CENTRE DEAL")]
+    words = {w["word"]: w for w in glossary.candidates(cards, date(2026, 10, 10))}
+    # counted with a story's other outlets; everyday words, known entries, names and capitals headlines left out
+    assert set(words) == {"HyperFlow"}
+    assert words["HyperFlow"]["outlets"] == 3 and words["HyperFlow"]["stories"] == 2
+    assert words["HyperFlow"]["examples"] == ["Agents get HyperFlow", "HyperFlow beats baselines"]
 
 
 def test_word_of_the_day_rotates_through_the_glossary(monkeypatch):
@@ -2972,6 +3004,49 @@ def test_a_labs_hugging_face_release_is_one_story_for_all_its_sizes():
          "https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct", date(2025, 7, 22)),
         ("Qwen publishes Qwen3.6-2603 on Hugging Face", "https://huggingface.co/Qwen/Qwen3.6-2603", date(2026, 3, 1))]
     assert entries[0]["summary"] == "Text model weights published on Hugging Face in 3 versions."
+
+
+def test_hugging_face_trending_adds_verified_organisations_new_models_not_copies(monkeypatch):
+    import json, urllib.error
+    from datetime import datetime, timezone
+    now = datetime(2026, 10, 10, tzinfo=timezone.utc)
+    m = lambda id, likes=500, created="2026-09-30T00:00:00Z", tags=(), task="image-text-to-text": {
+        "id": id, "likes": likes, "createdAt": created, "tags": list(tags), "pipeline_tag": task}
+    models = [m("Cloudflare/clef", tags=["base_model:finetune:Qwen/Qwen3.8-27B"]),
+              m("Cactus-Compute/whistle", 302, task="automatic-speech-recognition"),
+              m("Qwen/Qwen3.8-27B", 17000),  # a lab we follow by name (hf_models)
+              m("someone/humanizer", 900, tags=["base_model:finetune:google/gemma-4-12B"]),  # a person's upload
+              m("Cloudflare/clef-GGUF", 900), m("Cloudflare/clef-uncensored", 900),  # copies
+              m("Cloudflare/clef-q", 900, tags=["base_model:quantized:Cloudflare/clef"]),
+              m("Cloudflare/old", 900, created="2026-01-01T00:00:00Z"), m("Cloudflare/small", 150)]
+    orgs = {"Cloudflare": {"fullname": "Cloudflare", "isVerified": True},
+            "Cactus-Compute": {"fullname": "Cactus Compute, Inc.", "isVerified": True}}
+
+    def fetcher(url):
+        name = url.split("/organizations/")[1].split("/")[0]
+        if name not in orgs:
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+        return json.dumps(orgs[name]).encode()
+    monkeypatch.setattr(feeds, "_hf_orgs", {})
+    entries = feeds.parse_hf_trending(json.dumps(models).encode(), fetcher=fetcher, now=now)
+    assert [(e["title"], e["summary"]) for e in entries] == [
+        ("Cloudflare publishes clef on Hugging Face", "Vision-language model weights published on Hugging Face, built on Qwen3.8-27B."),
+        ("Cactus Compute publishes whistle on Hugging Face", "Speech recognition model weights published on Hugging Face.")]
+
+
+def test_open_source_projects_major_and_minor_releases_are_releases():
+    import json
+    r = lambda tag, body="", pre=False: {"tag_name": tag, "prerelease": pre, "draft": False, "body": body,
+                                         "published_at": "2026-10-05T10:00:00Z", "html_url": f"https://github.com/v/v/releases/tag/{tag}"}
+    releases = [r("v0.31.0", "## Highlights\n\nThis release features 717 commits from 307 contributors (96 new)!"),
+                r("v0.31.1"), r("v0.32.0rc1"), r("v0.32.0", pre=True), r("b11552"),
+                r("jax-v0.11.0", "* Added a doc on defining custom derivative rules with the experimental\n  `custom_vjp` API.\n"),
+                r("v2.0", "![logo](x.png)\n[Full Changelog](https://x)\nShort.\n- Ollama now runs models on MLX on Apple Silicon by default")]
+    entries = feeds.parse_github_releases(json.dumps(releases).encode(), lab="vLLM")
+    assert [(e["title"], e["summary"]) for e in entries] == [
+        ("vLLM releases version 0.31", "This release features 717 commits from 307 contributors (96 new)!"),
+        ("vLLM releases version 0.11", "Added a doc on defining custom derivative rules with the experimental custom_vjp API."),
+        ("vLLM releases version 2.0", "Ollama now runs models on MLX on Apple Silicon by default")]
 
 
 def test_the_labs_own_model_lists_name_each_model_once():

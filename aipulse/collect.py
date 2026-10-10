@@ -45,7 +45,8 @@ def fetch_entries(src: dict, fetcher=feeds.fetch) -> list[dict]:
     for attempt in range(EMPTY_RETRIES if src.get("expect_entries") else 1):
         if attempt:
             time.sleep(EMPTY_WAIT * attempt)
-        entries = parse(fetcher(src["url"]), **({"lab": src["lab"]} if src.get("lab") else {}))
+        entries = parse(fetcher(src["url"]), **({"lab": src["lab"]} if src.get("lab") else {}),
+                        **({"fetcher": fetcher} if src.get("format") in feeds.FETCHING else {}))
         if entries or not src.get("expect_entries"):
             return entries
     raise EmptyFeed(f"no entries after {EMPTY_RETRIES} tries")
@@ -424,6 +425,11 @@ def status_report(conn) -> str:
     lines = ["### AI Pulse",
              f"- **Stories:** {total:,} in total, {week:,} from the last 7 days",
              f"- **Failing sources:** {', '.join(failing) if failing else 'none'}"]
+    from . import glossary
+    words = glossary.candidates(store.cards(conn, days=glossary.CANDIDATE_DAYS, limit=10**6)[0], top=15)
+    if words:  # new words in the news for the glossary, to write up by hand
+        lines.append("- **Glossary candidates** (outlets, stories): "
+                     + ", ".join(f"{w['word']} ({w['outlets']}, {w['stories']})" for w in words))
     return "\n".join(lines) + "\n"
 
 

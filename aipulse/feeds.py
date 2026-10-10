@@ -362,7 +362,7 @@ def _hf_family(name: str) -> str:
     return "-".join(t for t in re.split(r"[-_ ]", name) if t and not _HF_VARIANT.match(t)) or name
 
 
-def parse_hf_models(json_bytes: bytes, lab: str = "") -> list[dict]:
+def parse_hf_models(json_bytes: bytes, lab: str = "", min_likes: int = HF_MIN_LIKES) -> list[dict]:
     """Hugging Face API: a lab's model families that people took up, as "<lab> publishes <model> on Hugging Face"."""
     groups: list[list[dict]] = []
     open_groups: dict[str, list[dict]] = {}
@@ -379,7 +379,7 @@ def parse_hf_models(json_bytes: bytes, lab: str = "") -> list[dict]:
     entries = []
     for group in groups:
         top = max(group, key=lambda m: m.get("likes", 0))
-        if top.get("likes", 0) < HF_MIN_LIKES:
+        if top.get("likes", 0) < min_likes:
             continue
         first, name = group[0], top["id"].split("/", 1)[1]
         if len(group) > 1 and re.search(r"\d", _hf_family(name)):  # "Llama-3.1"; but not a bare "sarvam"
@@ -391,6 +391,108 @@ def parse_hf_models(json_bytes: bytes, lab: str = "") -> list[dict]:
                         "summary": f"{(task + ' model').capitalize() if task else 'Model'} weights published on Hugging Face{versions}.",
                         "published": _hf_released(first), "authors": []})
     return entries
+
+
+# Hugging Face's trending models (huggingface.co/api/models?sort=trendingScore): new open models from the labs and
+# companies we don't follow by name (hf_models has 47). Only a verified organisation's (Hugging Face's own check of
+# companies and labs: a person's upload never counts), created in the last HF_NEW_DAYS days, that HF_TRENDING_LIKES+
+# people liked; never a copy: quantised, adapter or merged versions of another model (its tags say so), or names
+# copies use (GGUF, "uncensored"...). A company's own fine-tune of another lab's model counts, "built on" that model.
+HF_TRENDING_LIKES = 200
+HF_NEW_DAYS = 60
+HF_ORG_API = "https://huggingface.co/api/organizations/{}/overview"
+_HF_REMIX = re.compile(r"uncensored|abliterated|heretic|nsfw|lora|merged?(?:$|[-_])|roleplay", re.I)
+_HF_COPY_OF = ("base_model:quantized:", "base_model:adapter:", "base_model:merge:")
+_hf_orgs: dict[str, dict | None] = {}  # an organisation's overview, looked up once per run
+
+
+def _hf_org(name: str, fetcher) -> dict | None:
+    """A Hugging Face organisation's overview ({"fullname", "isVerified"...}); None for a person's account."""
+    if name not in _hf_orgs:
+        try:
+            _hf_orgs[name] = json.loads(fetcher(HF_ORG_API.format(urllib.parse.quote(name))))
+        except urllib.error.HTTPError as err:
+            if err.code != 404:
+                raise
+            _hf_orgs[name] = None
+    return _hf_orgs[name]
+
+
+def parse_hf_trending(json_bytes: bytes, fetcher=None, now: datetime | None = None) -> list[dict]:
+    """Hugging Face's trending models: new releases from verified organisations we don't follow by name, as
+    "<organisation> publishes <model> on Hugging Face"."""
+    from .sources import SOURCES
+    watched = {urllib.parse.parse_qs(urlsplit(s["url"]).query)["author"][0].lower()
+               for s in SOURCES if s.get("format") == "hf_models"}
+    now = now or datetime.now(timezone.utc)
+    by_author: dict[str, list[dict]] = {}
+    for m in json.loads(json_bytes):
+        if "/" not in m.get("id", "") or not m.get("createdAt"):
+            continue
+        author, name = m["id"].split("/", 1)
+        if (author.lower() in watched or m.get("likes", 0) < HF_TRENDING_LIKES
+                or (now - parse_date(m["createdAt"])).days > HF_NEW_DAYS or _HF_COPY.search(name) or _HF_REMIX.search(name)
+                or any(t.startswith(_HF_COPY_OF) for t in m.get("tags") or [])):
+            continue
+        by_author.setdefault(author, []).append(m)
+    entries = []
+    for author, models in by_author.items():
+        org = _hf_org(author, fetcher or fetch)
+        if not org or not org.get("isVerified"):
+            continue
+        lab = re.sub(r",?\s+(?:Inc|Ltd|LLC|GmbH|Corp|Co)\.?$", "", (org.get("fullname") or author).strip())
+        for e in parse_hf_models(json.dumps(models).encode(), lab=lab, min_likes=HF_TRENDING_LIKES):
+            model = next(m for m in models if "https://huggingface.co/" + m["id"] == e["url"])
+            base = next((t.split(":", 2)[2] for t in model.get("tags") or [] if t.startswith("base_model:finetune:")), "")
+            if base and base.split("/")[0].lower() != author.lower():
+                e["summary"] = e["summary"].rstrip(".") + f", built on {base.split('/')[-1]}."
+            entries.append(e)
+    return entries
+
+
+# Open-source AI projects' releases (api.github.com/repos/<owner>/<repo>/releases): the engines, libraries and apps
+# people run models with (vLLM, Ollama, Transformers...). Only major and minor versions (v1.0, 0.12.0, jax-v0.11.0),
+# never patches, release candidates, betas, pre-releases or drafts, as "<project> releases version 0.12"; the summary
+# is the release notes' first sentence.
+_RELEASE_TAG = re.compile(r"^(?:[A-Za-z]+-)?v?(\d+)\.(\d+)(?:\.0)?$")
+
+
+def _notes_lead(body: str) -> str:
+    """The first sentence of a release's notes (Markdown): headings, images, lists of links and thanks skipped."""
+    lines: list[str] = []
+    for line in (body or "").splitlines():  # a line wrapped in the notes joins the one it continues
+        if (lines and lines[-1].strip() and line.strip()
+                and not re.match(r"\s*(?:[-*+#|>]|\d+\.)", line) and not lines[-1].lstrip().startswith(("#", "|"))):
+            lines[-1] += " " + line.strip()
+        else:
+            lines.append(line)
+    for line in lines:
+        line = re.sub(r"!\[[^\]]*\]\([^)]*\)|<[^>]+>", "", line).strip()
+        line = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line)  # [text](link) -> text
+        line = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", line).replace("**", "").replace("`", "").strip()
+        if (len(line) >= 40 and not line.startswith(("#", "|", ">")) and not re.match(r"(?i)(?:full changelog|"
+                r"what's changed|new contributors|thanks|@)", line) and "http" not in line):
+            return clean_text(line, 300)
+    return ""
+
+
+def parse_github_releases(json_bytes: bytes, lab: str = "") -> list[dict]:
+    """GitHub API: an open-source project's major and minor releases, as "<project> releases version 0.12"."""
+    entries = []
+    for r in json.loads(json_bytes):
+        m = _RELEASE_TAG.match((r.get("tag_name") or "").strip())
+        if not m or r.get("draft") or r.get("prerelease") or not r.get("published_at"):
+            continue
+        version = f"{m[1]}.{m[2]}"
+        lead = _notes_lead(r.get("body") or "")
+        entries.append({"title": f"{lab} releases version {version}", "url": r["html_url"],
+                        "summary": lead or f"Version {version} of {lab}, the open-source project, is out on GitHub.",
+                        "published": parse_date(r["published_at"]), "authors": []})
+    return entries
+
+
+# Parsers that look more up as they go (an organisation's details), given the run's fetcher
+FETCHING = {"hf_trending"}
 
 
 _HF_MONTH_TAG = re.compile(r"-(2[3-9])(0[1-9]|1[0-2])$")  # Mistral-Small-4-119B-2603: released March 2026
@@ -675,5 +777,6 @@ def page_meta(page_bytes: bytes) -> dict:
 
 PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk,
-           "github_repos": parse_github_repos, "hf_models": parse_hf_models,
+           "github_repos": parse_github_repos, "hf_models": parse_hf_models, "hf_trending": parse_hf_trending,
+           "github_releases": parse_github_releases,
            "anthropic_models": parse_anthropic_models, "openai_models": parse_openai_models}
