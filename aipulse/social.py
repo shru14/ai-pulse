@@ -16,7 +16,7 @@ from . import classify, feeds
 
 API = "https://hacker-news.firebaseio.com/v0/"
 SCAN = 200       # how many of HN's top stories to look at
-KEEP = 8         # threads shown
+KEEP = 30        # threads kept: three on the front page, all on /discussing/
 MAX_AGE_H = 48   # only threads from the last two days
 KEY = "social-hn"
 

@@ -512,7 +512,7 @@ header.top{gap:10px}
 .more button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .empty{margin-top:40px;color:var(--muted);text-align:center}
 /* The footer: the header's full column on every page, three columns that stack on a phone */
-.site-foot{display:grid;grid-template-columns:1.6fr 1fr;gap:20px 40px;margin-top:48px;padding:22px 0 30px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--muted)}
+.site-foot{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:20px 40px;margin-top:48px;padding:22px 0 30px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--muted)}
 .site-foot h5{margin:0 0 8px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
 .site-foot p{margin:0;max-width:48ch}
 .site-foot ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px}
@@ -676,6 +676,7 @@ header.top.home{height:auto;padding-top:10px}
 .mag-sec .rule{margin:8px 0 14px}
 .mag-sec .mag-list{margin-top:0;gap:14px}
 .mag-sec .mitem{grid-template-columns:92px 1fr;gap:12px;align-items:start}
+.mag-sec .mitem>*{min-width:0}
 .mag-sec .mitem h4{font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .mag-sec .go{margin-top:auto;padding-top:16px;align-self:flex-start}  /* "All Releases →" level along the row */
 @media (min-width:761px){.mag-sec .mitem h4{min-height:3.9em}}  /* each headline a 3-line slot: rows level across the cards */
@@ -687,6 +688,18 @@ header.top.home{height:auto;padding-top:10px}
 .social-t a:hover{text-decoration:underline}
 .social-t td:last-child a{display:inline-flex;align-items:center;gap:3px;font:500 12px var(--mono);color:var(--muted)}
 .social-t .ci svg{width:13px;height:13px;display:block}
+.hn-more{margin-top:auto;padding-top:10px;align-self:flex-start;font:600 14px var(--body);color:var(--ink);text-decoration:underline;text-decoration-color:#E69F00;text-decoration-thickness:3px;text-underline-offset:4px}
+.disc-t{width:100%;border-collapse:collapse;font-size:15px}
+.disc-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
+.disc-t td{border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 14px 10px 0;vertical-align:top}
+.disc-t th:not(:first-child),.disc-t td:not(:first-child){text-align:right;white-space:nowrap;width:1%;padding-right:0;padding-left:14px}
+.disc-t td:first-child>a{color:var(--ink);font-weight:600;text-decoration:none}
+.disc-t td:first-child>a:hover{text-decoration:underline}
+.disc-t small{display:block;margin-top:3px;font:500 12px var(--mono);color:var(--muted)}
+.disc-t small a{color:var(--muted)}
+.disc-t td:nth-child(2) a{display:inline-flex;align-items:center;gap:3px;font:500 13px var(--mono);color:var(--muted)}
+.disc-t td:nth-child(3){font:500 13px var(--mono);color:var(--muted)}
+.disc-t .ci svg{width:13px;height:13px;display:block}
 /* the week's three tiles, trimmed: no figures, "also covered by" or tags; shorter pictures */
 .mag-row .tile,.mag-row .mag-cover{padding:16px!important;gap:10px}
 .mag-cover .also,.mag-cover .tags,.mag-cover .sum,.gl-viz,.meme-tile .meme-more,.meme-tile .meme-next{display:none!important}
@@ -696,7 +709,6 @@ header.top.home{height:auto;padding-top:10px}
 .gl-card{margin-top:10px;padding:10px 12px 12px!important;box-shadow:5px 5px 0 #000!important}
 .mag-row .gl-tile-go{min-width:0!important;padding:9px 18px!important;font-size:14px!important}
 .meme-tile #meme img{max-height:170px;object-fit:contain;width:100%}
-.nav-about{margin-left:auto}
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
 .about-lede{font:400 20px/1.35 var(--head);margin:0}
@@ -714,8 +726,24 @@ header.top.home{height:auto;padding-top:10px}
   .tcard{display:grid;grid-template-columns:120px 1fr}
   .tcard .timg{aspect-ratio:auto;min-height:100%;border-bottom:0!important;border-right:3px solid var(--ink)!important}
   .tcard .tb{min-width:0}
-  header.top .secnav a.nav-about{margin-left:0}
   .tcard .timg .mchip{display:none}}
+/* Phones: a short masthead and email strip, the week's three tiles side by side to swipe */
+@media (max-width:560px){
+  .lede strong{font-size:19px}
+  header.top .secnav a{margin-right:2px;padding-right:7px;font-size:13px}
+  .sub-strip{padding:16px!important;gap:12px}
+  .sub-strip h2{font-size:21px}
+  .sub-strip .sub-inside,.sub-strip .sub-steps,.sub-strip .sub-hint{display:none}
+  .sub-strip .sub-tile-go{width:100%}
+  .band-head h2{font-size:22px}
+  .tcard{grid-template-columns:104px 1fr}
+  .tcard h3{font-size:15px}
+  .mag-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:0 16px 10px;scrollbar-width:none}
+  .mag-row::-webkit-scrollbar{display:none}
+  .mag-row>*{flex:0 0 84%;min-width:0;scroll-snap-align:start}
+  .mag-row>[hidden]{display:none}
+  .disc-t th:nth-child(3),.disc-t td:nth-child(3){display:none}
+}
 @media (max-width:400px){  /* the smallest phones: name and all three buttons still on one row */
   header.top{gap:6px}
   header.top .brand{margin-right:auto}
@@ -735,6 +763,7 @@ header.top.home{height:auto;padding-top:10px}
       <div class="status home-status" id="home-status">Loading feed…</div></div>
     <!-- Each stream is its own page (/releases/, /industry/…); the brand goes back to the front page. -->
     <nav class="secnav" id="secnav" aria-label="Streams">
+      <a href="/about/" data-go="about" class="nav-about">About</a>
       <a href="/all/" data-go="all" class="k-all">All stories</a>
       <a href="/releases/" data-go="tool" class="k-tool">Releases</a>
       <a href="/industry/" data-go="news" class="k-news">Industry</a>
@@ -742,7 +771,6 @@ header.top.home{height:auto;padding-top:10px}
       <a href="/regulation/" data-go="regulation" class="k-regulation">Regulation tracker</a>
       <a href="/policy/" data-go="policy" class="k-policy">Policy</a>
       <a href="/infra/" data-go="infra" class="k-infra">Infra &amp; climate</a>
-      <a href="/about/" data-go="about" class="nav-about">About</a>
     </nav>
     <button class="subscribe-btn cta" id="subscribe-open" type="button" aria-haspopup="dialog" title="Get the daily digest in your inbox">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
@@ -858,7 +886,8 @@ header.top.home{height:auto;padding-top:10px}
           <div class="today-cards" id="today-grid"><p class="tile-note">Loading today's stories…</p></div>
           <!-- People are discussing: the most-discussed AI threads on Hacker News (aipulse/social.py) -->
           <aside class="hn-box" id="social" hidden><div class="hn-head"><b>People are discussing</b><span>on Hacker News</span></div>
-            <table class="social-t"><tbody id="social-rows"></tbody></table></aside>
+            <table class="social-t"><tbody id="social-rows"></tbody></table>
+            <a class="hn-more" href="/discussing/" data-go="discussing">Dig deeper →</a></aside>
         </div></section>
       <div class="mag-row">
         <article class="mag-cover" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
@@ -886,6 +915,12 @@ header.top.home{height:auto;padding-top:10px}
     <div class="band-head"><h2>About AI Pulse</h2><span class="kicker">Free · non-commercial · no ads, no tracking</span></div>
     <p class="about-lede">What is happening in AI worldwide, from 200+ public sources.</p>
     <p class="about-text">Headlines and the publishers’ own summaries, each linked to the original. No AI writes them, and only sites that allow automated reading are used.</p>
+  </section>
+
+  <!-- People are discussing, in full: every AI thread kept from Hacker News (the front page shows three) -->
+  <section class="about-page" id="discussing-page" hidden>
+    <div class="band-head"><h2>People are discussing</h2><span class="kicker">AI threads on Hacker News, last 2 days</span></div>
+    <table class="disc-t"><thead><tr><th>Thread</th><th>Comments</th><th>Points</th></tr></thead><tbody id="disc-rows"></tbody></table>
   </section>
 
   <!-- A stream's own page (or All stories): its name, then the filters and the stories, as before. -->
@@ -929,8 +964,9 @@ header.top.home{height:auto;padding-top:10px}
     <div><h5>Daily RSS</h5><ul><li><a href="feeds/releases.xml">Releases</a></li><li><a href="feeds/news.xml">Industry</a></li><li><a href="feeds/research.xml">Research</a></li>
       <li><a href="feeds/regulation.xml">Regulation tracker</a></li><li><a href="feeds/policy.xml">Policy</a></li><li><a href="feeds/infra.xml">Infra &amp; climate</a></li>
       <li><a href="feeds/all.opml">All feeds (OPML)</a></li></ul></div>
-    <div><h5>Sources and contact</h5><ul class="col"><li><a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a></li>
-      <li><a href="glossary/">AI glossary (A–Z)</a></li><li><a href="photos/credits.html">Photo credits</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></li></ul></div>
+    <div><h5>Sources</h5><ul class="col"><li><a href="https://github.com/shru14/ai-pulse#credits-and-licences">Sources and licences</a></li>
+      <li><a href="glossary/">AI glossary (A–Z)</a></li><li><a href="photos/credits.html">Photo credits</a></li></ul></div>
+    <div><h5>Contact</h5><ul class="col"><li><a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></li></ul></div>
   </footer>
 </div>
 
@@ -968,7 +1004,7 @@ const SECTION_DESC = {
 // A section being designed (docs: AI Pulse Discover): its page and tile are in place, its stories come later.
 const SOON = new Set();
 // Each stream's address (/policy/…): static.build writes a page there for search engines, with its own title.
-const PATH = {all: "all", tool: "releases", news: "industry", research: "research", regulation: "regulation", policy: "policy", infra: "infra", about: "about"};
+const PATH = {all: "all", tool: "releases", news: "industry", research: "research", regulation: "regulation", policy: "policy", infra: "infra", about: "about", discussing: "discussing"};
 const PAGE_TITLE = {all: "All AI stories, newest first", tool: "AI model and product releases",
   news: "AI industry news: companies, deals and markets", research: "New AI research papers",
   regulation: "AI regulation tracker: bills, laws and standards by country",
@@ -1005,12 +1041,14 @@ function heroArt(cat){
     return `<svg viewBox="0 0 256 256" fill="currentColor" style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;rotate:${tilt}deg"><path d="${ART_PATH[n]}"/></svg>`; }).join("");
 }
 function showPage(){
-  const home = state.cat === "home", about = state.cat === "about";
-  $("front").hidden = !home; $("section").hidden = home || about; $("about-page").hidden = !about;
+  const home = state.cat === "home", about = state.cat === "about", disc = state.cat === "discussing";
+  $("front").hidden = !home; $("section").hidden = home || about || disc;
+  $("about-page").hidden = !about; $("discussing-page").hidden = !disc;
   $("subscribe-open").hidden = $("glossary-open").hidden = home;
   // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
-  if(about){ document.title = "About · AI Pulse"; if(state.allTime === undefined) loadHomeCounts(); return; }
+  if(about || disc){ document.title = (about ? "About" : "People are discussing") + " · AI Pulse";
+    if(state.allTime === undefined) loadHomeCounts(); return; }
   if(home){ document.title = "AI Pulse · Daily AI news, laws and research from around the world"; return loadHome(); }
   if(state.allTime === undefined) loadHomeCounts();  // the masthead's all-time total
   const hero = $("sec-hero");
@@ -1772,6 +1810,19 @@ async function loadSocial(){
       return tr;
     }));
     $("social").hidden = false;
+    const ago = s => { const h = Math.max(0, Math.round((Date.now() / 1000 - s) / 3600)); return h < 1 ? "just now" : h + " h ago"; };
+    $("disc-rows").replaceChildren(...d.threads.map(t => {
+      const tr = el("tr"), td = el("td"), a = el("a", null, t.title), hn = el("a", null, t.comments.toLocaleString());
+      a.href = t.hn; a.target = "_blank"; a.rel = "noopener";
+      hn.href = t.hn; hn.target = "_blank"; hn.rel = "noopener"; hn.title = "comments on Hacker News"; hn.prepend(commentIcon());
+      const meta = el("small"), src = el("a", null, domainOf(t.url));
+      src.href = t.url; src.target = "_blank"; src.rel = "noopener";
+      meta.append(src, " · " + ago(t.time));
+      td.append(a, meta);
+      const tdc = el("td"); tdc.append(hn);
+      tr.append(td, tdc, el("td", null, t.points.toLocaleString()));
+      return tr;
+    }));
   }catch(e){}
 }
 // The live ticker: the newest stories by when they arrived (the last two days), twice over so the loop is seamless.

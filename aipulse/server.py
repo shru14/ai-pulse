@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 from . import brands, glossary, jurisdictions, photos, preferences, rss, store, subscribers
 from .sources import SOURCES
 
-STREAM_PATHS = {"all", "releases", "industry", "research", "regulation", "policy", "infra", "about"}
+STREAM_PATHS = {"all", "releases", "industry", "research", "regulation", "policy", "infra", "about", "discussing"}
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
 
 PER_PAGE = 40
