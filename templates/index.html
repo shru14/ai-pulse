@@ -652,16 +652,24 @@ header.top.home{height:auto;padding-top:10px}
 .band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;border-bottom:4px solid var(--ink);padding-bottom:6px;margin-bottom:16px}
 .band-head h2{font:400 26px/1.1 var(--head);margin:0}
 .today-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px}
-.today-grid .mag-list{margin-top:0}
+.today-grid .mag-list{margin-top:0;align-content:space-between}  /* first row level with the picture's top, last with its foot */
+.kicker{white-space:normal}
+.mitem .kicker{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Streams: compact cards, three to a row, three headlines each */
 .mag-sections{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 28px}
-.mag-sec .mag-list{margin-top:4px;gap:14px}
-.mag-sec .mitem{grid-template-columns:92px 1fr;gap:12px}
-.mag-sec .mitem h4{font-size:15px}
+/* every card's name on one line with its count under it, so the coloured rules and first rows line up across a row */
+.mag-sections .stream-head{flex-direction:column;align-items:flex-start;gap:4px}
+.mag-sections .stream-head h2{font-size:22px;white-space:nowrap}
+.mag-sec .rule{margin:8px 0 14px}
+.mag-sec .mag-list{margin-top:0;gap:14px}
+.mag-sec .mitem{grid-template-columns:92px 1fr;gap:12px;align-items:start}
+.mag-sec .mitem h4{font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mag-sec .go{margin-top:auto;padding-top:16px;align-self:flex-start}  /* "All Releases →" level along the row */
+@media (min-width:761px){.mag-sec .mitem h4{min-height:3.9em}}  /* each headline a 3-line slot: rows level across the cards */
 .social-t{width:100%;border-collapse:collapse;font-size:15px}
 .social-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
 .social-t td{border-top:1px solid var(--line);padding:9px 12px 9px 0;vertical-align:top}
-.social-t td:last-child{white-space:nowrap;padding-right:0}
+.social-t td:last-child,.social-t th:last-child{white-space:nowrap;padding-right:0;text-align:right}
 .social-t a{color:var(--ink);text-decoration:none;font-weight:600}
 .social-t a:hover{text-decoration:underline}
 .social-t small{display:block;color:var(--muted);font:500 11.5px var(--mono)}
@@ -1674,10 +1682,15 @@ function magItem(it, summary){
   th.href = it.url; th.target = "_blank"; th.rel = "noopener"; th.tabIndex = -1; th.setAttribute("aria-hidden", "true");
   th.append(storyArt(it));
   const d = el("div"), h4 = el("h4"); h4.append(storyLink(it));
-  d.append(h4, kicker(it));
+  d.append(h4, shortKicker(it));
   if(summary && it.summary) d.append(el("p", null, it.summary));
   row.append(th, d);
   return row;
+}
+// A row's line under its headline, short enough for one line: places, "9 Oct", the outlet.
+function shortKicker(it){
+  const places = (it.jurisdictions || []).filter(c => !c.startsWith("US-")).slice(0, 2);
+  return el("span","kicker", [...places, fmtShort(it.date), it.source || domainOf(it.url)].join(" · "));
 }
 // Today in AI: the last two days' most reported stories (not the story of the week again): the first over its
 // picture, three more beside it.
@@ -1689,7 +1702,7 @@ function renderToday(top){
   if(!list.length){ box.append(el("p","tile-note","Nothing yet today.")); return; }
   const first = list[0], lead = el("a","lead k-" + first.category);
   lead.href = first.url; lead.target = "_blank"; lead.rel = "noopener";
-  const txt = el("div","txt"); txt.append(kicker(first), el("h3", null, first.title));
+  const txt = el("div","txt"); txt.append(shortKicker(first), el("h3", null, first.title));
   lead.append(storyArt(first), el("div","shade"), el("span","mchip", CAT_LABEL[first.category]), txt);
   const more = el("div","mag-list");
   list.slice(1).forEach(it => more.append(magItem(it, true)));
