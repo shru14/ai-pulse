@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 from . import brands, glossary, jurisdictions, photos, preferences, rss, store, subscribers
 from .sources import SOURCES
 
-STREAM_PATHS = {"all", "releases", "industry", "research", "regulation", "policy", "infra"}
+STREAM_PATHS = {"all", "releases", "industry", "research", "regulation", "policy", "infra", "about"}
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "index.html"
 
 PER_PAGE = 40
@@ -78,9 +78,6 @@ def make_handler(db_path: str):
                     from . import memegen
                     memegen.prepare(conn, recent)  # only what the "memes" command already made (no Gemini call here)
                     self._send(json.dumps(memes.payload(recent)).encode(), "application/json")
-                elif url.path in ("/about", "/about/"):
-                    from .static import about_page
-                    self._send(about_page().encode(), "text/html; charset=utf-8")
                 elif url.path == "/social.json":
                     from . import social
                     self._send(json.dumps(social.payload(conn)).encode(), "application/json")

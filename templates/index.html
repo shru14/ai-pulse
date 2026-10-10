@@ -699,6 +699,19 @@ header.top.home{height:auto;padding-top:10px}
 .mag-row .gl-tile-go{min-width:0!important;padding:9px 18px!important;font-size:14px!important}
 .meme-tile #meme img{max-height:170px;object-fit:contain;width:100%}
 .nav-about{margin-left:auto}
+.about-page{margin-top:20px;display:grid;gap:18px}
+.about-page[hidden]{display:none}
+.about-lede{font:400 20px/1.35 var(--head);margin:0}
+.about-t{width:100%;border-collapse:collapse;font-size:15px}
+.about-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
+.about-t td{border-top:1px solid var(--line);padding:9px 14px 9px 0;vertical-align:top}
+.about-t td:first-child{white-space:nowrap}
+.about-t td:first-child a{color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:var(--cat-f);text-decoration-thickness:3px;text-underline-offset:4px}
+.about-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 28px}
+.about-cols h3{font:400 18px var(--head);margin:0 0 6px;padding-top:10px;border-top:4px solid var(--ink)}
+.about-cols p{margin:0;line-height:1.55;color:var(--muted)}
+.about-cols a,.about-page p a{color:var(--accent)}
+@media (max-width:760px){.about-cols{grid-template-columns:1fr}.about-t td:first-child{white-space:normal}}
 .mag-row>.tile{display:flex;flex-direction:column}
 .mag-row .gl-tile-links,.mag-row .meme-go{margin-top:auto}  /* the three buttons at the tiles' feet */
 @media (max-width:1100px){.mag-sections{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -708,7 +721,7 @@ header.top.home{height:auto;padding-top:10px}
   .tcard{display:grid;grid-template-columns:120px 1fr}
   .tcard .timg{aspect-ratio:auto;min-height:100%;border-bottom:0!important;border-right:3px solid var(--ink)!important}
   .tcard .tb{min-width:0}
-  .nav-about{display:none}  /* phones: About is in the footer, so the menu keeps two rows */
+  header.top .secnav a.nav-about{margin-left:0}
   .tcard .timg .mchip{display:none}}
 @media (max-width:400px){  /* the smallest phones: name and all three buttons still on one row */
   header.top{gap:6px}
@@ -736,7 +749,7 @@ header.top.home{height:auto;padding-top:10px}
       <a href="/regulation/" data-go="regulation" class="k-regulation">Regulation tracker</a>
       <a href="/policy/" data-go="policy" class="k-policy">Policy</a>
       <a href="/infra/" data-go="infra" class="k-infra">Infra &amp; climate</a>
-      <a href="/about/" class="nav-about">About</a>
+      <a href="/about/" data-go="about" class="nav-about">About</a>
     </nav>
     <button class="subscribe-btn cta" id="subscribe-open" type="button" aria-haspopup="dialog" title="Get the daily digest in your inbox">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
@@ -875,6 +888,26 @@ header.top.home{height:auto;padding-top:10px}
     </div>
   </section>
 
+  <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
+  <section class="about-page" id="about-page" hidden>
+    <div class="band-head"><h2>About AI Pulse</h2><span class="kicker">Free · non-commercial · no ads, no tracking</span></div>
+    <p class="about-lede">A briefing on what is happening in AI worldwide, in six streams.</p>
+    <table class="about-t"><thead><tr><th>Stream</th><th>What is in it</th></tr></thead><tbody>
+      <tr><td><a href="/releases/" data-go="tool" class="k-tool">Releases</a></td><td>New models, products and open-source launches, from the labs’ own blogs, Hugging Face and GitHub</td></tr>
+      <tr><td><a href="/industry/" data-go="news" class="k-news">Industry</a></td><td>Company news, deals, market moves and AI incidents, from newsrooms worldwide</td></tr>
+      <tr><td><a href="/research/" data-go="research" class="k-research">Research</a></td><td>New papers, from arXiv and Hugging Face Daily Papers</td></tr>
+      <tr><td><a href="/regulation/" data-go="regulation" class="k-regulation">Regulation tracker</a></td><td>AI bills, laws, bodies and standards, from official records, by country</td></tr>
+      <tr><td><a href="/policy/" data-go="policy" class="k-policy">Policy</a></td><td>What governments, regulators, courts and think tanks do about AI</td></tr>
+      <tr><td><a href="/infra/" data-go="infra" class="k-infra">Infra &amp; climate</a></td><td>Data centres, chips, energy and water, and AI’s footprint</td></tr>
+    </tbody></table>
+    <div class="about-cols">
+      <div><h3>How it works</h3><p>AI Pulse reads more than 200 public sources every 6 hours, and the labs’ blogs every 30 minutes. It keeps only AI stories, joins the same story from several outlets into one card, and sorts each into its stream by written rules. No AI model writes or summarises the stories: summaries are the publishers’ own descriptions, and every card links to the original.</p></div>
+      <div><h3>Sources</h3><p>Only sources whose robots.txt and terms allow automated reading are used, each credited on its stories. A source that blocks us is removed. The full list, with each one’s terms, is in the <a href="https://github.com/shru14/ai-pulse#sources">project’s README</a>; the code is open on GitHub.</p></div>
+      <div><h3>The email</h3><p>A daily email at about 05:15 UTC (or weekly on Sundays) with the stories that mattered most, in the streams you pick. Free; one click to unsubscribe. <a href="privacy.html">Privacy</a></p></div>
+      <div><h3>Contact</h3><p>Mistakes, ideas or a source to suggest: <a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></p></div>
+    </div>
+  </section>
+
   <!-- A stream's own page (or All stories): its name, then the filters and the stories, as before. -->
   <section class="section" id="section" hidden>
   <div class="sec-hero" id="sec-hero">
@@ -956,7 +989,7 @@ const SECTION_DESC = {
 // A section being designed (docs: AI Pulse Discover): its page and tile are in place, its stories come later.
 const SOON = new Set();
 // Each stream's address (/policy/…): static.build writes a page there for search engines, with its own title.
-const PATH = {all: "all", tool: "releases", news: "industry", research: "research", regulation: "regulation", policy: "policy", infra: "infra"};
+const PATH = {all: "all", tool: "releases", news: "industry", research: "research", regulation: "regulation", policy: "policy", infra: "infra", about: "about"};
 const PAGE_TITLE = {all: "All AI stories, newest first", tool: "AI model and product releases",
   news: "AI industry news: companies, deals and markets", research: "New AI research papers",
   regulation: "AI regulation tracker: bills, laws and standards by country",
@@ -993,11 +1026,12 @@ function heroArt(cat){
     return `<svg viewBox="0 0 256 256" fill="currentColor" style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;rotate:${tilt}deg"><path d="${ART_PATH[n]}"/></svg>`; }).join("");
 }
 function showPage(){
-  const home = state.cat === "home";
-  $("front").hidden = !home; $("section").hidden = home;
+  const home = state.cat === "home", about = state.cat === "about";
+  $("front").hidden = !home; $("section").hidden = home || about; $("about-page").hidden = !about;
   $("subscribe-open").hidden = $("glossary-open").hidden = home;
   // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
+  if(about){ document.title = "About · AI Pulse"; if(state.allTime === undefined) loadHomeCounts(); return; }
   if(home){ document.title = "AI Pulse · Daily AI news, laws and research from around the world"; return loadHome(); }
   if(state.allTime === undefined) loadHomeCounts();  // the masthead's all-time total
   const hero = $("sec-hero");
