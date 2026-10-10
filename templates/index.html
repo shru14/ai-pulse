@@ -732,13 +732,17 @@ header.top.home{height:auto;padding-top:10px}
 .meme-tile #meme img{max-height:170px;object-fit:contain;width:100%}
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
-.about-lede{font:400 20px/1.35 var(--head);margin:0}
-.about-text{margin:0;font-size:16px;line-height:1.55;color:var(--muted);max-width:720px}
-/* About: the text, and the site's own link-preview picture (og.png) in the space to its right */
-.about-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}
-.about-copy{display:grid;gap:18px}
+/* About: two sections side by side (stacked on phones): the picture, then the intro and a ticked point each. The
+   ticks are white on the palette's blue (#0072B2, Okabe-Ito: colour-blind safe), so they show in light and dark mode. */
+.about-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center;margin-top:12px}
 .about-art{width:100%;height:auto;display:block}
-@media (max-width:760px){.about-row{grid-template-columns:1fr}.about-art{max-width:440px}}
+.about-intro{margin:0;font:400 22px/1.35 var(--head)}
+.nav-about{--cat-f:#0072B2}  /* About's mark in the menu: the page's blue, not white */
+.about-ticks{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:12px}
+.about-ticks li{position:relative;padding-left:34px;font-size:15.5px;line-height:1.45;color:var(--muted)}
+.about-ticks li::before{content:"";position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;
+  background:#0072B2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/15px no-repeat}
+@media (max-width:760px){.about-split{grid-template-columns:1fr;gap:24px}}
 .about-t{width:100%;border-collapse:collapse;font-size:15px}
 .about-t td{border-top:1px solid var(--line);padding:9px 14px 9px 0;vertical-align:top}
 .about-t td:first-child{white-space:nowrap;font-weight:600;width:1%}
@@ -953,13 +957,20 @@ header.top.home{height:auto;padding-top:10px}
 
   <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
-    <div class="band-head"><h2>About</h2><span class="kicker">Free · non-commercial · no ads, no tracking</span></div>
-    <div class="about-row">
-      <div class="about-copy">
-        <p class="about-lede">What is happening in AI worldwide, from 200+ public sources.</p>
-        <p class="about-text">Headlines and the publishers’ own summaries, each linked to the original. No AI writes them, and only sites that allow automated reading are used.</p>
+    <!-- two sections: the picture, then what AI Pulse is, a ticked point each (stacked on phones) -->
+    <div class="about-split">
+      <div class="about-pic"><img class="about-art" src="og.png" alt="AI Pulse: Releases, Industry, Research, Regulation tracker, Policy, Infra &amp; climate" width="1200" height="630"></div>
+      <div class="about-detail">
+        <p class="about-intro">Stay informed on worldwide developments across artificial intelligence technology, regulation and infrastructure.</p>
+        <ul class="about-ticks">
+          <li>Free and non-commercial: no ads, no tracking</li>
+          <li>From 200+ public sources: AI labs, newsrooms, research, parliaments and regulators</li>
+          <li>Only sites that allow automated reading are used</li>
+          <li>Each publisher’s own headline and summary, linked to the original</li>
+          <li>No AI writes the stories</li>
+          <li>New stories from the labs every 30 minutes, everything else every 6 hours</li>
+        </ul>
       </div>
-      <img class="about-art" src="og.png" alt="AI Pulse: Releases, Industry, Research, Regulation tracker, Policy, Infra &amp; climate" width="1200" height="630">
     </div>
   </section>
 
