@@ -844,14 +844,6 @@ header.top.home{height:auto;padding-top:10px}
   <!-- Front page: the daily email strip, the week's biggest story, the word and meme of the week, then a tile per stream. -->
   <section class="home" id="front" hidden>
     <div class="mag">
-      <!-- Today in AI: the last two days' biggest stories, by how many outlets carry them -->
-      <section class="today" id="today"><div class="band-head"><h2>Today in AI</h2><span class="kicker">The most reported, last 2 days</span></div>
-        <div class="today-row">
-          <div class="today-cards" id="today-grid"><p class="tile-note">Loading today's stories…</p></div>
-          <!-- People are discussing: the most-discussed AI threads on Hacker News (aipulse/social.py) -->
-          <aside class="hn-box" id="social" hidden><div class="hn-head"><b>People are discussing</b><span>on Hacker News</span></div>
-            <table class="social-t"><tbody id="social-rows"></tbody></table></aside>
-        </div></section>
       <div class="tile sub-tile sub-strip">
         <div class="sub-head"><span class="label">Daily email · free</span><h2>Yesterday in AI, every morning</h2>
           <ul class="sub-inside" aria-label="In every email"><li>The 10 that mattered</li><li>The rest in brief</li>
@@ -867,6 +859,14 @@ header.top.home{height:auto;padding-top:10px}
           <small>One email a day · unsubscribe in one click</small>
           <a class="sub-yesterday" href="daily/sample.html" target="_blank" rel="noopener">See what the email looks like →</a></div>
       </div>
+      <!-- Today in AI: the last two days' biggest stories, by how many outlets carry them -->
+      <section class="today" id="today"><div class="band-head"><h2>Today in AI</h2><span class="kicker">The most reported, last 2 days</span></div>
+        <div class="today-row">
+          <div class="today-cards" id="today-grid"><p class="tile-note">Loading today's stories…</p></div>
+          <!-- People are discussing: the most-discussed AI threads on Hacker News (aipulse/social.py) -->
+          <aside class="hn-box" id="social" hidden><div class="hn-head"><b>People are discussing</b><span>on Hacker News</span></div>
+            <table class="social-t"><tbody id="social-rows"></tbody></table></aside>
+        </div></section>
       <div class="mag-row">
         <article class="mag-cover" id="hero"><p class="tile-note">Loading this week's stories…</p></article>
         <div class="tile gl-tile">
