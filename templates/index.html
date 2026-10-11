@@ -700,6 +700,7 @@ header.top.home{height:auto;padding-top:10px}
 .board-t td{border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 8px 8px 0;vertical-align:top}
 .board-t td:first-child,.board-t th:first-child{width:1%;white-space:nowrap;font:600 14px var(--mono)}
 .board-t td:nth-child(n+3),.board-t th:nth-child(n+3){width:1%;white-space:nowrap;text-align:right;font:500 13px var(--mono);color:var(--muted);padding-left:10px}
+.board-t th:nth-child(n+3){white-space:normal;min-width:7ch}
 .board-t td:last-child,.board-t th:last-child{padding-right:0}
 .board-t td:nth-child(2) a{color:var(--ink);font-weight:600;text-decoration:none}
 .board-t td:nth-child(2) a:hover{text-decoration:underline}
@@ -926,7 +927,7 @@ header.top.home{height:auto;padding-top:10px}
           <div class="today-main">
             <div class="today-cards" id="today-grid"><p class="tile-note">Loading today's stories…</p></div>
             <!-- the leaderboard: ranks 4 to 10, and any story that was in the top 3 earlier today -->
-            <table class="board-t" id="board" hidden><thead><tr><th>#</th><th>Story</th><th>Sources</th><th title="Places moved since the day began (00:00 UTC)">Today</th></tr></thead>
+            <table class="board-t" id="board" hidden><thead><tr><th>#</th><th>Story</th><th title="How many different outlets reported this story">Outlets reporting</th><th title="Places moved up or down since 00:00 UTC; new = not in the top 30 then">Rank change today</th></tr></thead>
               <tbody id="board-rows"></tbody></table>
             <a class="hn-more" href="/today/" data-go="today">See the full list →</a>
           </div>
@@ -977,7 +978,7 @@ header.top.home{height:auto;padding-top:10px}
   <!-- Today in AI, in full: every story of the last two days, by how many outlets carry it (the front page shows ten) -->
   <section class="about-page" id="today-page" hidden>
     <div class="band-head"><h2>Today in AI</h2><span class="kicker">Every story of the last 2 days, most reported first</span></div>
-    <table class="board-t"><thead><tr><th>#</th><th>Story</th><th>Sources</th><th title="Places moved since the day began (00:00 UTC)">Today</th></tr></thead>
+    <table class="board-t"><thead><tr><th>#</th><th>Story</th><th title="How many different outlets reported this story">Outlets reporting</th><th title="Places moved up or down since 00:00 UTC; new = not in the top 30 then">Rank change today</th></tr></thead>
       <tbody id="today-rows"></tbody></table>
   </section>
 
