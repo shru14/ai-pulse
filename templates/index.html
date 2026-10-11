@@ -2008,12 +2008,13 @@ function boardRows(rows){
   });
 }
 // Today in AI: the top 3 as picture cards, ranks 4 to 10 in a table under them, and any story that was in the top 3
-// earlier today and has fallen further, so a big story never drops out of sight the same day. The table lists only
-// stories carried by 2 or more outlets; as many outlets, the one with more buzz first (today.py).
+// earlier today and has fallen further, so a big story never drops out of sight the same day. Below #5 the table
+// lists only stories carried by 2 or more outlets; as many outlets, the one with more buzz first (today.py).
 function renderToday(top){
   const box = $("today-grid"), rows = todayBoard(top), list = rows.slice(0, 3);
   box.replaceChildren();
-  const rest = rows.slice(3).filter(r => outlets(r.it) >= 2 && (r.rank <= 10 || r.peak));  // only stories 2+ outlets carry
+  // #4 and #5 always; below them only stories 2+ outlets carry
+  const rest = rows.slice(3).filter(r => r.rank <= 5 || outlets(r.it) >= 2 && (r.rank <= 10 || r.peak));
   $("board-rows").replaceChildren(...boardRows(rest)); $("board").hidden = !rest.length;
   if(!list.length){ box.append(el("p","tile-note","Nothing yet today.")); return; }
   list.forEach(r => {
