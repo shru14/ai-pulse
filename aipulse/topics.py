@@ -3,7 +3,7 @@
 Each topic is a rule kept by hand: the tracked bills it follows (their stages are its official record) and the words
 a story must have (`words`, in its headline or summary) and must not (`exclude`). A card joins a topic when it matches
 the words; a tracked bill's own card joins only the topics that list it, so a US bill named "... AI Act" never lands in
-the EU AI Act's story. Research papers stay in Research. A topic with nothing new for QUIET_DAYS is Concluded.
+the EU AI Act's story. Research papers stay in Research. A topic with nothing new for QUIET_DAYS is tagged Concluded.
 
 The stories are the outlets' own headlines, so a topic's page loads them in the reader's browser from its events.json,
 as the industry pages do; the page itself holds only our own words.
@@ -12,11 +12,12 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import pages, rss
+from . import countries, pages, photos, rss
 
 QUIET_DAYS = 90  # a topic with no new event for this long is Concluded (kept, never deleted)
 STREAMS = ("news", "policy", "regulation", "infra", "tool")  # not research: papers aren't events
@@ -114,6 +115,28 @@ TOPICS = {
         words=r"\bAI Basic Act\b|\bKorea\w*\b.{0,40}\bAI (law|act)\b"),
 }
 
+# Each topic's picture: one of the site's credited Wikimedia Commons photos (photos.py), and the flags of the places
+# whose laws it follows (beside its tracked bills' own). The logos come from its stories (brands.py).
+LOOK = {
+    "eu-ai-act": ("parliament-1.jpg", ("EU",)),
+    "nvidia-chips-china": ("chips-5.jpg", ("US", "CN")),
+    "anthropic-pentagon": ("court-5.jpg", ("US",)),
+    "chatbots-teens": ("school-3.jpg", ()),
+    "copyright-court": ("court-1.jpg", ()),
+    "grok-deepfakes": ("software-2.jpg", ()),
+    "openai-restructuring": ("business-3.jpg", ()),
+    "musk-v-openai": ("court-7.jpg", ()),
+    "california-ai-laws": ("parliament-3.jpg", ("US",)),
+    "us-state-preemption": ("court-8.jpg", ("US",)),
+    "data-centre-power-bills": ("energy-7.jpg", ()),
+    "stargate": ("datacenter-5.jpg", ("US",)),
+    "apple-google-siri": ("business-6.jpg", ()),
+    "korea-ai-basic-act": ("court-3.jpg", ("KR",)),
+}
+SMALL = 25  # a topic with this many events or fewer shows each as a card; a bigger one only its milestones
+LOGOS = 3   # brand logos on a topic's picture: the ones its stories name most,
+LOGO_MIN = 3  # each named by this many of its stories at least
+
 _RULES = {slug: (re.compile(t["words"], re.I), re.compile(t["exclude"], re.I) if t.get("exclude") else None)
           for slug, t in TOPICS.items()}
 
@@ -130,9 +153,14 @@ def matches(slug: str, card: dict) -> bool:
     return bool(words.search(text)) and not (exclude and exclude.search(text))
 
 
+def _logo(card: dict) -> dict | None:
+    lg = card.get("logo")
+    return {k: lg[k] for k in ("name", "hex", "path")} if lg and lg.get("path") else None
+
+
 def events(slug: str, cards: list[dict]) -> list[dict]:
-    """The topic's events, oldest first: each matching story (with how many outlets carried it), and each stage of
-    its tracked bills as an official record."""
+    """The topic's events, oldest first: each matching story (with how many outlets carried it and the brand it
+    names), and each stage of its tracked bills as an official record (with its place's flag)."""
     out = []
     for c in cards:
         if not matches(slug, c):
@@ -141,52 +169,22 @@ def events(slug: str, cards: list[dict]) -> list[dict]:
             life = c["lifecycle"]
             name = c["title"].split(": ", 1)[-1]
             out += [{"date": s["date"], "title": f"{name}: {s['label']}", "url": life["url"],
-                     "source": life["source"], "outlets": 1, "official": True}
+                     "source": life["source"], "outlets": 1, "official": True,
+                     "flag": countries.flag(c["bill"].split("-")[0])}
                     for s in life["steps"] if s.get("date")]
             continue
         out.append({"date": c["date"], "title": c["title"].strip(), "url": c["url"], "source": c["source"],
                     "outlets": 1 + len({a["source"] for a in c.get("also") or []} - {c["source"]}),
-                    "official": False})
-    return sorted(out, key=lambda e: (e["date"], not e["official"]))
+                    "official": False, "logo": _logo(c)})
+    out.sort(key=lambda e: (e["date"], not e["official"]))
+    big = len(out) > SMALL
+    for i, e in enumerate(out):  # a milestone gets a card; the rest fold into "+N more" between them
+        e["milestone"] = not big or e["official"] or e["outlets"] > 1 or i in (0, len(out) - 1)
+    return out
 
 
 def path(slug: str) -> str:
     return f"topics/{slug}/"
-
-
-EVENTS_JS = r"""<script>
-(() => {
-  const ol = document.getElementById("topic-events");
-  const day = d => new Date(d.slice(0, 10) + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric", timeZone: "UTC"});
-  const month = d => new Date(d.slice(0, 7) + "-01T00:00:00Z").toLocaleDateString(undefined, {month: "long", year: "numeric", timeZone: "UTC"});
-  const note = text => { const li = document.createElement("li"); li.className = "meta"; li.textContent = text; ol.replaceChildren(li); };
-  fetch(ol.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(list => {
-    if(!list.length) return note("Nothing yet.");
-    ol.replaceChildren();
-    let last = "";
-    list.forEach(e => {
-      if(e.date.slice(0, 7) !== last) {
-        last = e.date.slice(0, 7);
-        const h = document.createElement("li"); h.className = "month"; h.textContent = month(e.date); ol.append(h);
-      }
-      const li = document.createElement("li"), a = document.createElement("a"), meta = document.createElement("div");
-      if(e.official) li.className = "official";
-      a.href = e.url; a.rel = "noopener"; a.textContent = e.title;
-      meta.className = "meta";
-      meta.textContent = [day(e.date), e.official ? "Official record · " + e.source : e.source,
-                          e.outlets > 1 ? e.outlets + " outlets" : ""].filter(Boolean).join(" · ");
-      li.append(a, meta); ol.append(li);
-    });
-  }).catch(() => note("Couldn't load the story. Try reloading the page."));
-})();
-</script>"""
-
-
-def _block(slug: str, latest: str | None) -> str:
-    t = TOPICS[slug]
-    when = f'<span class="meta">Latest: {_day(latest)}</span>' if latest else ""
-    return (f'<a href="/{path(slug)}"><span class="kind">{escape(t["kind"])}</span>'
-            f'<b>{escape(t["name"])}</b><span class="what">{escape(t["what"])}</span>{when}</a>')
 
 
 def _day(iso: str) -> str:
@@ -194,38 +192,125 @@ def _day(iso: str) -> str:
     return f"{d.day} {d.strftime('%b %Y')}"
 
 
+def _logo_svg(lg: dict) -> str:
+    return (f'<span class="logo" title="{escape(lg["name"])}"><svg viewBox="0 0 24 24" aria-hidden="true">'
+            f'<path fill="#{escape(lg["hex"].lstrip("#"))}" d="{escape(lg["path"])}"/></svg></span>')
+
+
+def _badges(slug: str, ev: list[dict]) -> str:
+    """The topic's flags, then the logos its stories name most."""
+    flags = list(dict.fromkeys([countries.flag(f) for f in LOOK[slug][1]]
+                               + [e["flag"] for e in ev if e.get("flag")]))
+    count: dict[str, list] = {}
+    for e in ev:
+        if e.get("logo"):
+            count.setdefault(e["logo"]["name"], [0, e["logo"]])[0] += 1
+    logos = [lg for n, lg in sorted(count.values(), key=lambda x: -x[0])[:LOGOS] if n >= LOGO_MIN]
+    return ("".join(f'<img class="flag" src="flags/{f}" alt="">' for f in flags)
+            + "".join(_logo_svg(lg) for lg in logos))
+
+
+def _photo(slug: str, credits: dict) -> str:
+    file = LOOK[slug][0]
+    return (f'<img class="photo" src="photos/{file}" alt="" loading="lazy" '
+            f'title="{escape(credits.get(file, "Photo: Wikimedia Commons"))}">')
+
+
+TIMELINE_JS = r"""<script>
+(() => {
+  const tl = document.getElementById("timeline");
+  const day = d => new Date(d.slice(0, 10) + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", timeZone: "UTC"});
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
+  const icon = e => {
+    if(e.flag) { const i = el("img", "flag"); i.src = "flags/" + e.flag; i.alt = ""; return i; }
+    if(!e.logo) return null;
+    const s = el("span", "logo"); s.title = e.logo.name;
+    s.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path></path></svg>';
+    const p = s.querySelector("path"); p.setAttribute("fill", "#" + e.logo.hex.replace("#", "")); p.setAttribute("d", e.logo.path);
+    return s;
+  };
+  const pill = (cls, text) => { const li = el("li", cls); li.append(el("span", "", text)); return li; };
+  const card = (e, side) => {
+    const li = el("li", "ev " + side + (e.official ? " official" : " news") + (e.outlets > 1 ? " wide" : ""));
+    const box = el("div", "box"), top = el("div", "top");
+    top.append(el("span", "when", day(e.date)), el("span", "lane", e.official ? "Official record" : "In the news"));
+    const ic = icon(e); if(ic) top.append(ic);
+    const a = el("a", "", e.title); a.href = e.url; a.rel = "noopener";
+    const meta = el("div", "meta", e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : ""));
+    box.append(top, a, meta); li.append(el("span", "dot"), box);
+    return li;
+  };
+  const more = list => {
+    const li = el("li", "more"), b = el("button", "", "+" + list.length + (list.length === 1 ? " more story" : " more stories"));
+    b.type = "button"; b.setAttribute("aria-expanded", "false");
+    const ul = el("ul"); ul.hidden = true;
+    list.forEach(e => { const r = el("li"), a = el("a", "", e.title); a.href = e.url; a.rel = "noopener";
+      r.append(el("span", "when", day(e.date)), a, el("span", "src", e.source)); ul.append(r); });
+    b.addEventListener("click", () => { ul.hidden = !ul.hidden; b.setAttribute("aria-expanded", String(!ul.hidden)); });
+    li.append(b, ul); return li;
+  };
+  fetch(tl.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(list => {
+    tl.replaceChildren();
+    if(!list.length) return tl.append(el("li", "meta", "Nothing yet."));
+    let year = "", n = 0, folded = [];
+    const flush = () => { if(folded.length) tl.append(more(folded)); folded = []; };
+    list.forEach(e => {
+      if(e.date.slice(0, 4) !== year) { flush(); year = e.date.slice(0, 4); tl.append(pill("year", year)); }
+      if(!e.milestone) return folded.push(e);
+      flush();
+      tl.append(card(e, n++ % 2 ? "right" : "left"));  // either side of the line in turn; the colour tells which kind
+    });
+    flush();
+    tl.append(pill("year now", "Now"));
+  }).catch(() => tl.replaceChildren(el("li", "meta", "Couldn't load the timeline. Try reloading the page.")));
+})();
+</script>"""
+
+
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
-    """Write topics/ (a block per topic) and each topic's page with its events.json. Returns the pages' paths."""
+    """Write topics/ (a picture card per topic) and each topic's page: its picture and its timeline, from its
+    events.json. Returns the pages' paths."""
     parts = pages.frame(conn, len(cards))
-    latest, paths = {}, []
+    credits = {c["photo"]: f"Photo: {photos._who(c)}, {c['licence']}" for c in photos.credits()}
+    (out / "flags").mkdir(exist_ok=True)
+    quiet = (today - timedelta(days=QUIET_DAYS)).isoformat()
+    blocks, paths = [], []
     for slug, t in TOPICS.items():
         ev = events(slug, cards)
-        latest[slug] = ev[-1]["date"] if ev else None
+        for f in {countries.flag(f) for f in LOOK[slug][1]} | {e["flag"] for e in ev if e.get("flag")}:
+            shutil.copy(countries.FLAGS / f, out / "flags" / f)
+        latest = ev[-1]["date"] if ev else ""
+        done = latest < quiet
         p = path(slug)
         (out / p).mkdir(parents=True, exist_ok=True)
         (out / p / "events.json").write_text(json.dumps(ev, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+        badges = _badges(slug, ev)
+        status = '<span class="done">Concluded</span>' if done else ""
         related = " · ".join(f'<a href="/{path(r)}">{escape(TOPICS[r]["name"])}</a>' for r in t.get("related", ()))
-        body = (f'<span class="kind">{escape(t["kind"])}</span>\n<h1>{escape(t["name"])}</h1>\n'
+        body = (f'<div class="topic-hero">{_photo(slug, credits)}<div class="over"><span class="kind">{escape(t["kind"])}'
+                f'</span>{status}<h1>{escape(t["name"])}</h1><div class="badges">{badges}</div></div></div>\n'
                 f'<p class="intro">{escape(t["what"])}</p>\n'
-                f'<p class="intro">How it unfolded, oldest first: each event links to the official record or the '
-                f'outlet\'s own page.</p>\n'
-                f'<ol class="events" id="topic-events" data-src="/{p}events.json"><li class="meta">Loading…</li></ol>\n'
-                f'{EVENTS_JS}')
+                + ('<p class="legend"><span class="key official">Official record</span>'
+                   '<span class="key news">In the news</span></p>\n' if any(e["official"] for e in ev) else "")
+                + f'<ol class="timeline" id="timeline" data-src="/{p}events.json"><li class="meta">Loading…</li></ol>\n'
+                f'{TIMELINE_JS}')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": t["name"],
                 "description": t["what"], "url": f"{rss.SITE}{p}"}
         (out / p / "index.html").write_text(
             pages.page(f"{t['name']} · AI Pulse", t["what"], p, body, data, parts, ("/topics/", "All topics"),
                        f"Related: {related}" if related else ""), encoding="utf-8")
         paths.append(p)
-    quiet = (today - timedelta(days=QUIET_DAYS)).isoformat()
-    order = sorted(TOPICS, key=lambda s: latest[s] or "", reverse=True)
-    live = [s for s in order if (latest[s] or "") >= quiet]
-    done = [s for s in order if (latest[s] or "") < quiet]
+        blocks.append((done, latest, f'<a href="/{p}"><span class="pic">{_photo(slug, credits)}{status}'
+                                     f'<span class="badges">{badges}</span></span><span class="txt">'
+                                     f'<span class="kind">{escape(t["kind"])}</span><b>{escape(t["name"])}</b>'
+                                     f'<span class="what">{escape(t["what"])}</span>'
+                                     + (f'<span class="meta">Latest: {_day(latest)}</span>' if latest else "")
+                                     + "</span></a>"))
+    blocks.sort(key=lambda b: b[1], reverse=True)  # newest first,
+    blocks.sort(key=lambda b: b[0])  # the concluded after the rest
     what = "Stories AI Pulse follows over time, laws and news together. Open one to see how it unfolded."
     body = (f'<h1>Topics</h1>\n<p class="intro">{escape(what)}</p>\n'
-            f'<h2>Following</h2>\n<div class="topics">{"".join(_block(s, latest[s]) for s in live)}</div>\n'
-            + (f'<h2>Concluded</h2>\n<p class="meta">Nothing new for {QUIET_DAYS} days.</p>\n'
-               f'<div class="topics">{"".join(_block(s, latest[s]) for s in done)}</div>\n' if done else ""))
+            f'<div class="topics">{"".join(b[2] for b in blocks)}</div>\n')
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Topics", "description": what,
             "url": f"{rss.SITE}topics/"}
     (out / "topics" / "index.html").write_text(
