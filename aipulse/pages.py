@@ -95,11 +95,11 @@ STYLE = """
 .cp .topic-hero .badges .logo{width:34px;height:34px}
 .cp .tp > .intro{margin:18px 0 6px;font-size:clamp(17px,2vw,20px);line-height:1.45;color:var(--ink);max-width:62ch}
 .cp .tp h2{margin-top:34px}
-.cp:has(> .tp) > .note{font-size:clamp(17px,2vw,20px)}  /* "Related:" as big as the intro */
 .cp .mlist{list-style:none;margin:12px 0 0;padding:0}
 .cp .mlist li{position:relative;padding:5px 0 5px 28px;font-size:15.5px;line-height:1.35;border:0}
 .cp .mlist li::before{content:"✓";position:absolute;left:4px;top:4px;font-weight:700;color:#D55E00}
-.cp .mlist a{font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+.cp .tp > .related{margin-top:28px;font-size:15.5px;line-height:1.35}  /* in the key moments' font, on their left edge */
+.cp .mlist a,.cp .tp > .related a{font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:2px}
 .cp .mlist .when{margin-left:8px;color:var(--muted);font-size:13px;white-space:nowrap}
 .cp .when{font:600 12.5px var(--mono);letter-spacing:.03em}
 .cp .lane{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
