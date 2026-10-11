@@ -77,18 +77,39 @@ def _day_cards(cards: list[dict], category: str, day: date) -> list[dict]:
     return rss.daily(cards, category, today=day + timedelta(days=1), days=1).get(day, [])
 
 
-def by_streams(cards: list[dict], streams: list[str], day: date) -> dict[str, list[dict]]:
-    """What the email shows: each chosen stream's stories that day, less any that don't name AI (quality.on_topic).
-    Industry is ordered by its tags (news first, then AI-incidents, studies, opinion...)."""
-    out = {n: [c for c in _day_cards(cards, rss.FEEDS[n][0], day) if quality.on_topic(c)] for n in streams}
+LATE_DAYS = 3  # how far back a late arrival may be dated and still go in the next email
+# A late arrival goes in the top stories only when this many outlets reported it (0: never); otherwise it's in its
+# stream's headlines, after the day's own stories. The day's own stories lead the email either way.
+LATE_TOP = 2
+
+
+def late(cards: list[dict], category: str, day: date, since: str | None) -> list[dict]:
+    """A stream's stories dated in the LATE_DAYS before `day` that arrived after the last email was built (`since`,
+    the newest arrival that email saw), so a story published or fetched late reaches one email, and never two.
+    A story counts by its group's first arrival (`first_added`, set by the digest command): a lab's own post that
+    arrives late and becomes the lead of a story already sent doesn't send it again. Without `since`, none."""
+    if not since:
+        return []
+    first = (day - timedelta(days=LATE_DAYS)).isoformat()
+    return [{**c, "late": True} for c in cards if c["category"] == category and first <= c["date"] < day.isoformat()
+            and (c.get("first_added") or c.get("added_at") or "") > since]
+
+
+def by_streams(cards: list[dict], streams: list[str], day: date, since: str | None = None) -> dict[str, list[dict]]:
+    """What the email shows: each chosen stream's stories that day, and any that arrived late (see late), less any
+    that don't name AI (quality.on_topic). Industry is ordered by its tags (news first, then AI-incidents, studies,
+    opinion...)."""
+    out = {n: [c for c in _day_cards(cards, rss.FEEDS[n][0], day) + late(cards, rss.FEEDS[n][0], day, since)
+               if quality.on_topic(c)] for n in streams}
     if "news" in out:
         out["news"].sort(key=lambda c: list(KIND).index(c.get("kind") if c.get("kind") in KIND else "news"))
     return out
 
 
-def left_out(cards: list[dict], streams: list[str], day: date) -> list[dict]:
-    """The day's stories kept out of the email for not naming AI."""
-    return [c for n in streams for c in _day_cards(cards, rss.FEEDS[n][0], day) if not quality.on_topic(c)]
+def left_out(cards: list[dict], streams: list[str], day: date, since: str | None = None) -> list[dict]:
+    """The day's stories (and late arrivals) kept out of the email for not naming AI."""
+    return [c for n in streams for c in _day_cards(cards, rss.FEEDS[n][0], day) + late(cards, rss.FEEDS[n][0], day, since)
+            if not quality.on_topic(c)]
 
 
 def long_day(day: date) -> str:
@@ -273,6 +294,11 @@ def _outlets(c: dict) -> int:
     return 1 + len(_others(c))
 
 
+def _fits_top(c: dict) -> bool:
+    """Can the story be one of the top stories? The day's own always; a late arrival only if big enough (LATE_TOP)."""
+    return not c.get("late") or bool(LATE_TOP and _outlets(c) >= LATE_TOP)
+
+
 def _rank(c: dict) -> tuple:
     """How much a story mattered, without any AI: more outlets reporting it, then a company's own launch post,
     then reporting over opinion, then an official action."""
@@ -327,7 +353,7 @@ def _terms(c: dict) -> frozenset[str]:
 def _biggest(by_stream: dict[str, list[dict]], streams: list[str]) -> list[dict]:
     """The day's WORD_FROM biggest stories in a reader's email (their streams, without what they left out),
     whatever they asked for more of."""
-    todays = [c for n in streams for c in by_stream.get(n) or [] if c.get("kind") not in SIDE_KINDS]
+    todays = [c for n in streams for c in by_stream.get(n) or [] if c.get("kind") not in SIDE_KINDS and _fits_top(c)]
     return sorted(todays, key=_rank, reverse=True)[:WORD_FROM]
 
 
@@ -641,16 +667,16 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
                   f"{day:%A}: {intro[0].lower() + intro[1:] if intro.startswith('A lighter') else intro}"]
     quiet = _quiet(by_stream, cards, streams, day) if todays else ""  # an empty day (a Sunday) says so once
     everything = full_page(day)  # every story of the day, whatever streams this reader chose
-    top = (sorted(todays, key=_rank, reverse=True) if light else
-           sorted([c for c in todays if c.get("kind") not in SIDE_KINDS], key=_rank, reverse=True)[:TOP])
+    top = (sorted([c for c in todays if _fits_top(c)], key=_rank, reverse=True) if light else
+           sorted([c for c in todays if c.get("kind") not in SIDE_KINDS and _fits_top(c)], key=_rank, reverse=True)[:TOP])
     prefs = prefs or {}
     tuned = bool(prefs.get("more") or prefs.get("words"))
     _, theirs = _mine(prefs)
     picks = {id(c) for c in todays if tuned and theirs(c)}
     if tuned and not light:
         # up to PICKS of the reader's own (any kind, a tutorial too if they asked for it), then the day's biggest
-        mine = sorted([c for c in todays if id(c) in picks], key=_rank, reverse=True)[:PICKS]
-        biggest = [c for c in top + sorted(todays, key=_rank, reverse=True) if c not in mine]
+        mine = sorted([c for c in todays if id(c) in picks and _fits_top(c)], key=_rank, reverse=True)[:PICKS]
+        biggest = [c for c in top + sorted([c for c in todays if _fits_top(c)], key=_rank, reverse=True) if c not in mine]
         top = mine + list({id(c): c for c in biggest}.values())[:TOP - len(mine)]
     elif tuned:  # a lighter day: every story is in, the reader's own first
         top = sorted(top, key=lambda c: id(c) not in picks)
@@ -736,7 +762,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     for n in streams:
         category, stream, _ = rss.FEEDS[n]
         rest = sorted([c for c in by_stream[n] if id(c) not in shown and c.get("kind") not in SIDE_KINDS],
-                      key=_rank, reverse=True)
+                      key=lambda c: (not c.get("late"), *_rank(c)), reverse=True)  # the day's own, then late arrivals
         side = Counter(c["kind"] for c in by_stream[n] if c.get("kind") in SIDE_KINDS)
         side_words = ", ".join(f"{k} {'company blog' if w == 'blog' else w}{'s' if k > 1 else ''}" for w, k in side.items())
         extra, more = len(rest) - HEADLINES + sum(side.values()), f"{rss.SITE}#{category}"
@@ -788,7 +814,7 @@ def full_page(day: date) -> str:
 
 def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "",
           layout: str = "short", web: bool = False, prefs: dict | None = None,
-          dossier: dict | None = None) -> tuple[str, str, str] | None:
+          dossier: dict | None = None, since: str | None = None) -> tuple[str, str, str] | None:
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day (Sunday's short
     email still goes if the week had stories: it says the day had none).
     `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site.
@@ -797,8 +823,9 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     with a sign-up line in place of a reader's own settings. `prefs`: the reader's choices (subscribers.prefs_of):
     what they left out never appears in their short email, and their own come first; the full email is the same
     for everyone. `dossier`: on Sundays, the reader's weekly dossier (see _dossier), in the short email only.
-    Sunday's short email (the day is a Saturday, see WEEKLY) opens with the week: its story, word and meme."""
-    by_stream = by_streams(cards, streams, day)
+    Sunday's short email (the day is a Saturday, see WEEKLY) opens with the week: its story, word and meme.
+    `since`: the newest arrival the last email saw; stories that arrived after it, dated before `day`, go in too."""
+    by_stream = by_streams(cards, streams, day, since)
     left = []
     if layout == "short":
         by_stream, left = _leave_out(by_stream, prefs)

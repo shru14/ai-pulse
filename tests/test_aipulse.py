@@ -1714,6 +1714,30 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
 
 
+def test_late_arrivals_reach_the_next_email_once(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    card = lambda i, day, added, **k: {"id": f"l{i}", "title": f"Story {i}", "summary": "", "url": f"https://ex.com/{i}",
+                                       "source": f"S{i}", "category": "news", "date": day, "added_at": added, **k}
+    since = "2026-10-10T05:00:00+00:00"  # the newest arrival the 9 Oct email saw
+    cards = [card(1, "2026-10-10", "2026-10-10T18:00:00+00:00"),
+             card(2, "2026-10-09", "2026-10-10T12:00:00+00:00"),  # dated 9 Oct, came in after that email: late
+             card(3, "2026-10-09", "2026-10-09T20:00:00+00:00"),  # in the 9 Oct email already
+             # a lab's own post that came late and leads a story first reported before that email: not again
+             card(4, "2026-10-09", "2026-10-10T16:00:00+00:00", first_added="2026-10-09T21:00:00+00:00"),
+             card(5, "2026-10-05", "2026-10-10T12:00:00+00:00")]  # too old to be news (LATE_DAYS)
+    late = [c["id"] for n in digest.by_streams(cards, ["news"], date(2026, 10, 10), since).values() for c in n]
+    assert late == ["l1", "l2"]
+    assert [c["id"] for c in digest.by_streams(cards, ["news"], date(2026, 10, 10))["news"]] == ["l1"]  # no time: none
+    # a late story leads only when enough outlets reported it (LATE_TOP); otherwise it's after the day's own
+    two = [{"title": "x", "source": "Other", "url": "https://o.com/2", "date": "2026-10-09"}]
+    assert digest._fits_top({"late": True, "source": "S2", "also": two}) and not digest._fits_top({"late": True, "source": "S2"})
+    assert digest._fits_top({"source": "S1"})
+    monkeypatch.setattr(digest, "LATE_TOP", 0)
+    assert not digest._fits_top({"late": True, "source": "S2", "also": two})
+
+
 def test_industry_news_is_labelled_not_moved(monkeypatch):
     from datetime import date
     from aipulse import classify, digest
