@@ -7,13 +7,19 @@
 # A push to main (a change to the code or the page) only rebuilds and publishes the site from the saved database, in
 # a few minutes: no collecting, re-sorting, memes or dossiers (the next scheduled run does those, and "Run workflow"
 # by hand does everything at once).
+# The heartbeat (heartbeat.yml) starts these runs on time, with run=full or run=quick; GitHub's own schedule below
+# is best-effort (it left most runs unstarted or hours late) and stays only as a backup for the full runs.
 name: Collect and publish
 
 on:
   schedule:
     - cron: "0 */6 * * *"  # 00:00, 06:00, 12:00, 18:00 UTC: everything
-    - cron: "25,55 * * * *"  # the quick run (off the hour, when GitHub starts scheduled runs late)
   workflow_dispatch:
+    inputs:
+      run:
+        description: "quick: only the labs' and companies' blogs; empty or full: everything"
+        required: false
+        default: ""
   push:
     branches: [main]
 
@@ -30,6 +36,8 @@ jobs:
   collect-and-publish:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      QUICK: ${{ inputs.run == 'quick' }}
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
@@ -80,7 +88,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub API: labs' new repositories (sources.py)
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}  # free model list only; skipped while unset
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # free model list only; skipped while unset
-        run: python -m aipulse --db aipulse.db collect ${{ github.event.schedule == '25,55 * * * *' && '--labs' || '' }}
+        run: python -m aipulse --db aipulse.db collect ${{ inputs.run == 'quick' && '--labs' || '' }}
 
       # A source that has just started failing: one email to the project inbox (not shown on the site)
       - name: Tell the project inbox about sources that stopped working
@@ -93,13 +101,13 @@ jobs:
 
       # Stored stories keep the category they got when collected; this applies rule fixes to them too.
       - name: Re-sort stored stories with the current rules
-        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && env.QUICK != 'true'
         run: python -m aipulse --db aipulse.db reclassify
 
       # A new stream's history back to 2023 (Infra & climate, added 3 Oct 2026): its sources'
       # archives, about 12 minutes a full run, carrying on where the last run stopped until every source is done.
       - name: History for a new stream
-        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && env.QUICK != 'true'
         run: python -m aipulse --db aipulse.db history --stream infra --minutes 12
 
       # Gemini (free tier, the project's only AI model, for memes only) writes the past 7 days' meme once a day; it is kept in the
@@ -116,19 +124,19 @@ jobs:
       # last 45 days' stories (last week and the month before), at most 4,000 a run, newest first. Then each interest
       # readers follow is searched in last week's stories and kept in the database, for the site and the Monday email.
       - name: Restore the embedding model
-        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && env.QUICK != 'true'
         uses: actions/cache@v4
         with:
           path: data/embed-models
           key: embed-models-bge-base-en-v1.5-2de9369
 
       - name: Story vectors
-        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && env.QUICK != 'true'
         continue-on-error: true
         run: python -m aipulse --db aipulse.db embed --limit 4000
 
       - name: Weekly dossiers
-        if: github.event_name != 'push' && github.event.schedule != '25,55 * * * *'
+        if: github.event_name != 'push' && env.QUICK != 'true'
         continue-on-error: true
         env:
           DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the interests (never who follows them) from the sign-up web app
@@ -178,11 +186,11 @@ jobs:
       - id: deploy
         uses: actions/deploy-pages@v4
 
-  # A backup for the daily email: GitHub has left the email workflow's own schedule unstarted (30 Sep 2026), while
-  # this workflow's schedule runs. Each scheduled run between 05:00 and 11:59 UTC starts the email workflow; it
+  # A backup for the daily email: GitHub has left the email workflow's own schedule unstarted (30 Sep 2026). Each
+  # scheduled or heartbeat run of this workflow between 05:00 and 11:59 UTC starts the email workflow; it
   # sends the day once (a marker in the Actions cache), so every start after the first stops at once.
   morning-email:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || inputs.run != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
