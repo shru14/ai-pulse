@@ -49,8 +49,9 @@ STORIES_JS = r"""<script>
 RELATED = 6  # related terms per word: those its meaning names, those whose meanings name it, then its group's
 CLOUD = 30  # words in glossary/'s "In the news · past 7 days" cloud
 TOGETHER_DAYS, TOGETHER = 30, 14  # a word's page: the words most often in the same stories, over these days
-# a word's colour in a cloud, by its group: Okabe-Ito blue, vermillion, bluish green, and ink (colour-blind safe)
-CLOUD_COLOURS = ["#0072B2", "#D55E00", "#007A5A", "#000"]
+# a word's colour in a cloud, by its group: Okabe-Ito blue, vermillion, bluish green, and ink (colour-blind safe);
+# site.css sets them, lighter in dark mode
+CLOUD_COLOURS = ["var(--g0)", "var(--g1)", "var(--g2)", "var(--g3)"]
 
 
 def _first_sentence(text: str) -> str:
