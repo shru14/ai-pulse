@@ -79,12 +79,10 @@ STYLE = """
 .cp .topics .kind{margin:0}
 .cp .topics .kind{font-size:10px}
 .cp .topics b{font:400 15px/1.2 var(--display)}
-.cp .topics .what{font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .cp .topics .last{display:flex;flex-direction:column;gap:3px;margin-top:auto;border:2px solid #000;background:color-mix(in srgb,#56B4E9 14%,var(--bg));padding:6px 8px}
 .cp .topics .last .lt{font-size:12.5px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .cp .topics .last .lt:empty{display:none}
 .cp .topics .last .meta{margin:0;font-size:11px}
-.cp .topics .last .meta b{font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
 .cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .tp{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .topic-hero{position:relative;height:clamp(240px,34vw,380px);margin-top:16px;border:2px solid #000;overflow:hidden;box-shadow:6px 6px 0 #000}

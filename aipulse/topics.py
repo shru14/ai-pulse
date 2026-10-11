@@ -482,9 +482,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             f'<a href="/{path(b["slug"])}"><span class="pic">{_photo(b["slug"], credits)}{tag}'
             f'<span class="badges">{b["badges"]}</span></span><span class="txt">'
             f'<span class="kind">{escape(t["kind"])}</span><b>{escape(t["name"])}</b>'
-            f'<span class="what">{escape(t["what"])}</span>'
             + (f'<span class="last" data-slug="{b["slug"]}"><span class="lt"></span>'
-               f'<span class="meta"><b>Latest</b> · {_day(b["latest"])}</span></span>' if b["latest"] else "")
+               f'<span class="meta">{_day(b["latest"])}</span></span>' if b["latest"] else "")
             + "</span></a>")
     what = "Pick a topic to see how it unfolded, from the first report to today, with laws and news on one timeline."
     body = (f'<h1>Follow the story</h1>\n<p class="intro">{escape(what)}</p>\n'
