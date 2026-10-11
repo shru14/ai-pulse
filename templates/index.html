@@ -613,11 +613,11 @@ header.top.home{height:auto;padding-top:10px}
 .mast-line{order:4;flex-basis:100%;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 24px;padding:2px 0 8px}
 .mast-line .lede{margin:0}
 .mast-line .home-status{margin:0}
-/* the sections as buttons, filled with their stream's colour when open or pointed at */
-.secnav{gap:8px;padding:8px 0}
-.secnav a{border:2px solid var(--ink);border-radius:0;padding:5px 12px;margin:0;background:var(--surface);color:var(--ink);text-transform:none;letter-spacing:0;font:600 14px var(--body);box-shadow:2px 2px 0 var(--ink)}
-.secnav a:hover{background:var(--cat-f,var(--surface));color:#000}
-.secnav a[aria-current]{background:var(--cat-f,var(--ink));color:#000;box-shadow:none;transform:translate(2px,2px)}
+/* the sections as rounded chips, like the region filters; the open one filled with its stream's colour */
+.secnav{gap:6px;padding:8px 0}
+.secnav a{border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin:0;background:var(--surface);color:var(--ink);text-transform:none;letter-spacing:0;font:500 14px var(--body)}
+.secnav a:hover{background:var(--cat-soft,var(--surface))}
+.secnav a[aria-current]{background:var(--cat-f,var(--ink));border-color:var(--cat-f,var(--ink));color:#000;font-weight:600}
 .subscribe-btn{border-radius:0;border:2px solid var(--ink)}
 .subscribe-btn.cta{box-shadow:none}
 .item.tool{--cat-f:var(--f-tool)}.item.news{--cat-f:var(--f-news)}.item.research{--cat-f:var(--f-research)}
