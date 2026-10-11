@@ -163,6 +163,53 @@ STYLE = """
   .cp .tp h2{margin-top:26px}
 }
 a.subscribe-btn{text-decoration:none}
+/* the monthly issues (monthly.py): the shelf of covers and each issue's sheets */
+.cp:has(> .mi) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
+.cp .mi{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
+.cp .mi .topic-hero .kind{font-size:12.5px}
+.cp .mi .topic-hero h1{max-width:none}
+.cp .mi .topic-hero .num{color:#fff;font:600 14px var(--mono);letter-spacing:.06em}
+.cp .contents{display:flex;flex-wrap:wrap;gap:6px 22px;list-style:none;margin:18px 0 0;padding:12px 0;border-bottom:2px solid #000;counter-reset:c}
+.cp .contents li{padding:0;border:0;counter-increment:c;font-size:15px}
+.cp .contents li::before{content:counter(c,decimal-leading-zero);font:600 12px var(--mono);color:#D55E00;margin-right:7px}
+.cp .contents a{font-weight:600;color:var(--ink);text-decoration:none}
+.cp .contents a:hover{text-decoration:underline}
+.cp .sheet{margin-top:34px;counter-increment:sheet}
+.cp .mi{counter-reset:sheet}
+.cp .sheet > h2::before{content:counter(sheet,decimal-leading-zero);margin-right:10px;color:#D55E00}
+.cp .brief{font-size:clamp(18px,2.1vw,21px);line-height:1.55;max-width:64ch;margin:12px 0 0;border-left:6px solid #D55E00;padding-left:16px}
+.cp table.mt{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
+.cp .mt th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 12px 6px 0}
+.cp .mt td{border-top:1px solid color-mix(in srgb,#000 25%,transparent);padding:10px 12px 10px 0;vertical-align:top}
+.cp .mt tr.first td{border-top:2px solid #000}
+.cp .mt td a{color:var(--ink);font-weight:600;text-decoration:none;line-height:1.35}
+.cp .mt td a:hover,.cp .mt td a:focus-visible{text-decoration:underline}
+.cp .mt .meta{font-size:13px}
+.cp .mt .n{font:400 20px var(--display)}
+.cp .mt td:last-child,.cp .mt th:last-child{text-align:right;white-space:nowrap;padding-right:0}
+.cp .mt .st{display:inline-block;margin:0 0 4px;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#141925;background:var(--st);border:2px solid #000;padding:1px 6px;white-space:nowrap}
+.cp .mt.streams td:first-child{width:1%;white-space:nowrap}
+.cp .mt.top td:first-child{width:1%}
+.cp .mt.top .st{display:table;margin-bottom:5px}
+.cp .mt .new{display:inline-block;margin-left:8px;font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#E69F00;color:#000;border:2px solid #000;padding:0 5px;vertical-align:2px}
+.cp .mt.words td:nth-child(2){color:var(--muted);font-size:14.5px}
+.cp .mt .name{font:400 16px/1.2 var(--display)!important}
+.cp .chapter.wk .yr span{font-size:clamp(26px,3vw,36px)}
+.cp .chapter.wk .yr small{display:block;position:sticky;top:calc(var(--bar-h,64px) + 56px);margin-top:4px;font:600 12.5px var(--mono);color:var(--muted)}
+.cp .timeline .quiet{text-align:center;color:var(--muted);font-size:14px;padding:12px 0;position:relative;z-index:1}
+.cp .issue-nav{display:flex;justify-content:space-between;gap:12px;margin-top:36px;padding-top:14px;border-top:6px solid #D55E00;font-weight:600}
+.cp .issue-nav a{color:var(--ink)}
+.cp .shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:14px}
+.cp .shelf a{display:flex;flex-direction:column;border:2px solid #000;background:var(--bg);color:var(--ink);text-decoration:none;box-shadow:4px 4px 0 #000;transition:transform .12s,box-shadow .12s}
+.cp .shelf a:hover,.cp .shelf a:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #D55E00}
+.cp .shelf .pic{display:block;aspect-ratio:4/3;border-bottom:2px solid #000;overflow:hidden}
+.cp .shelf .txt{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px}
+.cp .shelf .num{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#D55E00}
+.cp .shelf b{font:400 22px/1.1 var(--display)}
+@media (max-width:900px){.cp .shelf{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.cp .shelf{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cp .mt.top td:nth-child(3),.cp .mt.top th:nth-child(3){display:none}
+  .cp .chapter.wk .yr small{position:static;display:inline;margin-left:10px}}
 """
 
 
