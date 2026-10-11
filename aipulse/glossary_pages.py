@@ -181,9 +181,11 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "DefinedTermSet", "name": "AI Pulse glossary", "url": home,
             "hasDefinedTerm": [{"@type": "DefinedTerm", "name": e["term"], "url": f"{rss.SITE}glossary/{e['id']}/"}
                                for e in words]}
+    # the glossary's own page needs no Glossary button in its masthead
+    own = (re.sub(r'\s*<a class="subscribe-btn gl-open".*?</a>', "", parts[0], flags=re.S), parts[1])
     (out / "glossary").mkdir(parents=True, exist_ok=True)
     (out / "glossary" / "index.html").write_text(pages.page(
         "AI glossary: the hard words in AI news, in plain English · AI Pulse",
         f"{len(words)} AI words explained in plain English, from LLM and tokens to compute, agents and AI law. Written by hand.",
-        "glossary/", body, data, parts, ("/", "Back to AI Pulse"), note), encoding="utf-8")
+        "glossary/", body, data, own, ("/", "Back to AI Pulse"), note), encoding="utf-8")
     return ["glossary/", *paths]
