@@ -336,16 +336,16 @@ def summarise(conn, today: date, limit: int = 4, only: str | None = None, log=pr
         if not cards:
             continue
         text = write(month, cards, log=log)
-        if text is None:
-            if _model() is None:
-                log("monthly: no summary model (pip install llama-cpp-python); skipped")
-                return done
-            continue
+        if text is None and _model() is None:
+            log("monthly: no summary model (pip install llama-cpp-python); skipped")
+            return done
+        # every try failed the check: kept empty (the issue has no summary), so later runs don't try again; it is
+        # written again only by hand (python -m aipulse monthly --month YYYY-MM)
         conn.execute("INSERT OR REPLACE INTO monthly VALUES (?, ?, ?, ?)",
-                     (month, text, MODEL, datetime.now(timezone.utc).isoformat(timespec="seconds")))
+                     (month, text or "", MODEL, datetime.now(timezone.utc).isoformat(timespec="seconds")))
         conn.commit()
-        done += 1
-        log(f"monthly: {name(month)} summarised")
+        done += bool(text)
+        log(f"monthly: {name(month)} " + ("summarised" if text else "left without a summary"))
     return done
 
 

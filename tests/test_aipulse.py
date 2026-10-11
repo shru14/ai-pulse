@@ -3348,3 +3348,17 @@ def test_monthly_issue_pages(tmp_path):
     assert latest["name"] == "September 2026" and latest["summary"] == ""  # no summary written yet: none shown
     shelf = (tmp_path / "monthly" / "index.html").read_text(encoding="utf-8")
     assert shelf.index("September") < shelf.index("August")  # newest first
+
+
+def test_monthly_summary_that_fails_every_try_is_not_tried_again(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import monthly
+    conn = store.connect(tmp_path / "f.db")
+    monthly.connect(conn)
+    monkeypatch.setattr(monthly, "months", lambda today: ["2026-08"])
+    monkeypatch.setattr(monthly, "month_cards", lambda conn, m: [{"id": "a"}])
+    monkeypatch.setattr(monthly, "write", lambda m, cards, log: None)
+    monkeypatch.setitem(monthly._llm, "m", object())  # the model is there; its text failed the check
+    assert monthly.summarise(conn, date(2026, 10, 11), log=lambda *_: None) == 0
+    assert [tuple(r) for r in conn.execute("SELECT month, summary FROM monthly")] == [("2026-08", "")]
+    assert monthly.due(conn, date(2026, 10, 11)) == []  # the next run doesn't download the model again for it
