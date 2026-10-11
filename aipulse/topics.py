@@ -20,6 +20,9 @@ from pathlib import Path
 from . import countries, pages, photos, rss
 
 QUIET_DAYS = 90  # a topic with no new event for this long is Concluded (kept, never deleted)
+# Topics are listed by how much they're in the news: over the last TREND_DAYS, each event counts once per outlet that
+# carried it, and three times over in the last HOT_DAYS. The top TRENDING with an event in the last HOT_DAYS are tagged.
+TREND_DAYS, HOT_DAYS, TRENDING = 30, 7, 3
 STREAMS = ("news", "policy", "regulation", "infra", "tool")  # not research: papers aren't events
 
 # slug: name, kind (the block's label), what (our own words), bills, words, exclude, related topics
@@ -113,6 +116,65 @@ TOPICS = {
         name="South Korea's AI Basic Act", kind="Law",
         what="South Korea's AI law, its enforcement decree and the guidelines that put it into practice.",
         words=r"\bAI Basic Act\b|\bKorea\w*\b.{0,40}\bAI (law|act)\b"),
+    "claude-mythos": dict(
+        name="Anthropic's Mythos", kind="Safety",
+        what="Anthropic's Mythos model, kept back over its hacking skills: who gets to use it, and what it found.",
+        words=r"\bMythos\b", exclude=r"\bMythos Ventures\b"),
+    "ai-ipos": dict(
+        name="OpenAI and Anthropic go public", kind="Markets",
+        what="The two biggest AI labs' road to the stock market: filings, hires and delays.",
+        words=r"\b(OpenAI|Anthropic)\b.{0,40}\bIPO\b|\bIPO\b.{0,40}\b(OpenAI|Anthropic)\b",
+        related=("openai-restructuring",)),
+    "deepseek-us": dict(
+        name="DeepSeek and the US", kind="Trade",
+        what="How Washington and US labs answered DeepSeek: bans, chip questions and claims it copied their models.",
+        words=r"\bDeepSeek\b.{0,80}\b(ban|banned|bans|security|exports?|distill\w*|Nvidia|chips?|probe|investigat\w*"
+              r"|Commerce|Congress|White House|Sacks)\b|\b(ban|bans|banned)\b.{0,40}\bDeepSeek\b"
+              r"|\bdistillation (campaigns?|attacks?)\b",
+        exclude=r"\bR1-Distill|\bdistilled (new )?(R1|model)",
+        related=("nvidia-chips-china",)),
+    "meta-superintelligence": dict(
+        name="Meta's superintelligence push", kind="Company",
+        what="Meta's bid to catch up in AI: the Scale AI deal, the hiring spree and its superintelligence lab.",
+        words=r"\bMeta\b.{0,60}\b(superintelligence|MSL|Scale AI|Alexandr Wang|poach\w*)\b"
+              r"|\bSuperintelligence Labs\b|\bScale AI\b.{0,60}\bMeta\b"),
+    "openai-device": dict(
+        name="OpenAI's device", kind="Company",
+        what="OpenAI's first hardware, designed with Jony Ive after it bought his company io.",
+        words=r"\bOpenAI\b.{0,60}\b(device|hardware|gadget|smart speaker|Jony Ive)\b|\bJony Ive\b.{0,60}\bOpenAI\b"),
+    "ai-music-labels": dict(
+        name="Suno, Udio and the record labels", kind="Courts",
+        what="The record labels' fight with AI music makers Suno and Udio, from lawsuits to licensing deals.",
+        words=r"\b(Suno|Udio)\b.{0,80}\b(labels?|Warner|Universal|Sony|UMG|lawsuits?|sues?|sued|settle\w*|licens\w*"
+              r"|deals?|GEMA|court|copyright)\b|\b(labels?|Warner|Universal|Sony|UMG|GEMA)\b.{0,80}\b(Suno|Udio)\b",
+        related=("copyright-court",)),
+    "ai-summits": dict(
+        name="Global AI summits", kind="Policy",
+        what="The meetings where governments try to agree on AI, from Bletchley Park to Paris and New Delhi.",
+        words=r"\b(AI Action Summit|AI Impact Summit|Bletchley|Seoul AI Summit|AI Safety Summit)\b"
+              r"|\bIndia\b.{0,30}\bAI summit\b|\bParis\b.{0,30}\bAI summit\b"),
+    "ai-bubble": dict(
+        name="AI bubble talk", kind="Markets",
+        what="Whether AI spending has run ahead of its returns: bubble warnings, circular deals and what markets did.",
+        words=r"\bAI bubble\b|\bbubble\b.{0,40}\bAI\b|\bcircular (deals?|financing)\b",
+        exclude=r"\bBubble (launches|raises|adds|lets|unveils)\b"),
+    "google-antitrust-ai": dict(
+        name="Google's antitrust cases and AI", kind="Courts",
+        what="Google's search monopoly cases, and how AI changed the remedies and the complaints against it.",
+        words=r"\bGoogle\b.{0,80}\b(antitrust|monopoly|Mehta|remed(y|ies))\b|\b(antitrust|monopoly)\b.{0,60}\bGoogle\b"),
+    "perplexity-legal": dict(
+        name="Perplexity's legal fights", kind="Courts",
+        what="The publishers and companies taking Perplexity to court over its AI search and shopping agents.",
+        words=r"\bPerplexity\b.{0,80}\b(sues?|sued|lawsuits?|suit|court|cease|judge|block\w*)\b"
+              r"|\b(sues?|sued|lawsuits?|blocks?)\b.{0,60}\bPerplexity\b",
+        related=("copyright-court",)),
+    "openai-microsoft": dict(
+        name="OpenAI and Microsoft", kind="Company",
+        what="The partnership behind ChatGPT, renegotiated as OpenAI grew: stakes, exclusivity and the AGI clause.",
+        words=r"\bOpenAI\b.{0,60}\bMicrosoft\b.{0,60}\b(partnership|deal|renegotiat\w*|AGI clause|stake|contract"
+              r"|exclusiv\w*|blessing)\b|\bMicrosoft\b.{0,60}\bOpenAI\b.{0,60}\b(partnership|renegotiat\w*|AGI clause"
+              r"|stake|exclusiv\w*)\b",
+        related=("openai-restructuring",)),
 }
 
 # Each topic's picture: one of the site's credited Wikimedia Commons photos (photos.py), and the flags of the places
@@ -132,6 +194,17 @@ LOOK = {
     "stargate": ("datacenter-5.jpg", ("US",)),
     "apple-google-siri": ("business-6.jpg", ()),
     "korea-ai-basic-act": ("court-3.jpg", ("KR",)),
+    "claude-mythos": ("software-3.jpg", ()),
+    "ai-ipos": ("business-2.jpg", ()),
+    "deepseek-us": ("chips-3.jpg", ("US", "CN")),
+    "meta-superintelligence": ("lab-2.jpg", ()),
+    "openai-device": ("software-4.jpg", ()),
+    "ai-music-labels": ("conference-2.jpg", ()),
+    "ai-summits": ("conference-5.jpg", ()),
+    "ai-bubble": ("business-4.jpg", ()),
+    "google-antitrust-ai": ("court-6.jpg", ("US",)),
+    "perplexity-legal": ("court-2.jpg", ()),
+    "openai-microsoft": ("business-5.jpg", ()),
 }
 SMALL = 25  # a topic with this many events or fewer shows each as a card; a bigger one only its milestones
 LOGOS = 3   # brand logos on a topic's picture: the ones its stories name most,
@@ -181,6 +254,12 @@ def events(slug: str, cards: list[dict]) -> list[dict]:
     for i, e in enumerate(out):  # a milestone gets a card; the rest fold into "+N more" between them
         e["milestone"] = not big or e["official"] or e["outlets"] > 1 or i in (0, len(out) - 1)
     return out
+
+
+def trend(ev: list[dict], today: date) -> int:
+    """How much the topic is in the news now (see TREND_DAYS)."""
+    since, hot = ((today - timedelta(days=d)).isoformat() for d in (TREND_DAYS, HOT_DAYS))
+    return sum(e["outlets"] * (3 if e["date"] >= hot else 1) for e in ev if e["date"] >= since)
 
 
 def path(slug: str) -> str:
@@ -300,17 +379,23 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             pages.page(f"{t['name']} · AI Pulse", t["what"], p, body, data, parts, ("/topics/", "All topics"),
                        f"Related: {related}" if related else ""), encoding="utf-8")
         paths.append(p)
-        blocks.append((done, latest, f'<a href="/{p}"><span class="pic">{_photo(slug, credits)}{status}'
-                                     f'<span class="badges">{badges}</span></span><span class="txt">'
-                                     f'<span class="kind">{escape(t["kind"])}</span><b>{escape(t["name"])}</b>'
-                                     f'<span class="what">{escape(t["what"])}</span>'
-                                     + (f'<span class="meta">Latest: {_day(latest)}</span>' if latest else "")
-                                     + "</span></a>"))
-    blocks.sort(key=lambda b: b[1], reverse=True)  # newest first,
-    blocks.sort(key=lambda b: b[0])  # the concluded after the rest
+        blocks.append({"slug": slug, "done": done, "latest": latest, "badges": badges, "score": trend(ev, today),
+                       "hot": latest >= (today - timedelta(days=HOT_DAYS)).isoformat()})
+    blocks.sort(key=lambda b: b["latest"], reverse=True)
+    blocks.sort(key=lambda b: (b["done"], -b["score"]))  # in the news most first (newest first on a tie), concluded last
+    for i, b in enumerate(blocks):
+        t = TOPICS[b["slug"]]
+        tag = ('<span class="done">Concluded</span>' if b["done"] else
+               '<span class="done hot">Trending</span>' if i < TRENDING and b["hot"] else "")
+        b["html"] = (f'<a href="/{path(b["slug"])}"><span class="pic">{_photo(b["slug"], credits)}{tag}'
+                     f'<span class="badges">{b["badges"]}</span></span><span class="txt">'
+                     f'<span class="kind">{escape(t["kind"])}</span><b>{escape(t["name"])}</b>'
+                     f'<span class="what">{escape(t["what"])}</span>'
+                     + (f'<span class="meta">Latest: {_day(b["latest"])}</span>' if b["latest"] else "")
+                     + "</span></a>")
     what = "Stories AI Pulse follows over time, laws and news together. Open one to see how it unfolded."
     body = (f'<h1>Topics</h1>\n<p class="intro">{escape(what)}</p>\n'
-            f'<div class="topics">{"".join(b[2] for b in blocks)}</div>\n')
+            f'<div class="topics">{"".join(b["html"] for b in blocks)}</div>\n')
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Topics", "description": what,
             "url": f"{rss.SITE}topics/"}
     (out / "topics" / "index.html").write_text(
