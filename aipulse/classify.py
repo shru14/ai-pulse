@@ -245,7 +245,7 @@ COMPANY_TERMS = {
                   r"|is|has|will|CEO|sues|signs|buys|opens)\b)))",
     "Hugging Face": r"Hugging ?Face", "Databricks": r"Databricks",
     "Snowflake": r"(?-i:Snowflake)", "Stability AI": r"Stability AI|Stable Diffusion", "Character.AI": r"Character\.?AI",
-    "World Labs": r"World Labs",
+    "World Labs": r"World Labs", "TypeSafe": r"TypeSafe|(?-i:\bJev\b)",  # Jev, its model (not "Jevons", "AnyJev")
 }
 # A company's home country: the country tag of a story that names no place ("Nvidia launches ..." -> United States).
 COMPANY_HOME = {
