@@ -1,0 +1,52 @@
+# Starts the site's runs (pages.yml) on time. GitHub's own schedule is best-effort: in the week to 11 Oct 2026 it
+# started 6-10 of pages.yml's ~52 scheduled runs a day, hours late, so stories reached the site up to half a day after
+# they were published. This job stays awake (a job may run for 6 hours) and starts pages.yml itself: everything at
+# 00:00, 06:00, 12:00 and 18:00 UTC, the quick labs run at :25 and :55. A quick run is skipped while another pages.yml
+# run is still going or waiting (the next one is 30 minutes away, and a waiting run would replace a waiting full
+# run). Before its 6 hours are up it starts its own successor, which waits (the concurrency group) and takes over.
+# GitHub's built-in token may start other workflows this way; on a public repository the minutes are free.
+# The schedule below is only a backup that restarts the heartbeat if it ever stops; while one is running, a
+# scheduled start just waits and is replaced by the successor.
+name: Heartbeat
+
+on:
+  schedule:
+    - cron: "40 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+concurrency:
+  group: heartbeat
+  cancel-in-progress: false
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Start the site's runs on time, then hand over to the next heartbeat
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          end=$(( $(date +%s) + 345 * 60 ))
+          while [ "$(date +%s)" -lt "$end" ]; do
+            sleep $(( 60 - $(date +%s) % 60 ))
+            h=$(date -u +%-H); m=$(date -u +%M)
+            if [ "$m" = 00 ] && [ $(( h % 6 )) -eq 0 ]; then
+              echo "$(date -u +%H:%M) full run"
+              gh workflow run pages.yml --repo "$REPO" --ref main -f run=full || true
+            elif [ "$m" = 25 ] || [ "$m" = 55 ]; then
+              busy=$(gh run list --workflow pages.yml --repo "$REPO" --limit 10 --json status \
+                     -q '[.[] | select(.status != "completed")] | length' || echo 0)
+              if [ "$busy" = 0 ]; then
+                echo "$(date -u +%H:%M) quick run"
+                gh workflow run pages.yml --repo "$REPO" --ref main -f run=quick || true
+              else
+                echo "$(date -u +%H:%M) quick run skipped: a run is still going or waiting"
+              fi
+            fi
+          done
+          gh workflow run heartbeat.yml --repo "$REPO" --ref main
