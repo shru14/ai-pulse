@@ -618,6 +618,7 @@ header.top.home{height:auto;padding-top:10px}
 .secnav a{border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin:0;background:var(--surface);color:var(--ink);text-transform:none;letter-spacing:0;font:500 14px var(--body)}
 .secnav a:hover{background:var(--cat-soft,var(--surface))}
 .secnav a[aria-current]{background:var(--cat-f,var(--ink));border-color:var(--cat-f,var(--ink));color:#000;font-weight:600}
+header.top:has(.secnav){border-bottom:0}  /* the chips end the masthead themselves */
 .subscribe-btn{border-radius:0;border:2px solid var(--ink)}
 .subscribe-btn.cta{box-shadow:none}
 .item.tool{--cat-f:var(--f-tool)}.item.news{--cat-f:var(--f-news)}.item.research{--cat-f:var(--f-research)}
