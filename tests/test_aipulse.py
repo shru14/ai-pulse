@@ -2282,8 +2282,7 @@ def test_glossary_explains_the_hard_words_in_stories():
              {"date": "2026-08-01", "title": "An old RAG story", "summary": ""}]
     rag = next(e for e in glossary.payload(cards, date(2026, 9, 29))["entries"] if e["id"] == "rag")
     assert rag["recent"] == 1 and rag["search"] == "RAG" and rag["match"] and rag["level"] == "Technical"
-    # each word's example: the newest story using it, in the last 30 days (the older one is too old)
-    assert rag["example"]["title"] == "A RAG pipeline for agents" and rag["example"]["date"] == "2026-09-28"
+    assert "example" not in rag  # no news story or date on a glossary word
     assert not rag["new"] and rag["added"] == "2026-09-29"
     entries = {e["id"]: e for e in glossary.payload(cards, date(2026, 10, 12))["entries"]}
     assert entries["synthid"]["new"] and entries["kl-divergence"]["new"]  # both added after launch
