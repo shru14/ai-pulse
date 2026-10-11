@@ -3353,6 +3353,29 @@ def test_monthly_issue_pages(tmp_path):
     assert shelf.index("September") < shelf.index("August")  # newest first
 
 
+def test_monthly_rules_that_moved_reads_every_tracked_law():
+    from aipulse import monthly
+    def law(key, title, d, steps):
+        return {"id": key, "title": f"{key}: {title}", "date": d, "category": "regulation", "bill": key, "source": "Gov",
+                "url": f"https://x/{key}", "lifecycle": {"url": f"https://gov/{key}", "source": "Gov", "steps": steps}}
+    s = lambda stage, label, d: {"stage": stage, "label": label, "date": d}
+    laws = [law("KR-1", "AI Basic Act", "2026-09-30",  # dated its latest stage, months after the one it passed in August
+                [s("introduced", "Introduced", "2026-05-01"), s("passed_chamber", "Passed", "2026-08-01"),
+                 s("signed", "Promulgated", "2026-08-04"), s("in_force", "In force", "2026-09-30")]),
+            law("CH-2", "Motion on AI", "2026-08-20", [s("introduced", "Submitted", "2026-08-02"),
+                                                         s("withdrawn", "Closed", "2026-08-20")]),
+            law("US-3", "An introduced bill", "2026-08-09", [s("introduced", "Introduced", "2026-08-09")]),
+            {"id": "s", "title": "ISO/IEC 42099: AI something", "date": "2026-08-01", "category": "regulation",
+             "bill": "STD-ISO/IEC-42099", "source": "ISO/IEC", "url": "https://iso/42099"}]
+    rows = monthly.rules(laws, "2026-08")
+    assert [(r["badge"], r["title"], r["label"]) for r in rows] == [
+        ("signed", "AI Basic Act", "Promulgated"),  # the furthest stage of the month; the official wording kept
+        ("standard", "ISO/IEC 42099: AI something", "Published"), ("withdrawn", "Motion on AI", "Closed")]
+    assert rows[0]["flag"] == "kr.svg" and rows[1]["flag"] == "intl.svg"
+    assert monthly.issue("2026-08", [], {}, laws)["rules"] == rows  # the month's cards alone would miss KR-1
+    assert monthly.rules(laws, "2026-07") == []
+
+
 def test_monthly_summary_that_fails_every_try_is_not_tried_again(tmp_path, monkeypatch):
     from datetime import date
     from aipulse import monthly

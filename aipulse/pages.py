@@ -194,6 +194,11 @@ a.subscribe-btn{text-decoration:none}
 .cp .mt.top td:first-child{width:1%}
 .cp .mt.top .st{display:table;margin-bottom:5px}
 .cp .mt .new{display:inline-block;margin-left:8px;font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#E69F00;color:#000;border:2px solid #000;padding:0 5px;vertical-align:2px}
+.cp .mt .badge{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#000;background:#F0E442;border:2px solid #000;padding:1px 6px;white-space:nowrap}
+.cp .mt .b-in_force{background:#009E73}.cp .mt .b-signed{background:#56B4E9}.cp .mt .b-standard{background:#CC79A7}
+.cp .mt .b-vetoed,.cp .mt .b-withdrawn{background:#fff;border-style:dashed;color:#000}
+.cp .mt.rules td:first-child{width:1%}
+.cp .mt.rules td:last-child .flag{width:24px;height:18px;display:block;margin:2px 0 4px auto}
 .cp .mt.words td:nth-child(2){color:var(--muted);font-size:14.5px}
 .cp .mt .name{font:400 16px/1.2 var(--display)!important}
 .cp .chapter.wk .yr span{font-size:clamp(26px,3vw,36px)}
