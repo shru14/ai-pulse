@@ -471,6 +471,7 @@ header.top{gap:10px}
 .group.place-filter{color:var(--ink);border-color:var(--ink)}
 .group:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .authors{font-size:14px;color:var(--muted);margin:0}
+.ref-note{font-size:13px;color:var(--muted);margin:2px 0 0;line-height:1.45}
 .cat.regulation{color:var(--c-reg);background:var(--c-reg-soft)}
 .cat.infra{color:var(--c-infra);background:var(--c-infra-soft)}
 .place{font:500 12px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;cursor:pointer}
@@ -1089,6 +1090,32 @@ const STREAM_NAME = {tool:"Releases", news:"Industry", policy:"Policy", research
   infra:"Infra & climate"};
 // Regulation tracker items: proposals, adopted laws, and what the followed ethics / law scholars publish.
 const ACTION_LABEL = {proposal:"Proposal", law:"Law adopted", body:"AI body", standard:"Standard"};
+// What an official reference number at the start of a tracker title means, in one sentence; hand-written and
+// checked against each parliament's own account of its process (house.gov, consilium.europa.eu, camara.leg.br,
+// parlament.ch, stortinget.no, oireachtas.ie, law.go.kr, e-Gov, iso.org). A title with no known number gets none.
+const REF_NOTES = [
+  ["US", /^H\.R\. \d/, "H.R.: a bill in the US House. It becomes law only if the House and Senate pass the same text and the President signs it."],
+  ["US", /^S\. \d/, "S.: a bill in the US Senate. It becomes law only if the Senate and House pass the same text and the President signs it."],
+  ["US", /^[HS]\.J\.Res\. \d/, "J.Res.: a joint resolution in Congress. Like a bill, it needs both the House and Senate, then the President's signature."],
+  ["EU", /^\d{4}\/\d{4}\(COD\)/, "COD: the EU's ordinary procedure. A Commission proposal becomes law only when Parliament and the Council approve the same text."],
+  ["BR", /^PL \d/, "PL: a bill in Brazil's Congress. The Chamber of Deputies and the Senate vote on it, then the President signs or vetoes it."],
+  ["BR", /^PLP \d/, "PLP: a bill for a complementary law in Brazil. It needs an absolute majority in both chambers, then the President's signature."],
+  ["CH", /^Motion \d/, "Motion: a Swiss MP's request. If both chambers adopt it, the Federal Council must draft a law or take the measure asked for."],
+  ["NO", /^Dokument 8:/, "Dokument 8: a proposal by members of Norway's Storting. A committee reviews it and the minister comments before the vote."],
+  ["NO", /^Prop\. \d+ L /, "Prop. L: the Norwegian government's bill to the Storting."],
+  ["NO", /^Prop\. \d+ LS /, "Prop. LS: a Norwegian government proposal to the Storting for a law and other decisions together."],
+  ["IE", /^Bill \d+ of \d{4}/, "A bill in Ireland's Oireachtas. It passes the Dáil and the Seanad, then becomes law when the President signs it."],
+  ["KR", /^Act No\. \d+:/, "Act No.: a Korean law passed by the National Assembly, numbered when it is promulgated."],
+  ["KR", /^Presidential Decree No\./, "Presidential Decree: rules the Korean government issues to carry out an act, with no National Assembly vote."],
+  ["KR", /^Ministerial Decree No\./, "Ministerial Decree: a Korean ministry's detailed rules under an act and its decree."],
+  ["JP", /^Act No\. \d+ of \d{4}/, "Act No.: a Japanese law passed by the Diet, numbered by year when it is promulgated."],
+  ["JP", /^Cabinet Order No\./, "Cabinet Order: rules Japan's Cabinet makes to carry out an act, with no Diet vote."],
+  ["VN", /^Law No\. [\d/]+\/QH\d+/, "QH: passed by Vietnam's National Assembly (QH15 is its 15th term)."],
+  ["VN", /^Decree No\. [\d/]+\/NĐ-CP/, "NĐ-CP: a decree of Vietnam's Government, setting out how a law is carried out."],
+  ["INTL", /^ISO\/IEC TR \d/, "ISO/IEC TR: a technical report from ISO and IEC, guidance and background. Voluntary, not law."],
+  ["INTL", /^ISO\/IEC \d/, "ISO/IEC: an international standard. Voluntary, not law, though laws and contracts can point to it."],
+];
+const refNote = it => (REF_NOTES.find(([j, re]) => (it.jurisdictions || []).includes(j) && re.test(it.title)) || [])[2];
 // ISO gives a standard's month of publication only (aipulse/standards.py dates it the 1st): show the month.
 const monthOf = d => new Date(d+"T00:00:00").toLocaleDateString(undefined,{month:"short", year:"numeric"});
 // items: the cards loaded so far for the current tab / search / range / country (the server filters and
@@ -1233,6 +1260,8 @@ function render(){
       art.append(side);
       const body = el("div","body"); art.append(body);
       const h = el("h3"); const a = el("a",null,it.title); a.href = it.url; a.target="_blank"; a.rel="noopener"; h.append(a); body.append(h);
+      const note = it.category === "regulation" && refNote(it);
+      if(note) body.append(el("p","ref-note",note));
       if(it.authors && it.authors.length){
         const shown = it.authors.slice(0,6).join(", ");
         body.append(el("p","authors", shown + (it.authors.length>6 ? " +"+(it.authors.length-6)+" more" : "")));
