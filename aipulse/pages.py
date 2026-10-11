@@ -168,11 +168,13 @@ a.subscribe-btn{text-decoration:none}
 .cp .mi{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .mi .topic-hero .kind{font-size:12.5px}
 .cp .mi .topic-hero h1{max-width:none}
-.cp .mi .topic-hero{background:#1b1f27}
+.cp .mi .topic-hero{background:#1b1f27;height:clamp(150px,18vw,220px)}
+.cp .mi .topic-hero .over{gap:6px}
+.cp .mi .topic-hero h1{font-size:clamp(28px,4vw,44px)}
 .cp .mi .timeline .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .cp .mi .topic-hero .num{color:#fff;font:600 14px var(--mono);letter-spacing:.06em}
-.cp .contents{display:flex;flex-wrap:wrap;gap:6px 22px;list-style:none;margin:18px 0 0;padding:12px 0;border-bottom:2px solid #000;counter-reset:c}
-.cp .contents li{padding:0;border:0;counter-increment:c;font-size:15px}
+.cp .contents{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:6px 14px;list-style:none;margin:18px 0 0;padding:12px 0;border-bottom:2px solid #000;counter-reset:c}
+.cp .contents li{padding:0;border:0;counter-increment:c;font-size:14px;white-space:nowrap}
 .cp .contents li::before{content:counter(c,decimal-leading-zero);font:600 12px var(--mono);color:#D55E00;margin-right:7px}
 .cp .contents a{font-weight:600;color:var(--ink);text-decoration:none}
 .cp .contents a:hover{text-decoration:underline}
@@ -209,22 +211,21 @@ a.subscribe-btn{text-decoration:none}
 .cp .key span{display:inline-flex;align-items:center;gap:6px}
 .cp .sq{display:inline-block;flex:none;width:12px;height:12px;background:var(--st);border:2px solid #000}
 .cp .ranked{list-style:none;margin:0;padding:0;border-top:2px solid #000}
-.cp .ranked li{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid color-mix(in srgb,#000 25%,transparent)}
-.cp .ranked .track{display:flex;align-items:center;gap:8px;margin-top:7px}
-.cp .ranked .rail{flex:0 1 440px;min-width:0;display:flex;align-items:center;gap:8px;white-space:nowrap}
-.cp .ranked .obar{display:block;flex:none;height:14px;min-width:14px;background:var(--st);border:2px solid #000;box-sizing:border-box}
-.cp .ranked .v{flex:none;font:600 11.5px var(--mono);color:var(--muted)}
+.cp .ranked li{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid color-mix(in srgb,#000 25%,transparent)}
+.cp .ranked .cnt{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:52px;padding:3px 6px;background:var(--st);border:2px solid #000;color:#000}
+.cp .ranked .cnt b{font:400 18px/1 var(--display)}
+.cp .ranked .cnt small{font:600 9.5px var(--mono);letter-spacing:.04em;text-transform:uppercase}
 .cp .ranked .r{font:400 18px/1.1 var(--display)}
 .cp .ranked a{color:var(--ink);font-weight:600;text-decoration:none;line-height:1.35}
 .cp .ranked a:hover,.cp .ranked a:focus-visible{text-decoration:underline}
 .cp .ranked .meta{font-size:13px;margin-top:2px}
 .cp .sgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:12px}
 .cp .scard{border:2px solid #000;box-shadow:4px 4px 0 #000;background:var(--bg)}
-.cp .scard h3{margin:0;padding:7px 12px;background:var(--st);border-bottom:2px solid #000;color:#000;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cp .scard h3{margin:0;padding:7px 12px;background:var(--st);border-bottom:2px solid #000;color:#000;font:400 16px/1.2 var(--display)}
 .cp .scard ol{list-style:none;margin:0;padding:0 12px}
 .cp .scard li{padding:10px 0;border-bottom:1px solid color-mix(in srgb,#000 25%,transparent)}
 .cp .scard li:last-child{border-bottom:0}
-.cp .scard a{color:var(--ink);font-weight:600;text-decoration:none;line-height:1.35}
+.cp .scard a{color:var(--ink);font-weight:400;text-decoration:none;line-height:1.35}
 .cp .scard a:hover,.cp .scard a:focus-visible{text-decoration:underline}
 .cp .scard .meta{font-size:12.5px;margin-top:3px}
 @media (min-width:701px){
@@ -261,6 +262,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .shelf .txt{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px}
 .cp .shelf .num{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#D55E00}
 .cp .shelf b{font:400 22px/1.1 var(--display)}
+@media (max-width:1060px){.cp .contents{flex-wrap:wrap;justify-content:flex-start}}
 @media (max-width:900px){.cp .shelf{grid-template-columns:repeat(3,minmax(0,1fr))}.cp .sgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.cp .shelf{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cp .grp{grid-template-columns:1fr;gap:6px}

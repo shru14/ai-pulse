@@ -396,15 +396,13 @@ ISSUE_JS = r"""<script>
     const sq = s => { const q = el("i", "sq"); q.style.setProperty("--st", "var(--f-" + COL[s] + ")"); return q; };
     document.getElementById("top-key").replaceChildren(...[...new Set(d.top.map(e => e.stream))].map(s => {
       const k = el("span"); k.append(sq(s), NAMES[s]); return k; }));
-    const most = Math.max(...d.top.map(e => e.outlets), 1);
     document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) => {
-      const li = el("li"), body = el("div"), track = el("div", "track"), rail = el("span", "rail"), bar = el("span", "obar");
-      const many = e.outlets + (e.outlets > 1 ? " outlets" : " outlet");
-      bar.style.width = "calc((100% - 84px) * " + (e.outlets / most) + ")"; bar.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
-      bar.title = NAMES[e.stream] + ": " + many;
-      rail.append(bar, el("span", "v", many)); track.append(rail);
-      body.append(link(e), el("div", "meta", NAMES[e.stream] + " · " + e.source + " · " + day(e.date)), track);
-      li.append(el("b", "r", String(i + 1)), body);
+      const li = el("li"), body = el("div"), cnt = el("span", "cnt");
+      cnt.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
+      cnt.title = NAMES[e.stream] + ": " + e.outlets + (e.outlets > 1 ? " outlets" : " outlet");
+      cnt.append(el("b", null, String(e.outlets)), el("small", null, e.outlets > 1 ? "outlets" : "outlet"));
+      body.append(link(e), el("div", "meta", NAMES[e.stream] + " · " + e.source + " · " + day(e.date)));
+      li.append(el("b", "r", String(i + 1)), body, cnt);
       return li;
     }));
     const rr = document.getElementById("rule-groups"), by = {};
