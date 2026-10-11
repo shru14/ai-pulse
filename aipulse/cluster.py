@@ -27,6 +27,9 @@ MIN_SHARED = 2  # distinctive words in common, so two short headlines can't matc
 ANCHOR_IDF = 3.2
 ANCHOR_EXTRA_IDF = 1.5  # the other shared word: not a common one ("new", "launch" are stop words or common)
 ANCHOR_DAYS = 0
+# Reported the next day (a translation, a late write-up), the two headlines must share two such rare names ("Gemini"
+# and "Cloud"): one alone ("Muse") is in a new story about that product every day.
+ANCHOR_NEXT_DAY = 2
 # Releases and industry news are compared with each other: a launch is often reported as news too.
 FAMILY = {"tool": "tool+news", "news": "tool+news"}
 
@@ -72,7 +75,8 @@ def tokens(item: dict) -> set[str]:
 def _text(item: dict) -> str:
     text = item["title"]
     if item.get("summary") and not brief.is_draft(item["summary"]):
-        text += " " + item["summary"][:200]
+        # without our own note on a translation: two Spanish stories aren't alike for saying "Machine-translated"
+        text += " " + classify._TRANSLATED.sub("", item["summary"])[:200]
     return text
 
 
@@ -139,16 +143,16 @@ def _release_and_incident(a: dict, b: dict) -> bool:
     return {a["category"], b["category"]} == {"tool", "news"} and "incident" in (a.get("action"), b.get("action"))
 
 
-def _anchored(a: dict, b: dict, idf: dict[str, float]) -> bool:
-    """Both headlines are about the same company (the first one each names) and share a rare name that isn't the
-    company's own ("Muse"). A story naming the product only in passing ("...a wide gap to Claude and GPT-6") is
-    about another company, so it doesn't count."""
+def _anchored(a: dict, b: dict, idf: dict[str, float], need: int = 1) -> bool:
+    """Both headlines are about the same company (the first one each names) and share `need` rare names that
+    aren't the company's own ("Muse"). A story naming the product only in passing ("...a wide gap to Claude and
+    GPT-6") is about another company, so it doesn't count."""
     company = classify.lead_company(a["title"])
     if not company or company != classify.lead_company(b["title"]):
         return False
     own = _norm(company.lower())
     anchors = {t for t in _names(a["title"]) & _names(b["title"]) if idf.get(t, 0.0) >= ANCHOR_IDF and t != own}
-    if not anchors:
+    if len(anchors) < need:
         return False
     # ...and something else the two say alike: a product that fills the news for days ("Muse") is in many
     # different stories, so the name alone isn't enough.
@@ -208,6 +212,8 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
             if s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and (_anchored(items[i], items[j], idf)
                                                                      or _same_person(items[i], items[j], idf)
                                                                      or _same_sum(items[i], items[j])):
+                s = THRESHOLD
+            elif s < THRESHOLD and days[j] - days[i] == ANCHOR_DAYS + 1 and _anchored(items[i], items[j], idf, ANCHOR_NEXT_DAY):
                 s = THRESHOLD
             if s > 0:
                 sim[min(i, j), max(i, j)] = s
