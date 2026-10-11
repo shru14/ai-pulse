@@ -613,8 +613,11 @@ header.top.home{height:auto;padding-top:10px}
 .mast-line{order:4;flex-basis:100%;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 24px;padding:2px 0 8px}
 .mast-line .lede{margin:0}
 .mast-line .home-status{margin:0}
-.secnav a{border-radius:0;padding:6px 12px 6px 0;margin-right:10px;text-transform:none;letter-spacing:0;font:600 14px var(--body)}
-.secnav a[aria-current]{background:none;color:var(--ink);box-shadow:inset 0 -4px 0 var(--cat-f,var(--ink))}
+/* the sections as buttons, filled with their stream's colour when open or pointed at */
+.secnav{gap:8px;padding:8px 0}
+.secnav a{border:2px solid var(--ink);border-radius:0;padding:5px 12px;margin:0;background:var(--surface);color:var(--ink);text-transform:none;letter-spacing:0;font:600 14px var(--body);box-shadow:2px 2px 0 var(--ink)}
+.secnav a:hover{background:var(--cat-f,var(--surface));color:#000}
+.secnav a[aria-current]{background:var(--cat-f,var(--ink));color:#000;box-shadow:none;transform:translate(2px,2px)}
 .subscribe-btn{border-radius:0;border:2px solid var(--ink)}
 .subscribe-btn.cta{box-shadow:none}
 .item.tool{--cat-f:var(--f-tool)}.item.news{--cat-f:var(--f-news)}.item.research{--cat-f:var(--f-research)}
@@ -631,8 +634,10 @@ header.top.home{height:auto;padding-top:10px}
   header.top .subscribe-btn.cta{padding:0 10px}
   header.top .subscribe-btn.cta svg{display:none}  /* the word alone, so the top row fits a phone */
   header.top{gap:8px}
-  header.top .secnav{flex-wrap:wrap;overflow:visible}  /* every stream in sight: two rows rather than a hidden scroll */
-  header.top .secnav a{margin-right:4px;padding-right:8px;font-size:13.5px}
+  /* one row of buttons that scrolls sideways, running to the screen's edge, faded there to show there's more */
+  header.top .secnav{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;margin-inline:-16px;padding:8px 16px;
+    -webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}
+  header.top .secnav a{scroll-snap-align:start;font-size:13.5px;padding:5px 10px}
   .sec-hero{min-height:0;padding:20px 16px}
   header.top.home{position:static}  /* the tall masthead scrolls away on a phone... */
   .controls{top:0}  /* ...and the filters stick to the top instead */
@@ -777,7 +782,7 @@ header.top.home{height:auto;padding-top:10px}
 /* Phones: a short masthead and email strip, the week's three tiles side by side to swipe */
 @media (max-width:560px){
   .lede strong{font-size:19px}
-  header.top .secnav a{margin-right:2px;padding-right:7px;font-size:13px}
+  header.top .secnav a{font-size:13px}
   .sub-strip{padding:16px!important;gap:12px}
   .sub-strip h2{font-size:21px}
   .sub-strip .sub-inside{margin-top:10px;gap:5px}
@@ -1131,6 +1136,8 @@ function showPage(){
   $("subscribe-open").hidden = $("glossary-open").hidden = home; $("az-open").hidden = !home;
   // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
   document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
+  const open = document.querySelector("#secnav a[aria-current]"), nav = $("secnav");  // on a phone, the open one in sight
+  if(open && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = open.offsetLeft - nav.offsetLeft - 16;
   if(tday){ document.title = "Today in AI · AI Pulse"; renderTodayPage(); loadHome(); return; }
   if(about || disc){ document.title = (about ? "About" : "People are discussing") + " · AI Pulse";
     if(state.allTime === undefined) loadHomeCounts(); return; }
