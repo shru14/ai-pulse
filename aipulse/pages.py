@@ -57,6 +57,16 @@ STYLE = """
 .cp .days .grp{margin-left:10px;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
 .cp .note{margin-top:28px;font-size:14px;color:var(--muted)}
 .cp .note a{color:#0072B2}
+.cp .topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:14px}
+.cp .topics a{display:flex;flex-direction:column;gap:6px;border:2px solid #000;background:var(--bg);padding:14px 16px;color:var(--ink);text-decoration:none}
+.cp .topics a:hover,.cp .topics a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
+.cp .topics .kind{margin:0}
+.cp .topics b{font:400 22px/1.15 var(--display)}
+.cp .topics .what{font-size:14.5px;line-height:1.4}
+.cp .topics .meta{margin-top:auto;padding-top:4px}
+.cp .events .month{border:0;padding:22px 0 2px;font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cp ol.events{list-style:none;margin:0;padding:0}
+.cp .events .official{border-left:6px solid #D55E00;padding-left:12px}
 a.subscribe-btn{text-decoration:none}
 """
 

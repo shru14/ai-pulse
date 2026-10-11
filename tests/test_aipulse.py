@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "social.json", "today", "today.json",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "social.json", "today", "today.json", "topics",
         "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -641,6 +641,7 @@ def test_static_build_holds_every_card(tmp_path):
     tracker_pages = list((tmp_path / "site" / "tracker").glob("**/index.html"))
     tracker_pages += list((tmp_path / "site" / "glossary").glob("**/index.html"))  # and the glossary's
     tracker_pages += list((tmp_path / "site" / "industry").glob("*/index.html"))  # and Industry's kinds, a page each
+    tracker_pages += list((tmp_path / "site" / "topics").glob("**/index.html"))  # and the topics, a page each
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and 'data-kind="tutorial"' in tutorials and "Updated" not in tutorials
