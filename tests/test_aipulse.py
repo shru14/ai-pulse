@@ -1714,6 +1714,20 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     assert digest.build(cards, ["policy"], date(2026, 9, 27)) is None      # nothing that day: no email
 
 
+def test_same_company_and_sum_is_one_story():
+    from aipulse import cluster
+    item = lambda i, title, src: {"id": f"s{i}", "title": title, "summary": "", "url": f"https://ex.com/{i}",
+                                  "source": src, "category": "news", "date": "2026-10-09"}
+    a = item(1, "The maker of non-text AI model Jev valued at $7.5B just weeks after launch", "TechCrunch AI")
+    b = item(2, "Jev creator TypeSafe closes $870M round at $7.5B valuation", "SiliconANGLE AI")
+    c = item(3, "Jev creator TypeSafe signs $7.5B chip deal", "Other")
+    assert cluster._sums(b["title"]) == {("$", 870_000_000), ("$", 7_500_000_000)}
+    assert cluster._sums("Anthropic lost $8 billion last year") == cluster._sums("reveals $8B operating loss")
+    assert cluster._same_sum(a, b) and cluster._same_sum(b, c)
+    assert not cluster._same_sum(a, item(4, "Mistral raises $7.5B", "Other"))  # another company
+    assert [len(g) for g in cluster.group([a, b])] == [2]
+
+
 def test_late_arrivals_reach_the_next_email_once(monkeypatch):
     from datetime import date
     from aipulse import digest

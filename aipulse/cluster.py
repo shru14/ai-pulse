@@ -169,6 +169,23 @@ def _same_person(a: dict, b: dict, idf: dict[str, float]) -> bool:
     return any(all(idf.get(w, 0.0) >= ANCHOR_IDF for w in p) for p in people(a) & people(b))
 
 
+_SUM = re.compile(r"([$€£])\s?(\d+(?:[.,]\d+)?)\s?(trillion|billion|million|tn|bn|mn|[tbm])\b", re.I)
+_UNIT = {"t": 1e12, "tn": 1e12, "trillion": 1e12, "b": 1e9, "bn": 1e9, "billion": 1e9, "m": 1e6, "mn": 1e6, "million": 1e6}
+
+
+def _sums(title: str) -> set[tuple[str, float]]:
+    """Sums of money a headline names, in one form ("$7.5B" and "$7.5 billion" -> ("$", 7.5e9))."""
+    return {(cur, round(float(n.replace(",", ".")) * _UNIT[u.lower()])) for cur, n, u in _SUM.findall(title)}
+
+
+def _same_sum(a: dict, b: dict) -> bool:
+    """Two headlines about the same company that name the same sum of money: one funding round or deal, told in
+    other words ("The maker of ... Jev valued at $7.5B" and "Jev creator TypeSafe closes $870M round at $7.5B
+    valuation"). A sum is specific enough that the company's name is the only other thing they need to share."""
+    company = classify.lead_company(a["title"])
+    return bool(company) and company == classify.lead_company(b["title"]) and bool(_sums(a["title"]) & _sums(b["title"]))
+
+
 def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[dict]]:
     """Groups of the same event (single-story groups included), lead first, in the input's order."""
     idf = idf if idf is not None else idf_weights(items)
@@ -189,7 +206,8 @@ def group(items: list[dict], idf: dict[str, float] | None = None) -> list[list[d
                 continue
             s = similarity(toks[i], toks[j], idf)
             if s < THRESHOLD and days[j] - days[i] <= ANCHOR_DAYS and (_anchored(items[i], items[j], idf)
-                                                                     or _same_person(items[i], items[j], idf)):
+                                                                     or _same_person(items[i], items[j], idf)
+                                                                     or _same_sum(items[i], items[j])):
                 s = THRESHOLD
             if s > 0:
                 sim[min(i, j), max(i, j)] = s
