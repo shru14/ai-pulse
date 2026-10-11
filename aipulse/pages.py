@@ -163,9 +163,18 @@ STYLE = """
   .cp .timeline .dot{left:12px}
   .cp .timeline .ev.left .box::after,.cp .timeline .ev.right .box::after{left:-18px;right:auto;width:16px}
   .cp .timeline .more,.cp .timeline .now{align-items:flex-start;justify-content:flex-start}
-  .cp .timeline .ev .thumb{width:72px}
+  .cp .timeline .more{padding-left:36px}  /* beside the line, not on it */
+  .cp .timeline .more ul li{grid-template-columns:52px 1fr}
+  .cp .timeline .ev .thumb{display:none}  /* on a phone the photo only stretches beside a long headline */
+  .cp .timeline .ev a{font-size:15px}
+  /* key moments: a short row each (small photo, then the words), so the timeline isn't four screens down */
+  .cp .mgrid{grid-template-columns:1fr;gap:10px}
+  .cp .moment{flex-direction:row}
+  .cp .moment .mpic{width:84px;height:auto;align-self:stretch;border-bottom:0;border-right:2px solid #000}
+  .cp .moment .mtxt{padding:8px 10px 10px;gap:4px}
+  .cp .moment b{font-size:14px}
+  .cp .tp h2{margin-top:26px}
 }
-@media (max-width:460px){.cp .mgrid{grid-template-columns:1fr}}
 a.subscribe-btn{text-decoration:none}
 """
 
