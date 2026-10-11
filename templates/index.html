@@ -613,12 +613,15 @@ header.top.home{height:auto;padding-top:10px}
 .mast-line{order:4;flex-basis:100%;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 24px;padding:2px 0 8px}
 .mast-line .lede{margin:0}
 .mast-line .home-status{margin:0}
-/* the sections as rounded chips, like the region filters; the open one filled with its stream's colour */
-.secnav{gap:6px;padding:8px 0}
-.secnav a{border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin:0;background:var(--surface);color:var(--ink);text-transform:none;letter-spacing:0;font:500 14px var(--body)}
-.secnav a:hover{background:var(--cat-soft,var(--surface))}
-.secnav a[aria-current]{background:var(--cat-f,var(--ink));border-color:var(--cat-f,var(--ink));color:#000;font-weight:600}
-header.top:has(.secnav){border-bottom:0}  /* the chips end the masthead themselves */
+/* the streams as a newspaper's section bar: a ruled strip across the page, the open one with its colour on top */
+header.top .secnav{gap:0;padding:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.secnav a{flex:1 1 auto;text-align:center;border:0;border-top:5px solid transparent;border-radius:0;margin:-1px 0 0;padding:9px 12px 8px;background:none;color:var(--ink);text-transform:none;letter-spacing:0;font:600 14px var(--body)}
+.secnav a + a{border-left:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+.secnav a:hover{background:none;border-top-color:var(--cat-f)}
+.secnav a[aria-current]{border-top-color:var(--cat-f);background:color-mix(in srgb,var(--cat-f) 16%,var(--bg));box-shadow:none}
+header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself */
+.about-link{flex:none;font:600 14px var(--body);color:var(--ink);text-decoration:underline;text-decoration-color:#0072B2;text-decoration-thickness:2px;text-underline-offset:4px}
+.about-link[aria-current]{text-decoration-thickness:4px}
 .subscribe-btn{border-radius:0;border:2px solid var(--ink)}
 .subscribe-btn.cta{box-shadow:none}
 .item.tool{--cat-f:var(--f-tool)}.item.news{--cat-f:var(--f-news)}.item.research{--cat-f:var(--f-research)}
@@ -636,9 +639,10 @@ header.top:has(.secnav){border-bottom:0}  /* the chips end the masthead themselv
   header.top .subscribe-btn.cta svg{display:none}  /* the word alone, so the top row fits a phone */
   header.top{gap:8px}
   /* one row of buttons that scrolls sideways, running to the screen's edge, faded there to show there's more */
-  header.top .secnav{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;margin-inline:-16px;padding:8px 16px;
+  header.top .secnav{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;margin-inline:-16px;padding:0 16px;
     -webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}
-  header.top .secnav a{scroll-snap-align:start;font-size:13.5px;padding:5px 10px}
+  header.top .secnav a{flex:none;scroll-snap-align:start;font-size:13.5px;padding:9px 12px 8px}
+  .about-link{font-size:13px}
   .sec-hero{min-height:0;padding:20px 16px}
   header.top.home{position:static}  /* the tall masthead scrolls away on a phone... */
   .controls{top:0}  /* ...and the filters stick to the top instead */
@@ -760,7 +764,6 @@ header.top:has(.secnav){border-bottom:0}  /* the chips end the masthead themselv
 .about-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center;margin-top:12px}
 .about-art{width:100%;height:auto;display:block}
 .about-intro{margin:0;font:400 22px/1.35 var(--head)}
-.nav-about{--cat-f:#0072B2}  /* About's mark in the menu: the page's blue, not white */
 .about-ticks{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:12px}
 .about-ticks li{position:relative;padding-left:34px;font-size:15.5px;line-height:1.45;color:var(--muted)}
 .about-ticks li::before{content:"";position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;
@@ -824,7 +827,6 @@ header.top:has(.secnav){border-bottom:0}  /* the chips end the masthead themselv
     <!-- Each stream is its own page (/releases/, /industry/…); the brand goes back to the front page. All stories
          (/all/) has no link here: it's where a tag or a search lands, every stream at once. -->
     <nav class="secnav" id="secnav" aria-label="Streams">
-      <a href="/about/" data-go="about" class="nav-about">About</a>
       <a href="/releases/" data-go="tool" class="k-tool">Releases</a>
       <a href="/industry/" data-go="news" class="k-news">Industry</a>
       <a href="/research/" data-go="research" class="k-research">Research</a>
@@ -832,6 +834,7 @@ header.top:has(.secnav){border-bottom:0}  /* the chips end the masthead themselv
       <a href="/policy/" data-go="policy" class="k-policy">Policy</a>
       <a href="/infra/" data-go="infra" class="k-infra">Infra &amp; climate</a>
     </nav>
+    <a class="about-link" href="/about/" data-go="about">About</a>
     <button class="subscribe-btn cta" id="subscribe-open" type="button" aria-haspopup="dialog" title="Get the daily digest in your inbox">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
       <span>Subscribe</span>
@@ -1136,7 +1139,7 @@ function showPage(){
   $("about-page").hidden = !about; $("discussing-page").hidden = !disc; $("today-page").hidden = !tday;
   $("subscribe-open").hidden = $("glossary-open").hidden = home; $("az-open").hidden = !home;
   // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
-  document.querySelectorAll("#secnav a").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
+  document.querySelectorAll("#secnav a, .about-link").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
   const open = document.querySelector("#secnav a[aria-current]"), nav = $("secnav");  // on a phone, the open one in sight
   if(open && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = open.offsetLeft - nav.offsetLeft - 16;
   if(tday){ document.title = "Today in AI · AI Pulse"; renderTodayPage(); loadHome(); return; }
