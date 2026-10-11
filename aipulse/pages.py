@@ -86,7 +86,7 @@ STYLE = """
 .cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .tp{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .topic-hero{position:relative;height:clamp(240px,34vw,380px);margin-top:16px;border:2px solid #000;overflow:hidden;box-shadow:6px 6px 0 #000}
-.cp .topic-hero .photo{transform:scale(1.04)}
+.cp .topic-hero .photo{object-position:right center}  /* the cartoon sits on the right, clear of the title */
 .cp .topic-hero .over{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;padding:clamp(18px,3vw,34px);background:linear-gradient(100deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.55) 45%,transparent 80%),linear-gradient(transparent 50%,rgba(0,0,0,.6))}
 .cp .topic-hero .kind{margin:0;color:#fff;background:#D55E00;color:#000;align-self:flex-start;padding:2px 8px;border:2px solid #000}
 .cp .topic-hero h1{color:#fff;margin:0;font-size:clamp(34px,6vw,64px);max-width:16ch}
@@ -95,16 +95,12 @@ STYLE = """
 .cp .topic-hero .badges .logo{width:34px;height:34px}
 .cp .tp > .intro{margin:18px 0 6px;font-size:clamp(17px,2vw,20px);line-height:1.45;color:var(--ink);max-width:62ch}
 .cp .tp h2{margin-top:34px}
-.cp .mgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:12px}
-.cp .moment{display:flex;flex-direction:column;border:2px solid #000;background:var(--bg);color:var(--ink);text-decoration:none;box-shadow:4px 4px 0 #000;transition:transform .12s,box-shadow .12s}
-.cp .moment:hover,.cp .moment:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #D55E00}
-.cp .moment .mpic{display:block;width:100%;height:120px;object-fit:cover;border-bottom:2px solid #000}
-.cp .moment.official{border-top:8px solid #D55E00}
-.cp .moment.news{border-top:8px solid #56B4E9}
-.cp .moment .mtxt{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px;flex:1}
-.cp .moment b{font-size:15px;line-height:1.3}
-.cp .moment .meta{margin-top:auto}
-.cp .moment .top,.cp .timeline .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cp:has(> .tp) > .note{font-size:clamp(17px,2vw,20px)}  /* "Related:" as big as the intro */
+.cp .mlist{list-style:none;margin:12px 0 0;padding:0}
+.cp .mlist li{position:relative;padding:5px 0 5px 28px;font-size:15.5px;line-height:1.35;border:0}
+.cp .mlist li::before{content:"✓";position:absolute;left:4px;top:4px;font-weight:700;color:#D55E00}
+.cp .mlist a{font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+.cp .mlist .when{margin-left:8px;color:var(--muted);font-size:13px;white-space:nowrap}
 .cp .when{font:600 12.5px var(--mono);letter-spacing:.03em}
 .cp .lane{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .cp .legend{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0 0;font-size:14px}
@@ -127,7 +123,6 @@ STYLE = """
 .cp .timeline .ev.news .box{border-top:8px solid #56B4E9}
 .cp .timeline .ev.wide .box{box-shadow:4px 4px 0 #0072B2}
 .cp .timeline .ev.key .box{box-shadow:6px 6px 0 #D55E00}
-.cp .timeline .ev .thumb{flex:none;width:96px;object-fit:cover;border-right:2px solid #000}
 .cp .timeline .ev .txt{flex:1;min-width:0;padding:10px 12px 11px}
 .cp .timeline .ev .box::after{content:"";position:absolute;top:22px;width:24px;height:3px;background:#000}
 .cp .timeline .ev.left .box::after{right:-26px}
@@ -153,7 +148,6 @@ STYLE = """
 .cp .timeline .more .src{grid-column:2;color:var(--muted);font-size:13px}
 .cp .timeline .now{display:flex;justify-content:center;padding:14px 0 0}
 .cp .timeline .now span{position:relative;z-index:1;background:#D55E00;color:#000;border:2px solid #000;font:400 16px var(--display);padding:4px 16px;border-radius:999px}
-@media (max-width:900px){.cp .mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:700px){
   .cp .chapter{grid-template-columns:1fr}
   .cp .chapter .yr{position:sticky;top:var(--bar-h,64px);z-index:2;background:var(--bg);border-top:0;border-bottom:2px solid #000}
@@ -165,14 +159,7 @@ STYLE = """
   .cp .timeline .more,.cp .timeline .now{align-items:flex-start;justify-content:flex-start}
   .cp .timeline .more{padding-left:36px}  /* beside the line, not on it */
   .cp .timeline .more ul li{grid-template-columns:52px 1fr}
-  .cp .timeline .ev .thumb{display:none}  /* on a phone the photo only stretches beside a long headline */
   .cp .timeline .ev a{font-size:15px}
-  /* key moments: a short row each (small photo, then the words), so the timeline isn't four screens down */
-  .cp .mgrid{grid-template-columns:1fr;gap:10px}
-  .cp .moment{flex-direction:row}
-  .cp .moment .mpic{width:84px;height:auto;align-self:stretch;border-bottom:0;border-right:2px solid #000}
-  .cp .moment .mtxt{padding:8px 10px 10px;gap:4px}
-  .cp .moment b{font-size:14px}
   .cp .tp h2{margin-top:26px}
 }
 a.subscribe-btn{text-decoration:none}

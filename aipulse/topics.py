@@ -17,7 +17,7 @@ from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import countries, pages, photos, rss
+from . import countries, pages, rss
 
 QUIET_DAYS = 90  # a topic with no new event for this long is Concluded (kept, never deleted)
 # Topics are ranked by how much they're in the news: over the last TREND_DAYS, each event counts once per outlet that
@@ -178,34 +178,34 @@ TOPICS = {
         related=("openai-restructuring",)),
 }
 
-# Each topic's picture: one of the site's credited Wikimedia Commons photos (photos.py), and the flags of the places
-# whose laws it follows (beside its tracked bills' own). The logos come from its stories (brands.py).
+# Each topic's picture is our own cartoon, templates/photos/cartoons/<slug>.svg (no real people, no logos). LOOK holds
+# the flags of the places whose laws it follows (beside its tracked bills' own). The logos come from its stories (brands.py).
 LOOK = {
-    "eu-ai-act": ("parliament-1.jpg", ("EU",)),
-    "nvidia-chips-china": ("chips-5.jpg", ("US", "CN")),
-    "anthropic-pentagon": ("court-5.jpg", ("US",)),
-    "chatbots-teens": ("school-3.jpg", ()),
-    "copyright-court": ("court-1.jpg", ()),
-    "grok-deepfakes": ("software-2.jpg", ()),
-    "openai-restructuring": ("business-3.jpg", ()),
-    "musk-v-openai": ("court-7.jpg", ()),
-    "california-ai-laws": ("parliament-3.jpg", ("US",)),
-    "us-state-preemption": ("court-8.jpg", ("US",)),
-    "data-centre-power-bills": ("energy-7.jpg", ()),
-    "stargate": ("datacenter-5.jpg", ("US",)),
-    "apple-google-siri": ("business-6.jpg", ()),
-    "korea-ai-basic-act": ("court-3.jpg", ("KR",)),
-    "claude-mythos": ("software-3.jpg", ()),
-    "ai-ipos": ("business-2.jpg", ()),
-    "deepseek-us": ("chips-3.jpg", ("US", "CN")),
-    "meta-superintelligence": ("lab-2.jpg", ()),
-    "openai-device": ("software-4.jpg", ()),
-    "ai-music-labels": ("conference-2.jpg", ()),
-    "ai-summits": ("conference-5.jpg", ()),
-    "ai-bubble": ("business-4.jpg", ()),
-    "google-antitrust-ai": ("court-6.jpg", ("US",)),
-    "perplexity-legal": ("court-2.jpg", ()),
-    "openai-microsoft": ("business-5.jpg", ()),
+    "eu-ai-act": ("EU",),
+    "nvidia-chips-china": ("US", "CN"),
+    "anthropic-pentagon": ("US",),
+    "chatbots-teens": (),
+    "copyright-court": (),
+    "grok-deepfakes": (),
+    "openai-restructuring": (),
+    "musk-v-openai": (),
+    "california-ai-laws": ("US",),
+    "us-state-preemption": ("US",),
+    "data-centre-power-bills": (),
+    "stargate": ("US",),
+    "apple-google-siri": (),
+    "korea-ai-basic-act": ("KR",),
+    "claude-mythos": (),
+    "ai-ipos": (),
+    "deepseek-us": ("US", "CN"),
+    "meta-superintelligence": (),
+    "openai-device": (),
+    "ai-music-labels": (),
+    "ai-summits": (),
+    "ai-bubble": (),
+    "google-antitrust-ai": ("US",),
+    "perplexity-legal": (),
+    "openai-microsoft": (),
 }
 SMALL = 25  # a topic with this many events or fewer shows each as a card; a bigger one only its milestones
 LOGOS = 3   # brand logos on a topic's picture: the ones its stories name most,
@@ -235,8 +235,8 @@ def _logo(card: dict) -> dict | None:
 
 def events(slug: str, cards: list[dict]) -> list[dict]:
     """The topic's events, oldest first: each matching story (with how many outlets carried it and the brand it
-    names), and each stage of its tracked bills as an official record (with its place's flag). Milestones carry a
-    photo; the few biggest are its key moments (see KEY)."""
+    names), and each stage of its tracked bills as an official record (with its place's flag). The few biggest
+    milestones are its key moments (see KEY)."""
     out = []
     for c in cards:
         if not matches(slug, c):
@@ -267,48 +267,9 @@ def events(slug: str, cards: list[dict]) -> list[dict]:
     key += news[:KEY - len(key)]
     for e in key:
         e["key"] = e["milestone"] = True
-    used: set[str] = set()
     for e in out:
-        tags, category = e.pop("tags", []), e.pop("category", "regulation")
-        if e["milestone"]:
-            e["photo"] = _story_photo("parliament" if e["official"] else _photo_topic(tags, category), e["url"], used)
+        e.pop("tags", None), e.pop("category", None)
     return out
-
-
-# The front page's choice of photo for a story (index.html, storyPhoto): by its first tag with a photo topic, else
-# its stream; a page shows each photo once while it has others to show.
-PHOTO_TOPIC = [("Chips", "chips"), ("Compute & Data Centers", "datacenter"), ("Robotics", "robots"),
-               ("Healthcare", "health"), ("Education", "school"), ("Energy", "energy"), ("Climate", "energy"),
-               ("Infrastructure & sustainability", "energy"), ("Funding", "business"), ("IPO", "business"),
-               ("M&A", "business"), ("Law", "court"), ("Copyright", "court"), ("Elections", "parliament"),
-               ("International bodies", "conference"), ("Governance", "conference"), ("Coding Tools", "software"),
-               ("Science", "lab")]
-STREAM_PHOTO = {"tool": "software", "news": "business", "research": "lab", "regulation": "court",
-                "policy": "parliament", "infra": "datacenter"}
-_PHOTOS: dict[str, list] = {}
-
-
-def _photo_topic(tags: list[str], category: str) -> str:
-    return next((p for t, p in PHOTO_TOPIC if t in tags), STREAM_PHOTO.get(category, "business"))
-
-
-def _story_photo(topic: str, url: str, used: set[str]) -> list | None:
-    if not _PHOTOS:
-        for c in photos.credits():
-            _PHOTOS.setdefault(c["topic"], []).append([c["photo"], f"Photo: {photos._who(c)}, {c['licence']}"])
-    choices = _PHOTOS.get(topic) or []
-    if not choices:
-        return None
-    h = 7
-    for ch in url:
-        h = (h * 31 + ord(ch)) & 0xFFFFFFFF
-    i = h % len(choices)
-    for _ in range(len(choices)):
-        if choices[i][0] not in used:
-            break
-        i = (i + 1) % len(choices)
-    used.add(choices[i][0])
-    return choices[i]
 
 
 def trend(ev: list[dict], today: date) -> int:
@@ -333,7 +294,7 @@ def _logo_svg(lg: dict) -> str:
 
 def _badges(slug: str, ev: list[dict]) -> str:
     """The topic's flags, then the logos its stories name most."""
-    flags = list(dict.fromkeys([countries.flag(f) for f in LOOK[slug][1]]
+    flags = list(dict.fromkeys([countries.flag(f) for f in LOOK[slug]]
                                + [e["flag"] for e in ev if e.get("flag")]))
     count: dict[str, list] = {}
     for e in ev:
@@ -344,10 +305,8 @@ def _badges(slug: str, ev: list[dict]) -> str:
             + "".join(_logo_svg(lg) for lg in logos))
 
 
-def _photo(slug: str, credits: dict) -> str:
-    file = LOOK[slug][0]
-    return (f'<img class="photo" src="photos/{file}" alt="" loading="lazy" '
-            f'title="{escape(credits.get(file, "Photo: Wikimedia Commons"))}">')
+def _photo(slug: str) -> str:
+    return f'<img class="photo" src="photos/cartoons/{slug}.svg" alt="" loading="lazy">'
 
 
 TIMELINE_JS = r"""<script>
@@ -357,7 +316,6 @@ TIMELINE_JS = r"""<script>
   const day = d => fmt(d, {day: "numeric", month: "short"}), full = d => fmt(d, {day: "numeric", month: "short", year: "numeric"});
   const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
   const link = (e, cls) => { const a = el("a", cls, e.title); a.href = e.url; a.rel = "noopener"; return a; };
-  const pic = (e, cls) => { if(!e.photo) return null; const i = el("img", cls); i.src = "photos/" + e.photo[0]; i.alt = ""; i.loading = "lazy"; i.title = e.photo[1]; return i; };
   const lane = e => el("span", "lane", e.official ? "Official record" : "In the news");
   const meta = e => el("div", "meta", e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : ""));
   const icon = e => {
@@ -370,9 +328,8 @@ TIMELINE_JS = r"""<script>
   };
   const card = (e, side) => {
     const li = el("li", "ev " + side + (e.official ? " official" : " news") + (e.outlets > 1 ? " wide" : "") + (e.key ? " key" : ""));
-    const box = el("div", "box"), top = el("div", "top"), ic = icon(e), im = pic(e, "thumb");
+    const box = el("div", "box"), top = el("div", "top"), ic = icon(e);
     top.append(el("span", "when", day(e.date)), lane(e)); if(ic) top.append(ic);
-    if(im) box.append(im);
     const txt = el("div", "txt"); txt.append(top, link(e), meta(e)); box.append(txt);
     li.append(el("span", "dot"), box);
     return li;
@@ -390,13 +347,10 @@ TIMELINE_JS = r"""<script>
     if(!list.length) return tl.append(el("p", "meta", "Nothing yet."));
     const keys = list.filter(e => e.key);
     if(keys.length) {
-      const grid = moments.querySelector(".mgrid");
+      const ul = moments.querySelector(".mlist");
       keys.forEach(e => {
-        const a = el("a", "moment" + (e.official ? " official" : " news")); a.href = e.url; a.rel = "noopener";
-        const im = pic(e, "mpic"); if(im) a.append(im);
-        const t = el("span", "mtxt"), top = el("span", "top");
-        top.append(el("span", "when", full(e.date)), lane(e));
-        t.append(top, el("b", "", e.title), meta(e)); a.append(t); grid.append(a);
+        const li = el("li"), a = el("a", "", e.title); a.href = e.url; a.rel = "noopener";
+        li.append(a, el("span", "when", full(e.date))); ul.append(li);
       });
       moments.hidden = false;
     }
@@ -435,13 +389,12 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write topics/ (a picture card per topic, the most in the news first) and each topic's page: its picture and its timeline, from its
     events.json. Returns the pages' paths."""
     parts = pages.frame(conn, len(cards))
-    credits = {c["photo"]: f"Photo: {photos._who(c)}, {c['licence']}" for c in photos.credits()}
     (out / "flags").mkdir(exist_ok=True)
     quiet = (today - timedelta(days=QUIET_DAYS)).isoformat()
     blocks, paths = [], []
     for slug, t in TOPICS.items():
         ev = events(slug, cards)
-        for f in {countries.flag(f) for f in LOOK[slug][1]} | {e["flag"] for e in ev if e.get("flag")}:
+        for f in {countries.flag(f) for f in LOOK[slug]} | {e["flag"] for e in ev if e.get("flag")}:
             shutil.copy(countries.FLAGS / f, out / "flags" / f)
         latest = ev[-1]["date"] if ev else ""
         done = latest < quiet
@@ -451,10 +404,10 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         badges = _badges(slug, ev)
         status = '<span class="done">Concluded</span>' if done else ""
         related = " · ".join(f'<a href="/{path(r)}">{escape(TOPICS[r]["name"])}</a>' for r in t.get("related", ()))
-        body = (f'<div class="tp">\n<div class="topic-hero">{_photo(slug, credits)}<div class="over"><span class="kind">'
+        body = (f'<div class="tp">\n<div class="topic-hero">{_photo(slug)}<div class="over"><span class="kind">'
                 f'{escape(t["kind"])}</span>{status}<h1>{escape(t["name"])}</h1><div class="badges">{badges}</div></div></div>\n'
                 f'<p class="intro">{escape(t["what"])}</p>\n'
-                '<section class="moments" id="moments" hidden><h2>Key moments</h2><div class="mgrid"></div></section>\n'
+                '<section class="moments" id="moments" hidden><h2>Key moments</h2><ul class="mlist"></ul></section>\n'
                 '<h2>How it unfolded</h2>\n'
                 + ('<p class="legend"><span class="lg official">Official record</span>'
                    '<span class="lg news">In the news</span></p>\n' if any(e["official"] for e in ev) else "")
@@ -466,7 +419,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             pages.page(f"{t['name']} · AI Pulse", t["what"], p, body, data, parts, ("/topics/", "All topics"),
                        f"Related: {related}" if related else ""), encoding="utf-8")
         paths.append(p)
-        flags = sorted({countries.flag(f) for f in LOOK[slug][1]} | {e["flag"] for e in ev if e.get("flag")})
+        flags = sorted({countries.flag(f) for f in LOOK[slug]} | {e["flag"] for e in ev if e.get("flag")})
         blocks.append({"slug": slug, "done": done, "latest": latest, "badges": badges, "score": trend(ev, today),
                        "flags": flags,
                        "hot": latest >= (today - timedelta(days=HOT_DAYS)).isoformat(),
@@ -479,7 +432,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     # the front page's "Follow the story" strip: the FRONT topics most in the news (index.html, loadTopics)
     (out / "topics" / "front.json").write_text(json.dumps([
         {"href": f"/{path(b['slug'])}", "name": TOPICS[b["slug"]]["name"], "kind": TOPICS[b["slug"]]["kind"],
-         "photo": [LOOK[b["slug"]][0], credits.get(LOOK[b["slug"]][0], "")],
+         "photo": [f"cartoons/{b['slug']}.svg", ""],
          "flags": b["flags"], **b["last"]}
         for b in blocks if not b["done"] and b["last"]][:FRONT], separators=(",", ":"), ensure_ascii=False),
         encoding="utf-8")
@@ -489,7 +442,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         tag = ('<span class="done">Concluded</span>' if b["done"] else
                '<span class="done hot">Trending</span>' if i < TRENDING and b["hot"] else "")
         cards_html.append(
-            f'<a href="/{path(b["slug"])}"><span class="pic">{_photo(b["slug"], credits)}{tag}'
+            f'<a href="/{path(b["slug"])}"><span class="pic">{_photo(b["slug"])}{tag}'
             f'<span class="badges">{b["badges"]}</span></span><span class="txt">'
             f'<span class="kind">{escape(t["kind"])}</span><b>{escape(t["name"])}</b>'
             + (f'<span class="last" data-slug="{b["slug"]}"><span class="lt"></span>'
