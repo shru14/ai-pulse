@@ -1728,6 +1728,26 @@ def test_same_company_and_sum_is_one_story():
     assert [len(g) for g in cluster.group([a, b])] == [2]
 
 
+def test_translation_note_and_next_day_names():
+    from aipulse import cluster
+    note = " Machine-translated from Spanish; the original is linked."
+    item = lambda i, title, summary, day, src: {"id": f"t{i}", "title": title, "summary": summary, "url": f"https://ex.com/{i}",
+                                                "source": src, "category": "news", "date": day}
+    # our own note on two translations isn't something the stories share
+    a = item(1, "Google Cloud presents its agent Gemini, an AI partner for companies", "Gemini agent acts proactively." + note,
+             "2026-10-09", "DPL News")
+    b = item(2, "The open web was designed for humans", "Wikipedia has been an open website for 25 years." + note,
+             "2026-10-10", "Xataka")
+    assert "spanish" not in cluster.tokens(a) and [len(g) for g in cluster.group([a, b])] == [1, 1]
+    # the next day, two rare names in common (Gemini, Cloud) are one story; one alone (Muse) is not
+    c = item(3, "Google Cloud introduces Gemini agent to change enterprise work", "", "2026-10-08", "SiliconANGLE AI")
+    idf = {"gemini": 3.9, "cloud": 3.5, "agent": 2.5, "muse": 4.0}
+    assert cluster._anchored(a, c, idf, 2)
+    m1 = item(4, "Meta's Muse agent is outpacing ChatGPT's early mobile launch", "", "2026-09-21", "TechCrunch AI")
+    m2 = item(5, "Meta Tests Muse AI Agent Calls Made By Humans", "", "2026-09-22", "404 Media")
+    assert cluster._anchored(m1, m2, idf) and not cluster._anchored(m1, m2, idf, 2)
+
+
 def test_late_arrivals_reach_the_next_email_once(monkeypatch):
     from datetime import date
     from aipulse import digest
