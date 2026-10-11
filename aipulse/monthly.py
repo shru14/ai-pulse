@@ -395,7 +395,7 @@ ISSUE_JS = r"""<script>
         const a = el("a", "name", t.name); a.href = t.href;
         return row([a, [link(t), el("div", "meta", day(t.date))], el("b", "n", String(t.n))]);
       }));
-    } else document.getElementById("storylines").remove(), document.querySelector('a[href="#storylines"]')?.parentElement.remove();
+    } else document.getElementById("storylines").remove(), document.querySelector('a[href$="#storylines"]')?.parentElement.remove();
   }).catch(() => root.querySelectorAll("tbody, #timeline").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
 })();
 </script>"""
@@ -462,7 +462,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         body = (f'<div class="mi" id="issue" data-src="/{p}issue.json">\n'
                 f'<div class="topic-hero">{_img(photo)}<div class="over"><span class="kind">AI Pulse · The month in AI</span>'
                 f'<span class="num">No. {number(m)}</span><h1>{name(m)}</h1></div></div>\n'
-                '<ol class="contents">' + "".join(f'<li><a href="#{k}">{t}</a></li>' for k, t in sections) + "</ol>\n"
+                '<ol class="contents">' + "".join(f'<li><a href="/{p}#{k}">{t}</a></li>' for k, t in sections) + "</ol>\n"
                 + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{escape(summary)}</p></section>\n'
                    if summary else "")
                 + '<section class="sheet" id="top"><h2>What mattered most</h2><table class="mt top"><thead><tr><th>#</th>'

@@ -3340,6 +3340,7 @@ def test_monthly_issue_pages(tmp_path):
     assert "<h1>August 2026</h1>" in page and "No. 8" in page and "August in brief." in page
     assert "Big launch" not in page  # the outlets' headlines load in the browser, from issue.json
     assert 'href="/monthly/2026-09/">September 2026 →' in page
+    assert '<a href="/monthly/2026-08/#streams">' in page  # the contents: this page's sections (its <base> is "/")
     issue = json.loads((tmp_path / "monthly" / "2026-08" / "issue.json").read_text(encoding="utf-8"))
     assert [e["title"] for e in issue["top"]] == ["Big launch of a reasoning model", "Funding round", "Small news"]
     assert [len(w["events"]) for w in issue["weeks"]] == [1, 0, 0, 1, 0][:len(issue["weeks"])]  # 2+ outlets only
