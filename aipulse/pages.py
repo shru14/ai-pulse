@@ -194,11 +194,17 @@ a.subscribe-btn{text-decoration:none}
 .cp .mt.top td:first-child{width:1%}
 .cp .mt.top .st{display:table;margin-bottom:5px}
 .cp .mt .new{display:inline-block;margin-left:8px;font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#E69F00;color:#000;border:2px solid #000;padding:0 5px;vertical-align:2px}
-.cp .mt .badge{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#000;background:#F0E442;border:2px solid #000;padding:1px 6px;white-space:nowrap}
-.cp .mt .b-in_force{background:#009E73}.cp .mt .b-signed{background:#56B4E9}.cp .mt .b-standard{background:#CC79A7}
-.cp .mt .b-vetoed,.cp .mt .b-withdrawn{background:#fff;border-style:dashed;color:#000}
-.cp .mt.rules td:first-child{width:1%}
-.cp .mt.rules td:last-child .flag{width:24px;height:18px;display:block;margin:2px 0 4px auto}
+.cp .groups .badge{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#000;background:#F0E442;border:2px solid #000;padding:1px 6px;white-space:nowrap}
+.cp .groups .b-in_force{background:#009E73}.cp .groups .b-signed{background:#56B4E9}.cp .groups .b-standard{background:#CC79A7}
+.cp .groups .b-vetoed,.cp .groups .b-withdrawn{background:#fff;border-style:dashed}
+.cp .groups{border-top:2px solid #000;margin-top:10px}
+.cp .grp{display:grid;grid-template-columns:170px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid color-mix(in srgb,#000 25%,transparent)}
+.cp .grp .n{font:400 22px var(--display);margin-left:8px;vertical-align:-3px}
+.cp .chips{display:flex;flex-wrap:wrap;gap:6px}
+.cp .chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1.5px solid var(--line);padding:3px 8px 3px 4px;font-size:13.5px}
+.cp .chip .flag{width:20px;height:15px}
+.cp .chip a{color:var(--ink);font-weight:500;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.cp .chip a:hover,.cp .chip a:focus-visible{text-decoration:underline}
 .cp .mt.words td:nth-child(2){color:var(--muted);font-size:14.5px}
 .cp .mt .name{font:400 16px/1.2 var(--display)!important}
 .cp .chapter.wk .yr span{font-size:clamp(26px,3vw,36px)}
@@ -216,6 +222,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .shelf b{font:400 22px/1.1 var(--display)}
 @media (max-width:900px){.cp .shelf{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:640px){.cp .shelf{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cp .grp{grid-template-columns:1fr;gap:6px}
   .cp .mt.top td:nth-child(3),.cp .mt.top th:nth-child(3){display:none}
   .cp .chapter.wk .yr small{position:static;display:inline;margin-left:10px}}
 """

@@ -395,10 +395,17 @@ ISSUE_JS = r"""<script>
   fetch(root.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
     document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) =>
       row([el("b", "n", String(i + 1)), [pill(e.stream), link(e), meta(e)], el("span", "when", day(e.date))])));
-    const rr = document.getElementById("rule-rows");
-    if(rr) rr.replaceChildren(...d.rules.map(r => {
-      const b = el("span", "badge b-" + r.badge, BADGES[r.badge]), f = el("img", "flag"); f.src = "flags/" + r.flag; f.alt = "";
-      return row([b, [link(r), el("div", "meta", r.label + " · " + r.source)], [f, el("span", "when", day(r.date))]]);
+    const rr = document.getElementById("rule-groups"), by = {};
+    d.rules.forEach(r => (by[r.badge] = by[r.badge] || []).push(r));
+    if(rr) rr.replaceChildren(...Object.entries(by).map(([b, list]) => {
+      const g = el("div", "grp"), head = el("div"), chips = el("div", "chips");
+      head.append(el("span", "badge b-" + b, BADGES[b]), el("span", "n", String(list.length)));
+      list.forEach(r => {
+        const ch = el("span", "chip"), f = el("img", "flag"), a = link(r);
+        f.src = "flags/" + r.flag; f.alt = ""; a.title = r.title + " · " + r.label + " · " + day(r.date) + " · " + r.source;
+        ch.append(f, a); chips.append(ch);
+      });
+      g.append(head, chips); return g;
     }));
     const tl = document.getElementById("timeline"); tl.replaceChildren();
     let n = 0;
