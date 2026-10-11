@@ -2,7 +2,8 @@
 
 Each issue has the month in brief (a short summary), the stories most outlets carried, a week-by-week timeline (with
 the tracker's laws that passed a stage that month), the top stories of each stream, the glossary's words of the
-month and the storylines (topics.py) that moved. An issue is made once its month is over.
+month and the storylines (topics.py) that moved. Rules that moved lists every tracked law that passed a stage that month
+and every standard published that month, each with a badge for where it got to. An issue is made once its month is over.
 
 The summary is written by an open-source model run on this machine or the GitHub runner: Qwen3-4B-Instruct-2507
 (Alibaba's Qwen team, Apache 2.0; https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507), as packaged in GGUF by
@@ -20,13 +21,14 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import urllib.request
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 
-from . import countries, feeds, glossary, pages, rss, topics
+from . import countries, feeds, glossary, pages, rss, standards, topics
 
 FIRST = "2026-01"  # the first issue (the owner's choice, 11 Oct 2026: 2026 on, no earlier years)
 REPO = "unsloth/Qwen3-4B-Instruct-2507-GGUF"
@@ -44,6 +46,8 @@ PER_STREAM = 3
 WORDS = 8
 STORYLINES = 8
 FRONT = 2  # issues on the front page
+BADGES = {"in_force": "In force", "signed": "Signed", "passed_legislature": "Passed", "passed_chamber": "Passed a chamber",
+          "standard": "Standard", "vetoed": "Vetoed", "withdrawn": "Withdrawn"}  # Rules that moved, in this order
 STREAMS = {"tool": "Releases", "news": "Industry", "research": "Research", "regulation": "Regulation",
            "policy": "Policy", "infra": "Infra & climate"}
 LAB_PAPERS = {"Hugging Face Daily Papers", "Apple Machine Learning Research"}  # papers the labs put their name to
@@ -124,7 +128,7 @@ def _story(c: dict) -> dict:
 
 def _stages(cards: list[dict], month: str) -> list[dict]:
     """The tracker's bills that passed a stage past "introduced" this month, as timeline events: each bill once, at the
-    furthest stage it reached that month."""
+    furthest stage it reached that month. `cards` are all the tracker's, as a bill's card is dated its latest stage."""
     out = []
     for c in cards:
         life = c.get("lifecycle")
@@ -134,8 +138,21 @@ def _stages(cards: list[dict], month: str) -> list[dict]:
         for s in [s for s in life["steps"] if (s.get("date") or "").startswith(month) and s["stage"] != "introduced"][-1:]:
             out.append({"date": s["date"][:10], "title": f"{bill}: {s['label']}", "url": life["url"],
                         "source": life["source"], "outlets": 1, "stream": "regulation", "official": True,
-                        "flag": countries.flag(c["bill"].split("-")[0])})
+                        "flag": countries.flag(c["bill"].split("-")[0]), "law": bill, "stage": s["stage"],
+                        "label": s["label"]})
     return sorted(out, key=lambda e: e["date"])
+
+
+def rules(laws: list[dict], month: str) -> list[dict]:
+    """Rules that moved: the laws that passed a stage this month (furthest along first) and the standards published
+    this month, each with its badge (BADGES). Official titles as the source gives them."""
+    order = list(BADGES)
+    out = [{"date": e["date"], "title": e["law"], "url": e["url"], "source": e["source"], "flag": e["flag"],
+            "badge": e["stage"], "label": e["label"]} for e in _stages(laws, month)]
+    out += [{"date": c["date"][:10], "title": c["title"].strip(), "url": c["url"], "source": c["source"],
+             "flag": countries.flag("INTL"), "badge": "standard", "label": "Published"}
+            for c in laws if (c.get("bill") or "").startswith(standards.MARK) and c["date"].startswith(month)]
+    return sorted(out, key=lambda r: (order.index(r["badge"]), r["date"]))
 
 
 def _weeks(month: str) -> list[tuple[date, date]]:
@@ -178,11 +195,13 @@ def words(now: Counter, before: list[Counter], month: str) -> list[dict]:
     return out[:WORDS]
 
 
-def issue(month: str, cards: list[dict], storylines: dict[str, list[dict]]) -> dict:
-    """The issue's stories (issue.json): `cards` are the month's, `storylines` each topic's events."""
+def issue(month: str, cards: list[dict], storylines: dict[str, list[dict]], laws: list[dict] | None = None) -> dict:
+    """The issue's stories (issue.json): `cards` are the month's, `storylines` each topic's events, `laws` all the
+    tracker's bills and standards (the month's cards when not given)."""
     news = [c for c in cards if c["category"] in STREAMS and c["category"] != "research"]
     top = ranked(news)
-    stages = _stages(cards, month)
+    laws = cards if laws is None else laws
+    stages = _stages(laws, month)
     weeks = []
     for a, b in _weeks(month):
         inside = [c for c in top if a.isoformat() <= c["date"][:10] <= b.isoformat() and outlets(c) > 1]
@@ -212,8 +231,8 @@ def issue(month: str, cards: list[dict], storylines: dict[str, list[dict]]) -> d
                           "title": big["title"], "url": big["url"], "date": big["date"][:10]})
     moved.sort(key=lambda t: -t["n"])
     moved = moved[:STORYLINES]
-    return {"month": month, "top": [_story(c) for c in top[:TOP]], "weeks": weeks, "streams": streams,
-            "storylines": moved}
+    return {"month": month, "top": [_story(c) for c in top[:TOP]], "rules": rules(laws, month), "weeks": weeks,
+            "streams": streams, "storylines": moved}
 
 
 # ---------- The summary ----------
@@ -363,6 +382,7 @@ def month_cards(conn, month: str) -> list[dict]:
 
 ISSUE_JS = r"""<script>
 (() => {
+  const BADGES = __BADGES__;
   const root = document.getElementById("issue");
   const NAMES = {tool: "Releases", news: "Industry", research: "Research", regulation: "Regulation", policy: "Policy", infra: "Infra & climate"};
   const COL = {tool: "tool", news: "news", research: "research", regulation: "reg", policy: "policy", infra: "infra"};
@@ -373,9 +393,32 @@ ISSUE_JS = r"""<script>
   const pill = s => { const p = el("span", "st", NAMES[s]); p.style.setProperty("--st", "var(--f-" + COL[s] + ")"); return p; };
   const row = cells => { const tr = el("tr"); cells.forEach(c => { const td = el("td"); if(c != null) td.append(...[].concat(c)); tr.append(td); }); return tr; };
   fetch(root.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
-    document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) =>
-      row([el("b", "n", String(i + 1)), [pill(e.stream), link(e), meta(e)], el("span", "when", day(e.date))])));
-    const tl = document.getElementById("timeline"); tl.replaceChildren();
+    const sq = s => { const q = el("i", "sq"); q.style.setProperty("--st", "var(--f-" + COL[s] + ")"); return q; };
+    document.getElementById("top-key").replaceChildren(...[...new Set(d.top.map(e => e.stream))].map(s => {
+      const k = el("span"); k.append(sq(s), NAMES[s]); return k; }));
+    document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) => {
+      const li = el("li"), body = el("div"), cnt = el("span", "cnt");
+      cnt.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
+      cnt.title = NAMES[e.stream] + ": " + e.outlets + (e.outlets > 1 ? " outlets" : " outlet");
+      cnt.append(el("b", null, String(e.outlets)), el("small", null, e.outlets > 1 ? "outlets" : "outlet"));
+      body.append(link(e), el("div", "meta", NAMES[e.stream] + " · " + e.source + " · " + day(e.date)));
+      li.append(el("b", "r", String(i + 1)), body, cnt);
+      return li;
+    }));
+    const rr = document.getElementById("rule-groups"), by = {};
+    d.rules.forEach(r => (by[r.badge] = by[r.badge] || []).push(r));
+    if(rr) rr.replaceChildren(...Object.entries(by).map(([b, list]) => {
+      const g = el("div", "grp"), head = el("div"), chips = el("div", "chips");
+      head.append(el("span", "badge b-" + b, BADGES[b]), el("span", "n", String(list.length)));
+      list.forEach(r => {
+        const ch = el("span", "chip"), f = el("img", "flag"), txt = el("span");
+        f.src = "flags/" + r.flag; f.alt = "";
+        txt.append(link(r), el("span", "meta", r.label + " · " + day(r.date) + " · " + r.source));
+        ch.append(f, txt); chips.append(ch);
+      });
+      g.append(head, chips); return g;
+    }));
+    const tl = document.getElementById("timeline"); tl.replaceChildren(); tl.style.setProperty("--weeks", d.weeks.length);
     let n = 0;
     d.weeks.forEach((w, i) => {
       const ch = el("section", "chapter wk"), yr = el("div", "yr"), ol = el("ol", "timeline");
@@ -390,18 +433,45 @@ ISSUE_JS = r"""<script>
       });
       ch.append(yr, ol); tl.append(ch);
     });
-    document.getElementById("stream-rows").replaceChildren(...Object.entries(d.streams).flatMap(([s, list]) =>
-      list.map((e, i) => { const tr = row([i ? null : pill(s), [link(e), meta(e)], el("span", "when", day(e.date))]); if(!i) tr.className = "first"; return tr; })));
+    document.getElementById("stream-rows").replaceChildren(...Object.entries(d.streams).map(([s, list]) => {
+      const card = el("section", "scard"), ol = el("ol");
+      card.style.setProperty("--st", "var(--f-" + COL[s] + ")");
+      list.forEach(e => { const li = el("li"); li.append(link(e), el("div", "meta", e.source
+        + (e.outlets > 1 ? " · " + e.outlets + " outlets" : "") + " · " + day(e.date))); ol.append(li); });
+      card.append(el("h3", null, NAMES[s]), ol); return card;
+    }));
     if(d.storylines.length) {
       document.getElementById("story-rows").replaceChildren(...d.storylines.map(t => {
         const a = el("a", "name", t.name); a.href = t.href;
         return row([a, [link(t), el("div", "meta", day(t.date))], el("b", "n", String(t.n))]);
       }));
     } else document.getElementById("storylines").remove(), document.querySelector('a[href$="#storylines"]')?.parentElement.remove();
-  }).catch(() => root.querySelectorAll("tbody, #timeline").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
+  }).catch(() => root.querySelectorAll("tbody, #timeline, #top-rows, #rule-groups, #stream-rows").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
 })();
-</script>"""
+</script>""".replace("__BADGES__", json.dumps(BADGES))
 
+
+
+def marked(summary: str, cards: list[dict]) -> str:
+    """The summary as HTML with its names marked: each run of capitalised words holding a name the month's headlines
+    use (a company, a model, a place) or a number (GPT-5.6), from its first name to its last."""
+    names = _names(headlines(cards))
+    def is_name(w):
+        w = re.sub(r"[’']s$", "", w)
+        return not w.startswith("AI-") and (w in names or bool(re.search(r"\d", w)))
+    out, last = [], 0
+    for m in re.finditer(r"[A-Z][\w.+’'-]*\w(?: [A-Z0-9][\w.+’'-]*\w| [0-9])*", summary):
+        ws = m.group(0).split(" ")
+        hits = [k for k, w in enumerate(ws) if is_name(w)]
+        if not hits:
+            continue
+        while hits[-1] + 1 < len(ws) and ws[hits[-1] + 1] == "AI":  # Moonshot AI, Mistral AI
+            hits.append(hits[-1] + 1)
+        start = m.start() + sum(len(w) + 1 for w in ws[:hits[0]])
+        end = start + len(" ".join(ws[hits[0]:hits[-1] + 1]))
+        out += [escape(summary[last:start]), f"<mark>{escape(summary[start:end])}</mark>"]
+        last = end
+    return "".join(out) + escape(summary[last:])
 
 
 def first_sentence(text: str) -> str:
@@ -443,6 +513,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     for c in cards:
         by_month.setdefault((c.get("date") or "")[:7], []).append(c)
     storylines = {slug: topics.events(slug, cards) for slug in topics.TOPICS}
+    laws = [c for c in cards if c.get("lifecycle") or (c.get("bill") or "").startswith(standards.MARK)]
     issues = [m for m in months(today) if by_month.get(m)]
     counts = {m: word_counts(by_month[m]) for m in issues}
     (out / "monthly").mkdir(parents=True, exist_ok=True)
@@ -450,38 +521,43 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     shelf, paths = [], []
     for i, m in enumerate(issues):
         mine = by_month[m]
-        data = issue(m, mine, storylines)
+        data = issue(m, mine, storylines, laws)
         p = path(m)
         (out / p).mkdir(parents=True, exist_ok=True)
+        for f in {r["flag"] for r in data["rules"]}:  # the rules' flags (the timeline's are among them)
+            (out / "flags").mkdir(exist_ok=True)
+            shutil.copy(countries.FLAGS / f, out / "flags" / f)
         (out / p / "issue.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
         ws = words(counts[m], [counts[mm] for mm in months(date.fromisoformat(m + "-01"))[-3:] if mm in counts], m)
         photo = _cover(data["storylines"], used)
         summary = summaries.get(m)
         sections = ([("brief", "The month in brief")] if summary else []) + [
-            ("top", "What mattered most"), ("weeks", "Week by week"), ("streams", "Stream by stream")] + (
+            ("top", "What mattered most")] + ([("rules", "Rules that moved")] if data["rules"] else []) + [
+            ("weeks", "Week by week"), ("streams", "Stream by stream")] + (
             [("words", "Words of the month")] if ws else []) + [("storylines", "Storylines that moved")]
         word_rows = "".join(
-            f'<tr><td><a href="/glossary/{w["id"]}/">{escape(w["term"])}</a>'
+            f'<a class="blk" href="/glossary/{w["id"]}/"><b>{escape(w["term"])}'
             + ('<span class="new">New</span>' if w["new"] else "")
-            + f'</td><td>{escape(first_sentence(w["def"]))}</td><td>{w["n"]}</td></tr>' for w in ws)
+            + f'</b><span class="def">{escape(first_sentence(w["def"]))}</span>'
+            + f'<span class="n">{w["n"]} {"story" if w["n"] == 1 else "stories"}</span></a>' for w in ws)
         prev = f'<a href="/{path(issues[i - 1])}">← {name(issues[i - 1])}</a>' if i else "<span></span>"
         nxt = f'<a href="/{path(issues[i + 1])}">{name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
         body = (f'<div class="mi" id="issue" data-src="/{p}issue.json">\n'
                 f'<div class="topic-hero">{_img(photo)}<div class="over"><span class="kind">AI Pulse · The month in AI</span>'
                 f'<span class="num">No. {number(m)}</span><h1>{name(m)}</h1></div></div>\n'
                 '<ol class="contents">' + "".join(f'<li><a href="/{p}#{k}">{t}</a></li>' for k, t in sections) + "</ol>\n"
-                + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{escape(summary)}</p></section>\n'
+                + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{marked(summary, mine)}</p></section>\n'
                    if summary else "")
-                + '<section class="sheet" id="top"><h2>What mattered most</h2><table class="mt top"><thead><tr><th>#</th>'
-                  '<th>Story</th><th>Date</th></tr></thead><tbody id="top-rows"><tr><td></td><td class="meta">Loading…</td>'
-                  '<td></td></tr></tbody></table></section>\n'
-                '<section class="sheet" id="weeks"><h2>Week by week</h2>'
+                + '<section class="sheet" id="top"><h2>What mattered most</h2><p class="key" id="top-key"></p>'
+                  '<ol class="ranked" id="top-rows"><li class="meta">Loading…</li></ol></section>\n'
+                + ('<section class="sheet" id="rules"><h2>Rules that moved</h2><div class="groups" id="rule-groups">'
+                   '<p class="meta">Loading…</p></div></section>\n' if data["rules"] else "")
+                + '<section class="sheet" id="weeks"><h2>Week by week</h2>'
                 '<p class="legend"><span class="lg official">A law passed a stage</span><span class="lg news">In the news</span></p>'
                 '<div class="chapters" id="timeline"><p class="meta">Loading…</p></div></section>\n'
-                '<section class="sheet" id="streams"><h2>Stream by stream</h2><table class="mt streams"><thead><tr>'
-                '<th>Stream</th><th>Story</th><th>Date</th></tr></thead><tbody id="stream-rows"></tbody></table></section>\n'
-                + (f'<section class="sheet" id="words"><h2>Words of the month</h2><table class="mt words"><thead><tr>'
-                   f'<th>Word</th><th>Meaning</th><th>Stories</th></tr></thead><tbody>{word_rows}</tbody></table></section>\n'
+                '<section class="sheet" id="streams"><h2>Stream by stream</h2><div class="sgrid" id="stream-rows">'
+                '<p class="meta">Loading…</p></div></section>\n'
+                + (f'<section class="sheet" id="words"><h2>Words of the month</h2><div class="blocks">{word_rows}</div></section>\n'
                    if ws else "")
                 + '<section class="sheet" id="storylines"><h2>Storylines that moved</h2><table class="mt"><thead><tr>'
                   '<th>Storyline</th><th>Its biggest story this month</th><th>Stories</th></tr></thead>'
