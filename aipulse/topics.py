@@ -20,9 +20,9 @@ from pathlib import Path
 from . import countries, pages, photos, rss
 
 QUIET_DAYS = 90  # a topic with no new event for this long is Concluded (kept, never deleted)
-# Topics are listed by how much they're in the news: over the last TREND_DAYS, each event counts once per outlet that
-# carried it, and three times over in the last HOT_DAYS. The top TRENDING with an event in the last HOT_DAYS are tagged.
-TREND_DAYS, HOT_DAYS, TRENDING = 30, 7, 3
+# Topics are ranked by how much they're in the news: over the last TREND_DAYS, each event counts once per outlet that
+# carried it, and three times over in the last HOT_DAYS.
+TREND_DAYS, HOT_DAYS = 30, 7
 STREAMS = ("news", "policy", "regulation", "infra", "tool")  # not research: papers aren't events
 
 # slug: name, kind (the block's label), what (our own words), bills, words, exclude, related topics
@@ -421,8 +421,17 @@ TIMELINE_JS = r"""<script>
 </script>"""
 
 
+BOARD_JS = r"""<script>
+fetch("/topics/latest.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
+  document.querySelectorAll(".board td.latest").forEach(td => {
+    const e = d[td.dataset.slug]; if(e) td.querySelector("a").textContent = e.title;
+  });
+}).catch(() => {});
+</script>"""
+
+
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
-    """Write topics/ (a picture card per topic) and each topic's page: its picture and its timeline, from its
+    """Write topics/ (the topics ranked, a row each) and each topic's page: its picture and its timeline, from its
     events.json. Returns the pages' paths."""
     parts = pages.frame(conn, len(cards))
     credits = {c["photo"]: f"Photo: {photos._who(c)}, {c['licence']}" for c in photos.credits()}
@@ -456,23 +465,28 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             pages.page(f"{t['name']} · AI Pulse", t["what"], p, body, data, parts, ("/topics/", "All topics"),
                        f"Related: {related}" if related else ""), encoding="utf-8")
         paths.append(p)
-        blocks.append({"slug": slug, "done": done, "latest": latest, "badges": badges, "score": trend(ev, today),
-                       "hot": latest >= (today - timedelta(days=HOT_DAYS)).isoformat()})
+        blocks.append({"slug": slug, "done": done, "latest": latest, "score": trend(ev, today),
+                       "last": {k: ev[-1][k] for k in ("title", "source", "date")} if ev else None})
     blocks.sort(key=lambda b: b["latest"], reverse=True)
     blocks.sort(key=lambda b: (b["done"], -b["score"]))  # in the news most first (newest first on a tie), concluded last
-    for i, b in enumerate(blocks):
-        t = TOPICS[b["slug"]]
-        tag = ('<span class="done">Concluded</span>' if b["done"] else
-               '<span class="done hot">Trending</span>' if i < TRENDING and b["hot"] else "")
-        b["html"] = (f'<a href="/{path(b["slug"])}"><span class="pic">{_photo(b["slug"], credits)}{tag}'
-                     f'<span class="badges">{b["badges"]}</span></span><span class="txt">'
-                     f'<span class="kind">{escape(t["kind"])}</span><b>{escape(t["name"])}</b>'
-                     f'<span class="what">{escape(t["what"])}</span>'
-                     + (f'<span class="meta">Latest: {_day(b["latest"])}</span>' if b["latest"] else "")
-                     + "</span></a>")
-    what = "Stories AI Pulse follows over time, laws and news together. Open one to see how it unfolded."
-    body = (f'<h1>Topics</h1>\n<p class="intro">{escape(what)}</p>\n'
-            f'<div class="topics">{"".join(b["html"] for b in blocks)}</div>\n')
+    # each topic's newest event, the outlet's own headline, for the board to load in the reader's browser
+    (out / "topics" / "latest.json").write_text(json.dumps({b["slug"]: b["last"] for b in blocks if b["last"]},
+                                                           separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+    rows, rank = [], 0
+    for b in blocks:
+        t, href = TOPICS[b["slug"]], f'/{path(b["slug"])}'
+        rank += not b["done"]
+        rows.append(f'<tr{" class=done-row" if b["done"] else ""}><td class="rank">{"" if b["done"] else rank}</td>'
+                    f'<td class="topic"><a href="{href}">{_photo(b["slug"], credits)}<span><b>{escape(t["name"])}</b>'
+                    f'<span class="kind">{escape(t["kind"])}</span>'
+                    + ('<span class="done">Concluded</span>' if b["done"] else "") + '</span></a></td>'
+                    f'<td class="latest" data-slug="{b["slug"]}"><a href="{href}"></a>'
+                    + (f'<span class="meta">{_day(b["latest"])}</span>' if b["latest"] else "") + '</td></tr>')
+    what = "Pick a topic to see how it unfolded, from the first report to today, with laws and news on one timeline."
+    body = (f'<h1>Follow the story</h1>\n<p class="intro">{escape(what)}</p>\n'
+            f'<p class="meta">Most in the news over the last {TREND_DAYS} days first.</p>\n'
+            '<table class="board"><thead><tr><th class="rank">#</th><th>Topic</th><th>Latest</th></tr></thead>'
+            f'<tbody>{"".join(rows)}</tbody></table>\n{BOARD_JS}\n')
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Topics", "description": what,
             "url": f"{rss.SITE}topics/"}
     (out / "topics" / "index.html").write_text(
