@@ -117,6 +117,8 @@ def _day(iso: str) -> str:
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write glossary/ and a page per word. Returns their paths."""
     parts = pages.frame(conn, len(cards))
+    # the glossary's own pages need no Glossary button in their masthead
+    parts = (re.sub(r'\s*<a class="subscribe-btn gl-open".*?</a>', "", parts[0], flags=re.S), parts[1])
     pages.write_css(out)
     # each recent story's glossary words: the past 7 days' counts (the cloud) and which words share stories
     week, since = (today - timedelta(days=7)).isoformat(), (today - timedelta(days=TOGETHER_DAYS)).isoformat()
