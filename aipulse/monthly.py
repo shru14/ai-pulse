@@ -35,6 +35,7 @@ FILE = "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
 MODEL = "Qwen3-4B-Instruct-2507 Q4_K_M"  # stored with each summary
 MODEL_DIR = Path(__file__).resolve().parent.parent / "data" / "summary-models"
 HEADLINES = 40  # the summary reads this many of the month's most reported headlines
+FEWER = {3: 30, 4: 25}  # ...and fewer on the last tries: a busy month (August 2026) otherwise runs long every time
 TRIES = 4
 MAX_CHARS = 900  # about 140 words: a longer summary is a list of headlines, not a summary
 TOP = 10        # What mattered most
@@ -42,6 +43,7 @@ PER_WEEK = 4    # stories a week on the timeline (2+ outlets), besides the laws 
 PER_STREAM = 3
 WORDS = 8
 STORYLINES = 8
+FRONT = 2  # issues on the front page
 STREAMS = {"tool": "Releases", "news": "Industry", "research": "Research", "regulation": "Regulation",
            "policy": "Policy", "infra": "Infra & climate"}
 LAB_PAPERS = {"Hugging Face Daily Papers", "Apple Machine Learning Research"}  # papers the labs put their name to
@@ -216,14 +218,14 @@ def issue(month: str, cards: list[dict], storylines: dict[str, list[dict]]) -> d
 
 # ---------- The summary ----------
 
-def headlines(cards: list[dict]) -> list[dict]:
-    """What the summary reads: the month's most reported news (2+ outlets first), no papers."""
-    return ranked([c for c in cards if c["category"] in STREAMS and c["category"] != "research"])[:HEADLINES]
+def headlines(cards: list[dict], n: int = HEADLINES) -> list[dict]:
+    """What the summary reads: the month's `n` most reported news stories (2+ outlets first), no papers."""
+    return ranked([c for c in cards if c["category"] in STREAMS and c["category"] != "research"])[:n]
 
 
-def prompt(month: str, cards: list[dict]) -> str:
+def prompt(month: str, cards: list[dict], n: int = HEADLINES) -> str:
     lines = "\n".join(f"- {c['date'][:10]} [{STREAMS[c['category']]}] ({outlets(c)} outlets) {c['title'].strip()}"
-                      for c in headlines(cards))
+                      for c in headlines(cards, n))
     return PROMPT.format(month=name(month), lines=lines)
 
 
@@ -307,11 +309,11 @@ def write(month: str, cards: list[dict], generate=None, log=print) -> str | None
             out = llm.create_chat_completion(messages=[{"role": "user", "content": p}], temperature=0.2,
                                              max_tokens=260, seed=seed)
             return out["choices"][0]["message"]["content"]
-    p = prompt(month, cards)
-    source = " ".join([name(month)] + [c["title"] for c in headlines(cards)])  # what the summary may say
     told: list[str] = []  # each try after the first is told what was wrong with the ones before
     for seed in range(1, TRIES + 1):
-        text = clean(generate(p + "".join(told), seed))
+        n = FEWER.get(seed, HEADLINES)
+        source = " ".join([name(month)] + [c["title"] for c in headlines(cards, n)])  # what the summary may say
+        text = clean(generate(prompt(month, cards, n) + "".join(told), seed))
         bad = list(dict.fromkeys(unsupported(text, source)))
         if not bad and 300 <= len(text) <= MAX_CHARS and len(re.findall(r"[.!?](?:\s|$)", text)) <= 6:
             return text
@@ -407,6 +409,11 @@ def first_sentence(text: str) -> str:
     return re.split(r"(?<!e\.g)(?<!i\.e)\.\s+(?=[A-Z])", text, maxsplit=1)[0].rstrip(".") + "."
 
 
+def lede(summary: str) -> str:
+    """A summary's first sentence ("U.S." doesn't end one)."""
+    return re.split(r"(?<=[a-z0-9)’'][.!?])\s+(?=[A-Z])", summary, maxsplit=1)[0]
+
+
 def path(month: str) -> str:
     return f"monthly/{month}/"
 
@@ -427,7 +434,7 @@ def _img(photo: list | None) -> str:
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
-    """Write monthly/ (the shelf of issues), each issue's page and issue.json, and monthly/latest.json (the front
+    """Write monthly/ (the shelf of issues), each issue's page and issue.json, and monthly/front.json (the front
     page's strip). Returns the pages' paths."""
     connect(conn)
     parts = pages.frame(conn, len(cards))
@@ -506,9 +513,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     (out / "monthly" / "index.html").write_text(
         pages.page("The month in AI · AI Pulse", what, "monthly/", body, ld, parts, ("/", "Back to AI Pulse")),
         encoding="utf-8")
-    latest = shelf[-1] if shelf else None
-    (out / "monthly" / "latest.json").write_text(json.dumps(
-        {"href": f"/{path(latest['month'])}", "name": name(latest["month"]), "number": number(latest["month"]),
-         "photo": latest["photo"], "summary": latest["summary"] or ""} if latest else {},
+    # the front page's monthly bar: the FRONT newest issues, each with its summary's first sentence (index.html, loadMonthly)
+    (out / "monthly" / "front.json").write_text(json.dumps([
+        {"href": f"/{path(s['month'])}", "name": name(s["month"]), "number": number(s["month"]), "photo": s["photo"],
+         "lede": lede(s["summary"] or "")} for s in reversed(shelf[-FRONT:])],
         separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
     return ["monthly/", *paths]

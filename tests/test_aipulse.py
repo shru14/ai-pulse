@@ -3345,8 +3345,10 @@ def test_monthly_issue_pages(tmp_path):
     assert [e["title"] for e in issue["top"]] == ["Big launch of a reasoning model", "Funding round", "Small news"]
     assert [len(w["events"]) for w in issue["weeks"]] == [1, 0, 0, 1, 0][:len(issue["weeks"])]  # 2+ outlets only
     assert "Reasoning model" in [w["term"] for w in monthly.words(monthly.word_counts(cards * 5), [], "2026-08")]
-    latest = json.loads((tmp_path / "monthly" / "latest.json").read_text(encoding="utf-8"))
-    assert latest["name"] == "September 2026" and latest["summary"] == ""  # no summary written yet: none shown
+    front = json.loads((tmp_path / "monthly" / "front.json").read_text(encoding="utf-8"))
+    assert [f["name"] for f in front] == ["September 2026", "August 2026"]  # the newest two, newest first
+    assert front[0]["lede"] == "" and front[1]["lede"] == "August in brief."  # no summary yet: none shown
+    assert monthly.lede("A U.S. court ruled. Then more.") == "A U.S. court ruled."
     shelf = (tmp_path / "monthly" / "index.html").read_text(encoding="utf-8")
     assert shelf.index("September") < shelf.index("August")  # newest first
 

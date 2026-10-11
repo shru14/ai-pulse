@@ -750,20 +750,19 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .ts-last{display:flex;flex-direction:column;gap:3px;margin-top:auto;border:2px solid var(--ink);background:color-mix(in srgb,#56B4E9 14%,var(--surface));padding:7px 9px;font-size:14px;font-weight:600;line-height:1.35}
 .ts-last small{font:500 11.5px var(--mono);color:var(--muted)}
 @media (max-width:760px){.ts-cards{grid-template-columns:1fr;gap:12px}}
-/* The month in AI: the newest monthly issue, its cover beside its summary */
-.month-strip{display:flex;flex-direction:column}
+/* Monthly issues: a yellow bar like the sign-up strip, then the newest issues as topic-style cards */
+.month-strip{display:flex;flex-direction:column;gap:20px}
 .month-strip[hidden]{display:none}
-.ms-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);border:3px solid var(--ink);background:var(--surface);color:var(--ink);text-decoration:none}
-.ms-cover{position:relative;display:block;min-height:220px;border-right:3px solid var(--ink);overflow:hidden;background:#1b1f27}
-.ms-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center;opacity:.6}
-.ms-cover span{position:absolute;left:14px;right:14px;bottom:12px;color:#fff}
-.ms-cover small{display:block;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
-.ms-cover b{display:block;font:400 clamp(26px,3vw,36px)/1.05 var(--head)}
-.ms-body{display:flex;flex-direction:column;gap:12px;padding:16px 18px}
-.ms-body p{margin:0;font-size:16px;line-height:1.55}
-.ms-go{margin-top:auto;align-self:flex-start;font:600 15px var(--body);background:#0072B2;color:#fff;border:2px solid #000;padding:9px 16px}
-.ms-card:hover .ms-go{box-shadow:4px 4px 0 #D55E00}
-@media (max-width:760px){.ms-card{grid-template-columns:1fr}.ms-cover{min-height:150px;border-right:0;border-bottom:3px solid var(--ink)}}
+.month-bar{display:flex;align-items:center;justify-content:space-between;gap:16px 26px;flex-wrap:wrap;padding:18px 24px;background:#F0E442;color:#000;border:3px solid var(--ink)}
+.month-bar .label{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.month-bar h2{font:400 26px/1.05 var(--head);margin:6px 0 4px}
+.month-bar p{margin:0;font-size:15px}
+.month-go{flex:none;font:600 16px var(--body);padding:12px 26px;background:#000;color:#fff;text-decoration:none;box-shadow:6px 6px 0 #0072B2}
+.month-go:hover{filter:brightness(1.25)}
+.ms-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ms-cards .ts-pic{background:#1b1f27}
+.ms-cards .ts-pic img:first-child{object-position:right center}
+@media (max-width:760px){.ms-cards{grid-template-columns:1fr}}
 .disc-t{width:100%;border-collapse:collapse;font-size:15px}
 .disc-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
 .disc-t td{border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 14px 10px 0;vertical-align:top}
@@ -1025,14 +1024,16 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
           <button class="gl-tile-go meme-go" type="button" data-open="subscribe">Get a meme every day →</button>
         </div>
       </div></section>
+      <!-- Monthly issues: a yellow bar to the shelf, then the two newest issues (aipulse/monthly.py, monthly/front.json) -->
+      <section class="month-strip" id="month-strip" hidden>
+        <div class="month-bar"><div><span class="label">Monthly issues · free</span><h2>Check out our monthly issues</h2>
+          <p>A booklet for every month: what happened in brief, week by week, and the words to know.</p></div>
+          <a class="month-go" href="/monthly/">All issues →</a></div>
+        <div class="ts-cards ms-cards" id="ms-cards"></div></section>
       <!-- Follow the story: the topics most in the news over the last 30 days (aipulse/topics.py, topics/front.json) -->
       <section class="topics-strip" id="topics-strip" hidden><div class="band-head"><h2>Follow the story</h2><span class="kicker">How the biggest stories unfolded</span></div>
         <div class="ts-cards" id="ts-cards"></div>
         <a class="hn-more" href="/topics/">All topics →</a></section>
-      <!-- The month in AI: the newest monthly issue (aipulse/monthly.py, monthly/latest.json) -->
-      <section class="month-strip" id="month-strip" hidden><div class="band-head"><h2>The month in AI</h2><span class="kicker">A booklet for every month</span></div>
-        <a class="ms-card" id="ms-card" href="/monthly/"></a>
-        <a class="hn-more" href="/monthly/">All monthly issues →</a></section>
     </div>
   </section>
 
@@ -2050,19 +2051,20 @@ async function loadTopics(){
     $("topics-strip").hidden = false;
   }catch(e){}
 }
-// The month in AI: the newest monthly issue's cover and summary (monthly/latest.json, from the build)
+// Monthly issues: the two newest, as cards like the topics' (monthly/front.json, from the build)
 async function loadMonthly(){
   try{
-    const m = await (await fetch("/monthly/latest.json", {cache: "no-cache"})).json();
-    if(!m.href) return;
-    const a = $("ms-card"), cover = el("span", "ms-cover"), words = el("span"), body = el("span", "ms-body");
-    a.href = m.href;
-    if(m.photo){ const img = el("img"); img.src = "/photos/" + m.photo[0]; img.alt = ""; img.loading = "lazy"; img.title = m.photo[1]; cover.append(img); }
-    words.append(el("small", null, "No. " + m.number), el("b", null, m.name));
-    cover.append(words);
-    if(m.summary) body.append(el("p", null, m.summary));
-    body.append(el("span", "ms-go", "Read the " + m.name.split(" ")[0] + " issue →"));
-    a.replaceChildren(cover, body);
+    const list = await (await fetch("/monthly/front.json", {cache: "no-cache"})).json();
+    if(!list.length) return;
+    $("ms-cards").replaceChildren(...list.map(m => {
+      const a = el("a", "ts-card"), pic = el("span", "ts-pic"), body = el("span", "ts-body");
+      a.href = m.href;
+      if(m.photo){ const img = el("img"); img.src = "/photos/" + m.photo[0]; img.alt = ""; img.loading = "lazy"; pic.append(img); }
+      body.append(el("span", "ts-kind", "No. " + m.number), el("b", null, m.name));
+      if(m.lede){ const last = el("span", "ts-last"); last.append(el("span", null, m.lede)); body.append(last); }
+      a.append(pic, body);
+      return a;
+    }));
     $("month-strip").hidden = false;
   }catch(e){}
 }
