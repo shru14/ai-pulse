@@ -57,9 +57,9 @@ STYLE = """
 .cp .days .grp{margin-left:10px;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
 .cp .note{margin-top:28px;font-size:14px;color:var(--muted)}
 .cp .note a{color:#0072B2}
-.cp .topics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
-@media (max-width:760px){.cp .topics{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:560px){.cp .topics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cp .topics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+@media (max-width:760px){.cp .topics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.cp .topics{grid-template-columns:1fr}}
 .cp .topics > a{display:flex;flex-direction:column;border:2px solid #000;background:var(--bg);color:var(--ink);text-decoration:none;box-shadow:3px 3px 0 #000;transition:transform .12s,box-shadow .12s}
 .cp .topics > a:hover,.cp .topics > a:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #D55E00}
 .cp .topics .pic{position:relative;display:block;height:92px;border-bottom:2px solid #000;overflow:hidden}
@@ -80,7 +80,7 @@ STYLE = """
 .cp .topics .kind{font-size:10px}
 .cp .topics b{font:400 15px/1.2 var(--display)}
 .cp .topics .last{display:flex;flex-direction:column;gap:3px;margin-top:auto;border:2px solid #000;background:color-mix(in srgb,#56B4E9 14%,var(--bg));padding:6px 8px}
-.cp .topics .last .lt{font-size:12.5px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cp .topics .last .lt{font-size:13.5px;font-weight:600;line-height:1.35}
 .cp .topics .last .lt:empty{display:none}
 .cp .topics .last .meta{margin:0;font-size:11px}
 .cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
