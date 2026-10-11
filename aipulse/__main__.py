@@ -374,6 +374,7 @@ def main():
             sys.exit(0 if due else 1)
         if a.month:
             conn.execute("DELETE FROM monthly WHERE month = ?", (a.month,))
+            conn.commit()
         monthly.summarise(conn, today, limit=a.limit, only=a.month)
     elif a.cmd == "dossiers":
         from . import embed, subscribers, weekly

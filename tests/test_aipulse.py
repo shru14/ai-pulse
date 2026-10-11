@@ -3309,6 +3309,8 @@ def test_monthly_summary_keeps_only_names_and_numbers_its_headlines_have():
     # a name or number the headlines don't have; a sentence's first word may be any word
     assert monthly.unsupported("Meanwhile, OpenAI released GPT-7 for 5 dollars.", heads) == ["OpenAI", "GPT-7", "7", "5"]
     assert monthly.unsupported("A Google-led group met in the U.S. today.", heads + " US") == []  # "-led", "U.S." = "US"
+    # a place by its adjective in the headlines; a place they don't name at all is left out
+    assert monthly.unsupported("Regulators in Italy and China acted. Indonesia too.", "Italian and Chinese regulators") == ["Indonesia"]
     good = ("Google released Gemini 4 Argon, its most powerful model. " * 5 + "Mistral raised €3B.").strip()
     tries = iter(["OpenAI made a rival model this month, and it was quite large and good. " * 5, good])
     logs = []

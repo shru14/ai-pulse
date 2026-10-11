@@ -248,8 +248,9 @@ def unsupported(text: str, source: str) -> list[str]:
             first = m.start() == 0 and i == 0
             if re.fullmatch(r".+-[a-z]+", w):  # "Trump-led", "Google-backed": the name is the part before
                 w = w.rsplit("-", 1)[0]
-            if w in ("AI", "I") or w.lower().replace(".", "") in hay or (first and (
-                    w.lower() in STARTERS or re.search(rf"{re.escape(w.lower())}", source))):
+            stem = w.lower()[:max(4, len(w) - 1)]  # a place by its adjective: "Italy" for "Italian", "China" for "Chinese"
+            if w in ("AI", "I") or w.lower().replace(".", "") in hay or re.search(rf"\b{re.escape(stem)}[a-z]*(?:n|ese|ish)\b", hay) or (first and (
+                    w.lower() in STARTERS or re.search(rf"\b{re.escape(w.lower())}\b", source))):
                 continue
             bad.append(w)
         bad += [n for n in _NUM.findall(sentence) if not re.search(rf"(?<![\d.,]){re.escape(n)}(?![\d])", source)]
