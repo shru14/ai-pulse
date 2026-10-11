@@ -2424,8 +2424,10 @@ document.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click"
 
 // The subscribe form pops up as the site loads, once a visit (not again on reloads in the same tab session); never
 // for a reader who subscribed from this browser, nor over a link from an email (confirm, unsubscribe, choices, glossary).
+// Not on phones: it covers the whole screen and brings up the keyboard; the Subscribe button is in the header.
 const SUB_PROMPT = "aipulse-sub-prompt";
 function promptSubscribe(){
+  if(matchMedia("(max-width:640px)").matches) return;
   if(location.hash && !/^#(home|all|tool|news|research|regulation|policy|infra)?$/.test(location.hash)) return;
   try{
     if(localStorage.getItem(SUB_PROMPT) === "subscribed" || sessionStorage.getItem(SUB_PROMPT)) return;
