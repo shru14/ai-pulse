@@ -399,6 +399,8 @@ def build(conn, out: str | Path) -> int:
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
     from . import topics
     places += topics.build(conn, cards, out, today)  # storylines followed over time, a page each (topics/)
+    from . import monthly
+    places += monthly.build(conn, cards, out, today)  # a booklet for each month that is over (monthly/)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")

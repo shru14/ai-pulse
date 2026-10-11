@@ -18,12 +18,13 @@ six streams and links every card to the original.
 
 ## Features
 
-- **Site:** a front page (a ticker of the latest stories, Today in AI as a leaderboard ranked by sources, with the [full list](https://projectaipulse.com/today/), and what people are discussing; the past 7 days' story, word and meme (updated every day); then the 3 [topics](https://projectaipulse.com/topics/) most in the news), a page per stream, filters and search back to 2023, dark mode, a bookmark on each story to save it for later (a Saved stories page, kept in the reader's browser only), an [About page](https://projectaipulse.com/about/) and [what people are discussing](https://projectaipulse.com/discussing/).
+- **Site:** a front page (a ticker of the latest stories, Today in AI as a leaderboard ranked by sources, with the [full list](https://projectaipulse.com/today/), and what people are discussing; the past 7 days' story, word and meme (updated every day); a yellow bar to the [monthly issues](https://projectaipulse.com/monthly/) with the two newest inside it; then the 3 [topics](https://projectaipulse.com/topics/) most in the news), a page per stream, filters and search back to 2023, dark mode, a bookmark on each story to save it for later (a Saved stories page, kept in the reader's browser only), an [About page](https://projectaipulse.com/about/) and [what people are discussing](https://projectaipulse.com/discussing/).
 - **One card per event**, in English (offline translation where needed).
 - **Daily or weekly email** of the streams you pick, with a word and meme of the day.
 - **Weekly dossier:** your own questions, answered with the week's stories.
 - **Pages:** [AI laws by country](https://projectaipulse.com/tracker/), [AI standards](https://projectaipulse.com/standards/), [glossary](https://projectaipulse.com/glossary/).
 - **[Topics](https://projectaipulse.com/topics/):** storylines followed over time (the EU AI Act, Nvidia chips to China, Musk v. OpenAI…), laws and news on one timeline. Each topic is a hand-kept word rule; every run adds the new stories that match. Most in the news over the last 30 days first; a topic with nothing new for 90 days is marked Concluded.
+- **[The month in AI](https://projectaipulse.com/monthly/):** a booklet for every month since January 2026, made once the month is over: the month in brief, the 10 most reported stories, a week-by-week timeline (with laws that passed a stage), each stream's top stories, the glossary's words of the month and the storylines that moved. The summary is written offline by an open-source model (Qwen3-4B-Instruct, Apache 2.0, run with llama.cpp) from the month's 40 most reported headlines; every name and number in it must be in those headlines, else it is not used.
 - **Glossary:** 146 words in plain English, each with its newest story. Each run lists words 3+ outlets use that it lacks (`python -m aipulse glossary`); they are written up by hand.
 - **RSS:** one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
 
@@ -109,7 +110,7 @@ Federal Register of Legislation (CC BY 4.0); for the latest information go to ht
 Irish bills: Houses of the Oireachtas (https://www.oireachtas.ie), Oireachtas (Open Data) PSI Licence, which
 incorporates CC BY 4.0. Norwegian proposals: Stortinget (https://data.stortinget.no), Norwegian Licence for Open
 Government Data (NLOD); titles machine-translated by AI Pulse.
-AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
+AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Monthly summaries: Qwen3-4B-Instruct-2507 (Qwen team, Apache 2.0), GGUF by Unsloth, run with llama.cpp (MIT). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
 (MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) (no icons are fetched from brands' own sites). Fonts: Archivo Black, Archivo, Anton and IBM Plex Mono (SIL Open Font License 1.1), served
 from this site. Section icons: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).
 Meme templates: via [Imgflip](https://imgflip.com), used as parody and commentary. Flags: [flag-icons](https://github.com/lipis/flag-icons) (MIT, © 2013 Panayiotis Lipiridis), served from this site.

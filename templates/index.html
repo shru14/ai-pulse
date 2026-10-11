@@ -750,6 +750,24 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .ts-last{display:flex;flex-direction:column;gap:3px;margin-top:auto;border:2px solid var(--ink);background:color-mix(in srgb,#56B4E9 14%,var(--surface));padding:7px 9px;font-size:14px;font-weight:600;line-height:1.35}
 .ts-last small{font:500 11.5px var(--mono);color:var(--muted)}
 @media (max-width:760px){.ts-cards{grid-template-columns:1fr;gap:12px}}
+/* Monthly issues: a yellow bar like the sign-up strip, the two newest issues inside it */
+.month-strip[hidden]{display:none}
+.month-bar{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,2fr);align-items:center;gap:18px 26px;padding:18px 24px;background:#F0E442;color:#000;border:3px solid var(--ink)}
+.month-bar .label{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.month-bar h2{font:400 26px/1.05 var(--head);margin:6px 0 4px}
+.month-bar p{margin:0 0 14px;font-size:15px}
+.month-go{display:inline-block;font:600 16px var(--body);padding:11px 24px;background:#000;color:#fff;text-decoration:none;box-shadow:6px 6px 0 #0072B2}
+.month-go:hover{filter:brightness(1.25)}
+.ms-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ms-card{display:grid;grid-template-columns:96px minmax(0,1fr);border:3px solid #000;background:#fff;color:#000;text-decoration:none;min-height:118px}
+.ms-card img{width:100%;height:100%;object-fit:cover;object-position:right center;border-right:3px solid #000;background:#1b1f27}
+.ms-body{display:flex;flex-direction:column;gap:3px;padding:8px 10px 10px;min-width:0}
+.ms-body small{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#3B3B3B}
+.ms-body b{font:400 17px/1.15 var(--head)}
+.ms-body span{font-size:13.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ms-card:hover b{text-decoration:underline;text-decoration-color:#D55E00;text-underline-offset:3px}
+@media (max-width:900px){.month-bar{grid-template-columns:1fr}}
+@media (max-width:560px){.ms-cards{grid-template-columns:1fr}}
 .disc-t{width:100%;border-collapse:collapse;font-size:15px}
 .disc-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
 .disc-t td{border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 14px 10px 0;vertical-align:top}
@@ -1011,6 +1029,12 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
           <button class="gl-tile-go meme-go" type="button" data-open="subscribe">Get a meme every day →</button>
         </div>
       </div></section>
+      <!-- Monthly issues: a yellow bar to the shelf, then the two newest issues (aipulse/monthly.py, monthly/front.json) -->
+      <section class="month-strip" id="month-strip" hidden>
+        <div class="month-bar"><div class="mb-text"><span class="label">Monthly issues · free</span><h2>Check out our monthly issues</h2>
+          <p>A booklet for every month: what happened in brief, week by week, and the words to know.</p>
+          <a class="month-go" href="/monthly/">All issues →</a></div>
+          <div class="ms-cards" id="ms-cards"></div></div></section>
       <!-- Follow the story: the topics most in the news over the last 30 days (aipulse/topics.py, topics/front.json) -->
       <section class="topics-strip" id="topics-strip" hidden><div class="band-head"><h2>Follow the story</h2><span class="kicker">How the biggest stories unfolded</span></div>
         <div class="ts-cards" id="ts-cards"></div>
@@ -2032,6 +2056,23 @@ async function loadTopics(){
     $("topics-strip").hidden = false;
   }catch(e){}
 }
+// Monthly issues: the two newest, small cards inside the yellow bar (monthly/front.json, from the build)
+async function loadMonthly(){
+  try{
+    const list = await (await fetch("/monthly/front.json", {cache: "no-cache"})).json();
+    if(!list.length) return;
+    $("ms-cards").replaceChildren(...list.map(m => {
+      const a = el("a", "ms-card"), body = el("span", "ms-body"), img = el("img");
+      a.href = m.href;
+      img.src = m.photo ? "/photos/" + m.photo[0] : ""; img.alt = ""; img.loading = "lazy";
+      body.append(el("small", null, "No. " + m.number), el("b", null, m.name));
+      if(m.lede) body.append(el("span", null, m.lede));
+      a.append(img, body);
+      return a;
+    }));
+    $("month-strip").hidden = false;
+  }catch(e){}
+}
 // People are discussing: Hacker News' most-discussed AI threads (social.json, fetched with each full update).
 async function loadSocial(){
   try{
@@ -2502,6 +2543,7 @@ showPage();
 loadTicker();
 loadSocial();
 loadTopics();
+loadMonthly();
 promptSubscribe();
 setInterval(() => location.reload(), 30*60*1000);
 </script>

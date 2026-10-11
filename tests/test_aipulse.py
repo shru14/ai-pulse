@@ -620,7 +620,7 @@ def test_static_build_holds_every_card(tmp_path):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
         "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -642,6 +642,7 @@ def test_static_build_holds_every_card(tmp_path):
     tracker_pages += list((tmp_path / "site" / "glossary").glob("**/index.html"))  # and the glossary's
     tracker_pages += list((tmp_path / "site" / "industry").glob("*/index.html"))  # and Industry's kinds, a page each
     tracker_pages += list((tmp_path / "site" / "topics").glob("**/index.html"))  # and the topics, a page each
+    tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and 'data-kind="tutorial"' in tutorials and "Updated" not in tutorials
@@ -3279,3 +3280,88 @@ def test_glossary_note_lists_the_branchs_new_words_to_approve():
     assert subject == "AI Pulse glossary: 1 new word to approve"
     assert "not on the site yet" in text and "merge glossary/2026-10-11" in text
     assert "<th align" in html and "<b>Vision-language model</b>" in html  # a table: word, group, meaning
+
+
+def test_monthly_issues_are_numbered_from_january_2026_and_cut_in_weeks():
+    from datetime import date
+    from aipulse import monthly
+    ms = monthly.months(date(2026, 10, 11))
+    assert ms[0] == "2026-01" and ms[-1] == "2026-09"  # 2026 only, and only months that are over
+    assert monthly.number("2026-01") == 1 and monthly.number("2026-09") == 9
+    assert monthly.name("2026-09") == "September 2026"
+    weeks = monthly._weeks("2026-09")  # 30 days: 1-7, 8-14, 15-21, 22-30 (a 2-day stub joins the last week)
+    assert [(a.day, b.day) for a, b in weeks] == [(1, 7), (8, 14), (15, 21), (22, 30)]
+    assert [(a.day, b.day) for a, b in monthly._weeks("2026-02")] == [(1, 7), (8, 14), (15, 21), (22, 28)]
+    assert monthly._weeks("2026-10")[-1][1].day == 31
+
+
+def test_monthly_summary_keeps_only_names_and_numbers_its_headlines_have():
+    from aipulse import monthly
+    def card(i, title, n=1, d="2026-09-10", cat="news"):
+        return {"id": i, "title": title, "date": d, "category": cat, "source": "A", "url": f"https://x/{i}",
+                "also": [{"source": f"S{k}"} for k in range(n - 1)]}
+    cards = [card("a", "Google releases Gemini 4 Argon", 7, cat="tool"), card("b", "Mistral raises €3B", 4),
+             card("c", "A paper on attention", 9, cat="research")]  # papers stay out of what the model reads
+    p = monthly.prompt("2026-09", cards)
+    assert "September 2026" in p and "(7 outlets) Google releases Gemini 4 Argon" in p and "paper" not in p
+    heads = "September 2026 Google releases Gemini 4 Argon Mistral raises €3B"
+    assert monthly.unsupported("Google released Gemini 4 Argon. Mistral raised €3B in September.", heads) == []
+    # a name or number the headlines don't have; a sentence's first word may be any word
+    assert monthly.unsupported("Meanwhile, OpenAI released GPT-7 for 5 dollars.", heads) == ["OpenAI", "GPT-7", "7", "5"]
+    assert monthly.unsupported("A Google-led group met in the U.S. today.", heads + " US") == []  # "-led", "U.S." = "US"
+    # a place by its adjective in the headlines; a place they don't name at all is left out
+    assert monthly.unsupported("Regulators in Italy and China acted. Indonesia too.", "Italian and Chinese regulators") == ["Indonesia"]
+    good = ("Google released Gemini 4 Argon, its most powerful model. " * 5 + "Mistral raised €3B.").strip()
+    tries, prompts = iter(["OpenAI made a rival model this month, and it was quite large and good. " * 5, good]), []
+    logs = []
+    assert monthly.write("2026-09", cards, generate=lambda p, seed: prompts.append(p) or next(tries), log=logs.append) == good
+    assert logs == ["  2026-09: try 1 left out (OpenAI)"]
+    assert prompts[1].endswith("Do not mention OpenAI: the headlines don't.")  # the next try is told what was wrong
+    assert monthly.write("2026-09", cards, generate=lambda p, seed: "Too short.", log=lambda *_: None) is None
+    long = "Google released Gemini 4 Argon. " * 8  # 8 sentences: a list of headlines, not a summary
+    assert monthly.write("2026-09", cards, generate=lambda p, seed: long, log=lambda *_: None) is None
+
+
+def test_monthly_issue_pages(tmp_path):
+    import json
+    from datetime import date
+    from aipulse import monthly
+    conn = store.connect(tmp_path / "m.db")
+    monthly.connect(conn)
+    conn.execute("INSERT INTO monthly VALUES ('2026-08', 'August in brief.', 'test', '2026-09-01')")
+    def card(i, title, n=1, d="2026-08-10", cat="news"):
+        return {"id": i, "title": title, "date": d, "category": cat, "source": "A", "url": f"https://x/{i}",
+                "summary": "", "tags": [], "also": [{"source": f"S{k}"} for k in range(n - 1)]}
+    cards = [card("a", "Big launch of a reasoning model", 5, "2026-08-03", "tool"), card("b", "Small news", 1, "2026-08-20"),
+             card("c", "Funding round", 3, "2026-08-25"), card("d", "September story", 2, "2026-09-02")]
+    paths = monthly.build(conn, cards, tmp_path, date(2026, 10, 11))
+    assert paths == ["monthly/", "monthly/2026-08/", "monthly/2026-09/"]  # October isn't over
+    page = (tmp_path / "monthly" / "2026-08" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>August 2026</h1>" in page and "No. 8" in page and "August in brief." in page
+    assert "Big launch" not in page  # the outlets' headlines load in the browser, from issue.json
+    assert 'href="/monthly/2026-09/">September 2026 →' in page
+    assert '<a href="/monthly/2026-08/#streams">' in page  # the contents: this page's sections (its <base> is "/")
+    issue = json.loads((tmp_path / "monthly" / "2026-08" / "issue.json").read_text(encoding="utf-8"))
+    assert [e["title"] for e in issue["top"]] == ["Big launch of a reasoning model", "Funding round", "Small news"]
+    assert [len(w["events"]) for w in issue["weeks"]] == [1, 0, 0, 1, 0][:len(issue["weeks"])]  # 2+ outlets only
+    assert "Reasoning model" in [w["term"] for w in monthly.words(monthly.word_counts(cards * 5), [], "2026-08")]
+    front = json.loads((tmp_path / "monthly" / "front.json").read_text(encoding="utf-8"))
+    assert [f["name"] for f in front] == ["September 2026", "August 2026"]  # the newest two, newest first
+    assert front[0]["lede"] == "" and front[1]["lede"] == "August in brief."  # no summary yet: none shown
+    assert monthly.lede("A U.S. court ruled. Then more.") == "A U.S. court ruled."
+    shelf = (tmp_path / "monthly" / "index.html").read_text(encoding="utf-8")
+    assert shelf.index("September") < shelf.index("August")  # newest first
+
+
+def test_monthly_summary_that_fails_every_try_is_not_tried_again(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import monthly
+    conn = store.connect(tmp_path / "f.db")
+    monthly.connect(conn)
+    monkeypatch.setattr(monthly, "months", lambda today: ["2026-08"])
+    monkeypatch.setattr(monthly, "month_cards", lambda conn, m: [{"id": "a"}])
+    monkeypatch.setattr(monthly, "write", lambda m, cards, log: None)
+    monkeypatch.setitem(monthly._llm, "m", object())  # the model is there; its text failed the check
+    assert monthly.summarise(conn, date(2026, 10, 11), log=lambda *_: None) == 0
+    assert [tuple(r) for r in conn.execute("SELECT month, summary FROM monthly")] == [("2026-08", "")]
+    assert monthly.due(conn, date(2026, 10, 11)) == []  # the next run doesn't download the model again for it

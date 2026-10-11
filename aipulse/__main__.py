@@ -96,6 +96,10 @@ def main():
     ds = sub.add_parser("dossiers", help="the week's dossier for every reader's question, kept for the site and the "
                                          "Sunday email (offline model; reads the questions with DIGEST_LIST_KEY)")
     ds.add_argument("--interest", action="append", help="these instead of the readers' (testing)")
+    mo = sub.add_parser("monthly", help="the monthly issues' summaries still due (offline open-source model)")
+    mo.add_argument("--due", action="store_true", help="only say whether one is due: exit 0 if so, 1 if not")
+    mo.add_argument("--limit", type=int, default=4, help="at most this many months this run (newest first)")
+    mo.add_argument("--month", help="write this month's (YYYY-MM) again")
     sub.add_parser("audit", help="check every source's robots.txt and terms again (on a PC, monthly; see aipulse/terms.py)")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
@@ -359,6 +363,19 @@ def main():
     elif a.cmd == "embed":
         from . import embed
         embed.update(store.connect(a.db), limit=a.limit)
+    elif a.cmd == "monthly":
+        from . import monthly
+        conn = store.connect(a.db)
+        monthly.connect(conn)
+        today = datetime.now(timezone.utc).date()
+        if a.due:
+            due = monthly.due(conn, today)
+            print(f"monthly: {len(due)} summaries due" + (f", newest {due[0]}" if due else ""))
+            sys.exit(0 if due else 1)
+        if a.month:
+            conn.execute("DELETE FROM monthly WHERE month = ?", (a.month,))
+            conn.commit()
+        monthly.summarise(conn, today, limit=a.limit, only=a.month)
     elif a.cmd == "dossiers":
         from . import embed, subscribers, weekly
         key = os.environ.get("DIGEST_LIST_KEY", "")
