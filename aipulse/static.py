@@ -374,6 +374,9 @@ def build(conn, out: str | Path) -> int:
     (out / "discussing").mkdir()
     (out / "discussing" / "index.html").write_text(page_at(page, "discussing", "People are discussing · AI Pulse",
         "The most-discussed AI threads on Hacker News in the last two days."), encoding="utf-8")
+    (out / "saved").mkdir()  # the reader's bookmarks (kept in their browser): not in the sitemap
+    (out / "saved" / "index.html").write_text(page_at(page, "saved", "Saved stories · AI Pulse",
+        "The stories you saved on AI Pulse, kept in this browser."), encoding="utf-8")
     (out / "today").mkdir()
     (out / "today" / "index.html").write_text(page_at(page, "today", "Today in AI · AI Pulse",
         "Today's AI stories, ranked by how many outlets carry them."), encoding="utf-8")
