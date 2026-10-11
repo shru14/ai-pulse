@@ -80,6 +80,9 @@ def main():
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     dg.add_argument("--layout", choices=["short", "full"], default="short",
                     help="short (the daily email): the ten that mattered most, then headlines; full: every story in one table")
+    dg.add_argument("--since", default="", help="the newest arrival the last email saw (its --seen); stories dated "
+                    "before the day that arrived after it go in too")
+    dg.add_argument("--seen", metavar="FILE", help="write the newest arrival this email sees to FILE (the next one's --since)")
     gl = sub.add_parser("glossary", help="words recent stories use that the glossary doesn't explain yet (to write up by hand)")
     gl.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json instead of the database")
     gn = sub.add_parser("glossary-note", help="email the project inbox the words a glossary/ branch adds, to approve")
@@ -246,9 +249,21 @@ def main():
         from . import memegen
         # the day's meme by Gemini, if GEMINI_API_KEY is set; Sunday's email has the week's instead
         memegen.prepare(conn, cards, day=day, make=True)
+        # Late arrivals: stories dated before the day that came in after the last email was built, so they go in
+        # this one (only with --since, the last email's --seen; an old marker without a time adds none)
+        since = a.since if "T" in a.since else None
+        first = dict(conn.execute("SELECT cluster, MIN(added_at) FROM items GROUP BY cluster"))
+        for c in cards:  # each story's first arrival among its outlets (digest.late)
+            c["first_added"] = first.get(c["id"]) or c.get("added_at")
+        if a.seen:
+            open(a.seen, "w", encoding="utf-8").write(conn.execute("SELECT MAX(added_at) FROM items").fetchone()[0] or "")
+        # The quality check looks at the day's own stories, as before
         by_stream = digest.by_streams(cards, streams, day)
         counts = {x: len(v) for x, v in by_stream.items()}
-        for c in digest.left_out(cards, streams, day):
+        arrived = {x: len(v) - counts[x] for x, v in digest.by_streams(cards, streams, day, since).items()}
+        if any(arrived.values()):
+            print(f"Late arrivals (dated before {day}, came in after the last email): {arrived}")
+        for c in digest.left_out(cards, streams, day, since):
             print(f"Left out (doesn't name AI): {c['title']!r} ({c['source']})")
         found = quality.problems(by_stream, cards, day)
         if found:
@@ -265,14 +280,13 @@ def main():
                 print(f"Alert sent to the project inbox: {note[0]}")
             sys.exit(HELD)
         # A story whose link is dead is left out of every email (logged by headline)
-        dead = quality.dead_links(by_stream)
+        dead = quality.dead_links(digest.by_streams(cards, streams, day, since))
         for c in dead:
             print(f"Left out (dead link): {c['title']!r} ({c['source']})")
         if dead:
             gone = {c["url"] for c in dead}
             cards = [c for c in cards if c.get("url") not in gone]
-            by_stream = digest.by_streams(cards, streams, day)
-            counts = {x: len(v) for x, v in by_stream.items()}
+            counts = {x: len(v) for x, v in digest.by_streams(cards, streams, day).items()}
         if a.subscribers:
             from . import subscribers
             # Each confirmed reader gets their own streams and choices; nothing on a day their streams were empty.
@@ -286,7 +300,7 @@ def main():
             weekly_only = sum(1 for r in readers.values() if r[3].get("often") == "weekly")
             readers = digest.due(readers, day)
             emails = [(to, *e, one_click) for to, (chosen, one_click, link, prefs) in readers.items()
-                      if (e := digest.build(cards, chosen, day, link, a.layout, prefs=prefs, dossier=dossier(prefs)))]
+                      if (e := digest.build(cards, chosen, day, link, a.layout, prefs=prefs, dossier=dossier(prefs), since=since))]
             if a.dry_run:
                 tuned = sum(1 for r in readers.values() if any(v for k, v in r[3].items() if k != "often"))
                 print(f"Checked, no problems: {len(emails)} of {len(readers)} subscribers would get the {day} digest "
@@ -306,7 +320,7 @@ def main():
                 streams, _, link, prefs = mine
                 note = wk.note(conn, key, prefs.get("interests") or [], day) if digest.weekly(day) else None
             print(f"Sample as the subscriber's own email: {'yes' if mine else 'no, not subscribed'}")
-        email = digest.build(cards, streams, day, link, a.layout, prefs=prefs, dossier=note)
+        email = digest.build(cards, streams, day, link, a.layout, prefs=prefs, dossier=note, since=since)
         if a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(digest.preview(email[2]))
             print(f"Checked, no problems: {email[0]} {counts} -> wrote {a.dry_run}")

@@ -5,6 +5,8 @@
 # quality check (aipulse/quality.py) holds counts as handled too: the project inbox gets one alert, not four.
 # GitHub once never started this schedule at all (30 Sep 2026), so the site's workflow (pages.yml, whose schedule
 # does run) also starts this one each morning; the marker makes every start after the first a no-op.
+# Each day's marker holds the newest arrival that day's email saw; the next morning reads it, and stories dated
+# before its day that came in after it (published or fetched late) go in that email, so none falls between two.
 # The log shows counts, never addresses.
 name: Daily digest
 
@@ -54,7 +56,9 @@ jobs:
         id: day
         run: |
           d="${{ inputs.day }}"
-          echo "day=${d:-$(date -u -d yesterday +%F)}" >> "$GITHUB_OUTPUT"
+          d="${d:-$(date -u -d yesterday +%F)}"
+          echo "day=$d" >> "$GITHUB_OUTPUT"
+          echo "before=$(date -u -d "$d -1 day" +%F)" >> "$GITHUB_OUTPUT"
 
       - name: Already handled today?
         id: done
@@ -67,6 +71,13 @@ jobs:
 
       - uses: actions/checkout@v4
         if: steps.done.outputs.cache-hit != 'true'
+
+      - name: What the last email saw (the day before's marker)
+        if: steps.done.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: digest-sent
+          key: digest-sent-${{ steps.day.outputs.before }}
 
       - uses: actions/setup-python@v5
         if: steps.done.outputs.cache-hit != 'true'
@@ -96,12 +107,13 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}  # the day's meme captions (free tier; rule-based without it)
         run: |
           set +e
+          since="$(cat digest-sent 2>/dev/null)"  # empty, or an old marker (a bare day): no late arrivals
           if [ "${{ inputs.sample }}" = "true" ]; then
             # One sample, to the project inbox only: no subscriber gets it and the day isn't marked as sent.
-            python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL" --day ${{ steps.day.outputs.day }} --layout ${{ inputs.layout }}
+            python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL" --day ${{ steps.day.outputs.day }} --layout ${{ inputs.layout }} --since "$since"
             exit $?
           fi
-          python -m aipulse --db aipulse.db digest --subscribers --day ${{ steps.day.outputs.day }} ${{ inputs.dry_run && '--dry-run check.html' || '' }}
+          python -m aipulse --db aipulse.db digest --subscribers --day ${{ steps.day.outputs.day }} --since "$since" --seen seen.txt ${{ inputs.dry_run && '--dry-run check.html' || '' }}
           code=$?
           # 0 = sent, 3 = held by the quality check (alert sent): either way the day is handled. Anything else (the
           # list or Gmail unreachable) leaves it for the next chance.
@@ -110,7 +122,7 @@ jobs:
 
       - name: Mark the day as handled
         if: always() && !inputs.dry_run && !inputs.sample && steps.send.outputs.handled == '1'
-        run: echo "${{ steps.day.outputs.day }}" > digest-sent
+        run: cp seen.txt digest-sent  # the newest arrival this email saw, for the next one
 
       - name: Save the marker
         if: always() && !inputs.dry_run && !inputs.sample && steps.send.outputs.handled == '1'
