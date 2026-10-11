@@ -432,31 +432,19 @@ def word_of_the_day(day: date, among: set[str] | None = None) -> dict:
 
 
 def payload(cards: list[dict], today: date | None = None, days: int = 7) -> dict:
-    """glossary.json: every entry, plus how many of the last `days` days' cards mention each (for "In the news"),
-    an example of it in the news (the last EXAMPLE_DAYS days' best card using it: one with the word in its headline,
-    then a news story over a paper, then the newest) and whether it is new (added in the last NEW_DAYS days)."""
+    """glossary.json: every entry, plus how many of the last `days` days' cards mention each (for "In the news")
+    and whether it is new (added in the last NEW_DAYS days)."""
     today = today or date.today()
-    since, recent = (today - timedelta(days=days)).isoformat(), (today - timedelta(days=EXAMPLE_DAYS)).isoformat()
-    seen, example, rank = Counter(), {}, {}
+    since = (today - timedelta(days=days)).isoformat()
+    seen = Counter()
     for c in cards:
-        if (c.get("date") or "") < recent:
-            continue
-        title = c.get("title") or ""
-        ids = terms_in(f"{title} {c.get('summary') or ''}")
-        if c["date"] >= since:
-            seen.update(ids)
-        for i in ids:
-            r = (mentions(i, title), c.get("category") != "research", c["date"])
-            if i not in rank or r > rank[i]:
-                rank[i], example[i] = r, {"title": title.strip(), "url": c.get("url") or "",
-                                          "source": c.get("source") or "", "date": c["date"][:10]}
+        if (c.get("date") or "") >= since:
+            seen.update(terms_in(f"{c.get('title') or ''} {c.get('summary') or ''}"))
     new_since = (today - timedelta(days=NEW_DAYS)).isoformat()
     return {"groups": GROUPS, "days": days, "levels": ["Everyday", "Technical"],
-            "entries": [{**e, "recent": seen.get(e["id"], 0), "example": example.get(e["id"]),
+            "entries": [{**e, "recent": seen.get(e["id"], 0),
                          "new": LAUNCH.isoformat() < e["added"] and e["added"] >= new_since} for e in ENTRIES]}
 
-
-EXAMPLE_DAYS = 30  # a word's example story: the newest of this many days
 
 # candidates(): what the glossary may still need, found as AI stories write such words: acronyms and names with
 # capitals inside (KV, SynthID), hyphenated words (long-horizon) and phrases ending in a technical noun (world action
