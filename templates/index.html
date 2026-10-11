@@ -246,7 +246,7 @@ header.top{gap:10px}
 .lede{margin:18px 0 0;max-width:80ch;color:var(--muted);font-size:16px;line-height:1.55}
 .lede strong{color:var(--ink);font:700 18px var(--head);letter-spacing:-.01em}
 .home-status{margin-top:6px}
-.mag{display:grid;gap:34px;margin-top:20px}
+.mag{display:grid;grid-template-columns:minmax(0,1fr);gap:34px;margin-top:20px}  /* never wider than the screen */
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:24px;min-width:0}
 .tile .label{font:600 13px var(--mono);letter-spacing:.02em}
 .tile-note{margin:0;color:var(--muted)}
@@ -801,7 +801,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   .band-head h2{font-size:22px}
   .tcard{grid-template-columns:104px 1fr}
   .tcard h3{font-size:15px}
-  .mag-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:0 16px 10px;scrollbar-width:none}
+  .mag-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:0 16px 10px;scroll-padding-inline:16px;scrollbar-width:none}
   .mag-row::-webkit-scrollbar{display:none}
   .mag-row>*{flex:0 0 84%;min-width:0;scroll-snap-align:start}
   .mag-row>[hidden]{display:none}
@@ -815,6 +815,19 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   header.top .subscribe-btn.cta{padding:0 8px}
   header.top .gl-open,header.top .az-btn,.theme-btn{width:34px}
 }
+/* Phones: one 16px margin on every page (the browser's own 8px body margin was adding to it), and the name and
+   every button on one row, so dark mode never drops to a line of its own */
+@media (max-width:560px){
+  body{margin:0}
+  .wrap{padding-inline:0}
+  header.top{gap:5px}
+  header.top .mark{width:28px;height:28px}
+  header.top .brand{gap:6px}
+  header.top .brand h1{font-size:16px}
+  header.top .about-link{padding:0 7px;font-size:12.5px}
+  header.top .subscribe-btn.cta{padding:0 7px;font-size:13px}
+}
+@media (max-width:359px){header.top .brand h1{display:none}}  /* the smallest phones: the logo alone */
 </style>
 </head><body>
 
