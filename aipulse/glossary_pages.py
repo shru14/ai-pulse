@@ -117,6 +117,8 @@ def _day(iso: str) -> str:
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write glossary/ and a page per word. Returns their paths."""
     parts = pages.frame(conn, len(cards))
+    # the glossary's own pages need no Glossary button in their masthead
+    parts = (re.sub(r'\s*<a class="subscribe-btn gl-open".*?</a>', "", parts[0], flags=re.S), parts[1])
     pages.write_css(out)
     # each recent story's glossary words: the past 7 days' counts (the cloud) and which words share stories
     week, since = (today - timedelta(days=7)).isoformat(), (today - timedelta(days=TOGETHER_DAYS)).isoformat()
@@ -181,11 +183,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "DefinedTermSet", "name": "AI Pulse glossary", "url": home,
             "hasDefinedTerm": [{"@type": "DefinedTerm", "name": e["term"], "url": f"{rss.SITE}glossary/{e['id']}/"}
                                for e in words]}
-    # the glossary's own page needs no Glossary button in its masthead
-    own = (re.sub(r'\s*<a class="subscribe-btn gl-open".*?</a>', "", parts[0], flags=re.S), parts[1])
     (out / "glossary").mkdir(parents=True, exist_ok=True)
     (out / "glossary" / "index.html").write_text(pages.page(
         "AI glossary: the hard words in AI news, in plain English · AI Pulse",
         f"{len(words)} AI words explained in plain English, from LLM and tokens to compute, agents and AI law. Written by hand.",
-        "glossary/", body, data, own, ("/", "Back to AI Pulse"), note), encoding="utf-8")
+        "glossary/", body, data, parts, ("/", "Back to AI Pulse"), note), encoding="utf-8")
     return ["glossary/", *paths]
