@@ -209,6 +209,7 @@ LOOK = {
 SMALL = 25  # a topic with this many events or fewer shows each as a card; a bigger one only its milestones
 LOGOS = 3   # brand logos on a topic's picture: the ones its stories name most,
 LOGO_MIN = 3  # each named by this many of its stories at least
+KEY, KEY_OFFICIAL = 4, 2  # key moments at the top of a topic's page, at most this many of them official records
 
 _RULES = {slug: (re.compile(t["words"], re.I), re.compile(t["exclude"], re.I) if t.get("exclude") else None)
           for slug, t in TOPICS.items()}
@@ -233,7 +234,8 @@ def _logo(card: dict) -> dict | None:
 
 def events(slug: str, cards: list[dict]) -> list[dict]:
     """The topic's events, oldest first: each matching story (with how many outlets carried it and the brand it
-    names), and each stage of its tracked bills as an official record (with its place's flag)."""
+    names), and each stage of its tracked bills as an official record (with its place's flag). Milestones carry a
+    photo; the few biggest are its key moments (see KEY)."""
     out = []
     for c in cards:
         if not matches(slug, c):
@@ -242,18 +244,70 @@ def events(slug: str, cards: list[dict]) -> list[dict]:
             life = c["lifecycle"]
             name = c["title"].split(": ", 1)[-1]
             out += [{"date": s["date"], "title": f"{name}: {s['label']}", "url": life["url"],
-                     "source": life["source"], "outlets": 1, "official": True,
+                     "source": life["source"], "outlets": 1, "official": True, "bill": c["bill"], "stage": s["stage"],
                      "flag": countries.flag(c["bill"].split("-")[0])}
                     for s in life["steps"] if s.get("date")]
             continue
         out.append({"date": c["date"], "title": c["title"].strip(), "url": c["url"], "source": c["source"],
                     "outlets": 1 + len({a["source"] for a in c.get("also") or []} - {c["source"]}),
-                    "official": False, "logo": _logo(c)})
+                    "official": False, "logo": _logo(c), "tags": c.get("tags") or [], "category": c["category"]})
     out.sort(key=lambda e: (e["date"], not e["official"]))
     big = len(out) > SMALL
     for i, e in enumerate(out):  # a milestone gets a card; the rest fold into "+N more" between them
         e["milestone"] = not big or e["official"] or e["outlets"] > 1 or i in (0, len(out) - 1)
+    # key moments: each bill's furthest stage past its introduction (the latest two), then the stories most
+    # outlets carried
+    furthest = {}
+    for e in out:
+        if e["official"] and e["stage"] != "introduced":
+            furthest[e["bill"]] = e
+    key = sorted(furthest.values(), key=lambda e: e["date"])[-KEY_OFFICIAL:]
+    news = sorted((e for e in out if not e["official"]), key=lambda e: (e["outlets"], e["date"]), reverse=True)
+    key += news[:KEY - len(key)]
+    for e in key:
+        e["key"] = e["milestone"] = True
+    used: set[str] = set()
+    for e in out:
+        tags, category = e.pop("tags", []), e.pop("category", "regulation")
+        if e["milestone"]:
+            e["photo"] = _story_photo("parliament" if e["official"] else _photo_topic(tags, category), e["url"], used)
     return out
+
+
+# The front page's choice of photo for a story (index.html, storyPhoto): by its first tag with a photo topic, else
+# its stream; a page shows each photo once while it has others to show.
+PHOTO_TOPIC = [("Chips", "chips"), ("Compute & Data Centers", "datacenter"), ("Robotics", "robots"),
+               ("Healthcare", "health"), ("Education", "school"), ("Energy", "energy"), ("Climate", "energy"),
+               ("Infrastructure & sustainability", "energy"), ("Funding", "business"), ("IPO", "business"),
+               ("M&A", "business"), ("Law", "court"), ("Copyright", "court"), ("Elections", "parliament"),
+               ("International bodies", "conference"), ("Governance", "conference"), ("Coding Tools", "software"),
+               ("Science", "lab")]
+STREAM_PHOTO = {"tool": "software", "news": "business", "research": "lab", "regulation": "court",
+                "policy": "parliament", "infra": "datacenter"}
+_PHOTOS: dict[str, list] = {}
+
+
+def _photo_topic(tags: list[str], category: str) -> str:
+    return next((p for t, p in PHOTO_TOPIC if t in tags), STREAM_PHOTO.get(category, "business"))
+
+
+def _story_photo(topic: str, url: str, used: set[str]) -> list | None:
+    if not _PHOTOS:
+        for c in photos.credits():
+            _PHOTOS.setdefault(c["topic"], []).append([c["photo"], f"Photo: {photos._who(c)}, {c['licence']}"])
+    choices = _PHOTOS.get(topic) or []
+    if not choices:
+        return None
+    h = 7
+    for ch in url:
+        h = (h * 31 + ord(ch)) & 0xFFFFFFFF
+    i = h % len(choices)
+    for _ in range(len(choices)):
+        if choices[i][0] not in used:
+            break
+        i = (i + 1) % len(choices)
+    used.add(choices[i][0])
+    return choices[i]
 
 
 def trend(ev: list[dict], today: date) -> int:
@@ -297,9 +351,14 @@ def _photo(slug: str, credits: dict) -> str:
 
 TIMELINE_JS = r"""<script>
 (() => {
-  const tl = document.getElementById("timeline");
-  const day = d => new Date(d.slice(0, 10) + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", timeZone: "UTC"});
+  const tl = document.getElementById("timeline"), moments = document.getElementById("moments");
+  const fmt = (d, o) => new Date(d.slice(0, 10) + "T00:00:00Z").toLocaleDateString(undefined, {...o, timeZone: "UTC"});
+  const day = d => fmt(d, {day: "numeric", month: "short"}), full = d => fmt(d, {day: "numeric", month: "short", year: "numeric"});
   const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
+  const link = (e, cls) => { const a = el("a", cls, e.title); a.href = e.url; a.rel = "noopener"; return a; };
+  const pic = (e, cls) => { if(!e.photo) return null; const i = el("img", cls); i.src = "photos/" + e.photo[0]; i.alt = ""; i.loading = "lazy"; i.title = e.photo[1]; return i; };
+  const lane = e => el("span", "lane", e.official ? "Official record" : "In the news");
+  const meta = e => el("div", "meta", e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : ""));
   const icon = e => {
     if(e.flag) { const i = el("img", "flag"); i.src = "flags/" + e.flag; i.alt = ""; return i; }
     if(!e.logo) return null;
@@ -308,40 +367,56 @@ TIMELINE_JS = r"""<script>
     const p = s.querySelector("path"); p.setAttribute("fill", "#" + e.logo.hex.replace("#", "")); p.setAttribute("d", e.logo.path);
     return s;
   };
-  const pill = (cls, text) => { const li = el("li", cls); li.append(el("span", "", text)); return li; };
   const card = (e, side) => {
-    const li = el("li", "ev " + side + (e.official ? " official" : " news") + (e.outlets > 1 ? " wide" : ""));
-    const box = el("div", "box"), top = el("div", "top");
-    top.append(el("span", "when", day(e.date)), el("span", "lane", e.official ? "Official record" : "In the news"));
-    const ic = icon(e); if(ic) top.append(ic);
-    const a = el("a", "", e.title); a.href = e.url; a.rel = "noopener";
-    const meta = el("div", "meta", e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : ""));
-    box.append(top, a, meta); li.append(el("span", "dot"), box);
+    const li = el("li", "ev " + side + (e.official ? " official" : " news") + (e.outlets > 1 ? " wide" : "") + (e.key ? " key" : ""));
+    const box = el("div", "box"), top = el("div", "top"), ic = icon(e), im = pic(e, "thumb");
+    top.append(el("span", "when", day(e.date)), lane(e)); if(ic) top.append(ic);
+    if(im) box.append(im);
+    const txt = el("div", "txt"); txt.append(top, link(e), meta(e)); box.append(txt);
+    li.append(el("span", "dot"), box);
     return li;
   };
   const more = list => {
     const li = el("li", "more"), b = el("button", "", "+" + list.length + (list.length === 1 ? " more story" : " more stories"));
     b.type = "button"; b.setAttribute("aria-expanded", "false");
     const ul = el("ul"); ul.hidden = true;
-    list.forEach(e => { const r = el("li"), a = el("a", "", e.title); a.href = e.url; a.rel = "noopener";
-      r.append(el("span", "when", day(e.date)), a, el("span", "src", e.source)); ul.append(r); });
+    list.forEach(e => { const r = el("li"); r.append(el("span", "when", day(e.date)), link(e), el("span", "src", e.source)); ul.append(r); });
     b.addEventListener("click", () => { ul.hidden = !ul.hidden; b.setAttribute("aria-expanded", String(!ul.hidden)); });
     li.append(b, ul); return li;
   };
   fetch(tl.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(list => {
     tl.replaceChildren();
-    if(!list.length) return tl.append(el("li", "meta", "Nothing yet."));
-    let year = "", n = 0, folded = [];
-    const flush = () => { if(folded.length) tl.append(more(folded)); folded = []; };
+    if(!list.length) return tl.append(el("p", "meta", "Nothing yet."));
+    const keys = list.filter(e => e.key);
+    if(keys.length) {
+      const grid = moments.querySelector(".mgrid");
+      keys.forEach(e => {
+        const a = el("a", "moment" + (e.official ? " official" : " news")); a.href = e.url; a.rel = "noopener";
+        const im = pic(e, "mpic"); if(im) a.append(im);
+        const t = el("span", "mtxt"), top = el("span", "top");
+        top.append(el("span", "when", full(e.date)), lane(e));
+        t.append(top, el("b", "", e.title), meta(e)); a.append(t); grid.append(a);
+      });
+      moments.hidden = false;
+    }
+    let ol = null, n = 0, folded = [];
+    const flush = () => { if(folded.length) ol.append(more(folded)); folded = []; };
     list.forEach(e => {
-      if(e.date.slice(0, 4) !== year) { flush(); year = e.date.slice(0, 4); tl.append(pill("year", year)); }
+      const year = e.date.slice(0, 4);
+      if(!ol || ol.dataset.year !== year) {  // a chapter a year, its number kept in view beside it
+        if(ol) flush();
+        const ch = el("section", "chapter"), yr = el("div", "yr");
+        yr.append(el("span", "", year));
+        ol = el("ol", "timeline"); ol.dataset.year = year;
+        ch.append(yr, ol); tl.append(ch);
+      }
       if(!e.milestone) return folded.push(e);
       flush();
-      tl.append(card(e, n++ % 2 ? "right" : "left"));  // either side of the line in turn; the colour tells which kind
+      ol.append(card(e, n++ % 2 ? "right" : "left"));  // either side of the line in turn; the colour tells which kind
     });
     flush();
-    tl.append(pill("year now", "Now"));
-  }).catch(() => tl.replaceChildren(el("li", "meta", "Couldn't load the timeline. Try reloading the page.")));
+    const now = el("li", "now"); now.append(el("span", "", "Now")); ol.append(now);
+  }).catch(() => tl.replaceChildren(el("p", "meta", "Couldn't load the timeline. Try reloading the page.")));
 })();
 </script>"""
 
@@ -366,13 +441,15 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         badges = _badges(slug, ev)
         status = '<span class="done">Concluded</span>' if done else ""
         related = " · ".join(f'<a href="/{path(r)}">{escape(TOPICS[r]["name"])}</a>' for r in t.get("related", ()))
-        body = (f'<div class="topic-hero">{_photo(slug, credits)}<div class="over"><span class="kind">{escape(t["kind"])}'
-                f'</span>{status}<h1>{escape(t["name"])}</h1><div class="badges">{badges}</div></div></div>\n'
+        body = (f'<div class="tp">\n<div class="topic-hero">{_photo(slug, credits)}<div class="over"><span class="kind">'
+                f'{escape(t["kind"])}</span>{status}<h1>{escape(t["name"])}</h1><div class="badges">{badges}</div></div></div>\n'
                 f'<p class="intro">{escape(t["what"])}</p>\n'
-                + ('<p class="legend"><span class="key official">Official record</span>'
-                   '<span class="key news">In the news</span></p>\n' if any(e["official"] for e in ev) else "")
-                + f'<ol class="timeline" id="timeline" data-src="/{p}events.json"><li class="meta">Loading…</li></ol>\n'
-                f'{TIMELINE_JS}')
+                '<section class="moments" id="moments" hidden><h2>Key moments</h2><div class="mgrid"></div></section>\n'
+                '<h2>How it unfolded</h2>\n'
+                + ('<p class="legend"><span class="lg official">Official record</span>'
+                   '<span class="lg news">In the news</span></p>\n' if any(e["official"] for e in ev) else "")
+                + f'<div class="chapters" id="timeline" data-src="/{p}events.json"><p class="meta">Loading…</p></div>\n'
+                f'</div>\n{TIMELINE_JS}')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": t["name"],
                 "description": t["what"], "url": f"{rss.SITE}{p}"}
         (out / p / "index.html").write_text(
