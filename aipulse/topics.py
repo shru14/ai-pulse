@@ -23,6 +23,7 @@ QUIET_DAYS = 90  # a topic with no new event for this long is Concluded (kept, n
 # Topics are ranked by how much they're in the news: over the last TREND_DAYS, each event counts once per outlet that
 # carried it, and three times over in the last HOT_DAYS. The top TRENDING with an event in the last HOT_DAYS are tagged.
 TREND_DAYS, HOT_DAYS, TRENDING = 30, 7, 3
+FRONT = 3  # topics the front page shows
 STREAMS = ("news", "policy", "regulation", "infra", "tool")  # not research: papers aren't events
 
 # slug: name, kind (the block's label), what (our own words), bills, words, exclude, related topics
@@ -465,7 +466,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             pages.page(f"{t['name']} · AI Pulse", t["what"], p, body, data, parts, ("/topics/", "All topics"),
                        f"Related: {related}" if related else ""), encoding="utf-8")
         paths.append(p)
+        flags = sorted({countries.flag(f) for f in LOOK[slug][1]} | {e["flag"] for e in ev if e.get("flag")})
         blocks.append({"slug": slug, "done": done, "latest": latest, "badges": badges, "score": trend(ev, today),
+                       "flags": flags,
                        "hot": latest >= (today - timedelta(days=HOT_DAYS)).isoformat(),
                        "last": {k: ev[-1][k] for k in ("title", "source", "date")} if ev else None})
     blocks.sort(key=lambda b: b["latest"], reverse=True)
@@ -473,6 +476,13 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     # each topic's newest event, the outlet's own headline, for its card to load in the reader's browser
     (out / "topics" / "latest.json").write_text(json.dumps({b["slug"]: b["last"] for b in blocks if b["last"]},
                                                            separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+    # the front page's "Follow the story" strip: the FRONT topics most in the news (index.html, loadTopics)
+    (out / "topics" / "front.json").write_text(json.dumps([
+        {"href": f"/{path(b['slug'])}", "name": TOPICS[b["slug"]]["name"], "kind": TOPICS[b["slug"]]["kind"],
+         "photo": [LOOK[b["slug"]][0], credits.get(LOOK[b["slug"]][0], "")],
+         "flags": b["flags"], **b["last"]}
+        for b in blocks if not b["done"] and b["last"]][:FRONT], separators=(",", ":"), ensure_ascii=False),
+        encoding="utf-8")
     cards_html = []
     for i, b in enumerate(blocks):
         t = TOPICS[b["slug"]]
