@@ -3376,6 +3376,16 @@ def test_monthly_rules_that_moved_reads_every_tracked_law():
     assert monthly.rules(laws, "2026-07") == []
 
 
+def test_monthly_brief_marks_the_names_its_headlines_have():
+    from aipulse import monthly
+    cards = [{"title": t, "date": "2026-07-02", "category": "news", "source": "A", "url": f"https://x/{i}"}
+             for i, t in enumerate(["Moonshot ships Kimi K3", "Google DeepMind shows Gemini Robotics 2",
+                                    "An AI-powered hack hits Hugging Face", "Europe and Microsoft agree"])]
+    html = monthly.marked("Moonshot AI released Kimi K3. Google DeepMind's Gemini Robotics 2 & an AI-powered hack.", cards)
+    assert html == ("<mark>Moonshot AI</mark> released <mark>Kimi K3</mark>. <mark>Google DeepMind&#x27;s Gemini Robotics 2</mark>"
+                    " &amp; an AI-powered hack.")  # escaped; "AI-powered" isn't a name
+
+
 def test_monthly_summary_that_fails_every_try_is_not_tried_again(tmp_path, monkeypatch):
     from datetime import date
     from aipulse import monthly

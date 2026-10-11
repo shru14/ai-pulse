@@ -396,11 +396,15 @@ ISSUE_JS = r"""<script>
     const sq = s => { const q = el("i", "sq"); q.style.setProperty("--st", "var(--f-" + COL[s] + ")"); return q; };
     document.getElementById("top-key").replaceChildren(...[...new Set(d.top.map(e => e.stream))].map(s => {
       const k = el("span"); k.append(sq(s), NAMES[s]); return k; }));
+    const most = Math.max(...d.top.map(e => e.outlets), 1);
     document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) => {
-      const li = el("li"), a = link(e), q = sq(e.stream);
-      q.title = NAMES[e.stream];
-      li.append(el("b", "r", String(i + 1)), q, a, el("div", "meta", NAMES[e.stream] + " · " + e.source + " · "
-        + e.outlets + (e.outlets > 1 ? " outlets" : " outlet") + " · " + day(e.date)));
+      const li = el("li"), body = el("div"), track = el("div", "track"), rail = el("span", "rail"), bar = el("span", "obar");
+      const many = e.outlets + (e.outlets > 1 ? " outlets" : " outlet");
+      bar.style.width = "calc((100% - 84px) * " + (e.outlets / most) + ")"; bar.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
+      bar.title = NAMES[e.stream] + ": " + many;
+      rail.append(bar, el("span", "v", many)); track.append(rail);
+      body.append(link(e), el("div", "meta", NAMES[e.stream] + " · " + e.source + " · " + day(e.date)), track);
+      li.append(el("b", "r", String(i + 1)), body);
       return li;
     }));
     const rr = document.getElementById("rule-groups"), by = {};
@@ -416,7 +420,7 @@ ISSUE_JS = r"""<script>
       });
       g.append(head, chips); return g;
     }));
-    const tl = document.getElementById("timeline"); tl.replaceChildren();
+    const tl = document.getElementById("timeline"); tl.replaceChildren(); tl.style.setProperty("--weeks", d.weeks.length);
     let n = 0;
     d.weeks.forEach((w, i) => {
       const ch = el("section", "chapter wk"), yr = el("div", "yr"), ol = el("ol", "timeline");
@@ -431,18 +435,45 @@ ISSUE_JS = r"""<script>
       });
       ch.append(yr, ol); tl.append(ch);
     });
-    document.getElementById("stream-rows").replaceChildren(...Object.entries(d.streams).flatMap(([s, list]) =>
-      list.map((e, i) => { const tr = row([i ? null : pill(s), [link(e), meta(e)], el("span", "when", day(e.date))]); if(!i) tr.className = "first"; return tr; })));
+    document.getElementById("stream-rows").replaceChildren(...Object.entries(d.streams).map(([s, list]) => {
+      const card = el("section", "scard"), ol = el("ol");
+      card.style.setProperty("--st", "var(--f-" + COL[s] + ")");
+      list.forEach(e => { const li = el("li"); li.append(link(e), el("div", "meta", e.source
+        + (e.outlets > 1 ? " · " + e.outlets + " outlets" : "") + " · " + day(e.date))); ol.append(li); });
+      card.append(el("h3", null, NAMES[s]), ol); return card;
+    }));
     if(d.storylines.length) {
       document.getElementById("story-rows").replaceChildren(...d.storylines.map(t => {
         const a = el("a", "name", t.name); a.href = t.href;
         return row([a, [link(t), el("div", "meta", day(t.date))], el("b", "n", String(t.n))]);
       }));
     } else document.getElementById("storylines").remove(), document.querySelector('a[href$="#storylines"]')?.parentElement.remove();
-  }).catch(() => root.querySelectorAll("tbody, #timeline, #top-rows, #rule-groups").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
+  }).catch(() => root.querySelectorAll("tbody, #timeline, #top-rows, #rule-groups, #stream-rows").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
 })();
 </script>""".replace("__BADGES__", json.dumps(BADGES))
 
+
+
+def marked(summary: str, cards: list[dict]) -> str:
+    """The summary as HTML with its names marked: each run of capitalised words holding a name the month's headlines
+    use (a company, a model, a place) or a number (GPT-5.6), from its first name to its last."""
+    names = _names(headlines(cards))
+    def is_name(w):
+        w = re.sub(r"[’']s$", "", w)
+        return not w.startswith("AI-") and (w in names or bool(re.search(r"\d", w)))
+    out, last = [], 0
+    for m in re.finditer(r"[A-Z][\w.+’'-]*\w(?: [A-Z0-9][\w.+’'-]*\w| [0-9])*", summary):
+        ws = m.group(0).split(" ")
+        hits = [k for k, w in enumerate(ws) if is_name(w)]
+        if not hits:
+            continue
+        while hits[-1] + 1 < len(ws) and ws[hits[-1] + 1] == "AI":  # Moonshot AI, Mistral AI
+            hits.append(hits[-1] + 1)
+        start = m.start() + sum(len(w) + 1 for w in ws[:hits[0]])
+        end = start + len(" ".join(ws[hits[0]:hits[-1] + 1]))
+        out += [escape(summary[last:start]), f"<mark>{escape(summary[start:end])}</mark>"]
+        last = end
+    return "".join(out) + escape(summary[last:])
 
 
 def first_sentence(text: str) -> str:
@@ -517,7 +548,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 f'<div class="topic-hero">{_img(photo)}<div class="over"><span class="kind">AI Pulse · The month in AI</span>'
                 f'<span class="num">No. {number(m)}</span><h1>{name(m)}</h1></div></div>\n'
                 '<ol class="contents">' + "".join(f'<li><a href="/{p}#{k}">{t}</a></li>' for k, t in sections) + "</ol>\n"
-                + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{escape(summary)}</p></section>\n'
+                + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{marked(summary, mine)}</p></section>\n'
                    if summary else "")
                 + '<section class="sheet" id="top"><h2>What mattered most</h2><p class="key" id="top-key"></p>'
                   '<ol class="ranked" id="top-rows"><li class="meta">Loading…</li></ol></section>\n'
@@ -526,8 +557,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 + '<section class="sheet" id="weeks"><h2>Week by week</h2>'
                 '<p class="legend"><span class="lg official">A law passed a stage</span><span class="lg news">In the news</span></p>'
                 '<div class="chapters" id="timeline"><p class="meta">Loading…</p></div></section>\n'
-                '<section class="sheet" id="streams"><h2>Stream by stream</h2><table class="mt streams"><thead><tr>'
-                '<th>Stream</th><th>Story</th><th>Date</th></tr></thead><tbody id="stream-rows"></tbody></table></section>\n'
+                '<section class="sheet" id="streams"><h2>Stream by stream</h2><div class="sgrid" id="stream-rows">'
+                '<p class="meta">Loading…</p></div></section>\n'
                 + (f'<section class="sheet" id="words"><h2>Words of the month</h2><div class="blocks">{word_rows}</div></section>\n'
                    if ws else "")
                 + '<section class="sheet" id="storylines"><h2>Storylines that moved</h2><table class="mt"><thead><tr>'
