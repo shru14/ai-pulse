@@ -412,12 +412,12 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 + ('<p class="legend"><span class="lg official">Official record</span>'
                    '<span class="lg news">In the news</span></p>\n' if any(e["official"] for e in ev) else "")
                 + f'<div class="chapters" id="timeline" data-src="/{p}events.json"><p class="meta">Loading…</p></div>\n'
-                f'</div>\n{TIMELINE_JS}')
+                + (f'<p class="related">Related: {related}</p>\n' if related else "")
+                + f'</div>\n{TIMELINE_JS}')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": t["name"],
                 "description": t["what"], "url": f"{rss.SITE}{p}"}
         (out / p / "index.html").write_text(
-            pages.page(f"{t['name']} · AI Pulse", t["what"], p, body, data, parts, ("/topics/", "All topics"),
-                       f"Related: {related}" if related else ""), encoding="utf-8")
+            pages.page(f"{t['name']} · AI Pulse", t["what"], p, body, data, parts, ("/topics/", "All topics")), encoding="utf-8")
         paths.append(p)
         flags = sorted({countries.flag(f) for f in LOOK[slug]} | {e["flag"] for e in ev if e.get("flag")})
         blocks.append({"slug": slug, "done": done, "latest": latest, "badges": badges, "score": trend(ev, today),
