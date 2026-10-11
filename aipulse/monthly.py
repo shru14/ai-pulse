@@ -393,17 +393,26 @@ ISSUE_JS = r"""<script>
   const pill = s => { const p = el("span", "st", NAMES[s]); p.style.setProperty("--st", "var(--f-" + COL[s] + ")"); return p; };
   const row = cells => { const tr = el("tr"); cells.forEach(c => { const td = el("td"); if(c != null) td.append(...[].concat(c)); tr.append(td); }); return tr; };
   fetch(root.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
-    document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) =>
-      row([el("b", "n", String(i + 1)), [pill(e.stream), link(e), meta(e)], el("span", "when", day(e.date))])));
+    const sq = s => { const q = el("i", "sq"); q.style.setProperty("--st", "var(--f-" + COL[s] + ")"); return q; };
+    document.getElementById("top-key").replaceChildren(...[...new Set(d.top.map(e => e.stream))].map(s => {
+      const k = el("span"); k.append(sq(s), NAMES[s]); return k; }));
+    document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) => {
+      const li = el("li"), a = link(e), q = sq(e.stream);
+      q.title = NAMES[e.stream];
+      li.append(el("b", "r", String(i + 1)), q, a, el("div", "meta", NAMES[e.stream] + " · " + e.source + " · "
+        + e.outlets + (e.outlets > 1 ? " outlets" : " outlet") + " · " + day(e.date)));
+      return li;
+    }));
     const rr = document.getElementById("rule-groups"), by = {};
     d.rules.forEach(r => (by[r.badge] = by[r.badge] || []).push(r));
     if(rr) rr.replaceChildren(...Object.entries(by).map(([b, list]) => {
       const g = el("div", "grp"), head = el("div"), chips = el("div", "chips");
       head.append(el("span", "badge b-" + b, BADGES[b]), el("span", "n", String(list.length)));
       list.forEach(r => {
-        const ch = el("span", "chip"), f = el("img", "flag"), a = link(r);
-        f.src = "flags/" + r.flag; f.alt = ""; a.title = r.title + " · " + r.label + " · " + day(r.date) + " · " + r.source;
-        ch.append(f, a); chips.append(ch);
+        const ch = el("span", "chip"), f = el("img", "flag"), txt = el("span");
+        f.src = "flags/" + r.flag; f.alt = "";
+        txt.append(link(r), el("span", "meta", r.label + " · " + day(r.date) + " · " + r.source));
+        ch.append(f, txt); chips.append(ch);
       });
       g.append(head, chips); return g;
     }));
@@ -430,7 +439,7 @@ ISSUE_JS = r"""<script>
         return row([a, [link(t), el("div", "meta", day(t.date))], el("b", "n", String(t.n))]);
       }));
     } else document.getElementById("storylines").remove(), document.querySelector('a[href$="#storylines"]')?.parentElement.remove();
-  }).catch(() => root.querySelectorAll("tbody, #timeline").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
+  }).catch(() => root.querySelectorAll("tbody, #timeline, #top-rows, #rule-groups").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
 })();
 </script>""".replace("__BADGES__", json.dumps(BADGES))
 
@@ -498,9 +507,10 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             ("weeks", "Week by week"), ("streams", "Stream by stream")] + (
             [("words", "Words of the month")] if ws else []) + [("storylines", "Storylines that moved")]
         word_rows = "".join(
-            f'<tr><td><a href="/glossary/{w["id"]}/">{escape(w["term"])}</a>'
+            f'<a class="blk" href="/glossary/{w["id"]}/"><b>{escape(w["term"])}'
             + ('<span class="new">New</span>' if w["new"] else "")
-            + f'</td><td>{escape(first_sentence(w["def"]))}</td><td>{w["n"]}</td></tr>' for w in ws)
+            + f'</b><span class="def">{escape(first_sentence(w["def"]))}</span>'
+            + f'<span class="n">{w["n"]} {"story" if w["n"] == 1 else "stories"}</span></a>' for w in ws)
         prev = f'<a href="/{path(issues[i - 1])}">← {name(issues[i - 1])}</a>' if i else "<span></span>"
         nxt = f'<a href="/{path(issues[i + 1])}">{name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
         body = (f'<div class="mi" id="issue" data-src="/{p}issue.json">\n'
@@ -509,19 +519,16 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 '<ol class="contents">' + "".join(f'<li><a href="/{p}#{k}">{t}</a></li>' for k, t in sections) + "</ol>\n"
                 + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{escape(summary)}</p></section>\n'
                    if summary else "")
-                + '<section class="sheet" id="top"><h2>What mattered most</h2><table class="mt top"><thead><tr><th>#</th>'
-                  '<th>Story</th><th>Date</th></tr></thead><tbody id="top-rows"><tr><td></td><td class="meta">Loading…</td>'
-                  '<td></td></tr></tbody></table></section>\n'
-                + ('<section class="sheet" id="rules"><h2>Rules that moved</h2><table class="mt rules"><thead><tr>'
-                   '<th>Stage</th><th>Law or standard</th><th>Date</th></tr></thead><tbody id="rule-rows"></tbody>'
-                   '</table></section>\n' if data["rules"] else "")
+                + '<section class="sheet" id="top"><h2>What mattered most</h2><p class="key" id="top-key"></p>'
+                  '<ol class="ranked" id="top-rows"><li class="meta">Loading…</li></ol></section>\n'
+                + ('<section class="sheet" id="rules"><h2>Rules that moved</h2><div class="groups" id="rule-groups">'
+                   '<p class="meta">Loading…</p></div></section>\n' if data["rules"] else "")
                 + '<section class="sheet" id="weeks"><h2>Week by week</h2>'
                 '<p class="legend"><span class="lg official">A law passed a stage</span><span class="lg news">In the news</span></p>'
                 '<div class="chapters" id="timeline"><p class="meta">Loading…</p></div></section>\n'
                 '<section class="sheet" id="streams"><h2>Stream by stream</h2><table class="mt streams"><thead><tr>'
                 '<th>Stream</th><th>Story</th><th>Date</th></tr></thead><tbody id="stream-rows"></tbody></table></section>\n'
-                + (f'<section class="sheet" id="words"><h2>Words of the month</h2><table class="mt words"><thead><tr>'
-                   f'<th>Word</th><th>Meaning</th><th>Stories</th></tr></thead><tbody>{word_rows}</tbody></table></section>\n'
+                + (f'<section class="sheet" id="words"><h2>Words of the month</h2><div class="blocks">{word_rows}</div></section>\n'
                    if ws else "")
                 + '<section class="sheet" id="storylines"><h2>Storylines that moved</h2><table class="mt"><thead><tr>'
                   '<th>Storyline</th><th>Its biggest story this month</th><th>Stories</th></tr></thead>'

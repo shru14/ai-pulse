@@ -191,8 +191,6 @@ a.subscribe-btn{text-decoration:none}
 .cp .mt td:last-child,.cp .mt th:last-child{text-align:right;white-space:nowrap;padding-right:0}
 .cp .mt .st{display:inline-block;margin:0 0 4px;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#141925;background:var(--st);border:2px solid #000;padding:1px 6px;white-space:nowrap}
 .cp .mt.streams td:first-child{width:1%;white-space:nowrap}
-.cp .mt.top td:first-child{width:1%}
-.cp .mt.top .st{display:table;margin-bottom:5px}
 .cp .mt .new{display:inline-block;margin-left:8px;font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#E69F00;color:#000;border:2px solid #000;padding:0 5px;vertical-align:2px}
 .cp .groups .badge{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#000;background:#F0E442;border:2px solid #000;padding:1px 6px;white-space:nowrap}
 .cp .groups .b-in_force{background:#009E73}.cp .groups .b-signed{background:#56B4E9}.cp .groups .b-standard{background:#CC79A7}
@@ -201,11 +199,27 @@ a.subscribe-btn{text-decoration:none}
 .cp .grp{display:grid;grid-template-columns:170px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid color-mix(in srgb,#000 25%,transparent)}
 .cp .grp .n{font:400 22px var(--display);margin-left:8px;vertical-align:-3px}
 .cp .chips{display:flex;flex-wrap:wrap;gap:6px}
-.cp .chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1.5px solid var(--line);padding:3px 8px 3px 4px;font-size:13.5px}
-.cp .chip .flag{width:20px;height:15px}
-.cp .chip a{color:var(--ink);font-weight:500;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.cp .chip{display:inline-flex;align-items:flex-start;gap:7px;max-width:100%;border:1.5px solid var(--line);border-radius:0;padding:5px 9px 5px 5px;font-size:13.5px;line-height:1.3;background:none}
+.cp .chip .flag{width:20px;height:15px;margin-top:1px}
+.cp .chip a{color:var(--ink);font-weight:600;text-decoration:none}
 .cp .chip a:hover,.cp .chip a:focus-visible{text-decoration:underline}
-.cp .mt.words td:nth-child(2){color:var(--muted);font-size:14.5px}
+.cp .chip .meta{display:block;font-size:12px;margin-top:2px}
+.cp .key{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 8px;font:500 11.5px var(--mono);color:var(--muted)}
+.cp .key span{display:inline-flex;align-items:center;gap:6px}
+.cp .sq{display:inline-block;flex:none;width:12px;height:12px;background:var(--st);border:2px solid #000}
+.cp .ranked{list-style:none;margin:0;padding:0;border-top:2px solid #000}
+.cp .ranked li{display:grid;grid-template-columns:30px 12px 1fr;gap:4px 10px;align-items:start;padding:9px 0;border-bottom:1px solid color-mix(in srgb,#000 25%,transparent)}
+.cp .ranked .r{font:400 18px/1.1 var(--display)}
+.cp .ranked .sq{margin-top:4px}
+.cp .ranked a{color:var(--ink);font-weight:600;text-decoration:none;line-height:1.35}
+.cp .ranked a:hover,.cp .ranked a:focus-visible{text-decoration:underline}
+.cp .ranked .meta{grid-column:3;font-size:13px}
+.cp .blocks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+.cp .blk{display:flex;flex-direction:column;gap:5px;border:2px solid #000;padding:10px;color:var(--muted);font-size:13px;line-height:1.4;text-decoration:none}
+.cp .blk b{color:var(--ink);font:400 16px/1.15 var(--display)}
+.cp .blk .new{display:inline-block;margin-left:6px;font:600 9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#E69F00;color:#000;border:2px solid #000;padding:0 4px;vertical-align:2px}
+.cp .blk .n{margin-top:auto;font:600 11px var(--mono);color:var(--muted)}
+.cp .blk:hover b,.cp .blk:focus-visible b{text-decoration:underline}
 .cp .mt .name{font:400 16px/1.2 var(--display)!important}
 .cp .chapter.wk .yr span{font-size:clamp(26px,3vw,36px)}
 .cp .chapter.wk .yr small{display:block;position:sticky;top:calc(var(--bar-h,64px) + 56px);margin-top:4px;font:600 12.5px var(--mono);color:var(--muted)}
@@ -223,7 +237,7 @@ a.subscribe-btn{text-decoration:none}
 @media (max-width:900px){.cp .shelf{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:640px){.cp .shelf{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cp .grp{grid-template-columns:1fr;gap:6px}
-  .cp .mt.top td:nth-child(3),.cp .mt.top th:nth-child(3){display:none}
+  .cp .blocks{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cp .chapter.wk .yr small{position:static;display:inline;margin-left:10px}}
 """
 
