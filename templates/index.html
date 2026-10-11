@@ -711,6 +711,22 @@ header.top.home{height:auto;padding-top:10px}
 .hn-go{margin-top:auto;align-self:flex-start;text-decoration:none;font-size:14px!important;padding:9px 18px!important;
   border:2px solid var(--ink)!important;box-shadow:4px 4px 0 #E69F00!important}  /* Dig deeper: a button, in HN's orange */
 .hn-more{margin-top:auto;padding-top:10px;align-self:flex-start;font:600 14px var(--body);color:var(--ink);text-decoration:underline;text-decoration-color:#E69F00;text-decoration-thickness:3px;text-underline-offset:4px}
+/* Follow the story: the topic pages' cards, three to a row */
+.topics-strip{display:flex;flex-direction:column}
+.topics-strip[hidden]{display:none}
+.ts-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.ts-card{display:flex;flex-direction:column;border:3px solid var(--ink);background:var(--surface);color:var(--ink);text-decoration:none;min-width:0}
+.ts-pic{position:relative;display:block;aspect-ratio:21/9;border-bottom:3px solid var(--ink);overflow:hidden}
+.ts-pic img:first-child{display:block;width:100%;height:100%;object-fit:cover}
+.ts-flag{position:absolute;bottom:8px;width:28px;height:21px;border:2px solid #000;object-fit:cover}
+.ts-flag:nth-child(2){left:8px}.ts-flag:nth-child(3){left:42px}
+.ts-body{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px;flex:1}
+.ts-kind{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ts-card b{font:400 18px/1.2 var(--head)}
+.ts-card:hover b{text-decoration:underline;text-decoration-color:#D55E00;text-underline-offset:3px}
+.ts-last{display:flex;flex-direction:column;gap:3px;margin-top:auto;border:2px solid var(--ink);background:color-mix(in srgb,#56B4E9 14%,var(--surface));padding:7px 9px;font-size:14px;font-weight:600;line-height:1.35}
+.ts-last small{font:500 11.5px var(--mono);color:var(--muted)}
+@media (max-width:760px){.ts-cards{grid-template-columns:1fr;gap:12px}}
 .disc-t{width:100%;border-collapse:collapse;font-size:15px}
 .disc-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 0 6px}
 .disc-t td{border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 14px 10px 0;vertical-align:top}
@@ -936,6 +952,10 @@ header.top.home{height:auto;padding-top:10px}
             <table class="social-t"><tbody id="social-rows"></tbody></table>
             <a class="gl-tile-go hn-go" href="/discussing/" data-go="discussing">Dig deeper →</a></aside>
         </div></section>
+      <!-- Follow the story: the topics most in the news over the last 30 days (aipulse/topics.py, topics/front.json) -->
+      <section class="topics-strip" id="topics-strip" hidden><div class="band-head"><h2>Follow the story</h2><span class="kicker">How the biggest stories unfolded</span></div>
+        <div class="ts-cards" id="ts-cards"></div>
+        <a class="hn-more" href="/topics/">All topics →</a></section>
       <div class="mag-row">
         <article class="mag-cover" id="hero"><p class="tile-note">Loading the past 7 days' stories…</p></article>
         <div class="tile gl-tile">
@@ -1905,6 +1925,25 @@ function renderTodayPage(){
   const top = (HOME.lastWeek || []).filter(it => CATS.includes(it.category)).sort(byWeight)[0];
   tb.replaceChildren(...boardRows(todayBoard(top).slice(0, 200)));
 }
+// Follow the story: the three topics most in the news, each with its newest event (topics/front.json, from the build)
+async function loadTopics(){
+  try{
+    const list = await (await fetch("/topics/front.json", {cache: "no-cache"})).json();
+    if(!list.length) return;
+    $("ts-cards").replaceChildren(...list.map(t => {
+      const a = el("a", "ts-card"), pic = el("span", "ts-pic"), img = el("img"), body = el("span", "ts-body");
+      a.href = t.href;
+      img.src = "/photos/" + t.photo[0]; img.alt = ""; img.loading = "lazy"; img.title = t.photo[1];
+      pic.append(img, ...t.flags.map(f => { const i = el("img", "ts-flag"); i.src = "/flags/" + f; i.alt = ""; return i; }));
+      const last = el("span", "ts-last");
+      last.append(el("span", null, t.title), el("small", null, new Date(t.date + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", timeZone: "UTC"})));
+      body.append(el("span", "ts-kind", t.kind), el("b", null, t.name), last);
+      a.append(pic, body);
+      return a;
+    }));
+    $("topics-strip").hidden = false;
+  }catch(e){}
+}
 // People are discussing: Hacker News' most-discussed AI threads (social.json, fetched with each full update).
 async function loadSocial(){
   try{
@@ -2380,6 +2419,7 @@ function promptSubscribe(){
 showPage();
 loadTicker();
 loadSocial();
+loadTopics();
 promptSubscribe();
 setInterval(() => location.reload(), 30*60*1000);
 </script>
