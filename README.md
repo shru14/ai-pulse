@@ -23,6 +23,7 @@ six streams and links every card to the original.
 - **Daily or weekly email** of the streams you pick, with a word and meme of the day.
 - **Weekly dossier:** your own questions, answered with the week's stories.
 - **Pages:** [AI laws by country](https://projectaipulse.com/tracker/), [AI standards](https://projectaipulse.com/standards/), [glossary](https://projectaipulse.com/glossary/).
+- **[Topics](https://projectaipulse.com/topics/):** storylines followed over time (the EU AI Act, Nvidia chips to China, Musk v. OpenAI…), laws and news on one timeline. Each topic is a hand-kept word rule; every run adds the new stories that match. Most in the news over the last 30 days first; a topic with nothing new for 90 days is marked Concluded.
 - **Glossary:** 146 words in plain English, each with its newest story. Each run lists words 3+ outlets use that it lacks (`python -m aipulse glossary`); they are written up by hand.
 - **RSS:** one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
 
