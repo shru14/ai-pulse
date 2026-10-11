@@ -168,6 +168,8 @@ a.subscribe-btn{text-decoration:none}
 .cp .mi{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .mi .topic-hero .kind{font-size:12.5px}
 .cp .mi .topic-hero h1{max-width:none}
+.cp .mi .topic-hero{background:#1b1f27}
+.cp .mi .timeline .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .cp .mi .topic-hero .num{color:#fff;font:600 14px var(--mono);letter-spacing:.06em}
 .cp .contents{display:flex;flex-wrap:wrap;gap:6px 22px;list-style:none;margin:18px 0 0;padding:12px 0;border-bottom:2px solid #000;counter-reset:c}
 .cp .contents li{padding:0;border:0;counter-increment:c;font-size:15px}
@@ -202,7 +204,8 @@ a.subscribe-btn{text-decoration:none}
 .cp .shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:14px}
 .cp .shelf a{display:flex;flex-direction:column;border:2px solid #000;background:var(--bg);color:var(--ink);text-decoration:none;box-shadow:4px 4px 0 #000;transition:transform .12s,box-shadow .12s}
 .cp .shelf a:hover,.cp .shelf a:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #D55E00}
-.cp .shelf .pic{display:block;aspect-ratio:4/3;border-bottom:2px solid #000;overflow:hidden}
+.cp .shelf .pic{display:block;aspect-ratio:4/3;border-bottom:2px solid #000;overflow:hidden;background:#1b1f27}
+.cp .shelf .photo{object-position:right center}
 .cp .shelf .txt{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px}
 .cp .shelf .num{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#D55E00}
 .cp .shelf b{font:400 22px/1.1 var(--display)}

@@ -206,7 +206,7 @@ def issue(month: str, cards: list[dict], storylines: dict[str, list[dict]]) -> d
         this = [e for e in ev if e["date"].startswith(month)]
         if len(this) >= 2:  # one story isn't a storyline moving
             big = max(this, key=lambda e: (e["outlets"], e["date"]))
-            moved.append({"name": topics.TOPICS[slug]["name"], "href": "/" + topics.path(slug), "n": len(this),
+            moved.append({"slug": slug, "name": topics.TOPICS[slug]["name"], "href": "/" + topics.path(slug), "n": len(this),
                           "title": big["title"], "url": big["url"], "date": big["date"][:10]})
     moved.sort(key=lambda t: -t["n"])
     moved = moved[:STORYLINES]
@@ -411,25 +411,19 @@ def path(month: str) -> str:
     return f"monthly/{month}/"
 
 
-def _cover(top: list[dict], cards: list[dict], used: set[str]) -> list | None:
-    """The issue's cover: a credited Commons photo no other issue has, of the subject of the month's biggest story it
-    can find one for (the topics of What mattered most in turn, then any)."""
-    by_url = {c["url"]: c for c in cards}
-    wanted = [topics._photo_topic(by_url[e["url"]].get("tags") or [], by_url[e["url"]]["category"])
-              for e in top if e["url"] in by_url]
-    topics._story_photo("", "", set())  # loads the photos
-    for t in list(dict.fromkeys(wanted)) + sorted(topics._PHOTOS):
-        free = [ph for ph in topics._PHOTOS.get(t, []) if ph[0] not in used]
-        if free:
-            pick = free[sum(map(ord, top[0]["url"] if top else t)) % len(free)]
-            used.add(pick[0])
-            return pick
-    return None
+def _cover(storylines: list[dict], used: set[str]) -> list | None:
+    """The issue's cover: our own cartoon of the storyline that moved most that month (topics.py; no real people,
+    no logos), one no other issue has where it can."""
+    slugs = [t["slug"] for t in storylines]
+    pick = next((sl for sl in slugs if sl not in used), slugs[0] if slugs else None)
+    if pick is None:
+        return None
+    used.add(pick)
+    return [f"cartoons/{pick}.svg", ""]
 
 
 def _img(photo: list | None) -> str:
-    return (f'<img class="photo" src="photos/{escape(photo[0])}" alt="" loading="lazy" title="{escape(photo[1])}">'
-            if photo else "")
+    return f'<img class="photo" src="photos/{escape(photo[0])}" alt="" loading="lazy">' if photo else ""
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
@@ -454,7 +448,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         (out / p).mkdir(parents=True, exist_ok=True)
         (out / p / "issue.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
         ws = words(counts[m], [counts[mm] for mm in months(date.fromisoformat(m + "-01"))[-3:] if mm in counts], m)
-        photo = _cover(data["top"], mine, used)
+        photo = _cover(data["storylines"], used)
         summary = summaries.get(m)
         sections = ([("brief", "The month in brief")] if summary else []) + [
             ("top", "What mattered most"), ("weeks", "Week by week"), ("streams", "Stream by stream")] + (
