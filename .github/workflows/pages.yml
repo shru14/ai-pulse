@@ -144,8 +144,8 @@ jobs:
 
       # The monthly issue's summary (aipulse/monthly.py): once a month is over, an open-source model (Qwen3-4B-Instruct,
       # Apache 2.0) run on the runner with llama.cpp writes it from the month's most reported headlines; no API, nothing
-      # billed. Installed and downloaded (~2.5 GB) only when a summary is due; at most 4 months a run (the archive back
-      # to 2023 fills over the first runs, newest first), each kept in the database.
+      # billed. Installed and downloaded (~2.5 GB) only when a summary is due; at most 4 months a run (2026's months
+      # so far fill over the first runs, newest first), each kept in the database.
       - name: Monthly issue's summary
         if: github.event_name != 'push' && env.QUICK != 'true'
         continue-on-error: true

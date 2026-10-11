@@ -3282,12 +3282,12 @@ def test_glossary_note_lists_the_branchs_new_words_to_approve():
     assert "<th align" in html and "<b>Vision-language model</b>" in html  # a table: word, group, meaning
 
 
-def test_monthly_issues_are_numbered_from_january_2023_and_cut_in_weeks():
+def test_monthly_issues_are_numbered_from_january_2026_and_cut_in_weeks():
     from datetime import date
     from aipulse import monthly
     ms = monthly.months(date(2026, 10, 11))
-    assert ms[0] == "2023-01" and ms[-1] == "2026-09"  # only months that are over
-    assert monthly.number("2023-01") == 1 and monthly.number("2026-09") == 45
+    assert ms[0] == "2026-01" and ms[-1] == "2026-09"  # 2026 only, and only months that are over
+    assert monthly.number("2026-01") == 1 and monthly.number("2026-09") == 9
     assert monthly.name("2026-09") == "September 2026"
     weeks = monthly._weeks("2026-09")  # 30 days: 1-7, 8-14, 15-21, 22-30 (a 2-day stub joins the last week)
     assert [(a.day, b.day) for a, b in weeks] == [(1, 7), (8, 14), (15, 21), (22, 30)]
@@ -3312,10 +3312,11 @@ def test_monthly_summary_keeps_only_names_and_numbers_its_headlines_have():
     # a place by its adjective in the headlines; a place they don't name at all is left out
     assert monthly.unsupported("Regulators in Italy and China acted. Indonesia too.", "Italian and Chinese regulators") == ["Indonesia"]
     good = ("Google released Gemini 4 Argon, its most powerful model. " * 5 + "Mistral raised €3B.").strip()
-    tries = iter(["OpenAI made a rival model this month, and it was quite large and good. " * 5, good])
+    tries, prompts = iter(["OpenAI made a rival model this month, and it was quite large and good. " * 5, good]), []
     logs = []
-    assert monthly.write("2026-09", cards, generate=lambda p, seed: next(tries), log=logs.append) == good
+    assert monthly.write("2026-09", cards, generate=lambda p, seed: prompts.append(p) or next(tries), log=logs.append) == good
     assert logs == ["  2026-09: try 1 left out (OpenAI)"]
+    assert prompts[1].endswith("Do not mention OpenAI: the headlines don't.")  # the next try is told what was wrong
     assert monthly.write("2026-09", cards, generate=lambda p, seed: "Too short.", log=lambda *_: None) is None
     long = "Google released Gemini 4 Argon. " * 8  # 8 sentences: a list of headlines, not a summary
     assert monthly.write("2026-09", cards, generate=lambda p, seed: long, log=lambda *_: None) is None
@@ -3336,7 +3337,7 @@ def test_monthly_issue_pages(tmp_path):
     paths = monthly.build(conn, cards, tmp_path, date(2026, 10, 11))
     assert paths == ["monthly/", "monthly/2026-08/", "monthly/2026-09/"]  # October isn't over
     page = (tmp_path / "monthly" / "2026-08" / "index.html").read_text(encoding="utf-8")
-    assert "<h1>August 2026</h1>" in page and "No. 44" in page and "August in brief." in page
+    assert "<h1>August 2026</h1>" in page and "No. 8" in page and "August in brief." in page
     assert "Big launch" not in page  # the outlets' headlines load in the browser, from issue.json
     assert 'href="/monthly/2026-09/">September 2026 →' in page
     issue = json.loads((tmp_path / "monthly" / "2026-08" / "issue.json").read_text(encoding="utf-8"))

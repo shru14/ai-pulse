@@ -1,4 +1,4 @@
-"""The monthly issue: a booklet for each month since January 2023 (monthly/<YYYY-MM>/), shelved at monthly/.
+"""The monthly issue: a booklet for each month of 2026 on (monthly/<YYYY-MM>/), shelved at monthly/.
 
 Each issue has the month in brief (a short summary), the stories most outlets carried, a week-by-week timeline (with
 the tracker's laws that passed a stage that month), the top stories of each stream, the glossary's words of the
@@ -28,14 +28,14 @@ from pathlib import Path
 
 from . import countries, feeds, glossary, pages, rss, topics
 
-FIRST = "2023-01"  # the first issue: the archive (python -m aipulse backfill) goes back to 2023
+FIRST = "2026-01"  # the first issue (the owner's choice, 11 Oct 2026: 2026 on, no earlier years)
 REPO = "unsloth/Qwen3-4B-Instruct-2507-GGUF"
 REVISION = "a06e946bb6b655725eafa393f4a9745d460374c9"  # pinned: the same model writes every issue
 FILE = "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
 MODEL = "Qwen3-4B-Instruct-2507 Q4_K_M"  # stored with each summary
 MODEL_DIR = Path(__file__).resolve().parent.parent / "data" / "summary-models"
 HEADLINES = 40  # the summary reads this many of the month's most reported headlines
-TRIES = 3
+TRIES = 4
 MAX_CHARS = 900  # about 140 words: a longer summary is a list of headlines, not a summary
 TOP = 10        # What mattered most
 PER_WEEK = 4    # stories a week on the timeline (2+ outlets), besides the laws that passed a stage
@@ -83,7 +83,7 @@ def name(month: str) -> str:
 
 
 def number(month: str) -> int:
-    """The issue's number: January 2023 is No. 1."""
+    """The issue's number: January 2026 is No. 1."""
     y, m = map(int, month.split("-"))
     fy, fm = map(int, FIRST.split("-"))
     return (y - fy) * 12 + m - fm + 1
@@ -309,12 +309,15 @@ def write(month: str, cards: list[dict], generate=None, log=print) -> str | None
             return out["choices"][0]["message"]["content"]
     p = prompt(month, cards)
     source = " ".join([name(month)] + [c["title"] for c in headlines(cards)])  # what the summary may say
+    told: list[str] = []  # each try after the first is told what was wrong with the ones before
     for seed in range(1, TRIES + 1):
-        text = clean(generate(p, seed))
-        bad = unsupported(text, source)
+        text = clean(generate(p + "".join(told), seed))
+        bad = list(dict.fromkeys(unsupported(text, source)))
         if not bad and 300 <= len(text) <= MAX_CHARS and len(re.findall(r"[.!?](?:\s|$)", text)) <= 6:
             return text
-        log(f"  {month}: try {seed} left out ({', '.join(list(dict.fromkeys(bad))[:6]) or 'length'})")
+        log(f"  {month}: try {seed} left out ({', '.join(bad[:6]) or 'length'})")
+        told.append(f"\n\nDo not mention {', '.join(bad)}: the headlines don't." if bad else
+                    "\n\nKeep it shorter: at most 5 sentences and 120 words.")
     return None
 
 
@@ -500,7 +503,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             f'<a href="/{path(s["month"])}"><span class="pic">{_img(s["photo"])}</span><span class="txt">'
             f'<span class="num">No. {number(s["month"])}</span><b>{date.fromisoformat(s["month"] + "-01").strftime("%B")}</b>'
             f'<span class="meta">{s["month"][:4]}</span></span></a>')
-    what = ("A booklet for every month since January 2023: what happened in brief, the stories that mattered most, "
+    what = ("A booklet for every month since January 2026: what happened in brief, the stories that mattered most, "
             "week by week, and the words to know.")
     body = (f'<h1>The month in AI</h1>\n<p class="intro">{escape(what)}</p>\n'
             + "".join(f'<h2>{y}</h2>\n<div class="shelf">{"".join(c)}</div>\n' for y, c in years.items()))
