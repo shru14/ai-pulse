@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -643,6 +643,7 @@ def test_static_build_holds_every_card(tmp_path):
     tracker_pages += list((tmp_path / "site" / "industry").glob("*/index.html"))  # and Industry's kinds, a page each
     tracker_pages += list((tmp_path / "site" / "topics").glob("**/index.html"))  # and the topics, a page each
     tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
+    tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html"]
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and 'data-kind="tutorial"' in tutorials and "Updated" not in tutorials
@@ -3398,3 +3399,41 @@ def test_monthly_summary_that_fails_every_try_is_not_tried_again(tmp_path, monke
     assert monthly.summarise(conn, date(2026, 10, 11), log=lambda *_: None) == 0
     assert [tuple(r) for r in conn.execute("SELECT month, summary FROM monthly")] == [("2026-08", "")]
     assert monthly.due(conn, date(2026, 10, 11)) == []  # the next run doesn't download the model again for it
+
+
+def test_promises_and_rule_echoes():
+    from aipulse import echoes, promises
+    card = lambda i, day, title, cat="news", **kw: {"id": i, "date": day, "title": title, "url": f"https://x/{i}",
+                                                    "source": "Outlet", "category": cat, "also": [], **kw}
+    cards = [card("p1", "2024-10-25", "OpenAI reportedly plans to release its Orion AI model by December"),
+             card("l1", "2025-02-27", "OpenAI unveils GPT-4.5 'Orion,' its largest AI model yet"),
+             card("p2", "2025-04-05", "Meta reportedly prepares to launch Llama 4 after delays"),
+             card("l2", "2025-04-05", "Meta releases Llama 4, a new crop of flagship AI models"),
+             card("p3", "2025-02-14", "Baidu to open-source its Ernie large language model series"),
+             card("x3", "2025-03-16", "Baidu launches two new versions of its AI model Ernie"),
+             card("l3", "2025-06-30", "Baidu open-sources Ernie 4.5"),
+             # a purpose, not a promise; a prediction; a launch whose subtitle names the product
+             card("n1", "2024-03-18", "Nvidia NIM aims to bring AI applications to businesses faster"),
+             card("n2", "2025-12-31", "Investors predict AI is coming for labor in 2026"),
+             card("p4", "2025-10-14", "Nvidia to start shipping AI-optimized DGX Spark desktop computer"),
+             card("x4", "2026-01-05", "NVIDIA Releases PAIR: An Open Source Router for DGX Spark")]
+    found = {p["url"].rsplit("/", 1)[1]: p for p in promises.promises(cards, date(2026, 10, 12))}
+    assert set(found) == {"p1", "p2", "p3", "p4"}
+    assert found["p1"]["status"] == "late" and found["p1"]["launch"]["url"].endswith("/l1") and found["p1"]["late"] == 58
+    assert found["p2"]["status"] == "shipped" and found["p2"]["days"] == 0  # the same day counts
+    assert found["p3"]["launch"]["url"].endswith("/l3")  # open-sourced, not just a new version
+    assert found["p4"]["status"] == "waiting" and "launch" not in found["p4"]  # no date given, under 18 months old
+    # echoes: official records about AI only, grouped by subject, places in the order they first took it up
+    rec = lambda i, day, title, place, src: {"id": i, "date": day, "title": title, "url": f"https://r/{i}",
+                                             "source": src, "category": "regulation", "jurisdictions": [place],
+                                             "action": "proposal"}
+    records = [rec("a", "2024-09-02", "Criminal Code Amendment (Deepfake Sexual Material) Act 2024", "AU", "legislation.gov.au"),
+               rec("b", "2026-03-20", "Motion 26.3458: Grok and sexualized deepfakes. Act now!", "CH", "Swiss Parliament"),
+               rec("c", "2020-05-15", "Privacy Amendment (Public Health Contact Information) Act 2020", "AU", "legislation.gov.au"),
+               rec("d", "2026-02-06", "The Artificial Intelligence (Human Health and Medical Education) Regulation Bill, 2026", "IN", "Parliament of India")]
+    records[0]["action"] = "law"
+    themes = {t["slug"]: t for t in echoes.echoes(records)}
+    assert echoes.themes_of(records[2]) == []  # a privacy law that isn't about AI
+    assert [p["code"] for p in themes["sexual-deepfakes"]["places"]] == ["AU", "CH"]
+    assert themes["sexual-deepfakes"]["places"][0]["furthest"] == "Adopted"
+    assert "health" not in themes  # one place only: no echo yet
