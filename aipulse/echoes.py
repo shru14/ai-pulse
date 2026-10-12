@@ -178,10 +178,8 @@ def echoes(cards: list[dict]) -> list[dict]:
     return out
 
 
-LANE, LANE_PHONE = 30, 24  # px between a row's lines of flags (smaller flags on a phone)
-# % of the timeline: flags closer than this go on the next line, so none hides another. A phone's timeline is about
-# 330px wide, so its flags (22px, with their rings and ticks about 35px) need a wider share of it.
-GAP, GAP_PHONE = 3.6, 12
+LANE = 30  # px between a row's lines of flags
+GAP = 3.6  # % of the timeline: flags closer than this go on the next line, so none hides another
 _STAGES = [(4, "Adopted or set up"), (2, "Passed a vote"), (1, "Proposed"), (0, "Withdrawn or vetoed")]
 
 
@@ -197,15 +195,13 @@ def _lane(lines: list[float], x: float, gap: float) -> int:
 
 
 def _row(t: dict, start: date, days: int, years: list[tuple[int, float]]) -> str:
-    wide: list[float] = []  # each line's last flag, on a wide screen and on a phone
-    phone: list[float] = []
+    wide: list[float] = []  # each line's last flag
     pins = []
     for p in t["places"]:
         x = _x(p["since"], start, days)
         lane = _lane(wide, x, GAP)
-        small = _lane(phone, x, GAP_PHONE)
         tip = f'{p["name"]}: since {_when(p["first"], p["since"])}, {p["furthest"].lower()}'
-        pins.append(f'<span class="pin r{p["rank"]}" style="left:{x}%;--t:{lane * LANE}px;--tp:{small * LANE_PHONE}px" '
+        pins.append(f'<span class="pin r{p["rank"]}" style="left:{x}%;--t:{lane * LANE}px" '
                     f'title="{escape(tip)}"><img src="flags/{countries.flag(p["code"])}" alt="{escape(p["name"])}"></span>')
     grid = "".join(f'<i class="yl" style="left:{x}%"></i>' for _, x in years)
     rows = []
@@ -221,8 +217,7 @@ def _row(t: dict, start: date, days: int, years: list[tuple[int, float]]) -> str
             f'{escape(countries.place(first["name"]))}, in {_when(first["first"], first["since"])}'
             + (f'. {adopted} adopted it or set a body up.' if adopted else '. None has adopted it yet.'))
     return (f'<details class="er" id="{t["slug"]}"><summary><span class="nm">{escape(t["name"])}'
-            f'<small>{n} places</small></span><span class="trk" style="--h:{len(wide) * LANE - 6}px;'
-            f'--hp:{len(phone) * LANE_PHONE - 4}px">{grid}'
+            f'<small>{n} places</small></span><span class="trk" style="--h:{len(wide) * LANE - 6}px">{grid}'
             f'{"".join(pins)}</span></summary>\n<div class="det"><p>{lead}</p><table class="mt"><thead><tr>'
             f'<th>Since</th><th>Place</th><th>Official record</th><th>Furthest</th></tr></thead>'
             f'<tbody>{"".join(rows)}</tbody></table></div></details>')
@@ -238,7 +233,6 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     start = date(min((int(p["since"][:4]) for t in found for p in t["places"]), default=today.year), 1, 1)
     days = max((today - start).days, 1)
     years = [(y, _x(f"{y}-01-01", start, days)) for y in range(start.year, today.year + 1)]
-    # "2024", or "'24" on a phone
     axis = "".join(f'<span style="left:{x}%"><i>{str(y)[:2]}</i>{str(y)[2:]}</span>' for y, x in years)
     legend = "".join(f'<span><span class="pin r{r}"><img src="flags/{countries.flag("INTL")}" alt=""></span>{w}</span>'
                      for r, w in _STAGES)
@@ -251,7 +245,10 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             f'<div class="ec-wrap"><div class="ec"><div class="ec-axis"><span></span><span class="yrs">{axis}'
             f'<span class="now" style="left:100%">Now</span></span></div>\n'
             + "\n".join(_row(t, start, days, years) for t in found)
-            + '</div></div>\n</div>\n')
+            + '</div></div>\n</div>\n'
+            # on a phone the chart is drawn 760px wide and shrunk to the screen (see pages.py)
+            '<script>(() => {const w = document.querySelector(".ec-wrap"), f = () => w.style.setProperty("--z", '
+            'innerWidth <= 640 ? Math.min(1, w.clientWidth / 760) : 1); f(); addEventListener("resize", f)})()</script>\n')
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Rule echoes", "description": what,
             "url": f"{rss.SITE}{PATH}"}
     note = ("From the Regulation tracker's official records, each linking to its source; updated with the tracker. "
