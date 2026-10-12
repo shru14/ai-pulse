@@ -427,28 +427,14 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft .mt thead{display:none}
   .cp .ft .mt tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
   .cp .ft .mt td{display:block;border:0;padding:2px 0}}
-/* a phone: the rule echoes fit the screen, each subject's name above its own timeline, with smaller flags placed
-   on their own lines (--tp, worked out for a narrow timeline in echoes.py) */
+/* a phone: the rule echoes are the wide-screen chart, drawn 760px wide and shrunk to fit (--z, set by the page);
+   an opened subject's records are back at full size, so they stay readable */
 @media (max-width:640px){
-  .cp .ec-wrap{overflow:visible}
-  .cp .ec{min-width:0;padding:0 0 4px}
-  .cp .ec-axis,.cp .er > summary{grid-template-columns:minmax(0,1fr)}
-  .cp .ec-axis > span:first-child{display:none}
-  .cp .ec-axis .yrs,.cp .er .trk{margin:0 18px 0 12px}
-  .cp .yrs{font-size:10.5px}
-  .cp .yrs i{display:none}
-  .cp .yrs > span{padding-left:3px}
-  .cp .er > summary{gap:10px;padding:12px 0 14px}
-  .cp .er .nm{padding-left:30px}
-  .cp .er .nm small{display:inline;margin-left:8px}
-  .cp .er .trk{height:var(--hp)}
-  .cp .pin{top:var(--tp,0);margin-left:-11px;width:22px;height:16px}
-  .cp .pin img{width:22px;height:16px;border-width:1.5px}
-  .cp .pin.r4::after{width:12px;height:12px;right:-7px;top:-7px;font-size:7px;line-height:12px;border-width:1.5px}
-  .cp .pin.r4 img,.cp .pin.r2 img,.cp .pin.r3 img{outline-width:2px}
+  .cp .ec-wrap{overflow:hidden}
+  .cp .ec{width:760px;box-sizing:border-box;zoom:var(--z,1)}
+  .cp .er .det{zoom:calc(1 / var(--z,1))}
   .cp .ec-legend{gap:8px 16px;font-size:13px}
   .cp .yrs .now{font-size:0;height:13px;padding:0}  /* only the bar: the word would sit on the last year */
-  .cp .er .yl{top:0}  /* the year lines stay off the subject's name above */
   .cp .er .mt tr.first td{border-top:0}
   .cp .er .mt tr.first{border-top:2px solid var(--line)}
   .cp .er .mt td.when,.cp .er .mt td.when + td{display:inline;font:600 12px var(--mono);color:var(--muted)}
