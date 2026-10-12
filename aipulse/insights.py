@@ -453,7 +453,7 @@ def _money(f: dict, month: str) -> str:
     b = f["biggest"]
     score = ('<div class="ins-score">'
              f'<div><b>{f["rounds"]}</b><span>funding rounds</span></div><div><b>{money.usd(f["raised"])}</b><span>disclosed</span></div>'
-             + (f'<div><b>{money.usd(b["amount"])}</b><span>biggest · <a href="{escape(b["url"])}" rel="noopener">'
+             + (f'<div><b>{money.usd(b["amount"])}</b><span>biggest round · <a href="{escape(b["url"])}" rel="noopener">'
                 f'{escape(b["company"])}</a></span></div>' if b else "") + "</div>")
     top = max((t[1] for t in f["themes"]), default=1)
     themes = "".join(
@@ -612,7 +612,7 @@ def body(month: str, x: dict) -> str:
                            f"{rich[1]} round{'s' if rich[1] > 1 else ''}.")
         if f["deals"]:
             d = f["deals"][0]
-            say.append(f"The biggest deal: {d['company']} {'buying' if d['kind'] == 'acquisition' else 'with'} "
+            say.append(f"The biggest {'acquisition' if d['kind'] == 'acquisition' else 'compute deal'}: {d['company']} {'buying' if d['kind'] == 'acquisition' else 'with'} "
                        f"{d['partner'] or 'a partner'}, {money.usd(d['amount'])}{' (reported)' if d['reported'] else ''}.")
         sections.append(("money", "Money moves", " ".join(say), _money(f, month)))
     # funding pace: is the money speeding up, or is it one big round?
