@@ -397,7 +397,7 @@ def build(conn, out: str | Path) -> int:
     from . import countries
     places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
     places += countries.standards_page(conn, cards, out)  # every AI standard on the tracker (standards/)
-    places += kind_pages.build(conn, len(cards), out)  # Industry's kinds of story, a page each (industry/<kind>/)
+    places += kind_pages.build(conn, cards, out)  # Industry's kinds of story, a page each (industry/<kind>/)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
     from . import topics

@@ -178,13 +178,13 @@ def standards_page(conn, cards: list[dict], out: Path) -> list[str]:
                          f'<div class="meta">{escape(meta)}</div>'
                          + (f'<div class="what">{escape(c["summary"])}</div>' if c["source"] in SOURCES and c.get("summary") else "")
                          + "</li>")
-        sections.append(f"<h2>{escape(label)}</h2>\n<ul>\n" + "\n".join(lines) + "\n</ul>")
+        sections.append(f"<section>\n<h2>{escape(label)}</h2>\n<ul>\n" + "\n".join(lines) + "\n</ul>\n</section>")
     parts = pages.frame(conn, len(cards))
     back = ("/regulation/", "Back to the live Regulation tracker page")
     note = 'Official records only, each linking to its source.'
-    body = ('<h1>AI standards</h1>\n<p class="intro">Published standards for AI from ISO/IEC, IEEE and national '
+    body = ('<div class="sd">\n<h1>AI standards</h1>\n<p class="intro">Published standards for AI from ISO/IEC, IEEE and national '
             'bodies, newest first, each linking to its official page. <a href="/tracker/">AI laws by country</a></p>\n'
-            + "\n".join(sections))
+            '<div class="cols">\n' + "\n".join(sections) + "\n</div>\n</div>")
     data = {"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "name": "AI standards", "url": f"{rss.SITE}standards/"},
         {"@type": "ItemList", "name": "AI standards", "itemListElement": [
