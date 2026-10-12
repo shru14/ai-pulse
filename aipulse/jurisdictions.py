@@ -291,10 +291,10 @@ def detect(title: str, summary: str = "", limit: int = 4, actors_only: bool = Fa
     return found[:limit]
 
 
-# The tracker's regions (a filter, nothing more). The EU and its members are Europe; "INTL" (the UN, OECD,
-# Council of Europe, G7, ...) is its own region. Russia belongs to none (the user's choice); it keeps its
-# own country chip.
-NO_REGION = {"RU"}
+# The tracker's regions (a filter, nothing more). The EU and its members are Europe. "INTL" (the UN, OECD,
+# Council of Europe, G7, ...) has no pill: almost nothing carries it, so it sat empty; those items show under
+# "All regions" and keep their own chip. Russia belongs to none either (the user's choice).
+NO_REGION = {"RU", "INTL"}
 REGIONS = {
     "europe": ("Europe", ["EU", *EU_MEMBERS, "GB", "CH", "NO", "IS", "UA", "RS", "TR", "VA", "AM", "AL", "AD", "AZ",
                           "BY", "BA", "GE", "XK", "LI", "MD", "MC", "ME", "MK", "SM"]),
@@ -310,7 +310,6 @@ REGIONS = {
                                      "BH", "BI", "BW", "CD", "CF", "CG", "CV", "DJ", "ER", "GA", "GM", "GN", "GQ", "GW",
                                      "IQ", "IR", "JO", "KM", "KW", "LB", "LR", "MG", "ML", "MW", "MZ", "NA", "NE", "OM",
                                      "PS", "SC", "SD", "SL", "SO", "SS", "ST", "SY", "SZ", "TD", "TG", "TZ", "YE"]),
-    "intl": ("International", ["INTL"]),
 }
 REGION_OF = {code: region for region, (_, codes) in REGIONS.items() for code in codes}
 

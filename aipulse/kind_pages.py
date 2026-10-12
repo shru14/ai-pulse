@@ -2,7 +2,8 @@
 AI-incidents, tutorials and events, the front page's Industry strip linking to them. The stories are the outlets'
 own headlines, so each page loads them in the reader's browser from data.json (the last 3 months), as the
 glossary's word pages do; the page itself holds only our own words. No date of its own. Company blogs are
-grouped by company, a tile each with its logo, like the tracker's places with their flags.
+grouped by company, a tile each with its logo, like the tracker's places with their flags; the other kinds by
+topic. Each tile previews its newest story.
 """
 from __future__ import annotations
 
@@ -30,34 +31,49 @@ KINDS = {
 STORIES_JS = r"""<script>
 (() => {
   const ul = document.getElementById("kind-stories"), more = document.getElementById("more-stories");
-  const tiles = document.getElementById("companies"), firms = tiles ? JSON.parse(document.getElementById("firms").textContent) : null;
+  const tiles = document.getElementById("cats"), firms = ul.dataset.kind === "blog" ? JSON.parse(document.getElementById("firms").textContent) : null;
   const firm = src => (firms && firms.of[src]) || src;
-  let all = [];
+  let all = [], groups = c => [];
   const day = d => new Date(d.slice(0, 10) + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric", timeZone: "UTC"});
   const note = text => { const li = document.createElement("li"); li.className = "meta"; li.textContent = text; ul.replaceChildren(li); };
   let list = [], shown = 0;
-  // Company blogs: a tile per company (its logo, else its initial); a tile shows only that company's posts
+  // A tile per category (company blogs: per company, with its logo; the rest: per topic), each previewing its
+  // newest story; a tile shows only its category's stories, and clicked again, all of them again
   const pick = name => {
-    list = name ? all.filter(c => firm(c.source) === name) : all;
-    tiles.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.firm === name));
+    list = name ? all.filter(c => groups(c).includes(name)) : all;
+    tiles.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === name));
     ul.replaceChildren(); shown = 0; show();
   };
   const buildTiles = () => {
-    const count = {};
-    all.forEach(c => count[firm(c.source)] = (count[firm(c.source)] || 0) + 1);
-    const tile = (name, n) => {
-      const b = document.createElement("button"), mark = document.createElement("span"), label = document.createElement("span");
-      b.type = "button"; b.dataset.firm = name;
-      mark.className = "logo"; mark.setAttribute("aria-hidden", "true");
-      if(!name) mark.textContent = "∗";
-      else if(firms.logo[name]) mark.innerHTML = firms.logo[name];  // fixed markup from our build, never story text
-      else mark.textContent = name[0];
-      label.textContent = name || "All companies";
-      const num = document.createElement("small"); num.textContent = n;
-      b.append(mark, label, num); b.addEventListener("click", () => pick(name));
+    if(firms) groups = c => [firm(c.source)];
+    else {
+      // topics with 3+ stories, the most-told first (at most 11); a story in none of them is under Other
+      const topics = new Set(JSON.parse(document.getElementById("topics").textContent)), n = {};
+      all.forEach(c => c.tags.filter(t => topics.has(t)).forEach(t => n[t] = (n[t] || 0) + 1));
+      const top = new Set(Object.keys(n).filter(t => n[t] >= 3).sort((a, b) => n[b] - n[a] || a.localeCompare(b)).slice(0, 11));
+      groups = c => { const g = c.tags.filter(t => top.has(t)); return g.length ? g : ["Other"]; };
+    }
+    const count = {}, newest = {};
+    all.forEach(c => groups(c).forEach(g => { count[g] = (count[g] || 0) + 1; newest[g] = newest[g] || c; }));
+    const tile = (name, n, c) => {
+      const b = document.createElement("button"), head = document.createElement("span"), label = document.createElement("span");
+      b.type = "button"; b.dataset.cat = name; head.className = "head";
+      if(firms) {
+        const mark = document.createElement("span");
+        mark.className = "logo"; mark.setAttribute("aria-hidden", "true");
+        if(firms.logo[name]) mark.innerHTML = firms.logo[name];  // fixed markup from our build, never story text
+        else mark.textContent = name[0];
+        head.append(mark);
+      }
+      label.textContent = name;
+      const num = document.createElement("small"), peek = document.createElement("span");
+      num.textContent = n; peek.className = "peek"; peek.textContent = c.title.trim();
+      head.append(label, num); b.append(head, peek); b.addEventListener("click", () => pick(b.getAttribute("aria-pressed") === "true" ? "" : name));
       return b;
     };
-    tiles.replaceChildren(tile("", all.length), ...Object.keys(count).sort((a, b) => count[b] - count[a] || a.localeCompare(b)).map(n => tile(n, count[n])));
+    const names = Object.keys(count).filter(g => g !== "Other").sort((a, b) => count[b] - count[a] || a.localeCompare(b));
+    if(count.Other) names.push("Other");
+    tiles.replaceChildren(...names.map(g => tile(g, count[g], newest[g])));
   };
   const show = () => {
     list.slice(shown, shown += 20).forEach(c => {
@@ -73,8 +89,7 @@ STORIES_JS = r"""<script>
       .sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
     document.getElementById("stories-count").textContent = list.length + (list.length === 1 ? " story" : " stories");
     if(!list.length) return note("None in the last 3 months.");
-    if(tiles) return (buildTiles(), pick(""));
-    ul.replaceChildren(); show();
+    buildTiles(); pick("");
   }).catch(() => note("Couldn't load the stories. Try reloading the page."));
   more.addEventListener("click", show);
 })();
@@ -128,19 +143,20 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
     parts = pages.frame(conn, len(cards))
     of = {s: company(s) for s in sorted({c["source"] for c in cards if c.get("kind") == "blog"})}
     firms = json.dumps({"of": of, "logo": logos(set(of.values()))}).replace("</", "<\\/")
+    topics = f'<script type="application/json" id="topics">{json.dumps(sorted(classify.TOPIC_TAGS))}</script>\n'
     back = ("/industry/", "Back to Industry")
     others = " · ".join(f'<a href="/{path(k)}">{escape(digest.KIND[k][0])}</a>' for k in KINDS)
     paths = []
     for kind, (_, heading, what) in KINDS.items():
         p = path(kind)
-        body = (f'<h1>{escape(heading)}</h1>\n<p class="intro">{escape(what)}</p>\n'
+        body = (f'<div class="kd"><h1>{escape(heading)}</h1>\n<p class="intro">{escape(what)}</p>\n'
                 f'<p class="intro"><span id="stories-count">The stories</span> in the last 3 months, newest first, '
                 f'each linking to the outlet\'s own page.</p>\n'
-                + (f'<div class="places companies" id="companies"></div>\n'
-                   f'<script type="application/json" id="firms">{firms}</script>\n' if kind == "blog" else "")
+                + '<div class="places companies" id="cats"></div>\n'
+                + (f'<script type="application/json" id="firms">{firms}</script>\n' if kind == "blog" else topics)
                 + f'<ul id="kind-stories" data-kind="{kind}"><li class="meta">Loading the stories…</li></ul>\n'
                 f'<button type="button" class="more-stories" id="more-stories" hidden>Show more stories</button>\n'
-                f'{STORIES_JS}')
+                f'{STORIES_JS}</div>')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": heading, "description": what,
                 "url": f"{rss.SITE}{p}"}
         (out / p).mkdir(parents=True, exist_ok=True)

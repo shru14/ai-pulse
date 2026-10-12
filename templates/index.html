@@ -96,7 +96,7 @@ header.top{position:sticky;top:0;z-index:6;background:var(--bg);height:var(--bar
 .mark circle{fill:var(--accent)}
 @keyframes trace{0%{stroke-dashoffset:44}45%,100%{stroke-dashoffset:0}}
 @media (prefers-reduced-motion: reduce){.mark polyline{animation:none}}
-h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em;margin:0;line-height:1}
+h1{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:-.02em;margin:0;line-height:1}
 /* "Daily digest": opens the subscribe panel. The label hides on narrow screens; the icon stays. */
 .subscribe-btn[hidden]{display:none}
 .subscribe-btn{flex:none;height:36px;display:inline-flex;align-items:center;gap:7px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:600 14px var(--body);cursor:pointer}
@@ -139,10 +139,10 @@ header.top{gap:10px}
 @media (max-width:480px){.subscribe-btn.cta span{display:inline}.subscribe-btn.cta{width:auto;padding:0 12px}}
 .subscribe{width:min(460px,calc(100vw - 32px));border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:22px 22px 16px;box-shadow:0 18px 50px rgba(0,0,0,.18)}
 .subscribe::backdrop{background:rgba(10,12,18,.45)}
-.subscribe h2{font-family:var(--display);font-size:21px;line-height:1.2;margin:0 28px 8px 0}
+.subscribe h2{font-family:var(--display);font-weight:400;font-size:21px;line-height:1.2;margin:0 28px 8px 0}
 .sub-lede{margin:0 0 14px;color:var(--muted);font-size:15px;line-height:1.5}
 .sub-close-form{position:absolute;top:10px;right:10px;margin:0}
-.sub-close{width:32px;height:32px;border:0;border-radius:8px;background:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer}
+.sub-close{width:32px;height:32px;border:0;border-radius:8px;background:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;font-family:var(--body)}
 .sub-close:hover{background:var(--bg);color:var(--ink)}
 .sub-streams{border:0;margin:0 0 14px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
 .sub-streams legend{font-size:13px;font-weight:600;color:var(--muted);padding:0;margin-bottom:6px}
@@ -318,6 +318,7 @@ header.top{gap:10px}
 .meme-tile #meme a{display:block;cursor:zoom-in}
 .meme-next{margin:12px 0 0;font-size:13px;line-height:1.4}
 .meme a{word-break:break-word}
+.meme > div > div{font-family:var(--body)!important}  /* the meme block is the email's too (Arial there); here the credit is in the page's type */
 .sub-tile,.gl-tile{display:flex;flex-direction:column;justify-content:space-between;gap:14px;border:0}
 .sub-tile{background:var(--p-email);color:#141925}
 .sub-strip{display:grid;grid-template-columns:minmax(220px,1fr) 2.2fr auto;align-items:center;gap:26px;padding:20px 24px}
@@ -478,6 +479,7 @@ header.top{gap:10px}
 .group{font:13px var(--body);border:1px solid var(--line);background:none;color:var(--muted);padding:3px 10px;border-radius:999px;cursor:pointer}
 .group .n{font-family:var(--mono);font-size:11px;margin-left:4px;opacity:.8}
 .group[aria-pressed="true"]{color:var(--sub-c);border-color:var(--sub-c);background:var(--sub-soft)}
+#placebar .group[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
 .group.place-filter{color:var(--ink);border-color:var(--ink)}
 .group:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .authors{font-size:14px;color:var(--muted);margin:0}
@@ -559,7 +561,7 @@ header.top{border-bottom:4px solid var(--ink)}
 .gl-tile{background:#0072B2;color:#FFFFFF}
 .gl-card{border-radius:0;border:3px solid #000;box-shadow:8px 8px 0 #000;color:#000}
 .gl-tile b{font:400 34px/1.05 var(--head)}
-.gl-tile .week-badge b{font:700 13px/1.2 var(--head)}
+.gl-tile .week-badge b,.week-badge b{font:400 13px/1.2 var(--head)}  /* Archivo Black has one weight: bold here would be faked */
 .gl-tile b mark{background:#F0E442}
 .gl-stat{border:3px solid #FFFFFF;border-radius:0}
 .gl-tile .gl-tile-go,.meme-tile .gl-tile-go,.mag-cover .gl-tile-go{min-width:260px;border:2px solid #FFFFFF!important;box-shadow:none!important;
@@ -717,7 +719,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .social-t td:last-child a{display:inline-flex;align-items:center;gap:3px;font:500 12px var(--mono);color:var(--muted)}
 .social-t .ci svg{width:13px;height:13px;display:block}
 .today-main{display:flex;flex-direction:column;gap:14px;min-width:0}
-/* Today's leaderboard (today.py): ranks 4 to 10 under the cards, and any story that was in the top 3 today */
+/* Today's leaderboard (today.py): ranks 4 and 5 under the cards */
 .board-t{width:100%;border-collapse:collapse;font-size:14px;line-height:1.3}
 .board-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 8px 6px 0}
 .board-t td{border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 8px 8px 0;vertical-align:top}
@@ -1001,7 +1003,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
         <div class="today-row">
           <div class="today-main">
             <div class="today-cards" id="today-grid"><p class="tile-note">Loading today's stories…</p></div>
-            <!-- the leaderboard: ranks 4 to 10, and any story that was in the top 3 earlier today -->
+            <!-- the leaderboard: ranks 4 and 5 -->
             <table class="board-t" id="board" hidden><thead><tr><th>#</th><th>Story</th><th title="How many different outlets reported this story">Outlets reporting</th><th title="Places moved up or down since 00:00 UTC; new = not in the top 30 then">Rank change today</th></tr></thead>
               <tbody id="board-rows"></tbody></table>
             <a class="hn-more" href="/today/" data-go="today">See the full list →</a>
@@ -2007,14 +2009,11 @@ function boardRows(rows){
     return tr;
   });
 }
-// Today in AI: the top 3 as picture cards, ranks 4 to 10 in a table under them, and any story that was in the top 3
-// earlier today and has fallen further, so a big story never drops out of sight the same day. Below #5 the table
-// lists only stories carried by 2 or more outlets; as many outlets, the one with more buzz first (today.py).
+// Today in AI: the top 3 as picture cards and #4 and #5 in a table under them; the rest only on /today/
 function renderToday(top){
   const box = $("today-grid"), rows = todayBoard(top), list = rows.slice(0, 3);
   box.replaceChildren();
-  // #4 and #5 always; below them only stories 2+ outlets carry
-  const rest = rows.slice(3).filter(r => r.rank <= 5 || outlets(r.it) >= 2 && (r.rank <= 10 || r.peak));
+  const rest = rows.slice(3, 5);
   $("board-rows").replaceChildren(...boardRows(rest)); $("board").hidden = !rest.length;
   if(!list.length){ box.append(el("p","tile-note","Nothing yet today.")); return; }
   list.forEach(r => {
