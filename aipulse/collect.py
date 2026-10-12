@@ -491,7 +491,7 @@ def resummarize(conn, log=print) -> int:
 
 
 def stream_of(src: dict, title: str, summary: str, url: str) -> str:
-    """A new story's stream: an infrastructure source's are Infra & climate; an Industry story
+    """A new story's stream: an infrastructure source's are Infra; an Industry story
     whose headline is about AI's data centres or footprint moves there too (classify.infra_story)."""
     if src["category"] == "infra":
         return "infra"
@@ -533,7 +533,7 @@ def _is_paper(it: dict) -> bool:
     return it["category"] == "research" or "arxiv.org/abs/" in it["url"]
 
 
-_RENAMED = {"NVIDIA": "Nvidia", "Mistral AI": "Mistral"}
+_RENAMED = {"NVIDIA": "Nvidia", "Mistral AI": "Mistral", "Infra & climate": classify.INFRA_TAG}  # the stream until 12 Oct 2026
 
 
 def retag(conn) -> int:
@@ -554,6 +554,8 @@ def retag(conn) -> int:
         tags = classify.tags_for(it["title"], text, source=it["source"])
         if tags != it["tags"]:
             store.set_tags(conn, it["id"], tags)
+            if brief.is_draft(it["summary"]):  # a drafted line names the tags ("..., involving Infra & climate"): redraw it
+                store.update_text(conn, it["id"], it["title"], brief.draft({**it, "tags": tags}, PLACE_NAMES))
             changed += 1
     conn.commit()
     return changed

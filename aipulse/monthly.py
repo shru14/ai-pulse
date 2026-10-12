@@ -49,7 +49,7 @@ FRONT = 2  # issues on the front page
 BADGES = {"in_force": "In force", "signed": "Signed", "passed_legislature": "Passed", "passed_chamber": "Passed a chamber",
           "standard": "Standard", "vetoed": "Vetoed", "withdrawn": "Withdrawn"}  # Rules that moved, in this order
 STREAMS = {"tool": "Releases", "news": "Industry", "research": "Research", "regulation": "Regulation",
-           "policy": "Policy", "infra": "Infra & climate"}
+           "policy": "Policy", "infra": "Infra"}
 LAB_PAPERS = {"Hugging Face Daily Papers", "Apple Machine Learning Research"}  # papers the labs put their name to
 
 SCHEMA = """
@@ -384,7 +384,7 @@ ISSUE_JS = r"""<script>
 (() => {
   const BADGES = __BADGES__;
   const root = document.getElementById("issue");
-  const NAMES = {tool: "Releases", news: "Industry", research: "Research", regulation: "Regulation", policy: "Policy", infra: "Infra & climate"};
+  const NAMES = {tool: "Releases", news: "Industry", research: "Research", regulation: "Regulation", policy: "Policy", infra: "Infra"};
   const COL = {tool: "tool", news: "news", research: "research", regulation: "reg", policy: "policy", infra: "infra"};
   const day = d => new Date(d + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", timeZone: "UTC"});
   const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };

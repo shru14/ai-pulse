@@ -24,7 +24,7 @@ FEEDS = {
     "research": ("research", "Research", "New AI papers, from arXiv, the big labs and leading scholars."),
     "regulation": ("regulation", "Regulation tracker", "AI bills, laws, bodies and standards, from proposal to force, by country."),
     "policy": ("policy", "Policy", "What governments, courts and politicians do about AI, worldwide."),
-    "infra": ("infra", "Infra & climate", "AI's data centres and their power, water, land and emissions, worldwide."),
+    "infra": ("infra", "Infra", "AI's data centres and their power, water, land and emissions, worldwide."),
 }
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")  # not allowed in XML
 

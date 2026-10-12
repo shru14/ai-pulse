@@ -14,19 +14,22 @@ six streams and links every card to the original.
 | **Research** | Papers only | Every 6 h |
 | **Regulation tracker** | AI proposals, laws, bodies and standards, by country | Every 6 h |
 | **Policy** | What governments, courts and politicians do about AI | Every 6 h |
-| **Infra & climate** | AI's data centres and their power, water, land and emissions | Every 6 h |
+| **Infra** | AI's data centres and their power, water, land and emissions | Every 6 h |
 
 ## Features
 
-- **Site:** a front page (a ticker of the latest stories, Today in AI as a leaderboard ranked by sources (the top 5 always; below them only stories 2+ outlets carry), with the [full list](https://projectaipulse.com/today/), and what people are discussing; the past 7 days' story, word and meme (updated every day); a yellow bar to the [monthly issues](https://projectaipulse.com/monthly/) with the two newest inside it; then the 3 [topics](https://projectaipulse.com/topics/) most in the news), a page per stream, filters and search back to 2023, dark mode, a bookmark on each story to save it for later (a Saved stories page, kept in the reader's browser only), an [About page](https://projectaipulse.com/about/) and [what people are discussing](https://projectaipulse.com/discussing/).
-- **One card per event**, in English (offline translation where needed).
-- **Daily or weekly email** of the streams you pick, with a word and meme of the day.
+- **Front page:** the latest stories, Today in AI ranked by how widely each story is reported, what people are discussing, the week's story, word and meme, the newest monthly issues and the topics most in the news.
+- **Six streams**, each with its own page, filters and search back to 2023.
+- **One card per event**, in English (stories in other languages are translated offline).
+- **Email**, daily or weekly, with the streams and topics you pick.
 - **Weekly dossier:** your own questions, answered with the week's stories.
-- **Pages:** [AI laws by country](https://projectaipulse.com/tracker/), [AI standards](https://projectaipulse.com/standards/), [glossary](https://projectaipulse.com/glossary/).
-- **[Topics](https://projectaipulse.com/topics/):** storylines followed over time (the EU AI Act, Nvidia chips to China, Musk v. OpenAI…), laws and news on one timeline. Each topic is a hand-kept word rule; every run adds the new stories that match. Most in the news over the last 30 days first; a topic with nothing new for 90 days is marked Concluded.
-- **[The month in AI](https://projectaipulse.com/monthly/):** a booklet for every month since January 2026, made once the month is over: the month in brief, the 10 most reported stories, the rules that moved (every tracked law that passed a stage that month and every standard published, each with a badge for where it got to), a week-by-week timeline (with laws that passed a stage), each stream's top stories, the glossary's words of the month and the storylines that moved. The summary is written offline by an open-source model (Qwen3-4B-Instruct, Apache 2.0, run with llama.cpp) from the month's 40 most reported headlines; every name and number in it must be in those headlines, else it is not used.
-- **Glossary:** 146 words in plain English, each with its newest story. Each run lists words 3+ outlets use that it lacks (`python -m aipulse glossary`); they are written up by hand.
-- **RSS:** one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
+- **[AI laws by country](https://projectaipulse.com/tracker/)** with each bill's stage, and **[AI standards](https://projectaipulse.com/standards/)**.
+- **[Topics](https://projectaipulse.com/topics/):** storylines followed over time, news and laws on one timeline.
+- **[The month in AI](https://projectaipulse.com/monthly/):** a booklet for every month since January 2026, with the month's biggest stories, the rules that moved, a timeline and each stream's highlights. Its summary is written offline by an open-source model and checked against the month's headlines.
+- **[Glossary](https://projectaipulse.com/glossary/):** AI words in plain English, each with its newest story.
+- **Saved stories:** a bookmark on each story, kept in your browser only.
+- **Dark mode** and **RSS**: one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
+- **Free, no ads, no tracking.**
 
 ## How we keep it legal
 
@@ -54,7 +57,7 @@ Every source's robots.txt and terms were audited on 7 October 2026. The evidence
 | Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation, Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International, The Elec, BusinessKorea · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports, Contxto · **Spanish and Portuguese (translated offline):** Xataka (Spain), DPL News, FayerWayer, TeleSemana (Latin America), Olhar Digital, Tecnoblog (Brazil) · **More Asia and MENA:** Dawn (Pakistan), Japan Today, CNA (Singapore), Saudi Gazette · **Practitioners:** Simon Willison, Lil'Log, METR · **Incidents:** AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
 | Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma, ISED Canada, CLTC (UC Berkeley), ITU, Partnership on AI, Smart Africa, NTIA, DARPA, NSF, UK AI Security Institute |
-| Infra & climate | **Global:** Carbon Brief, Climate Home News, Mongabay, The Conversation, Data Center Knowledge, Data Center POST, Greenpeace International, Global Energy Monitor · **Europe:** European Commission (energy) · **UK:** GOV.UK, Techerati, DCNN · **Africa:** Africa Data Centres Association · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists, Southern Environmental Law Center, Food & Water Watch, Energy Innovation |
+| Infra | **Global:** Data Center Knowledge, Data Center POST, Greenpeace International, Global Energy Monitor · **Europe:** European Commission (energy) · **UK:** GOV.UK, Techerati, DCNN · **Africa:** Africa Data Centres Association · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists, Southern Environmental Law Center, Food & Water Watch, Energy Innovation |
 | People are discussing (front page) | Hacker News, through its [official API](https://github.com/HackerNews/API) (robots.txt allows its .json files): the most-discussed AI threads of the last 2 days, titles, points and comment counts only, every 6 h |
 | Regulation tracker | European Data Protection Board, European Commission (Digital Strategy), and the official records below |
 

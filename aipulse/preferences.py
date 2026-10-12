@@ -41,7 +41,8 @@ THEMES = {
 }
 THEME_OF = {topic: theme for theme, topics in THEMES.items() for topic in topics}
 # Themes renamed since readers chose them: a saved choice of the old name still means the new theme.
-RENAMED = {"Chips, compute & energy": classify.INFRA_TAG, "Infrastructure & sustainability": classify.INFRA_TAG}
+RENAMED = {"Chips, compute & energy": classify.INFRA_TAG, "Infrastructure & sustainability": classify.INFRA_TAG,
+           "Infra & climate": classify.INFRA_TAG}
 
 # Places are offered as continents (UN M49 geoscheme), not a long list of countries; every country can still be
 # found with the form's search. Built from the site's own regions: Americas and Asia-Pacific split, the Middle

@@ -78,7 +78,7 @@ STREAM_PAGES = {
     "regulation": ("regulation", "Regulation tracker", "AI regulation tracker: bills, laws and standards by country",
                    rss.FEEDS["regulation"][2]),
     "policy": ("policy", "Policy", "AI policy news: governments, courts and politics", rss.FEEDS["policy"][2]),
-    "infra": ("infra", "Infra & climate", "AI data centres, energy and climate", rss.FEEDS["infra"][2]),
+    "infra": ("infra", "Infra", "AI data centres and the power, water and land they draw on", rss.FEEDS["infra"][2]),
 }
 
 

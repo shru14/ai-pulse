@@ -2225,7 +2225,7 @@ def test_daily_email_shows_the_ten_that_mattered_then_headlines(monkeypatch):
     rest = text.split("THE REST OF THE DAY")[1]
     assert "Releases (" not in rest and "All in the top 10: Releases, Policy." in rest  # one row for them
     _, text2, _ = digest.build(cards, ["releases", "news", "infra"], date(2026, 9, 28))
-    assert "Nothing new today: Infra & climate." in text2 and "Infra & climate (" not in text2  # an empty stream too
+    assert "Nothing new today: Infra." in text2 and "Infra (" not in text2  # an empty stream too
     assert "+5 more: https://projectaipulse.com/#news (incl. 1 tutorial)" in rest  # 8 of 15 in the top, 3 listed
     assert "Choose the full email" not in html and html.count('class="cell"') == 10 and "@media" in html  # two by five, one column on a phone
 
@@ -2652,9 +2652,9 @@ def test_infrastructure_reaches_the_email_and_its_readers():
             "category": "research", "date": "2026-10-05", "added_at": "2026-10-05T10:00:00+00:00"}
     _, text, html = digest.build([card], ["research"], date(2026, 10, 5), one_click)
     mine = one_click.replace("#unsubscribe=", "#choices=")
-    assert f"following button\nAdd Infra & climate: {mine}" in text
+    assert f"following button\nAdd Infra: {mine}" in text
     note = html.split("New on AI Pulse: Infra")[1].split("</div>")[0]
-    assert f'href="{mine}"' in note and "Add Infra &amp; climate →" in note
+    assert f'href="{mine}"' in note and "Add Infra →" in note
     assert digest._new_stream(date(2026, 11, 1), ["research"]) == ""
     # its stories are on topic without naming AI, and carry the tag and theme readers can choose
     story = {"title": "Teraco opens a 40MW data centre in Cape Town", "summary": "", "source": "ESI Africa", "category": "infra"}
