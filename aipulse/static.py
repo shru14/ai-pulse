@@ -18,7 +18,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, photos, preferences, rss, store
-from . import subscribers
+from . import pages, subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
 _WORD = re.compile(r"[^\W_]+")
@@ -107,7 +107,8 @@ def privacy_page() -> str:
     rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>" for a, b, c in PRIVACY_ROWS)
     mail = '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a>'
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '<title>Privacy · AI Pulse</title><style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
+            '<title>Privacy · AI Pulse</title>' + pages.share_tags("Privacy · AI Pulse", "privacy.html",
+            "What AI Pulse keeps about you: nothing about site visitors, and for the daily email only what it needs to send it.") + '<style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
             'padding:24px 16px;color:#222;background:#fff}h1{font-size:20px;font-weight:600;margin:0 0 6px}'
             'h2{font-size:16px;font-weight:600;margin:22px 0 6px}p{margin:0 0 12px;color:#333}'
             'table{border-collapse:collapse;width:100%;margin:0 0 12px}th,td{text-align:left;vertical-align:top;'
@@ -220,7 +221,7 @@ def web_edition(html: str, path: str, description: str, title: str | None = None
             f'<meta property="og:title" content="{title}"><meta property="og:description" content="{escape(description)}">'
             f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og.png">'
             f'<meta name="twitter:card" content="summary_large_image">')
-    html = html.replace("</title>", "</title>" + head, 1)
+    html = html.replace("</title>", "</title>" + head, 1).replace("<html>", '<html lang="en">', 1)
     return re.sub(r'<div style="(font-size:22px;font-weight:bold;line-height:1.3;margin:0 0 8px)">(.*?)</div>',
                   r'<h1 style="\1">\2</h1>', html, count=1)
 

@@ -323,11 +323,26 @@ LOCAL_TIME = ('<script>document.querySelectorAll("time[datetime]").forEach(t => 
               '.toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))</script>')
 
 
+def snippet(text: str, limit: int = 160) -> str:
+    """A description short enough for a search result (they cut near 160 characters): whole words, then "…"."""
+    return text if len(text) <= limit else text[:limit - 1].rsplit(" ", 1)[0].rstrip(",;:·—- ") + "…"
+
+
+def share_tags(title: str, path: str, description: str) -> str:
+    """The head lines search results and link previews read, for a page built by hand (privacy, photo credits)."""
+    url, description = f"{rss.SITE}{path}", escape(snippet(description))
+    return (f'<meta name="description" content="{description}"><link rel="canonical" href="{url}">'
+            f'<meta property="og:title" content="{escape(title)}"><meta property="og:description" content="{description}">'
+            f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og.png">'
+            f'<meta name="twitter:card" content="summary_large_image">')
+
+
 def page(title: str, description: str, path: str, body: str, data: dict, parts: tuple[str, str],
          back: tuple[str, str], note: str = "") -> str:
     """A whole page: `back` is (address, words) for the link above the heading, `note` a line under the content."""
     url = f"{rss.SITE}{path}"
     header, footer = parts
+    description = snippet(description)
     return (f'<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n{THEME}\n'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">\n<base href="/">\n'
             f'<title>{escape(title)}</title>\n<meta name="description" content="{escape(description)}">\n'
