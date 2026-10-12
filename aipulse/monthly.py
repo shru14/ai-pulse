@@ -401,9 +401,9 @@ ISSUE_JS = r"""<script>
       card.append(el("h3", null, NAMES[s]), ol); return card;
     }));
     if(d.storylines.length) {
-      document.getElementById("story-rows").replaceChildren(...d.storylines.map(t => {
+      document.getElementById("story-rows").replaceChildren(...d.storylines.map((t, i) => {
         const a = el("a", "name", t.name); a.href = t.href;
-        return row([a, [link(t), el("div", "meta", day(t.date))], el("b", "n", String(t.n))]);
+        return row([String(i + 1), a, link(t), day(t.date), el("b", "n", String(t.n))]);
       }));
     } else document.getElementById("storylines").remove(), document.querySelector('a[href$="#storylines"]')?.parentElement.remove();
   }).catch(() => root.querySelectorAll("tbody, #top-rows, #rule-groups, #stream-rows").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
@@ -521,8 +521,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 '<p class="meta">Loading…</p></div></section>\n'
                 + (f'<section class="sheet" id="words"><h2>Words of the month</h2><div class="blocks">{word_rows}</div></section>\n'
                    if ws else "")
-                + '<section class="sheet" id="storylines"><h2>Storylines that moved</h2><table class="mt"><thead><tr>'
-                  '<th>Storyline</th><th>Its biggest story this month</th><th>Stories</th></tr></thead>'
+                + '<section class="sheet" id="storylines"><h2>Storylines that moved</h2><table class="mt sl"><thead><tr>'
+                  '<th>#</th><th>Storyline</th><th>Its biggest story this month</th><th>Date</th><th>Stories</th></tr></thead>'
                   '<tbody id="story-rows"></tbody></table></section>\n'
                 f'<nav class="issue-nav">{prev}<a href="/monthly/">All issues</a>{nxt}</nav>\n'
                 f'</div>\n{ISSUE_JS}')
