@@ -1116,6 +1116,27 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
       <p>Opinion, company blogs, studies, AI incidents, tutorials and events, each on its own page.</p></div>
     <div class="by-country-go"><a href="industry/opinion/">Opinion →</a><a href="industry/company-blogs/">Company blogs →</a><a href="industry/studies/">Studies →</a><a href="industry/ai-incidents/">AI incidents →</a><a href="industry/tutorials/">Tutorials →</a><a href="industry/events/">Events →</a><a href="promises/">Promised vs shipped →</a></div>
   </div>
+  <!-- Releases, Policy, Research and Infra: their stories split into pages too (aipulse/kind_pages.py) -->
+  <div class="by-country" id="by-tool" hidden>
+    <div><b>Looking for one company?</b>
+      <p>Each big AI lab's releases, on its own page.</p></div>
+    <div class="by-country-go"><a href="releases/google/">Google →</a><a href="releases/openai/">OpenAI →</a><a href="releases/anthropic/">Anthropic →</a><a href="releases/meta/">Meta →</a><a href="releases/microsoft/">Microsoft →</a><a href="releases/nvidia/">Nvidia →</a><a href="releases/amazon/">Amazon →</a><a href="releases/apple/">Apple →</a><a href="releases/xai/">xAI →</a><a href="releases/mistral/">Mistral →</a><a href="releases/alibaba/">Alibaba →</a><a href="releases/deepseek/">DeepSeek →</a><a href="releases/hugging-face/">Hugging Face →</a></div>
+  </div>
+  <div class="by-country" id="by-policy" hidden>
+    <div><b>Looking for one kind of voice?</b>
+      <p>What governments say, what think tanks and civil society say, and the news reports, each on its own page.</p></div>
+    <div class="by-country-go"><a href="policy/governments/">Governments →</a><a href="policy/think-tanks/">Think tanks &amp; civil society →</a><a href="policy/news/">News reports →</a></div>
+  </div>
+  <div class="by-country" id="by-research" hidden>
+    <div><b>Looking for one subject?</b>
+      <p>Papers on language models, agents, vision, speech, robots, safety, reinforcement learning, efficiency, science and benchmarks, each on its own page.</p></div>
+    <div class="by-country-go"><a href="research/language-models/">Language models →</a><a href="research/agents/">Agents →</a><a href="research/vision/">Vision, image and video →</a><a href="research/speech/">Speech and audio →</a><a href="research/robotics/">Robotics and world models →</a><a href="research/safety/">Safety and security →</a><a href="research/reinforcement-learning/">Reinforcement learning →</a><a href="research/efficiency/">Efficiency and training →</a><a href="research/science/">Science and medicine →</a><a href="research/benchmarks/">Benchmarks and evaluation →</a></div>
+  </div>
+  <div class="by-country" id="by-infra" hidden>
+    <div><b>Looking for one subject?</b>
+      <p>Power, water, emissions, local pushback, builds and deals, rules and permits, and hardware, each on its own page.</p></div>
+    <div class="by-country-go"><a href="infra/power-and-grid/">Power &amp; grid →</a><a href="infra/water/">Water →</a><a href="infra/emissions-and-climate/">Emissions &amp; climate →</a><a href="infra/land-and-local-pushback/">Land &amp; local pushback →</a><a href="infra/builds-and-deals/">Builds &amp; deals →</a><a href="infra/rules-and-permits/">Rules &amp; permits →</a><a href="infra/hardware-and-compute/">Hardware &amp; compute →</a></div>
+  </div>
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
   <div class="more"><button type="button" id="more" hidden>Load more</button></div>
@@ -1248,6 +1269,7 @@ function showPage(){
   $("sec-desc").textContent = SECTION_DESC[state.cat];
   $("by-country").hidden = state.cat !== "regulation";
   $("by-kind").hidden = state.cat !== "news";
+  ["tool", "policy", "research", "infra"].forEach(c => $("by-" + c).hidden = state.cat !== c);
   $("sec-art").innerHTML = heroArt(state.cat);
   const hp = (PHOTOS[STREAM_PHOTO[state.cat]] || PHOTOS.business || [])[0];
   hero.style.setProperty("--hero-photo", hp ? 'url("photos/' + hp[0] + '")' : "none");
