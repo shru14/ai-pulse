@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "follow-through", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -643,6 +643,7 @@ def test_static_build_holds_every_card(tmp_path):
     tracker_pages += list((tmp_path / "site" / "industry").glob("*/index.html"))  # and Industry's kinds, a page each
     tracker_pages += list((tmp_path / "site" / "topics").glob("**/index.html"))  # and the topics, a page each
     tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
+    tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html"]
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and 'data-kind="tutorial"' in tutorials and "Updated" not in tutorials
@@ -3400,8 +3401,8 @@ def test_monthly_summary_that_fails_every_try_is_not_tried_again(tmp_path, monke
     assert monthly.due(conn, date(2026, 10, 11)) == []  # the next run doesn't download the model again for it
 
 
-def test_follow_through_promises_and_echoes():
-    from aipulse import followthrough as ft
+def test_promises_and_rule_echoes():
+    from aipulse import echoes, promises
     card = lambda i, day, title, cat="news", **kw: {"id": i, "date": day, "title": title, "url": f"https://x/{i}",
                                                     "source": "Outlet", "category": cat, "also": [], **kw}
     cards = [card("p1", "2024-10-25", "OpenAI reportedly plans to release its Orion AI model by December"),
@@ -3416,7 +3417,7 @@ def test_follow_through_promises_and_echoes():
              card("n2", "2025-12-31", "Investors predict AI is coming for labor in 2026"),
              card("p4", "2025-10-14", "Nvidia to start shipping AI-optimized DGX Spark desktop computer"),
              card("x4", "2026-01-05", "NVIDIA Releases PAIR: An Open Source Router for DGX Spark")]
-    found = {p["url"].rsplit("/", 1)[1]: p for p in ft.promises(cards, date(2026, 10, 12))}
+    found = {p["url"].rsplit("/", 1)[1]: p for p in promises.promises(cards, date(2026, 10, 12))}
     assert set(found) == {"p1", "p2", "p3", "p4"}
     assert found["p1"]["status"] == "late" and found["p1"]["launch"]["url"].endswith("/l1") and found["p1"]["late"] == 58
     assert found["p2"]["status"] == "shipped" and found["p2"]["days"] == 0  # the same day counts
@@ -3431,8 +3432,8 @@ def test_follow_through_promises_and_echoes():
                rec("c", "2020-05-15", "Privacy Amendment (Public Health Contact Information) Act 2020", "AU", "legislation.gov.au"),
                rec("d", "2026-02-06", "The Artificial Intelligence (Human Health and Medical Education) Regulation Bill, 2026", "IN", "Parliament of India")]
     records[0]["action"] = "law"
-    themes = {t["slug"]: t for t in ft.echoes(records)}
-    assert ft.themes_of(records[2]) == []  # a privacy law that isn't about AI
+    themes = {t["slug"]: t for t in echoes.echoes(records)}
+    assert echoes.themes_of(records[2]) == []  # a privacy law that isn't about AI
     assert [p["code"] for p in themes["sexual-deepfakes"]["places"]] == ["AU", "CH"]
     assert themes["sexual-deepfakes"]["places"][0]["furthest"] == "Adopted"
     assert "health" not in themes  # one place only: no echo yet
