@@ -447,7 +447,7 @@ a.subscribe-btn{text-decoration:none}
 /* insights: the cover, the key findings, and each exhibit headed by its finding */
 .cp .ins-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-top:4px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0 18px;margin-top:8px}
 .cp .ins-head .kind{font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.cp .ins-head h1{margin:6px 0 0;font-size:clamp(30px,4.6vw,54px);line-height:1.02}
+.cp .ins-head h1{margin:8px 0 0;font-size:clamp(22px,2.8vw,34px);line-height:1.25}
 .cp .ins-side{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 .cp .ins-head .no{font:400 clamp(44px,6vw,68px)/1 var(--display);color:transparent;-webkit-text-stroke:1.5px var(--ink)}
 .cp .ins-pdf{font:600 12px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--bg);border:1px solid var(--ink);padding:6px 10px;cursor:pointer}
@@ -472,16 +472,29 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-ipot{max-width:900px}
 .cp .ins-ipot td a{font-weight:600}
 .cp .ins-ipot td.when{font:600 12px var(--mono);color:var(--muted)}
-.cp .ins-kf{margin-top:24px}
-.cp .ins-kf .kind{display:block;margin-bottom:8px;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.cp .kf{width:100%;border-collapse:collapse}
-.cp .kf td{border-top:1px solid var(--rule);padding:10px 12px 10px 0;vertical-align:top;font-size:16.5px;line-height:1.4}
-.cp .kf tr:first-child td{border-top:1px solid var(--line)}
-.cp .kf tr:last-child td{border-bottom:1px solid var(--line)}
-.cp .kf .k{width:40px}
-.cp .kn{display:inline-grid;place-items:center;width:24px;height:24px;background:var(--hue,var(--bg));color:#141925;border:1px solid var(--line);font:600 12px var(--mono)}
-.cp .kf .x{white-space:nowrap;text-align:right;padding-right:0}
-.cp .kf .x a{font:600 12px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+/* the key findings as a departures board: fixed dark in both themes, split-flap numbers, each exhibit's colour */
+.cp .ins-kf{--board:#F0E442;margin-top:24px;padding:14px 16px 8px;background:#141925;color:#F2F2F2;border:1px solid var(--line)}
+.cp .bd-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:10px;border-bottom:1px solid #3A4150;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.cp .bd-t{color:#141925;background:var(--board);padding:2px 8px}
+.cp .bd-c{color:var(--board)}
+.cp .kf{width:100%;border-collapse:collapse;perspective:600px}
+.cp .kf th{text-align:left;font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#8A93A3;padding:10px 12px 6px 0}
+.cp .kf th:last-child{text-align:right;padding-right:0}
+.cp .kf td{border-top:1px solid #2A303C;padding:8px 12px 8px 0;vertical-align:middle;font:400 14.5px/1.45 var(--mono);color:#F2F2F2}
+.cp .kf .no{width:58px;white-space:nowrap}
+.cp .fl{position:relative;display:inline-grid;place-items:center;width:20px;height:26px;margin-right:2px;background:linear-gradient(#262C39 50%,#1D222D 50%);color:var(--board);font:600 15px var(--mono);border-radius:2px}
+.cp .fl::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid #0B0E13}
+.cp .kf .air{display:inline-block;width:10px;height:10px;margin-right:10px;background:var(--hue);vertical-align:0}
+.cp .kf .gt{white-space:nowrap;text-align:right;padding-right:0}
+.cp .kf .gt a{display:inline-flex;align-items:center;gap:6px;color:var(--board);text-decoration:none;font:600 11px var(--mono);letter-spacing:.08em}
+.cp .kf .gt .fl{width:16px;height:22px;font-size:13px}
+.cp .kf .gt a:hover .fl,.cp .kf .gt a:focus-visible .fl{background:var(--board);color:#141925}
+@media (prefers-reduced-motion:no-preference){
+  .cp .kf .fl{animation:ins-flap .5s cubic-bezier(.3,1.4,.5,1) both;animation-delay:calc(var(--i) * 70ms)}
+  .cp .kf .fd{animation:ins-fade .4s both;animation-delay:calc(var(--i) * 70ms + 150ms)}}
+@keyframes ins-flap{from{transform:rotateX(90deg)}to{transform:none}}
+@keyframes ins-fade{from{opacity:0}to{opacity:1}}
+.cp .ins-head h1 .hl{background:#F0E442;color:#000;padding:0 10px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .cp .ex{--ctx:color-mix(in srgb,var(--hue) 38%,var(--bg));--ctx2:color-mix(in srgb,var(--hue) 18%,var(--bg));--focus:var(--hue);margin-top:52px;padding-top:12px;border-top:3px solid var(--hue);scroll-margin-top:calc(var(--bar-h,64px) + 12px)}
 .cp .ex-k{display:flex;align-items:baseline;gap:12px;margin:0;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .cp .ex-k b{background:var(--hue);border:1px solid var(--line);color:#141925;padding:0 6px;font-weight:600}
@@ -622,10 +635,14 @@ a.subscribe-btn{text-decoration:none}
     --f-tool:#009E73;--f-news:#56B4E9;--f-research:#C85BC3;--f-reg:#D55E00;--f-policy:#E69F00;--f-infra:#8BEC8B;--f-all:#F0E442}
   .cp .ex{break-inside:avoid;page-break-inside:avoid;margin-top:28px}
   .cp .ins-kf{break-after:page}
+  .cp .kf .fl,.cp .kf .fd{animation:none!important}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (max-width:700px){
   .cp .ins-head .no{display:none}
-  .cp .kf td{font-size:15px}
+  .cp .kf thead,.cp .kf .gt span{display:none}
+  .cp .kf td{font-size:13px}
+  .cp .kf .no{width:50px}
+  .cp .ins-kf{padding:12px 10px 6px}
   .cp .ins-two,.cp .ins-score{grid-template-columns:1fr}
   .cp .ins-score div + div{border-left:0;border-top:1px solid var(--rule);padding-left:0}
   .cp .ins-db li,.cp .ins-axis{grid-template-columns:76px minmax(0,1fr) 48px;gap:8px}

@@ -647,10 +647,16 @@ def body(month: str, x: dict) -> str:
                          _tiles(x["places"]) + f'<p class="ins-note">Stories naming each place, darker = more. Change against {last}.</p>'))
     # each section is an exhibit headed by its finding (the first sentence); the findings open the page, each a link
     heads = [re.split(r"(?<=[.!?])\s+(?=[A-Z0-9$])", s, maxsplit=1) for _, _, s, _ in sections]
-    found = "".join(f'<tr style="--hue:var(--f-{HUE[k]})"><td class="k"><span class="kn">{i}</span></td><td>{escape(hd[0])}</td>'
-                    f'<td class="x"><a href="/{path(month)}#{k}">Exhibit {i} →</a></td></tr>'
+    # ...on a departures board: split-flap numbers, each exhibit's colour as its "airline", the exhibit as its gate
+    def flap(n):
+        return "".join(f'<b class="fl">{d}</b>' for d in f"{n:02d}")
+    found = "".join(f'<tr style="--hue:var(--f-{HUE[k]});--i:{i}"><td class="no">{flap(i)}</td>'
+                    f'<td class="fd"><i class="air"></i>{escape(hd[0])}</td>'
+                    f'<td class="gt"><a href="/{path(month)}#{k}" aria-label="Exhibit {i}"><span>EX</span>{flap(i)}</a></td></tr>'
                     for i, ((k, *_), hd) in enumerate(zip(sections, heads), 1))
-    return (f'<section class="ins-kf"><span class="kind">Key findings</span><table class="kf"><tbody>{found}</tbody></table></section>\n'
+    return (f'<section class="ins-kf"><div class="bd-top"><span class="bd-t">Key findings</span>'
+            f'<span class="bd-c">{escape(monthly.name(month).upper())}</span></div><table class="kf"><thead><tr><th>No.</th>'
+            f'<th>Finding</th><th>Gate</th></tr></thead><tbody>{found}</tbody></table></section>\n'
             + "".join(f'<section class="ex" id="{k}" style="--hue:var(--f-{HUE[k]})"><p class="ex-k"><b>Exhibit {i}</b>{t}</p><h2>{escape(hd[0])}</h2>'
                       + (f'<p class="ins-say">{escape(hd[1])}</p>' if len(hd) > 1 else "") + f'{h}</section>\n'
                       for i, ((k, t, _, h), hd) in enumerate(zip(sections, heads), 1)))
@@ -674,7 +680,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         prev = f'<a href="/{path(issues[i - 1])}">← {monthly.name(issues[i - 1])}</a>' if i else "<span></span>"
         nxt = f'<a href="/{path(issues[i + 1])}">{monthly.name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
         html = (f'<div class="mi">\n<div class="ins-head"><div><span class="kind">AI Pulse · Monthly report · Insights</span>'
-                f'<h1>{monthly.name(m)} in numbers</h1></div><div class="ins-side"><span class="no">{monthly.number(m):02d}</span><button class="ins-pdf" type="button" onclick="window.print()">Save as PDF</button></div></div>\n{body(m, x)}'
+                f'<h1><span class="hl">{monthly.name(m)} in numbers</span></h1></div><div class="ins-side"><span class="no">{monthly.number(m):02d}</span><button class="ins-pdf" type="button" onclick="window.print()">Save as PDF</button></div></div>\n{body(m, x)}'
                 f'<nav class="issue-nav">{prev}<a href="/{monthly.path(m)}">Back to the issue</a>{nxt}</nav>\n</div>')
         what = (f"What the AI news of {monthly.name(m)} adds up to: how it compares with the months before, what made the "
                 "busiest days, and the companies, themes and places in the news.")
