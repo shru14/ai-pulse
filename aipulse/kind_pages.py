@@ -150,14 +150,14 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
     paths = []
     for kind, (_, heading, what) in KINDS.items():
         p = path(kind)
-        body = (f'<h1>{escape(heading)}</h1>\n<p class="intro">{escape(what)}</p>\n'
+        body = (f'<div class="kd"><h1>{escape(heading)}</h1>\n<p class="intro">{escape(what)}</p>\n'
                 f'<p class="intro"><span id="stories-count">The stories</span> in the last 3 months, newest first, '
                 f'each linking to the outlet\'s own page.</p>\n'
                 + '<div class="places companies" id="cats"></div>\n'
                 + (f'<script type="application/json" id="firms">{firms}</script>\n' if kind == "blog" else topics)
                 + f'<ul id="kind-stories" data-kind="{kind}"><li class="meta">Loading the stories…</li></ul>\n'
                 f'<button type="button" class="more-stories" id="more-stories" hidden>Show more stories</button>\n'
-                f'{STORIES_JS}')
+                f'{STORIES_JS}</div>')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": heading, "description": what,
                 "url": f"{rss.SITE}{p}"}
         (out / p).mkdir(parents=True, exist_ok=True)
