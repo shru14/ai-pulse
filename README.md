@@ -27,7 +27,7 @@ six streams and links every card to the original.
 - **[Topics](https://projectaipulse.com/topics/):** storylines followed over time, news and laws on one timeline.
 - **[Rule echoes](https://projectaipulse.com/rule-echoes/):** the subjects AI laws keep coming back to, and the places that took each one up, in order, from the tracker's official records.
 - **[Promised vs shipped](https://projectaipulse.com/promises/):** when an AI company says it will release something, the later headline saying it did, matched by rules from headlines alone (no AI model).
-- **[The month in AI](https://projectaipulse.com/monthly/):** a booklet for every month since January 2026, with the month's biggest stories, the rules that moved, a timeline and each stream's highlights, plus a page of charts for each month (stories by stream and by day, the companies, themes and places in the news, against the month before). Its summary is written offline by an open-source model and checked against the month's headlines.
+- **[The month in AI](https://projectaipulse.com/monthly/):** a booklet for every month since January 2026, with the month's biggest stories, the rules that moved, a timeline and each stream's highlights, plus a page of insights for each month (how each stream's share compares with the past year, what made the busiest days, and the companies, themes and places in the news). Its summary is written offline by an open-source model and checked against the month's headlines.
 - **[Glossary](https://projectaipulse.com/glossary/):** AI words in plain English, each with its newest story.
 - **Saved stories:** a bookmark on each story, kept in your browser only.
 - **Dark mode** and **RSS**: one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).

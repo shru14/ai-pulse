@@ -1,22 +1,30 @@
 """The month in numbers (monthly/<YYYY-MM>/insights/): a page of charts for each monthly issue, linked from the issue.
 
-Every number is a count of our own stories (a story many outlets carried counts once), compared with the month before:
-the stories in each stream, day by day, the companies and the places the stories named most, and the themes that rose
-or faded against the three months before. Companies, places and themes are the tags each story already carries
-(classify.py). Only our own words and numbers are on the page, no headlines. Rebuilt with the site.
+Every number is a count of our own stories (a story many outlets carried counts once). How this month compares: each
+stream's share of the month's stories against the 11 months before (a share, as raw counts grow with our sources).
+What made the busiest days: the days that stood out against a normal day that month, each with the stories most outlets
+carried. Then the companies and the places the stories named most (against the month before), and the themes that
+rose or faded against the three months before. Companies, places and themes are the tags each story already carries
+(classify.py). The busiest days' headlines load in the reader's browser from insights.json, so the page itself holds
+only our own words. Rebuilt with the site.
 """
 from __future__ import annotations
 
+import json
 from collections import Counter
 from datetime import date, timedelta
 from html import escape
 from pathlib import Path
+from statistics import median
 
 from . import classify, jurisdictions, monthly, pages, rss
 
 TOP = 10    # companies and places shown
 THEMES = 5  # themes rising, and fading
 MIN = 10    # a theme rises or fades only with this many stories a month (now, or before)
+YEAR = 12   # How this month compares: this month and the 11 before
+PEAKS = 3   # busiest days explained
+STOOD_OUT = 1.3  # ...each at least this many times a normal day
 FEW = 5     # fewer stories the month before: the change is shown as "was 3", not "+133%"
 COMPANIES = set(classify.COMPANY_TERMS)
 PLACES = {v[0] for k, v in jurisdictions.JURISDICTIONS.items() if k != "INTL"}  # international bodies aren't a place
@@ -49,11 +57,39 @@ def change(now: int, before: int) -> str:
     return "same" if p == 0 else f"+{p}%" if p > 0 else f"−{-p}%"
 
 
+def shares(month: str, by_month: dict[str, list[dict]]) -> list[tuple[str, list[tuple[str, float]]]]:
+    """Each stream's share of all stories, month by month (oldest first, this month last), for the YEAR months to this
+    one that have stories. Streams with too few stories in the year to say anything are left out."""
+    ms = [m for m in (_prev(month, k) for k in range(YEAR - 1, -1, -1)) if by_month.get(m)]
+    out = []
+    for s in monthly.STREAMS:
+        n = {m: sum(c["category"] == s for c in by_month[m]) for m in ms}
+        if sum(n.values()) >= 30:
+            out.append((s, [(m, n[m] / len(by_month[m])) for m in ms]))
+    return out
+
+
+def peaks(mine: list[dict], daily: list[tuple[date, int]]) -> list[dict]:
+    """The days that stood out (most stories against the month's median day of the same kind, weekday or weekend),
+    by date, each with the stories most outlets carried that day (Research left out: a paper is one outlet). A day
+    with no story two outlets carried is only a busy feed, with nothing to explain it, so it's passed over."""
+    usual = {k: median([n for d, n in daily if (d.weekday() >= 5) == k] or [1]) or 1 for k in (False, True)}
+    out = []
+    for d, n in sorted(daily, key=lambda x: -x[1] / usual[x[0].weekday() >= 5]):
+        x = n / usual[d.weekday() >= 5]
+        if x < STOOD_OUT or len(out) == PEAKS:
+            break
+        day = monthly.ranked([c for c in mine if c["date"][:10] == d.isoformat() and c["category"] != "research"])
+        picks = [c for c in day if monthly.outlets(c) > 1][:2]
+        if picks:
+            out.append({"day": d.isoformat(), "n": n, "x": round(x, 1), "weekend": d.weekday() >= 5,
+                        "stories": [monthly._story(c) for c in picks]})
+    return sorted(out, key=lambda p: p["day"])
+
+
 def numbers(month: str, by_month: dict[str, list[dict]]) -> dict:
     """The month's counts, each with last month's beside it."""
     mine, last = by_month.get(month, []), by_month.get(_prev(month), [])
-    streams = Counter(c["category"] for c in mine)
-    before = Counter(c["category"] for c in last)
     days = Counter(c["date"][:10] for c in mine)
     d, end = date.fromisoformat(month + "-01"), monthly._last_day(month)
     daily = []
@@ -70,9 +106,7 @@ def numbers(month: str, by_month: dict[str, list[dict]]) -> dict:
     moves = [(t, theme[t], usual.get(t, 0)) for t in TOPICS if max(theme[t], usual.get(t, 0)) >= MIN]
     rise = sorted([m for m in moves if m[1] > m[2]], key=lambda m: -(m[1] - m[2]) / (m[2] + 5))[:THEMES]
     fade = sorted([m for m in moves if m[1] < m[2]], key=lambda m: (m[1] - m[2]) / (m[2] + 5))[:THEMES]
-    return {"total": len(mine), "total0": len(last),
-            "streams": [(s, streams[s], before[s]) for s in monthly.STREAMS if streams[s] or before[s]],
-            "daily": daily,
+    return {"shares": shares(month, by_month), "daily": daily, "peaks": peaks(mine, daily),
             "companies": [(t, n, comp0[t]) for t, n in comp.most_common(TOP)],
             "places": [(t, n, place0[t]) for t, n in place.most_common(TOP)], "nplaces": len(place),
             "rise": rise, "fade": fade}
@@ -91,15 +125,61 @@ def _bars(rows: list[tuple], colour=lambda r: "var(--f-news)", label=lambda r: e
         for r in rows) + "</ol>"
 
 
-def _days(daily: list[tuple[date, int]]) -> str:
+def _pct(v: float) -> str:
+    return f"{v * 100:.1f}%" if v < .1 else f"{v * 100:.0f}%"
+
+
+def _compare(rows: list[tuple[str, list[tuple[str, float]]]]) -> str:
+    """A row per stream: its share each month as small columns (this month in the stream's colour), the share, and
+    where it stands against the months before."""
+    out = []
+    for s, ms in rows:
+        top = max(v for _, v in ms) or 1
+        now, before = ms[-1][1], [v for _, v in ms[:-1]]
+        cols = "".join(f'<i class="{"now" if k == len(ms) - 1 else ""}" style="height:{max(v / top * 100, 3):.0f}%" '
+                       f'title="{monthly.name(m)}: {_pct(v)}"></i>' for k, (m, v) in enumerate(ms))
+        if len(before) >= 3 and now > max(before):
+            note = f"Biggest in {len(ms)} months"
+        elif len(before) >= 3 and now < min(before):
+            note = f"Smallest in {len(ms)} months"
+        else:
+            note = f"usually {_pct(sum(before) / len(before))}" if before else ""
+        out.append(f'<li><span class="nm">{monthly.STREAMS[s]}</span><span class="ins-spark" style="--c:var(--f-{COL[s]})">'
+                   f'{cols}</span><b class="v">{_pct(now)}</b><span class="ch">{note}</span></li>')
+    return '<ol class="ins-bars ins-cmp">' + "".join(out) + "</ol>"
+
+
+def _days(daily: list[tuple[date, int]], peaks: list[dict], src: str) -> str:
     top = max((n for _, n in daily), default=1) or 1
-    peak = max(daily, key=lambda x: x[1])[0]
+    marks = {p["day"]: k + 1 for k, p in enumerate(peaks)}
     cols = "".join(
-        f'<li class="{"we" if d.weekday() >= 5 else ""}{" pk" if d == peak else ""}" title="{d.strftime("%a")} {d.day} {d.strftime("%b")}: {n} {"story" if n == 1 else "stories"}">'
-        f'<i style="height:{max(n / top * 100, 1):.1f}%"></i><span>{d.day if d.day in (1, 8, 15, 22, 29) or d == peak else ""}</span></li>'
+        f'<li class="{"we" if d.weekday() >= 5 else ""}{" pk" if d.isoformat() in marks else ""}" title="{d.strftime("%a")} {d.day} {d.strftime("%b")}: {n} {"story" if n == 1 else "stories"}">'
+        + (f'<b class="mk" style="bottom:calc({n / top * 100:.1f}% + 4px)">{marks[d.isoformat()]}</b>' if d.isoformat() in marks else "")
+        + f'<i style="height:{max(n / top * 100, 1):.1f}%"></i><span>{d.day if d.day in (1, 8, 15, 22, 29) else ""}</span></li>'
         for d, n in daily)
+    cards = "".join(
+        f'<div class="ins-peak" data-day="{p["day"]}"><b class="mk">{k + 1}</b><div><h3>{_day(date.fromisoformat(p["day"]))}</h3>'
+        f'<p class="meta">{p["n"]} stories, {p["x"]:g}× a normal {"weekend day" if p["weekend"] else "weekday"} that month</p>'
+        '<ol><li class="meta">Loading…</li></ol></div></div>' for k, p in enumerate(peaks))
     return (f'<ol class="ins-days" style="--n:{len(daily)}">{cols}</ol>'
-            '<p class="ins-key"><span><i class="sw"></i>Weekday</span><span><i class="sw we"></i>Weekend</span></p>')
+            '<p class="ins-key"><span><i class="sw"></i>Weekday</span><span><i class="sw we"></i>Weekend</span>'
+            '<span><i class="sw pk"></i>Stood out</span></p>'
+            + (f'<div class="ins-peaks" id="peaks" data-src="{src}">{cards}</div>{PEAKS_JS}' if peaks else ""))
+
+
+PEAKS_JS = r"""<script>
+(() => {
+  const box = document.getElementById("peaks");
+  const NAMES = {tool: "Releases", news: "Industry", research: "Research", regulation: "Regulation", policy: "Policy", infra: "Infra"};
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
+  fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => d.peaks.forEach(p => {
+    box.querySelector(`[data-day="${p.day}"] ol`).replaceChildren(...p.stories.map(e => {
+      const li = el("li"), a = el("a", null, e.title); a.href = e.url; a.rel = "noopener";
+      li.append(a, el("div", "meta", NAMES[e.stream] + " · " + e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : "")));
+      return li; }));
+  })).catch(() => box.querySelectorAll("ol").forEach(o => o.replaceChildren(el("li", "meta", "Couldn't load the stories. Try reloading the page."))));
+})();
+</script>"""
 
 
 def _themes(rows: list[tuple], up: bool) -> str:
@@ -116,31 +196,40 @@ def _day(d: date) -> str:
     return f'{d.strftime("%A")} {d.day} {d.strftime("%B")}'
 
 
+def _and(words: list[str]) -> str:
+    return words[0] if len(words) == 1 else ", ".join(words[:-1]) + " and " + words[-1]
+
+
 def body(month: str, x: dict) -> str:
     last = monthly.name(_prev(month)).split()[0]
     sections = []
-    # stories by stream
-    grew = [s for s in x["streams"] if s[2] >= 10]
-    big = max(grew, key=lambda s: (s[1] - s[2]) / s[2], default=None)
-    say = f'{x["total"]:,} stories'
-    if x["total0"]:
-        ch = change(x["total"], x["total0"])
-        say += f', {"as many as" if ch == "same" else ch.replace("+", "").replace("−", "") + (" more than" if ch[0] == "+" else " fewer than")} {last}'
-    if big and big[1] > big[2]:
-        say += f'. {monthly.STREAMS[big[0]]} grew most ({change(big[1], big[2])})'
-    sections.append(("streams", "Stories by stream", say + ".",
-                     _bars([(monthly.STREAMS[s], n, b) for s, n, b in x["streams"]],
-                           colour=lambda r: f'var(--f-{COL[next(k for k, v in monthly.STREAMS.items() if v == r[0])]})')
-                     + f'<p class="ins-note">Change against {last}.</p>'))
-    # day by day
-    daily = x["daily"]
-    peak = max(daily, key=lambda d: d[1])
-    wd = [n for d, n in daily if d.weekday() < 5]
-    we = [n for d, n in daily if d.weekday() >= 5]
-    say = f"The busiest day was {_day(peak[0])}, with {peak[1]} stories."
-    if wd and we:
-        say += f" A weekday had {round(sum(wd) / len(wd))} on average, a weekend day {round(sum(we) / len(we))}."
-    sections.append(("days", "Day by day", say, _days(daily)))
+    # how this month compares: each stream's share of the news against the months before
+    rows = x["shares"]
+    if rows:
+        n = len(rows[0][1])
+        big = [monthly.STREAMS[s] for s, ms in rows if n >= 4 and ms[-1][1] > max(v for _, v in ms[:-1])]
+        small = [monthly.STREAMS[s] for s, ms in rows if n >= 4 and ms[-1][1] < min(v for _, v in ms[:-1])]
+        say = []
+        if big:
+            say.append(f"{_and(big)} took a bigger share of the news than in any of the {n - 1} months before.")
+        if small:
+            say.append(f"{_and(small)} took {'its' if len(small) == 1 else 'their'} smallest share.")
+        if not say and n > 1:
+            s, ms = max(rows, key=lambda r: abs(r[1][-1][1] / (sum(v for _, v in r[1][:-1]) / (n - 1) or 1) - 1))
+            usual = sum(v for _, v in ms[:-1]) / (n - 1)
+            say.append(f"{monthly.STREAMS[s]} moved most: {_pct(ms[-1][1])} of the month's stories, against a usual {_pct(usual)}.")
+        sections.append(("compare", "How this month compares", " ".join(say) or "Each stream's share of the month's stories.",
+                         _compare(rows) + f'<p class="ins-note">Each stream\'s share of all stories, month by month to {monthly.name(month)}. '
+                         'A share, not a count, as the count grows with our sources.</p>'))
+    # what made the busiest days
+    pk = x["peaks"]
+    if pk:
+        days = [f"{date.fromisoformat(p['day']).day} {date.fromisoformat(p['day']).strftime('%B')}" for p in pk]
+        say = (f"{['One day', 'Two days', 'Three days'][len(pk) - 1]} stood out: {_and(days)}. What drove "
+               + ("it:" if len(pk) == 1 else "each:"))
+    else:
+        say = "No day stood out: the news ran evenly all month."
+    sections.append(("days", "What made the busiest days", say, _days(x["daily"], pk, f"/{path(month)}insights.json")))
     # companies
     if x["companies"]:
         c0 = x["companies"][0]
@@ -187,12 +276,16 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     for i, m in enumerate(issues):
         x = numbers(m, by_month)
         p = path(m)
+        (out / p).mkdir(parents=True, exist_ok=True)
+        (out / p / "insights.json").write_text(json.dumps({"peaks": x["peaks"]}, separators=(",", ":"), ensure_ascii=False),
+                                               encoding="utf-8")
         prev = f'<a href="/{path(issues[i - 1])}">← {monthly.name(issues[i - 1])}</a>' if i else "<span></span>"
         nxt = f'<a href="/{path(issues[i + 1])}">{monthly.name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
         html = (f'<div class="mi">\n<div class="ins-head"><span class="kind">AI Pulse · Insights · No. {monthly.number(m)}</span>'
                 f'<h1>{monthly.name(m)} in numbers</h1></div>\n{body(m, x)}'
                 f'<nav class="issue-nav">{prev}<a href="/{monthly.path(m)}">Back to the issue</a>{nxt}</nav>\n</div>')
-        what = f"What the AI news of {monthly.name(m)} adds up to: the stories by stream and by day, the companies, places and themes."
+        what = (f"What the AI news of {monthly.name(m)} adds up to: how it compares with the months before, what made the "
+                "busiest days, and the companies, themes and places in the news.")
         ld = {"@context": "https://schema.org", "@type": "WebPage", "name": f"{monthly.name(m)} in numbers",
               "description": what, "url": f"{rss.SITE}{p}"}
         (out / p).mkdir(parents=True, exist_ok=True)

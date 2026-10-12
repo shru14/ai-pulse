@@ -3443,11 +3443,29 @@ def test_insights_counts_against_the_month_before():
     from aipulse import insights
     assert insights.change(13, 10) == "+30%" and insights.change(9, 10) == "−10%" and insights.change(10, 10) == "same"
     assert insights.change(7, 1) == "was 1" and insights.change(3, 0) == "new"
-    card = lambda d, cat, tags: {"date": d, "category": cat, "tags": tags}
+    card = lambda d, cat, tags: {"date": d, "category": cat, "tags": tags, "title": "A story", "url": "u", "source": "A"}
     by = {"2026-08": [card("2026-08-03", "news", ["OpenAI"])] * 10,
           "2026-09": [card("2026-09-01", "news", ["OpenAI", "United States"])] * 12 + [card("2026-09-06", "tool", ["Anthropic"])]}
     x = insights.numbers("2026-09", by)
-    assert x["total"] == 13 and x["total0"] == 10
+    assert [s for s, _ in x["shares"]] == []  # too few stories in the year to say anything
     assert x["companies"][0] == ("OpenAI", 12, 10) and x["places"] == [("United States", 12, 0)]
     assert len(x["daily"]) == 30 and dict(x["daily"])[__import__("datetime").date(2026, 9, 1)] == 12
-    assert "13 stories, 30% more than August" in insights.body("2026-09", x)
+    assert "Companies in the news" in insights.body("2026-09", x)
+
+
+def test_insights_busiest_days_need_a_story_two_outlets_carried():
+    from datetime import date, timedelta
+    from aipulse import insights
+    def card(d, n, outlets=1):
+        return [{"date": d, "category": "news", "title": f"Story {d} {k}", "url": f"u{d}{k}", "source": "A",
+                 "also": [{"source": f"S{j}"} for j in range(outlets - 1)] if k == 0 else []} for k in range(n)]
+    mine = []
+    for k in range(30):
+        d = (date(2026, 9, 1) + timedelta(days=k)).isoformat()
+        mine += card(d, 30 if d == "2026-09-29" else 25 if d == "2026-09-15" else 10, outlets=3 if d == "2026-09-29" else 1)
+    from collections import Counter
+    days = Counter(c["date"] for c in mine)
+    daily = [(date(2026, 9, 1) + timedelta(days=k), days[(date(2026, 9, 1) + timedelta(days=k)).isoformat()]) for k in range(30)]
+    p = insights.peaks(mine, daily)
+    assert [x["day"] for x in p] == ["2026-09-29"]  # the 15th was busy too, but no story two outlets carried
+    assert p[0]["x"] == 3.0 and p[0]["stories"][0]["outlets"] == 3

@@ -424,8 +424,8 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-top:22px;padding:14px 20px;background:#F0E442;color:#000;border:3px solid var(--ink);text-decoration:none}
 .cp .ins-link .label{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
 .cp .ins-link b{display:block;font:400 24px/1.1 var(--head);margin-top:4px}
-.cp .ins-link span.go{font-weight:700;white-space:nowrap}
-.cp .ins-link:hover span.go{text-decoration:underline}
+.cp .ins-link .ins-go{font:800 17px var(--body);white-space:nowrap}
+.cp .ins-link:hover .ins-go{text-decoration:underline}
 .cp .ins-head{border-bottom:6px solid #D55E00;padding:6px 0 14px}
 .cp .ins-head .kind{font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .cp .ins-head h1{margin:6px 0 0;font-size:clamp(28px,4vw,44px)}
@@ -454,7 +454,26 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-key span{display:inline-flex;align-items:center;gap:6px}
 .cp .ins-key .sw{width:14px;height:14px;background:#56B4E9;border:2px solid var(--line)}
 .cp .ins-key .sw.we{background:color-mix(in srgb,#56B4E9 40%,var(--bg))}
-@media (max-width:640px){.cp .ins-two{grid-template-columns:1fr}
+.cp .ins-cmp li{grid-template-columns:minmax(90px,170px) minmax(0,300px) 64px minmax(0,1fr)}
+.cp .ins-cmp .ch{text-align:left;font-size:13px}
+.cp .ins-spark{display:flex;align-items:flex-end;gap:2px;height:34px;border-bottom:2px solid var(--line)}
+.cp .ins-spark i{flex:1;background:color-mix(in srgb,var(--ink) 22%,var(--bg));border:0;border-radius:2px 2px 0 0;min-height:2px}
+.cp .ins-spark i.now{background:var(--c);border:2px solid var(--line);border-bottom:0}
+.cp .ins-days li .mk{position:absolute;left:50%;transform:translateX(-50%)}
+.cp .mk{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--bg);font:600 11.5px var(--mono)}
+.cp .ins-key .sw.pk{background:#0072B2}
+.cp .ins-peaks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px;max-width:1120px}
+.cp .ins-peak{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);background:var(--bg);padding:12px 14px;box-shadow:4px 4px 0 var(--line)}
+.cp .ins-peak .mk{flex:none;margin-top:2px}
+.cp .ins-peak h3{margin:0;font-size:16px}
+.cp .ins-peak .meta{margin:2px 0 0}
+.cp .ins-peak ol{list-style:none;margin:8px 0 0;padding:0}
+.cp .ins-peak li{padding:6px 0 0;border:0;font-size:14.5px;line-height:1.35}
+.cp .ins-peak li a{color:var(--ink);font-weight:600;text-decoration:none}
+.cp .ins-peak li a:hover{text-decoration:underline}
+@media (max-width:640px){.cp .ins-cmp li{grid-template-columns:minmax(70px,90px) minmax(0,1fr) 50px;row-gap:0}
+  .cp .ins-cmp .ch{grid-column:2 / -1;font-size:12px}
+  .cp .ins-two{grid-template-columns:1fr}
   .cp .ins-bars li,.cp .ins-th li{grid-template-columns:minmax(76px,110px) minmax(0,1fr) 44px 50px;gap:7px}
   .cp .ins-days{height:150px}}
 """
