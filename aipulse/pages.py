@@ -325,7 +325,7 @@ LOCAL_TIME = ('<script>document.querySelectorAll("time[datetime]").forEach(t => 
 
 # Anonymous visit counts (GoatCounter, chosen 12 Oct 2026; terms.PLATFORM): no cookie, no stored IP address or
 # ID. Only the page's path is sent, never its query or the #codes in sign-up links. Empty = no counter.
-GOATCOUNTER = ""
+GOATCOUNTER = "ai-pulse"
 
 
 def counter() -> str:
