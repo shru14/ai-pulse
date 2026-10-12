@@ -526,9 +526,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .ex{--ctx:color-mix(in srgb,var(--hue) 38%,var(--bg));--ctx2:color-mix(in srgb,var(--hue) 18%,var(--bg));--focus:var(--hue);margin-top:52px;padding-top:12px;border-top:3px solid var(--hue);scroll-margin-top:calc(var(--bar-h,64px) + 12px)}
 .cp .ex-k{display:flex;align-items:baseline;gap:12px;margin:0;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .cp .ex-k b{background:var(--hue);border:1px solid var(--line);color:#141925;padding:0 6px;font-weight:600}
-.cp .mi .ex h2{border:0;padding:0;margin:10px 0 16px;max-width:44ch;font:400 clamp(20px,2.2vw,26px)/1.3 var(--body);text-transform:none;letter-spacing:0}
-.cp .ins-say{font-size:16px;line-height:1.5;margin:-8px 0 18px;max-width:760px;color:var(--muted)}
-.cp .ins-note{font-size:13px;color:var(--muted);margin:8px 0 0;max-width:900px}
+.cp .mi .ex h2{border:0;padding:0;margin:10px 0 16px;font:400 clamp(20px,2.2vw,26px)/1.3 var(--body);text-transform:none;letter-spacing:0}
+.cp .ins-say{font-size:16px;line-height:1.5;margin:-8px 0 18px;color:var(--muted)}
+.cp .ins-note{font-size:13px;color:var(--muted);margin:8px 0 0}
 .cp .ex > .ins-note:last-child{margin-top:14px;padding-top:8px;border-top:1px solid var(--rule);max-width:none}
 .cp .call{position:absolute;top:50%;z-index:1;transform:translateY(-50%);margin-left:10px;background:var(--mark);color:#000;border:2px solid #000;font:600 11.5px/1.25 var(--mono);padding:2px 6px;white-space:nowrap}
 .cp .call.in{transform:translate(-100%,-50%);margin-left:-6px}
@@ -630,7 +630,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-riv .ins-spark{height:22px}
 .cp .ins-riv .ins-spark i.now{--c:#E69F00}
 .cp .ins-riv .ch{text-align:left}
-.cp .ins-opens{font-size:14px;margin:12px 0 0;max-width:820px}
+.cp .ins-opens{font-size:14px;margin:12px 0 0}
 /* legal and risk: a shaded table */
 .cp .ins-risk{max-width:620px}
 .cp .ins-risk td,.cp .ins-risk th{padding:6px 10px 6px 0}
