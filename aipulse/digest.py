@@ -39,7 +39,7 @@ KIND = {
     "event": ("Event", "#e0f7fa", "#00737a"),
 }
 STREAM_TAG = {"releases": "Release", "research": "Research paper", "regulation": "Tracker", "policy": "Policy",
-              "infra": "Infra & climate"}
+              "infra": "Infra"}
 # What each stream holds, in a line under its heading, and its colour on the site.
 SECTION_NOTE = {
     "releases": "New models, products and open-source launches.",
@@ -273,7 +273,7 @@ def story_tags(c: dict, in_stream: bool = False) -> list[str]:
               for j in c.get("jurisdictions") or []]
     # worked out with the current rules (classify.tags_for), so the email matches the site after its next re-sort
     tags = [t for t in classify.tags_for(c.get("title") or "", c.get("summary") or "", source=c.get("source") or "") if t not in ("Research", "Study Report")]
-    # Infra & climate right after the places, so a Research or Policy story about it shows the tag
+    # Infra right after the places, so a Research or Policy story about it shows the tag
     infra = [classify.INFRA_TAG] if classify.INFRA_TAG in tags and not (in_stream and c.get("category") == "infra") else []
     ordered = (places + [t for t in tags if t in brief._PLACE_TAGS] + infra
                + [t for t in tags if t not in brief._PLACE_TAGS and t != classify.INFRA_TAG])
@@ -469,7 +469,7 @@ def _new_stream(day: date, streams: list[str]) -> str:
     words), with its button (see _brief). Nothing for a reader who has it."""
     if day > NEW_STREAM_UNTIL or "infra" in streams:
         return ""
-    return ("New on AI Pulse: Infra & climate section, AI's data centres and the power, water and land they "
+    return ("New on AI Pulse: Infra section, AI's data centres and the power, water and land they "
             "draw on. Add it to your feed by clicking on following button")
 
 
@@ -699,7 +699,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     dossier_text, dossier_html = _dossier(dossier)  # Sundays, for a reader with questions: their weekly dossier
     # the new stream's note carries a highlighted button to the sign-up form (`change`: the reader's own link,
     # which opens it with their email and choices filled in), so readers see their choices can be changed
-    go, go_words = change[0], "Add Infra & climate"
+    go, go_words = change[0], "Add Infra"
     news_button = (f'<a href="{escape(go)}" style="display:inline-block;margin-top:8px;background:{NAVY};color:#ffffff;'
                    f'font-size:13px;font-weight:bold;text-decoration:none;padding:7px 12px;border-radius:5px">'
                    f'{escape(go_words)} →</a>' if news and go else "")

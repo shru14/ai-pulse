@@ -376,7 +376,7 @@ SOURCES = [
      "max_age_days": 60, "no_releases": True},  # a few long posts a year
     {"name": "METR", "url": "https://metr.org/feed.xml", "category": "news", "ai_only": True, "no_releases": True},
 
-    # --- Infra & climate: AI's data centres and what they draw on (power, water, land, emissions) ---
+    # --- Infra: AI's data centres and what they draw on (power, water, land, emissions) ---
     # Checked 3 Oct 2026: each robots.txt allows reading and each publishes this feed; articles are free to read.
     # Out: IRENA, Japan's METI, BNamericas, Dialogue Earth and the IEA (robots.txt disallows; the IEA's, from GitHub's
 # servers, 6 Oct 2026); WRI, Ireland's CSO, AEMO and
@@ -385,13 +385,8 @@ SOURCES = [
     # Data-centre trade news, by region
     {"name": "Data Center Knowledge", "url": "https://www.datacenterknowledge.com/rss.xml", "category": "infra", "infra_filter": True},
     {"name": "W.Media", "url": "https://w.media/feed/", "category": "infra", "infra_filter": True, "paged": True},  # Asia-Pacific
-    # Energy, climate and environment newsrooms, worldwide
-    {"name": "Carbon Brief", "url": "https://www.carbonbrief.org/feed/", "category": "infra", "infra_filter": True, "paged": True},
-    {"name": "Climate Home News", "url": "https://www.climatechangenews.com/feed/", "category": "infra", "infra_filter": True,
-     "paged": True},
-    {"name": "Mongabay", "url": "https://news.mongabay.com/feed/", "category": "infra", "infra_filter": True, "paged": True},
-    {"name": "The Conversation (Energy)", "url": "https://theconversation.com/global/topics/energy-72/articles.atom",
-     "category": "infra", "infra_filter": True},
+    # Energy newsrooms. Out since 12 Oct 2026: Carbon Brief, Climate Home News, Mongabay and The Conversation (Energy),
+    # climate newsrooms that gave the stream almost nothing (it is Infra now, no longer Infra & climate).
     {"name": "Canary Media", "url": "https://www.canarymedia.com/rss", "category": "infra", "infra_filter": True},  # North America
     # Added 7 Oct 2026 for history back to 2023: each robots.txt allows reading; POWER's terms and UCS's pages say nothing
     # against feeds or automated reading. Out: Grist (RSS for private use only), Inside Climate News (no automatic
@@ -664,7 +659,7 @@ SOURCES += [
      "pause": 3.5,
      "professors": [n for n, _, _ in EXPERTS]},
     # Papers on AI's own footprint (its energy, carbon, water and power), by anyone (classify.ai_footprint_paper), tagged
-    # Infra & climate. Added 7 Oct 2026 so the stream's climate side has research behind it; arXiv's metadata is CC0.
+    # Infra. Added 7 Oct 2026 so the stream's climate side has research behind it; arXiv's metadata is CC0.
     {"name": "arXiv", "label": "arXiv new papers: AI's footprint", "format": "arxiv_rss",
      "url": arxiv_rss_url(["cs.LG", "cs.AI", "cs.CL", "cs.DC", "cs.AR", "cs.PF", "cs.CY"]), "category": "research",
      "ai_only": True, "max_age_days": 14, "pause": 3.5, "footprint": True},

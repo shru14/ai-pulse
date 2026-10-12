@@ -235,7 +235,7 @@ const KIND = {news: ["News", "#e8eaf6", "#3949ab"], incident: ["AI-incident", "#
   analysis: ["Opinion & analysis", "#fef7e0", "#8a5a00"], blog: ["Company blog", "#e8f0fe", "#1967d2"],
   tutorial: ["Tutorial", "#f3e8fd", "#7b1fa2"], event: ["Event", "#e0f7fa", "#00737a"]};
 const STREAM = {tool: ["Release", "#0f9d76"], research: ["Research paper", "#9153d9"], regulation: ["Tracker", "#d6457e"],
-  policy: ["Policy", "#d9822b"], infra: ["Infra & climate", "#5c940d"]};
+  policy: ["Policy", "#d9822b"], infra: ["Infra", "#5c940d"]};
 const ACTION = {proposal: "Proposal", law: "Law adopted", body: "AI body", standard: "Standard"};
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[ch]));
 const short = (s, n) => !s || s.length <= n ? (s || "") : s.slice(0, n - 3).replace(/\s+\S*$/, "") + "…";

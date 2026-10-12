@@ -22,7 +22,7 @@ STORIES_JS = r"""<script>
   const ul = document.getElementById("word-stories"), more = document.getElementById("more-stories");
   const re = new RegExp("(?<!\\w)(?:" + JSON.parse(ul.dataset.match).join("|") + ")(?![\\w])", ul.dataset.case ? "" : "i");
   const NAMES = {tool: "Releases", news: "Industry", research: "Research", regulation: "Regulation tracker",
-                 policy: "Policy", infra: "Infra & climate"};
+                 policy: "Policy", infra: "Infra"};
   const day = d => new Date(d.slice(0, 10) + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric", timeZone: "UTC"});
   const note = text => { const li = document.createElement("li"); li.className = "meta"; li.textContent = text; ul.replaceChildren(li); };
   let list = [], shown = 0;

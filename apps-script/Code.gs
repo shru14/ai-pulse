@@ -35,7 +35,7 @@
 const SITE = "https://projectaipulse.com/";
 const SENDER = "projectaipulse@gmail.com";
 const STREAMS = {releases: "Releases", news: "Industry", research: "Research", regulation: "Regulation tracker",
-                 policy: "Policy", infra: "Infra & climate"};
+                 policy: "Policy", infra: "Infra"};
 const MAX_SUBSCRIBERS = 400;        // Gmail sends to about 500 recipients a day
 const MAX_CONFIRMATIONS_A_DAY = 80; // Apps Script may send 100 emails a day from a free account
 const MAX_PER_ADDRESS_A_DAY = 3;    // nobody can flood an inbox with confirm links

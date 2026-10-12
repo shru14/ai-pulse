@@ -353,8 +353,8 @@ SOURCE_HOME = {s["name"]: jurisdictions.JURISDICTIONS[s["jurisdictions"][0]][0] 
                if s.get("jurisdictions") and (s.get("government") or s["category"] == "regulation")}
 
 
-# --- Infra & climate: AI's physical side (data centres and what they draw on) ---
-INFRA_TAG = "Infra & climate"
+# --- Infra: AI's physical side (data centres and what they draw on) ---
+INFRA_TAG = "Infra"
 # Data centres themselves: named anywhere in a story, they make it one about AI's infrastructure.
 _DC = re.compile(r"data[- ]?cent(?:er|re)s?|\bhyperscalers?\b|\bhyperscale (?:data|campus|facilit)|server farms?|"
                  r"\bAI campus(?:es)?|gigafactor\w* of compute", re.I)

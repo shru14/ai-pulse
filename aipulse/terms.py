@@ -159,16 +159,10 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "simonwillison.net": ("no terms", "https://simonwillison.net/about/", "Offers its Atom feeds for anyone to follow"),
     "lilianweng.github.io": ("no terms", "", "No terms page linked from the site"),
     "metr.org": ("no terms", "", "No terms page linked from the site"),
-    # --- Infra & climate ---
+    # --- Infra ---
     "www.datacenterknowledge.com": ("terms read", "https://www.informatechtarget.com/terms-and-conditions",
                                     "Nothing on feeds, robots or personal use"),
     "w.media": ("terms read", "https://w.media/terms-conditions/", "Nothing on feeds, robots or personal use"),
-    "www.carbonbrief.org": ("licence", "https://creativecommons.org/licenses/by-nc-nd/4.0/",
-                            "Creative Commons Attribution-NonCommercial-NoDerivatives 4.0"),
-    "www.climatechangenews.com": ("terms read", "https://www.climatechangenews.com/terms-of-use/",
-                                  "Nothing on feeds, robots or personal use"),
-    "news.mongabay.com": ("licence", "https://www.mongabay.com/terms",
-                          "'You may republish Mongabay content in your publication at no cost'"),
     "theconversation.com": ("licence", "https://theconversation.com/global/republishing-guidelines",
                             "Creative Commons Attribution/No derivatives"),
     "www.canarymedia.com": ("no terms", "", "No terms page linked from the site"),
