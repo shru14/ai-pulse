@@ -432,8 +432,8 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-link:hover .ins-go{text-decoration:underline}
 /* the monthly report look (issue and insights pages): ink-black heads, grey context with one blue focus, yellow tags,
    square edges. Dark mode keeps the same jobs with its own greys and the lighter blue. */
-.cp .mi{--ctx:#C4C4C4;--ctx2:#E2E2E2;--focus:#0072B2;--mark:#F0E442;--rule:color-mix(in srgb,var(--ink) 22%,transparent)}
-:root[data-theme="dark"] .cp .mi{--ctx:#4A505C;--ctx2:#2A2F38;--focus:#56B4E9}
+.cp .mi{--ctx:#AADAF4;--ctx2:#D9ECF6;--focus:#0072B2;--mark:#F0E442;--rule:color-mix(in srgb,var(--ink) 22%,transparent)}
+:root[data-theme="dark"] .cp .mi{--ctx:#2D5670;--ctx2:#1C3240;--focus:#56B4E9}
 .cp .mi .sheet > h2{display:flex;align-items:center;gap:12px;border-top:2px solid var(--line);padding-top:12px;font:400 clamp(21px,2.3vw,27px)/1.15 var(--display);text-transform:none;letter-spacing:0}
 .cp .mi .sheet > h2::before{content:counter(sheet);display:inline-grid;place-items:center;flex:none;width:30px;height:30px;margin:0;background:var(--ink);color:var(--bg);font:400 15px var(--display)}
 .cp .mi .contents li::before{color:var(--muted)}
@@ -445,24 +445,47 @@ a.subscribe-btn{text-decoration:none}
   .cp .mi .chapter .yr::before{top:-10px;width:16px;height:16px;border:2px solid var(--line);border-radius:0;background:var(--focus)}
   .cp .mi .chapter.wk .yr span{font-size:22px}}
 /* insights: the cover, the key findings, and each exhibit headed by its finding */
-.cp .ins-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-top:8px solid var(--line);border-bottom:2px solid var(--line);padding:14px 0 18px;margin-top:8px}
+.cp .ins-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-top:4px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0 18px;margin-top:8px}
 .cp .ins-head .kind{font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .cp .ins-head h1{margin:6px 0 0;font-size:clamp(30px,4.6vw,54px);line-height:1.02}
-.cp .ins-head .no{font:400 clamp(44px,6vw,68px)/1 var(--display);color:transparent;-webkit-text-stroke:2px var(--ink)}
+.cp .ins-side{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.cp .ins-head .no{font:400 clamp(44px,6vw,68px)/1 var(--display);color:transparent;-webkit-text-stroke:1.5px var(--ink)}
+.cp .ins-pdf{font:600 12px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--bg);border:1px solid var(--ink);padding:6px 10px;cursor:pointer}
+.cp .ins-pdf:hover,.cp .ins-pdf:focus-visible{background:var(--mark);color:#000}
+/* funding pace: a column a month, the biggest round its darker top */
+.cp .ins-pace{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;align-items:end;height:200px;max-width:900px;border-bottom:1px solid var(--line)}
+.cp .ins-pace li{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:0;border:0}
+.cp .ins-pace .col{display:flex;flex-direction:column;justify-content:flex-start;background:var(--ctx);min-height:2px}
+.cp .ins-pace .col i{display:block;background:color-mix(in srgb,var(--focus) 55%,var(--ctx))}
+.cp .ins-pace li.now .col{background:color-mix(in srgb,var(--focus) 45%,var(--bg))}
+.cp .ins-pace li.now .col i{background:var(--focus)}
+.cp .ins-pace .amt{font:600 10.5px var(--mono);color:var(--muted);text-align:center;margin-bottom:3px;white-space:nowrap}
+.cp .ins-pace li.now .amt{color:var(--ink)}
+.cp .ins-pace .mo{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font:600 11px var(--mono);color:var(--muted)}
+.cp .ins-pace li.now .mo{color:var(--ink)}
+.cp .ins-pace + .ins-key{margin-top:30px}
+.cp .ins-key .sw.rest{background:var(--ctx)}
+.cp .ins-key .sw.big{background:var(--focus)}
+/* IPO watch: the year's IPO talk, then the month's headlines */
+.cp .ins-ipo{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+.cp .ins-ipo .ins-spark{width:220px;height:30px;border-bottom:1px solid var(--line)}
+.cp .ins-ipot{max-width:900px}
+.cp .ins-ipot td a{font-weight:600}
+.cp .ins-ipot td.when{font:600 12px var(--mono);color:var(--muted)}
 .cp .ins-kf{margin-top:24px}
 .cp .ins-kf .kind{display:block;margin-bottom:8px;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .cp .kf{width:100%;border-collapse:collapse}
 .cp .kf td{border-top:1px solid var(--rule);padding:10px 12px 10px 0;vertical-align:top;font-size:16.5px;line-height:1.4}
-.cp .kf tr:first-child td{border-top:2px solid var(--line)}
-.cp .kf tr:last-child td{border-bottom:2px solid var(--line)}
+.cp .kf tr:first-child td{border-top:1px solid var(--line)}
+.cp .kf tr:last-child td{border-bottom:1px solid var(--line)}
 .cp .kf .k{width:40px}
-.cp .kn{display:inline-grid;place-items:center;width:26px;height:26px;background:var(--ink);color:var(--bg);font:400 14px var(--display)}
+.cp .kn{display:inline-grid;place-items:center;width:24px;height:24px;border:1px solid var(--ink);font:600 12px var(--mono)}
 .cp .kf .x{white-space:nowrap;text-align:right;padding-right:0}
 .cp .kf .x a{font:600 12px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
-.cp .ex{margin-top:52px;padding-top:12px;border-top:2px solid var(--line);scroll-margin-top:calc(var(--bar-h,64px) + 12px)}
+.cp .ex{margin-top:52px;padding-top:12px;border-top:1px solid var(--line);scroll-margin-top:calc(var(--bar-h,64px) + 12px)}
 .cp .ex-k{display:flex;align-items:baseline;gap:12px;margin:0;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.cp .ex-k b{background:var(--ink);color:var(--bg);padding:1px 7px;font-weight:600}
-.cp .mi .ex h2{border:0;padding:0;margin:10px 0 16px;max-width:38ch;font:400 clamp(21px,2.4vw,28px)/1.18 var(--display);text-transform:none;letter-spacing:0}
+.cp .ex-k b{border:1px solid var(--ink);color:var(--ink);padding:0 6px;font-weight:600}
+.cp .mi .ex h2{border:0;padding:0;margin:10px 0 16px;max-width:44ch;font:400 clamp(20px,2.2vw,26px)/1.3 var(--body);text-transform:none;letter-spacing:0}
 .cp .ins-say{font-size:16px;line-height:1.5;margin:-8px 0 18px;max-width:760px;color:var(--muted)}
 .cp .ins-note{font-size:13px;color:var(--muted);margin:8px 0 0;max-width:900px}
 .cp .ex > .ins-note:last-child{margin-top:14px;padding-top:8px;border-top:1px solid var(--rule);max-width:none}
@@ -481,7 +504,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-bars .tr{position:relative;height:18px}
 .cp .ins-bars .tr i{display:block;height:100%;background:var(--c,var(--ctx));min-width:3px}
 .cp .ins-bars li.on .tr i{background:var(--focus)}
-.cp .ins-bars .v{font:400 19px/1 var(--display);text-align:right}
+.cp .ins-bars .v{font:600 17px/1 var(--body);text-align:right}
 .cp .ins-bars .ch{font:600 12.5px var(--mono);color:var(--muted);text-align:right;white-space:nowrap}
 .cp .ins-bars li.on .ch{color:var(--ink)}
 .cp .ins-bars li:hover .nm{text-decoration:underline}
@@ -500,7 +523,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-db .us{width:14px;height:14px;margin:-7px 0 0 -7px;border:2px solid var(--ink);background:var(--bg)}
 .cp .ins-db .now{width:18px;height:18px;margin:-9px 0 0 -9px;background:var(--c);border:2px solid var(--line)}
 .cp .ins-db .call{margin-left:16px}
-.cp .ins-db .v{font:400 20px/1 var(--display);text-align:right}
+.cp .ins-db .v{font:600 18px/1 var(--body);text-align:right}
 .cp .ins-db .ch{font:600 12.5px var(--mono);color:var(--muted)}
 .cp .ins-db .ch small{display:block;font-size:11.5px}
 .cp .ins-db li.on .ch{color:var(--ink)}
@@ -530,19 +553,20 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-drv li:last-child{padding:0}
 .cp .ins-drv li a{color:var(--ink);font-weight:600;text-decoration:none}
 .cp .ins-drv li a:hover{text-decoration:underline}
+.cp .ins-drv .n,.cp .ins-deals .n{font:600 17px var(--body)}
 .cp .ins-drv .n small{display:block;font:600 11.5px var(--mono);color:var(--muted)}
 /* money moves: three figures, rounds by theme, valuations (a table), deals by size */
 .cp .ins-score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-width:900px;margin:0 0 24px;border-top:2px solid var(--line);border-bottom:2px solid var(--line)}
 .cp .ins-score div{padding:10px 14px 12px 0}
 .cp .ins-score div + div{border-left:1px solid var(--rule);padding-left:14px}
-.cp .ins-score b{display:block;font:400 clamp(24px,3vw,32px)/1.05 var(--display)}
+.cp .ins-score b{display:block;font:400 clamp(26px,3vw,34px)/1.05 var(--body)}
 .cp .ins-score span{font-size:13.5px;color:var(--muted)}
 .cp .ins-score a{color:var(--ink);font-weight:600}
 .cp .ins-fund li{grid-template-columns:minmax(80px,140px) minmax(0,1fr) 30px 58px}
 .cp .ins-val{margin-top:0}
 .cp .ins-val td{padding:7px 10px 7px 0;vertical-align:middle}
 .cp .ins-val .ch{font:600 12px var(--mono);color:var(--muted);white-space:nowrap}
-.cp .ins-val .n{font:400 18px var(--display)}
+.cp .ins-val .n{font:600 17px var(--body)}
 .cp .ins-money + .ins-h{margin-top:26px}
 .cp .ins-deals{max-width:900px}
 .cp .ins-deals li{grid-template-columns:minmax(150px,250px) minmax(0,1fr) 72px}
@@ -571,7 +595,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-risk td,.cp .ins-risk th{padding:6px 10px 6px 0}
 .cp .ins-risk th:not(:first-child),.cp .ins-risk td.hx{text-align:center;width:90px}
 .cp .ins-risk td:first-child{font-weight:600}
-.cp .ins-risk td.hx{font:400 18px var(--display);background:color-mix(in srgb,#D55E00 var(--a),transparent)}
+.cp .ins-risk td.hx{font:600 17px var(--body);background:color-mix(in srgb,#D55E00 var(--a),transparent)}
 .cp .ins-risk td.z{color:var(--muted);background:none;font:400 14px var(--body)}
 /* themes rising and fading: was → now */
 .cp .ins-move{list-style:none;margin:0;padding:0}
@@ -580,7 +604,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-move .nm{font-weight:600;font-size:15px}
 .cp .ins-move .was{font:600 13px var(--mono);color:var(--muted);text-align:right}
 .cp .ins-move .to{color:var(--muted);text-align:center}
-.cp .ins-move .v{font:400 19px/1 var(--display);text-align:right}
+.cp .ins-move .v{font:600 17px/1 var(--body);text-align:right}
 .cp .ins-move .ar{font-size:12px;text-align:center}
 .cp .ins-move .ar.up{color:var(--c-tool)}
 .cp .ins-move .ar.dn{color:var(--c-reg)}
@@ -588,9 +612,16 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .cp .ins-tiles li{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:2px solid var(--line);background:color-mix(in srgb,#56B4E9 var(--a),#fff);color:#141925}
 .cp .ins-tiles .nm{font-weight:600;font-size:14px;line-height:1.2}
-.cp .ins-tiles b{font:400 24px/1.1 var(--display)}
+.cp .ins-tiles b{font:400 26px/1.1 var(--body)}
 .cp .ins-tiles .ch{font:600 12px var(--mono)}
 @media (max-width:1000px){.cp .ins-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media print{
+  body:has(.ins-head) header.top,body:has(.ins-head) footer,body:has(.ins-head) .back,.cp .ins-pdf,.cp .mi .issue-nav{display:none!important}
+  body:has(.ins-head){background:#fff!important;color:#000}
+  .cp .mi,:root[data-theme] .cp .mi{--bg:#fff;--ink:#000;--muted:#3B3B3B;--line:#000;--ctx:#AADAF4;--ctx2:#D9ECF6;--focus:#0072B2}
+  .cp .ex{break-inside:avoid;page-break-inside:avoid;margin-top:28px}
+  .cp .ins-kf{break-after:page}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (max-width:700px){
   .cp .ins-head .no{display:none}
   .cp .kf td{font-size:15px}

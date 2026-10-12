@@ -40,6 +40,11 @@ REGULATOR = re.compile(r"\b(?:FTC|DOJ|SEC|FCC|CMA|ICO|CNIL|European Commission|E
                        r"bans?|banned|charges?|subpoena\w*|warns?)\b|\b(?:probe|investigation|inquiry) (?:into|of)\b|"
                        r"\bfined\b|\bto investigate (?:if|whether)\b|\bunder investigation\b", re.I)
 ENOUGH = 10     # US vs China: a split shown only with this many from the two
+# IPO watch: headlines about a listing (the "IPO" tag alone is too loose: it rides on any story about a big lab)
+IPO = re.compile(r"\bIPOs?\b|\bgo(?:es|ing)? public\b|\bpublic listing\b|\bfiles? (?:confidentially )?(?:for|to) "
+                 r"(?:an? )?(?:IPO|list)|\bS-1\b|\bstock market debut\b", re.I)
+IPO_MIN = 3     # IPO watch shown only with this many headlines in the month
+IPO_SHOWN = 5   # ...and lists the ones most outlets carried
 HF_UPLOAD = re.compile(r"(.+?) publishes .+ on Hugging Face$")  # feeds.py's open-weight uploads
 # Where the labs Hugging Face uploads name are based, beyond the news tags' companies (classify.COMPANY_HOME)
 LAB_HOME = {"Qwen": "China", "Ant Group": "China", "inclusionAI": "China", "Zhipu": "China", "Z.ai": "China",
@@ -210,6 +215,29 @@ def exposure(mine: list[dict]) -> list[tuple]:
     return [(co, k["courts"], k["regulators"], k["incidents"]) for co, k in rows if sum(k.values()) >= 2][:EXPOSED]
 
 
+def pace(month: str, ledger: dict[str, list[dict]]) -> list[tuple]:
+    """Funding pace: for this month and the 11 before (those with rounds), the rounds, the money disclosed, and the
+    biggest round (its amount and company), oldest first."""
+    out = []
+    for m in (_prev(month, k) for k in range(YEAR - 1, -1, -1)):
+        rs = [r for r in ledger.get(m, []) if r["kind"] == "round" and r["amount"]]
+        if rs:
+            b = max(rs, key=lambda r: r["amount"])
+            out.append((m, len(rs), sum(r["amount"] for r in rs), b["amount"], b["company"]))
+    return out
+
+
+def _ipo(cards: list[dict]) -> list[dict]:
+    return [c for c in cards if c["category"] in ("news", "tool", "policy", "infra") and IPO.search(c.get("title") or "")]
+
+
+def ipos(month: str, by_month: dict[str, list[dict]]) -> dict:
+    """IPO watch: the month's headlines about listings (most outlets first), and how many there were each month over
+    the year to this one."""
+    trend = [(m, len(_ipo(by_month.get(m, [])))) for m in (_prev(month, k) for k in range(YEAR - 1, -1, -1))]
+    return {"trend": trend, "stories": [monthly._story(c) for c in monthly.ranked(_ipo(by_month.get(month, [])))][:IPO_SHOWN]}
+
+
 def numbers(month: str, by_month: dict[str, list[dict]], ledger: dict[str, list[dict]] | None = None) -> dict:
     """The month's counts, each with last month's beside it. `ledger` is each month's money stories (money.month)."""
     if ledger is None:
@@ -235,7 +263,8 @@ def numbers(month: str, by_month: dict[str, list[dict]], ledger: dict[str, list[
             "companies": [(t, n, comp0[t]) for t, n in comp.most_common(TOP)],
             "places": [(t, n, place0[t]) for t, n in place.most_common(TOP)], "nplaces": len(place),
             "rise": rise, "fade": fade, "money": funds(month, ledger), "opens": Counter(x["lab"] for x in open_models(mine)),
-            "rivals": rivals(month, by_month), "exposure": exposure(mine)}
+            "rivals": rivals(month, by_month), "exposure": exposure(mine), "pace": pace(month, ledger),
+            "ipo": ipos(month, by_month)}
 
 
 # ---------- The page ----------
@@ -349,6 +378,45 @@ PEAKS_JS = r"""<script>
       li.append(a, el("div", "meta", NAMES[e.stream] + " · " + e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : "")));
       return li; }));
   })).catch(() => box.querySelectorAll("ol").forEach(o => o.replaceChildren(el("li", "meta", "Couldn't load the stories. Try reloading the page."))));
+})();
+</script>"""
+
+
+def _pace(rows: list[tuple]) -> str:
+    """A column a month: the money disclosed, the biggest round its darker top, the amount above, the month below."""
+    top = max(r[2] for r in rows) or 1
+    cols = "".join(
+        f'<li class="{"now" if k == len(rows) - 1 else ""}" title="{monthly.name(m)}: {n} rounds, {money.usd(v)}; '
+        f'biggest {escape(co)}, {money.usd(b)}"><span class="amt">{money.usd(v)}</span>'
+        f'<span class="col" style="height:{max(v / top * 100, 1):.1f}%"><i style="height:{b / v * 100:.1f}%"></i></span>'
+        f'<span class="mo">{date.fromisoformat(m + "-01").strftime("%b")}</span></li>'
+        for k, (m, n, v, b, co) in enumerate(rows))
+    return (f'<ol class="ins-pace" style="--n:{len(rows)}">{cols}</ol>'
+            '<p class="ins-key"><span><i class="sw rest"></i>Other rounds</span><span><i class="sw big"></i>The month\'s biggest round</span></p>')
+
+
+def _ipos(x: dict, src: str) -> str:
+    """IPO talk over the year as small columns, then the month's headlines (loaded in the browser)."""
+    top = max(n for _, n in x["trend"]) or 1
+    cols = "".join(f'<i class="{"now" if k == len(x["trend"]) - 1 else ""}" style="height:{max(n / top * 100, 3):.0f}%" '
+                   f'title="{monthly.name(m)}: {n}"></i>' for k, (m, n) in enumerate(x["trend"]))
+    return (f'<div class="ins-ipo"><span class="ins-spark" style="--c:var(--focus)">{cols}</span>'
+            f'<span class="meta">IPO headlines a month, past {len(x["trend"])} months</span></div>'
+            f'<table class="mt ins-ipot" id="ipo-rows" data-src="{src}"><tbody><tr><td class="meta">Loading…</td></tr></tbody></table>'
+            + IPO_JS)
+
+
+IPO_JS = r"""<script>
+(() => {
+  const box = document.getElementById("ipo-rows");
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
+  const day = d => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", {day: "numeric", month: "short", timeZone: "UTC"});
+  fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
+    box.tBodies[0].replaceChildren(...d.ipo.map(e => {
+      const tr = el("tr"), a = el("a", null, e.title), td = el("td"); a.href = e.url; a.rel = "noopener";
+      td.append(a, el("div", "meta", e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : "")));
+      tr.append(td, el("td", "when", day(e.date))); return tr; }));
+  }).catch(() => box.tBodies[0].replaceChildren(el("tr", "meta", "Couldn't load the headlines. Try reloading the page.")));
 })();
 </script>"""
 
@@ -502,6 +570,29 @@ def body(month: str, x: dict) -> str:
             say.append(f"The biggest deal: {d['company']} {'buying' if d['kind'] == 'acquisition' else 'with'} "
                        f"{d['partner'] or 'a partner'}, {money.usd(d['amount'])}{' (reported)' if d['reported'] else ''}.")
         sections.append(("money", "Money moves", " ".join(say), _money(f, month)))
+    # funding pace: is the money speeding up, or is it one big round?
+    pc = x["pace"]
+    if len(pc) >= 3 and pc[-1][0] == month:
+        m, n, v, b, co = pc[-1]
+        usual = median([r[2] for r in pc[:-1]])
+        cmp = ("more than" if v > usual * 1.1 else "less than" if v < usual * .9 else "about the same as")
+        say = (f"{monthly.name(month).split()[0]}'s {money.usd(v)} in funding was {cmp} a typical month ({money.usd(usual)}). "
+               f"The biggest round, {co} at {money.usd(b)}, was {b / v:.0%} of it.")
+        sections.append(("pace", "Funding pace", say, _pace(pc)
+                         + '<p class="ins-note">How to read: one column a month, its height the money disclosed in funding '
+                           'rounds; the darker top is that month\'s single biggest round. A typical month is the median of '
+                           'the months before.</p>'))
+    # IPO watch
+    ip = x["ipo"]
+    n = ip["trend"][-1][1]
+    if n >= IPO_MIN:
+        before = [k for _, k in ip["trend"][:-1]]
+        usual = sum(before) / len(before) if before else 0
+        say = (f"IPO talk: {n} headlines about listings, against about {round(usual)} a month."
+               if usual else f"IPO talk: {n} headlines about listings.")
+        sections.append(("ipo", "IPO watch", say, _ipos(ip, f"/{path(month)}insights.json")
+                         + '<p class="ins-note">How to read: headlines that name an IPO, a listing or a filing to go public; '
+                           'the most-carried first. Small columns: how many such headlines a month.</p>'))
     # US vs China
     if x["rivals"]:
         def line(what, us, cn, trend):
@@ -575,12 +666,12 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         x = numbers(m, by_month, ledger)
         p = path(m)
         (out / p).mkdir(parents=True, exist_ok=True)
-        (out / p / "insights.json").write_text(json.dumps({"peaks": x["peaks"]}, separators=(",", ":"), ensure_ascii=False),
+        (out / p / "insights.json").write_text(json.dumps({"peaks": x["peaks"], "ipo": x["ipo"]["stories"]}, separators=(",", ":"), ensure_ascii=False),
                                                encoding="utf-8")
         prev = f'<a href="/{path(issues[i - 1])}">← {monthly.name(issues[i - 1])}</a>' if i else "<span></span>"
         nxt = f'<a href="/{path(issues[i + 1])}">{monthly.name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
         html = (f'<div class="mi">\n<div class="ins-head"><div><span class="kind">AI Pulse · Monthly report · Insights</span>'
-                f'<h1>{monthly.name(m)} in numbers</h1></div><span class="no">{monthly.number(m):02d}</span></div>\n{body(m, x)}'
+                f'<h1>{monthly.name(m)} in numbers</h1></div><div class="ins-side"><span class="no">{monthly.number(m):02d}</span><button class="ins-pdf" type="button" onclick="window.print()">Save as PDF</button></div></div>\n{body(m, x)}'
                 f'<nav class="issue-nav">{prev}<a href="/{monthly.path(m)}">Back to the issue</a>{nxt}</nav>\n</div>')
         what = (f"What the AI news of {monthly.name(m)} adds up to: how it compares with the months before, what made the "
                 "busiest days, and the companies, themes and places in the news.")
