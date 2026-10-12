@@ -53,7 +53,7 @@ def robots_txt() -> str:
     return f"{blocked}User-agent: *\nDisallow: /dossier/\n\nSitemap: {rss.SITE}sitemap.xml\n"
 
 
-UNDATED = ("standards/", *map(kind_pages.path, kind_pages.KINDS))  # pages without a date of their own: they change only when an entry is added
+UNDATED = ("standards/", *kind_pages.paths())  # pages without a date of their own: they change only when an entry is added
 
 
 def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
@@ -390,7 +390,7 @@ def build(conn, out: str | Path) -> int:
     from . import countries
     places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
     places += countries.standards_page(conn, cards, out)  # every AI standard on the tracker (standards/)
-    places += kind_pages.build(conn, cards, out)  # Industry's kinds of story, a page each (industry/<kind>/)
+    places += kind_pages.build(conn, cards, out)  # each stream's stories split into pages (industry/opinion/, releases/openai/, ...)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
     from . import topics
