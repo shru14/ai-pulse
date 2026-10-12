@@ -38,7 +38,7 @@ STORIES_JS = r"""<script>
   const note = text => { const li = document.createElement("li"); li.className = "meta"; li.textContent = text; ul.replaceChildren(li); };
   let list = [], shown = 0;
   // A tile per category (company blogs: per company, with its logo; the rest: per topic), each previewing its
-  // newest story; a tile shows only its category's stories
+  // newest story; a tile shows only its category's stories, and clicked again, all of them again
   const pick = name => {
     list = name ? all.filter(c => groups(c).includes(name)) : all;
     tiles.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === name));
@@ -61,20 +61,19 @@ STORIES_JS = r"""<script>
       if(firms) {
         const mark = document.createElement("span");
         mark.className = "logo"; mark.setAttribute("aria-hidden", "true");
-        if(!name) mark.textContent = "∗";
-        else if(firms.logo[name]) mark.innerHTML = firms.logo[name];  // fixed markup from our build, never story text
+        if(firms.logo[name]) mark.innerHTML = firms.logo[name];  // fixed markup from our build, never story text
         else mark.textContent = name[0];
         head.append(mark);
       }
-      label.textContent = name || (firms ? "All companies" : "All topics");
+      label.textContent = name;
       const num = document.createElement("small"), peek = document.createElement("span");
       num.textContent = n; peek.className = "peek"; peek.textContent = c.title.trim();
-      head.append(label, num); b.append(head, peek); b.addEventListener("click", () => pick(name));
+      head.append(label, num); b.append(head, peek); b.addEventListener("click", () => pick(b.getAttribute("aria-pressed") === "true" ? "" : name));
       return b;
     };
     const names = Object.keys(count).filter(g => g !== "Other").sort((a, b) => count[b] - count[a] || a.localeCompare(b));
     if(count.Other) names.push("Other");
-    tiles.replaceChildren(tile("", all.length, all[0]), ...names.map(g => tile(g, count[g], newest[g])));
+    tiles.replaceChildren(...names.map(g => tile(g, count[g], newest[g])));
   };
   const show = () => {
     list.slice(shown, shown += 20).forEach(c => {
