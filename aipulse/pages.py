@@ -347,6 +347,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .chip .sw{width:12px;height:12px;border:2px solid var(--line);border-radius:50%;background:var(--ink)}
 .cp .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .cp .chip[aria-pressed="true"] b{color:var(--bg)}
+.cp .pf .chip{border-radius:0}  /* the promise filters: rectangles, not pills */
 .cp .pr-wrap{overflow:hidden;margin-top:12px;border:2px solid var(--line);background:var(--bg);box-shadow:5px 5px 0 var(--line)}
 .cp .pr-head,.cp .pr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:0 22px}
 .cp .pr-head{border-bottom:2px solid var(--line);padding:8px 18px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
