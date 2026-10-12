@@ -684,6 +684,19 @@ a.subscribe-btn{text-decoration:none}
   .cp .ins-drv td{display:block;border:0;padding:0}
   .cp .ins-drv td:nth-child(2){grid-column:1 / -1;grid-row:2}
   .cp .ins-drv td.n{grid-column:2;grid-row:1}}
+/* Phones: long lists scroll inside their own box and rows of cards swipe sideways (the front page's rule, for these pages) */
+@media (max-width:640px){
+  .cp .topics,.cp .sgrid,.cp .blocks,.cp .tiles{display:flex;flex-direction:row;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:12px;padding:0 4px 10px 0;align-items:stretch}
+  .cp .topics>*,.cp .sgrid>*{flex:0 0 84%;min-width:0;scroll-snap-align:start}
+  .cp .blocks>*{flex:0 0 72%;min-width:0;scroll-snap-align:start}
+  .cp .tiles>*{flex:0 0 46%;min-width:0;scroll-snap-align:start}
+  .cp .topics .pic{height:130px}
+  .cp .places{grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-template-columns:none;grid-auto-columns:46%;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:10px}
+  .cp .places>*{scroll-snap-align:start;min-width:0}
+  .cp > ul,.cp .pr-list,.cp #az,#kind-stories,#word-stories{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
+  .cp table.mt.sl{display:block;overflow-x:auto}  /* Storylines that moved: swipe for the date and the rest */
+  .cp .mt.sl td:nth-child(2),.cp .mt.sl td:nth-child(3){min-width:170px}
+}
 """
 
 

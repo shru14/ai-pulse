@@ -861,6 +861,18 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   .secnav .saved-nav:not([hidden]){display:inline-flex}
 }
 @media (max-width:359px){header.top .brand h1{display:none}}  /* the smallest phones: the logo alone */
+/* Phones: a long section scrolls inside its own box and a row of cards swipes sideways, so a page is a few screens */
+@media (max-width:640px){
+  .ts-cards,.items{display:flex;flex-direction:row;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:12px;padding:0 4px 10px 0}
+  .ts-cards{align-items:stretch}
+  .items{align-items:flex-start}  /* each day's stories side by side, each card its own height */
+  .ts-cards>*,.items>*{flex:0 0 84%;min-width:0;scroll-snap-align:start}
+  .item .side .sart{aspect-ratio:2/1}
+  .board-t,.disc-t{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
+  .board-t thead th,.disc-t thead th{position:sticky;top:0;z-index:1;background:var(--bg)}
+  .board-t th{font-size:9.5px;letter-spacing:0}
+  .board-t th:nth-child(n+3){min-width:0}
+}
 </style>
 </head><body>
 
