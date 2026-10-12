@@ -106,26 +106,19 @@ def privacy_page() -> str:
     """The privacy notice: the site keeps nothing about visitors; the daily email keeps only what it needs."""
     rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>" for a, b, c in PRIVACY_ROWS)
     mail = '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a>'
-    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '<title>Privacy · AI Pulse</title>' + pages.share_tags("Privacy · AI Pulse", "privacy.html",
-            "What AI Pulse keeps about you: nothing about site visitors, and for the daily email only what it needs to send it.") + '<style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
-            'padding:24px 16px;color:#222;background:#fff}h1{font-size:20px;font-weight:600;margin:0 0 6px}'
-            'h2{font-size:16px;font-weight:600;margin:22px 0 6px}p{margin:0 0 12px;color:#333}'
-            'table{border-collapse:collapse;width:100%;margin:0 0 12px}th,td{text-align:left;vertical-align:top;'
-            'padding:6px 8px;border-top:1px solid #ddd}th{font-weight:600}a{color:#0072B2}'
-            '@media(max-width:600px){td,th{display:block;border:0;padding:2px 0}tr{display:block;border-top:1px solid #ddd;'
-            'padding:6px 0}thead{display:none}}</style></head><body>'
-            f'<h1>Privacy</h1><p>AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}. '
-            '<a href="./">Back to AI Pulse</a></p>'
+    what = "What AI Pulse keeps about you: nothing about site visitors, and for the daily email only what it needs to send it."
+    body = (f'<h1>Privacy</h1>\n<p class="intro">AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}.</p>\n'
             '<h2>The site</h2><p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site '
             'you came from, your browser, system, country and screen size. No IP address, cookie or ID is kept. '
             'Your settings stay in your own browser. GitHub Pages, '
             'which hosts the site, may log IP addresses for security.</p>'
             '<h2>The email</h2><p>Only if you sign up and confirm, and you can unsubscribe from any email.</p>'
-            f'<table><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
+            f'<table class="mt pv"><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
             '<p>Kept in the project’s Google account and sent from its Gmail. Never sold or shared.</p>'
             f'<h2>Your rights</h2><p>Ask to see, correct or delete your data: {mail}. You can also complain to your data '
-            'protection authority.</p></body></html>')
+            'protection authority.</p>')
+    data = {"@context": "https://schema.org", "@type": "WebPage", "name": "Privacy", "description": what}
+    return pages.page("Privacy · AI Pulse", what, "privacy.html", body, data, pages.frame(), ("/", "Back to AI Pulse"))
 
 
 def about_page(page: str) -> str:

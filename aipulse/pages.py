@@ -14,7 +14,7 @@ from .server import TEMPLATE
 
 STYLE = """
 .cp{max-width:780px;margin:0 auto;padding-bottom:12px}
-.cp .back{display:inline-block;margin-top:24px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:underline;text-decoration-color:#D55E00;text-decoration-thickness:2px;text-underline-offset:4px}
+.cp .back{display:inline-block;margin-top:24px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:4px}
 .cp h1{display:flex;align-items:center;gap:16px;font:400 clamp(28px,5vw,40px)/1.1 var(--display);letter-spacing:0;margin:18px 0 8px}
 .cp .flag{flex:none;width:32px;height:24px;object-fit:cover;border:1px solid var(--line)}
 .cp h1 .flag{width:60px;height:45px;border-width:2px}
@@ -23,7 +23,7 @@ STYLE = """
 .cp h1.word{font-size:clamp(24px,3.6vw,30px)}
 .cp .intro{color:var(--muted);margin:0 0 20px}
 .cp .intro a{color:var(--accent)}
-.cp h2{font:600 15px var(--body);text-transform:uppercase;letter-spacing:.06em;margin:30px 0 4px;border-top:6px solid #D55E00;padding-top:10px}
+.cp h2{font:600 15px var(--body);text-transform:uppercase;letter-spacing:.06em;margin:30px 0 4px;border-top:6px solid var(--ink);padding-top:10px}
 .cp ul{list-style:none;margin:0;padding:0}
 .cp li{padding:12px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
 .cp li a{color:var(--ink);font-weight:600;text-decoration:none}
@@ -33,15 +33,16 @@ STYLE = """
 .cp .what{font-size:15px;margin-top:4px;max-width:64ch}
 .cp .places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:20px}
 .cp .places a{display:flex;align-items:center;gap:12px;border:2px solid var(--line);background:var(--bg);padding:12px 14px;color:var(--ink);font-weight:600;text-decoration:none}
-.cp .places a:hover,.cp .places a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
+.cp .places a:hover,.cp .places a:focus-visible{background:#F0E442;color:#000}
 .cp:has(> .kd) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .kd{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}  /* Industry's kinds run wide, like a topic page */
 .cp .companies{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:4px 0 26px}  /* a tile per company or topic, each previewing its newest story */
 .cp .companies button{display:flex;flex-direction:column;align-items:stretch;gap:10px;border:2px solid var(--line);background:var(--bg);padding:16px 18px;color:var(--ink);font:600 18px var(--body);text-align:left;cursor:pointer}
 .cp .companies .head{display:flex;align-items:center;gap:12px}
 .cp .companies .peek{font:400 15px/1.45 var(--body);color:var(--muted)}
-.cp .companies button:hover,.cp .companies button:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
-.cp .companies button[aria-pressed="true"]{box-shadow:4px 4px 0 #D55E00}
+.cp .companies button:hover,.cp .companies button:focus-visible{background:#F0E442;color:#000}
+.cp .companies button:hover .peek,.cp .companies button:focus-visible .peek,.cp .companies button:hover small,.cp .companies button:focus-visible small{color:#3B3B3B}
+.cp .companies button[aria-pressed="true"]{box-shadow:5px 5px 0 #0072B2}
 .cp .companies .logo{color:#141925;font:700 15px var(--body)}
 .cp .companies small{margin-left:auto;color:var(--muted);font-size:13px}
 .cp .def{font-size:17px;line-height:1.55;margin:10px 0 14px;max-width:64ch}
@@ -50,7 +51,7 @@ STYLE = """
 .cp .more-stories[hidden]{display:none}
 .cp .letters{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
 .cp .letters a{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:2px solid var(--line);color:var(--ink);font-weight:600;text-decoration:none}
-.cp .letters a:hover,.cp .letters a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
+.cp .letters a:hover,.cp .letters a:focus-visible{background:#F0E442;color:#000}
 .cp .terms li{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:4px 18px}
 .cp .terms .short{color:var(--muted);font-size:15px}
 .cp .terms .grp{display:block;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
@@ -73,7 +74,7 @@ STYLE = """
 @media (max-width:860px){.cp .topics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.cp .topics{grid-template-columns:1fr}}
 .cp .topics > a{display:flex;flex-direction:column;border:2px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;box-shadow:3px 3px 0 var(--line);transition:transform .12s,box-shadow .12s}
-.cp .topics > a:hover,.cp .topics > a:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #D55E00}
+.cp .topics > a:hover,.cp .topics > a:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #0072B2}
 .cp .topics .pic{position:relative;display:block;height:180px;border-bottom:2px solid var(--line);overflow:hidden}
 .cp .photo{display:block;width:100%;height:100%;object-fit:cover}
 .cp .badges{display:flex;gap:6px;align-items:center}
@@ -87,7 +88,7 @@ STYLE = """
 .cp .done{position:absolute;top:10px;right:10px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:#fff;color:#000;border:2px solid var(--line);padding:2px 7px}
 .cp .topics .txt{display:flex;flex-direction:column;gap:8px;padding:14px 16px 16px;flex:1}
 .cp .topics .pic .done{top:10px;right:10px;font-size:11px;padding:2px 7px}
-.cp .done.hot{background:#D55E00;color:#000}
+.cp .done.hot{background:#F0E442;color:#000}
 .cp .topics .kind{margin:0}
 .cp .topics .kind{font-size:11.5px}
 .cp .topics b{font:400 21px/1.2 var(--display)}
@@ -108,7 +109,7 @@ STYLE = """
 .cp .topic-hero{position:relative;height:clamp(240px,34vw,380px);margin-top:16px;border:2px solid var(--line);overflow:hidden;box-shadow:6px 6px 0 var(--line)}
 .cp .topic-hero .photo{object-position:right center}  /* the cartoon sits on the right, clear of the title */
 .cp .topic-hero .over{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;padding:clamp(18px,3vw,34px);background:linear-gradient(100deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.55) 45%,transparent 80%),linear-gradient(transparent 50%,rgba(0,0,0,.6))}
-.cp .topic-hero .kind{margin:0;color:#fff;background:#D55E00;color:#000;align-self:flex-start;padding:2px 8px;border:2px solid var(--line)}
+.cp .topic-hero .kind{margin:0;background:#F0E442;color:#000;align-self:flex-start;padding:2px 8px;border:2px solid var(--line)}
 .cp .topic-hero h1{color:#fff;margin:0;font-size:clamp(34px,6vw,64px);max-width:16ch}
 .cp .topic-hero .done{position:static;align-self:flex-start}
 .cp .topic-hero .badges .flag{width:36px;height:27px}
@@ -117,7 +118,7 @@ STYLE = """
 .cp .tp h2{margin-top:34px}
 .cp .mlist{list-style:none;margin:12px 0 0;padding:0}
 .cp .mlist li{position:relative;padding:5px 0 5px 28px;font-size:15.5px;line-height:1.35;border:0}
-.cp .mlist li::before{content:"✓";position:absolute;left:4px;top:4px;font-weight:700;color:#D55E00}
+.cp .mlist li::before{content:"✓";position:absolute;left:4px;top:4px;font-weight:700;color:var(--c-tool)}
 .cp .tp > .related{margin-top:28px;font-size:15.5px;line-height:1.35}  /* in the key moments' font, on their left edge */
 .cp .mlist a,.cp .tp > .related a{font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:2px}
 .cp .mlist .when{margin-left:8px;color:var(--muted);font-size:13px;white-space:nowrap}
@@ -125,13 +126,13 @@ STYLE = """
 .cp .lane{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .cp .legend{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0 0;font-size:14px}
 .cp .lg::before{content:"";display:inline-block;width:12px;height:12px;border:2px solid var(--line);margin-right:7px;vertical-align:-1px}
-.cp .lg.official::before{background:#D55E00}
+.cp .lg.official::before{background:var(--ink)}
 .cp .lg.news::before{background:#56B4E9}
 .cp .chapters{margin-top:10px}
 .cp .chapter{display:grid;grid-template-columns:150px minmax(0,1fr);gap:0 10px}
 .cp .chapter .yr{position:relative;border-top:2px solid var(--line)}
 .cp .chapter .yr span{position:sticky;top:calc(var(--bar-h,64px) + 14px);display:block;padding-top:10px;font:400 clamp(34px,4vw,50px)/1 var(--display);color:transparent;-webkit-text-stroke:2px var(--ink)}
-.cp .chapter:nth-child(odd) .yr span{color:#D55E00}
+.cp .chapter:nth-child(odd) .yr span{color:var(--accent);-webkit-text-stroke:0}
 .cp ol.timeline{list-style:none;margin:0;padding:18px 0 22px;position:relative;border-top:2px dashed color-mix(in srgb,var(--ink) 30%,transparent)}
 .cp ol.timeline::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:4px;margin-left:-2px;background:var(--ink)}
 .cp .timeline > li{border:0;padding:0;position:relative}
@@ -139,16 +140,17 @@ STYLE = """
 .cp .timeline .ev.left{justify-content:flex-start;padding-right:calc(50% + 26px)}
 .cp .timeline .ev.right{justify-content:flex-end;padding-left:calc(50% + 26px)}
 .cp .timeline .ev .box{position:relative;display:flex;width:100%;border:2px solid var(--line);background:var(--bg);box-shadow:4px 4px 0 var(--line)}
-.cp .timeline .ev.official .box{border-top:8px solid #D55E00}
+.cp .timeline .ev.official .box{border-top:8px solid var(--ink)}
 .cp .timeline .ev.news .box{border-top:8px solid #56B4E9}
 .cp .timeline .ev.wide .box{box-shadow:4px 4px 0 #0072B2}
-.cp .timeline .ev.key .box{box-shadow:6px 6px 0 #D55E00}
+.cp .timeline .ev.key .box{box-shadow:6px 6px 0 var(--ink);background:color-mix(in srgb,#F0E442 40%,var(--bg))}
+:root[data-theme="dark"] .cp .timeline .ev.key .box{background:color-mix(in srgb,#F0E442 16%,var(--bg))}
 .cp .timeline .ev .txt{flex:1;min-width:0;padding:10px 12px 11px}
 .cp .timeline .ev .box::after{content:"";position:absolute;top:22px;width:24px;height:3px;background:var(--ink)}
 .cp .timeline .ev.left .box::after{right:-26px}
 .cp .timeline .ev.right .box::after{left:-26px}
 .cp .timeline .dot{position:absolute;left:50%;top:30px;width:16px;height:16px;margin-left:-8px;border:3px solid var(--line);border-radius:50%;background:#56B4E9;z-index:1}
-.cp .timeline .official .dot{background:#D55E00;border-radius:2px;transform:rotate(45deg)}
+.cp .timeline .official .dot{background:var(--ink);border-radius:2px;transform:rotate(45deg)}
 .cp .timeline .key .dot{width:22px;height:22px;margin-left:-11px;top:27px}
 .cp .timeline .top{margin-bottom:6px}
 .cp .timeline .top .flag,.cp .timeline .top .logo{margin-left:auto}
@@ -167,7 +169,7 @@ STYLE = """
 .cp .timeline .more ul a{font-weight:600;color:var(--ink);text-decoration:none}
 .cp .timeline .more .src{grid-column:2;color:var(--muted);font-size:13px}
 .cp .timeline .now{display:flex;justify-content:center;padding:14px 0 0}
-.cp .timeline .now span{position:relative;z-index:1;background:#D55E00;color:#000;border:2px solid var(--line);font:400 16px var(--display);padding:4px 16px;border-radius:999px}
+.cp .timeline .now span{position:relative;z-index:1;background:#F0E442;color:#000;border:2px solid var(--line);font:400 16px var(--display);padding:4px 16px;border-radius:999px}
 @media (max-width:700px){
   .cp .chapter{grid-template-columns:1fr}
   .cp .chapter .yr{position:sticky;top:var(--bar-h,64px);z-index:2;background:var(--bg);border-top:0;border-bottom:2px solid var(--line)}
@@ -183,6 +185,26 @@ STYLE = """
   .cp .tp h2{margin-top:26px}
 }
 a.subscribe-btn{text-decoration:none}
+/* section heads in the poster look, as the front page's bands: the title over a thick ink rule, a square of the
+   palette before it (yellow, sky, green, pink, blue in turn). The monthly issue and its insights keep their own. */
+.cp h2:not(.mi *){display:flex;align-items:center;gap:10px;margin:36px 0 10px;padding:0 0 6px;border-top:0;border-bottom:4px solid var(--ink);
+  font:400 22px/1.15 var(--display);text-transform:none;letter-spacing:0}
+.cp h2:not(.mi *)::before{content:"";flex:none;width:16px;height:16px;border:2px solid var(--line);background:var(--chip,#F0E442)}
+.cp :is(h2,section):nth-of-type(5n+2){--chip:#56B4E9}
+.cp :is(h2,section):nth-of-type(5n+3){--chip:#009E73}
+.cp :is(h2,section):nth-of-type(5n+4){--chip:#C85BC3}
+.cp :is(h2,section):nth-of-type(5n+5){--chip:#0072B2}
+/* the monthly issue and its insights keep their approved report look, as it was */
+.cp:has(> .mi) > .back{text-decoration-color:#D55E00}
+.cp .mi .topic-hero .kind{background:#D55E00}
+.cp .mi .lg.official::before,.cp .mi .timeline .official .dot{background:#D55E00}
+.cp .mi .timeline .ev.official .box{border-top-color:#D55E00}
+.cp .mi .timeline .now span{background:#D55E00}
+.cp .credits li{padding:8px 0;font-size:14px;overflow-wrap:anywhere}
+.cp .credits li a{font-weight:400;text-decoration:underline;text-underline-offset:2px}
+.cp .mt.pv td:last-child,.cp .mt.pv th:last-child{text-align:left;white-space:normal}
+@media (max-width:600px){.cp .mt.pv thead{display:none}.cp .mt.pv tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
+  .cp .mt.pv td{display:block;border:0;padding:2px 0}}
 /* the monthly issues (monthly.py): the shelf of covers and each issue's sheets */
 .cp:has(> .mi) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .mi{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
@@ -195,13 +217,13 @@ a.subscribe-btn{text-decoration:none}
 .cp .mi .topic-hero .num{color:#fff;font:600 14px var(--mono);letter-spacing:.06em}
 .cp .contents{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:6px 14px;list-style:none;margin:18px 0 0;padding:12px 0;border-bottom:2px solid var(--line);counter-reset:c}
 .cp .contents li{padding:0;border:0;counter-increment:c;font-size:14px;white-space:nowrap}
-.cp .contents li::before{content:counter(c,decimal-leading-zero);font:600 12px var(--mono);color:#D55E00;margin-right:7px}
+.cp .contents li::before{content:counter(c,decimal-leading-zero);font:600 12px var(--mono);color:var(--ink);margin-right:7px}
 .cp .contents a{font-weight:600;color:var(--ink);text-decoration:none}
 .cp .contents a:hover{text-decoration:underline}
 .cp .sheet{margin-top:34px;counter-increment:sheet}
 .cp .mi{counter-reset:sheet}
-.cp .sheet > h2::before{content:counter(sheet,decimal-leading-zero);margin-right:10px;color:#D55E00}
-.cp .brief{font-size:clamp(16px,1.6vw,17.5px);line-height:1.65;margin:12px 0 0;border-left:6px solid #D55E00;padding-left:16px}
+.cp .sheet > h2::before{content:counter(sheet,decimal-leading-zero);margin-right:10px;color:var(--ink)}
+.cp .brief{font-size:clamp(16px,1.6vw,17.5px);line-height:1.65;margin:12px 0 0;border-left:6px solid var(--line);padding-left:16px}
 .cp .brief mark{color:inherit;font-weight:600;background:linear-gradient(transparent 58%,color-mix(in srgb,#F0E442 75%,transparent) 58%)}
 .cp table.mt{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
 .cp .mt th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 12px 6px 0}
@@ -272,18 +294,18 @@ a.subscribe-btn{text-decoration:none}
 .cp .chapter.wk .yr span{font-size:clamp(26px,3vw,36px)}
 .cp .chapter.wk .yr small{display:block;position:sticky;top:calc(var(--bar-h,64px) + 56px);margin-top:4px;font:600 12.5px var(--mono);color:var(--muted)}
 .cp .timeline .quiet{text-align:center;color:var(--muted);font-size:14px;padding:12px 0;position:relative;z-index:1}
-.cp .issue-nav{display:flex;justify-content:space-between;gap:12px;margin-top:36px;padding-top:14px;border-top:6px solid #D55E00;font-weight:600}
+.cp .issue-nav{display:flex;justify-content:space-between;gap:12px;margin-top:36px;padding-top:14px;border-top:4px solid var(--ink);font-weight:600}
 .cp .issue-nav a{color:var(--ink)}
 .cp .shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:14px}
 .cp .shelf a{display:flex;flex-direction:column;border:2px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;box-shadow:4px 4px 0 var(--line);transition:transform .12s,box-shadow .12s}
-.cp .shelf a:hover,.cp .shelf a:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #D55E00}
+.cp .shelf a:hover,.cp .shelf a:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #0072B2}
 .cp .shelf .pic{display:block;aspect-ratio:4/3;border-bottom:2px solid var(--line);overflow:hidden;background:#1b1f27}
 .cp .shelf .photo{object-position:right center}
 .cp .shelf .txt{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px}
-.cp .shelf .num{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#D55E00}
+.cp .shelf .num{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 .cp .shelf b{font:400 22px/1.1 var(--display)}
-.cp .cloud{--g0:#0072B2;--g1:#D55E00;--g2:#007A5A;--g3:#000}
-:root[data-theme="dark"] .cp .cloud{--g0:#56B4E9;--g1:#E36A12;--g2:#009E73;--g3:#F2F2F2}
+.cp .cloud{--g0:#0072B2;--g1:#9C4798;--g2:#007A5A;--g3:#000}
+:root[data-theme="dark"] .cp .cloud{--g0:#56B4E9;--g1:#C85BC3;--g2:#009E73;--g3:#F2F2F2}
 @media (max-width:1060px){.cp .contents{flex-wrap:wrap;justify-content:flex-start}}
 @media (max-width:900px){.cp .shelf{grid-template-columns:repeat(3,minmax(0,1fr))}.cp .sgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.cp .shelf{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -308,19 +330,19 @@ a.subscribe-btn{text-decoration:none}
 .cp .ec-axis{border-bottom:2px solid var(--line);background:var(--bg)}
 .cp .yrs{position:relative;display:block;height:30px;font:600 11.5px var(--mono);color:var(--muted)}
 .cp .yrs > span{position:absolute;top:9px;white-space:nowrap;padding-left:5px;border-left:1px solid color-mix(in srgb,var(--ink) 35%,transparent)}
-.cp .yrs .now{transform:translateX(-100%);padding:0 5px 0 0;border:0;border-right:3px solid #D55E00;color:var(--ink)}
+.cp .yrs .now{transform:translateX(-100%);padding:0 5px 0 0;border:0;border-right:3px solid var(--ink);color:var(--ink)}
 .cp .er{border-bottom:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
 .cp .er:last-child{border-bottom:0}
 .cp .er > summary{list-style:none;cursor:pointer;padding:14px 0}
 .cp .er > summary::-webkit-details-marker{display:none}
-.cp .er > summary:hover,.cp .er[open] > summary{background:color-mix(in srgb,#D55E00 9%,var(--bg))}
+.cp .er > summary:hover,.cp .er[open] > summary{background:color-mix(in srgb,#F0E442 30%,var(--bg))}
 .cp .er .nm{position:relative;padding:0 12px 0 34px;font-weight:600;font-size:15px;line-height:1.25}
-.cp .er .nm::before{content:"+";position:absolute;left:12px;top:-1px;font:700 16px var(--mono);color:#D55E00}
+.cp .er .nm::before{content:"+";position:absolute;left:12px;top:-1px;font:700 16px var(--mono);color:var(--accent)}
 .cp .er[open] .nm::before{content:"−"}
 .cp .er .nm small{display:block;margin-top:2px;color:var(--muted);font:500 11px var(--mono);letter-spacing:.04em}
 .cp .trk{position:relative;display:block;min-height:24px;height:var(--h)}
 .cp .yl,.cp .tn{position:absolute;top:-14px;bottom:-14px;width:1px;background:color-mix(in srgb,var(--ink) 12%,transparent)}
-.cp .tn{width:2px;background:color-mix(in srgb,#D55E00 55%,transparent)}
+.cp .tn{width:2px;background:color-mix(in srgb,var(--accent) 55%,transparent)}
 .cp .pin{position:absolute;top:var(--t,0);display:block;margin-left:-15px;width:30px;height:23px;transition:transform .12s;z-index:1}
 .cp .pin img{display:block;width:30px;height:23px;object-fit:cover;border:2px solid var(--line);box-sizing:border-box;background:#fff}
 .cp .pin.r4 img{outline:3px solid #009E73;outline-offset:1px}
@@ -332,7 +354,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .er .det p{max-width:70ch;margin:8px 0 4px;line-height:1.5}
 /* promised vs shipped: the stats, then a bar per promise from the day it was made to the day it shipped */
 .cp .ps.shipped,.cp .seg.shipped,.cp .dot.shipped,.cp .chip.shipped .sw{background:#009E73}
-.cp .ps.late,.cp .seg.late,.cp .dot.late,.cp .chip.late .sw{background:#E69F00}
+.cp .ps.late,.cp .seg.late,.cp .dot.late,.cp .chip.late .sw{background:#F0E442}
 .cp .ps.waiting,.cp .seg.waiting,.cp .dot.waiting,.cp .chip.waiting .sw{background:#56B4E9}
 .cp .seg.not-found,.cp .dot.not-found,.cp .chip.not-found .sw{background:repeating-linear-gradient(135deg,var(--bg) 0 3px,color-mix(in srgb,var(--ink) 45%,transparent) 3px 5px)}
 .cp .pstats{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;margin:22px 0 6px}
@@ -385,7 +407,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .pi .lbl{display:block;font:600 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .cp .pbar{display:block;height:16px;border:2px solid var(--line);box-sizing:border-box;border-radius:0 4px 4px 0}
 .cp .pbar.shipped{background:#009E73}
-.cp .pbar.late{background:#E69F00}
+.cp .pbar.late{background:#F0E442}
 .cp .pbar.waiting{background:#56B4E9}
 .cp .pbar.not-found{background:repeating-linear-gradient(135deg,var(--bg) 0 4px,color-mix(in srgb,var(--ink) 35%,transparent) 4px 6px)}
 .cp .lab{display:block;margin-top:5px;font:600 13px var(--body);color:var(--ink)}
@@ -673,17 +695,18 @@ def write_css(out: Path) -> None:
     (out / "site.css").write_text(style + STYLE, encoding="utf-8")
 
 
-def frame(conn, total: int) -> tuple[str, str]:
-    """The front page's masthead (no stream links; Subscribe and Glossary open on the front page) and footer."""
+def frame(conn=None, total: int = 0) -> tuple[str, str]:
+    """The front page's masthead (no stream links; Subscribe and Glossary open on the front page) and footer. Without
+    a database (the photo credits and privacy pages) the masthead leaves out the story count and last update."""
     t = TEMPLATE.read_text(encoding="utf-8")
-    last = (store.last_run(conn) or {}).get("ran_at") or ""
+    last = ((store.last_run(conn) or {}).get("ran_at") or "") if conn else ""
     header = re.search(r'<header class="top home">.*?</header>', t, re.S).group(0)
     header = re.sub(r"\s*<!-- Each stream.*?</nav>", "", header, flags=re.S)
     header = re.sub(r'<button class="(subscribe-btn[^"]*)" id="(\w+)-open" type="button" aria-haspopup="dialog"',
                     r'<a class="\1" href="/#\2"', header).replace("</button>", "</a>")
     when = (f'<div>Last update <time datetime="{escape(last)}">{escape(last[:16].replace("T", " "))} UTC</time></div>'
             if last else "")
-    header = header.replace("Loading feed…", f"<div><b>{total}</b> stories in total</div>{when}")
+    header = header.replace("Loading feed…", (f"<div><b>{total}</b> stories in total</div>" if total else "") + when)
     footer = re.search(r'<footer class="site-foot">.*?</footer>', t, re.S).group(0)
     return header, footer
 
