@@ -7,7 +7,7 @@ DIN Media record, as its ISO page wouldn't load). Nothing of a standard's text i
 summaries are our own. A new standard appears when it's added here.
 
 ISO gives only the month of publication, so ISO cards are dated the 1st and the page shows the month.
-Standards are international, so they sit under "International" in the tracker's region filter.
+Standards are international (code INTL), so they show under "All regions" in the tracker, with their own chip.
 """
 
 from __future__ import annotations
