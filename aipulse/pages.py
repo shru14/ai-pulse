@@ -57,30 +57,32 @@ STYLE = """
 .cp .days .grp{margin-left:10px;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
 .cp .note{margin-top:28px;font-size:14px;color:var(--muted)}
 .cp .note a{color:var(--accent)}
-.cp .topics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
-@media (max-width:760px){.cp .topics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cp:has(> .ti) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
+.cp .ti{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}  /* the topics index runs wide, like a topic page */
+.cp .topics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:22px}
+@media (max-width:860px){.cp .topics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.cp .topics{grid-template-columns:1fr}}
 .cp .topics > a{display:flex;flex-direction:column;border:2px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;box-shadow:3px 3px 0 var(--line);transition:transform .12s,box-shadow .12s}
 .cp .topics > a:hover,.cp .topics > a:focus-visible{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #D55E00}
-.cp .topics .pic{position:relative;display:block;height:92px;border-bottom:2px solid var(--line);overflow:hidden}
+.cp .topics .pic{position:relative;display:block;height:180px;border-bottom:2px solid var(--line);overflow:hidden}
 .cp .photo{display:block;width:100%;height:100%;object-fit:cover}
 .cp .badges{display:flex;gap:6px;align-items:center}
-.cp .topics .pic .badges{position:absolute;left:6px;bottom:6px;gap:4px}
-.cp .topics .pic .flag{width:22px;height:16px}
-.cp .topics .pic .logo{width:22px;height:22px}
-.cp .topics .pic .logo svg{width:12px;height:12px}
+.cp .topics .pic .badges{position:absolute;left:10px;bottom:10px;gap:5px}
+.cp .topics .pic .flag{width:28px;height:20px}
+.cp .topics .pic .logo{width:28px;height:28px}
+.cp .topics .pic .logo svg{width:15px;height:15px}
 .cp .badges .flag{width:30px;height:22px;border:2px solid var(--line);object-fit:cover}
 .cp .logo{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:#fff;border:2px solid var(--line);border-radius:50%;flex:none}
 .cp .logo svg{width:17px;height:17px}
 .cp .done{position:absolute;top:10px;right:10px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:#fff;color:#000;border:2px solid var(--line);padding:2px 7px}
-.cp .topics .txt{display:flex;flex-direction:column;gap:4px;padding:8px 10px 10px;flex:1}
-.cp .topics .pic .done{top:6px;right:6px;font-size:9.5px;padding:1px 5px}
+.cp .topics .txt{display:flex;flex-direction:column;gap:8px;padding:14px 16px 16px;flex:1}
+.cp .topics .pic .done{top:10px;right:10px;font-size:11px;padding:2px 7px}
 .cp .done.hot{background:#D55E00;color:#000}
 .cp .topics .kind{margin:0}
-.cp .topics .kind{font-size:10px}
-.cp .topics b{font:400 15px/1.2 var(--display)}
-.cp .topics .last{display:flex;flex-direction:column;gap:3px;margin-top:auto;border:2px solid var(--line);background:color-mix(in srgb,#56B4E9 14%,var(--bg));padding:6px 8px}
-.cp .topics .last .lt{font-size:13.5px;font-weight:600;line-height:1.35}
+.cp .topics .kind{font-size:11.5px}
+.cp .topics b{font:400 21px/1.2 var(--display)}
+.cp .topics .last{display:flex;flex-direction:column;gap:4px;margin-top:auto;border:2px solid var(--line);background:color-mix(in srgb,#56B4E9 14%,var(--bg));padding:10px 12px}
+.cp .topics .last .lt{font-size:15px;font-weight:600;line-height:1.35}
 .cp .topics .last .lt:empty{display:none}
 .cp .topics .last .meta{margin:0;font-size:11px}
 .cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
