@@ -240,14 +240,35 @@ def numbers(month: str, by_month: dict[str, list[dict]], ledger: dict[str, list[
 
 # ---------- The page ----------
 
-def _bars(rows: list[tuple], colour=lambda r: "var(--f-news)", label=lambda r: escape(r[0])) -> str:
-    """A bar per row (name, count, last month's count), longest = the most."""
+def _riser(rows: list[tuple]) -> tuple | None:
+    """The row that grew most against the month before (from FEW or more), if any grew."""
+    return max([r for r in rows if r[2] >= FEW and r[1] > r[2]], key=lambda r: r[1] / r[2], default=None)
+
+
+def _call(text: str, w: float) -> str:
+    """A yellow tag at the end of a bar (inside it when the bar runs long)."""
+    return f'<span class="call{" in" if w > 62 else ""}" style="left:{w:.1f}%">{escape(text)}</span>'
+
+
+def _bars(rows: list[tuple], focus: str | None = None, tag: str = "") -> str:
+    """A grey bar per row (name, count, last month's count), longest = the most; `focus` in the accent, with `tag`."""
     top = max((r[1] for r in rows), default=1) or 1
-    return '<ol class="ins-bars">' + "".join(
-        f'<li title="{escape(r[0])}: {r[1]} {"story" if r[1] == 1 else "stories"}'
-        f'{f", {r[2]} the month before" if len(r) > 2 else ""}"><span class="nm">{label(r)}</span>'
-        f'<span class="tr"><i style="width:{max(r[1] / top * 100, 1):.1f}%;--c:{colour(r)}"></i></span>'
-        f'<b class="v">{r[1]:,}</b><span class="ch">{change(r[1], r[2]) if len(r) > 2 else ""}</span></li>'
+    out = []
+    for r in rows:
+        w, on = max(r[1] / top * 100, 1), r[0] == focus
+        out.append(f'<li class="{"on" if on else ""}" title="{escape(r[0])}: {r[1]} {"story" if r[1] == 1 else "stories"}'
+                   f'{f", {r[2]} the month before" if len(r) > 2 else ""}"><span class="nm">{escape(r[0])}</span>'
+                   f'<span class="tr"><i style="width:{w:.1f}%"></i>{_call(tag, w) if on and tag else ""}</span>'
+                   f'<b class="v">{r[1]:,}</b><span class="ch">{change(r[1], r[2]) if len(r) > 2 else ""}</span></li>')
+    return '<ol class="ins-bars">' + "".join(out) + "</ol>"
+
+
+def _tiles(rows: list[tuple]) -> str:
+    """Places as tiles, darker the more stories named them: the place, its count and the change against last month."""
+    top = max((r[1] for r in rows), default=1) or 1
+    return '<ol class="ins-tiles">' + "".join(
+        f'<li style="--a:{r[1] / top * 75 + 10:.0f}%" title="{escape(r[0])}: {r[1]} stories, {r[2]} the month before">'
+        f'<span class="nm">{escape(r[0])}</span><b>{r[1]}</b><span class="ch">{change(r[1], r[2])}</span></li>'
         for r in rows) + "</ol>"
 
 
@@ -255,42 +276,66 @@ def _pct(v: float) -> str:
     return f"{v * 100:.1f}%" if v < .1 else f"{v * 100:.0f}%"
 
 
+def _pts(d: float) -> str:
+    d *= 100
+    return "same" if abs(d) < .05 else f"{'+' if d > 0 else '−'}{abs(d):.1f} pts"
+
+
 def _compare(rows: list[tuple[str, list[tuple[str, float]]]]) -> str:
-    """A row per stream: its share each month as small columns (this month in the stream's colour), the share, and
-    where it stands against the months before."""
-    out = []
+    """A row per stream on one scale: its usual share (hollow square, the months before) and this month's (filled, in
+    the stream's colour), the share, and how far it moved. The stream that moved most gets a yellow tag."""
+    stats = []
     for s, ms in rows:
-        top = max(v for _, v in ms) or 1
         now, before = ms[-1][1], [v for _, v in ms[:-1]]
-        cols = "".join(f'<i class="{"now" if k == len(ms) - 1 else ""}" style="height:{max(v / top * 100, 3):.0f}%" '
-                       f'title="{monthly.name(m)}: {_pct(v)}"></i>' for k, (m, v) in enumerate(ms))
-        if len(before) >= 3 and now > max(before):
-            note = f"Biggest in {len(ms)} months"
-        elif len(before) >= 3 and now < min(before):
-            note = f"Smallest in {len(ms)} months"
-        else:
-            note = f"usually {_pct(sum(before) / len(before))}" if before else ""
-        out.append(f'<li><span class="nm">{monthly.STREAMS[s]}</span><span class="ins-spark" style="--c:var(--f-{COL[s]})">'
-                   f'{cols}</span><b class="v">{_pct(now)}</b><span class="ch">{note}</span></li>')
-    return '<ol class="ins-bars ins-cmp">' + "".join(out) + "</ol>"
+        stats.append((s, now, sum(before) / len(before) if before else None, before, len(ms)))
+    scale = math.ceil(max(max(now, u or 0) for _, now, u, _, _ in stats) * 10 + .5) / 10
+    moved = max((t for t in stats if t[2]), key=lambda t: abs(t[1] / t[2] - 1), default=None)
+    def at(v):
+        return f"{v / scale * 100:.1f}%"
+    out = []
+    for t in stats:
+        s, now, usual, before, n = t
+        note = (f"Biggest in {n} months" if len(before) >= 3 and now > max(before) else
+                f"Smallest in {n} months" if len(before) >= 3 and now < min(before) else "")
+        trk = ""
+        if usual is not None:
+            lo, hi = min(now, usual), max(now, usual)
+            trk = (f'<i class="seg" style="left:{at(lo)};width:calc({at(hi)} - {at(lo)})"></i>'
+                   f'<i class="us" style="left:{at(usual)}" title="Usual: {_pct(usual)}"></i>')
+        trk += f'<i class="now" style="left:{at(now)};--c:var(--f-{COL[s]})" title="This month: {_pct(now)}"></i>'
+        on = t is moved
+        if on:
+            trk += f'<span class="call" style="left:{at(max(now, usual or 0))}">{escape(note or "Moved most")}</span>'
+        small = f"<small>{note}</small>" if note and not on else ""
+        out.append(f'<li class="{"on" if on else ""}"><span class="nm">{monthly.STREAMS[s]}</span><span class="trk">{trk}</span>'
+                   f'<b class="v">{_pct(now)}</b><span class="ch">{_pts(now - usual) if usual is not None else ""}{small}</span></li>')
+    ticks = "".join(f'<span style="left:{k / 10 / scale * 100:.1f}%">{k * 10}%</span>' for k in range(round(scale * 10) + 1))
+    return ('<p class="ins-key"><span><i class="sw us"></i>Usual (the months before)</span><span><i class="sw"></i>This month</span></p>'
+            f'<ol class="ins-db">{"".join(out)}</ol><div class="ins-axis"><span></span><span class="tk">{ticks}</span></div>')
 
 
 def _days(daily: list[tuple[date, int]], peaks: list[dict], src: str) -> str:
+    """Stories a day as grey columns (weekends lighter), the days that stood out in the accent with a numbered tag and
+    a line at a normal weekday, then a table of what drove each of those days."""
     top = max((n for _, n in daily), default=1) or 1
     marks = {p["day"]: k + 1 for k, p in enumerate(peaks)}
+    normal = round(median([n for d, n in daily if d.weekday() < 5] or [0]))
     cols = "".join(
         f'<li class="{"we" if d.weekday() >= 5 else ""}{" pk" if d.isoformat() in marks else ""}" title="{d.strftime("%a")} {d.day} {d.strftime("%b")}: {n} {"story" if n == 1 else "stories"}">'
-        + (f'<b class="mk" style="bottom:calc({n / top * 100:.1f}% + 4px)">{marks[d.isoformat()]}</b>' if d.isoformat() in marks else "")
+        + (f'<b class="mk" style="bottom:calc({n / top * 100:.1f}% + 5px)">{marks[d.isoformat()]}</b>' if d.isoformat() in marks else "")
         + f'<i style="height:{max(n / top * 100, 1):.1f}%"></i><span>{d.day if d.day in (1, 8, 15, 22, 29) else ""}</span></li>'
         for d, n in daily)
-    cards = "".join(
-        f'<div class="ins-peak" data-day="{p["day"]}"><b class="mk">{k + 1}</b><div><h3>{_day(date.fromisoformat(p["day"]))}</h3>'
-        f'<p class="meta">{p["n"]} stories, {p["x"]:g}× a normal {"weekend day" if p["weekend"] else "weekday"} that month</p>'
-        '<ol><li class="meta">Loading…</li></ol></div></div>' for k, p in enumerate(peaks))
-    return (f'<ol class="ins-days" style="--n:{len(daily)}">{cols}</ol>'
-            '<p class="ins-key"><span><i class="sw"></i>Weekday</span><span><i class="sw we"></i>Weekend</span>'
-            '<span><i class="sw pk"></i>Stood out</span></p>'
-            + (f'<div class="ins-peaks" id="peaks" data-src="{src}">{cards}</div>{PEAKS_JS}' if peaks else ""))
+    ref = (f'<span class="ref" style="bottom:{normal / top * 100:.1f}%"><em>Normal weekday ≈ {normal}</em></span>'
+           if normal else "")
+    rows = "".join(
+        f'<tr data-day="{p["day"]}"><td class="dt"><b class="mk">{k + 1}</b>{_day(date.fromisoformat(p["day"]))}</td>'
+        '<td><ol><li class="meta">Loading…</li></ol></td>'
+        f'<td class="n">{p["x"]:g}×<small>{p["n"]} stories</small></td></tr>' for k, p in enumerate(peaks))
+    return (f'<div class="ins-plot"><ol class="ins-days" style="--n:{len(daily)}">{cols}</ol>{ref}</div>'
+            '<p class="ins-note">How to read: one column a day, its height the stories that day (weekends lighter). '
+            'The numbered columns stood out against a normal day; the table says what drove them.</p>'
+            + (f'<table class="mt ins-drv" id="peaks" data-src="{src}"><thead><tr><th>Day</th><th>What drove it</th>'
+               f'<th>vs a normal day</th></tr></thead><tbody>{rows}</tbody></table>{PEAKS_JS}' if peaks else ""))
 
 
 PEAKS_JS = r"""<script>
@@ -309,13 +354,13 @@ PEAKS_JS = r"""<script>
 
 
 def _themes(rows: list[tuple], up: bool) -> str:
+    """A row per theme: about how many a month before, how many now, and an arrow."""
     if not rows:
         return '<p class="meta">None this month.</p>'
-    top = max(abs(n - u) / (u + 1) for _, n, u in rows) or 1
-    return '<ol class="ins-bars ins-th">' + "".join(
+    return '<ol class="ins-move">' + "".join(
         f'<li title="{escape(t)}: {n} stories, about {round(u)} a month before"><span class="nm">{escape(t)}</span>'
-        f'<span class="tr"><i style="width:{max(abs(n - u) / (u + 1) / top * 100, 2):.1f}%;--c:{"#E69F00" if up else "#56B4E9"}"></i></span>'
-        f'<b class="v">{n}</b><span class="ch">was ~{round(u)}</span></li>' for t, n, u in rows) + "</ol>"
+        f'<span class="was">~{round(u)}</span><span class="to">→</span><b class="v">{n}</b>'
+        f'<span class="ar {"up" if up else "dn"}">{"▲" if up else "▼"}</span></li>' for t, n, u in rows) + "</ol>"
 
 
 def _day(d: date) -> str:
@@ -332,41 +377,35 @@ THEME_NAMES = {"Compute & Data Centers": "Data centres", "Image & Video Generati
 
 
 def _money(f: dict, month: str) -> str:
-    """Where the money went (rounds by theme), the valuation ladder (log scale), and the big deals."""
+    """Three figures, where the money went (rounds by theme) beside the valuations named, then the big deals."""
     rep = '<span class="rep" title="The headline says reportedly, in talks or the like">reported</span>'
     b = f["biggest"]
-    figs = (f'<p class="ins-figs"><span><b>{f["rounds"]}</b> rounds</span><span><b>{money.usd(f["raised"])}</b> disclosed</span>'
-            + (f'<span><b>{money.usd(b["amount"])}</b> biggest · <a href="{escape(b["url"])}" rel="noopener">{escape(b["company"])}</a></span>' if b else "")
-            + "</p>")
+    score = ('<div class="ins-score">'
+             f'<div><b>{f["rounds"]}</b><span>funding rounds</span></div><div><b>{money.usd(f["raised"])}</b><span>disclosed</span></div>'
+             + (f'<div><b>{money.usd(b["amount"])}</b><span>biggest · <a href="{escape(b["url"])}" rel="noopener">'
+                f'{escape(b["company"])}</a></span></div>' if b else "") + "</div>")
     top = max((t[1] for t in f["themes"]), default=1)
     themes = "".join(
-        f'<li title="{escape(t)}: {n} rounds, {money.usd(v)}; about {u:.0f} a month before">'
-        f'<span class="nm">{escape(THEME_NAMES.get(t, t))}</span><span class="tr"><i style="width:{n / top * 100:.0f}%;--c:#009E73"></i></span>'
-        f'<b class="v">{n}</b><span class="ch">{money.usd(v)}</span></li>' for t, n, v, u in f["themes"])
-    left = (f'<div><h3>Where the money went</h3>{figs}'
-            + (f'<ol class="ins-bars ins-fund">{themes}</ol><p class="ins-note">Rounds by theme · money disclosed.</p>' if themes else "")
-            + "</div>")
-    lad = f["ladder"]
+        f'<li class="{"on" if k == 0 else ""}" title="{escape(t)}: {n} rounds, {money.usd(v)}; about {u:.0f} a month before">'
+        f'<span class="nm">{escape(THEME_NAMES.get(t, t))}</span><span class="tr"><i style="width:{n / top * 100:.0f}%"></i></span>'
+        f'<b class="v">{n}</b><span class="ch">{money.usd(v)}</span></li>' for k, (t, n, v, u) in enumerate(f["themes"]))
+    left = (f'<div><h3>Where the money went</h3><ol class="ins-bars ins-fund">{themes}</ol>'
+            '<p class="ins-note">How to read: bar = funding rounds in each theme; on the right, the money they disclosed.</p></div>'
+            if themes else "")
     right = ""
-    if lad:
-        lo, hi = math.log10(min(r["valuation"] for r in lad)), math.log10(max(r["valuation"] for r in lad))
-        span = (hi - lo) or 1
+    if f["ladder"]:
         rows = []
-        for r in lad:
-            pos = (math.log10(r["valuation"]) - lo) / span * 100
+        for r in f["ladder"]:
             note = ""
             if r["before"]:
                 v0, m0 = r["before"]
                 k = r["valuation"] / v0
                 note = (f"×{k:.1f} since {_since(m0, month)}" if k >= 1.05 else f"down from {money.usd(v0)}" if k <= .95
                         else f"same as {_since(m0, month)}")
-            ghost = (f'<i class="was" style="left:{(math.log10(r["before"][0]) - lo) / span * 100:.1f}%"></i>'
-                     if r["before"] and lo <= math.log10(r["before"][0]) <= hi else "")
-            rows.append(f'<li><a class="nm" href="{escape(r["url"])}" rel="noopener">{escape(r["company"])}</a>'
-                        f'<span class="lt">{ghost}<i class="dot" style="left:{pos:.1f}%"></i></span>'
-                        f'<b class="v">{money.usd(r["valuation"])}</b><span class="ch">{note}{rep if r["reported"] else ""}</span></li>')
-        right = (f'<div><h3>Valuation ladder</h3><ol class="ins-bars ins-lad">{"".join(rows)}</ol>'
-                 '<p class="ins-note">Valuations named this month, on a log scale. A hollow dot is the last one we saw.</p></div>')
+            rows.append(f'<tr><td><a href="{escape(r["url"])}" rel="noopener">{escape(r["company"])}</a>{rep if r["reported"] else ""}</td>'
+                        f'<td class="ch">{note}</td><td class="n">{money.usd(r["valuation"])}</td></tr>')
+        right = ('<div><h3>Valuations named</h3><table class="mt ins-val"><tbody>' + "".join(rows) + "</tbody></table>"
+                 '<p class="ins-note">Valuations the headlines named this month; the change is against the last one we saw.</p></div>')
     deals = ""
     if f["deals"]:
         rows = "".join(
@@ -377,7 +416,7 @@ def _money(f: dict, month: str) -> str:
         n, v = f["compute_year"]
         deals = (f'<h3 class="ins-h">Big deals</h3><table class="mt ins-deals"><tbody>{rows}</tbody></table>'
                  + (f'<p class="ins-note">Compute deals reported in {month[:4]} so far: <b>{money.usd(v)}</b> across {n}.</p>' if n else ""))
-    return (f'<div class="ins-two ins-money">{left}{right}</div>{deals}'
+    return (f'{score}<div class="ins-two ins-money">{left}{right}</div>{deals}'
             '<p class="ins-note">Amounts as the headlines give them, in US dollars.</p>')
 
 
@@ -435,14 +474,14 @@ def body(month: str, x: dict) -> str:
             usual = sum(v for _, v in ms[:-1]) / (n - 1)
             say.append(f"{monthly.STREAMS[s]} moved most: {_pct(ms[-1][1])} of the month's stories, against a usual {_pct(usual)}.")
         sections.append(("compare", "How this month compares", " ".join(say) or "Each stream's share of the month's stories.",
-                         _compare(rows) + f'<p class="ins-note">Each stream\'s share of all stories, month by month to {monthly.name(month)}. '
+                         _compare(rows) + f'<p class="ins-note">How to read: each stream\'s share of {monthly.name(month)}\'s stories '
+                         f'(filled square) against its average over the {n - 1} months before (hollow). '
                          'A share, not a count, as the count grows with our sources.</p>'))
     # what made the busiest days
     pk = x["peaks"]
     if pk:
         days = [f"{date.fromisoformat(p['day']).day} {date.fromisoformat(p['day']).strftime('%B')}" for p in pk]
-        say = (f"{['One day', 'Two days', 'Three days'][len(pk) - 1]} stood out: {_and(days)}. What drove "
-               + ("it:" if len(pk) == 1 else "each:"))
+        say = f"{['One day', 'Two days', 'Three days'][len(pk) - 1]} stood out: {_and(days)}."
     else:
         say = "No day stood out: the news ran evenly all month."
     sections.append(("days", "What made the busiest days", say, _days(x["daily"], pk, f"/{path(month)}insights.json")))
@@ -482,13 +521,15 @@ def body(month: str, x: dict) -> str:
                          _exposure(x["exposure"])))
     # companies
     if x["companies"]:
-        c0 = x["companies"][0]
-        up = max([c for c in x["companies"] if c[2] >= 5], key=lambda c: c[1] / c[2], default=None)
+        c0, up = x["companies"][0], _riser(x["companies"])
         say = f"{c0[0]} was in the most stories ({c0[1]})."
-        if up and up[1] > up[2] and up[0] != c0[0]:
+        if up and up[0] != c0[0]:
             say += f" {up[0]} rose most ({change(up[1], up[2])})."
+        else:
+            up = None
         sections.append(("companies", "Companies in the news", say,
-                         _bars(x["companies"]) + f'<p class="ins-note">Stories naming each company. Change against {last}.</p>'))
+                         _bars(x["companies"], *((up[0], f"Rose most · {change(up[1], up[2])}") if up else ()))
+                         + f'<p class="ins-note">How to read: bar = stories naming each company; the change is against {last}, the biggest riser in blue.</p>'))
     # themes
     if x["rise"] or x["fade"]:
         say = []
@@ -501,18 +542,24 @@ def body(month: str, x: dict) -> str:
         sections.append(("themes", "Themes rising and fading", " ".join(say),
                          f'<div class="ins-two"><div><h3>Rising</h3>{_themes(x["rise"], True)}</div>'
                          f'<div><h3>Fading</h3>{_themes(x["fade"], False)}</div></div>'
-                         '<p class="ins-note">Against the average of the three months before. Bar = how far it moved.</p>'))
+                         '<p class="ins-note">Stories a month: about how many in the three months before, and now.</p>'))
     # places
     if x["places"]:
         p0 = x["places"][0]
-        say = f"Stories named {x['nplaces']} countries and blocs. {p0[0]} came up most ({p0[1]})"
+        say = f"{p0[0]} came up most ({p0[1]})"
         say += f", then {x['places'][1][0]} ({x['places'][1][1]})." if len(x["places"]) > 1 else "."
+        say += f" Stories named {x['nplaces']} countries and blocs."
         sections.append(("places", "Where in the world", say,
-                         _bars(x["places"], colour=lambda r: "var(--f-policy)")
-                         + f'<p class="ins-note">Stories naming each place. Change against {last}.</p>'))
-    return ('<ol class="contents ins-toc">' + "".join(f'<li><a href="/{path(month)}#{k}">{t}</a></li>' for k, t, *_ in sections)
-            + "</ol>\n" + "".join(f'<section class="sheet ins" id="{k}"><h2>{t}</h2><p class="ins-say">{escape(s)}</p>{h}</section>\n'
-                                  for k, t, s, h in sections))
+                         _tiles(x["places"]) + f'<p class="ins-note">Stories naming each place, darker = more. Change against {last}.</p>'))
+    # each section is an exhibit headed by its finding (the first sentence); the findings open the page, each a link
+    heads = [re.split(r"(?<=[.!?])\s+(?=[A-Z0-9$])", s, maxsplit=1) for _, _, s, _ in sections]
+    found = "".join(f'<tr><td class="k"><span class="kn">{i}</span></td><td>{escape(hd[0])}</td>'
+                    f'<td class="x"><a href="/{path(month)}#{k}">Exhibit {i} →</a></td></tr>'
+                    for i, ((k, *_), hd) in enumerate(zip(sections, heads), 1))
+    return (f'<section class="ins-kf"><span class="kind">Key findings</span><table class="kf"><tbody>{found}</tbody></table></section>\n'
+            + "".join(f'<section class="ex" id="{k}"><p class="ex-k"><b>Exhibit {i}</b>{t}</p><h2>{escape(hd[0])}</h2>'
+                      + (f'<p class="ins-say">{escape(hd[1])}</p>' if len(hd) > 1 else "") + f'{h}</section>\n'
+                      for i, ((k, t, _, h), hd) in enumerate(zip(sections, heads), 1)))
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
@@ -532,8 +579,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                                                encoding="utf-8")
         prev = f'<a href="/{path(issues[i - 1])}">← {monthly.name(issues[i - 1])}</a>' if i else "<span></span>"
         nxt = f'<a href="/{path(issues[i + 1])}">{monthly.name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
-        html = (f'<div class="mi">\n<div class="ins-head"><span class="kind">AI Pulse · Insights · No. {monthly.number(m)}</span>'
-                f'<h1>{monthly.name(m)} in numbers</h1></div>\n{body(m, x)}'
+        html = (f'<div class="mi">\n<div class="ins-head"><div><span class="kind">AI Pulse · Monthly report · Insights</span>'
+                f'<h1>{monthly.name(m)} in numbers</h1></div><span class="no">{monthly.number(m):02d}</span></div>\n{body(m, x)}'
                 f'<nav class="issue-nav">{prev}<a href="/{monthly.path(m)}">Back to the issue</a>{nxt}</nav>\n</div>')
         what = (f"What the AI news of {monthly.name(m)} adds up to: how it compares with the months before, what made the "
                 "busiest days, and the companies, themes and places in the news.")
