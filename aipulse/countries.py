@@ -15,7 +15,7 @@ from pathlib import Path
 from . import jurisdictions, pages, rss
 from .bills import LABELS, OFFICIAL_SOURCES
 
-MIN_RECORDS = 3
+MIN_RECORDS = 2  # the owner's choice, 12 Oct 2026 (was 3)
 KINDS = [("law", "Laws adopted"), ("proposal", "Proposals"), ("body", "AI bodies"), ("standard", "Standards")]
 
 
