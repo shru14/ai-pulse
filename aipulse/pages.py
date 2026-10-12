@@ -446,7 +446,14 @@ a.subscribe-btn{text-decoration:none}
   .cp .pin img{width:22px;height:16px;border-width:1.5px}
   .cp .pin.r4::after{width:12px;height:12px;right:-7px;top:-7px;font-size:7px;line-height:12px;border-width:1.5px}
   .cp .pin.r4 img,.cp .pin.r2 img,.cp .pin.r3 img{outline-width:2px}
-  .cp .ec-legend{gap:8px 16px;font-size:13px}}
+  .cp .ec-legend{gap:8px 16px;font-size:13px}
+  .cp .yrs .now{font-size:0;height:13px;padding:0}  /* only the bar: the word would sit on the last year */
+  .cp .er .yl{top:0}  /* the year lines stay off the subject's name above */
+  .cp .er .mt tr.first td{border-top:0}
+  .cp .er .mt tr.first{border-top:2px solid var(--line)}
+  .cp .er .mt td.when,.cp .er .mt td.when + td{display:inline;font:600 12px var(--mono);color:var(--muted)}
+  .cp .er .mt td.when + td:not(:empty)::before{content:" · "}
+  .cp .er .mt td:last-child{margin-top:3px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}}
 .cp .yrs i{font-style:normal}
 .cp .yrs b{font-weight:inherit}
 .cp .yrs .sm{display:none}
