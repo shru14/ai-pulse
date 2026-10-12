@@ -236,6 +236,14 @@ a.subscribe-btn{text-decoration:none}
 .cp .mt td:last-child,.cp .mt th:last-child{text-align:right;white-space:nowrap;padding-right:0}
 .cp .mt .st{display:inline-block;margin:0 0 4px;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#141925;background:var(--st);border:2px solid var(--line);padding:1px 6px;white-space:nowrap}
 .cp .mt.streams td:first-child{width:1%;white-space:nowrap}
+.cp .mt.sl th{padding-left:12px}.cp .mt.sl tr:first-child td{border-top:2px solid var(--line)}
+.cp .mt.sl td{padding-left:12px;vertical-align:baseline}
+.cp .mt.sl td+td,.cp .mt.sl th+th{border-left:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+.cp .mt.sl td:first-child,.cp .mt.sl th:first-child{padding-left:0;width:1%;font:500 14px var(--mono);color:var(--muted)}
+.cp .mt.sl td:nth-child(2) a{font-weight:700}
+.cp .mt.sl td:nth-child(3) a{font-weight:400;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent);text-underline-offset:3px}
+.cp .mt.sl td:nth-child(4){white-space:nowrap;color:var(--muted);font-size:14px}
+@media (max-width:600px){.cp .mt.sl th:nth-child(4),.cp .mt.sl td:nth-child(4){display:none}}
 .cp .mt .new{display:inline-block;margin-left:8px;font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#E69F00;color:#000;border:2px solid var(--line);padding:0 5px;vertical-align:2px}
 .cp .groups .badge{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#000;background:#F0E442;border:2px solid var(--line);padding:1px 6px;white-space:nowrap}
 .cp .groups .b-in_force{background:#009E73}.cp .groups .b-signed{background:#56B4E9}.cp .groups .b-standard{background:#CC79A7}
