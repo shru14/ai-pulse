@@ -1,7 +1,7 @@
 """The monthly issue: a booklet for each month of 2026 on (monthly/<YYYY-MM>/), shelved at monthly/.
 
-Each issue has the month in brief (a short summary), the stories most outlets carried, a week-by-week timeline (with
-the tracker's laws that passed a stage that month), the top stories of each stream, the glossary's words of the
+Each issue has the month in brief (a short summary), the stories most outlets carried, the top stories of each
+stream (none of them repeated from the sections above), the glossary's words of the
 month and the storylines (topics.py) that moved. Rules that moved lists every tracked law that passed a stage that month
 and every standard published that month, each with a badge for where it got to. An issue is made once its month is over.
 
@@ -41,7 +41,6 @@ FEWER = {3: 30, 4: 25}  # ...and fewer on the last tries: a busy month (August 2
 TRIES = 4
 MAX_CHARS = 900  # about 140 words: a longer summary is a list of headlines, not a summary
 TOP = 10        # What mattered most
-PER_WEEK = 4    # stories a week on the timeline (2+ outlets), besides the laws that passed a stage
 PER_STREAM = 3
 WORDS = 8
 STORYLINES = 8
@@ -155,23 +154,6 @@ def rules(laws: list[dict], month: str) -> list[dict]:
     return sorted(out, key=lambda r: (order.index(r["badge"]), r["date"]))
 
 
-def _weeks(month: str) -> list[tuple[date, date]]:
-    """The month in weeks of 7 days from the 1st; the last one runs to the month's end."""
-    start, end = date.fromisoformat(month + "-01"), _last_day(month)
-    out = []
-    while start <= end:
-        stop = min(start + timedelta(days=6), end)
-        if (end - stop).days < 3:  # a stub of 1-2 days joins the week before it
-            stop = end
-        out.append((start, stop))
-        start = stop + timedelta(days=1)
-    return out
-
-
-def _day_range(a: date, b: date) -> str:
-    return f"{a.day}–{b.day} {b.strftime('%b')}"
-
-
 def word_counts(cards: list[dict]) -> Counter:
     """How many of these stories use each glossary word (in the headline or the description)."""
     n = Counter()
@@ -201,12 +183,6 @@ def issue(month: str, cards: list[dict], storylines: dict[str, list[dict]], laws
     news = [c for c in cards if c["category"] in STREAMS and c["category"] != "research"]
     top = ranked(news)
     laws = cards if laws is None else laws
-    stages = _stages(laws, month)
-    weeks = []
-    for a, b in _weeks(month):
-        inside = [c for c in top if a.isoformat() <= c["date"][:10] <= b.isoformat() and outlets(c) > 1]
-        ev = [_story(c) for c in inside[:PER_WEEK]] + [s for s in stages if a.isoformat() <= s["date"] <= b.isoformat()]
-        weeks.append({"days": _day_range(a, b), "events": sorted(ev, key=lambda e: e["date"])})
     streams = {}
     shown = {c["url"] for c in top[:TOP]}  # What mattered most's stories aren't repeated
     for cat in STREAMS:
@@ -216,8 +192,9 @@ def issue(month: str, cards: list[dict], storylines: dict[str, list[dict]], laws
             mine.sort(key=lambda c: (c["source"] not in LAB_PAPERS,
                                      -max((seen[w] for w in re.findall(r"[A-Z][\w.+-]*\w", c["title"])), default=0)))
             picks = [_story(c) for c in mine[:PER_STREAM]]
-        elif cat == "regulation":  # laws that passed a stage first
-            picks = (stages[-PER_STREAM:][::-1] + [_story(c) for c in ranked(mine) if not c.get("lifecycle")])[:PER_STREAM]
+        elif cat == "regulation":  # the news about rules: the laws and standards themselves are in Rules that moved
+            picks = [_story(c) for c in ranked(mine) if not c.get("lifecycle")
+                     and not (c.get("bill") or "").startswith(standards.MARK)][:PER_STREAM]
         else:
             picks = [_story(c) for c in ranked(mine)[:PER_STREAM]]
         if picks:
@@ -231,7 +208,7 @@ def issue(month: str, cards: list[dict], storylines: dict[str, list[dict]], laws
                           "title": big["title"], "url": big["url"], "date": big["date"][:10]})
     moved.sort(key=lambda t: -t["n"])
     moved = moved[:STORYLINES]
-    return {"month": month, "top": [_story(c) for c in top[:TOP]], "rules": rules(laws, month), "weeks": weeks,
+    return {"month": month, "top": [_story(c) for c in top[:TOP]], "rules": rules(laws, month),
             "streams": streams, "storylines": moved}
 
 
@@ -397,12 +374,10 @@ ISSUE_JS = r"""<script>
     document.getElementById("top-key").replaceChildren(...[...new Set(d.top.map(e => e.stream))].map(s => {
       const k = el("span"); k.append(sq(s), NAMES[s]); return k; }));
     document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) => {
-      const li = el("li"), body = el("div"), cnt = el("span", "cnt");
-      cnt.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
-      cnt.title = NAMES[e.stream] + ": " + e.outlets + (e.outlets > 1 ? " outlets" : " outlet");
-      cnt.append(el("b", null, String(e.outlets)), el("small", null, e.outlets > 1 ? "outlets" : "outlet"));
-      body.append(link(e), el("div", "meta", NAMES[e.stream] + " · " + e.source + " · " + day(e.date)));
-      li.append(el("b", "r", String(i + 1)), body, cnt);
+      const li = el("li");  // a tile edged in its stream's colour: rank, headline, the outlets that carried it
+      li.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
+      li.title = NAMES[e.stream] + " · " + e.source + " · " + day(e.date);
+      li.append(el("b", "r", String(i + 1)), link(e), el("span", "out", e.outlets + (e.outlets > 1 ? " outlets" : " outlet")));
       return li;
     }));
     const rr = document.getElementById("rule-groups"), by = {};
@@ -418,21 +393,6 @@ ISSUE_JS = r"""<script>
       });
       g.append(head, chips); return g;
     }));
-    const tl = document.getElementById("timeline"); tl.replaceChildren(); tl.style.setProperty("--weeks", d.weeks.length);
-    let n = 0;
-    d.weeks.forEach((w, i) => {
-      const ch = el("section", "chapter wk"), yr = el("div", "yr"), ol = el("ol", "timeline");
-      yr.append(el("span", "", "Week " + (i + 1)), el("small", null, w.days));
-      if(!w.events.length) ol.append(el("li", "quiet", "A quiet week: no story two outlets carried."));
-      w.events.forEach(e => {
-        const li = el("li", "ev " + (n++ % 2 ? "right" : "left") + (e.official ? " official" : " news") + (e.outlets > 1 ? " wide" : ""));
-        const box = el("div", "box"), top = el("div", "top"), txt = el("div", "txt");
-        top.append(el("span", "when", day(e.date)), el("span", "lane", e.official ? "Official record" : NAMES[e.stream]));
-        if(e.flag) { const f = el("img", "flag"); f.src = "flags/" + e.flag; f.alt = ""; top.append(f); }
-        txt.append(top, link(e), meta(e)); box.append(txt); li.append(el("span", "dot"), box); ol.append(li);
-      });
-      ch.append(yr, ol); tl.append(ch);
-    });
     document.getElementById("stream-rows").replaceChildren(...Object.entries(d.streams).map(([s, list]) => {
       const card = el("section", "scard"), ol = el("ol");
       card.style.setProperty("--st", "var(--f-" + COL[s] + ")");
@@ -446,7 +406,7 @@ ISSUE_JS = r"""<script>
         return row([a, [link(t), el("div", "meta", day(t.date))], el("b", "n", String(t.n))]);
       }));
     } else document.getElementById("storylines").remove(), document.querySelector('a[href$="#storylines"]')?.parentElement.remove();
-  }).catch(() => root.querySelectorAll("tbody, #timeline, #top-rows, #rule-groups, #stream-rows").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
+  }).catch(() => root.querySelectorAll("tbody, #top-rows, #rule-groups, #stream-rows").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
 })();
 </script>""".replace("__BADGES__", json.dumps(BADGES))
 
@@ -524,7 +484,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         data = issue(m, mine, storylines, laws)
         p = path(m)
         (out / p).mkdir(parents=True, exist_ok=True)
-        for f in {r["flag"] for r in data["rules"]}:  # the rules' flags (the timeline's are among them)
+        for f in {r["flag"] for r in data["rules"]}:  # the rules' flags
             (out / "flags").mkdir(exist_ok=True)
             shutil.copy(countries.FLAGS / f, out / "flags" / f)
         (out / p / "issue.json").write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
@@ -533,7 +493,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         summary = summaries.get(m)
         sections = ([("brief", "The month in brief")] if summary else []) + [
             ("top", "What mattered most")] + ([("rules", "Rules that moved")] if data["rules"] else []) + [
-            ("weeks", "Week by week"), ("streams", "Stream by stream")] + (
+            ("streams", "Stream by stream")] + (
             [("words", "Words of the month")] if ws else []) + [("storylines", "Storylines that moved")]
         word_rows = "".join(
             f'<a class="blk" href="/glossary/{w["id"]}/"><b>{escape(w["term"])}'
@@ -552,13 +512,12 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{marked(summary, mine)}</p></section>\n'
                    if summary else "")
                 + '<section class="sheet" id="top"><h2>What mattered most</h2><p class="key" id="top-key"></p>'
-                  '<ol class="ranked" id="top-rows"><li class="meta">Loading…</li></ol></section>\n'
+                  '<ol class="tiles" id="top-rows"><li class="meta">Loading…</li></ol>'
+                  '<p class="meta">How to read: ranked by how many outlets carried each story; '
+                  'each tile is in the colour of its stream.</p></section>\n'
                 + ('<section class="sheet" id="rules"><h2>Rules that moved</h2><div class="groups" id="rule-groups">'
                    '<p class="meta">Loading…</p></div></section>\n' if data["rules"] else "")
-                + '<section class="sheet" id="weeks"><h2>Week by week</h2>'
-                '<p class="legend"><span class="lg official">A law passed a stage</span><span class="lg news">In the news</span></p>'
-                '<div class="chapters" id="timeline"><p class="meta">Loading…</p></div></section>\n'
-                '<section class="sheet" id="streams"><h2>Stream by stream</h2><div class="sgrid" id="stream-rows">'
+                + '<section class="sheet" id="streams"><h2>Stream by stream</h2><div class="sgrid" id="stream-rows">'
                 '<p class="meta">Loading…</p></div></section>\n'
                 + (f'<section class="sheet" id="words"><h2>Words of the month</h2><div class="blocks">{word_rows}</div></section>\n'
                    if ws else "")
@@ -567,7 +526,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                   '<tbody id="story-rows"></tbody></table></section>\n'
                 f'<nav class="issue-nav">{prev}<a href="/monthly/">All issues</a>{nxt}</nav>\n'
                 f'</div>\n{ISSUE_JS}')
-        what = (summary or f"What happened in AI in {name(m)}: the biggest stories, week by week, and the words to know.")
+        what = (summary or f"What happened in AI in {name(m)}: the biggest stories, stream by stream, and the words to know.")
         ld = {"@context": "https://schema.org", "@type": "PublicationIssue", "issueNumber": number(m),
               "name": f"The month in AI: {name(m)}", "description": what, "url": f"{rss.SITE}{p}",
               "datePublished": (_last_day(m) + timedelta(days=1)).isoformat()}
@@ -584,7 +543,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             f'<span class="num">No. {number(s["month"])}</span><b>{date.fromisoformat(s["month"] + "-01").strftime("%B")}</b>'
             f'<span class="meta">{s["month"][:4]}</span></span></a>')
     what = ("A booklet for every month since January 2026: what happened in brief, the stories that mattered most, "
-            "week by week, and the words to know.")
+            "stream by stream, and the words to know.")
     body = (f'<h1>The month in AI</h1>\n<p class="intro">{escape(what)}</p>\n'
             + "".join(f'<h2>{y}</h2>\n<div class="shelf">{"".join(c)}</div>\n' for y, c in years.items()))
     ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "The month in AI", "description": what,

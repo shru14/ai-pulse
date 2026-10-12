@@ -252,15 +252,13 @@ a.subscribe-btn{text-decoration:none}
 .cp .key{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 8px;font:500 11.5px var(--mono);color:var(--muted)}
 .cp .key span{display:inline-flex;align-items:center;gap:6px}
 .cp .sq{display:inline-block;flex:none;width:12px;height:12px;background:var(--st);border:2px solid var(--line)}
-.cp .ranked{list-style:none;margin:0;padding:0;border-top:2px solid var(--line)}
-.cp .ranked li{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
-.cp .ranked .cnt{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:52px;padding:3px 6px;background:var(--st);border:2px solid var(--line);color:#000}
-.cp .ranked .cnt b{font:400 18px/1 var(--display)}
-.cp .ranked .cnt small{font:600 9.5px var(--mono);letter-spacing:.04em;text-transform:uppercase}
-.cp .ranked .r{font:400 18px/1.1 var(--display)}
-.cp .ranked a{color:var(--ink);font-weight:600;text-decoration:none;line-height:1.35}
-.cp .ranked a:hover,.cp .ranked a:focus-visible{text-decoration:underline}
-.cp .ranked .meta{font-size:13px;margin-top:2px}
+.cp .tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}  /* What mattered most */
+@media (min-width:900px){.cp .tiles{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.cp .tiles li{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px;border:2px solid var(--line);border-left:8px solid var(--st)}
+.cp .tiles .r{font:400 20px/1 var(--display)}
+.cp .tiles a{flex:1;color:var(--ink);font-weight:700;font-size:14.5px;line-height:1.3;text-decoration:none}
+.cp .tiles a:hover,.cp .tiles a:focus-visible{text-decoration:underline}
+.cp .tiles .out{font:600 11px var(--mono);padding:2px 6px;border:2px solid var(--line);background:var(--st);color:#000;white-space:nowrap}
 .cp .sgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:12px}
 .cp .scard{border:2px solid var(--line);box-shadow:4px 4px 0 var(--line);background:var(--bg)}
 .cp .scard h3{margin:0;padding:7px 12px;background:var(--st);border-bottom:2px solid var(--line);color:#000;font:400 16px/1.2 var(--display)}
