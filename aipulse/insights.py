@@ -11,15 +11,24 @@ only our own words. Rebuilt with the site.
 from __future__ import annotations
 
 import json
+import math
+import re
 from collections import Counter
 from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 from statistics import median
 
-from . import classify, jurisdictions, monthly, pages, rss
+from . import classify, jurisdictions, money, monthly, pages, rss
 
 TOP = 10    # companies and places shown
+FUND_THEMES = 6  # Money moves: themes shown,
+LADDER = 8       # valuations,
+DEALS = 6        # and deals
+LABS = [re.compile(classify.COMPANY_TERMS[k], re.I) for k in ("OpenAI", "Anthropic", "xAI", "Mistral", "DeepSeek")
+        if k in classify.COMPANY_TERMS] + [re.compile(r"Moonshot|MiniMax|Zhipu|Safe Superintelligence|SSI|Thinking Machines|"
+                                                    r"Reflection|Prometheus|Cohere|Sakana|Kimi", re.I)]
+NOT_THEMES = {"Funding", "M&A", "IPO", "Study Report", "Benchmarks", "Law", "Regulation", "Governance"}  # not what's funded
 THEMES = 5  # themes rising, and fading
 MIN = 10    # a theme rises or fades only with this many stories a month (now, or before)
 YEAR = 12   # How this month compares: this month and the 11 before
@@ -87,8 +96,42 @@ def peaks(mine: list[dict], daily: list[tuple[date, int]]) -> list[dict]:
     return sorted(out, key=lambda p: p["day"])
 
 
-def numbers(month: str, by_month: dict[str, list[dict]]) -> dict:
-    """The month's counts, each with last month's beside it."""
+def funds(month: str, ledger: dict[str, list[dict]]) -> dict:
+    """Money moves (money.py): the month's funding rounds by theme (against the three months before), the valuations
+    named (each with the company's last one before, when we have it), and the biggest acquisitions and compute deals."""
+    mine = ledger.get(month, [])
+    rounds = [r for r in mine if r["kind"] == "round" and r["amount"]]
+    def theme(r):  # the frontier labs' rounds apart (the biggest money), else the first theme the story names
+        if any(p.fullmatch(r["company"]) for p in LABS):
+            return "AI labs"
+        return next((t for t, p in classify._topics.items() if t not in NOT_THEMES and p.search(r["text"])), "Other")
+    by = {}
+    for r in rounds:
+        t = by.setdefault(theme(r), [0, 0.0])
+        t[0] += 1
+        t[1] += r["amount"]
+    usual = Counter()
+    for k in range(1, 4):
+        usual.update(theme(r) for r in ledger.get(_prev(month, k), []) if r["kind"] == "round" and r["amount"])
+    themes = sorted(((t, n, v, usual[t] / 3) for t, (n, v) in by.items() if t != "Other"), key=lambda x: (-x[1], -x[2]))
+    earlier = {}
+    for m in sorted(k for k in ledger if k < month):
+        for r in ledger[m]:
+            if r["valuation"]:
+                earlier[r["company"].lower()] = (r["valuation"], m)
+    vals = sorted((r for r in mine if r["valuation"]), key=lambda r: -r["valuation"])[:LADDER]
+    ladder = [dict(r, before=earlier.get(r["company"].lower())) for r in vals]
+    deals = sorted((r for r in mine if r["kind"] in ("acquisition", "compute")), key=lambda r: -r["amount"])[:DEALS]
+    year = [r for m, rs in ledger.items() if m[:4] == month[:4] and m <= month for r in rs if r["kind"] == "compute"]
+    return {"rounds": len(rounds), "raised": sum(r["amount"] for r in rounds),
+            "biggest": max(rounds, key=lambda r: r["amount"], default=None), "themes": themes[:FUND_THEMES],
+            "ladder": ladder, "deals": deals, "compute_year": (len(year), sum(r["amount"] for r in year))}
+
+
+def numbers(month: str, by_month: dict[str, list[dict]], ledger: dict[str, list[dict]] | None = None) -> dict:
+    """The month's counts, each with last month's beside it. `ledger` is each month's money stories (money.month)."""
+    if ledger is None:
+        ledger = {m: money.month(cs) for m, cs in by_month.items()}
     mine, last = by_month.get(month, []), by_month.get(_prev(month), [])
     days = Counter(c["date"][:10] for c in mine)
     d, end = date.fromisoformat(month + "-01"), monthly._last_day(month)
@@ -109,7 +152,7 @@ def numbers(month: str, by_month: dict[str, list[dict]]) -> dict:
     return {"shares": shares(month, by_month), "daily": daily, "peaks": peaks(mine, daily),
             "companies": [(t, n, comp0[t]) for t, n in comp.most_common(TOP)],
             "places": [(t, n, place0[t]) for t, n in place.most_common(TOP)], "nplaces": len(place),
-            "rise": rise, "fade": fade}
+            "rise": rise, "fade": fade, "money": funds(month, ledger)}
 
 
 # ---------- The page ----------
@@ -196,6 +239,65 @@ def _day(d: date) -> str:
     return f'{d.strftime("%A")} {d.day} {d.strftime("%B")}'
 
 
+def _since(m: str, month: str) -> str:
+    """"May" in the same year, "Jan '25" before it."""
+    d = date.fromisoformat(m + "-01")
+    return d.strftime("%b") if m[:4] == month[:4] else d.strftime("%b ’%y")
+
+
+THEME_NAMES = {"Compute & Data Centers": "Data centres", "Image & Video Generation": "Image & video"}  # short labels
+
+
+def _money(f: dict, month: str) -> str:
+    """Where the money went (rounds by theme), the valuation ladder (log scale), and the big deals."""
+    rep = '<span class="rep" title="The headline says reportedly, in talks or the like">reported</span>'
+    b = f["biggest"]
+    figs = (f'<p class="ins-figs"><span><b>{f["rounds"]}</b> rounds</span><span><b>{money.usd(f["raised"])}</b> disclosed</span>'
+            + (f'<span><b>{money.usd(b["amount"])}</b> biggest · <a href="{escape(b["url"])}" rel="noopener">{escape(b["company"])}</a></span>' if b else "")
+            + "</p>")
+    top = max((t[1] for t in f["themes"]), default=1)
+    themes = "".join(
+        f'<li title="{escape(t)}: {n} rounds, {money.usd(v)}; about {u:.0f} a month before">'
+        f'<span class="nm">{escape(THEME_NAMES.get(t, t))}</span><span class="tr"><i style="width:{n / top * 100:.0f}%;--c:#009E73"></i></span>'
+        f'<b class="v">{n}</b><span class="ch">{money.usd(v)}</span></li>' for t, n, v, u in f["themes"])
+    left = (f'<div><h3>Where the money went</h3>{figs}'
+            + (f'<ol class="ins-bars ins-fund">{themes}</ol><p class="ins-note">Rounds by theme · money disclosed.</p>' if themes else "")
+            + "</div>")
+    lad = f["ladder"]
+    right = ""
+    if lad:
+        lo, hi = math.log10(min(r["valuation"] for r in lad)), math.log10(max(r["valuation"] for r in lad))
+        span = (hi - lo) or 1
+        rows = []
+        for r in lad:
+            pos = (math.log10(r["valuation"]) - lo) / span * 100
+            note = ""
+            if r["before"]:
+                v0, m0 = r["before"]
+                k = r["valuation"] / v0
+                note = (f"×{k:.1f} since {_since(m0, month)}" if k >= 1.05 else f"down from {money.usd(v0)}" if k <= .95
+                        else f"same as {_since(m0, month)}")
+            ghost = (f'<i class="was" style="left:{(math.log10(r["before"][0]) - lo) / span * 100:.1f}%"></i>'
+                     if r["before"] and lo <= math.log10(r["before"][0]) <= hi else "")
+            rows.append(f'<li><a class="nm" href="{escape(r["url"])}" rel="noopener">{escape(r["company"])}</a>'
+                        f'<span class="lt">{ghost}<i class="dot" style="left:{pos:.1f}%"></i></span>'
+                        f'<b class="v">{money.usd(r["valuation"])}</b><span class="ch">{note}{rep if r["reported"] else ""}</span></li>')
+        right = (f'<div><h3>Valuation ladder</h3><ol class="ins-bars ins-lad">{"".join(rows)}</ol>'
+                 '<p class="ins-note">Valuations named this month, on a log scale. A hollow dot is the last one we saw.</p></div>')
+    deals = ""
+    if f["deals"]:
+        rows = "".join(
+            f'<tr><td><a href="{escape(d["url"])}" rel="noopener">{escape(d["company"])} {"→" if d["kind"] == "acquisition" else "↔"} '
+            f'{escape(d["partner"] or "—")}</a>{rep if d["reported"] else ""}</td>'
+            f'<td><span class="kd kd-{d["kind"]}">{"Acquisition" if d["kind"] == "acquisition" else "Compute deal"}</span></td>'
+            f'<td class="n">{money.usd(d["amount"])}</td></tr>' for d in f["deals"])
+        n, v = f["compute_year"]
+        deals = (f'<h3 class="ins-h">Big deals</h3><table class="mt ins-deals"><tbody>{rows}</tbody></table>'
+                 + (f'<p class="ins-note">Compute deals reported in {month[:4]} so far: <b>{money.usd(v)}</b> across {n}.</p>' if n else ""))
+    return (f'<div class="ins-two ins-money">{left}{right}</div>{deals}'
+            '<p class="ins-note">Amounts as the headlines give them, in US dollars.</p>')
+
+
 def _and(words: list[str]) -> str:
     return words[0] if len(words) == 1 else ", ".join(words[:-1]) + " and " + words[-1]
 
@@ -230,6 +332,23 @@ def body(month: str, x: dict) -> str:
     else:
         say = "No day stood out: the news ran evenly all month."
     sections.append(("days", "What made the busiest days", say, _days(x["daily"], pk, f"/{path(month)}insights.json")))
+    # money moves
+    f = x["money"]
+    if f["rounds"] or f["deals"]:
+        say = []
+        if f["rounds"]:
+            say.append(f"{f['rounds']} funding rounds disclosed {money.usd(f['raised'])}"
+                       + (f"; {THEME_NAMES.get(f['themes'][0][0], f['themes'][0][0])} drew the most ({f['themes'][0][1]})."
+                          if f["themes"] else "."))
+            rich = max(f["themes"], key=lambda t: t[2], default=None)
+            if rich and rich is not f["themes"][0] and rich[2] >= .5 * f["raised"]:  # the money in a few big rounds
+                say.append(f"{THEME_NAMES.get(rich[0], rich[0])} took {rich[2] / f['raised']:.0%} of the money with "
+                           f"{rich[1]} round{'s' if rich[1] > 1 else ''}.")
+        if f["deals"]:
+            d = f["deals"][0]
+            say.append(f"The biggest deal: {d['company']} {'buying' if d['kind'] == 'acquisition' else 'with'} "
+                       f"{d['partner'] or 'a partner'}, {money.usd(d['amount'])}{' (reported)' if d['reported'] else ''}.")
+        sections.append(("money", "Money moves", " ".join(say), _money(f, month)))
     # companies
     if x["companies"]:
         c0 = x["companies"][0]
@@ -273,8 +392,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         by_month.setdefault((c.get("date") or "")[:7], []).append(c)
     paths = []
     issues = [m for m in monthly.months(today) if by_month.get(m)]
+    ledger = {m: money.month(cs) for m, cs in by_month.items() if m and m <= issues[-1]} if issues else {}
     for i, m in enumerate(issues):
-        x = numbers(m, by_month)
+        x = numbers(m, by_month, ledger)
         p = path(m)
         (out / p).mkdir(parents=True, exist_ok=True)
         (out / p / "insights.json").write_text(json.dumps({"peaks": x["peaks"]}, separators=(",", ":"), ensure_ascii=False),

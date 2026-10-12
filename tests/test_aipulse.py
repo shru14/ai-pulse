@@ -3469,3 +3469,23 @@ def test_insights_busiest_days_need_a_story_two_outlets_carried():
     p = insights.peaks(mine, daily)
     assert [x["day"] for x in p] == ["2026-09-29"]  # the 15th was busy too, but no story two outlets carried
     assert p[0]["x"] == 3.0 and p[0]["stories"][0]["outlets"] == 3
+
+
+def test_money_reads_rounds_valuations_and_deals_from_headlines():
+    from aipulse import money
+    def r(title):
+        return money.read({"title": title, "url": "u"})
+    a = r("Viral AI agent Instinct raises $1B Series C at a $10B valuation")
+    assert (a["kind"], a["company"], a["amount"], a["valuation"]) == ("round", "Instinct", 1e9, 1e10)
+    b = r("Nvidia confirms it will buy Hugging Face for $12.9 billion")
+    assert (b["kind"], b["company"], b["partner"], b["amount"]) == ("acquisition", "Nvidia", "Hugging Face", 12.9e9)
+    c = r("Anthropic signs $9.1 billion data center deal with Bitcoin miner Riot Platforms")
+    assert (c["kind"], c["company"], c["partner"]) == ("compute", "Anthropic", "Riot Platforms")
+    d = r("OpenAI reportedly in talks to raise $30B round at $1.4T valuation")
+    assert d["reported"] and d["company"] == "OpenAI" and d["valuation"] == 1.4e12
+    assert r("AI voice startup ElevenLabs doubles valuation to $22B")["company"] == "ElevenLabs"
+    assert r("After Nvidia's $20B not-acqui-hire, AI chip startup Groq reportedly raising $650M")["amount"] == 650e6
+    assert r("China blocks Meta's $2 billion acquisition of AI startup Manus") is None
+    assert r("AI research startup Listen Labs scrubbed a $1.5B funding round for Salesforce talks") is None
+    assert r("Nvidia boosts share buyback program by record $150B") is None
+    assert money.usd(12.9e9) == "$12.9B" and money.usd(1.4e12) == "$1.4T" and money.usd(300e6) == "$300M"

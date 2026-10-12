@@ -462,6 +462,34 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-days li .mk{position:absolute;left:50%;transform:translateX(-50%)}
 .cp .mk{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--bg);font:600 11.5px var(--mono)}
 .cp .ins-key .sw.pk{background:#0072B2}
+.cp .ins-money{margin-top:4px}
+.cp .ins-money h3,.cp .ins-h{margin:0 0 8px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cp .ins-figs{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0 0 12px;font-size:14px;color:var(--muted)}
+.cp .ins-figs b{font:400 24px/1 var(--display);color:var(--ink);margin-right:4px}
+.cp .ins-figs a{color:var(--ink);font-weight:600}
+.cp .ins-fund li{grid-template-columns:minmax(80px,140px) minmax(0,1fr) 30px 58px}
+.cp .ins-lad li{grid-template-columns:minmax(80px,130px) minmax(0,1fr) 74px minmax(0,104px)}
+.cp .ins-lad a.nm{color:var(--ink);text-decoration:none}
+.cp .ins-lad a.nm:hover{text-decoration:underline}
+.cp .ins-lad .lt{position:relative;height:20px;margin:0 8px}
+.cp .ins-lad .lt::before{content:"";position:absolute;left:0;right:0;top:9px;border-top:2px dotted color-mix(in srgb,var(--ink) 35%,transparent)}
+.cp .ins-lad .lt i{position:absolute;top:3px;width:14px;height:14px;margin-left:-7px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box}
+.cp .ins-lad .lt .dot{background:#0072B2}
+.cp .ins-lad .lt .was{background:var(--bg)}
+.cp .ins-lad .ch{text-align:left;white-space:normal;line-height:1.25}
+.cp .rep{display:inline-block;margin-left:6px;font:600 10px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid currentColor;padding:0 4px;vertical-align:1px}
+.cp .ins-money + .ins-h{margin-top:22px}
+.cp .ins-deals{max-width:820px}
+.cp .ins-deals td{padding:7px 12px 7px 0;vertical-align:middle}
+.cp .ins-deals td:first-child a{font-weight:600}
+.cp .ins-deals .n{font:400 20px var(--display)}
+.cp .kd{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#141925;border:2px solid var(--line);padding:1px 6px;white-space:nowrap}
+.cp .kd-acquisition{background:#CC79A7}
+.cp .kd-compute{background:#E69F00}
+@media (max-width:640px){.cp .ins-lad li{grid-template-columns:minmax(70px,96px) minmax(0,1fr) 54px;row-gap:0}
+  .cp .ins-lad .ch{grid-column:2 / -1;font-size:12px}
+  .cp .ins-fund li{grid-template-columns:minmax(70px,100px) minmax(0,1fr) 26px 52px}
+  .cp .ins-deals td{font-size:14px}}
 .cp .ins-peaks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px;max-width:1120px}
 .cp .ins-peak{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);background:var(--bg);padding:12px 14px;box-shadow:4px 4px 0 var(--line)}
 .cp .ins-peak .mk{flex:none;margin-top:2px}
