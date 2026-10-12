@@ -18,7 +18,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, photos, preferences, rss, store
-from . import subscribers
+from . import pages, subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
 _WORD = re.compile(r"[^\W_]+")
@@ -107,7 +107,8 @@ def privacy_page() -> str:
     rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>" for a, b, c in PRIVACY_ROWS)
     mail = '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a>'
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '<title>Privacy · AI Pulse</title><style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
+            '<title>Privacy · AI Pulse</title>' + pages.share_tags("Privacy · AI Pulse", "privacy.html",
+            "What AI Pulse keeps about you: nothing about site visitors, and for the daily email only what it needs to send it.") + '<style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
             'padding:24px 16px;color:#222;background:#fff}h1{font-size:20px;font-weight:600;margin:0 0 6px}'
             'h2{font-size:16px;font-weight:600;margin:22px 0 6px}p{margin:0 0 12px;color:#333}'
             'table{border-collapse:collapse;width:100%;margin:0 0 12px}th,td{text-align:left;vertical-align:top;'
@@ -116,7 +117,9 @@ def privacy_page() -> str:
             'padding:6px 0}thead{display:none}}</style></head><body>'
             f'<h1>Privacy</h1><p>AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}. '
             '<a href="./">Back to AI Pulse</a></p>'
-            '<h2>The site</h2><p>No cookies, analytics or ads. Your settings stay in your own browser. GitHub Pages, '
+            '<h2>The site</h2><p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site '
+            'you came from, your browser, system, country and screen size. No IP address, cookie or ID is kept. '
+            'Your settings stay in your own browser. GitHub Pages, '
             'which hosts the site, may log IP addresses for security.</p>'
             '<h2>The email</h2><p>Only if you sign up and confirm, and you can unsubscribe from any email.</p>'
             f'<table><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
@@ -219,8 +222,8 @@ def web_edition(html: str, path: str, description: str, title: str | None = None
     head = (f'<meta name="description" content="{escape(description)}"><link rel="canonical" href="{url}">'
             f'<meta property="og:title" content="{title}"><meta property="og:description" content="{escape(description)}">'
             f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og.png">'
-            f'<meta name="twitter:card" content="summary_large_image">')
-    html = html.replace("</title>", "</title>" + head, 1)
+            f'<meta name="twitter:card" content="summary_large_image">{pages.counter()}')
+    html = html.replace("</title>", "</title>" + head, 1).replace("<html>", '<html lang="en">', 1)
     return re.sub(r'<div style="(font-size:22px;font-weight:bold;line-height:1.3;margin:0 0 8px)">(.*?)</div>',
                   r'<h1 style="\1">\2</h1>', html, count=1)
 
@@ -367,7 +370,7 @@ def build(conn, out: str | Path) -> int:
 
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
-    page = photos.fill(subscribers.fill(page))
+    page = photos.fill(subscribers.fill(page)).replace("</head>", pages.counter() + "</head>", 1)
     (out / "index.html").write_text(page, encoding="utf-8")
     (out / "about").mkdir()
     (out / "about" / "index.html").write_text(about_page(page), encoding="utf-8")  # the same page, opened at About

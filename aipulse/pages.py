@@ -323,18 +323,45 @@ LOCAL_TIME = ('<script>document.querySelectorAll("time[datetime]").forEach(t => 
               '.toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))</script>')
 
 
+# Anonymous visit counts (GoatCounter, chosen 12 Oct 2026; terms.PLATFORM): no cookie, no stored IP address or
+# ID. Only the page's path is sent, never its query or the #codes in sign-up links. Empty = no counter.
+GOATCOUNTER = "ai-pulse"
+
+
+def counter() -> str:
+    """The visit counter's script for the published site's pages (nothing while GOATCOUNTER is empty)."""
+    return (f'<script>window.goatcounter={{path:location.pathname}}</script><script data-goatcounter='
+            f'"https://{GOATCOUNTER}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>'
+            if GOATCOUNTER else "")
+
+
+def snippet(text: str, limit: int = 160) -> str:
+    """A description short enough for a search result (they cut near 160 characters): whole words, then "…"."""
+    return text if len(text) <= limit else text[:limit - 1].rsplit(" ", 1)[0].rstrip(",;:·—- ") + "…"
+
+
+def share_tags(title: str, path: str, description: str) -> str:
+    """The head lines search results and link previews read, for a page built by hand (privacy, photo credits)."""
+    url, description = f"{rss.SITE}{path}", escape(snippet(description))
+    return (f'<meta name="description" content="{description}"><link rel="canonical" href="{url}">'
+            f'<meta property="og:title" content="{escape(title)}"><meta property="og:description" content="{description}">'
+            f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og.png">'
+            f'<meta name="twitter:card" content="summary_large_image">{counter()}')
+
+
 def page(title: str, description: str, path: str, body: str, data: dict, parts: tuple[str, str],
          back: tuple[str, str], note: str = "") -> str:
     """A whole page: `back` is (address, words) for the link above the heading, `note` a line under the content."""
     url = f"{rss.SITE}{path}"
     header, footer = parts
+    description = snippet(description)
     return (f'<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n{THEME}\n'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">\n<base href="/">\n'
             f'<title>{escape(title)}</title>\n<meta name="description" content="{escape(description)}">\n'
             f'<link rel="canonical" href="{url}">\n<link rel="icon" href="/favicon.ico">\n'
             f'<meta property="og:title" content="{escape(title)}">\n<meta property="og:description" content="{escape(description)}">\n'
             f'<meta property="og:url" content="{url}">\n<meta property="og:image" content="{rss.SITE}og.png">\n'
-            f'<meta name="twitter:card" content="summary_large_image">\n'
+            f'<meta name="twitter:card" content="summary_large_image">\n{counter()}'
             f'<script type="application/ld+json">{json.dumps(data, ensure_ascii=False)}</script>\n'
             f'<link rel="stylesheet" href="site.css">\n</head>\n<body>\n<div class="wrap">\n{header}\n<main class="cp">\n'
             f'<a class="back" href="{back[0]}">← {escape(back[1])}</a>\n{body}\n'
