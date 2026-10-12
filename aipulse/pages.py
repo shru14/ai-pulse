@@ -34,8 +34,10 @@ STYLE = """
 .cp .places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:20px}
 .cp .places a{display:flex;align-items:center;gap:12px;border:2px solid var(--line);background:var(--bg);padding:12px 14px;color:var(--ink);font-weight:600;text-decoration:none}
 .cp .places a:hover,.cp .places a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
-.cp .companies{margin:4px 0 22px}  /* company blogs: a tile per company, like the places */
-.cp .companies button{display:flex;align-items:center;gap:12px;border:2px solid var(--line);background:var(--bg);padding:10px 14px;color:var(--ink);font:600 16px var(--body);text-align:left;cursor:pointer}
+.cp .companies{margin:4px 0 22px}  /* Industry's kinds: a tile per company or topic, like the places, each previewing its newest story */
+.cp .companies button{display:flex;flex-direction:column;align-items:stretch;gap:6px;border:2px solid var(--line);background:var(--bg);padding:10px 14px;color:var(--ink);font:600 16px var(--body);text-align:left;cursor:pointer}
+.cp .companies .head{display:flex;align-items:center;gap:12px}
+.cp .companies .peek{font:400 13.5px/1.35 var(--body);color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cp .companies button:hover,.cp .companies button:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
 .cp .companies button[aria-pressed="true"]{box-shadow:4px 4px 0 #D55E00}
 .cp .companies .logo{color:#141925;font:700 15px var(--body)}
