@@ -235,17 +235,9 @@ PROMISES_JS = r"""<script>
   };
   fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(list => {
     if(!list.length) return box.replaceChildren(el("p", "meta", "No promises yet."));
-    // one scale for every row, counted from the day of the promise: how long each took is the bar's length
-    const SPAN = 548 + 40, MONTH = 30.44, after = d => Math.round((ms(d) - 0) / DAY);
-    const x = n => (Math.min(n, SPAN) / SPAN * 100).toFixed(2);
-    const TICKS = [0, 3, 6, 9, 12, 18];
-    const grid = t => TICKS.forEach(m => { const i = el("i", "yl"); i.style.left = x(m * MONTH) + "%"; t.append(i); });
-    const axis = el("div", "pr-axis"), yrs = el("span", "yrs");
-    TICKS.forEach((m, i) => {  // "3 months", or "3 mo" on a phone
-      const s = el("span", i === TICKS.length - 1 ? "end" : "");
-      s.append(el("b", "lg", m ? m + " months" : "Promised"), el("b", "sm", m ? m + " mo" : "0"));
-      s.style.left = x(m * MONTH) + "%"; yrs.append(s); });
-    axis.append(el("span", "ax", "Months after the promise"), yrs);
+    // one plain bar per promise: its length is the days from the promise (up to 18 months), its colour how it went
+    const SPAN = 548, after = d => Math.round(ms(d) / DAY);
+    const head = el("div", "pr-head"); head.append(el("span", "", "The promise"), el("span", "", "Days from the promise"));
     const ol = el("ol", "pr-list");
     list.forEach(p => {
       const li = el("li", "pr"); li.dataset.s = p.status;
@@ -257,29 +249,17 @@ PROMISES_JS = r"""<script>
           el("div", "meta", p.launch.source + " · " + fmt(p.launch.date)));
         info.append(l);
       }
-      const t = el("div", "pt"); grid(t);
       const since = d => after(d) - after(p.date);  // days from the promise
-      // where the bar ends: the launch; or, still waiting, its date if ahead (else today); or the date it passed
-      // (or 18 months on)
-      const stop = p.launch ? p.days : p.status === "waiting" ? Math.max(since(today), p.due ? since(p.due) : 0) :
-        (p.due ? since(p.due) : Math.min(548, since(today)));
-      const due = p.due ? since(p.due) : null;
-      const span = (from, to, cls) => { const b = el("span", "pbar " + cls); b.style.left = x(from) + "%";
-        b.style.width = "max(6px, " + (x(to) - x(from)).toFixed(2) + "%)"; t.append(b); };
-      if(p.status === "late") { span(0, due, "ok"); span(due, stop, "over"); }
-      else span(0, stop, {shipped: "ok", waiting: "wait", "not-found": "none"}[p.status]);
-      const mark = (n, cls, tip) => { const s = el("span", "mk " + cls); s.style.left = x(n) + "%"; s.title = tip; t.append(s); };
-      mark(0, "said", "Promised " + fmt(p.date));
-      if(due != null) mark(due, "due", "Its date: " + fmt(p.due));
-      if(p.launch) mark(p.days, "out", "Launched " + fmt(p.launch.date));
-      const said = p.launch ? (p.late ? "shipped in " + days(p.days) + ", " + days(p.late) + " late" :
-        p.days === 0 ? "shipped the same day" : "shipped in " + days(p.days)) :
-        p.status === "waiting" ? (p.due ? "due " + fmt(p.due) : "no date given, " + days(since(today)) + " so far") :
-        "no launch found";
-      t.append(el("span", "lab", said));
+      // how long: to the launch; still waiting, so far; not found, to the date it passed (or 18 months on)
+      const n = p.launch ? p.days : p.status === "waiting" ? since(today) : (p.due ? since(p.due) : Math.min(SPAN, since(today)));
+      const t = el("div", "pt"), b = el("span", "pbar " + p.status);
+      b.style.width = "max(6px, " + (Math.min(n, SPAN) / SPAN * 100).toFixed(2) + "%)";
+      const said = p.launch ? (p.days === 0 ? "Same day" : days(p.days)) + (p.late ? ", " + days(p.late) + " late" : "") :
+        p.status === "waiting" ? days(n) + " so far" + (p.due ? ", due " + fmt(p.due) : "") : days(n) + ", no launch found";
+      t.append(b, el("span", "lab", said));
       li.append(info, t); ol.append(li);
     });
-    box.replaceChildren(axis, ol);
+    box.replaceChildren(head, ol);
     // the stats: how the promises turned out, the typical wait and overrun, and each company's record
     const ORDER = ["shipped", "late", "waiting", "not-found"];
     const median = a => { if(!a.length) return null; const s = [...a].sort((m, n) => m - n), h = s.length >> 1;
@@ -298,7 +278,7 @@ PROMISES_JS = r"""<script>
     const wait = median(list.filter(p => p.launch).map(p => p.days)), over = median(list.filter(p => p.late).map(p => p.late));
     tile(wait, wait === 1 ? "day" : "days", "typical wait from promise to launch");
     tile(over, over === 1 ? "day" : "days", "typical overrun, when a launch came after its date");
-    const co = el("div", "st-co"); co.append(el("h3", "", "By company"));
+    const co = el("div", "st-co"), grid = el("div", "crs"); co.append(el("h3", "", "By company"), grid);
     const by = {}; list.forEach(p => (by[p.company] = by[p.company] || []).push(p));
     Object.entries(by).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).forEach(([name, ps]) => {
       const row = el("div", "cr"), dots = el("span", "dots");
@@ -306,8 +286,9 @@ PROMISES_JS = r"""<script>
         const d = el("a", "dot " + p.status); d.href = p.url; d.rel = "noopener"; d.title = WORDS[p.status] + ": " + p.title; dots.append(d);
       });
       const kept = ps.filter(p => p.launch).length;
-      row.append(logo(name), el("span", "nm", name), dots, el("span", "meta", kept + " of " + ps.length + " shipped"));
-      co.append(row);
+      const who = el("div", "cw"); who.append(logo(name), el("span", "nm", name));
+      row.append(who, dots, el("span", "meta", kept + " of " + ps.length + " shipped"));
+      grid.append(row);
     });
     stats.replaceChildren(out, hero, co);
     // the filter buttons, which are also the colours' key
@@ -347,8 +328,6 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             '<section class="pstats" id="pstats" aria-label="The promises in numbers"></section>\n'
             '<h2>Every promise</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
-            '<p class="pr-key"><span><span class="mk said"></span>Promised</span><span><span class="mk due"></span>'
-            'Its date</span><span><span class="mk out"></span>Launched</span></p>\n'
             f'<div class="pr-wrap" id="promises" data-src="/{PATH}promises.json" data-today="{today.isoformat()}">'
             '<p class="meta">Loading…</p></div>\n</div>\n'
             f'<script type="application/json" id="logos">{marks}</script>\n'
