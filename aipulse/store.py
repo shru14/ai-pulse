@@ -97,6 +97,11 @@ def connect(path: str | Path) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     rebuilt = _migrate(conn)
     conn.executescript(SCHEMA)
+    # OpenRouter's model list, left from the old model tracker (removed 26 Sep 2026): its terms ban robots, so its
+    # rows go. Only dropped when there: opening the database shouldn't wait for another process's write lock.
+    if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='models'").fetchone():
+        conn.execute("DROP TABLE models")
+        conn.commit()
     if "alerted" not in {r["name"] for r in conn.execute("PRAGMA table_info(sources)")}:
         conn.execute("ALTER TABLE sources ADD COLUMN alerted INTEGER NOT NULL DEFAULT 0")
     conn.executescript(FTS_SCHEMA)
