@@ -48,11 +48,10 @@ def credits_page() -> str:
     rows = "".join(
         f'<li><a href="{escape(c["source"])}">{escape(c["title"].replace("_", " ").rsplit(".", 1)[0])}</a>'
         f' · {escape(_who(c))} · {lic(c)}</li>' for c in credits())
-    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '<title>Photo credits · AI Pulse</title>' + pages.share_tags("Photo credits · AI Pulse", "photos/credits.html",
-            "Who made each photo on AI Pulse, its page on Wikimedia Commons and its licence.") + '<style>body{font:14px/1.5 Arial,Helvetica,sans-serif;margin:0 auto;max-width:960px;'
-            'padding:24px 16px;color:#222;background:#fff}h1{font-size:20px;font-weight:600;margin:0 0 6px}p{margin:0 0 14px;color:#555}'
-            'ul{list-style:none;margin:0;padding:0}li{padding:5px 0;border-top:1px solid #ddd;overflow-wrap:anywhere}'
-            'a{color:#0072B2}</style></head><body><h1>Photo credits</h1><p>Openly licensed photos from Wikimedia Commons, '
-            'changed for this site: resized and recoloured in each stream’s colour. They illustrate a topic, not the story itself. <a href="../">Back to AI Pulse</a></p>'
-            f'<ul>{rows}</ul></body></html>')
+    body = ('<h1>Photo credits</h1>\n<p class="intro">Openly licensed photos from Wikimedia Commons, changed for this site: '
+            'resized and recoloured in each stream’s colour. They illustrate a topic, not the story itself.</p>\n'
+            f'<ul class="credits">{rows}</ul>')
+    what = "Who made each photo on AI Pulse, its page on Wikimedia Commons and its licence."
+    data = {"@context": "https://schema.org", "@type": "WebPage", "name": "Photo credits", "description": what}
+    return pages.page("Photo credits · AI Pulse", what, "photos/credits.html", body, data, pages.frame(),
+                      ("/", "Back to AI Pulse"))
