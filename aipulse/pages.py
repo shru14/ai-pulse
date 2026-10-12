@@ -243,7 +243,6 @@ a.subscribe-btn{text-decoration:none}
 .cp .mt.sl td:nth-child(2) a{font-weight:700}
 .cp .mt.sl td:nth-child(3) a{font-weight:400;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent);text-underline-offset:3px}
 .cp .mt.sl td:nth-child(4){white-space:nowrap;color:var(--muted);font-size:14px}
-@media (max-width:600px){.cp .mt.sl th:nth-child(4),.cp .mt.sl td:nth-child(4){display:none}}
 .cp .mt .new{display:inline-block;margin-left:8px;font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#E69F00;color:#000;border:2px solid var(--line);padding:0 5px;vertical-align:2px}
 .cp .groups .badge{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#000;background:#F0E442;border:2px solid var(--line);padding:1px 6px;white-space:nowrap}
 .cp .groups .b-in_force{background:#009E73}.cp .groups .b-signed{background:#56B4E9}.cp .groups .b-standard{background:#CC79A7}
