@@ -373,13 +373,14 @@ ISSUE_JS = r"""<script>
     const sq = s => { const q = el("i", "sq"); q.style.setProperty("--st", "var(--f-" + COL[s] + ")"); return q; };
     document.getElementById("top-key").replaceChildren(...[...new Set(d.top.map(e => e.stream))].map(s => {
       const k = el("span"); k.append(sq(s), NAMES[s]); return k; }));
+    const most = Math.max(1, ...d.top.map(e => e.outlets));
     document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) => {
-      const li = el("li"), body = el("div"), cnt = el("span", "cnt");
-      cnt.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
-      cnt.title = NAMES[e.stream] + ": " + e.outlets + (e.outlets > 1 ? " outlets" : " outlet");
-      cnt.append(el("b", null, String(e.outlets)), el("small", null, e.outlets > 1 ? "outlets" : "outlet"));
-      body.append(link(e), el("div", "meta", NAMES[e.stream] + " · " + e.source + " · " + day(e.date)));
-      li.append(el("b", "r", String(i + 1)), body, cnt);
+      const li = el("li"), body = el("div"), bar = el("div", "bar"), fill = el("i");
+      bar.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
+      fill.style.setProperty("--w", (e.outlets / most * 100).toFixed(0) + "%");  // a bar as long as the outlets that carried it
+      bar.append(fill, el("b", null, e.outlets + (e.outlets > 1 ? " outlets" : " outlet")));
+      body.append(link(e), bar, el("div", "meta", NAMES[e.stream] + " · " + e.source + " · " + day(e.date)));
+      li.append(el("b", "r", String(i + 1)), body);
       return li;
     }));
     const rr = document.getElementById("rule-groups"), by = {};
@@ -514,7 +515,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{marked(summary, mine)}</p></section>\n'
                    if summary else "")
                 + '<section class="sheet" id="top"><h2>What mattered most</h2><p class="key" id="top-key"></p>'
-                  '<ol class="ranked" id="top-rows"><li class="meta">Loading…</li></ol></section>\n'
+                  '<ol class="ranked" id="top-rows"><li class="meta">Loading…</li></ol>'
+                  '<p class="meta">How to read: ranked by how many outlets carried each story; the bar is that count, '
+                  'in the colour of its stream.</p></section>\n'
                 + ('<section class="sheet" id="rules"><h2>Rules that moved</h2><div class="groups" id="rule-groups">'
                    '<p class="meta">Loading…</p></div></section>\n' if data["rules"] else "")
                 + '<section class="sheet" id="streams"><h2>Stream by stream</h2><div class="sgrid" id="stream-rows">'
