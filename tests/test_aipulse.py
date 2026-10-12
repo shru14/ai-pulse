@@ -3283,17 +3283,13 @@ def test_glossary_note_lists_the_branchs_new_words_to_approve():
     assert "<th align" in html and "<b>Vision-language model</b>" in html  # a table: word, group, meaning
 
 
-def test_monthly_issues_are_numbered_from_january_2026_and_cut_in_weeks():
+def test_monthly_issues_are_numbered_from_january_2026():
     from datetime import date
     from aipulse import monthly
     ms = monthly.months(date(2026, 10, 11))
     assert ms[0] == "2026-01" and ms[-1] == "2026-09"  # 2026 only, and only months that are over
     assert monthly.number("2026-01") == 1 and monthly.number("2026-09") == 9
     assert monthly.name("2026-09") == "September 2026"
-    weeks = monthly._weeks("2026-09")  # 30 days: 1-7, 8-14, 15-21, 22-30 (a 2-day stub joins the last week)
-    assert [(a.day, b.day) for a, b in weeks] == [(1, 7), (8, 14), (15, 21), (22, 30)]
-    assert [(a.day, b.day) for a, b in monthly._weeks("2026-02")] == [(1, 7), (8, 14), (15, 21), (22, 28)]
-    assert monthly._weeks("2026-10")[-1][1].day == 31
 
 
 def test_monthly_summary_keeps_only_names_and_numbers_its_headlines_have():
@@ -3344,7 +3340,7 @@ def test_monthly_issue_pages(tmp_path):
     assert '<a href="/monthly/2026-08/#streams">' in page  # the contents: this page's sections (its <base> is "/")
     issue = json.loads((tmp_path / "monthly" / "2026-08" / "issue.json").read_text(encoding="utf-8"))
     assert [e["title"] for e in issue["top"]] == ["Big launch of a reasoning model", "Funding round", "Small news"]
-    assert [len(w["events"]) for w in issue["weeks"]] == [1, 0, 0, 1, 0][:len(issue["weeks"])]  # 2+ outlets only
+    assert "weeks" not in issue and 'id="weeks"' not in page  # Week by week: dropped, it repeated the sections above
     assert "Reasoning model" in [w["term"] for w in monthly.words(monthly.word_counts(cards * 5), [], "2026-08")]
     front = json.loads((tmp_path / "monthly" / "front.json").read_text(encoding="utf-8"))
     assert [f["name"] for f in front] == ["September 2026", "August 2026"]  # the newest two, newest first
