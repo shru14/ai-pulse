@@ -546,6 +546,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 f'<div class="topic-hero">{_img(photo)}<div class="over"><span class="kind">AI Pulse · The month in AI</span>'
                 f'<span class="num">No. {number(m)}</span><h1>{name(m)}</h1></div></div>\n'
                 '<ol class="contents">' + "".join(f'<li><a href="/{p}#{k}">{t}</a></li>' for k, t in sections) + "</ol>\n"
+                + f'<a class="ins-link" href="/{p}insights/"><span><span class="label">Insights</span><b>{name(m)} in numbers</b>'
+                  'Stories by stream and by day, the companies, themes and places, charted.</span>'
+                  '<span class="go">See the numbers →</span></a>\n'
                 + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{marked(summary, mine)}</p></section>\n'
                    if summary else "")
                 + '<section class="sheet" id="top"><h2>What mattered most</h2><p class="key" id="top-key"></p>'

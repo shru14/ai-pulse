@@ -3437,3 +3437,17 @@ def test_promises_and_rule_echoes():
     assert [p["code"] for p in themes["sexual-deepfakes"]["places"]] == ["AU", "CH"]
     assert themes["sexual-deepfakes"]["places"][0]["furthest"] == "Adopted"
     assert "health" not in themes  # one place only: no echo yet
+
+
+def test_insights_counts_against_the_month_before():
+    from aipulse import insights
+    assert insights.change(13, 10) == "+30%" and insights.change(9, 10) == "−10%" and insights.change(10, 10) == "same"
+    assert insights.change(7, 1) == "was 1" and insights.change(3, 0) == "new"
+    card = lambda d, cat, tags: {"date": d, "category": cat, "tags": tags}
+    by = {"2026-08": [card("2026-08-03", "news", ["OpenAI"])] * 10,
+          "2026-09": [card("2026-09-01", "news", ["OpenAI", "United States"])] * 12 + [card("2026-09-06", "tool", ["Anthropic"])]}
+    x = insights.numbers("2026-09", by)
+    assert x["total"] == 13 and x["total0"] == 10
+    assert x["companies"][0] == ("OpenAI", 12, 10) and x["places"] == [("United States", 12, 0)]
+    assert len(x["daily"]) == 30 and dict(x["daily"])[__import__("datetime").date(2026, 9, 1)] == 12
+    assert "13 stories, 30% more than August" in insights.body("2026-09", x)

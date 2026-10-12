@@ -420,6 +420,43 @@ a.subscribe-btn{text-decoration:none}
 .cp .yrs b{font-weight:inherit}
 .cp .yrs .sm{display:none}
 @media (max-width:640px){.cp .yrs .lg{display:none}.cp .yrs .sm{display:inline}}
+/* the month in numbers (insights.py): the yellow link in each issue, and the page's bar and column charts */
+.cp .ins-link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-top:22px;padding:14px 20px;background:#F0E442;color:#000;border:3px solid var(--ink);text-decoration:none}
+.cp .ins-link .label{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cp .ins-link b{display:block;font:400 24px/1.1 var(--head);margin-top:4px}
+.cp .ins-link span.go{font-weight:700;white-space:nowrap}
+.cp .ins-link:hover span.go{text-decoration:underline}
+.cp .ins-head{border-bottom:6px solid #D55E00;padding:6px 0 14px}
+.cp .ins-head .kind{font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cp .ins-head h1{margin:6px 0 0;font-size:clamp(28px,4vw,44px)}
+.cp .ins-say{font-size:17px;line-height:1.5;margin:10px 0 14px;max-width:760px}
+.cp .ins-note{font-size:13px;color:var(--muted);margin:8px 0 0}
+.cp .ins-bars{list-style:none;margin:0;padding:0;max-width:820px}
+.cp .ins-bars li{display:grid;grid-template-columns:minmax(90px,170px) minmax(0,1fr) 54px 56px;align-items:center;gap:10px;padding:5px 0;border:0}
+.cp .ins-bars .nm{font-weight:600;font-size:14.5px;overflow-wrap:anywhere}
+.cp .ins-bars .tr{height:20px}
+.cp .ins-bars i{display:block;height:100%;background:var(--c);border:2px solid var(--line);border-left:0;border-radius:0 4px 4px 0;box-sizing:border-box;min-width:4px}
+.cp .ins-bars .v{font:400 20px/1 var(--display);text-align:right}
+.cp .ins-bars .ch{font:600 12.5px var(--mono);color:var(--muted);text-align:right;white-space:nowrap}
+.cp .ins-bars li:hover .nm{text-decoration:underline}
+.cp .ins-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 34px}
+.cp .ins-two h3{margin:0 0 6px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cp .ins-th li{grid-template-columns:minmax(90px,150px) minmax(0,1fr) 40px 62px}
+.cp .ins-days{list-style:none;margin:0;padding:0 0 22px;height:200px;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:2px;align-items:end;border-bottom:2px solid var(--line);max-width:900px}
+.cp .ins-days li{position:relative;height:100%;display:flex;align-items:flex-end;padding:0;border:0}
+.cp .ins-days i{display:block;width:100%;background:#56B4E9;border:2px solid var(--line);border-bottom:0;border-radius:4px 4px 0 0;box-sizing:border-box;min-height:3px}
+.cp .ins-days li.we i{background:color-mix(in srgb,#56B4E9 40%,var(--bg))}
+.cp .ins-days li.pk i{background:#0072B2}
+.cp .ins-days li:hover i{outline:2px solid var(--ink)}
+.cp .ins-days span{position:absolute;bottom:-21px;left:50%;transform:translateX(-50%);font:600 11.5px var(--mono);color:var(--muted)}
+.cp .ins-days li.pk span{color:var(--ink)}
+.cp .ins-key{display:flex;gap:16px;font-size:13px;color:var(--muted);margin:10px 0 0}
+.cp .ins-key span{display:inline-flex;align-items:center;gap:6px}
+.cp .ins-key .sw{width:14px;height:14px;background:#56B4E9;border:2px solid var(--line)}
+.cp .ins-key .sw.we{background:color-mix(in srgb,#56B4E9 40%,var(--bg))}
+@media (max-width:640px){.cp .ins-two{grid-template-columns:1fr}
+  .cp .ins-bars li,.cp .ins-th li{grid-template-columns:minmax(76px,110px) minmax(0,1fr) 44px 50px;gap:7px}
+  .cp .ins-days{height:150px}}
 """
 
 
