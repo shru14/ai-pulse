@@ -526,6 +526,48 @@ def _and(words: list[str]) -> str:
     return words[0] if len(words) == 1 else ", ".join(words[:-1]) + " and " + words[-1]
 
 
+# The exhibits' order: by importance, but one whose finding is far from usual this month moves to the top
+ORDER = ["money", "pace", "companies", "days", "risk", "rivals", "ipo", "themes", "compare", "places"]
+STANDS_OUT = 2.0  # this many times its usual (or a fraction as small) stands out,
+PROMOTED = 3      # and at most this many move up
+
+
+def _damped(now: float, usual: float) -> float:
+    """How far a count moved from its usual, either way, softened for small counts (1 to 6 is less than 100 to 600)."""
+    return (now + 5) / (usual + 5) if now >= usual else (usual + 5) / (now + 5)
+
+
+def _either(now: float, usual: float) -> float:
+    return max(now / usual, usual / now) if now and usual else 0
+
+
+def surprise(x: dict) -> dict[str, tuple[float, int]]:
+    """For each exhibit that has a usual to measure against: how far this month's finding is from it (1 = as usual),
+    and which of the exhibit's sentences says so (0 = its first), to lead with when it stands out."""
+    out = {}
+    if x["shares"] and len(x["shares"][0][1]) > 1:
+        out["compare"] = (max((_either(ms[-1][1], sum(v for _, v in ms[:-1]) / (len(ms) - 1)) for _, ms in x["shares"]),
+                              default=0), 0)
+    out["days"] = (max((p["x"] for p in x["peaks"]), default=0), 0)
+    pc = x["pace"]
+    if len(pc) >= 3:
+        out["pace"] = (_either(pc[-1][2], median(r[2] for r in pc[:-1])), 0)
+    before = [n for _, n in x["ipo"]["trend"][:-1]]
+    if before:
+        out["ipo"] = (_damped(x["ipo"]["trend"][-1][1], sum(before) / len(before)), 0)
+    for i, (_, us, cn, trend) in enumerate(x["rivals"]):  # a sentence each: papers, then open-weight models
+        usual = [v for _, v in trend[:-1]]
+        if usual and us + cn >= 2 * ENOUGH:  # a split of a handful can swing far: it doesn't move up
+            out["rivals"] = max(out.get("rivals", (0, 0)), (_either(cn / (us + cn), sum(usual) / len(usual)), i))
+    for k in ("companies", "places"):  # the riser is the second sentence
+        up = _riser(x[k])
+        if up and x[k] and up[0] != x[k][0][0]:
+            out[k] = (_damped(up[1], up[2]), 1)
+    moves = [(_damped(n, u), 0) for _, n, u in x["rise"][:1]] + [(_damped(n, u), 1 if x["rise"] else 0) for _, n, u in x["fade"][:1]]
+    out["themes"] = max(moves, default=(0, 0))
+    return out
+
+
 def body(month: str, x: dict) -> str:
     last = monthly.name(_prev(month)).split()[0]
     sections = []
@@ -618,7 +660,7 @@ def body(month: str, x: dict) -> str:
         c0, up = x["companies"][0], _riser(x["companies"])
         say = f"{c0[0]} was in the most stories ({c0[1]})."
         if up and up[0] != c0[0]:
-            say += f" {up[0]} rose most ({change(up[1], up[2])})."
+            say += f" {up[0]} rose most among companies: {up[1]} stories, against {up[2]} in {last}."
         else:
             up = None
         sections.append(("companies", "Companies in the news", say,
@@ -632,7 +674,7 @@ def body(month: str, x: dict) -> str:
             say.append(f"{t} rose most: {n} stories, against about {round(u)} a month before.")
         if x["fade"]:
             t, n, u = x["fade"][0]
-            say.append(f"{t} faded most: {n}, against about {round(u)}.")
+            say.append(f"{t} faded most: {n} stories, against about {round(u)} a month before.")
         sections.append(("themes", "Themes rising and fading", " ".join(say),
                          f'<div class="ins-two"><div><h3>Rising</h3>{_themes(x["rise"], True)}</div>'
                          f'<div><h3>Fading</h3>{_themes(x["fade"], False)}</div></div>'
@@ -642,21 +684,33 @@ def body(month: str, x: dict) -> str:
         p0 = x["places"][0]
         say = f"{p0[0]} came up most ({p0[1]})"
         say += f", then {x['places'][1][0]} ({x['places'][1][1]})." if len(x["places"]) > 1 else "."
+        up = _riser(x["places"])
+        if up and up[0] != p0[0]:
+            say += f" {up[0]} rose most among places: {up[1]} stories, against {up[2]} in {last}."
         say += f" Stories named {x['nplaces']} countries and blocs."
         sections.append(("places", "Where in the world", say,
                          _tiles(x["places"]) + f'<p class="ins-note">Stories naming each place, darker = more. Change against {last}.</p>'))
+    # by importance, the ones that stand out this month first
+    score = surprise(x)
+    top = sorted((k for k, *_ in sections if score.get(k, (0, 0))[0] >= STANDS_OUT), key=lambda k: -score[k][0])[:PROMOTED]
+    sections.sort(key=lambda t: (0, top.index(t[0])) if t[0] in top else (1, ORDER.index(t[0])))
     # each section is an exhibit headed by its finding (the first sentence); the findings open the page, each a link
-    heads = [re.split(r"(?<=[.!?])\s+(?=[A-Z0-9$])", s, maxsplit=1) for _, _, s, _ in sections]
+    heads = []
+    for k, _, say, _ in sections:  # [headline, the rest]; one that stands out leads with the sentence that says why
+        parts = re.split(r"(?<=[.!?])\s+(?=\S)", say)
+        lead = score[k][1] if k in top and score[k][1] < len(parts) else 0
+        rest = " ".join(parts[:lead] + parts[lead + 1:])
+        heads.append([parts[lead]] + ([rest] if rest else []))
     # ...on a departures board: split-flap numbers, each exhibit's colour as its "airline", the exhibit as its gate
     def flap(n):
         return "".join(f'<b class="fl">{d}</b>' for d in f"{n:02d}")
     found = "".join(f'<tr style="--hue:var(--f-{HUE[k]});--i:{i}"><td class="no">{flap(i)}</td>'
-                    f'<td class="fd"><i class="air"></i>{escape(hd[0])}</td>'
+                    f'<td class="fd"><i class="air"></i>{escape(hd[0])}</td><td class="st">{"Stands out" if k in top else ""}</td>'
                     f'<td class="gt"><a href="/{path(month)}#{k}" aria-label="Exhibit {i}"><span>EX</span>{flap(i)}</a></td></tr>'
                     for i, ((k, *_), hd) in enumerate(zip(sections, heads), 1))
     return (f'<section class="ins-kf"><div class="bd-top"><span class="bd-t">Key findings</span>'
             f'<span class="bd-c">{escape(monthly.name(month).upper())}</span></div><table class="kf"><thead><tr><th>No.</th>'
-            f'<th>Finding</th><th>Gate</th></tr></thead><tbody>{found}</tbody></table></section>\n'
+            f'<th>Finding</th><th>Status</th><th>Gate</th></tr></thead><tbody>{found}</tbody></table></section>\n'
             + "".join(f'<section class="ex" id="{k}" style="--hue:var(--f-{HUE[k]})"><p class="ex-k"><b>Exhibit {i}</b>{t}</p><h2>{escape(hd[0])}</h2>'
                       + (f'<p class="ins-say">{escape(hd[1])}</p>' if len(hd) > 1 else "") + f'{h}</section>\n'
                       for i, ((k, t, _, h), hd) in enumerate(zip(sections, heads), 1)))

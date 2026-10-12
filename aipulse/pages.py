@@ -485,6 +485,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .fl{position:relative;display:inline-grid;place-items:center;width:20px;height:26px;margin-right:2px;background:linear-gradient(#262C39 50%,#1D222D 50%);color:var(--board);font:600 15px var(--mono);border-radius:2px}
 .cp .fl::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid #0B0E13}
 .cp .kf .air{display:inline-block;width:10px;height:10px;margin-right:10px;background:var(--hue);vertical-align:0}
+.cp .kf .st{white-space:nowrap;font:600 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--board)}
 .cp .kf .gt{white-space:nowrap;text-align:right;padding-right:0}
 .cp .kf .gt a{display:inline-flex;align-items:center;gap:6px;color:var(--board);text-decoration:none;font:600 11px var(--mono);letter-spacing:.08em}
 .cp .kf .gt .fl{width:16px;height:22px;font-size:13px}
@@ -640,6 +641,7 @@ a.subscribe-btn{text-decoration:none}
 @media (max-width:700px){
   .cp .ins-head .no{display:none}
   .cp .kf thead,.cp .kf .gt span{display:none}
+  .cp .kf .st{font-size:9px;letter-spacing:.04em;white-space:normal;width:44px}
   .cp .kf td{font-size:13px}
   .cp .kf .no{width:50px}
   .cp .ins-kf{padding:12px 10px 6px}
