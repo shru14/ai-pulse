@@ -29,7 +29,7 @@ six streams and links every card to the original.
 - **[Glossary](https://projectaipulse.com/glossary/):** AI words in plain English, each with its newest story.
 - **Saved stories:** a bookmark on each story, kept in your browser only.
 - **Dark mode** and **RSS**: one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
-- **Free, no ads, no tracking.**
+- **Free, no ads, no cookies.**
 
 ## How we keep it legal
 
@@ -38,7 +38,7 @@ six streams and links every card to the original.
 3. **No workarounds:** nothing behind a login, bot check or paywall.
 4. **Only what's needed:** headline, short description, date and link.
 5. **Credit and non-commercial use**, as the licences ask.
-6. **No tracking:** see the [privacy page](https://projectaipulse.com/privacy.html).
+6. **No tracking of readers:** visits are only counted anonymously (GoatCounter: no cookie, IP address or ID kept); see the [privacy page](https://projectaipulse.com/privacy.html).
 
 Every source's robots.txt and terms were audited on 7 October 2026. The evidence for each is in `aipulse/terms.py`;
 `python -m aipulse audit` checks them again. Questions: projectaipulse@gmail.com.

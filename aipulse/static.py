@@ -117,7 +117,9 @@ def privacy_page() -> str:
             'padding:6px 0}thead{display:none}}</style></head><body>'
             f'<h1>Privacy</h1><p>AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}. '
             '<a href="./">Back to AI Pulse</a></p>'
-            '<h2>The site</h2><p>No cookies, analytics or ads. Your settings stay in your own browser. GitHub Pages, '
+            '<h2>The site</h2><p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site '
+            'you came from, your browser, system, country and screen size. No IP address, cookie or ID is kept. '
+            'Your settings stay in your own browser. GitHub Pages, '
             'which hosts the site, may log IP addresses for security.</p>'
             '<h2>The email</h2><p>Only if you sign up and confirm, and you can unsubscribe from any email.</p>'
             f'<table><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
@@ -220,7 +222,7 @@ def web_edition(html: str, path: str, description: str, title: str | None = None
     head = (f'<meta name="description" content="{escape(description)}"><link rel="canonical" href="{url}">'
             f'<meta property="og:title" content="{title}"><meta property="og:description" content="{escape(description)}">'
             f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og.png">'
-            f'<meta name="twitter:card" content="summary_large_image">')
+            f'<meta name="twitter:card" content="summary_large_image">{pages.counter()}')
     html = html.replace("</title>", "</title>" + head, 1).replace("<html>", '<html lang="en">', 1)
     return re.sub(r'<div style="(font-size:22px;font-weight:bold;line-height:1.3;margin:0 0 8px)">(.*?)</div>',
                   r'<h1 style="\1">\2</h1>', html, count=1)
@@ -368,7 +370,7 @@ def build(conn, out: str | Path) -> int:
 
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
-    page = photos.fill(subscribers.fill(page))
+    page = photos.fill(subscribers.fill(page)).replace("</head>", pages.counter() + "</head>", 1)
     (out / "index.html").write_text(page, encoding="utf-8")
     (out / "about").mkdir()
     (out / "about" / "index.html").write_text(about_page(page), encoding="utf-8")  # the same page, opened at About

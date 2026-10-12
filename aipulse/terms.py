@@ -260,6 +260,10 @@ PLATFORM: dict[str, tuple[str, str, str]] = {
     "cdn.jsdelivr.net": ("licence", "https://www.jsdelivr.com/terms", "Serves Simple Icons (CC0) for brand logos"),
     "commons.wikimedia.org": ("licence", "https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia",
                               "84 photos, each CC0, public domain, CC BY or CC BY-SA, credited on photos/credits.html"),
+    "gc.zgo.at": ("terms read", "https://www.goatcounter.com/help/terms",
+                  "GoatCounter visit counts: 'free for reasonable public usage', personal sites fine; privacy policy "
+                  "(8 Jun 2025): no cookies, no IP address or ID stored, site+IP+browser kept in memory up to 8 "
+                  "hours; read 12 Oct 2026"),
     "imgflip.com": ("owner's choice", "", "Meme templates (copyrighted pictures) used as parody and commentary on a "
                     "non-commercial site; kept by the owner's decision of 7 Oct 2026"),
     "generativelanguage.googleapis.com": ("owner's choice", "https://ai.google.dev/gemini-api/terms",
