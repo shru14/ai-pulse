@@ -28,6 +28,27 @@ DEALS = 6        # and deals
 LABS = [re.compile(classify.COMPANY_TERMS[k], re.I) for k in ("OpenAI", "Anthropic", "xAI", "Mistral", "DeepSeek")
         if k in classify.COMPANY_TERMS] + [re.compile(r"Moonshot|MiniMax|Zhipu|Safe Superintelligence|SSI|Thinking Machines|"
                                                     r"Reflection|Prometheus|Cohere|Sakana|Kimi", re.I)]
+EXPOSED = 6     # Legal and risk: companies shown
+# Legal and risk: a court story is a lawsuit, a ruling or a settlement; a regulator story has a regulator acting
+COURT = re.compile(r"\blawsuits?\b|\bsues?\b|\bsued\b|\bsuing\b|\bsuits?\b(?! up)|\bcourts?\b(?!room)|"
+                   r"\bjudges? (?:rules?|ruled|says|orders?|blocks?|dismiss\w*|toss\w*|sides?|finds?)|\bjury\b|"
+                   r"\bcopyright (?:case|claim|suit|infringement)|\bantitrust (?:case|suit|trial)|class action|"
+                   r"\bsettle(?:s|d|ment)\b|\bverdict\b", re.I)
+REGULATOR = re.compile(r"\b(?:FTC|DOJ|SEC|FCC|CMA|ICO|CNIL|European Commission|EU|Commission|regulators?|watchdogs?|"
+                       r"attorneys? general|data protection (?:authority|board|regulator)|privacy regulator|"
+                       r"authorit(?:y|ies)|government)\b.{0,60}?\b(?:probe[sd]?|investigat\w*|fine[sd]?|sues?|orders?|"
+                       r"bans?|banned|charges?|subpoena\w*|warns?)\b|\b(?:probe|investigation|inquiry) (?:into|of)\b|"
+                       r"\bfined\b|\bto investigate (?:if|whether)\b|\bunder investigation\b", re.I)
+ENOUGH = 10     # US vs China: a split shown only with this many from the two
+HF_UPLOAD = re.compile(r"(.+?) publishes .+ on Hugging Face$")  # feeds.py's open-weight uploads
+# Where the labs Hugging Face uploads name are based, beyond the news tags' companies (classify.COMPANY_HOME)
+LAB_HOME = {"Qwen": "China", "Ant Group": "China", "inclusionAI": "China", "Zhipu": "China", "Z.ai": "China",
+            "ByteDance": "China", "Moonshot": "China", "Kuaishou": "China", "Baidu": "China", "Tencent": "China",
+            "Xiaomi": "China", "StepFun": "China", "MiniMax": "China", "Meituan": "China", "OpenBMB": "China",
+            "Cloudflare": "United States", "NVIDIA": "United States", "Hugging Face": "United States", "Microsoft": "United States",
+            "IBM": "United States", "Allen": "United States", "Ai2": "United States", "Liquid": "United States",
+            "Nous": "United States", "Arcee": "United States", "Salesforce": "United States", "ServiceNow": "United States",
+            "Sakana": "Japan", "LG": "South Korea", "Upstage": "South Korea", "NAVER": "South Korea", "Kakao": "South Korea"}
 NOT_THEMES = {"Funding", "M&A", "IPO", "Study Report", "Benchmarks", "Law", "Regulation", "Governance"}  # not what's funded
 THEMES = 5  # themes rising, and fading
 MIN = 10    # a theme rises or fades only with this many stories a month (now, or before)
@@ -128,6 +149,67 @@ def funds(month: str, ledger: dict[str, list[dict]]) -> dict:
             "ladder": ladder, "deals": deals, "compute_year": (len(year), sum(r["amount"] for r in year))}
 
 
+def home(lab: str) -> str | None:
+    """Where a lab is based (classify.COMPANY_HOME, and LAB_HOME for the names Hugging Face uploads use)."""
+    return (classify.COMPANY_HOME.get(lab)
+            or next((v for k, v in LAB_HOME.items() if k.lower() in lab.lower()), None))
+
+
+def open_models(cards: list[dict]) -> list[dict]:
+    """The month's open-weight models: the labs' uploads to Hugging Face in our Releases stream ("Xiaomi MiMo publishes
+    MiMo-V2.6-Flash on Hugging Face"; verified organisations, feeds.py), each with its lab as the news tags name it."""
+    out = []
+    for c in cards:
+        m = HF_UPLOAD.match(c.get("title") or "") if c["category"] == "tool" else None
+        if m:
+            who = m.group(1)
+            lab = next((k for k in classify.COMPANY_HOME if k.lower() in who.lower()), who)  # "Xiaomi MiMo" -> Xiaomi
+            out.append({"lab": lab, "date": c["date"][:10]})
+    return sorted(out, key=lambda x: x["date"])
+
+
+def rivals(month: str, by_month: dict[str, list[dict]]) -> list[tuple]:
+    """US vs China: papers and open-weight models from each, this month and China's share for the YEAR months to this
+    one. A paper counts for the country of each lab or scholar it names (classify.paper_homes)."""
+    homes = classify.paper_homes()
+    def counts(m: str) -> dict[str, Counter]:
+        out = {"Papers": Counter(), "Open-weight models": Counter()}
+        for c in by_month.get(m, []):
+            if c["category"] == "research":
+                out["Papers"].update({homes[t] for t in c.get("tags") or [] if t in homes})
+        out["Open-weight models"].update(home(x["lab"]) for x in open_models(by_month.get(m, [])))
+        return out
+    ms = [_prev(month, k) for k in range(YEAR - 1, -1, -1)]
+    history = {m: counts(m) for m in ms}
+    rows = []
+    for what in ("Papers", "Open-weight models"):
+        now = history[month][what]
+        us, cn = now["United States"], now["China"]
+        if us + cn < ENOUGH:  # a share of a handful says nothing
+            continue
+        trend = [(m, h[what]["China"] / (h[what]["China"] + h[what]["United States"]))
+                 for m, h in history.items() if h[what]["China"] + h[what]["United States"] >= ENOUGH]
+        rows.append((what, us, cn, trend))
+    return rows
+
+
+def exposure(mine: list[dict]) -> list[tuple]:
+    """Legal and risk: for each company, the month's stories that take it to court (lawsuits, copyright, antitrust),
+    before regulators (probes, fines, privacy) or into the AI Incident Database. The most exposed first."""
+    n: dict[str, Counter] = {}
+    for c in mine:
+        t = c.get("title") or ""
+        kind = ("incidents" if c.get("action") == "incident" else "courts" if COURT.search(t) else
+                "regulators" if REGULATOR.search(t) else None)
+        if kind:
+            # the companies the story is about: "Perplexity sued over data sharing with Meta and Google" -> Perplexity
+            head = t if kind == "incidents" else re.split(r"\b(?:with|over|about|from|after)\b", t)[0]
+            for co in classify.company_tags(head, c.get("summary") or "" if kind == "incidents" else ""):
+                n.setdefault(co, Counter())[kind] += 1
+    rows = sorted(n.items(), key=lambda kv: (-sum(kv[1].values()), kv[0]))
+    return [(co, k["courts"], k["regulators"], k["incidents"]) for co, k in rows if sum(k.values()) >= 2][:EXPOSED]
+
+
 def numbers(month: str, by_month: dict[str, list[dict]], ledger: dict[str, list[dict]] | None = None) -> dict:
     """The month's counts, each with last month's beside it. `ledger` is each month's money stories (money.month)."""
     if ledger is None:
@@ -152,7 +234,8 @@ def numbers(month: str, by_month: dict[str, list[dict]], ledger: dict[str, list[
     return {"shares": shares(month, by_month), "daily": daily, "peaks": peaks(mine, daily),
             "companies": [(t, n, comp0[t]) for t, n in comp.most_common(TOP)],
             "places": [(t, n, place0[t]) for t, n in place.most_common(TOP)], "nplaces": len(place),
-            "rise": rise, "fade": fade, "money": funds(month, ledger)}
+            "rise": rise, "fade": fade, "money": funds(month, ledger), "opens": Counter(x["lab"] for x in open_models(mine)),
+            "rivals": rivals(month, by_month), "exposure": exposure(mine)}
 
 
 # ---------- The page ----------
@@ -298,6 +381,37 @@ def _money(f: dict, month: str) -> str:
             '<p class="ins-note">Amounts as the headlines give them, in US dollars.</p>')
 
 
+def _rivals(rows: list[tuple], opens: Counter) -> str:
+    labs = " · ".join(f"{escape(lab)} {n}" for lab, n in opens.most_common())
+    line = (f'<p class="ins-opens"><b>Open-weight models on Hugging Face this month:</b> {labs}</p>' if opens else "")
+    if not rows:
+        return line
+    out = []
+    for what, us, cn, trend in rows:
+        share = cn / (us + cn)
+        usual = [v for _, v in trend[:-1]]
+        cols = "".join(f'<i class="{"now" if k == len(trend) - 1 else ""}" style="height:{max(v * 100, 3):.0f}%" '
+                       f'title="{monthly.name(m)}: China {v:.0%}"></i>' for k, (m, v) in enumerate(trend))
+        out.append(f'<li><span class="nm">{what}</span><span class="split" title="US {us}, China {cn}">'
+                   f'<i class="us" style="width:{(1 - share) * 100:.1f}%">US {us}</i><i class="cn" style="width:{share * 100:.1f}%">China {cn}</i></span>'
+                   f'<span class="ins-spark" style="--c:#E69F00">{cols}</span>'
+                   f'<span class="ch">China {share:.0%}{f" · usually {sum(usual) / len(usual):.0%}" if usual else ""}</span></li>')
+    return ('<ol class="ins-bars ins-riv">' + "".join(out) + f"</ol>{line}"
+            '<p class="ins-note">Counting only the two, and only with 10 or more between them. A paper counts for the '
+            'country of each lab or scholar it names; open-weight models are the labs\' uploads to Hugging Face. Small '
+            'columns: China\'s share, month by month over the past year.</p>')
+
+
+def _exposure(rows: list[tuple]) -> str:
+    top = max(max(r[1:]) for r in rows) or 1
+    def cell(n):
+        return (f'<td class="hx" style="--a:{n / top * 70 + 10:.0f}%">{n}</td>' if n else '<td class="hx z">–</td>')
+    return ('<table class="mt ins-risk"><thead><tr><th>Company</th><th>In court</th><th>Regulators</th><th>Incidents</th>'
+            '</tr></thead><tbody>' + "".join(f'<tr><td>{escape(co)}</td>{cell(a)}{cell(b)}{cell(c)}</tr>' for co, a, b, c in rows)
+            + '</tbody></table><p class="ins-note">Stories naming each company with lawsuits, copyright or antitrust (court), '
+            'probes, fines or privacy (regulators), and reports in the AI Incident Database.</p>')
+
+
 def _and(words: list[str]) -> str:
     return words[0] if len(words) == 1 else ", ".join(words[:-1]) + " and " + words[-1]
 
@@ -349,6 +463,23 @@ def body(month: str, x: dict) -> str:
             say.append(f"The biggest deal: {d['company']} {'buying' if d['kind'] == 'acquisition' else 'with'} "
                        f"{d['partner'] or 'a partner'}, {money.usd(d['amount'])}{' (reported)' if d['reported'] else ''}.")
         sections.append(("money", "Money moves", " ".join(say), _money(f, month)))
+    # US vs China
+    if x["rivals"]:
+        def line(what, us, cn, trend):
+            now, before = cn / (us + cn), [v for _, v in trend[:-1]]
+            usual = sum(before) / len(before) if before else None
+            verb = "wrote" if what == "Papers" else "made"
+            return (f"China {verb} {now:.0%} of the {what.lower()} from the two ({cn} to {us})"
+                    + ("." if usual is None else ", about its usual." if abs(now - usual) < .04
+                       else f", {'up' if now > usual else 'down'} from a usual {usual:.0%}."))
+        say = " ".join(line(*w) for w in x["rivals"])
+        sections.append(("rivals", "US vs China", say, _rivals(x["rivals"], x["opens"])))
+    # legal and risk
+    if x["exposure"]:
+        co, a, b, c = x["exposure"][0]
+        parts = [f"{n} {w}" for n, w in ((a, "in court"), (b, "with regulators"), (c, "incidents")) if n]
+        sections.append(("risk", "Legal and risk", f"{co} drew the most legal and risk stories: {_and(parts)}.",
+                         _exposure(x["exposure"])))
     # companies
     if x["companies"]:
         c0 = x["companies"][0]
@@ -379,7 +510,7 @@ def body(month: str, x: dict) -> str:
         sections.append(("places", "Where in the world", say,
                          _bars(x["places"], colour=lambda r: "var(--f-policy)")
                          + f'<p class="ins-note">Stories naming each place. Change against {last}.</p>'))
-    return ('<ol class="contents">' + "".join(f'<li><a href="/{path(month)}#{k}">{t}</a></li>' for k, t, *_ in sections)
+    return ('<ol class="contents ins-toc">' + "".join(f'<li><a href="/{path(month)}#{k}">{t}</a></li>' for k, t, *_ in sections)
             + "</ol>\n" + "".join(f'<section class="sheet ins" id="{k}"><h2>{t}</h2><p class="ins-say">{escape(s)}</p>{h}</section>\n'
                                   for k, t, s, h in sections))
 

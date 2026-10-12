@@ -3489,3 +3489,21 @@ def test_money_reads_rounds_valuations_and_deals_from_headlines():
     assert r("AI research startup Listen Labs scrubbed a $1.5B funding round for Salesforce talks") is None
     assert r("Nvidia boosts share buyback program by record $150B") is None
     assert money.usd(12.9e9) == "$12.9B" and money.usd(1.4e12) == "$1.4T" and money.usd(300e6) == "$300M"
+
+
+def test_insights_legal_risk_needs_a_lawsuit_or_a_regulator_acting():
+    from aipulse import insights
+    def kind(t):
+        return "court" if insights.COURT.search(t) else "reg" if insights.REGULATOR.search(t) else None
+    assert kind("Class action lawsuit accuses Anthropic of overselling Claude subscriptions") == "court"
+    assert kind("Judge Rules DOD Unlawfully Retaliated Against Anthropic") == "court"
+    assert kind("FTC launches sweeping probe into OpenAI, Anthropic, and other AI labs") == "reg"
+    assert kind("Australia to investigate if OpenAI hack of government health website broke the law") == "reg"
+    assert kind("The Honourable Mr Justice Claude – generative AI in the courtroom") is None
+    assert kind("Former OpenAI researcher builds an AI model that judges options instead of writing text") is None
+    assert kind("Nvidia wants to keep AI agents on a short leash with a watchdog built into its chips") is None
+    rows = insights.exposure([{"title": "Perplexity AI sued over alleged data sharing with Meta and Google", "summary": ""}] * 2)
+    assert rows == [("Perplexity", 2, 0, 0)]
+    ups = insights.open_models([{"title": "Xiaomi MiMo publishes MiMo-V2.6-Flash on Hugging Face", "category": "tool",
+                                 "date": "2026-09-21"}])
+    assert ups == [{"lab": "Xiaomi", "date": "2026-09-21"}] and insights.home("Qwen") == "China"
