@@ -3437,3 +3437,73 @@ def test_promises_and_rule_echoes():
     assert [p["code"] for p in themes["sexual-deepfakes"]["places"]] == ["AU", "CH"]
     assert themes["sexual-deepfakes"]["places"][0]["furthest"] == "Adopted"
     assert "health" not in themes  # one place only: no echo yet
+
+
+def test_insights_counts_against_the_month_before():
+    from aipulse import insights
+    assert insights.change(13, 10) == "+30%" and insights.change(9, 10) == "−10%" and insights.change(10, 10) == "same"
+    assert insights.change(7, 1) == "was 1" and insights.change(3, 0) == "new"
+    card = lambda d, cat, tags: {"date": d, "category": cat, "tags": tags, "title": "A story", "url": "u", "source": "A"}
+    by = {"2026-08": [card("2026-08-03", "news", ["OpenAI"])] * 10,
+          "2026-09": [card("2026-09-01", "news", ["OpenAI", "United States"])] * 12 + [card("2026-09-06", "tool", ["Anthropic"])]}
+    x = insights.numbers("2026-09", by)
+    assert [s for s, _ in x["shares"]] == []  # too few stories in the year to say anything
+    assert x["companies"][0] == ("OpenAI", 12, 10) and x["places"] == [("United States", 12, 0)]
+    assert len(x["daily"]) == 30 and dict(x["daily"])[__import__("datetime").date(2026, 9, 1)] == 12
+    assert "Companies in the news" in insights.body("2026-09", x)
+
+
+def test_insights_busiest_days_need_a_story_two_outlets_carried():
+    from datetime import date, timedelta
+    from aipulse import insights
+    def card(d, n, outlets=1):
+        return [{"date": d, "category": "news", "title": f"Story {d} {k}", "url": f"u{d}{k}", "source": "A",
+                 "also": [{"source": f"S{j}"} for j in range(outlets - 1)] if k == 0 else []} for k in range(n)]
+    mine = []
+    for k in range(30):
+        d = (date(2026, 9, 1) + timedelta(days=k)).isoformat()
+        mine += card(d, 30 if d == "2026-09-29" else 25 if d == "2026-09-15" else 10, outlets=3 if d == "2026-09-29" else 1)
+    from collections import Counter
+    days = Counter(c["date"] for c in mine)
+    daily = [(date(2026, 9, 1) + timedelta(days=k), days[(date(2026, 9, 1) + timedelta(days=k)).isoformat()]) for k in range(30)]
+    p = insights.peaks(mine, daily)
+    assert [x["day"] for x in p] == ["2026-09-29"]  # the 15th was busy too, but no story two outlets carried
+    assert p[0]["x"] == 3.0 and p[0]["stories"][0]["outlets"] == 3
+
+
+def test_money_reads_rounds_valuations_and_deals_from_headlines():
+    from aipulse import money
+    def r(title):
+        return money.read({"title": title, "url": "u"})
+    a = r("Viral AI agent Instinct raises $1B Series C at a $10B valuation")
+    assert (a["kind"], a["company"], a["amount"], a["valuation"]) == ("round", "Instinct", 1e9, 1e10)
+    b = r("Nvidia confirms it will buy Hugging Face for $12.9 billion")
+    assert (b["kind"], b["company"], b["partner"], b["amount"]) == ("acquisition", "Nvidia", "Hugging Face", 12.9e9)
+    c = r("Anthropic signs $9.1 billion data center deal with Bitcoin miner Riot Platforms")
+    assert (c["kind"], c["company"], c["partner"]) == ("compute", "Anthropic", "Riot Platforms")
+    d = r("OpenAI reportedly in talks to raise $30B round at $1.4T valuation")
+    assert d["reported"] and d["company"] == "OpenAI" and d["valuation"] == 1.4e12
+    assert r("AI voice startup ElevenLabs doubles valuation to $22B")["company"] == "ElevenLabs"
+    assert r("After Nvidia's $20B not-acqui-hire, AI chip startup Groq reportedly raising $650M")["amount"] == 650e6
+    assert r("China blocks Meta's $2 billion acquisition of AI startup Manus") is None
+    assert r("AI research startup Listen Labs scrubbed a $1.5B funding round for Salesforce talks") is None
+    assert r("Nvidia boosts share buyback program by record $150B") is None
+    assert money.usd(12.9e9) == "$12.9B" and money.usd(1.4e12) == "$1.4T" and money.usd(300e6) == "$300M"
+
+
+def test_insights_legal_risk_needs_a_lawsuit_or_a_regulator_acting():
+    from aipulse import insights
+    def kind(t):
+        return "court" if insights.COURT.search(t) else "reg" if insights.REGULATOR.search(t) else None
+    assert kind("Class action lawsuit accuses Anthropic of overselling Claude subscriptions") == "court"
+    assert kind("Judge Rules DOD Unlawfully Retaliated Against Anthropic") == "court"
+    assert kind("FTC launches sweeping probe into OpenAI, Anthropic, and other AI labs") == "reg"
+    assert kind("Australia to investigate if OpenAI hack of government health website broke the law") == "reg"
+    assert kind("The Honourable Mr Justice Claude – generative AI in the courtroom") is None
+    assert kind("Former OpenAI researcher builds an AI model that judges options instead of writing text") is None
+    assert kind("Nvidia wants to keep AI agents on a short leash with a watchdog built into its chips") is None
+    rows = insights.exposure([{"title": "Perplexity AI sued over alleged data sharing with Meta and Google", "summary": ""}] * 2)
+    assert rows == [("Perplexity", 2, 0, 0)]
+    ups = insights.open_models([{"title": "Xiaomi MiMo publishes MiMo-V2.6-Flash on Hugging Face", "category": "tool",
+                                 "date": "2026-09-21"}])
+    assert ups == [{"lab": "Xiaomi", "date": "2026-09-21"}] and insights.home("Qwen") == "China"

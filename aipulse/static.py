@@ -404,6 +404,8 @@ def build(conn, out: str | Path) -> int:
     places += topics.build(conn, cards, out, today)  # storylines followed over time, a page each (topics/)
     from . import monthly
     places += monthly.build(conn, cards, out, today)  # a booklet for each month that is over (monthly/)
+    from . import insights
+    places += insights.build(conn, cards, out, today)  # each issue's month in numbers (monthly/<month>/insights/)
     from . import echoes, promises
     places += echoes.build(conn, cards, out, today)  # the tracker's subjects spreading place to place (rule-echoes/)
     places += promises.build(conn, cards, out, today)  # companies' promises and their launches (promises/)
