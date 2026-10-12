@@ -180,8 +180,8 @@ def echoes(cards: list[dict]) -> list[dict]:
 
 LANE, LANE_PHONE = 30, 24  # px between a row's lines of flags (smaller flags on a phone)
 # % of the timeline: flags closer than this go on the next line, so none hides another. A phone's timeline is about
-# 330px wide, so its flags need a wider share of it.
-GAP, GAP_PHONE = 3.6, 8.5
+# 330px wide, so its flags (22px, with their rings and ticks about 35px) need a wider share of it.
+GAP, GAP_PHONE = 3.6, 12
 _STAGES = [(4, "Adopted or set up"), (2, "Passed a vote"), (1, "Proposed"), (0, "Withdrawn or vetoed")]
 
 
