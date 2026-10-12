@@ -34,6 +34,12 @@ STYLE = """
 .cp .places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:20px}
 .cp .places a{display:flex;align-items:center;gap:12px;border:2px solid var(--line);background:var(--bg);padding:12px 14px;color:var(--ink);font-weight:600;text-decoration:none}
 .cp .places a:hover,.cp .places a:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
+.cp .companies{margin:4px 0 22px}  /* company blogs: a tile per company, like the places */
+.cp .companies button{display:flex;align-items:center;gap:12px;border:2px solid var(--line);background:var(--bg);padding:10px 14px;color:var(--ink);font:600 16px var(--body);text-align:left;cursor:pointer}
+.cp .companies button:hover,.cp .companies button:focus-visible{background:color-mix(in srgb,#D55E00 15%,var(--bg))}
+.cp .companies button[aria-pressed="true"]{box-shadow:4px 4px 0 #D55E00}
+.cp .companies .logo{color:#141925;font:700 15px var(--body)}
+.cp .companies small{margin-left:auto;color:var(--muted);font-size:13px}
 .cp .def{font-size:17px;line-height:1.55;margin:10px 0 14px;max-width:64ch}
 .cp .def a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px}
 .cp .more-stories{margin-top:14px;font:600 15px var(--body);color:#fff;background:#0072B2;border:2px solid var(--line);padding:9px 16px;cursor:pointer}
@@ -85,6 +91,14 @@ STYLE = """
 .cp .topics .last .lt{font-size:15px;font-weight:600;line-height:1.35}
 .cp .topics .last .lt:empty{display:none}
 .cp .topics .last .meta{margin:0;font-size:11px}
+.cp:has(> .sd) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
+.cp .sd{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}  /* standards: the three lists side by side */
+.cp .sd .cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.cp .sd section ul{max-height:72vh;overflow-y:auto;padding-right:8px}
+.cp .sd h2{font:400 22px/1.15 var(--display);letter-spacing:.01em}
+.cp .sd .what{font-size:14.5px}
+@media (max-width:860px){.cp .sd .cols{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;padding-bottom:8px}
+  .cp .sd section{flex:0 0 85%;scroll-snap-align:start}}
 .cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .tp{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .topic-hero{position:relative;height:clamp(240px,34vw,380px);margin-top:16px;border:2px solid var(--line);overflow:hidden;box-shadow:6px 6px 0 var(--line)}
