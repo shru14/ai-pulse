@@ -254,9 +254,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .sq{display:inline-block;flex:none;width:12px;height:12px;background:var(--st);border:2px solid var(--line)}
 .cp .ranked{list-style:none;margin:0;padding:0;border-top:2px solid var(--line)}
 .cp .ranked li{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
-.cp .ranked .bar{display:flex;align-items:center;gap:8px;margin-top:6px}  /* the outlets that carried it, as a bar */
-.cp .ranked .bar i{flex:none;width:calc(var(--w) * .8);min-width:10px;height:14px;background:var(--st);border:2px solid var(--line)}
-.cp .ranked .bar b{font:600 12px var(--mono);white-space:nowrap}
+.cp .ranked .reach{display:flex;align-items:center;gap:8px;margin-top:6px}  /* the outlets that carried it, as a bar */
+.cp .ranked .reach i{flex:none;width:calc(var(--w) * .8);min-width:10px;height:14px;background:var(--st);border:2px solid var(--line)}
+.cp .ranked .reach b{font:600 12px var(--mono);white-space:nowrap}
 .cp .ranked .r{font:400 18px/1.1 var(--display)}
 .cp .ranked a{color:var(--ink);font-weight:600;text-decoration:none;line-height:1.35}
 .cp .ranked a:hover,.cp .ranked a:focus-visible{text-decoration:underline}

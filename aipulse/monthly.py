@@ -375,7 +375,7 @@ ISSUE_JS = r"""<script>
       const k = el("span"); k.append(sq(s), NAMES[s]); return k; }));
     const most = Math.max(1, ...d.top.map(e => e.outlets));
     document.getElementById("top-rows").replaceChildren(...d.top.map((e, i) => {
-      const li = el("li"), body = el("div"), bar = el("div", "bar"), fill = el("i");
+      const li = el("li"), body = el("div"), bar = el("div", "reach"), fill = el("i");
       bar.style.setProperty("--st", "var(--f-" + COL[e.stream] + ")");
       fill.style.setProperty("--w", (e.outlets / most * 100).toFixed(0) + "%");  // a bar as long as the outlets that carried it
       bar.append(fill, el("b", null, e.outlets + (e.outlets > 1 ? " outlets" : " outlet")));
