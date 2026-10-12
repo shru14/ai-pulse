@@ -479,12 +479,12 @@ a.subscribe-btn{text-decoration:none}
 .cp .kf tr:first-child td{border-top:1px solid var(--line)}
 .cp .kf tr:last-child td{border-bottom:1px solid var(--line)}
 .cp .kf .k{width:40px}
-.cp .kn{display:inline-grid;place-items:center;width:24px;height:24px;border:1px solid var(--ink);font:600 12px var(--mono)}
+.cp .kn{display:inline-grid;place-items:center;width:24px;height:24px;background:var(--hue,var(--bg));color:#141925;border:1px solid var(--line);font:600 12px var(--mono)}
 .cp .kf .x{white-space:nowrap;text-align:right;padding-right:0}
 .cp .kf .x a{font:600 12px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
-.cp .ex{margin-top:52px;padding-top:12px;border-top:1px solid var(--line);scroll-margin-top:calc(var(--bar-h,64px) + 12px)}
+.cp .ex{--ctx:color-mix(in srgb,var(--hue) 38%,var(--bg));--ctx2:color-mix(in srgb,var(--hue) 18%,var(--bg));--focus:var(--hue);margin-top:52px;padding-top:12px;border-top:3px solid var(--hue);scroll-margin-top:calc(var(--bar-h,64px) + 12px)}
 .cp .ex-k{display:flex;align-items:baseline;gap:12px;margin:0;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.cp .ex-k b{border:1px solid var(--ink);color:var(--ink);padding:0 6px;font-weight:600}
+.cp .ex-k b{background:var(--hue);border:1px solid var(--line);color:#141925;padding:0 6px;font-weight:600}
 .cp .mi .ex h2{border:0;padding:0;margin:10px 0 16px;max-width:44ch;font:400 clamp(20px,2.2vw,26px)/1.3 var(--body);text-transform:none;letter-spacing:0}
 .cp .ins-say{font-size:16px;line-height:1.5;margin:-8px 0 18px;max-width:760px;color:var(--muted)}
 .cp .ins-note{font-size:13px;color:var(--muted);margin:8px 0 0;max-width:900px}
@@ -610,7 +610,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-move .ar.dn{color:var(--c-reg)}
 /* where in the world: tiles, darker = more stories (fixed light tiles in both themes) */
 .cp .ins-tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.cp .ins-tiles li{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:2px solid var(--line);background:color-mix(in srgb,#56B4E9 var(--a),#fff);color:#141925}
+.cp .ins-tiles li{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--line);background:color-mix(in srgb,var(--hue) var(--a),#fff);color:#141925}
 .cp .ins-tiles .nm{font-weight:600;font-size:14px;line-height:1.2}
 .cp .ins-tiles b{font:400 26px/1.1 var(--body)}
 .cp .ins-tiles .ch{font:600 12px var(--mono)}
@@ -618,7 +618,8 @@ a.subscribe-btn{text-decoration:none}
 @media print{
   body:has(.ins-head) header.top,body:has(.ins-head) footer,body:has(.ins-head) .back,.cp .ins-pdf,.cp .mi .issue-nav{display:none!important}
   body:has(.ins-head){background:#fff!important;color:#000}
-  .cp .mi,:root[data-theme] .cp .mi{--bg:#fff;--ink:#000;--muted:#3B3B3B;--line:#000;--ctx:#AADAF4;--ctx2:#D9ECF6;--focus:#0072B2}
+  .cp .mi,:root[data-theme] .cp .mi{--bg:#fff;--ink:#000;--muted:#3B3B3B;--line:#000;--ctx:#AADAF4;--ctx2:#D9ECF6;--focus:#0072B2;
+    --f-tool:#009E73;--f-news:#56B4E9;--f-research:#C85BC3;--f-reg:#D55E00;--f-policy:#E69F00;--f-infra:#8BEC8B;--f-all:#F0E442}
   .cp .ex{break-inside:avoid;page-break-inside:avoid;margin-top:28px}
   .cp .ins-kf{break-after:page}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}

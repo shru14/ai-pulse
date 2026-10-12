@@ -441,6 +441,9 @@ def _since(m: str, month: str) -> str:
     return d.strftime("%b") if m[:4] == month[:4] else d.strftime("%b ’%y")
 
 
+# each exhibit's colour: the site's stream fills (Okabe-Ito), full for what matters and a pale mix for the rest
+HUE = {"compare": "all", "days": "news", "money": "tool", "pace": "tool", "ipo": "research", "rivals": "policy",
+       "risk": "reg", "companies": "news", "themes": "infra", "places": "policy"}
 THEME_NAMES = {"Compute & Data Centers": "Data centres", "Image & Video Generation": "Image & video"}  # short labels
 
 
@@ -644,11 +647,11 @@ def body(month: str, x: dict) -> str:
                          _tiles(x["places"]) + f'<p class="ins-note">Stories naming each place, darker = more. Change against {last}.</p>'))
     # each section is an exhibit headed by its finding (the first sentence); the findings open the page, each a link
     heads = [re.split(r"(?<=[.!?])\s+(?=[A-Z0-9$])", s, maxsplit=1) for _, _, s, _ in sections]
-    found = "".join(f'<tr><td class="k"><span class="kn">{i}</span></td><td>{escape(hd[0])}</td>'
+    found = "".join(f'<tr style="--hue:var(--f-{HUE[k]})"><td class="k"><span class="kn">{i}</span></td><td>{escape(hd[0])}</td>'
                     f'<td class="x"><a href="/{path(month)}#{k}">Exhibit {i} →</a></td></tr>'
                     for i, ((k, *_), hd) in enumerate(zip(sections, heads), 1))
     return (f'<section class="ins-kf"><span class="kind">Key findings</span><table class="kf"><tbody>{found}</tbody></table></section>\n'
-            + "".join(f'<section class="ex" id="{k}"><p class="ex-k"><b>Exhibit {i}</b>{t}</p><h2>{escape(hd[0])}</h2>'
+            + "".join(f'<section class="ex" id="{k}" style="--hue:var(--f-{HUE[k]})"><p class="ex-k"><b>Exhibit {i}</b>{t}</p><h2>{escape(hd[0])}</h2>'
                       + (f'<p class="ins-say">{escape(hd[1])}</p>' if len(hd) > 1 else "") + f'{h}</section>\n'
                       for i, ((k, t, _, h), hd) in enumerate(zip(sections, heads), 1)))
 
