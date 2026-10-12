@@ -487,9 +487,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-deals td{padding:7px 12px 7px 0;vertical-align:middle}
 .cp .ins-deals td:first-child a{font-weight:600}
 .cp .ins-deals .n{font:400 20px var(--display)}
-.cp .kd{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#141925;border:2px solid var(--line);padding:1px 6px;white-space:nowrap}
-.cp .kd-acquisition{background:#CC79A7}
-.cp .kd-compute{background:#E69F00}
+.cp .dk{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#141925;border:2px solid var(--line);padding:1px 6px;white-space:nowrap}
+.cp .dk-acquisition{background:#CC79A7}
+.cp .dk-compute{background:#E69F00}
 .cp .ins-riv li{grid-template-columns:minmax(90px,150px) minmax(0,1fr) 110px minmax(0,150px)}
 .cp .ins-riv .split{display:flex;height:22px;gap:2px}
 .cp .ins-riv .split i{display:flex;align-items:center;font:600 11.5px var(--mono);font-style:normal;color:#141925;border:2px solid var(--line);padding:0 6px;white-space:nowrap;overflow:hidden;min-width:0;box-sizing:border-box}

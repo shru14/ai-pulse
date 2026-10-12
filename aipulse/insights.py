@@ -372,7 +372,7 @@ def _money(f: dict, month: str) -> str:
         rows = "".join(
             f'<tr><td><a href="{escape(d["url"])}" rel="noopener">{escape(d["company"])} {"→" if d["kind"] == "acquisition" else "↔"} '
             f'{escape(d["partner"] or "—")}</a>{rep if d["reported"] else ""}</td>'
-            f'<td><span class="kd kd-{d["kind"]}">{"Acquisition" if d["kind"] == "acquisition" else "Compute deal"}</span></td>'
+            f'<td><span class="dk dk-{d["kind"]}">{"Acquisition" if d["kind"] == "acquisition" else "Compute deal"}</span></td>'
             f'<td class="n">{money.usd(d["amount"])}</td></tr>' for d in f["deals"])
         n, v = f["compute_year"]
         deals = (f'<h3 class="ins-h">Big deals</h3><table class="mt ins-deals"><tbody>{rows}</tbody></table>'
