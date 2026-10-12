@@ -300,10 +300,10 @@ a.subscribe-btn{text-decoration:none}
 .cp .er .nm::before{content:"+";position:absolute;left:12px;top:-1px;font:700 16px var(--mono);color:#D55E00}
 .cp .er[open] .nm::before{content:"−"}
 .cp .er .nm small{display:block;margin-top:2px;color:var(--muted);font:500 11px var(--mono);letter-spacing:.04em}
-.cp .trk{position:relative;display:block;min-height:24px}
+.cp .trk{position:relative;display:block;min-height:24px;height:var(--h)}
 .cp .yl,.cp .tn{position:absolute;top:-14px;bottom:-14px;width:1px;background:color-mix(in srgb,var(--ink) 12%,transparent)}
 .cp .tn{width:2px;background:color-mix(in srgb,#D55E00 55%,transparent)}
-.cp .pin{position:absolute;display:block;margin-left:-15px;width:30px;height:23px;transition:transform .12s;z-index:1}
+.cp .pin{position:absolute;top:var(--t,0);display:block;margin-left:-15px;width:30px;height:23px;transition:transform .12s;z-index:1}
 .cp .pin img{display:block;width:30px;height:23px;object-fit:cover;border:2px solid var(--line);box-sizing:border-box;background:#fff}
 .cp .pin.r4 img{outline:3px solid #009E73;outline-offset:1px}
 .cp .pin.r4::after{content:"✓";position:absolute;right:-9px;top:-9px;width:15px;height:15px;border-radius:50%;background:#009E73;color:#000;border:2px solid var(--line);font:700 9px/15px var(--body);text-align:center;box-sizing:border-box}
@@ -336,6 +336,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .dot{display:block;width:18px;height:18px;border:2px solid var(--line);transition:transform .12s}
 .cp .dot:hover,.cp .dot:focus-visible{transform:scale(1.3)}
 .cp .logo.none{visibility:hidden}
+.cp .logo.ini{font:800 10px/1 var(--body);letter-spacing:-.02em;color:#000}  /* a company without a mark: its initials */
 .cp .ft .logo{color:#000}  /* the marks drawn in currentColor stay dark on their white tile in dark mode */
 .cp .ft > h2{margin-top:34px}
 .cp .pf{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
@@ -387,11 +388,34 @@ a.subscribe-btn{text-decoration:none}
   .cp .cr .dots{grid-row:2;grid-column:2 / -1}
   .cp .olab{flex-wrap:wrap}.cp .olab span{flex-basis:45%}
   .cp .st-hero b{font-size:28px}
-  .cp .ec-axis,.cp .er > summary{grid-template-columns:150px minmax(0,1fr)}
   .cp .er .det{padding-left:14px}
   .cp .ft .mt thead{display:none}
   .cp .ft .mt tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
   .cp .ft .mt td{display:block;border:0;padding:2px 0}}
+/* a phone: the rule echoes fit the screen, each subject's name above its own timeline, with smaller flags placed
+   on their own lines (--tp, worked out for a narrow timeline in echoes.py) */
+@media (max-width:640px){
+  .cp .ec-wrap{overflow:visible}
+  .cp .ec{min-width:0;padding:0 0 4px}
+  .cp .ec-axis,.cp .er > summary{grid-template-columns:minmax(0,1fr)}
+  .cp .ec-axis > span:first-child{display:none}
+  .cp .ec-axis .yrs,.cp .er .trk{margin:0 18px 0 12px}
+  .cp .yrs{font-size:10.5px}
+  .cp .yrs i{display:none}
+  .cp .yrs > span{padding-left:3px}
+  .cp .er > summary{gap:10px;padding:12px 0 14px}
+  .cp .er .nm{padding-left:30px}
+  .cp .er .nm small{display:inline;margin-left:8px}
+  .cp .er .trk{height:var(--hp)}
+  .cp .pin{top:var(--tp,0);margin-left:-11px;width:22px;height:16px}
+  .cp .pin img{width:22px;height:16px;border-width:1.5px}
+  .cp .pin.r4::after{width:12px;height:12px;right:-7px;top:-7px;font-size:7px;line-height:12px;border-width:1.5px}
+  .cp .pin.r4 img,.cp .pin.r2 img,.cp .pin.r3 img{outline-width:2px}
+  .cp .ec-legend{gap:8px 16px;font-size:13px}}
+.cp .yrs i{font-style:normal}
+.cp .yrs b{font-weight:inherit}
+.cp .yrs .sm{display:none}
+@media (max-width:640px){.cp .yrs .lg{display:none}.cp .yrs .sm{display:inline}}
 """
 
 

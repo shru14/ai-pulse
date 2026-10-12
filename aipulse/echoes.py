@@ -178,8 +178,10 @@ def echoes(cards: list[dict]) -> list[dict]:
     return out
 
 
-LANE = 30  # px between a row's lines of flags
-GAP = 3.6  # % of the timeline: flags closer than this go on the next line, so none hides another
+LANE, LANE_PHONE = 30, 24  # px between a row's lines of flags (smaller flags on a phone)
+# % of the timeline: flags closer than this go on the next line, so none hides another. A phone's timeline is about
+# 330px wide, so its flags need a wider share of it.
+GAP, GAP_PHONE = 3.6, 8.5
 _STAGES = [(4, "Adopted or set up"), (2, "Passed a vote"), (1, "Proposed"), (0, "Withdrawn or vetoed")]
 
 
@@ -187,16 +189,24 @@ def _x(iso: str, start: date, days: int) -> float:
     return round((date.fromisoformat(iso[:10]) - start).days / days * 100, 2)
 
 
+def _lane(lines: list[float], x: float, gap: float) -> int:
+    """The first line of flags with room at x (each line's last flag is `gap` or more before it), else a new one."""
+    lane = next((i for i, last in enumerate(lines) if x - last >= gap), len(lines))
+    lines[lane:lane + 1] = [x]
+    return lane
+
+
 def _row(t: dict, start: date, days: int, years: list[tuple[int, float]]) -> str:
-    lanes: list[float] = []
+    wide: list[float] = []  # each line's last flag, on a wide screen and on a phone
+    phone: list[float] = []
     pins = []
     for p in t["places"]:
         x = _x(p["since"], start, days)
-        lane = next((i for i, last in enumerate(lanes) if x - last >= GAP), len(lanes))
-        lanes[lane:lane + 1] = [x]
+        lane = _lane(wide, x, GAP)
+        small = _lane(phone, x, GAP_PHONE)
         tip = f'{p["name"]}: since {_when(p["first"], p["since"])}, {p["furthest"].lower()}'
-        pins.append(f'<span class="pin r{p["rank"]}" style="left:{x}%;top:{lane * LANE}px" title="{escape(tip)}">'
-                    f'<img src="flags/{countries.flag(p["code"])}" alt="{escape(p["name"])}"></span>')
+        pins.append(f'<span class="pin r{p["rank"]}" style="left:{x}%;--t:{lane * LANE}px;--tp:{small * LANE_PHONE}px" '
+                    f'title="{escape(tip)}"><img src="flags/{countries.flag(p["code"])}" alt="{escape(p["name"])}"></span>')
     grid = "".join(f'<i class="yl" style="left:{x}%"></i>' for _, x in years)
     rows = []
     for p in t["places"]:
@@ -211,7 +221,8 @@ def _row(t: dict, start: date, days: int, years: list[tuple[int, float]]) -> str
             f'{escape(countries.place(first["name"]))}, in {_when(first["first"], first["since"])}'
             + (f'. {adopted} adopted it or set a body up.' if adopted else '. None has adopted it yet.'))
     return (f'<details class="er" id="{t["slug"]}"><summary><span class="nm">{escape(t["name"])}'
-            f'<small>{n} places</small></span><span class="trk" style="height:{len(lanes) * LANE - 6}px">{grid}'
+            f'<small>{n} places</small></span><span class="trk" style="--h:{len(wide) * LANE - 6}px;'
+            f'--hp:{len(phone) * LANE_PHONE - 4}px">{grid}'
             f'{"".join(pins)}</span></summary>\n<div class="det"><p>{lead}</p><table class="mt"><thead><tr>'
             f'<th>Since</th><th>Place</th><th>Official record</th><th>Furthest</th></tr></thead>'
             f'<tbody>{"".join(rows)}</tbody></table></div></details>')
@@ -227,7 +238,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     start = date(min((int(p["since"][:4]) for t in found for p in t["places"]), default=today.year), 1, 1)
     days = max((today - start).days, 1)
     years = [(y, _x(f"{y}-01-01", start, days)) for y in range(start.year, today.year + 1)]
-    axis = "".join(f'<span style="left:{x}%">{y}</span>' for y, x in years)
+    # "2024", or "'24" on a phone
+    axis = "".join(f'<span style="left:{x}%"><i>{str(y)[:2]}</i>{str(y)[2:]}</span>' for y, x in years)
     legend = "".join(f'<span><span class="pin r{r}"><img src="flags/{countries.flag("INTL")}" alt=""></span>{w}</span>'
                      for r, w in _STAGES)
     shutil.copy(countries.FLAGS / countries.flag("INTL"), out / "flags" / countries.flag("INTL"))

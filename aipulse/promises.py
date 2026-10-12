@@ -226,9 +226,11 @@ PROMISES_JS = r"""<script>
   const WORDS = {shipped: "Shipped", late: "Shipped late", waiting: "Waiting", "not-found": "Not found yet"};
   const ms = d => Date.parse(d + "T00:00:00Z"), DAY = 864e5, today = box.dataset.today;
   const LOGOS = JSON.parse(document.getElementById("logos").textContent);
-  const logo = name => {  // the front page's own company marks; a blank tile for a company without one
-    const s = el("span", "logo");
-    if(LOGOS[name]) { s.title = name; s.innerHTML = LOGOS[name]; } else s.classList.add("none");
+  // a company's initials, for one without a mark: "IBM", "Baidu" -> "B", "Character.AI" -> "CA"
+  const initials = n => /^[A-Z]{2,4}$/.test(n) ? n : n.split(/[\s.]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  const logo = name => {  // the front page's own company marks, else the initials in the same circle
+    const s = el("span", "logo"); s.title = name;
+    if(LOGOS[name]) s.innerHTML = LOGOS[name]; else { s.classList.add("ini"); s.textContent = initials(name); }
     return s;
   };
   fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(list => {
@@ -239,7 +241,9 @@ PROMISES_JS = r"""<script>
     const TICKS = [0, 3, 6, 9, 12, 18];
     const grid = t => TICKS.forEach(m => { const i = el("i", "yl"); i.style.left = x(m * MONTH) + "%"; t.append(i); });
     const axis = el("div", "pr-axis"), yrs = el("span", "yrs");
-    TICKS.forEach((m, i) => { const s = el("span", i === TICKS.length - 1 ? "end" : "", m ? m + " months" : "Promised");
+    TICKS.forEach((m, i) => {  // "3 months", or "3 mo" on a phone
+      const s = el("span", i === TICKS.length - 1 ? "end" : "");
+      s.append(el("b", "lg", m ? m + " months" : "Promised"), el("b", "sm", m ? m + " mo" : "0"));
       s.style.left = x(m * MONTH) + "%"; yrs.append(s); });
     axis.append(el("span", "ax", "Months after the promise"), yrs);
     const ol = el("ol", "pr-list");
