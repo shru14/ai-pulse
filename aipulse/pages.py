@@ -729,18 +729,28 @@ a.subscribe-btn{text-decoration:none}
 .cp .jb-rt td.n{font:600 14px var(--mono);white-space:nowrap}
 .cp .jb-rt .sw{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--c);margin-right:9px}
 .cp .jb-note{color:var(--muted);font-size:14px;margin:10px 0 0}
-.cp .jb-tl{display:block;width:100%;height:auto;margin-top:6px}
-.cp .jb-tl text{fill:var(--muted);font:500 12px var(--mono);text-anchor:middle}
-.cp .jb-tl text.hd{fill:var(--ink);font-weight:600}
-.cp .jb-tl text.lab{fill:var(--ink);font:700 14px var(--body);text-anchor:start}
-.cp .jb-tl text.end{text-anchor:start}
-.cp .jb-tl .yr{stroke:color-mix(in srgb,var(--ink) 18%,transparent)}
-.cp .jb-tl .ln{stroke:color-mix(in srgb,var(--ink) 30%,transparent);stroke-dasharray:1 3}
+.cp .jb h2{font:600 20px var(--body);text-transform:none;letter-spacing:0;border:0;padding:0;margin:44px 0 10px}
+.cp .jb h2::before{display:none}
+.cp .jb-col{flex:none;max-width:100%;height:auto}
+.cp .jb-col text{fill:var(--muted);font:500 12px var(--mono);text-anchor:middle}
+.cp .jb-col text.top{fill:var(--ink);font-weight:600}
+.cp .jb-col line{stroke:var(--muted)}
+.cp .jb .jb-split .jb-small{align-self:flex-end}
+.cp .jb table.jb-small{width:auto;font-size:13.5px}
+.cp .jb-small td,.cp .jb-small th{padding:5px 22px 5px 0}
+.cp .jb-small td.n{font:500 13px var(--mono);white-space:nowrap}
+.cp .jb table.jb-limits{color:var(--muted)}
 .cp .jb-limits td:first-child{width:30%}
-.cp .jb-cuts td.when{width:1%;white-space:nowrap;color:var(--muted)}
-.cp .jb-cuts td.co{width:1%;white-space:nowrap;font-weight:700}
-.cp .jb-cuts td.jn{width:1%;white-space:nowrap}
-.cp .jb-cuts .src{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.cp .jb-ch{margin:28px 0;padding:18px 22px 8px;background:color-mix(in srgb,var(--c) 9%,var(--bg));border-radius:6px}
+.cp .jb-ch h3{font:600 20px var(--body);text-transform:none;letter-spacing:0;margin:0}
+.cp .jb-ch h3 span{font:500 13px var(--mono);text-transform:none;letter-spacing:0;color:var(--muted);margin-left:10px;white-space:nowrap}
+.cp .jb-ch > p{margin:4px 0 10px;color:var(--muted);font-size:15px}
+.cp .jb-cuts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0 28px}
+.cp .jb-cuts li{padding:12px 0;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .jb-cuts .co{font:600 16px var(--body)}
+.cp .jb-cuts .said{font-size:16px;margin:2px 0 4px}
+.cp .jb-cuts .meta{font:500 12px var(--mono);color:var(--muted)}
+.cp .jb-cuts .src{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.35}
 .cp .ft .jb-cuts .src a{font-weight:400;color:var(--muted);text-decoration:underline}
 /* Papers that made the news: the papers as a newspaper page (the newest leads, the rest in columns), then the
    subjects in a plain table */
@@ -770,9 +780,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .pn-pc{color:var(--muted);font-size:13px}
 @media (max-width:900px){.cp .np-cols{column-count:2}}
 @media (max-width:640px){.cp .np-cols{column-count:1}.cp .np-lead{text-align:left}}
-@media (max-width:640px){.cp .jb-ring{margin:0 auto}
-  .cp .jb-cuts thead{display:none}.cp .jb-cuts tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
-  .cp .jb-cuts td{display:block;border:0;padding:2px 0;width:auto!important;white-space:normal!important}}
+@media (max-width:640px){.cp .jb-ring{margin:0 auto}.cp .jb-ch{padding:14px 14px 4px}}
 """
 
 

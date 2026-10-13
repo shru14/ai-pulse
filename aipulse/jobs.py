@@ -2,7 +2,7 @@
 the company itself gave, in its own statement, memo or filing: AI now does the work, it cut jobs to spend more on AI,
 AI took its customers, it mentioned AI but gave another reason, or it didn't mention AI. The page shows what companies
 say, not whether AI was truly the cause, and leads with the number of cuts (a few giants would swing a count of jobs);
-its last section says what the cuts can't tell us. Every cut is checked by hand against its
+its last section says what the counts are made of. Every cut is checked by hand against its
 story and listed in CHECKED; only cuts the company confirmed are kept (no unconfirmed reports, forecasts or plans).
 `python -m aipulse jobs` lists the job-cut stories not checked yet. The page's numbers and chapter words are worked
 out from CHECKED, so they follow it as cuts are added. Linked from Industry's strip on the front page.
@@ -186,17 +186,17 @@ def _names(xs: list[str]) -> str:
     return xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " and " + xs[-1]
 
 
-def _table(rows: list[dict]) -> str:
+def _list(rows: list[dict]) -> str:
+    """A reason's cuts: the company and what it said up front; the month, the jobs cut and the sources in small type."""
     def src(c: dict) -> str:
         day = date.fromisoformat(c["date"])
         links = [f'<a href="{escape(c["url"])}" rel="noopener">{escape(c["source"])}, {day.day} {_MONTHS[day.month - 1]} '
                  f'{day.year} — {escape(c["title"])}</a>']
         links += [f'<a href="{escape(u)}" rel="noopener">{escape(w)}</a>' for w, u in c.get("also") or []]
         return f'<div class="src">Source{"s" * (len(links) > 1)}: {" · ".join(links)}</div>'
-    body = "".join(f'<tr><td class="when">{escape(c["when"])}</td><td class="co">{escape(c["company"])}</td>'
-                   f'<td class="jn">{escape(c["jobs"])}</td><td>{escape(c["said"])}{src(c)}</td></tr>' for c in rows)
-    return ('<table class="mt jb-cuts"><thead><tr><th>When</th><th>Company</th><th>Jobs cut</th>'
-            f'<th>What the company said</th></tr></thead><tbody>{body}</tbody></table>')
+    items = "".join(f'<li><div class="co">{escape(c["company"])}</div><div class="said">{escape(c["said"])}</div>'
+                    f'<div class="meta">{escape(c["when"])} · jobs cut: {escape(c["jobs"])}</div>{src(c)}</li>' for c in rows)
+    return f'<ul class="jb-cuts">{items}</ul>'
 
 
 # what each reason means: the page's words describe the groups and count them, never draw a conclusion
@@ -210,7 +210,7 @@ MEANS = {
 
 
 def _limits(rows: list[dict], total: int) -> str:
-    """What these cuts can't tell us, as a table: each limit and why it matters."""
+    """About these counts, as a small table: what each count is made of."""
     top = max((c for c in rows if c["n"]), key=lambda c: c["n"], default=None)
     unknown = sum(not c["n"] for c in rows)
     edge = [c for c in rows if c["reason"] == "mentioned"]
@@ -234,9 +234,9 @@ def _limits(rows: list[dict], total: int) -> str:
     limits.append(("Some cuts are missing or partly known",
                    (f"{unknown} cut{'s' * (unknown != 1)} gave no job count. " if unknown else "")
                    + "Cuts the company didn't confirm, and stories we couldn't read to check, are left out."))
-    body = "".join(f"<tr><td><b>{escape(a)}</b></td><td>{escape(b)}</td></tr>" for a, b in limits)
-    return ('<section class="jb-lim"><h2>What these cuts can\'t tell us</h2>\n<table class="mt jb-limits"><thead><tr>'
-            f'<th>Limit</th><th>Why it matters</th></tr></thead><tbody>{body}</tbody></table></section>\n')
+    body = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits)
+    return ('<section class="jb-lim"><h2>About these counts</h2>\n'
+            f'<table class="mt jb-small jb-limits"><tbody>{body}</tbody></table></section>\n')
 
 
 def _jobs_text(n: int) -> str:
@@ -244,8 +244,8 @@ def _jobs_text(n: int) -> str:
 
 
 def page_body(rows: list[dict]) -> str:
-    """The page under the masthead: the cuts by the reason the company gave, when each was announced, each reason's cuts,
-    and what the cuts can't tell us. Every number is worked out from the rows."""
+    """The page under the masthead: the cuts by the reason the company gave, the cuts by year, each reason's cuts,
+    and what the counts are made of. Every number is worked out from the rows."""
     counted = [c for c in rows if c["n"]]
     total = sum(c["n"] for c in counted)
     groups = {k: [c for c in rows if c["reason"] == k] for k in REASONS}
@@ -268,10 +268,10 @@ def page_body(rows: list[dict]) -> str:
             f'<p class="intro">{escape(intro)}</p>\n'
             f'<section class="jb-answer"><h2>The cuts, by the reason the company gave</h2>\n'
             f'<div class="jb-split">{_ring(rows, shown)}{table}</div>\n<p class="jb-note">{escape(note)}</p></section>\n'
-            f'<section class="jb-years"><h2>When each cut was announced</h2>\n{_timeline(rows, shown)}\n'
-            '<p class="jb-note">Each dot is one cut, placed at the month it was announced, on the line of the reason the '
-            'company gave. Hover a dot for the company.</p></section>\n'
-            f'{_chapters(groups)}{_limits(rows, total)}</div>\n')
+            f'<section class="jb-years"><h2>The cuts, by year</h2>\n{_years(rows, shown)}\n'
+            '<p class="jb-note">Each column counts the cuts announced that year, split by the reason the company gave '
+            '(colours as in the ring).</p></section>\n'
+            f'<h2>Each cut, by the reason the company gave</h2>\n{_chapters(groups)}{_limits(rows, total)}</div>\n')
 
 
 def _chapters(groups: dict[str, list[dict]]) -> str:
@@ -279,9 +279,10 @@ def _chapters(groups: dict[str, list[dict]]) -> str:
     chapters = ""
     for k, (label, colour) in REASONS.items():
         if groups[k]:
-            chapters += (f'<section class="jb-ch"><h2 style="--chip:{colour}">{escape(label)}: '
-                         f'{_cuts_word(len(groups[k]))}</h2>\n<p class="intro">{escape(MEANS[k])}</p>\n'
-                         f'{_table(groups[k])}</section>\n')
+            jobs = sum(c["n"] for c in groups[k] if c["n"])
+            chapters += (f'<section class="jb-ch" style="--c:{colour}"><h3>{escape(label)} <span>'
+                         f'{_cuts_word(len(groups[k]))}{_jobs_text(jobs)}</span></h3>\n<p>{escape(MEANS[k])}</p>\n'
+                         f'{_list(groups[k])}</section>\n')
     return chapters
 
 
@@ -299,38 +300,30 @@ def _ring(rows: list[dict], shown: list[tuple]) -> str:
             f'company gave">{arcs}<text class="big" y="4">{len(rows)}</text><text y="26">cuts</text></svg>')
 
 
-def _timeline(rows: list[dict], shown: list[tuple]) -> str:
-    """One line per reason across the years; each cut a dot at the month it was announced (cuts in the same month sit
-    side by side); each line ends with its cuts and jobs, and each year is counted under the axis."""
-    first, last = int(min(c["month"][:4] for c in rows)), int(max(c["month"][:4] for c in rows))
-    x0, x1, lane, top = 250, 850, 46, 30
-    m0, m1 = first * 12, (last + 1) * 12
-    def x(m: float) -> float:
-        return x0 + (x1 - x0) * (m - m0) / (m1 - m0)
-    h = top + lane * len(shown)
-    s = f'<line class="yr" x1="{x(m1)}" y1="20" x2="{x(m1)}" y2="{h}"/>'
-    for y in range(first, last + 1):
-        n = sum(c["month"][:4] == str(y) for c in rows)
-        s += (f'<line class="yr" x1="{x(y * 12)}" y1="20" x2="{x(y * 12)}" y2="{h}"/>'
-              f'<text class="hd" x="{x(y * 12 + 6)}" y="13">{y}</text>'
-              f'<text x="{x(y * 12 + 6)}" y="{h + 18}">{_cuts_word(n)}</text>')
-    for i, (k, label, colour) in enumerate(shown):
-        cy = top + lane * i + lane / 2
-        g = sorted((c for c in rows if c["reason"] == k), key=lambda c: c["month"])
-        jobs = sum(c["n"] for c in g if c["n"])
-        s += (f'<line class="ln" x1="{x0}" y1="{cy}" x2="{x1}" y2="{cy}"/>'
-              f'<text class="lab" x="0" y="{cy + 5}">{escape(label)}</text>'
-              f'<text class="hd end" x="{x1 + 14}" y="{cy + 4}">{_cuts_word(len(g))}</text>'
-              + (f'<text class="end" x="{x1 + 72}" y="{cy + 4}">~{_num(jobs)} jobs</text>' if jobs else ""))
-        seen: dict[str, int] = {}
-        for c in g:
-            yy, mm = map(int, c["month"].split("-"))
-            seen[c["month"]] = seen.get(c["month"], 0) + 1
-            s += (f'<circle cx="{x(yy * 12 + mm - .5) + (seen[c["month"]] - 1) * 13:.1f}" cy="{cy}" r="5.5" '
-                  f'fill="{colour}"><title>{escape(c["company"])}, {escape(c["when"])}: {escape(c["jobs"])}</title>'
-                  '</circle>')
-    return (f'<svg class="jb-tl" viewBox="0 0 1000 {h + 26}" role="img" aria-label="Each cut by the month it was '
-            f'announced and the reason the company gave">{s}</svg>')
+def _years(rows: list[dict], shown: list[tuple]) -> str:
+    """A narrow column per year, its height the cuts announced that year, split by reason in the ring's colours, with
+    the year's count on top; beside it a small table of each year's cuts and jobs."""
+    years = sorted({c["month"][:4] for c in rows})
+    most = max(sum(c["month"][:4] == y for c in rows) for y in years)
+    h, cw, step, x0 = 180, 26, 70, 30
+    g = ""
+    for i, y in enumerate(years):
+        x, base, ys = x0 + i * step, h, [c for c in rows if c["month"][:4] == y]
+        for k, label, colour in shown:
+            if n := sum(c["reason"] == k for c in ys):
+                bh = h * .86 * n / most
+                g += (f'<rect x="{x}" y="{base - bh:.1f}" width="{cw}" height="{bh - 1.5:.1f}" fill="{colour}">'
+                      f'<title>{y}, {escape(label)}: {_cuts_word(n)}</title></rect>')
+                base -= bh
+        g += f'<text class="top" x="{x + cw / 2}" y="{base - 7:.1f}">{len(ys)}</text><text x="{x + cw / 2}" y="{h + 18}">{y}</text>'
+    w = x0 + step * (len(years) - 1) + cw + 30
+    g += f'<line x1="{x0 - 12}" y1="{h}" x2="{w - 18}" y2="{h}"/>'
+    table = "".join(f'<tr><td>{y}</td><td class="n">{sum(c["month"][:4] == y for c in rows)}</td><td class="n">'
+                    + (f'about {_num(n)}' if (n := sum(c["n"] for c in rows if c["month"][:4] == y and c["n"])) else "—")
+                    + '</td></tr>' for y in years)
+    return (f'<div class="jb-split"><svg class="jb-col" viewBox="0 0 {w} {h + 26}" width="{w}" role="img" aria-label="The '
+            f'cuts announced each year, by the reason the company gave">{g}</svg>\n<table class="mt jb-small"><thead><tr>'
+            f'<th>Year</th><th>Cuts</th><th>Jobs, where given</th></tr></thead><tbody>{table}</tbody></table></div>')
 
 
 def lists_in(source: str) -> tuple[set[str], set[str]]:
