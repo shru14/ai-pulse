@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -644,7 +644,8 @@ def test_static_build_holds_every_card(tmp_path):
         tracker_pages += list((tmp_path / "site" / stream).glob("*/index.html"))
     tracker_pages += list((tmp_path / "site" / "topics").glob("**/index.html"))  # and the topics, a page each
     tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
-    tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html"]
+    tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html",
+                     tmp_path / "site" / "harm-to-rule" / "index.html"]
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and '"kind": "tutorial"' in tutorials and "Updated" not in tutorials
@@ -3438,6 +3439,24 @@ def test_promises_and_rule_echoes():
     assert [p["code"] for p in themes["sexual-deepfakes"]["places"]] == ["AU", "CH"]
     assert themes["sexual-deepfakes"]["places"][0]["furthest"] == "Adopted"
     assert "health" not in themes  # one place only: no echo yet
+
+
+def test_harm_to_rule():
+    from aipulse import harms, incidents
+    harm = lambda i, day, title: {"id": i, "date": day, "title": title, "url": f"https://h/{i}", "source": incidents.SOURCE,
+                                  "category": "news", "action": incidents.INCIDENT}
+    rec = lambda i, day, title, place: {"id": i, "date": day, "title": title, "url": f"https://r/{i}", "source": "congress.gov",
+                                        "category": "regulation", "jurisdictions": [place], "action": "proposal"}
+    # titles only, stricter than the tracker: a school named in passing isn't a harm to children
+    assert harms.subjects_of(harm("x", "2024-01-01", "Robotaxi Reportedly Struck Pedestrian Near Elementary School")) == []
+    assert harms.subjects_of(harm("y", "2024-01-01", "Man Reportedly Committed Suicide Following Conversation with Chai Chatbot")) == ["companions"]
+    cards = [harm(f"h{i}", f"2024-0{i}-10", "Character.ai Chatbot Reportedly Targeted Minors") for i in range(1, 7)]
+    cards += [rec("a", "2024-03-01", "H.R. 1: CHATBOT Act", "US"), rec("b", "2025-01-01", "S. 2: Chatbot Safety Act", "US"),
+              rec("c", "2022-05-01", "H.R. 3: An AI chatbot bill", "US")]  # before 2023: left out
+    found = {s["slug"]: s for s in harms.subjects(cards)}
+    assert set(found) == {"companions"}  # children has its 6 harms but no rule
+    assert [r["card"]["id"] for r in found["companions"]["rules"]] == ["a", "b"]
+    assert [r["before"] for r in found["companions"]["rules"]] == [2, 6]
 
 
 def test_insights_counts_against_the_month_before():
