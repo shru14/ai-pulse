@@ -29,8 +29,17 @@ RARE_BEFORE = 20  # a name in fewer headlines than this before the promise is th
 SUBJECT = 32  # a headline's subject: a company named within its first characters, before the verb
 
 # Hand corrections, by the promise's card id: the launch's URL where the matcher missed one, or None to drop a
-# headline that isn't a promise.
-FIXES: dict[str, str | None] = {}
+# headline that isn't a promise, or a launch we have no headline to show for (checked 13 Oct 2026).
+FIXES: dict[str, str | None] = {
+    "b25206159a138424": "https://the-decoder.com/massive-windows-11-update-brings-microsoft-copilot-and-more-ai-features/",
+    "dd5f00c31b7c8c45": "https://techcrunch.com/2024/10/28/apple-intelligence-goes-live-with-ios-181-update/",  # not the WWDC unveiling
+    "8efb094f31530fb8": None,  # Apple "looking to add" AI search to Safari: court testimony, not a promise
+    "eb78045f807739f6": None,  # ChatGPT connectors: a test, not a release
+    "0515c5497040d217": None,  # "Ph.D.-level super-agents": a rumour
+    "0a86b4a47575210c": None,  # DGX Spark shipped 15 Oct 2025; no launch headline in our data
+    "fd44964b241238f5": None,  # Gemini for under-13s rolled out May 2025; no launch headline in our data
+    "5c60dc8e46412040": None,  # Character.AI Stories: the headline is the launch day's
+}
 
 _V = (r"(launch|release|ship|roll out|unveil|debut|open[- ]source|introduce|bring|add|offer|start|begin"
       r"|make .{0,30} available)\b")
@@ -115,11 +124,13 @@ def names(title: str, company: str) -> set[str]:
 def due(title: str, d: date) -> date | None:
     """The date the headline gives for the release, read generously (the last day it could mean)."""
     t, y = title.lower(), d.year
-    if re.search(r"coming weeks|next week|later this month|this month", t):
+    if "next week" in t:
+        return d + timedelta(days=14)
+    if re.search(r"coming weeks|later this month|this month", t):
         return d + timedelta(days=60)
     if "coming months" in t:
         return d + timedelta(days=183)
-    if re.search(r"later this year|this (summer|fall|autumn|winter)|by (the )?end of (the |this )?year|by year-end", t):
+    if re.search(r"this year|this (summer|fall|autumn|winter)|by (the )?end of (the |this )?year|by year-end", t):
         return date(y, 12, 31)
     if "next month" in t:
         return d + timedelta(days=62)
@@ -224,7 +235,7 @@ PROMISES_JS = r"""<script>
   const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
   const link = e => { const a = el("a", "", e.title); a.href = e.url; a.rel = "noopener"; return a; };
   const days = n => n === 1 ? "1 day" : n + " days";
-  const WORDS = {shipped: "Shipped", late: "Shipped late", waiting: "Waiting"};
+  const WORDS = {shipped: "Shipped", late: "Shipped late", waiting: "No launch found yet"};
   const ms = d => Date.parse(d + "T00:00:00Z"), DAY = 864e5, today = box.dataset.today;
   const LOGOS = JSON.parse(document.getElementById("logos").textContent);
   // a company's initials, for one without a mark: "IBM", "Baidu" -> "B", "Character.AI" -> "CA"
@@ -267,12 +278,12 @@ PROMISES_JS = r"""<script>
         info.append(l);
       }
       const since = d => after(d) - after(p.date);  // days from the promise
-      // how long: to the launch; still waiting, so far
+      // how long: to the launch; with none found yet, since the promise
       const n = p.launch ? p.days : since(today);
       const t = el("div", "pt"), b = el("span", "pbar " + p.status);
       b.style.width = "max(6px, " + (Math.min(n, SPAN) / SPAN * 100).toFixed(2) + "%)";
       const said = p.launch ? (p.days === 0 ? "Same day" : days(p.days)) + (p.late ? ", " + days(p.late) + " late" : "") :
-        days(n) + " so far" + (p.due ? ", due " + fmt(p.due) : "");
+        days(n) + " since the promise" + (p.due ? ", due " + fmt(p.due) : "");
       t.append(b, el("span", "lab", said));
       li.append(info, t); ol.append(li);
     });
@@ -282,7 +293,7 @@ PROMISES_JS = r"""<script>
     const median = a => { if(!a.length) return null; const s = [...a].sort((m, n) => m - n), h = s.length >> 1;
       return s.length % 2 ? s[h] : Math.round((s[h - 1] + s[h]) / 2); };
     const stats = document.getElementById("pstats"), out = el("div", "st-out"), obar = el("div", "obar"), olab = el("div", "olab");
-    out.append(el("h3", "", "How " + list.length + " promises turned out"));
+    out.append(el("h3", "", "Where " + list.length + " promises stand"));
     ORDER.forEach(s => {
       const n = list.filter(p => p.status === s).length; if(!n) return;
       const seg = el("span", "seg " + s); seg.style.flexGrow = n; seg.title = WORDS[s] + ": " + n;
@@ -292,7 +303,9 @@ PROMISES_JS = r"""<script>
     out.append(obar, olab);
     const hero = el("div", "st-hero");
     const tile = (n, unit, words) => { if(n == null) return; const d = el("div"); d.append(el("b", "", n + " " + unit), el("span", "", words)); hero.append(d); };
-    const wait = median(list.filter(p => p.launch).map(p => p.days)), over = median(list.filter(p => p.late).map(p => p.late));
+    // a typical overrun only from 5 late launches up: from fewer it is one or two promises, not a pattern
+    const lates = list.filter(p => p.late).map(p => p.late);
+    const wait = median(list.filter(p => p.launch).map(p => p.days)), over = lates.length >= 5 ? median(lates) : null;
     tile(wait, wait === 1 ? "day" : "days", "typical wait from promise to launch");
     tile(over, over === 1 ? "day" : "days", "typical overrun, when a launch came after its date");
     const co = el("div", "st-co"), grid = el("div", "crs"); co.append(el("h3", "", "By company"), grid);
@@ -310,7 +323,7 @@ PROMISES_JS = r"""<script>
     stats.replaceChildren(out, hero, co);
     // the filter buttons, which are also the colours' key
     const count = s => list.filter(p => !s || p.status === s).length;
-    [["", "All"], ["shipped", "Shipped"], ["late", "Shipped late"], ["waiting", "Waiting"]].forEach(([s, w]) => {
+    [["", "All"], ["shipped", "Shipped"], ["late", "Shipped late"], ["waiting", WORDS.waiting]].forEach(([s, w]) => {
       const b = el("button", "chip " + (s || "all")); b.type = "button"; b.setAttribute("aria-pressed", String(!s));
       b.append(el("span", "sw"), w + " ", el("b", "", count(s)));
       b.addEventListener("click", () => {
