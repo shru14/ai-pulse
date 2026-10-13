@@ -291,6 +291,47 @@ def page_body(rows: list[dict]) -> str:
             f'coloured by the reason the company gave.</p></section>\n{chapters}{_limits(rows, total)}</div>\n')
 
 
+def lists_in(source: str) -> tuple[set[str], set[str]]:
+    """The URLs in CHECKED and LEFT_OUT of another copy of this file (main's, to tell what a branch adds)."""
+    import ast
+    found = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:
+            for t in (node.targets if isinstance(node, ast.Assign) else [node.target]):
+                if isinstance(t, ast.Name) and t.id in ("CHECKED", "LEFT_OUT"):
+                    items = node.value.keys if isinstance(node.value, ast.Dict) else node.value.elts
+                    found[t.id] = {k.value for k in items if isinstance(k, ast.Constant)}
+    return found.get("CHECKED", set()), found.get("LEFT_OUT", set())
+
+
+def note(new: dict[str, dict], dropped: list[str], branch: str) -> tuple[str, str, str]:
+    """(subject, text, html) of the project inbox's note: the cuts a jobs/<day> branch adds to CHECKED, a row each, the
+    stories it adds to LEFT_OUT, and how to publish them (they go live only once approved)."""
+    from .glossary import REPO
+    n = len(new)
+    subject = f"AI Pulse, Jobs blamed on AI: {n} new cut{'s' * (n != 1)} to approve"
+    lead = f"Drafted today on the branch {branch}, not on the site yet:"
+    tail = f"To publish them, tell Claude: merge {branch}. To change one, say which. Changes: {REPO}/compare/main...{branch}"
+    left = f"Also checked and left out: {len(dropped)} stor{'ies' if len(dropped) != 1 else 'y'}." if dropped else ""
+    text = [lead, ""] + [f"{c['company']}, {c['month']}: {c['jobs']} ({REASONS[c['reason']][0]})\n  {c['said']}\n  {u}\n"
+                         for u, c in new.items()] + ([left, ""] if left else []) + [tail]
+    cell = 'style="padding:8px 10px;border-bottom:1px solid #e3e5e8;vertical-align:top;font-size:14px"'
+    rows = "".join(f'<tr><td {cell}><b>{escape(c["company"])}</b></td><td {cell}>{escape(c["month"])}</td>'
+                   f'<td {cell}>{escape(c["jobs"])}</td><td {cell}>{escape(REASONS[c["reason"]][0])}</td>'
+                   f'<td {cell}>{escape(c["said"])}</td><td {cell}><a href="{escape(u)}" style="color:#1a4fd6">Story</a></td>'
+                   '</tr>' for u, c in new.items())
+    html = ('<!doctype html><html><body style="margin:0;padding:16px;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a">'
+            f'<p style="font-size:15px">{escape(lead)}</p>'
+            '<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:820px"><tr>'
+            + "".join(f'<th align="left" {cell}>{h}</th>' for h in ("Company", "Month", "Jobs", "Reason", "What it said",
+                                                                    "Source"))
+            + f'</tr>{rows}</table>' + (f'<p style="font-size:14px">{escape(left)}</p>' if left else "")
+            + f'<p style="font-size:13px;color:#5f6368">To publish them, tell Claude: merge {escape(branch)}. To change one, '
+            f'say which. <a href="{REPO}/compare/main...{escape(branch)}" style="color:#1a4fd6">See the changes</a></p>'
+            '</body></html>')
+    return subject, "\n".join(text), html
+
+
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write jobs-blamed-on-ai/. Returns its path."""
     rows = cuts(cards)

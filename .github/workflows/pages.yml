@@ -24,7 +24,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write  # the data branch (below); the code itself is never changed
   pages: write
   id-token: write
 
@@ -175,6 +175,20 @@ jobs:
 
       - name: Build the site
         run: python -m aipulse --db aipulse.db build --out site
+
+      # The daily cloud jobs (the glossary's and Jobs blamed on AI's drafts) can reach GitHub but not the site: a copy of
+      # data.json, gzipped, as the only file of the data branch, replaced each full run (one commit, no history kept).
+      - name: Keep a copy of data.json on the data branch
+        if: env.QUICK != 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          d="$RUNNER_TEMP/data-branch"; mkdir -p "$d"; gzip -9 -c site/data.json > "$d/data.json.gz"; cd "$d"
+          git init -q -b data && git add data.json.gz
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "data.json from run $GITHUB_RUN_ID"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
 
       # Shown on the run's page (github.com/<user>/<repo>/actions): progress you can check from a phone.
       - name: Report progress

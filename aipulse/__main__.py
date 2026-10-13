@@ -10,6 +10,13 @@ import traceback
 from datetime import date, datetime, timedelta, timezone
 
 from . import cluster, rss, store
+
+
+def site_data(path: str) -> list[dict]:
+    """The stories in the site's data.json, or data.json.gz (the data branch's copy, for the daily cloud jobs)."""
+    import gzip
+    with (gzip.open if path.endswith(".gz") else open)(path, "rt", encoding="utf-8") as f:
+        return json.load(f)["cards"]
 from .collect import collect, reclassify, resummarize, retag
 from .server import serve
 
@@ -84,7 +91,8 @@ def main():
                     "before the day that arrived after it go in too")
     dg.add_argument("--seen", metavar="FILE", help="write the newest arrival this email sees to FILE (the next one's --since)")
     gl = sub.add_parser("glossary", help="words recent stories use that the glossary doesn't explain yet (to write up by hand)")
-    gl.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json instead of the database")
+    gl.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) instead "
+                    "of the database")
     gn = sub.add_parser("glossary-note", help="email the project inbox the words a glossary/ branch adds, to approve")
     gn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/glossary.py, to compare with")
     gn.add_argument("--branch", required=True, help="the branch the words are on (glossary/<day>)")
@@ -94,6 +102,12 @@ def main():
     jb = sub.add_parser("jobs", help="job-cut stories not checked yet for Jobs blamed on AI (to check by hand and add to "
                         "jobs.CHECKED or jobs.LEFT_OUT)")
     jb.add_argument("--days", type=int, default=30, help="stories from the last DAYS days (default 30; 0 for all since 2023)")
+    jb.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) instead "
+                    "of the database")
+    jn = sub.add_parser("jobs-note", help="email the project inbox the cuts a jobs/ branch adds, to approve")
+    jn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/jobs.py, to compare with")
+    jn.add_argument("--branch", required=True, help="the branch the cuts are on (jobs/<day>)")
+    jn.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     sub.add_parser("board", help="keep today's leaderboard ranks (the start of the day's and each story's best)")
     sub.add_parser("memes", help="ask Gemini (GEMINI_API_KEY, free tier) for last week's meme once and keep it")
     em = sub.add_parser("embed", help="story vectors for the weekly dossier's search (offline model; new or changed stories)")
@@ -339,7 +353,7 @@ def main():
     elif a.cmd == "glossary":
         from . import glossary
         if a.data:  # the site's own data.json (the daily glossary job has no database)
-            recent = json.load(open(a.data, encoding="utf-8"))["cards"]
+            recent = site_data(a.data)
         else:
             recent, _ = store.cards(store.connect(a.db), days=glossary.CANDIDATE_DAYS, limit=10**6)
         print(f"{len(glossary.ENTRIES)} entries. Not explained yet, used in the last {glossary.CANDIDATE_DAYS} days "
@@ -357,12 +371,30 @@ def main():
                 print(f"    -> {p['launch']['date']} {p['launch']['title']}\n       {p['launch']['url']}")
     elif a.cmd == "jobs":
         from . import jobs
-        found, _ = store.cards(store.connect(a.db), limit=10**9)
+        # the site's own data.json for the daily job, which has no database (its last 3 months)
+        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
         since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else jobs.SINCE
         todo = jobs.candidates(found, since)
         print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+    elif a.cmd == "jobs-note":
+        # A jobs/<day> branch's new cuts, to the project inbox for approval (.github/workflows/jobs-note.yml)
+        from . import digest, jobs
+        had, had_out = jobs.lists_in(open(a.base, encoding="utf-8").read())
+        new = {u: c for u, c in jobs.CHECKED.items() if u not in had}
+        dropped = [u for u in jobs.LEFT_OUT if u not in had_out]
+        if not new and not dropped:
+            print("No new cuts on this branch.")
+        elif a.dry_run:
+            open(a.dry_run, "w", encoding="utf-8").write(jobs.note(new, dropped, a.branch)[2])
+            print(f"{len(new)} new cuts -> wrote {a.dry_run}")
+        elif not os.environ.get("DIGEST_EMAIL"):
+            print(f"{len(new)} new cuts; DIGEST_EMAIL isn't set, so nothing was sent")
+        else:
+            note = jobs.note(new, dropped, a.branch)
+            digest.send(digest.sender(), *note)
+            print(f"Sent to the project inbox: {note[0]}")
     elif a.cmd == "glossary-note":
         # A glossary/<day> branch's new words, to the project inbox for approval (.github/workflows/glossary-note.yml)
         import importlib.util
