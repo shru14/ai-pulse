@@ -104,6 +104,8 @@ def main():
     jb.add_argument("--days", type=int, default=30, help="stories from the last DAYS days (default 30; 0 for all since 2023)")
     jb.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) instead "
                     "of the database")
+    pp = sub.add_parser("press", help="stories that may report on a paper, not checked yet for Papers that made the "
+                        "news (to check by hand and add to press.CHECKED or press.LEFT_OUT)")
     jn = sub.add_parser("jobs-note", help="email the project inbox the cuts a jobs/ branch adds, to approve")
     jn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/jobs.py, to compare with")
     jn.add_argument("--branch", required=True, help="the branch the cuts are on (jobs/<day>)")
@@ -119,8 +121,6 @@ def main():
     mo.add_argument("--due", action="store_true", help="only say whether one is due: exit 0 if so, 1 if not")
     mo.add_argument("--limit", type=int, default=4, help="at most this many months this run (newest first)")
     mo.add_argument("--month", help="write this month's (YYYY-MM) again")
-    pl = sub.add_parser("plain", help="the last week's papers in one plain sentence each (offline open-source model)")
-    pl.add_argument("--minutes", type=float, default=8, help="stop after this many minutes (default 8)")
     sub.add_parser("audit", help="check every source's robots.txt and terms again (on a PC, monthly; see aipulse/terms.py)")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
@@ -380,6 +380,12 @@ def main():
         print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+    elif a.cmd == "press":
+        from . import press
+        todo = press.candidates(store.cards(store.connect(a.db), limit=10**9)[0])
+        print(f"{len(press.CHECKED)} checked, {len(press.LEFT_OUT)} left out. To check from {press.SINCE} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
     elif a.cmd == "jobs-note":
         # A jobs/<day> branch's new cuts, to the project inbox for approval (.github/workflows/jobs-note.yml)
         from . import digest, jobs
@@ -432,9 +438,6 @@ def main():
             conn.execute("DELETE FROM monthly WHERE month = ?", (a.month,))
             conn.commit()
         monthly.summarise(conn, today, limit=a.limit, only=a.month)
-    elif a.cmd == "plain":
-        from . import plain
-        plain.update(store.connect(a.db), minutes=a.minutes)
     elif a.cmd == "dossiers":
         from . import embed, subscribers, weekly
         key = os.environ.get("DIGEST_LIST_KEY", "")
