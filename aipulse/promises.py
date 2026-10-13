@@ -1,9 +1,9 @@
 """Promised vs shipped (promises/): headlines in which a company says it will release something ("OpenAI plans to
 launch its GPT Store next week"), each matched to a later headline saying it did ("OpenAI launches GPT Store"), drawn
 as a bar from the promise to the launch. The company must be the subject of both headlines, and every name the promise
-gives ("GPT", "Store") must be in the launch's headline. A promise past its date (or 18 months old) with no launch found
-is left off the page: we can't tell a broken promise from a launch reported in words we don't match. FIXES corrects the matcher by hand. Rebuilt with the
-site, so a new promise or launch joins at the next run. Headlines are the outlets' own, so the promises load in the
+gives ("GPT", "Store") must be in the launch's headline. A promise past its date (or 18 months old) with no launch
+found is left off the page: we can't tell a broken promise from a launch reported in words we don't match. FIXES
+corrects the matcher by hand. Rebuilt with the site, so a new promise or launch joins at the next run. Headlines are the outlets' own, so the promises load in the
 reader's browser from promises.json, as the topics' timelines do; the page itself holds only our own words. Linked
 from Industry's strip on the front page.
 """
@@ -326,7 +326,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     body = (f'<div class="ft">\n<h1>Promised vs shipped</h1>\n<p class="intro">{escape(what)} We look for a launch '
             'headline up to 18 months later.</p>\n'
             '<section class="pstats" id="pstats" aria-label="The promises in numbers"></section>\n'
-            '<h2>Every promise</h2>\n'
+            '<h2>The promises</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
             f'<div class="pr-wrap" id="promises" data-src="/{PATH}promises.json" data-today="{today.isoformat()}">'
             '<p class="meta">Loading…</p></div>\n</div>\n'
