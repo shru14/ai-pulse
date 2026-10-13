@@ -718,6 +718,29 @@ a.subscribe-btn{text-decoration:none}
   .cp table.mt.sl{display:block;overflow-x:auto}  /* Storylines that moved: swipe for the date and the rest */
   .cp .mt.sl td:nth-child(2),.cp .mt.sl td:nth-child(3){min-width:170px}
 }
+/* Jobs blamed on AI: the question, one plain bar per reason, then a chapter per reason with its cuts */
+.cp .jb-q{font:400 clamp(20px,2.6vw,26px)/1.3 var(--body);margin:0 0 10px;max-width:46ch}
+.cp .jb .jb-answer > .intro,.cp .jb .jb-ch > .intro{max-width:70ch;font-size:17px;line-height:1.5;color:var(--ink)}
+.cp .jb-bars{margin-top:6px}
+.cp .jb-bar{display:grid;grid-template-columns:minmax(150px,250px) minmax(0,1fr);gap:4px 16px;align-items:center;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+.cp .jb-bar .lab{font:700 16px/1.3 var(--body);grid-row:span 2}
+.cp .jb-bar .val{font-size:15px}
+.cp .jb-bar .trk{height:24px}
+.cp .jb-bar .trk i{display:block;height:100%;background:var(--c);border:2px solid var(--line)}
+.cp .jb-note{color:var(--muted);font-size:14px;margin:10px 0 0}
+.cp .jb-yr .trk{display:flex;gap:2px}
+.cp .jb-yr .trk i{display:block;height:100%;background:var(--c);border:2px solid var(--line)}
+.cp .jb-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;margin:4px 0 6px}
+.cp .jb-key i{display:inline-block;width:12px;height:12px;background:var(--c);border:2px solid var(--line);margin-right:6px;vertical-align:-1px}
+.cp .jb-limits td:first-child{width:30%}
+.cp .jb-cuts td.when{width:1%;white-space:nowrap;color:var(--muted)}
+.cp .jb-cuts td.co{width:1%;white-space:nowrap;font-weight:700}
+.cp .jb-cuts td.jn{width:1%;white-space:nowrap}
+.cp .jb-cuts .src{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.cp .ft .jb-cuts .src a{font-weight:400;color:var(--muted);text-decoration:underline}
+@media (max-width:640px){.cp .jb-bar{grid-template-columns:minmax(0,1fr)}.cp .jb-bar .lab{grid-row:auto}
+  .cp .jb-cuts thead{display:none}.cp .jb-cuts tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
+  .cp .jb-cuts td{display:block;border:0;padding:2px 0;width:auto!important;white-space:normal!important}}
 """
 
 

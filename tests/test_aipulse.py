@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -645,7 +645,7 @@ def test_static_build_holds_every_card(tmp_path):
     tracker_pages += list((tmp_path / "site" / "topics").glob("**/index.html"))  # and the topics, a page each
     tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
     tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html",
-                     tmp_path / "site" / "harm-to-rule" / "index.html"]
+                     tmp_path / "site" / "harm-to-rule" / "index.html", tmp_path / "site" / "jobs-blamed-on-ai" / "index.html"]
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and '"kind": "tutorial"' in tutorials and "Updated" not in tutorials
@@ -3535,3 +3535,34 @@ def test_insights_legal_risk_needs_a_lawsuit_or_a_regulator_acting():
     ups = insights.open_models([{"title": "Xiaomi MiMo publishes MiMo-V2.6-Flash on Hugging Face", "category": "tool",
                                  "date": "2026-09-21"}])
     assert ups == [{"lab": "Xiaomi", "date": "2026-09-21"}] and insights.home("Qwen") == "China"
+
+
+def test_jobs_blamed_on_ai(monkeypatch):
+    from aipulse import jobs
+    cards = [{"id": "a", "url": "https://x/a", "title": "A cuts 1,000 jobs", "source": "S", "date": "2026-05-02",
+              "category": "news", "also": [{"url": "https://x/a2", "title": "A lays off staff", "source": "T",
+                                            "date": "2026-05-03"}]},
+             {"id": "b", "url": "https://x/b", "title": "B lays off 3,000", "source": "S", "date": "2025-03-01",
+              "category": "news"},
+             {"id": "c", "url": "https://x/c", "title": "C cuts staff as AI does the work", "source": "S",
+              "date": "2026-06-01", "category": "news"},
+             {"id": "d", "url": "https://x/d", "title": "D layoffs, report says", "source": "S", "date": "2026-07-01",
+              "category": "news"},
+             {"id": "e", "url": "https://x/e", "title": "E opens office", "source": "S", "date": "2026-07-01",
+              "category": "news"}]
+    monkeypatch.setattr(jobs, "CHECKED", {
+        "https://x/a2": dict(company="A", month="2026-05", jobs="about 1,000", n=1000, reason="work", said="AI does it"),
+        "https://x/b": dict(company="B", month="2025-03", jobs="about 3,000", n=3000, reason="never", said="Costs"),
+        "https://x/c": dict(company="C", month="2026-06", jobs="several hundred", n=None, reason="pay", said="AI money"),
+        "https://x/gone": dict(company="G", month="2026-01", jobs="1", n=1, reason="work", said="-")})
+    monkeypatch.setattr(jobs, "LEFT_OUT", {"https://x/d"})
+    rows = jobs.cuts(cards)
+    assert [r["company"] for r in rows] == ["C", "A", "B"]  # newest first; a story we don't have is skipped
+    assert rows[1]["source"] == "T" and rows[1]["when"] == "May 2026"  # found among a card's other stories
+    assert jobs.candidates(cards) == []  # checked, left out, or not about cuts
+    body = jobs.page_body(rows)
+    assert "3 big job cuts since 2025" in body and "about 4,000 in all" in body and "C gave none" in body
+    assert "Said AI now does the work: 1 cut" in body and "Mentioned AI" not in body  # only the reasons it has
+    assert "2026</div>" in body and "2 cuts</b> · about 1,000 jobs" in body  # by year
+    assert "B&#x27;s 3,000 jobs are about 3 in 4 of the jobs we could count" in body
+    assert jobs._share(14000, 46985) == "about 3 in 10" and jobs._share(34335, 46985) == "nearly 3 in 4"

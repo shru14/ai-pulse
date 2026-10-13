@@ -91,6 +91,9 @@ def main():
     gn.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     sub.add_parser("promises", help="promises the matcher finds that aren't checked yet, and launches it finds for checked "
                    "ones (to check by hand and add to promises.CHECKED)")
+    jb = sub.add_parser("jobs", help="job-cut stories not checked yet for Jobs blamed on AI (to check by hand and add to "
+                        "jobs.CHECKED or jobs.LEFT_OUT)")
+    jb.add_argument("--days", type=int, default=30, help="stories from the last DAYS days (default 30; 0 for all since 2023)")
     sub.add_parser("board", help="keep today's leaderboard ranks (the start of the day's and each story's best)")
     sub.add_parser("memes", help="ask Gemini (GEMINI_API_KEY, free tier) for last week's meme once and keep it")
     em = sub.add_parser("embed", help="story vectors for the weekly dossier's search (offline model; new or changed stories)")
@@ -352,6 +355,14 @@ def main():
             print(f"  {p['date']} {p['company']}: {p['title']}\n    {p['url']}")
             if p.get("launch"):
                 print(f"    -> {p['launch']['date']} {p['launch']['title']}\n       {p['launch']['url']}")
+    elif a.cmd == "jobs":
+        from . import jobs
+        found, _ = store.cards(store.connect(a.db), limit=10**9)
+        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else jobs.SINCE
+        todo = jobs.candidates(found, since)
+        print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
     elif a.cmd == "glossary-note":
         # A glossary/<day> branch's new words, to the project inbox for approval (.github/workflows/glossary-note.yml)
         import importlib.util
