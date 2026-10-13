@@ -1,10 +1,11 @@
 """Promised vs shipped (promises/): headlines in which a company says it will release something ("OpenAI plans to
 launch its GPT Store next week"), each matched to a later headline saying it did ("OpenAI launches GPT Store"), drawn
 as a bar from the promise to the launch. The company must be the subject of both headlines, and every name the promise
-gives ("GPT", "Store") must be in the launch's headline. A promise past its date (or 18 months old) with no launch
-found is kept out of the list and the numbers, in a section of its own that says our matching found no launch: we
-can't tell a broken promise from a launch reported in words we don't match. FIXES
-corrects the matcher by hand. Rebuilt with the site, so a new promise or launch joins at the next run. Headlines are the outlets' own, so the promises load in the
+gives ("GPT", "Store") must be in the launch's headline. The matcher only proposes: the page shows the promises in
+CHECKED, each checked by hand with its launch, and `python -m aipulse promises` lists what the matcher finds that
+isn't checked yet. A promise past its date (or 18 months old) with no launch found is kept out of the list and the
+numbers, in a section of its own that says we found no launch: we can't tell a broken promise from a launch reported
+in words we don't match, or by an outlet we don't read. Headlines are the outlets' own, so the promises load in the
 reader's browser from promises.json, as the topics' timelines do; the page itself holds only our own words. Linked
 from Industry's strip on the front page.
 """
@@ -28,17 +29,57 @@ WINDOW_DAYS = 548  # a launch counts up to 18 months after the promise
 RARE_BEFORE = 20  # a name in fewer headlines than this before the promise is the promise's own ("Orion", "Operator")
 SUBJECT = 32  # a headline's subject: a company named within its first characters, before the verb
 
-# Hand corrections, by the promise's card id: the launch's URL where the matcher missed one, or None to drop a
-# headline that isn't a promise, or a launch we have no headline to show for (checked 13 Oct 2026).
-FIXES: dict[str, str | None] = {
-    "b25206159a138424": "https://the-decoder.com/massive-windows-11-update-brings-microsoft-copilot-and-more-ai-features/",
-    "dd5f00c31b7c8c45": "https://techcrunch.com/2024/10/28/apple-intelligence-goes-live-with-ios-181-update/",  # not the WWDC unveiling
-    "8efb094f31530fb8": None,  # Apple "looking to add" AI search to Safari: court testimony, not a promise
-    "eb78045f807739f6": None,  # ChatGPT connectors: a test, not a release
-    "0515c5497040d217": None,  # "Ph.D.-level super-agents": a rumour
-    "0a86b4a47575210c": None,  # DGX Spark shipped 15 Oct 2025; no launch headline in our data
-    "fd44964b241238f5": None,  # Gemini for under-13s rolled out May 2025; no launch headline in our data
-    "5c60dc8e46412040": None,  # Character.AI Stories: the headline is the launch day's
+# Every promise the page shows, checked by hand, by its headline's URL: the URL of the launch's headline (the day it
+# was available, not an announcement), "" when we found no launch, or None to leave it out: not a promise, or it
+# shipped on a day no headline in our data gives. Checked 13 Oct 2026.
+CHECKED: dict[str, str | None] = {
+    # shipped
+    "https://the-decoder.com/openai-prepares-to-launch-gpt-5-but-big-leaps-are-unlikely/":
+        "https://www.marktechpost.com/2025/08/07/openai-just-released-gpt-5-the-smartest-fastest-and-most-useful-openai-model/",
+    "https://the-decoder.com/openai-expected-to-release-gpt-4-1-o3-and-o4-mini-models/":
+        "https://siliconangle.com/2025/04/14/openai-launches-new-gpt-4-1-series-language-models-developers/",
+    "https://the-decoder.com/meta-reportedly-prepares-to-launch-llama-4-after-delays-and-internal-overhaul/":
+        "https://www.marktechpost.com/2025/04/05/meta-ai-just-released-llama-4-scout-and-llama-4-maverick-the-first-set-of-llama-4-models/",
+    "https://siliconangle.com/2025/02/14/baidu-open-source-ernie-large-language-model-series/":
+        "https://siliconangle.com/2025/06/29/chinas-baidu-declares-war-openai-others-open-sourcing-ernie-ai-model/",
+    "https://siliconangle.com/2024/11/13/openai-hopes-launch-first-ai-agent-called-operator-january/":
+        "https://siliconangle.com/2025/01/23/openai-releases-operator-agent-rivals-enhance-ai-services/",
+    "https://the-decoder.com/openai-reportedly-plans-to-release-full-version-of-its-o1-reasoning-model-this-year/":
+        "https://the-decoder.com/openai-launches-o1-and-chatgpt-pro-for-200-per-month/",
+    "https://techcrunch.com/2024/10/24/openai-reportedly-plans-to-release-its-orion-ai-model-by-december/":
+        "https://techcrunch.com/2025/02/27/openai-unveils-gpt-4-5-orion-its-largest-ai-model-yet/",
+    "https://siliconangle.com/2024/08/27/openai-reportedly-preparing-launch-new-strawberry-ai-model/":
+        "https://www.marktechpost.com/2024/09/12/openai-introduces-openai-strawberry-o1-a-breakthrough-in-ai-reasoning-with-93-accuracy-in-math-challenges-and-ranks-in-the-top-1-of-programming-contests/",
+    "https://the-decoder.com/apple-reportedly-plans-to-debut-on-device-llm-in-ios-18-prioritizing-privacy-and-performance/":
+        "https://techcrunch.com/2024/10/28/apple-intelligence-goes-live-with-ios-181-update/",  # not the WWDC unveiling
+    "https://siliconangle.com/2024/03/11/elon-musks-xai-open-source-grok-language-model/":
+        "https://techcrunch.com/2024/03/17/xai-open-sources-base-model-of-grok-but-without-any-training-code/",
+    "https://the-decoder.com/metas-llama-3-is-set-to-release-in-july-and-could-be-twice-the-size/":
+        "https://www.marktechpost.com/2024/04/18/finally-the-wait-is-over-meta-unveils-llama-3-pioneering-a-new-era-in-open-source-a/",
+    "https://techcrunch.com/2023/11/22/elon-musk-says-xais-chatbot-grok-will-launch-to-x-premium-subscribers-next-week/":
+        "https://techcrunch.com/2023/12/08/xs-ai-chatbot-grok-now-rolled-out-to-all-u-s-premium-subscribers-english-language-users-are-next/",
+    "https://the-decoder.com/googles-next-generation-ai-model-gemini-to-launch-this-fall/":
+        "https://siliconangle.com/2023/12/06/google-debuts-gemini-powerful-generative-ai-model-yet-advanced-reasoning-native-multimodality/",
+    "https://techcrunch.com/2023/07/21/chatgpt-comes-to-android-next-week-but-you-can-sign-up-today/":
+        "https://the-decoder.com/openais-chatgpt-app-for-android-is-now-available/",
+    # no launch found
+    "https://www.itweb.co.za/article/netapp-and-oracle-to-launch-fully-managed-cloud-storage-service-for-demanding-ai-and-enterprise-workloads/rW1xL75nyEmMRk6m": "",
+    "https://siliconangle.com/2026/03/13/aws-will-bring-cerebras-wafer-size-wse-3-chip-cloud-platform/": "",
+    "https://the-decoder.com/openai-researcher-reveals-details-of-new-ai-model-with-potential-performance-leap/": "",
+    "https://the-decoder.com/sap-and-openai-plan-to-launch-an-ai-platform-for-germanys-public-sector-using-microsoft-azure/": "",
+    "https://techcrunch.com/2025/01/22/samsungs-smartthings-to-introduce-ai-features-that-simplify-your-daily-routines/": "",
+    "https://techcrunch.com/2024/08/29/ibm-cloud-will-offer-intel-gaudi-3-chips-next-year/": "",  # shipped, no headline in our data
+    "https://siliconangle.com/2024/04/11/report-apple-planning-bring-new-ai-focused-m4-chips-entire-line-macs/": "",  # likewise
+    # left out
+    "https://techcrunch.com/2025/05/07/apple-is-looking-to-add-ai-search-engines-to-safari/": None,  # court testimony, not a promise
+    "https://techcrunch.com/2025/03/17/openai-to-start-testing-chatgpt-connectors-for-google-drive-and-slack/": None,  # a test
+    "https://the-decoder.com/openai-reportedly-plans-to-unveil-ph-d-level-super-agents-at-the-end-of-january/": None,  # a rumour
+    "https://siliconangle.com/2025/10/14/nvidia-start-shipping-ai-optimized-dgx-spark-desktop-computer/": None,  # shipped 15 Oct 2025
+    "https://techcrunch.com/2025/05/02/google-will-soon-start-letting-kids-under-13-use-its-gemini-chatbot/": None,  # rolled out May 2025
+    "https://techcrunch.com/2025/11/25/character-ai-will-offer-interactive-stories-to-kids-instead-of-open-ended-chat/": None,  # launch day's
+    "https://siliconangle.com/2024/12/16/salesforce-launch-agentforce-2-0-change-digital-labor-enterprise/": None,  # announced Dec 2024, available Feb 2025
+    "https://the-decoder.com/amazon-to-launch-ai-enhanced-alexa-subscription-in-october/": None,  # unveiled Feb 2025, out from late Mar
+    "https://siliconangle.com/2023/05/23/microsofts-ai-powered-copilot-coming-windows-11/": None,  # announced 21 Sep 2023, out 26 Sep
 }
 
 _V = (r"(launch|release|ship|roll out|unveil|debut|open[- ]source|introduce|bring|add|offer|start|begin"
@@ -158,7 +199,28 @@ def _month_end(y: int, m: int) -> date:
 
 
 def promises(cards: list[dict], today: date) -> list[dict]:
-    """Every promise found since SINCE, newest first, with the launch found for it (or not) and its status."""
+    """The promises the page shows: those in CHECKED, newest first, each with its checked launch (or none)."""
+    by_url = {s["url"]: s for c in cards for s in [c, *(c.get("also") or [])]}
+    out = []
+    for url, launch in CHECKED.items():
+        if launch is None or not (s := by_url.get(url)):
+            continue
+        title = s["title"].strip()
+        m = PROMISE.search(title)
+        d = date.fromisoformat(s["date"])
+        out.append(_promise(s, subject(title, m.start() if m else len(title)), d, due(title, d), by_url.get(launch),
+                            today))
+    return sorted(out, key=lambda p: p["date"], reverse=True)
+
+
+def candidates(cards: list[dict], today: date) -> list[dict]:
+    """What the matcher finds that isn't checked yet: new promises, and a launch for a checked promise without one."""
+    return [p for p in found(cards, today)
+            if p["url"] not in CHECKED or (CHECKED[p["url"]] == "" and p.get("launch"))]
+
+
+def found(cards: list[dict], today: date) -> list[dict]:
+    """Every promise the matcher finds since SINCE, newest first, with the launch it finds for it (or not)."""
     stories = [s for c in cards if c["category"] in ("tool", "news") for s in [c, *(c.get("also") or [])]]
     seen_on: dict[str, list[str]] = {}  # each word: the dates of the headlines it is in, to tell new names from old
     for s in stories:
@@ -175,10 +237,9 @@ def promises(cards: list[dict], today: date) -> list[dict]:
             launches.append((s["date"], who, _words(_ASIDE.sub("", t)), s))
     launches.sort(key=lambda x: x[0])
     starts = [x[0] for x in launches]
-    by_url = {s["url"]: s for s in stories}
     out, seen = [], set()
     for c in sorted(cards, key=lambda c: c["date"]):
-        if c["category"] not in ("tool", "news") or c["date"] < SINCE or FIXES.get(c["id"], "") is None:
+        if c["category"] not in ("tool", "news") or c["date"] < SINCE:
             continue
         title = c["title"].strip()
         m = PROMISE.search(title)
@@ -203,12 +264,11 @@ def promises(cards: list[dict], today: date) -> list[dict]:
         versions = {w for w in named if re.search(r"\d", w)}
         need = named - versions if len(versions) > 1 else named
         opened = re.search(r"open[- ]sourc", title, re.I)
-        launch = by_url.get(FIXES.get(c["id"]) or "")
-        if not launch:  # the same day counts: "Meta prepares to launch Llama 4" and "Meta releases Llama 4", 5 Apr 2025
-            launch = next((s for when, w, words, s in launches[bisect.bisect_left(starts, c["date"]):]
-                           if when <= until and w == who and s["url"] != c["url"] and need <= words
-                           and (len(versions) < 2 or versions & words)
-                           and (not opened or re.search(r"open[- ]?(sourc|weight)", s["title"], re.I))), None)
+        # the same day counts: "Meta prepares to launch Llama 4" and "Meta releases Llama 4", 5 Apr 2025
+        launch = next((s for when, w, words, s in launches[bisect.bisect_left(starts, c["date"]):]
+                       if when <= until and w == who and s["url"] != c["url"] and need <= words
+                       and (len(versions) < 2 or versions & words)
+                       and (not opened or re.search(r"open[- ]?(sourc|weight)", s["title"], re.I))), None)
         out.append(_promise(c, who, d, due(title, d), launch, today))
     return sorted(out, key=lambda p: p["date"], reverse=True)
 
@@ -263,6 +323,13 @@ PROMISES_JS = r"""<script>
       miss.append(t); miss.hidden = false;
     }
     if(!list.length) return box.replaceChildren(el("p", "meta", "No promises yet."));
+    // what the sample is, so its pattern is read as these companies', not the whole industry's
+    const cos = {}; list.forEach(p => cos[p.company] = (cos[p.company] || 0) + 1);
+    const [topCo, topN] = Object.entries(cos).sort((a, b) => b[1] - a[1])[0], years = list.map(p => p.date.slice(0, 4)).sort();
+    document.getElementById("psample").textContent = list.length + " promises from " + Object.keys(cos).length +
+      " companies, made " + years[0] + "–" + years[years.length - 1] + ", " + topN + " of them " + topCo + "'s. A small sample: " +
+      "it shows these companies' record, not the whole industry's." +
+      (missed.length ? " " + missed.length + " more, with no launch found, are listed at the end." : "");
     // one plain bar per promise: its length is the days from the promise (up to 18 months), its colour how it went
     const SPAN = 548, after = d => Math.round(ms(d) / DAY);
     const head = el("div", "pr-head"); head.append(el("span", "", "The promise"), el("span", "", "Days from the promise"));
@@ -306,8 +373,9 @@ PROMISES_JS = r"""<script>
     // a typical overrun only from 5 late launches up: from fewer it is one or two promises, not a pattern
     const lates = list.filter(p => p.late).map(p => p.late);
     const wait = median(list.filter(p => p.launch).map(p => p.days)), over = lates.length >= 5 ? median(lates) : null;
-    tile(wait, wait === 1 ? "day" : "days", "typical wait from promise to launch");
-    tile(over, over === 1 ? "day" : "days", "typical overrun, when a launch came after its date");
+    const launched = list.filter(p => p.launch).length;
+    tile(wait, wait === 1 ? "day" : "days", "median wait from promise to launch, across " + launched + " launches");
+    tile(over, over === 1 ? "day" : "days", "median overrun, across " + lates.length + " launches after their date");
     const co = el("div", "st-co"), grid = el("div", "crs"); co.append(el("h3", "", "By company"), grid);
     const by = {}; list.forEach(p => (by[p.company] = by[p.company] || []).push(p));
     Object.entries(by).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).forEach(([name, ps]) => {
@@ -315,9 +383,12 @@ PROMISES_JS = r"""<script>
       ps.sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status)).forEach(p => {
         const d = el("a", "dot " + p.status); d.href = p.url; d.rel = "noopener"; d.title = WORDS[p.status] + ": " + p.title; dots.append(d);
       });
-      const kept = ps.filter(p => p.launch).length;
+      // counts, not a rate: a rate would leave out the promises with no launch found, and flatter the company
+      const kept = ps.filter(p => p.launch).length, open = ps.length - kept;
+      const gone = missed.filter(p => p.company === name).length;
       const who = el("div", "cw"); who.append(logo(name), el("span", "nm", name));
-      row.append(who, dots, el("span", "meta", kept + " of " + ps.length + " shipped"));
+      row.append(who, dots, el("span", "meta", [kept && kept + " shipped", open && open + " no launch yet",
+        gone && gone + " none found"].filter(Boolean).join(", ")));
       grid.append(row);
     });
     stats.replaceChildren(out, hero, co);
@@ -351,17 +422,17 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                                               encoding="utf-8")
     logos = {k: v for k, v in _logos().items() if k in {p["company"] for p in found}}
     marks = json.dumps(logos).replace("</", "<\\/")  # safe inside the page's <script>
-    what = ("When an AI company says it will release something, how long until it ships? Promises since 2023 whose "
-            "launch we found, or whose time isn't up yet, drawn from the day each was made to the day it shipped.")
+    what = ("When an AI company says it will release something, how long until it ships? Promises made since 2023, "
+            "each checked by hand against the day a headline says it was out, drawn from the promise to that day.")
     body = (f'<div class="ft">\n<h1>Promised vs shipped</h1>\n<p class="intro">{escape(what)} We look for a launch '
-            'headline up to 18 months later.</p>\n'
+            'headline up to 18 months later.</p>\n<p class="intro" id="psample"></p>\n'
             '<section class="pstats" id="pstats" aria-label="The promises in numbers"></section>\n'
             '<h2>The promises</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
             f'<div class="pr-wrap" id="promises" data-src="/{PATH}promises.json" data-today="{today.isoformat()}">'
             '<p class="meta">Loading…</p></div>\n'
             '<section id="missed" hidden><h2>No launch found: <span class="n"></span></h2>\n'
-            '<p class="intro">These promises are past their date, or 18 months old, and our matching found no launch '
+            '<p class="intro">These promises are past their date, or 18 months old, and we found no launch '
             'headline for them. That is a limit of our data, not a finding about the company: the launch may have been '
             'reported in words we don\'t match, or by an outlet we don\'t read.</p></section>\n</div>\n'
             f'<script type="application/json" id="logos">{marks}</script>\n'
