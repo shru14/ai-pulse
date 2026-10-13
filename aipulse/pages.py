@@ -738,6 +738,27 @@ a.subscribe-btn{text-decoration:none}
 .cp .jb-cuts td.jn{width:1%;white-space:nowrap}
 .cp .jb-cuts .src{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
 .cp .ft .jb-cuts .src a{font-weight:400;color:var(--muted);text-decoration:underline}
+/* Papers that made the news: the papers as a newspaper page (the newest leads, the rest in columns), then the
+   subjects in a plain table */
+.cp .np{margin:28px 0 8px;border-top:4px double var(--ink);border-bottom:4px double var(--ink);padding:0 0 18px}
+.cp .np-mast{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:600 12px var(--mono);text-transform:uppercase;letter-spacing:.08em;padding:8px 0;border-bottom:1px solid var(--ink)}
+.cp .np-clip h3{font:700 21px/1.25 Georgia,'Times New Roman',serif;margin:4px 0 8px;letter-spacing:0;text-transform:none}
+.cp .np-clip h3 a{color:var(--ink);text-decoration:none}
+.cp .np-clip h3 a:hover{text-decoration:underline}
+.cp .np-kick{font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.cp .np-deck{font:400 16px/1.5 Georgia,'Times New Roman',serif;margin:0 0 8px}
+.cp .np-by{font-size:12px;color:var(--muted);margin:2px 0 0;line-height:1.4}
+.cp .ft .np-by a{font-weight:400;color:var(--muted);text-decoration:underline}
+.cp .np-lead{padding:20px 0;border-bottom:1px solid var(--ink);text-align:center;max-width:820px;margin:0 auto}
+.cp .np-lead h3{font-size:clamp(26px,3.4vw,38px);line-height:1.15}
+.cp .np-lead .np-deck{font-size:19px;font-style:italic}
+.cp .np-cols{column-count:3;column-gap:28px;column-rule:1px solid color-mix(in srgb,var(--ink) 25%,transparent);margin-top:16px}
+.cp .np-cols .np-clip{break-inside:avoid;padding:0 0 14px;margin:0 0 14px;border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
+.cp .pn-sub{font-weight:700}
+.cp .pn-num b{font:800 20px var(--display,var(--body));margin-right:2px}
+.cp .pn-pc{color:var(--muted);font-size:13px}
+@media (max-width:900px){.cp .np-cols{column-count:2}}
+@media (max-width:640px){.cp .np-cols{column-count:1}.cp .np-lead{text-align:left}}
 @media (max-width:640px){.cp .jb-bar{grid-template-columns:minmax(0,1fr)}.cp .jb-bar .lab{grid-row:auto}
   .cp .jb-cuts thead{display:none}.cp .jb-cuts tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
   .cp .jb-cuts td{display:block;border:0;padding:2px 0;width:auto!important;white-space:normal!important}}

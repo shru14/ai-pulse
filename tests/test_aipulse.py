@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -645,7 +645,8 @@ def test_static_build_holds_every_card(tmp_path):
     tracker_pages += list((tmp_path / "site" / "topics").glob("**/index.html"))  # and the topics, a page each
     tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
     tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html",
-                     tmp_path / "site" / "harm-to-rule" / "index.html", tmp_path / "site" / "jobs-blamed-on-ai" / "index.html"]
+                     tmp_path / "site" / "harm-to-rule" / "index.html", tmp_path / "site" / "jobs-blamed-on-ai" / "index.html",
+                     tmp_path / "site" / "papers-in-the-news" / "index.html"]
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and '"kind": "tutorial"' in tutorials and "Updated" not in tutorials
@@ -3323,6 +3324,43 @@ def test_monthly_summary_keeps_only_names_and_numbers_its_headlines_have():
     assert monthly.write("2026-09", cards, generate=lambda p, seed: "Too short.", log=lambda *_: None) is None
     long = "Google released Gemini 4 Argon. " * 8  # 8 sentences: a list of headlines, not a summary
     assert monthly.write("2026-09", cards, generate=lambda p, seed: long, log=lambda *_: None) is None
+
+
+def test_papers_that_made_the_news(monkeypatch):
+    from aipulse import press
+    cards = [{"id": "a", "url": "https://x/a", "title": "Study finds AI helps", "source": "S", "date": "2026-09-02",
+              "category": "news", "also": [{"url": "https://x/a2", "title": "AI helps, paper says", "source": "T",
+                                            "date": "2026-09-03"}]},
+             {"id": "b", "url": "https://x/b", "title": "Researchers find agents forget", "source": "S",
+              "date": "2026-10-01", "category": "news"},
+             {"id": "c", "url": "https://x/c", "title": "New study on chips", "source": "S", "date": "2026-10-02",
+              "category": "news"},
+             {"id": "d", "url": "https://x/d", "title": "Old study", "source": "S", "date": "2026-01-01", "category": "news"},
+             {"id": "p1", "url": "https://arxiv.org/abs/1", "title": "Agents that plan", "source": "arXiv",
+              "date": "2026-09-01", "category": "research"},
+             {"id": "p2", "url": "https://arxiv.org/abs/2", "title": "A vision model", "source": "arXiv",
+              "date": "2026-09-01", "category": "research"},
+             {"id": "p3", "url": "https://arxiv.org/abs/3", "title": "Old agents", "source": "arXiv",
+              "date": "2026-01-01", "category": "research"}]
+    monkeypatch.setattr(press, "CHECKED", {
+        "https://x/a2": dict(paper="Helping people", link="https://doi.org/10.1/x", subject="people", about="Finds help."),
+        "https://x/b": dict(paper="Forgetful agents", link="https://arxiv.org/abs/9", subject="agents", about="Shows it."),
+        "https://x/gone": dict(paper="G", link="https://g", subject="agents", about="-")})
+    monkeypatch.setattr(press, "LEFT_OUT", {"https://x/c"})
+    rows = press.papers(cards)
+    assert [r["paper"] for r in rows] == ["Forgetful agents", "Helping people"]  # newest story first; missing skipped
+    assert rows[1]["source"] == "T"  # found among a card's other stories
+    assert press.candidates(cards) == []  # checked, left out, or before SINCE
+    read_by, read = press.read_subjects(cards)
+    assert read == 2 and read_by["agents"] == 1 and read_by["vision"] == 1  # only papers from SINCE
+    body = press.page_body(rows, read_by, read)
+    assert "2 research papers that news outlets we read reported on since 13 Jul 2026" in body
+    assert body.index("Researchers find agents forget") < body.index("AI helps, paper says")  # the newest leads
+    assert 'np-clip np-lead' in body and ">AI and people</div>" in body and ">Finds help.</p>" in body
+    assert '<td class="pn-num"><b>1</b> of 2</td>' in body and "<b>1</b> of 2<span class=\"pn-pc\"> · 50%" in body
+    assert "Not a Research subject" in body  # AI and people isn't counted on our side
+    assert 'class="pn-sub">Vision, image and video</td>' in body
+    assert "What these papers can't tell us" in body
 
 
 def test_monthly_issue_pages(tmp_path):
