@@ -357,6 +357,28 @@ a.subscribe-btn{text-decoration:none}
 .cp .pin:hover{transform:scale(1.25);z-index:3}
 .cp .er .det{padding:2px 18px 18px 34px}
 .cp .er .det p{max-width:70ch;margin:8px 0 4px;line-height:1.5}
+/* harm → rule: a panel per subject, the harms logged so far as a line and each rule a dot on it */
+.cp .hps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:16px}
+.cp .hp{display:block;border:2px solid var(--line);background:var(--bg);box-shadow:5px 5px 0 var(--line);padding:12px 14px 6px;color:var(--ink);text-decoration:none}
+.cp .hp:hover,.cp .hp:focus-visible{background:color-mix(in srgb,#F0E442 18%,var(--bg))}
+.cp .hp-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.cp .hp-h b{font-size:16px}
+.cp .hp-h small{color:var(--muted);font:500 11.5px var(--mono);white-space:nowrap}
+.cp .hp svg{display:block;width:100%;height:auto;margin-top:4px;overflow:visible}
+.cp .hp .g{stroke:color-mix(in srgb,var(--ink) 12%,transparent);stroke-width:1}
+.cp .hp .ax{fill:var(--muted);font:600 11px var(--mono)}
+.cp .hp .pl{fill:var(--ink);font:600 11px var(--body);paint-order:stroke;stroke:var(--bg);stroke-width:3px}
+.cp .hp .area{fill:color-mix(in srgb,#D62828 16%,transparent)}
+.cp .hp .cum{fill:none;stroke:#D62828;stroke-width:2.5;stroke-linejoin:round}
+.cp .dot{stroke:var(--line);stroke-width:2}
+.cp .dot.adopted{fill:#009E73}.cp .dot.passed{fill:#56B4E9}.cp .dot.proposed{fill:var(--bg)}
+.cp .dot.withdrawn{fill:color-mix(in srgb,var(--ink) 30%,var(--bg));stroke-dasharray:2 2}
+.cp .ec-legend svg{flex:none}
+.cp .ec-legend .cum-key{display:inline-block;width:22px;height:0;border-top:3px solid #D62828}
+.cp .er.hr > summary{display:block}.cp .er.hr .nm small{display:inline;margin-left:10px}
+.cp .hr-list{margin-top:12px;border:2px solid var(--line);background:var(--bg);box-shadow:5px 5px 0 var(--line)}
+@media (max-width:640px){.cp .hps{grid-template-columns:minmax(0,1fr)}}
+.cp .er .det h3{margin:18px 0 0}
 /* promised vs shipped: the stats, then a bar per promise from the day it was made to the day it shipped */
 .cp .ps.shipped,.cp .seg.shipped,.cp .dot.shipped,.cp .chip.shipped .sw{background:#009E73}
 .cp .ps.late,.cp .seg.late,.cp .dot.late,.cp .chip.late .sw{background:#F0E442}
@@ -437,7 +459,8 @@ a.subscribe-btn{text-decoration:none}
   .cp .er .mt tr.first{border-top:2px solid var(--line)}
   .cp .er .mt td.when,.cp .er .mt td.when + td{display:inline;font:600 12px var(--mono);color:var(--muted)}
   .cp .er .mt td.when + td:not(:empty)::before{content:" · "}
-  .cp .er .mt td:last-child{margin-top:3px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}}
+  .cp .er .mt td:last-child{margin-top:3px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .cp .er.hr .mt td:last-child{margin-top:3px;font:inherit;letter-spacing:0;text-transform:none;color:var(--ink)}}
 .cp .yrs i{font-style:normal}
 .cp .yrs b{font-weight:inherit}
 .cp .yrs .sm{display:none}

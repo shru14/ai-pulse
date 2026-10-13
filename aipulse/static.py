@@ -399,9 +399,10 @@ def build(conn, out: str | Path) -> int:
     places += monthly.build(conn, cards, out, today)  # a booklet for each month that is over (monthly/)
     from . import insights
     places += insights.build(conn, cards, out, today)  # each issue's month in numbers (monthly/<month>/insights/)
-    from . import echoes, promises
+    from . import echoes, harms, promises
     places += echoes.build(conn, cards, out, today)  # the tracker's subjects spreading place to place (rule-echoes/)
     places += promises.build(conn, cards, out, today)  # companies' promises and their launches (promises/)
+    places += harms.build(conn, cards, out, today)  # AI harms by subject beside the rules on it (harm-to-rule/)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
