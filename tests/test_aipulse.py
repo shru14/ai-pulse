@@ -3359,8 +3359,8 @@ def test_papers_that_made_the_news(monkeypatch):
     assert 'np-clip np-lead' in body and ">AI and people</div>" in body and ">Finds help.</p>" in body
     assert '<td class="pn-num"><b>1</b> of 2</td>' in body and "<b>1</b> of 2<span class=\"pn-pc\"> · 50%" in body
     assert "Not a Research subject" in body  # AI and people isn't counted on our side
-    assert 'class="pn-sub">Vision, image and video</td>' in body
-    assert "What these papers can't tell us" in body
+    assert ">Vision, image and video</td>" not in body  # a subject the news didn't cover isn't listed
+    assert "About these counts" in body
 
 
 def test_monthly_issue_pages(tmp_path):
