@@ -406,6 +406,23 @@ LEFT_OUT = {
     "https://techcrunch.com/2023/05/31/amazon-settles-with-ftc-for-25m-after-flouting-kids-privacy-and-deletion-requests/",
 }
 
+# The companies a case's "sued" names, where splitting it on commas and "and" would be wrong. An empty list: no
+# company we can name from the story (a group, or people spreading fakes), so the case is in no company's count.
+SUED_AS = {
+    "Perplexity and three data-scraping firms": ["Perplexity"],
+    "PimEyes and other face search companies": ["PimEyes"],
+    "TikTok, over an anonymous account": ["TikTok"],
+    "Six AI companies": [],
+    "16 deepfake pornography websites": [],
+    "Those spreading AI fakes of her": [],
+}
+
+
+def companies(sued: str) -> list[str]:
+    """The companies a case sues: 'Bloomberg, Microsoft and Meta' → ['Bloomberg', 'Microsoft', 'Meta']."""
+    return SUED_AS[sued] if sued in SUED_AS else [w for w in re.split(r", | and ", sued) if w]
+
+
 # a headline about a lawsuit or a court ruling
 SUIT = re.compile(r"\blawsuits?\b|\bsues?\b|\bsued\b|\bsuing\b|class action|\bcourt\b(?!room)|\bjudge\b(?! models?)|"
                   r"\bruling\b|\bsettle(s|d|ment)?\b(?! on)|\bverdict\b", re.I)
@@ -506,9 +523,10 @@ def _cards(rows: list[dict]) -> str:
     return f'<div class="ct-cards">{"".join(card(c) for c in rows)}</div>'
 
 
-def _board(rows: list[dict], under: str = "") -> str:
+def _board(rows: list[dict], under: str = "", side: str = "") -> str:
     """Where the cases stand: an Open panel and an Ended panel, a row per status with a dot per case (its case on
-    hover) and the count; the few ended cases are named under their row. `under` goes below the Open panel."""
+    hover) and the count; the few ended cases are named under their row. `under` goes below the Open panel, `side`
+    below the Ended one."""
     def panel(is_open: bool) -> str:
         group = [c for c in rows if STATUSES[c["status"]][2] == is_open]
         out = ""
@@ -526,7 +544,7 @@ def _board(rows: list[dict], under: str = "") -> str:
         return (f'<div class="ct-panel"><div class="ct-head"><b>{len(group)}</b> {head}'
                 f'<span>{means}</span></div>{out}</div>')
     note = '<p class="jb-note">A dot is a case, placed by its latest step; hover a dot for the case.</p>'
-    return f'<div class="ct-board"><div>{panel(True)}{note}{under}</div>{panel(False)}</div>'
+    return f'<div class="ct-board"><div>{panel(True)}{note}{under}</div><div>{panel(False)}{side}</div></div>'
 
 
 def _limits(rows: list[dict]) -> str:
@@ -569,6 +587,16 @@ def page_body(rows: list[dict]) -> str:
              f'<tbody>{where}</tbody></table>'
              '<table class="mt jb-small"><thead><tr><th>About</th><th>Cases</th><th>Open</th></tr></thead>'
              f'<tbody>{kinds}</tbody></table></div>')
+    sued = sorted({n for c in rows for n in companies(c["sued"])},
+                  key=lambda n: (-sum(n in companies(c["sued"]) for c in rows), n.lower()))
+    firms = "".join(f'<tr><td>{escape(n)}</td><td class="n">{sum(n in companies(c["sued"]) for c in rows)}</td>'
+                    f'<td class="n">{sum(n in companies(c["sued"]) for c in open_)}</td></tr>' for n in sued)
+    unnamed = sum(not companies(c["sued"]) for c in rows)
+    side = ('<div class="ct-firms"><table class="mt jb-small"><thead><tr><th>Company sued</th><th>Cases</th>'
+            f'<th>Open</th></tr></thead><tbody>{firms}</tbody></table>'
+            '<p class="jb-note">A case against several companies counts once under each.'
+            + (f' {unnamed} case{"s" * (unnamed != 1)} whose stories name no company sued count under none.'
+               if unnamed else "") + '</p></div>')
     sections = ""
     for k, (label, means) in KINDS.items():
         group = [c for c in rows if c["kind"] == k]
@@ -583,7 +611,7 @@ def page_body(rows: list[dict]) -> str:
     return (f'<div class="ft jb ct">\n<div class="ct-hero"><div><h1>AI in court</h1>\n'
             f'<p class="jb-q">{escape(QUESTION)}</p>\n<p class="intro">{escape(intro)}</p></div>{HERO}</div>\n'
             f'<section class="jb-answer"><h2>Where the cases stand</h2>\n'
-            f'{_board(rows, small)}</section>\n'
+            f'{_board(rows, small, side)}</section>\n'
             f'<h2>Each case</h2>\n{sections}{_limits(rows)}</div>\n')
 
 
