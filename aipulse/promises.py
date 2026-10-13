@@ -1,9 +1,10 @@
 """Promised vs shipped (promises/): headlines in which a company says it will release something ("OpenAI plans to
 launch its GPT Store next week"), each matched to a later headline saying it did ("OpenAI launches GPT Store"), drawn
 as a bar from the promise to the launch. The company must be the subject of both headlines, and every name the promise
-gives ("GPT", "Store") must be in the launch's headline. A promise with no launch found is "Not found yet", never
-"broken": a launch may have been reported in words we don't match. FIXES corrects the matcher by hand. Rebuilt with the
-site, so a new promise or launch joins at the next run. Headlines are the outlets' own, so the promises load in the
+gives ("GPT", "Store") must be in the launch's headline. A promise past its date (or 18 months old) with no launch
+found is kept out of the list and the numbers, in a section of its own that says our matching found no launch: we
+can't tell a broken promise from a launch reported in words we don't match. FIXES
+corrects the matcher by hand. Rebuilt with the site, so a new promise or launch joins at the next run. Headlines are the outlets' own, so the promises load in the
 reader's browser from promises.json, as the topics' timelines do; the page itself holds only our own words. Linked
 from Industry's strip on the front page.
 """
@@ -223,7 +224,7 @@ PROMISES_JS = r"""<script>
   const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
   const link = e => { const a = el("a", "", e.title); a.href = e.url; a.rel = "noopener"; return a; };
   const days = n => n === 1 ? "1 day" : n + " days";
-  const WORDS = {shipped: "Shipped", late: "Shipped late", waiting: "Waiting", "not-found": "Not found yet"};
+  const WORDS = {shipped: "Shipped", late: "Shipped late", waiting: "Waiting"};
   const ms = d => Date.parse(d + "T00:00:00Z"), DAY = 864e5, today = box.dataset.today;
   const LOGOS = JSON.parse(document.getElementById("logos").textContent);
   // a company's initials, for one without a mark: "IBM", "Baidu" -> "B", "Character.AI" -> "CA"
@@ -233,7 +234,23 @@ PROMISES_JS = r"""<script>
     if(LOGOS[name]) s.innerHTML = LOGOS[name]; else { s.classList.add("ini"); s.textContent = initials(name); }
     return s;
   };
-  fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(list => {
+  fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(all => {
+    // the promises our matching found no launch for go in a table of their own, out of the list and the numbers
+    const list = all.filter(p => p.status !== "not-found"), missed = all.filter(p => p.status === "not-found");
+    const miss = document.getElementById("missed");
+    if(missed.length) {
+      const tb = el("tbody");
+      missed.forEach(p => {
+        const tr = el("tr"), co = el("td"), pr = el("td");
+        co.append(p.company); pr.append(link(p), el("div", "meta", p.source));
+        tr.append(co, pr, el("td", "", fmt(p.date)), el("td", "", p.due ? fmt(p.due) : "None given")); tb.append(tr);
+      });
+      const t = el("table", "mt pv"), th = el("thead"), hr = el("tr");
+      ["Company", "The promise", "Promised", "Due"].forEach(w => hr.append(el("th", "", w)));
+      th.append(hr); t.append(th, tb);
+      miss.querySelector(".n").textContent = missed.length;
+      miss.append(t); miss.hidden = false;
+    }
     if(!list.length) return box.replaceChildren(el("p", "meta", "No promises yet."));
     // one plain bar per promise: its length is the days from the promise (up to 18 months), its colour how it went
     const SPAN = 548, after = d => Math.round(ms(d) / DAY);
@@ -250,18 +267,18 @@ PROMISES_JS = r"""<script>
         info.append(l);
       }
       const since = d => after(d) - after(p.date);  // days from the promise
-      // how long: to the launch; still waiting, so far; not found, to the date it passed (or 18 months on)
-      const n = p.launch ? p.days : p.status === "waiting" ? since(today) : (p.due ? since(p.due) : Math.min(SPAN, since(today)));
+      // how long: to the launch; still waiting, so far
+      const n = p.launch ? p.days : since(today);
       const t = el("div", "pt"), b = el("span", "pbar " + p.status);
       b.style.width = "max(6px, " + (Math.min(n, SPAN) / SPAN * 100).toFixed(2) + "%)";
       const said = p.launch ? (p.days === 0 ? "Same day" : days(p.days)) + (p.late ? ", " + days(p.late) + " late" : "") :
-        p.status === "waiting" ? days(n) + " so far" + (p.due ? ", due " + fmt(p.due) : "") : days(n) + ", no launch found";
+        days(n) + " so far" + (p.due ? ", due " + fmt(p.due) : "");
       t.append(b, el("span", "lab", said));
       li.append(info, t); ol.append(li);
     });
     box.replaceChildren(head, ol);
     // the stats: how the promises turned out, the typical wait and overrun, and each company's record
-    const ORDER = ["shipped", "late", "waiting", "not-found"];
+    const ORDER = ["shipped", "late", "waiting"];
     const median = a => { if(!a.length) return null; const s = [...a].sort((m, n) => m - n), h = s.length >> 1;
       return s.length % 2 ? s[h] : Math.round((s[h - 1] + s[h]) / 2); };
     const stats = document.getElementById("pstats"), out = el("div", "st-out"), obar = el("div", "obar"), olab = el("div", "olab");
@@ -293,7 +310,7 @@ PROMISES_JS = r"""<script>
     stats.replaceChildren(out, hero, co);
     // the filter buttons, which are also the colours' key
     const count = s => list.filter(p => !s || p.status === s).length;
-    [["", "All"], ["shipped", "Shipped"], ["late", "Shipped late"], ["waiting", "Waiting"], ["not-found", "Not found yet"]].forEach(([s, w]) => {
+    [["", "All"], ["shipped", "Shipped"], ["late", "Shipped late"], ["waiting", "Waiting"]].forEach(([s, w]) => {
       const b = el("button", "chip " + (s || "all")); b.type = "button"; b.setAttribute("aria-pressed", String(!s));
       b.append(el("span", "sw"), w + " ", el("b", "", count(s)));
       b.addEventListener("click", () => {
@@ -321,15 +338,19 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                                               encoding="utf-8")
     logos = {k: v for k, v in _logos().items() if k in {p["company"] for p in found}}
     marks = json.dumps(logos).replace("</", "<\\/")  # safe inside the page's <script>
-    what = ("When an AI company says it will release something, does it? Every promise since 2023, drawn from the day it "
-            "was made to the day it shipped.")
+    what = ("When an AI company says it will release something, how long until it ships? Promises since 2023 whose "
+            "launch we found, or whose time isn't up yet, drawn from the day each was made to the day it shipped.")
     body = (f'<div class="ft">\n<h1>Promised vs shipped</h1>\n<p class="intro">{escape(what)} We look for a launch '
-            'headline up to 18 months later. "Not found yet" means we found none, not that there wasn\'t one.</p>\n'
+            'headline up to 18 months later.</p>\n'
             '<section class="pstats" id="pstats" aria-label="The promises in numbers"></section>\n'
-            '<h2>Every promise</h2>\n'
+            '<h2>The promises</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
             f'<div class="pr-wrap" id="promises" data-src="/{PATH}promises.json" data-today="{today.isoformat()}">'
-            '<p class="meta">Loading…</p></div>\n</div>\n'
+            '<p class="meta">Loading…</p></div>\n'
+            '<section id="missed" hidden><h2>No launch found: <span class="n"></span></h2>\n'
+            '<p class="intro">These promises are past their date, or 18 months old, and our matching found no launch '
+            'headline for them. That is a limit of our data, not a finding about the company: the launch may have been '
+            'reported in words we don\'t match, or by an outlet we don\'t read.</p></section>\n</div>\n'
             f'<script type="application/json" id="logos">{marks}</script>\n'
             + PROMISES_JS + "\n")
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Promised vs shipped",
