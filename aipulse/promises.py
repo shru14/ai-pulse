@@ -2,7 +2,8 @@
 launch its GPT Store next week"), each matched to a later headline saying it did ("OpenAI launches GPT Store"), drawn
 as a bar from the promise to the launch. The company must be the subject of both headlines, and every name the promise
 gives ("GPT", "Store") must be in the launch's headline. A promise past its date (or 18 months old) with no launch
-found is left off the page: we can't tell a broken promise from a launch reported in words we don't match. FIXES
+found is kept out of the list and the numbers, in a section of its own that says our matching found no launch: we
+can't tell a broken promise from a launch reported in words we don't match. FIXES
 corrects the matcher by hand. Rebuilt with the site, so a new promise or launch joins at the next run. Headlines are the outlets' own, so the promises load in the
 reader's browser from promises.json, as the topics' timelines do; the page itself holds only our own words. Linked
 from Industry's strip on the front page.
@@ -233,7 +234,23 @@ PROMISES_JS = r"""<script>
     if(LOGOS[name]) s.innerHTML = LOGOS[name]; else { s.classList.add("ini"); s.textContent = initials(name); }
     return s;
   };
-  fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(list => {
+  fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(all => {
+    // the promises our matching found no launch for go in a table of their own, out of the list and the numbers
+    const list = all.filter(p => p.status !== "not-found"), missed = all.filter(p => p.status === "not-found");
+    const miss = document.getElementById("missed");
+    if(missed.length) {
+      const tb = el("tbody");
+      missed.forEach(p => {
+        const tr = el("tr"), co = el("td"), pr = el("td");
+        co.append(p.company); pr.append(link(p), el("div", "meta", p.source));
+        tr.append(co, pr, el("td", "", fmt(p.date)), el("td", "", p.due ? fmt(p.due) : "None given")); tb.append(tr);
+      });
+      const t = el("table", "mt pv"), th = el("thead"), hr = el("tr");
+      ["Company", "The promise", "Promised", "Due"].forEach(w => hr.append(el("th", "", w)));
+      th.append(hr); t.append(th, tb);
+      miss.querySelector(".n").textContent = missed.length;
+      miss.append(t); miss.hidden = false;
+    }
     if(!list.length) return box.replaceChildren(el("p", "meta", "No promises yet."));
     // one plain bar per promise: its length is the days from the promise (up to 18 months), its colour how it went
     const SPAN = 548, after = d => Math.round(ms(d) / DAY);
@@ -316,7 +333,7 @@ def _logos() -> dict[str, str]:
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write promises/: the page, and promises.json it draws from. Returns its path."""
     (out / PATH).mkdir(parents=True, exist_ok=True)
-    found = [p for p in promises(cards, today) if p["status"] != "not-found"]  # only promises we can say something about
+    found = promises(cards, today)
     (out / PATH / "promises.json").write_text(json.dumps(found, separators=(",", ":"), ensure_ascii=False),
                                               encoding="utf-8")
     logos = {k: v for k, v in _logos().items() if k in {p["company"] for p in found}}
@@ -329,7 +346,11 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             '<h2>The promises</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
             f'<div class="pr-wrap" id="promises" data-src="/{PATH}promises.json" data-today="{today.isoformat()}">'
-            '<p class="meta">Loading…</p></div>\n</div>\n'
+            '<p class="meta">Loading…</p></div>\n'
+            '<section id="missed" hidden><h2>No launch found: <span class="n"></span></h2>\n'
+            '<p class="intro">These promises are past their date, or 18 months old, and our matching found no launch '
+            'headline for them. That is a limit of our data, not a finding about the company: the launch may have been '
+            'reported in words we don\'t match, or by an outlet we don\'t read.</p></section>\n</div>\n'
             f'<script type="application/json" id="logos">{marks}</script>\n'
             + PROMISES_JS + "\n")
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Promised vs shipped",
