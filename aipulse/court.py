@@ -413,6 +413,25 @@ SUIT = re.compile(r"\blawsuits?\b|\bsues?\b|\bsued\b|\bsuing\b|class action|\bco
 TOPIC = re.compile(r"copyright|fair use|piracy|pirated|authors?|books?|publishers?|lyrics|songs?|music|artists?|"
                    r"images?|photos?|training|privacy|personal data|biometric|facial|face|voice|likeness|deepfakes?|"
                    r"publicity|scrap\w+|newspapers?|news (agency|companies|outlets)", re.I)
+# Our own flat picture beside the title: a courthouse with the scales of justice, a gavel on its block, and a filed
+# page with a chip on it. No real people, buildings or logos.
+HERO = ('<svg class="ct-art" viewBox="14 24 310 172" role="img" aria-label="A courthouse, a gavel and a filed page">'
+        '<g stroke="#1B1F24" stroke-width="3" stroke-linejoin="round" fill="#F4EFE6">'
+        '<path d="M66 72 160 30 254 72Z"/><rect x="60" y="72" width="200" height="12"/>'
+        '<rect x="76" y="84" width="16" height="66"/><rect x="114" y="84" width="16" height="66"/>'
+        '<rect x="190" y="84" width="16" height="66"/><rect x="228" y="84" width="16" height="66"/>'
+        '<rect x="56" y="150" width="208" height="9"/><rect x="46" y="159" width="228" height="9"/></g>'
+        '<g stroke="#1B1F24" stroke-width="2.5" fill="none" stroke-linecap="round">'
+        '<path d="M160 40v26M144 47h32M144 47l-6 11M144 47l6 11M176 47l-6 11M176 47l6 11M152 66h16"/>'
+        '<path d="M137 58a7 4 0 0 0 14 0ZM169 58a7 4 0 0 0 14 0Z" fill="#E69F00"/></g>'
+        '<g stroke="#1B1F24" stroke-width="3" stroke-linejoin="round">'
+        '<g transform="rotate(-8 52 158)"><rect x="22" y="122" width="56" height="70" rx="3" fill="#fff"/>'
+        '<path d="M31 136h38M31 146h38M31 156h24" stroke-width="2.5"/>'
+        '<rect x="50" y="164" width="18" height="18" rx="2" fill="#E69F00" stroke-width="2.5"/></g>'
+        '<rect x="226" y="174" width="70" height="14" rx="3" fill="#B5793C"/>'
+        '<g transform="rotate(-30 262 150)"><rect x="257" y="146" width="62" height="9" rx="4" fill="#D9A066"/>'
+        '<rect x="232" y="132" width="30" height="38" rx="5" fill="#B5793C"/></g></g></svg>')
+
 QUESTION = "Who is taking AI companies to court, and where does each case stand?"
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
@@ -458,24 +477,31 @@ def candidates(cards: list[dict], since: str = SINCE) -> list[dict]:
     return out
 
 
+# steps where a court decided something: a gavel on the timeline instead of a dot
+RULINGS = {"early", "won", "lost", "out"}
+
+
 def _chip(status: str) -> str:
     label, colour, _ = STATUSES[status]
     return f'<span class="ct-st" style="--c:{colour}">{escape(label)}</span>'
 
 
 def _cards(rows: list[dict]) -> str:
-    """A kind's cases as docket cards in newspaper columns: where it stands up top, the case name as a caption
-    ("X v. Y"), what it's about, then its steps on a small timeline, each dot in the colour of where it left the case,
-    with its date and source."""
+    """A kind's cases as docket cards in newspaper columns: where it stands up top (a stamp once it has ended), the
+    case caption (who is suing v. who is sued), what it's about, then its steps on a small timeline, each dot in the
+    colour of where it left the case (a gavel where a court decided something), with its date and source."""
     def card(c: dict) -> str:
-        colour = STATUSES[c["status"]][1]
-        steps = "".join(f'<li style="--c:{STATUSES[s["status"]][1]}"><span class="ct-d">{_day(s["date"])}</span>'
+        label, colour, is_open = STATUSES[c["status"]]
+        steps = "".join(f'<li{" class=ct-rule" * (s["status"] in RULINGS)} style="--c:{STATUSES[s["status"]][1]}">'
+                        f'<span class="ct-d">{_day(s["date"])}</span>'
                         f'{escape(s["what"])}. <a href="{escape(s["url"])}" rel="noopener">{escape(s["source"])}</a></li>'
                         for s in c["steps"])
         meta = escape(c["where"]) + (f' · filed {escape(_month(c["filed"]))}' if c["filed"] else "")
-        return (f'<article class="ct-card" style="--c:{colour}"><div class="ct-top">{_chip(c["status"])}'
+        mark = _chip(c["status"]) if is_open else f'<span class="ct-stamp">{escape(label)}</span>'
+        return (f'<article class="ct-card" style="--c:{colour}"><div class="ct-top">{mark}'
                 f'<span class="ct-meta">{meta}</span></div>'
-                f'<h4 class="ct-cap">{escape(c["by"])} <i>v.</i> {escape(c["sued"])}</h4>'
+                f'<div class="ct-cap"><span class="ct-side">Suing</span><b>{escape(c["by"])}</b>'
+                f'<i>v.</i><span class="ct-side">Sued</span><b>{escape(c["sued"])}</b></div>'
                 f'<p class="ct-about">{escape(c["about"])}</p><ol class="ct-track">{steps}</ol></article>')
     return f'<div class="ct-cards">{"".join(card(c) for c in rows)}</div>'
 
@@ -554,8 +580,8 @@ def page_body(rows: list[dict]) -> str:
                          f' · {n_open} open</span></h3>\n<p>{escape(means)} Open cases first, newest step first.</p>\n'
                          f'{_cards(group)}'
                          '</section>\n')
-    return (f'<div class="ft jb ct">\n<h1>AI in court</h1>\n<p class="jb-q">{escape(QUESTION)}</p>\n'
-            f'<p class="intro">{escape(intro)}</p>\n'
+    return (f'<div class="ft jb ct">\n<div class="ct-hero"><div><h1>AI in court</h1>\n'
+            f'<p class="jb-q">{escape(QUESTION)}</p>\n<p class="intro">{escape(intro)}</p></div>{HERO}</div>\n'
             f'<section class="jb-answer"><h2>Where the cases stand</h2>\n'
             f'{_board(rows, small)}</section>\n'
             f'<h2>Each case</h2>\n{sections}{_limits(rows)}</div>\n')
