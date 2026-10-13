@@ -304,7 +304,7 @@ def _years(rows: list[dict], shown: list[tuple]) -> str:
     """A narrow column per year, its height the cuts announced that year, split by reason in the ring's colours, with
     the year's count on top; beside it a small table of each year's cuts and jobs."""
     years = sorted({c["month"][:4] for c in rows})
-    most = max(sum(c["month"][:4] == y for c in rows) for y in years)
+    most = max((sum(c["month"][:4] == y for c in rows) for y in years), default=1)
     h, cw, step, x0 = 180, 26, 70, 30
     g = ""
     for i, y in enumerate(years):
