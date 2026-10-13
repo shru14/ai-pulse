@@ -89,6 +89,8 @@ def main():
     gn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/glossary.py, to compare with")
     gn.add_argument("--branch", required=True, help="the branch the words are on (glossary/<day>)")
     gn.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
+    sub.add_parser("promises", help="promises the matcher finds that aren't checked yet, and launches it finds for checked "
+                   "ones (to check by hand and add to promises.CHECKED)")
     sub.add_parser("board", help="keep today's leaderboard ranks (the start of the day's and each story's best)")
     sub.add_parser("memes", help="ask Gemini (GEMINI_API_KEY, free tier) for last week's meme once and keep it")
     em = sub.add_parser("embed", help="story vectors for the weekly dossier's search (offline model; new or changed stories)")
@@ -341,6 +343,15 @@ def main():
               f"by {glossary.CANDIDATE_OUTLETS}+ outlets (outlets, stories, a headline):")
         for w in glossary.candidates(recent):
             print(f"  {w['word']} ({w['outlets']}, {w['stories']}): {w['examples'][0]}")
+    elif a.cmd == "promises":
+        from . import promises
+        found, _ = store.cards(store.connect(a.db), limit=10**9)
+        todo = promises.candidates(found, date.today())
+        print(f"{len(promises.CHECKED)} checked. To check ({len(todo)}): the promise, then the launch the matcher suggests")
+        for p in todo:
+            print(f"  {p['date']} {p['company']}: {p['title']}\n    {p['url']}")
+            if p.get("launch"):
+                print(f"    -> {p['launch']['date']} {p['launch']['title']}\n       {p['launch']['url']}")
     elif a.cmd == "glossary-note":
         # A glossary/<day> branch's new words, to the project inbox for approval (.github/workflows/glossary-note.yml)
         import importlib.util

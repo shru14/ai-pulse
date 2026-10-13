@@ -3403,7 +3403,7 @@ def test_monthly_summary_that_fails_every_try_is_not_tried_again(tmp_path, monke
     assert monthly.due(conn, date(2026, 10, 11)) == []  # the next run doesn't download the model again for it
 
 
-def test_promises_and_rule_echoes():
+def test_promises_and_rule_echoes(monkeypatch):
     from aipulse import echoes, promises
     card = lambda i, day, title, cat="news", **kw: {"id": i, "date": day, "title": title, "url": f"https://x/{i}",
                                                     "source": "Outlet", "category": cat, "also": [], **kw}
@@ -3419,12 +3419,20 @@ def test_promises_and_rule_echoes():
              card("n2", "2025-12-31", "Investors predict AI is coming for labor in 2026"),
              card("p4", "2025-10-14", "Nvidia to start shipping AI-optimized DGX Spark desktop computer"),
              card("x4", "2026-01-05", "NVIDIA Releases PAIR: An Open Source Router for DGX Spark")]
-    found = {p["url"].rsplit("/", 1)[1]: p for p in promises.promises(cards, date(2026, 10, 12))}
+    found = {p["url"].rsplit("/", 1)[1]: p for p in promises.found(cards, date(2026, 10, 12))}
     assert set(found) == {"p1", "p2", "p3", "p4"}
     assert found["p1"]["status"] == "late" and found["p1"]["launch"]["url"].endswith("/l1") and found["p1"]["late"] == 58
     assert found["p2"]["status"] == "shipped" and found["p2"]["days"] == 0  # the same day counts
     assert found["p3"]["launch"]["url"].endswith("/l3")  # open-sourced, not just a new version
     assert found["p4"]["status"] == "waiting" and "launch" not in found["p4"]  # no date given, under 18 months old
+    # the page shows only what was checked by hand; the rest, and a launch for a checked one without, wait for a check
+    monkeypatch.setattr(promises, "CHECKED", {"https://x/p1": "https://x/l1", "https://x/p2": None, "https://x/p4": ""})
+    shown = promises.promises(cards, date(2026, 10, 12))
+    assert [p["url"] for p in shown] == ["https://x/p4", "https://x/p1"] and shown[1]["late"] == 58
+    assert {p["url"] for p in promises.candidates(cards, date(2026, 10, 12))} == {"https://x/p3"}
+    monkeypatch.setitem(promises.CHECKED, "https://x/p4", "")
+    cards.append(card("l4", "2025-10-15", "Nvidia releases DGX Spark"))
+    assert "https://x/p4" in {p["url"] for p in promises.candidates(cards, date(2026, 10, 12))}
     # echoes: official records about AI only, grouped by subject, places in the order they first took it up
     rec = lambda i, day, title, place, src: {"id": i, "date": day, "title": title, "url": f"https://r/{i}",
                                              "source": src, "category": "regulation", "jurisdictions": [place],
