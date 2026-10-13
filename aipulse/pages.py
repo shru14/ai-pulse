@@ -781,6 +781,42 @@ a.subscribe-btn{text-decoration:none}
 @media (max-width:900px){.cp .np-cols{column-count:2}}
 @media (max-width:640px){.cp .np-cols{column-count:1}.cp .np-lead{text-align:left}}
 @media (max-width:640px){.cp .jb-ring{margin:0 auto}.cp .jb-ch{padding:14px 14px 4px}}
+/* AI in court: the ring of where cases stand, small tables by country and kind, then a table of cases per kind */
+.cp .ct > .intro{max-width:none}
+.cp .ct .ct-small{align-items:flex-start;margin-top:22px}
+.cp .ct .jb-split.ct-small .jb-small{align-self:flex-start}
+.cp .ct-kind{margin:30px 0}
+.cp .ct-board{display:grid;grid-template-columns:3fr 2fr;gap:18px 40px;margin-top:6px}
+.cp .ct-head{font:500 15px var(--body);border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:4px}
+.cp .ct-head b{font:400 36px var(--head);margin-right:6px}
+.cp .ct-head span{display:block;color:var(--muted);font-size:13px}
+.cp .ct-row{display:grid;grid-template-columns:9.5em 1fr auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .ct-lab{font:600 14.5px var(--body)}
+.cp .ct-dots{display:flex;flex-wrap:wrap;gap:4px}
+.cp .ct-dots i{width:11px;height:11px;border-radius:50%;background:var(--c)}
+.cp .ct-n{font:600 15px var(--mono)}
+.cp .ct-names{grid-column:2/4;font-size:12.5px;color:var(--muted);line-height:1.45}
+@media (max-width:760px){.cp .ct-board{display:flex;flex-direction:column}.cp .ct-board > div:first-child{display:contents}.cp .ct-board .ct-panel{order:1}.cp .ct-board .jb-note{order:2;margin-top:0}.cp .ct-board .ct-small{order:3}.cp .ct-row{grid-template-columns:8em 1fr auto}}
+@media (max-width:640px){.cp .ft .ct-small .mt thead{display:table-header-group}.cp .ft .ct-small .mt tr{display:table-row;padding:0}.cp .ft .ct-small .mt td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:5px 18px 5px 0}}
+.cp .ct-kind h3{font:600 20px var(--body);text-transform:none;letter-spacing:0;margin:0}
+.cp .ct-kind h3 span{font:500 13px var(--mono);color:var(--muted);margin-left:10px;white-space:nowrap}
+.cp .ct-kind > p{margin:4px 0 0;color:var(--muted);font-size:15px}
+.cp .ct-st{display:inline-block;background:var(--c);color:#111;font:700 12.5px var(--body);letter-spacing:.07em;text-transform:uppercase;padding:4px 11px;border-radius:999px;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 30%,transparent)}
+.cp .ct-cards{column-count:3;column-gap:22px;margin-top:14px}
+.cp .ct-card{break-inside:avoid;display:inline-block;width:100%;margin:0 0 22px;padding:14px 16px 10px;border-top:5px solid var(--c);background:color-mix(in srgb,var(--c) 7%,var(--bg));border-radius:0 0 6px 6px}
+.cp .ct-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.cp .ct-meta{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cp .ct-card h4.ct-cap{font:700 19px/1.25 Georgia,'Times New Roman',serif;margin:12px 0 4px;letter-spacing:0;text-transform:none}
+.cp .ct-cap i{font-weight:400;color:var(--muted);padding:0 2px}
+.cp .ct-about{font:italic 400 14.5px/1.4 Georgia,'Times New Roman',serif;color:var(--muted);margin:0 0 10px}
+.cp .ct-track{list-style:none;margin:0;padding:0 0 0 2px;font-size:13.5px;line-height:1.4}
+.cp .ft .ct-track li{position:relative;border-bottom:0;padding:0 0 10px 20px;border-left:2px solid color-mix(in srgb,var(--ink) 18%,transparent);margin-left:5px}
+.cp .ft .ct-track li:last-child{border-left-color:transparent;padding-bottom:2px}
+.cp .ct-track li::before{content:"";position:absolute;left:-7px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px var(--bg)}
+.cp .ct-d{display:block;font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.cp .ft .ct-track a{font-weight:400;color:var(--muted);text-decoration:underline}
+@media (max-width:1000px){.cp .ct-cards{column-count:2}}
+@media (max-width:640px){.cp .ct-cards{column-count:1;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:6px;border-bottom:3px solid var(--ink)}}
 """
 
 

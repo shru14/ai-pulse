@@ -104,6 +104,8 @@ def main():
     jb.add_argument("--days", type=int, default=30, help="stories from the last DAYS days (default 30; 0 for all since 2023)")
     jb.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) instead "
                     "of the database")
+    sub.add_parser("court", help="lawsuit stories not checked yet for AI in court (to check by hand and add to "
+                   "court.CASES as a case or a step, or to court.LEFT_OUT)")
     pp = sub.add_parser("press", help="stories that may report on a paper, not checked yet for Papers that made the "
                         "news (to check by hand and add to press.CHECKED or press.LEFT_OUT)")
     jn = sub.add_parser("jobs-note", help="email the project inbox the cuts a jobs/ branch adds, to approve")
@@ -378,6 +380,12 @@ def main():
         since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else jobs.SINCE
         todo = jobs.candidates(found, since)
         print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+    elif a.cmd == "court":
+        from . import court
+        todo = court.candidates(store.cards(store.connect(a.db), limit=10**9)[0])
+        print(f"{len(court.CASES)} cases, {len(court.LEFT_OUT)} left out. To check from {court.SINCE} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
     elif a.cmd == "press":
