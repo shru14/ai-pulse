@@ -108,7 +108,7 @@ def _chart(s: dict, start: date, today: date) -> str:
                     f'<text class="ax" x="{x(f"{yr}-01-01") + 4}" y="{H - B + 18}">{yr}</text>'
                     for yr in range(start.year, today.year + 1))
     dots = "".join(
-        f'<circle class="dot {STAGE[r["rank"]]}" cx="{x(r["since"])}" cy="{y(r["before"])}" r="6.5">'
+        f'<circle class="hd {STAGE[r["rank"]]}" cx="{x(r["since"])}" cy="{y(r["before"])}" r="6.5">'
         f'<title>{escape(r["name"])}, {echoes._when(r["card"], r["since"])}: {escape(r["card"]["title"].strip())} '
         f'({r["reached"].lower()}; {r["before"]} harms before it)</title></circle>' for r in s["rules"])
     label = f'{s["name"]}: {len(s["harms"])} harms since January 2023 and {len(s["rules"])} rules'
@@ -187,7 +187,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     (out / PATH).mkdir(parents=True, exist_ok=True)
     start = date.fromisoformat(SINCE)
     legend = ('<span><i class="cum-key"></i>Harms logged so far</span>'
-              + "".join(f'<span><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle class="dot {k}" '
+              + "".join(f'<span><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle class="hd {k}" '
                         f'cx="8" cy="8" r="6"/></svg>A rule: {w.lower()}</span>' for k, w in _STAGES))
     what = ("AI harms by subject, and the rules on the same subject, from January 2023. The line counts the harms the AI "
             "Incident Database logged; each dot is a rule, on the day it was proposed, so its height is the harms before it.")

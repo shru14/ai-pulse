@@ -370,9 +370,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .hp .pl{fill:var(--ink);font:600 11px var(--body);paint-order:stroke;stroke:var(--bg);stroke-width:3px}
 .cp .hp .area{fill:color-mix(in srgb,#D62828 16%,transparent)}
 .cp .hp .cum{fill:none;stroke:#D62828;stroke-width:2.5;stroke-linejoin:round}
-.cp .dot{stroke:var(--line);stroke-width:2}
-.cp .dot.adopted{fill:#009E73}.cp .dot.passed{fill:#56B4E9}.cp .dot.proposed{fill:var(--bg)}
-.cp .dot.withdrawn{fill:color-mix(in srgb,var(--ink) 30%,var(--bg));stroke-dasharray:2 2}
+.cp .hd{stroke:var(--line);stroke-width:2}
+.cp .hd.adopted{fill:#009E73}.cp .hd.passed{fill:#56B4E9}.cp .hd.proposed{fill:var(--bg)}
+.cp .hd.withdrawn{fill:color-mix(in srgb,var(--ink) 30%,var(--bg));stroke-dasharray:2 2}
 .cp .ec-legend svg{flex:none}
 .cp .ec-legend .cum-key{display:inline-block;width:22px;height:0;border-top:3px solid #D62828}
 .cp .er.hr > summary{display:block}.cp .er.hr .nm small{display:inline;margin-left:10px}
