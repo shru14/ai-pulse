@@ -119,6 +119,8 @@ def main():
     mo.add_argument("--due", action="store_true", help="only say whether one is due: exit 0 if so, 1 if not")
     mo.add_argument("--limit", type=int, default=4, help="at most this many months this run (newest first)")
     mo.add_argument("--month", help="write this month's (YYYY-MM) again")
+    pl = sub.add_parser("plain", help="the last week's papers in one plain sentence each (offline open-source model)")
+    pl.add_argument("--minutes", type=float, default=8, help="stop after this many minutes (default 8)")
     sub.add_parser("audit", help="check every source's robots.txt and terms again (on a PC, monthly; see aipulse/terms.py)")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
@@ -430,6 +432,9 @@ def main():
             conn.execute("DELETE FROM monthly WHERE month = ?", (a.month,))
             conn.commit()
         monthly.summarise(conn, today, limit=a.limit, only=a.month)
+    elif a.cmd == "plain":
+        from . import plain
+        plain.update(store.connect(a.db), minutes=a.minutes)
     elif a.cmd == "dossiers":
         from . import embed, subscribers, weekly
         key = os.environ.get("DIGEST_LIST_KEY", "")

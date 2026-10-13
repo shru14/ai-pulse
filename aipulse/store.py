@@ -355,8 +355,12 @@ def _complete(conn: sqlite3.Connection, leads: list[dict]) -> list[dict]:
         from .classify import news_kind
         from .sources import SOURCES
         blogs = {s["name"] for s in SOURCES if s["category"] == "tool"}  # labs' and companies' own blogs
+        from .plain import sentences
+        plain = sentences(conn, [c["id"] for c in leads if c["category"] == "research"])  # a paper in everyday words
         for c in leads:
             c["also"] = also.get(c["id"], [])
+            if c["id"] in plain:
+                c["plain"] = plain[c["id"]]
             if c["category"] == "news":  # a label within the stream: AI-incident, news, tutorial, event or company blog
                 c["kind"] = "incident" if c["id"] in incidents else news_kind(c["title"], c.get("summary") or "",
                                                                              c["source"] in blogs)

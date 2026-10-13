@@ -3325,6 +3325,31 @@ def test_monthly_summary_keeps_only_names_and_numbers_its_headlines_have():
     assert monthly.write("2026-09", cards, generate=lambda p, seed: long, log=lambda *_: None) is None
 
 
+def test_plain_sentence_is_one_checked_jargon_free_sentence():
+    from aipulse import plain
+    title, abstract = "VEPA: Formal Guardrails for LLM Agents", "Introduces VEPA, a framework tested on 12 agent tasks."
+    assert plain.problems("Builds a way to keep AI helpers within safe rules, tested on 12 tasks.", title, abstract) == []
+    assert plain.problems("Uses LLM agents with VEPA.", title, abstract) == ["LLM", "VEPA"]  # acronyms are jargon
+    assert plain.problems("Builds rules that OpenAI tested on 40 tasks.", title, abstract) == ["OpenAI", "40"]
+    assert plain.problems("This paper builds rules. It works.", title, abstract) == ["length", "start"]
+    tries, prompts = iter(["Shows VEPA works.", "Shows a way to keep AI helpers within safe rules."]), []
+    assert plain.write(title, abstract, generate=lambda p, seed: prompts.append(p) or next(tries)) ==         "Shows a way to keep AI helpers within safe rules."
+    assert prompts[1].endswith("Do not write VEPA: say it in everyday words, or leave it out.")
+    assert plain.write(title, abstract, generate=lambda p, seed: "Uses LLM agents.") is None  # every try failed
+
+
+def test_paper_cards_carry_their_plain_sentence(tmp_path):
+    from aipulse import plain
+    conn = store.connect(tmp_path / "t.db")
+    plain.connect(conn)
+    store.insert(conn, {"title": "A paper", "summary": "Introduces a thing.", "url": "https://arxiv.org/abs/1",
+                        "source": "arXiv", "category": "research", "date": "2026-10-12", "tags": [], "authors": []})
+    pid = conn.execute("SELECT id FROM items").fetchone()[0]
+    assert "plain" not in store.cards(conn)[0][0]
+    conn.execute("INSERT INTO plain VALUES (?, 'Shows a thing.', 'm', 'now')", (pid,))
+    assert store.cards(conn)[0][0]["plain"] == "Shows a thing."
+
+
 def test_monthly_issue_pages(tmp_path):
     import json
     from datetime import date

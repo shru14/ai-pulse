@@ -156,6 +156,23 @@ jobs:
             python -m aipulse --db aipulse.db monthly --limit 4
           fi
 
+      # Each new paper in one plain sentence for its card (aipulse/plain.py): the monthly summary's open-source model
+      # (Qwen3-4B-Instruct, Apache 2.0) on the runner with llama.cpp, from the paper's title and abstract; no API, nothing
+      # billed. Only the last 7 days' papers; at most 8 minutes a run. The model (~2.5 GB) is cached between runs.
+      - name: Restore the summary model
+        if: github.event_name != 'push' && env.QUICK != 'true'
+        uses: actions/cache@v4
+        with:
+          path: data/summary-models
+          key: summary-models-qwen3-4b-a06e946
+
+      - name: Papers in plain words
+        if: github.event_name != 'push' && env.QUICK != 'true'
+        continue-on-error: true
+        run: |
+          pip install --quiet --only-binary=llama-cpp-python llama-cpp-python==0.3.36 --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+          python -m aipulse --db aipulse.db plain --minutes 8
+
       # Today in AI's leaderboard: each story's rank at the day's first run and its best rank so far (aipulse/today.py),
       # kept in the database before it is saved, so the board's arrows and "was #N today" survive between runs
       - name: Today's leaderboard

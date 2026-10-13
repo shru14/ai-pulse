@@ -483,6 +483,8 @@ header.top{gap:10px}
 .group.place-filter{color:var(--ink);border-color:var(--ink)}
 .group:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .authors{font-size:14px;color:var(--muted);margin:0}
+.plain{margin:0;font-size:15px;line-height:1.45}
+.plain-k{font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin-right:4px}
 .ref-note{font-size:13px;color:var(--muted);margin:2px 0 0;line-height:1.45}
 .cat.regulation{color:var(--c-reg);background:var(--c-reg-soft)}
 .cat.infra{color:var(--c-infra);background:var(--c-infra-soft)}
@@ -1345,6 +1347,8 @@ function render(){
       art.append(side);
       const body = el("div","body"); art.append(body);
       const h = el("h3"); const a = el("a",null,it.title); a.href = it.url; a.target="_blank"; a.rel="noopener"; h.append(a); body.append(h);
+      // A paper in everyday words, written by an open-source model from its abstract (aipulse/plain.py)
+      if(it.plain){ const pl = el("p","plain"); pl.append(el("span","plain-k","In plain words"), " "+it.plain); body.append(pl); }
       const note = it.category === "regulation" && refNote(it);
       if(note) body.append(el("p","ref-note",note));
       if(it.authors && it.authors.length){
