@@ -274,33 +274,25 @@ def _front(rows: list[dict]) -> str:
 
 
 def _limits(rows: list[dict], read: int) -> str:
-    """What these papers can't tell us, as a table: each limit and why it matters."""
+    """About these counts, as a small table: what each count is made of."""
     from collections import Counter
     top, top_n = (Counter(r["source"] for r in rows).most_common(1) or [("", 0)])[0]
-    limits = [
-        (f"{_plural(len(rows), 'paper')} since {_day(SINCE)}",
-         "Only stories from the outlets we read, each checked by hand. Too few for shares, so the page gives counts."),
-        ("The two sides are counted differently",
-         "Each paper in the news is put under one subject by hand. The papers we read are counted by the words in "
-         "their titles, as on the Research pages, so one can count under several subjects, or none."),
-        ("The papers we read are mostly computer science",
-         f"They are the {read:,} new papers we read from arXiv's AI sections and Hugging Face's daily list. Papers "
-         "from psychology, economics or law, which the press covers too, are mostly not among them."),
-        *([(f"{top_n} of the {len(rows)} stories are from {top}",
-             "One outlet writes most of the stories about papers that we read, so its choices shape the list.")]
-          if rows and top_n * 2 > len(rows) else []),
-        ("Some stories are left out",
-         "Stories about a company page, blog post, poll or report, and stories whose paper we couldn't find or "
-         "check, aren't counted."),
+    notes = [
+        ("Papers in the news", f"Stories since {_day(SINCE)} from the outlets we read, each checked by hand and put "
+         "under one subject."),
+        ("Papers we read", f"The {read:,} new papers from arXiv's AI sections and Hugging Face's daily list, counted "
+         "by the words in their titles, so one can count under several subjects, or none."),
+        *([("Outlets", f"{top_n} of the {len(rows)} stories are from {top}.")] if rows and top_n * 2 > len(rows) else []),
+        ("Not counted", "Stories about a company page, blog post, poll or report, and stories whose paper we couldn't "
+         "find or check."),
     ]
-    body = "".join(f"<tr><td><b>{escape(a)}</b></td><td>{escape(b)}</td></tr>" for a, b in limits)
-    return ('<section class="jb-lim"><h2>What these papers can\'t tell us</h2>\n<table class="mt jb-limits"><thead><tr>'
-            f'<th>Limit</th><th>Why it matters</th></tr></thead><tbody>{body}</tbody></table></section>\n')
+    body = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in notes)
+    return f'<section><h2>About these counts</h2>\n<table class="mt pn-notes"><tbody>{body}</tbody></table></section>\n'
 
 
 def page_body(rows: list[dict], read_by: dict[str, int], read: int) -> str:
     """The page under the masthead: the papers in the news by subject next to the papers we read, a chapter per
-    subject with its papers, and what the papers can't tell us. Every number is worked out from the rows."""
+    subject with its papers, and what the counts are made of. Every number is worked out from the rows."""
     groups = {k: [r for r in rows if r["subject"] == k] for k in SUBJECTS}
     order = sorted(SUBJECTS, key=lambda k: (-len(groups[k]), -read_by.get(k, 0)))
     def ours(k: str) -> str:
@@ -311,20 +303,17 @@ def page_body(rows: list[dict], read_by: dict[str, int], read: int) -> str:
 
     table = ('<table class="mt pn-subjects"><thead><tr><th>Subject</th><th>Papers in the news</th>'
              '<th>Papers we read</th></tr></thead><tbody>'
-             + "".join(f'<tr><td class="pn-sub">{escape(SUBJECTS[k])}</td><td class="pn-num"><b>{len(groups[k])}</b> of '
+             + "".join(f'<tr><td>{escape(SUBJECTS[k])}</td><td class="pn-num"><b>{len(groups[k])}</b> of '
                        f'{len(rows)}</td><td class="pn-num">{ours(k)}</td></tr>'
-                       for k in order if groups[k] or read_by.get(k))
+                       for k in order if groups[k])
              + '</tbody></table>')
     intro = (f"{_plural(len(rows), 'research paper')} that news outlets we read reported on since {_day(SINCE)}, each "
              "checked by hand: the paper the story is about, its subject, and what it found in one plain sentence. Next "
              "to them, the papers we read ourselves in the same months. New papers are added once checked.")
     return (f'<div class="ft jb pn">\n<h1>Papers that made the news</h1>\n<p class="jb-q">{escape(QUESTION)}</p>\n'
             f'<p class="intro">{escape(intro)}</p>\n'
-            f'{_front(rows)}<section class="jb-answer"><h2>By the numbers</h2>\n{table}\n'
-            '<p class="jb-note">Papers in the news: each counted once, under the subject it was put under by hand. '
-            'Papers we read: counted by the words in their titles, so one paper can count under several subjects, or '
-            'none.</p></section>\n'
-            f'{_limits(rows, read)}</div>\n')
+            f'{_front(rows)}<div class="pn-foot"><section><h2>By the numbers</h2>\n{table}</section>\n'
+            f'{_limits(rows, read)}</div></div>\n')
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:

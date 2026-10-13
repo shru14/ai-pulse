@@ -754,8 +754,15 @@ a.subscribe-btn{text-decoration:none}
 .cp .np-lead .np-deck{font-size:19px;font-style:italic}
 .cp .np-cols{column-count:3;column-gap:28px;column-rule:1px solid color-mix(in srgb,var(--ink) 25%,transparent);margin-top:16px}
 .cp .np-cols .np-clip{break-inside:avoid;padding:0 0 14px;margin:0 0 14px;border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
-.cp .pn-sub{font-weight:700}
-.cp .pn-num b{font:800 20px var(--display,var(--body));margin-right:2px}
+.cp .pn > .intro{max-width:none}
+.cp .pn-foot{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:40px;font-size:14px}
+.cp .pn-foot h2{font:600 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;border:0;padding:0}
+.cp .pn-foot h2::before{display:none}
+.cp .pn-foot .mt td{padding:6px 12px 6px 0;font-weight:400}
+.cp .pn-num b{font-weight:600;margin-right:2px}
+.cp .pn-notes td:first-child{width:30%;color:var(--muted)}
+.cp .pn-notes td:last-child{text-align:left;white-space:normal}
+@media (max-width:760px){.cp .pn-foot{grid-template-columns:1fr}}
 .cp .pn-pc{color:var(--muted);font-size:13px}
 @media (max-width:900px){.cp .np-cols{column-count:2}}
 @media (max-width:640px){.cp .np-cols{column-count:1}.cp .np-lead{text-align:left}}
