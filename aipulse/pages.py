@@ -810,13 +810,14 @@ a.subscribe-btn{text-decoration:none}
 .cp .ct-art{width:100%;height:auto;display:block}
 @media (max-width:640px){.cp .ct-hero{grid-template-columns:1fr 130px;gap:12px;align-items:start}}
 .cp .ct-cap{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;align-items:baseline;margin:12px 0 6px;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
-.cp .ct-cap b{font:700 18px/1.25 Georgia,'Times New Roman',serif}
-.cp .ct-cap i{grid-column:2;font:italic 400 15px Georgia,'Times New Roman',serif;color:var(--muted)}
+.cp .ct-cap b{font:400 17px/1.2 var(--head);letter-spacing:-.01em}
+.cp .ct-cap i{grid-column:2;font:800 13px var(--body);text-transform:uppercase;letter-spacing:.06em;font-style:normal;color:var(--muted)}
 .cp .ct-side{font:600 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .cp .ct-stamp{display:inline-block;color:color-mix(in srgb,var(--c) 75%,var(--ink));border:3px double currentColor;font:800 13px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;transform:rotate(-5deg);border-radius:4px}
 .cp .ct-track li.ct-rule::before{width:19px;height:19px;left:-10px;top:-1px;border-radius:0;box-shadow:none;-webkit-mask:var(--gavel) center/contain no-repeat;mask:var(--gavel) center/contain no-repeat}
 .cp .ct{--gavel:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(-40 12 10)'%3E%3Crect x='5' y='2' width='12' height='7' rx='1.5'/%3E%3Crect x='9.6' y='9' width='2.8' height='11' rx='1.2'/%3E%3C/g%3E%3Crect x='2' y='20' width='12' height='3.5' rx='1'/%3E%3C/svg%3E")}
-.cp .ct-about{font:italic 400 14.5px/1.4 Georgia,'Times New Roman',serif;color:var(--muted);margin:0 0 10px}
+.cp .ct-about{font:500 14.5px/1.4 var(--body);color:var(--muted);margin:0 0 10px}
+.cp .ct-firms{margin-top:22px}
 .cp .ct-track{list-style:none;margin:0;padding:0 0 0 2px;font-size:13.5px;line-height:1.4}
 .cp .ft .ct-track li{position:relative;border-bottom:0;padding:0 0 10px 20px;border-left:2px solid color-mix(in srgb,var(--ink) 18%,transparent);margin-left:5px}
 .cp .ft .ct-track li:last-child{border-left-color:transparent;padding-bottom:2px}
