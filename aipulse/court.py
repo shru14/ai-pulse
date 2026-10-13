@@ -3,7 +3,7 @@ every country the news we read covers: who sued whom, where, and where each case
 against the stories that reported it and listed in CASES with its steps (filed, an early ruling, a decision, a
 settlement, thrown out), each step tied to the story that reported it. A case stands where its latest step leaves it,
 so the page follows the steps as rulings come in. `python -m aipulse court` lists the lawsuit stories not checked yet,
-to add as a new case, a new step, or to LEFT_OUT. Linked from Industry's strip on the front page.
+to add as a new case, a new step, or to LEFT_OUT. Linked from Regulation's strip on the front page.
 """
 from __future__ import annotations
 
@@ -597,7 +597,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH / "index.html").write_text(
         pages.page("AI in court · AI Pulse", what, PATH, page_body(rows), data, pages.frame(conn, len(cards)),
-                   ("/industry/", "Back to Industry"),
+                   ("/regulation/", "Back to the Regulation tracker"),
                    "Headlines are the outlets' own, each linking to its story. New cases and steps are added once "
                    "checked by hand."),
         encoding="utf-8")
