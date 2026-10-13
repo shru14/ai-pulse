@@ -790,13 +790,15 @@ a.subscribe-btn{text-decoration:none}
 .cp .ct-head{font:500 15px var(--body);border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:4px}
 .cp .ct-head b{font:400 36px var(--head);margin-right:6px}
 .cp .ct-head span{display:block;color:var(--muted);font-size:13px}
-.cp .ct-row{display:grid;grid-template-columns:9.5em 1fr auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .ct-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
 .cp .ct-lab{font:600 14.5px var(--body)}
-.cp .ct-dots{display:flex;flex-wrap:wrap;gap:4px}
-.cp .ct-dots i{width:11px;height:11px;border-radius:50%;background:var(--c)}
+.cp .ct-lab::before{content:"";display:inline-block;width:10px;height:10px;background:var(--c);margin-right:8px;vertical-align:1px}
+.cp .jb .ct-tables table.jb-small{font-size:15.5px}
+.cp .ct-tables .jb-small td,.cp .ct-tables .jb-small th{padding:7px 26px 7px 0}
+.cp .ct-tables .jb-small td.n{font-size:15px}
 .cp .ct-n{font:600 15px var(--mono)}
-.cp .ct-names{grid-column:2/4;font-size:12.5px;color:var(--muted);line-height:1.45}
-@media (max-width:760px){.cp .ct-board{display:flex;flex-direction:column}.cp .ct-board > div:first-child{display:contents}.cp .ct-board .ct-panel{order:1}.cp .ct-board .jb-note{order:2;margin-top:0}.cp .ct-board .ct-small{order:3}.cp .ct-row{grid-template-columns:8em 1fr auto}}
+.cp .ct-names{grid-column:1/-1;font-size:12.5px;color:var(--muted);line-height:1.45}
+@media (max-width:760px){.cp .ct-board{display:flex;flex-direction:column}.cp .ct-board > div:first-child{display:contents}.cp .ct-board .ct-panel{order:1}.cp .ct-board .ct-small{order:3}}
 @media (max-width:640px){.cp .ft .ct-small .mt thead{display:table-header-group}.cp .ft .ct-small .mt tr{display:table-row;padding:0}.cp .ft .ct-small .mt td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:5px 18px 5px 0}}
 .cp .ct-kind h3{font:600 20px var(--body);text-transform:none;letter-spacing:0;margin:0}
 .cp .ct-kind h3 span{font:500 13px var(--mono);color:var(--muted);margin-left:10px;white-space:nowrap}
@@ -817,7 +819,13 @@ a.subscribe-btn{text-decoration:none}
 .cp .ct-track li.ct-rule::before{width:19px;height:19px;left:-10px;top:-1px;border-radius:0;box-shadow:none;-webkit-mask:var(--gavel) center/contain no-repeat;mask:var(--gavel) center/contain no-repeat}
 .cp .ct{--gavel:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(-40 12 10)'%3E%3Crect x='5' y='2' width='12' height='7' rx='1.5'/%3E%3Crect x='9.6' y='9' width='2.8' height='11' rx='1.2'/%3E%3C/g%3E%3Crect x='2' y='20' width='12' height='3.5' rx='1'/%3E%3C/svg%3E")}
 .cp .ct-about{font:500 14.5px/1.4 var(--body);color:var(--muted);margin:0 0 10px}
-.cp .ct-firms{margin-top:22px}
+.cp .ct-firms{margin-top:28px}
+.cp .ct-firms h4{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.cp .ct-firms ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0 28px}
+.cp .ct-firms li{padding:7px 0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.cp .ct-firms li b{font:600 14px var(--body)}
+.cp .ct-firms li span{font:500 12px var(--mono);color:var(--muted);white-space:nowrap}
+@media (max-width:640px){.cp .ct-firms ul{grid-template-columns:1fr 1fr;gap:0 16px}.cp .ct-firms li{display:block}.cp .ct-firms li span{display:block;margin-top:2px}}
 .cp .ct-track{list-style:none;margin:0;padding:0 0 0 2px;font-size:13.5px;line-height:1.4}
 .cp .ft .ct-track li{position:relative;border-bottom:0;padding:0 0 10px 20px;border-left:2px solid color-mix(in srgb,var(--ink) 18%,transparent);margin-left:5px}
 .cp .ft .ct-track li:last-child{border-left-color:transparent;padding-bottom:2px}

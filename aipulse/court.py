@@ -523,10 +523,8 @@ def _cards(rows: list[dict]) -> str:
     return f'<div class="ct-cards">{"".join(card(c) for c in rows)}</div>'
 
 
-def _board(rows: list[dict], under: str = "", side: str = "") -> str:
-    """Where the cases stand: an Open panel and an Ended panel, a row per status with a dot per case (its case on
-    hover) and the count; the few ended cases are named under their row. `under` goes below the Open panel, `side`
-    below the Ended one."""
+def _board(rows: list[dict], under: str = "") -> str:
+    """Where the cases stand: an Open panel and an Ended panel, a row per status with its count; the few ended cases are named under their row. `under` goes below the Open panel."""
     def panel(is_open: bool) -> str:
         group = [c for c in rows if STATUSES[c["status"]][2] == is_open]
         out = ""
@@ -534,17 +532,15 @@ def _board(rows: list[dict], under: str = "", side: str = "") -> str:
             cs = [c for c in group if c["status"] == k]
             if o != is_open or not cs:
                 continue
-            dots = "".join(f'<i title="{escape(c["by"])} v {escape(c["sued"])}"></i>' for c in cs)
             names = ("" if is_open else '<div class="ct-names">'
                      + " · ".join(f'{escape(c["by"])} v {escape(c["sued"])}' for c in cs) + "</div>")
             out += (f'<div class="ct-row" style="--c:{colour}"><div class="ct-lab">{escape(label)}</div>'
-                    f'<div class="ct-dots">{dots}</div><div class="ct-n">{len(cs)}</div>{names}</div>')
+                    f'<div class="ct-n">{len(cs)}</div>{names}</div>')
         head, means = (("Open", "Filed, an early ruling, or some of those suing settled") if is_open
                        else ("Ended", "Decided, settled or thrown out"))
         return (f'<div class="ct-panel"><div class="ct-head"><b>{len(group)}</b> {head}'
                 f'<span>{means}</span></div>{out}</div>')
-    note = '<p class="jb-note">A dot is a case, placed by its latest step; hover a dot for the case.</p>'
-    return f'<div class="ct-board"><div>{panel(True)}{note}{under}</div><div>{panel(False)}{side}</div></div>'
+    return f'<div class="ct-board"><div>{panel(True)}{under}</div><div>{panel(False)}</div></div>'
 
 
 def _limits(rows: list[dict]) -> str:
@@ -582,18 +578,20 @@ def page_body(rows: list[dict]) -> str:
     kinds = "".join(f'<tr><td>{escape(label)}</td><td class="n">{sum(c["kind"] == k for c in rows)}</td>'
                     f'<td class="n">{sum(c["kind"] == k for c in open_)}</td></tr>'
                     for k, (label, _) in KINDS.items() if any(c["kind"] == k for c in rows))
-    small = ('<div class="jb-split ct-small">'
+    small = ('<div class="jb-split ct-small ct-tables">'
              '<table class="mt jb-small"><thead><tr><th>Court in</th><th>Cases</th><th>Open</th></tr></thead>'
              f'<tbody>{where}</tbody></table>'
              '<table class="mt jb-small"><thead><tr><th>About</th><th>Cases</th><th>Open</th></tr></thead>'
              f'<tbody>{kinds}</tbody></table></div>')
     sued = sorted({n for c in rows for n in companies(c["sued"])},
                   key=lambda n: (-sum(n in companies(c["sued"]) for c in rows), n.lower()))
-    firms = "".join(f'<tr><td>{escape(n)}</td><td class="n">{sum(n in companies(c["sued"]) for c in rows)}</td>'
-                    f'<td class="n">{sum(n in companies(c["sued"]) for c in open_)}</td></tr>' for n in sued)
+    firms = ""
+    for n in sued:
+        total = sum(n in companies(c["sued"]) for c in rows)
+        firms += (f'<li><b>{escape(n)}</b><span>{total} case{"s" * (total != 1)} · '
+                  f'{sum(n in companies(c["sued"]) for c in open_)} open</span></li>')
     unnamed = sum(not companies(c["sued"]) for c in rows)
-    side = ('<div class="ct-firms"><table class="mt jb-small"><thead><tr><th>Company sued</th><th>Cases</th>'
-            f'<th>Open</th></tr></thead><tbody>{firms}</tbody></table>'
+    side = ('<div class="ct-firms"><h4>Companies sued</h4><ul>' + firms + '</ul>'
             '<p class="jb-note">A case against several companies counts once under each.'
             + (f' {unnamed} case{"s" * (unnamed != 1)} whose stories name no company sued count under none.'
                if unnamed else "") + '</p></div>')
@@ -611,7 +609,7 @@ def page_body(rows: list[dict]) -> str:
     return (f'<div class="ft jb ct">\n<div class="ct-hero"><div><h1>AI in court</h1>\n'
             f'<p class="jb-q">{escape(QUESTION)}</p>\n<p class="intro">{escape(intro)}</p></div>{HERO}</div>\n'
             f'<section class="jb-answer"><h2>Where the cases stand</h2>\n'
-            f'{_board(rows, small, side)}</section>\n'
+            f'{_board(rows, small)}{side}</section>\n'
             f'<h2>Each case</h2>\n{sections}{_limits(rows)}</div>\n')
 
 
