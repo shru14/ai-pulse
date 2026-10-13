@@ -318,7 +318,7 @@ a.subscribe-btn{text-decoration:none}
   .cp .blocks{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cp .sgrid{grid-template-columns:1fr}
   .cp .chapter.wk .yr small{position:static;display:inline;margin-left:10px}}
-.cp:has(> .ft) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
+.cp:has(> .ft) > .back,.cp:has(> .ft) > .note{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .ft{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}  /* the timelines run wide */
 .cp .ft > .intro{max-width:70ch;font-size:17px;line-height:1.5;color:var(--ink)}
 .cp .ft h3{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
