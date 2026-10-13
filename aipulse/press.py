@@ -332,3 +332,17 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                    "papers are added once checked by hand."),
         encoding="utf-8")
     return [PATH]
+
+
+def note(base: str, branch: str) -> tuple[str, str, str] | None:
+    """The project inbox's note for a press/<day> branch: each paper it adds and the stories it left out; None when
+    it adds nothing. `base` is main's copy of this file."""
+    from . import approve
+    had = approve.lists_in(base, ("CHECKED", "LEFT_OUT"))
+    rows = [(r["paper"], SUBJECTS.get(r["subject"], r["subject"]), r["about"], u)
+            for u, r in CHECKED.items() if u not in had["CHECKED"]]
+    dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    if not rows and not dropped:
+        return None
+    return approve.note("Papers in the news", f"paper{'s' * (len(rows) != 1)}", branch,
+                        ("Paper", "Subject", "What it found", "Story"), rows, dropped)

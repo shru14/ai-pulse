@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -646,7 +646,7 @@ def test_static_build_holds_every_card(tmp_path):
     tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
     tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html",
                      tmp_path / "site" / "harm-to-rule" / "index.html", tmp_path / "site" / "jobs-blamed-on-ai" / "index.html",
-                     tmp_path / "site" / "papers-in-the-news" / "index.html"]
+                     tmp_path / "site" / "papers-in-the-news" / "index.html", tmp_path / "site" / "ai-in-court" / "index.html"]
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and '"kind": "tutorial"' in tutorials and "Updated" not in tutorials
@@ -3601,6 +3601,6 @@ def test_jobs_blamed_on_ai(monkeypatch):
     body = jobs.page_body(rows)
     assert "3 big job cuts since 2025" in body and "about 4,000 in all" in body and "C gave none" in body
     assert "Said AI now does the work: 1 cut" in body and "Mentioned AI" not in body  # only the reasons it has
-    assert "2026</div>" in body and "2 cuts</b> · about 1,000 jobs" in body  # by year
+    assert '<td>2026</td><td class="n">2</td><td class="n">about 1,000</td>' in body  # by year
     assert "B&#x27;s 3,000 jobs are about 3 in 4 of the jobs we could count" in body
     assert jobs._share(14000, 46985) == "about 3 in 10" and jobs._share(34335, 46985) == "nearly 3 in 4"

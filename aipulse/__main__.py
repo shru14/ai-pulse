@@ -104,10 +104,19 @@ def main():
     jb.add_argument("--days", type=int, default=30, help="stories from the last DAYS days (default 30; 0 for all since 2023)")
     jb.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) instead "
                     "of the database")
-    sub.add_parser("court", help="lawsuit stories not checked yet for AI in court (to check by hand and add to "
-                   "court.CASES as a case or a step, or to court.LEFT_OUT)")
+    ct = sub.add_parser("court", help="lawsuit stories not checked yet for AI in court (to check by hand and add to "
+                        "court.CASES as a case or a step, or to court.LEFT_OUT)")
     pp = sub.add_parser("press", help="stories that may report on a paper, not checked yet for Papers that made the "
                         "news (to check by hand and add to press.CHECKED or press.LEFT_OUT)")
+    for q in (ct, pp):
+        q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
+        q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
+                       "instead of the database")
+    for name, module in (("court", "court"), ("press", "press")):
+        q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
+        q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
+        q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
+        q.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     jn = sub.add_parser("jobs-note", help="email the project inbox the cuts a jobs/ branch adds, to approve")
     jn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/jobs.py, to compare with")
     jn.add_argument("--branch", required=True, help="the branch the cuts are on (jobs/<day>)")
@@ -382,18 +391,32 @@ def main():
         print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-    elif a.cmd == "court":
-        from . import court
-        todo = court.candidates(store.cards(store.connect(a.db), limit=10**9)[0])
-        print(f"{len(court.CASES)} cases, {len(court.LEFT_OUT)} left out. To check from {court.SINCE} ({len(todo)}):")
+    elif a.cmd in ("court", "press"):
+        from . import court, press
+        m = court if a.cmd == "court" else press
+        # the site's own data.json for the daily job, which has no database (its last 3 months)
+        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
+        since = max(m.SINCE, (date.today() - timedelta(days=a.days)).isoformat()) if a.days else m.SINCE
+        todo = m.candidates(found, since)
+        done = f"{len(court.CASES)} cases" if m is court else f"{len(press.CHECKED)} checked"
+        print(f"{done}, {len(m.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-    elif a.cmd == "press":
-        from . import press
-        todo = press.candidates(store.cards(store.connect(a.db), limit=10**9)[0])
-        print(f"{len(press.CHECKED)} checked, {len(press.LEFT_OUT)} left out. To check from {press.SINCE} ({len(todo)}):")
-        for c in todo:
-            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+    elif a.cmd in ("court-note", "press-note"):
+        # A court/<day> or press/<day> branch's drafts, to the project inbox for approval (.github/workflows/*-note.yml)
+        from . import court, digest, press
+        m = court if a.cmd == "court-note" else press
+        note = m.note(open(a.base, encoding="utf-8").read(), a.branch)
+        if not note:
+            print("Nothing new on this branch.")
+        elif a.dry_run:
+            open(a.dry_run, "w", encoding="utf-8").write(note[2])
+            print(f"{note[0]} -> wrote {a.dry_run}")
+        elif not os.environ.get("DIGEST_EMAIL"):
+            print(f"{note[0]}; DIGEST_EMAIL isn't set, so nothing was sent")
+        else:
+            digest.send(digest.sender(), *note)
+            print(f"Sent to the project inbox: {note[0]}")
     elif a.cmd == "jobs-note":
         # A jobs/<day> branch's new cuts, to the project inbox for approval (.github/workflows/jobs-note.yml)
         from . import digest, jobs

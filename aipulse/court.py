@@ -505,7 +505,7 @@ def _board(rows: list[dict], under: str = "") -> str:
 
 def _limits(rows: list[dict]) -> str:
     """About these counts, as a small table: what each count is made of."""
-    first = min(rows, key=lambda c: c["steps"][0]["date"])["steps"][0]["date"][:4]
+    first = min((c["steps"][0]["date"][:4] for c in rows), default=SINCE[:4])
     limits = [
         (f"{len(rows)} cases from the news we read",
          f"Lawsuits against AI makers over copyright, privacy or likeness that outlets we read reported since {first}. "
@@ -529,7 +529,7 @@ def page_body(rows: list[dict]) -> str:
     and what the counts are made of. Every number is worked out from the rows."""
     open_ = [c for c in rows if STATUSES[c["status"]][2]]
     countries = sorted({c["where"] for c in rows}, key=lambda w: (-sum(c["where"] == w for c in rows), w))
-    first = min(c["steps"][0]["date"][:4] for c in rows)
+    first = min((c["steps"][0]["date"][:4] for c in rows), default=SINCE[:4])
     intro = (f"{len(rows)} lawsuits against AI makers over copyright, privacy and people's likeness, in "
              f"{len(countries)} countries, reported since {first}. {len(open_)} are open. Each case shows its steps "
              "as the news reported them; new steps are added once checked.")
@@ -576,3 +576,17 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                    "checked by hand."),
         encoding="utf-8")
     return [PATH]
+
+
+def note(base: str, branch: str) -> tuple[str, str, str] | None:
+    """The project inbox's note for a court/<day> branch: each step it adds (a new case's first steps included), and
+    the stories it left out; None when it adds nothing. `base` is main's copy of this file."""
+    from . import approve
+    had = approve.lists_in(base, ("CASES", "LEFT_OUT"))
+    rows = [(f'{c["by"]} v. {c["sued"]}', c["where"], STATUSES[st][0], what, u)
+            for c in CASES for u, st, what in c["steps"] if u not in had["CASES"]]
+    dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    if not rows and not dropped:
+        return None
+    return approve.note("AI in court", f"step{'s' * (len(rows) != 1)}", branch,
+                        ("Case", "Court in", "Where it stands", "What happened", "Source"), rows, dropped)
