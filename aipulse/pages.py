@@ -811,6 +811,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ct-hero{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center}
 .cp .ct-art{width:100%;height:auto;display:block}
 @media (max-width:640px){.cp .ct-hero{grid-template-columns:1fr 130px;gap:12px;align-items:start}}
+@media (max-width:640px){.cp .ct-hero > div{display:contents}.cp .ct-hero h1,.cp .ct-hero .jb-q{grid-column:1}.cp .ct-hero .ct-art{grid-column:2;grid-row:1/3;align-self:center}.cp .ct-hero .intro{grid-column:1/-1}}
 .cp .ct-cap{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;align-items:baseline;margin:12px 0 6px;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
 .cp .ct-cap b{font:400 17px/1.2 var(--head);letter-spacing:-.01em}
 .cp .ct-cap i{grid-column:2;font:800 13px var(--body);text-transform:uppercase;letter-spacing:.06em;font-style:normal;color:var(--muted)}
