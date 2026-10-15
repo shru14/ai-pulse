@@ -122,11 +122,27 @@ CHECKED: dict[str, dict] = {
         dict(paper="Efficient Unclonable Encryption from Pauli Eigenstates", link="https://arxiv.org/abs/2607.21811",
              subject="science",
              about="Builds a quantum way to encrypt a message that can't be copied: two people can never both read it."),
+    "https://theconversation.com/can-ai-feel-safer-than-human-advice-for-consumers-who-face-discrimination-293761":
+        dict(paper="Unveiling coping mechanisms in marketplace discrimination: The allure of artificial intelligence "
+                   "recommendations",
+             link="https://doi.org/10.1111/jpim.12774", subject="people",
+             about="Finds that people who have faced discrimination from humans prefer AI recommendations over human ones, "
+                   "because of embarrassment, and that this fades when the choice is private."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://openai.com/index/teaching-students-to-think-and-learn-through-questions",  # a company page
+    "https://iafrikan.com/one-developer-cloned-adobe-africa-should-study-what-it-did-to-the-curve/",  # no paper named
+    "https://metr.org/blog/2026-10-14-control-assessment-proposal/",  # a company blog post (METR)
+    "https://metr.org/blog/2026-10-14-ai-rd-acceleration-assessment-proposal/",  # a company blog post (METR)
+    "https://www.sciencedaily.com/releases/2026/10/261012185017.htm",  # paper found (Cognition) but its abstract can't be read to check: the publisher refuses us
+    "https://the-decoder.com/406-scientists-demand-ai-models-be-cut-off-from-the-internet-immediately/",  # an open letter, no paper named
+    "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-argon/",  # a product launch
+    "https://www.channelnewsasia.com/business/scientists-call-international-body-oversee-advanced-ai-6455556",  # can't read to check; same open letter as the Decoder story, no paper
+    "https://olhardigital.com.br/2026/10/13/pro/resumo-do-od-nasa-bate-recorde-em-marte-ia-ameaca-empregos-e-mais/",  # a news roundup, no one paper
+    "https://africadca.org/en/white-paper-african-climate-datacenter-pue-2026",  # an industry white paper, not a paper on a preprint server or in a journal
     "https://the-decoder.com/anthropic-study-warns-that-small-ai-models-could-soon-replicate-across-everyday-devices/",  # a company research page, not a paper
     "https://the-decoder.com/arxiv-caps-submissions-at-two-per-month-as-ai-paper-flood-overwhelms-the-preprint-server/",
     "https://the-decoder.com/ai-agents-overstate-their-results-and-remain-far-from-autonomous-research-study-finds/",  # a company report (Epoch AI), not a paper
