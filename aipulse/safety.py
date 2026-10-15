@@ -1,6 +1,6 @@
 """AI safety hub (ai-safety-hub/): the safety evaluations, red-teaming findings, system cards and safety frameworks
 that AI labs, government safety institutes, independent evaluators and industry bodies published in 2026, in one
-place, searchable by risk, kind, publisher, developer and open or closed weights.
+place, searchable and filtered by type and risk.
 
 Every document in DOCS was read by hand from the publisher's own pages (the owner's choice, 15 Oct 2026: a hand-checked
 list, 2026 only): its title and date as the publisher gives them, a link to it and to its PDF or paper, the models it
@@ -63,10 +63,6 @@ PUBLISHERS = {
     "UK AI Security Institute": "institute", "NIST (CAISI)": "institute",
     "METR": "evaluator", "Apollo Research": "evaluator",
     "Frontier Model Forum": "industry", "International AI Safety Report": "panel",
-}
-PUBLISHER_KINDS = {
-    "lab": "AI labs", "institute": "Government safety institutes", "evaluator": "Independent evaluators",
-    "industry": "Industry bodies", "panel": "International reports",
 }
 
 # the models documents test: (who makes it, are its weights published). Open = on Hugging Face in our stories (Kimi
@@ -1390,9 +1386,7 @@ def _card(d: dict) -> str:
         links += f' · <a href="{escape(d["original"])}" rel="noopener">{what} ↗</a>'
     text = " ".join([d["title"], d["by"], d["abstract"], *d["models"], *d["makers"],
                      *(RISKS[r][0] for r in d["risks"]), label]).lower()
-    data = (f'data-kind="{d["kind"]}" data-risks="{" ".join(d["risks"])}" data-by="{PUBLISHERS[d["by"]]}" '
-            f'data-maker="{escape("|".join(d["makers"]))}" data-weights="{" ".join(d["weights"])}" '
-            f'data-text="{escape(text)}"')
+    data = f'data-kind="{d["kind"]}" data-risks="{" ".join(d["risks"])}" data-text="{escape(text)}"'
     return (f'<article class="sh-doc" style="--c:{colour}" {data}><div class="sh-top">'
             f'<span class="sh-kind">{escape(label)}</span><span class="sh-meta">{_day(d["date"])} · '
             f'{escape(d["by"])}</span></div><h3>{escape(d["title"])}</h3>{models}'
@@ -1400,46 +1394,31 @@ def _card(d: dict) -> str:
             f'{abstract}<p class="sh-links">{links}</p></article>')
 
 
-def _select(name: str, label: str, options: list[tuple[str, str, int]]) -> str:
-    opts = "".join(f'<option value="{escape(v)}">{escape(t)} ({n})</option>' for v, t, n in options)
-    return (f'<label class="sh-sel"><span>{escape(label)}</span><select data-f="{name}">'
-            f'<option value="">All</option>{opts}</select></label>')
-
-
 def _filters(rows: list[dict]) -> str:
-    """The search box, a chip per risk with how many documents cover it, then type, publisher, developer and
-    weights, each option with its count of documents."""
-    chips = "".join(f'<button type="button" class="sh-chip" data-risk="{k}" title="{escape(means)}">'
-                    f'{escape(label)} <b>{n}</b></button>'
-                    for k, (label, means) in RISKS.items() if (n := sum(k in d["risks"] for d in rows)))
-    kinds = [(k, label, n) for k, (label, *_) in KINDS.items() if (n := sum(d["kind"] == k for d in rows))]
-    by = [(k, label, n) for k, label in PUBLISHER_KINDS.items()
-          if (n := sum(PUBLISHERS[d["by"]] == k for d in rows))]
-    makers = sorted({w for d in rows for w in d["makers"]}, key=lambda w: (-sum(w in d["makers"] for d in rows), w))
-    makers = [(w, w, sum(w in d["makers"] for d in rows)) for w in makers]
-    weights = [(o, f"{o.title()} weights", n) for o in ("open", "closed")
-               if (n := sum(o in d["weights"] for d in rows))]
-    return ('<div class="sh-filters"><input type="search" class="sh-q" placeholder="Search titles, abstracts and models"'
-            ' aria-label="Search the documents">'
-            f'<div class="sh-chips" role="group" aria-label="Risk">{chips}</div><div class="sh-sels">'
-            + _select("kind", "Type", kinds) + _select("by", "Publisher", by)
-            + _select("maker", "Model by", makers) + _select("weights", "Weights", weights) +
-            f'</div><p class="sh-count" aria-live="polite">Showing <b>{len(rows)}</b> of {len(rows)} documents</p></div>')
+    """A tab per type, the search box, and one risk list, each with its count of documents."""
+    tabs = "".join(f'<button type="button" class="sh-tab" data-kind="{k}" aria-pressed="false">{escape(label)} <b>{n}</b>'
+                   '</button>' for k, (label, *_) in KINDS.items() if (n := sum(d["kind"] == k for d in rows)))
+    risks = "".join(f'<option value="{k}">{escape(label)} ({n})</option>'
+                    for k, (label, _) in RISKS.items() if (n := sum(k in d["risks"] for d in rows)))
+    return (f'<div class="sh-filters"><div class="sh-tabs" role="group" aria-label="Type"><button type="button" '
+            f'class="sh-tab" data-kind="" aria-pressed="true">All <b>{len(rows)}</b></button>{tabs}</div>'
+            '<input type="search" class="sh-q" placeholder="Search titles, abstracts and models"'
+            ' aria-label="Search the documents"><label class="sh-sel"><span>Risk</span><select data-f="risk">'
+            f'<option value="">All</option>{risks}</select></label>'
+            f'<p class="sh-count" aria-live="polite">Showing <b>{len(rows)}</b> of {len(rows)} documents</p></div>')
 
 
 # the filters, in the reader's browser: every filter set must match; the search matches every word typed
 SCRIPT = """<script>
 (()=>{const hub=document.querySelector('.sh'),docs=[...hub.querySelectorAll('.sh-doc')],q=hub.querySelector('.sh-q'),
-count=hub.querySelector('.sh-count b'),none=hub.querySelector('.sh-none');let risk='';
-function run(){const words=q.value.toLowerCase().split(/\\s+/).filter(Boolean),f={};
-hub.querySelectorAll('select[data-f]').forEach(s=>f[s.dataset.f]=s.value);let n=0;
-docs.forEach(d=>{const ok=(!risk||d.dataset.risks.split(' ').includes(risk))&&(!f.kind||d.dataset.kind===f.kind)
-&&(!f.by||d.dataset.by===f.by)&&(!f.maker||d.dataset.maker.split('|').includes(f.maker))
-&&(!f.weights||d.dataset.weights.split(' ').includes(f.weights))&&words.every(w=>d.dataset.text.includes(w));
-d.hidden=!ok;n+=ok});count.textContent=n;none.hidden=n>0}
-hub.querySelectorAll('.sh-chip').forEach(b=>b.addEventListener('click',()=>{risk=risk===b.dataset.risk?'':b.dataset.risk;
-hub.querySelectorAll('.sh-chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.risk===risk));run()}));
-hub.querySelectorAll('select[data-f]').forEach(s=>s.addEventListener('change',run));q.addEventListener('input',run);
+count=hub.querySelector('.sh-count b'),none=hub.querySelector('.sh-none'),risk=hub.querySelector('select[data-f=risk]');
+let kind='';
+function run(){const words=q.value.toLowerCase().split(/\s+/).filter(Boolean);let n=0;
+docs.forEach(d=>{const ok=(!kind||d.dataset.kind===kind)&&(!risk.value||d.dataset.risks.split(' ').includes(risk.value))
+&&words.every(w=>d.dataset.text.includes(w));d.hidden=!ok;n+=ok});count.textContent=n;none.hidden=n>0}
+hub.querySelectorAll('.sh-tab').forEach(b=>b.addEventListener('click',()=>{kind=b.dataset.kind;
+hub.querySelectorAll('.sh-tab').forEach(t=>t.setAttribute('aria-pressed',t===b));run()}));
+risk.addEventListener('change',run);q.addEventListener('input',run);
 docs.forEach(d=>{const ab=d.querySelector('.sh-ab p'),more=d.querySelector('.sh-more');if(!ab)return;
 if(ab.scrollHeight>ab.clientHeight+4){more.hidden=false;more.addEventListener('click',()=>{const open=d.classList.toggle('open');
 more.textContent=open?'Show less':'Read the whole abstract'})}})})();

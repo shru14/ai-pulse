@@ -3398,9 +3398,10 @@ def test_ai_safety_hub(monkeypatch):
     assert [c["url"] for c in safety.candidates(cards)] == ["https://n/new"]  # not listed, left out or off-topic
     body = safety.page_body(rows)
     assert "3 documents published in 2026" in body and "1 system card, 1 evaluation, 1 framework &amp; guidance" in body
-    assert 'Showing <b>3</b> of 3 documents' in body and 'data-risk="cyber"' in body and "Cyber attacks <b>2</b>" in body
-    assert 'data-risk="physical"' not in body  # no chip for a risk no document covers
-    assert '<option value="open">Open weights (1)</option>' in body and "Z.ai, open weights" in body
+    assert 'Showing <b>3</b> of 3 documents' in body and '<option value="cyber">Cyber attacks (2)</option>' in body
+    assert '<option value="physical">' not in body  # no option for a risk no document covers
+    assert 'data-kind="card" aria-pressed="false">System card <b>1</b>' in body and 'data-kind="redteam"' not in body
+    assert "Z.ai, open weights" in body
     assert body.index("Model X System Card") < body.index("Assessment of GLM")
     assert "PDF ↗" in body and ">Feb 2026 · Frontier Model Forum<" in body
     assert body.count('class="sh-ab"') == 2  # a document without an abstract shows none
