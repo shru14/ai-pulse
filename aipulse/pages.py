@@ -835,6 +835,16 @@ a.subscribe-btn{text-decoration:none}
 .cp .ft .ct-track a{font-weight:400;color:var(--muted);text-decoration:underline}
 @media (max-width:1000px){.cp .ct-cards{column-count:2}}
 @media (max-width:640px){.cp .ct-cards{columns:auto;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:6px;border-bottom:3px solid var(--ink)}}
+/* Infra's features (builds, power, permits): the court page's hero and small tables, then one table of rows */
+.cp .iw-chip{display:inline-block;background:var(--c);color:#111;font:700 11px var(--body);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.cp .iw .ct-tables .jb-small td{vertical-align:middle}
+.cp .iw-t{font-size:14.5px}
+.cp .iw-t td.when{font:500 12.5px var(--mono);color:var(--muted);white-space:nowrap}
+.cp .iw-t td.who{font-weight:600}
+.cp .iw-t .meta{color:var(--muted)}
+.cp .ft .iw-t td.src a{font-weight:400;color:var(--muted);text-decoration:underline}
+@media (max-width:640px){.cp table.iw-t{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
+  .cp .iw-t td .iw-chip{margin:4px 0}}
 /* AI safety hub: the search and filters, then a card per document (its kind's colour on top), newest first */
 .cp .sh .jb-q{max-width:none}
 .cp .sh-filters{position:sticky;top:0;z-index:2;background:var(--bg);padding:12px 0 10px;margin:18px 0 6px;border-bottom:2px solid var(--ink)}
