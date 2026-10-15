@@ -399,7 +399,7 @@ def build(conn, out: str | Path) -> int:
     places += monthly.build(conn, cards, out, today)  # a booklet for each month that is over (monthly/)
     from . import insights
     places += insights.build(conn, cards, out, today)  # each issue's month in numbers (monthly/<month>/insights/)
-    from . import court, echoes, harms, jobs, press, promises, safety
+    from . import court, echoes, harms, infra_watch, jobs, press, promises, safety
     places += echoes.build(conn, cards, out, today)  # the tracker's subjects spreading place to place (rule-echoes/)
     places += promises.build(conn, cards, out, today)  # companies' promises and their launches (promises/)
     places += harms.build(conn, cards, out, today)  # AI harms by subject beside the rules on it (harm-to-rule/)
@@ -407,6 +407,7 @@ def build(conn, out: str | Path) -> int:
     places += press.build(conn, cards, out, today)  # research papers the news reported on, by subject (papers-in-the-news/)
     places += court.build(conn, cards, out, today)  # lawsuits against AI makers and where each stands (ai-in-court/)
     places += safety.build(conn, cards, out, today)  # system cards, evaluations, red-teaming and frameworks (ai-safety-hub/)
+    places += infra_watch.build(conn, cards, out, today)  # data-centre builds, power deals and permits (Infra's features)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
