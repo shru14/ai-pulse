@@ -601,21 +601,36 @@ header.top{border-bottom:4px solid var(--ink)}
 .sec-hero h2::after{display:none}
 .sec-hero p{font-size:16px;max-width:60ch}
 .sec-hero .status{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px 14px;font-size:12px}
-/* the tracker's strip under its filters: its official records, a page per country (countries.py) */
-.by-country{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0 4px;padding:14px 16px;
-  border:3px solid var(--ink);border-top:8px solid var(--f-reg);background:var(--surface)}
+/* each stream's strip under its filters: its own pages as tag tiles (left), the pages built from it as features (right,
+   on the stream's colour). Streams without features give the tiles the full width. */
+.by-country{display:grid;grid-template-columns:2.1fr 1fr;margin:14px 0 10px;border:3px solid var(--line);border-top:8px solid var(--f);
+  background:var(--surface);box-shadow:6px 6px 0 var(--line)}
 .by-country[hidden]{display:none}
-.by-country b{display:block;font:400 20px/1.2 var(--head)}
-.by-country p{margin:4px 0 0;color:var(--muted);font-size:15px;line-height:1.45}
-.by-country a{flex:none;display:inline-flex;align-items:center;height:40px;padding:0 16px;background:var(--accent);color:#FFFFFF;
-  border:2px solid var(--ink);font:600 15px var(--body);text-decoration:none;white-space:nowrap}
-.by-country a:hover{filter:brightness(1.08)}
-.by-country a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-/* the words keep a readable width; buttons that don't fit beside them go on their own row below */
-.by-country{flex-wrap:wrap}
-.by-country > div:first-child{flex:1 1 340px;min-width:0}
-.by-country-go{flex:0 1 auto;display:flex;flex-wrap:wrap;gap:8px}
-@media (max-width:640px){.by-country{flex-direction:column;align-items:flex-start}.by-country > div:first-child{flex-basis:auto}}
+.by-country.no-feats{grid-template-columns:1fr}
+.bc-main{padding:18px 20px;min-width:0}
+.by-country b{display:block;font:400 22px/1.15 var(--head)}
+.by-country p{margin:4px 0 0;color:var(--muted);font-size:15px;line-height:1.45;max-width:70ch}
+.bc-tags{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:16px}
+.no-feats .bc-tags{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.bc-tags a{display:flex;align-items:center;gap:9px;min-height:50px;padding:7px 10px 7px 7px;border:2px solid var(--line);background:var(--surface);
+  color:var(--ink);box-shadow:3px 3px 0 var(--line);font:600 14px/1.2 var(--body);text-decoration:none}
+.bc-tags a:hover{background:var(--soft)}
+.bc-ic{flex:none;width:30px;height:30px;display:grid;place-items:center;background:var(--soft);border:2px solid var(--line);color:var(--c)}
+.bc-ic.logo{background:#FFFFFF;color:#000000}
+.by-country svg{width:18px;height:18px}
+.bc-ic:not(.logo) svg,.bc-feats svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.bc-feats{background:var(--f);border-left:3px solid var(--line);padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+.bc-lab{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#000000}
+.bc-feats a{display:flex;align-items:center;gap:12px;background:#000000;color:#FFFFFF;padding:13px 12px;border:2px solid #000000;
+  box-shadow:5px 5px 0 #FFFFFF;font:400 16px/1.15 var(--head);text-decoration:none}
+.bc-feats a svg{flex:none;color:var(--f)}
+.bc-feats a em{margin-left:auto;padding-left:6px;font:600 18px var(--body);font-style:normal}
+.bc-feats a:hover{filter:brightness(1.25)}
+.by-country a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media (max-width:640px){.by-country{grid-template-columns:1fr}.bc-main{padding:14px}.by-country b{font-size:20px}
+  .bc-tags,.no-feats .bc-tags{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .bc-tags a{font-size:13.5px;padding:6px 8px 6px 6px;gap:8px}.bc-ic{width:30px;height:30px}
+  .bc-feats{border-left:0;border-top:3px solid var(--line);padding:14px}.bc-feats a{font-size:16px;padding:12px}}
 .sec-hero .ico,.sec-hero .ico.sec{width:52px;height:52px;border-radius:0;border:3px solid var(--ink);background:var(--bg);color:var(--ink)}
 /* the masthead: name and buttons on top, every stream on its own ruled row below (never cut off) */
 :root{--bar-h:104px}
@@ -1116,38 +1131,42 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
     <div class="groups" id="placebar" hidden></div>
   </div>
 
-  <!-- The tracker only: its official records, a page per country (aipulse/countries.py) -->
-  <div class="by-country" id="by-country" hidden>
-    <div><b>Looking for one country?</b>
-      <p>Every AI bill, law, regulator and standard from official records, one page per country, with each bill's stages.</p></div>
-    <div class="by-country-go"><a href="tracker/">Browse by country →</a><a href="standards/">All AI standards →</a><a href="rule-echoes/">Rule echoes →</a><a href="harm-to-rule/">Harm → rule →</a><a href="ai-in-court/">AI in court →</a></div>
+  <!-- The tracker only: its official records, a page per country (aipulse/countries.py), and its features -->
+  <div class="by-country" id="by-country" style="--f:var(--f-reg);--soft:var(--c-reg-soft);--c:var(--c-reg)" hidden>
+    <div class="bc-main"><b>Looking for one country?</b>
+      <p>Every AI bill, law, regulator and standard from official records, one page per country, with each bill's stages.</p>
+      <div class="bc-tags"><a href="tracker/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span>Countries</a><a href="standards/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM15 3v4h4M9 12h7M9 16h7"/></svg></span>Standards</a></div></div>
+    <div class="bc-feats"><span class="bc-lab">Features</span><a href="rule-echoes/"><svg viewBox="0 0 24 24"><path d="M4 18a8 8 0 0 1 16 0M7 18a5 5 0 0 1 10 0M10 18a2 2 0 0 1 4 0"/></svg><span>Rule echoes</span><em>→</em></a><a href="harm-to-rule/"><svg viewBox="0 0 24 24"><path d="M12 3.5l9.5 17h-19zM12 10v5M12 17.8v.2"/></svg><span>Harm → rule</span><em>→</em></a><a href="ai-in-court/"><svg viewBox="0 0 24 24"><path d="M12 4v16M8 20h8M5 7h14M5 7l-3 6.5a3 3 0 0 0 6 0zM19 7l-3 6.5a3 3 0 0 0 6 0z"/></svg><span>AI in court</span><em>→</em></a></div>
   </div>
-  <!-- Industry only: its kinds of story, a page each (aipulse/kind_pages.py) -->
-  <div class="by-country" id="by-kind" hidden>
-    <div><b>Looking for one kind of story?</b>
-      <p>Opinion, company blogs, studies, AI incidents, tutorials and events, each on its own page.</p></div>
-    <div class="by-country-go"><a href="industry/opinion/">Opinion →</a><a href="industry/company-blogs/">Company blogs →</a><a href="industry/studies/">Studies →</a><a href="industry/ai-incidents/">AI incidents →</a><a href="industry/tutorials/">Tutorials →</a><a href="industry/events/">Events →</a><a href="promises/">Promised vs shipped →</a><a href="jobs-blamed-on-ai/">Jobs blamed on AI →</a></div>
+  <!-- Industry only: its kinds of story, a page each (aipulse/kind_pages.py), and its features -->
+  <div class="by-country" id="by-kind" style="--f:var(--f-news);--soft:var(--c-news-soft);--c:var(--c-news)" hidden>
+    <div class="bc-main"><b>Looking for one kind of story?</b>
+      <p>Opinion, company blogs, studies, AI incidents, tutorials and events, each on its own page.</p>
+      <div class="bc-tags"><a href="industry/opinion/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M5 17h4l1.5-4V7H5v6h3zM14 17h4l1.5-4V7H14v6h3z"/></svg></span>Opinion</a><a href="industry/company-blogs/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M4 5h12v14H6a2 2 0 0 1-2-2zM16 9h4v8a2 2 0 0 1-2 2h-2M7.5 9h5M7.5 12.5h5M7.5 16h3"/></svg></span>Company blogs</a><a href="industry/studies/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 8.5A2 2 0 0 0 6.7 20.5h10.6a2 2 0 0 0 1.7-3L14 9V3M7.2 15h9.6"/></svg></span>Studies</a><a href="industry/ai-incidents/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M12 3.5l9.5 17h-19zM12 10v5M12 17.8v.2"/></svg></span>AI incidents</a><a href="industry/tutorials/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5"/></svg></span>Tutorials</a><a href="industry/events/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5"/></svg></span>Events</a></div></div>
+    <div class="bc-feats"><span class="bc-lab">Features</span><a href="promises/"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 12l3 3 5-6"/></svg><span>Promised vs shipped</span><em>→</em></a><a href="jobs-blamed-on-ai/"><svg viewBox="0 0 24 24"><path d="M4 8h16v11H4zM9 8V5h6v3M4 13h16"/></svg><span>Jobs blamed on AI</span><em>→</em></a></div>
   </div>
   <!-- Releases, Policy, Research and Infra: their stories split into pages too (aipulse/kind_pages.py) -->
-  <div class="by-country" id="by-tool" hidden>
-    <div><b>Looking for one company?</b>
-      <p>Each big AI lab's releases, on its own page.</p></div>
-    <div class="by-country-go"><a href="releases/google/">Google →</a><a href="releases/openai/">OpenAI →</a><a href="releases/anthropic/">Anthropic →</a><a href="releases/meta/">Meta →</a><a href="releases/microsoft/">Microsoft →</a><a href="releases/nvidia/">Nvidia →</a><a href="releases/amazon/">Amazon →</a><a href="releases/apple/">Apple →</a><a href="releases/xai/">xAI →</a><a href="releases/mistral/">Mistral →</a><a href="releases/alibaba/">Alibaba →</a><a href="releases/deepseek/">DeepSeek →</a><a href="releases/hugging-face/">Hugging Face →</a></div>
+  <div class="by-country no-feats" id="by-tool" style="--f:var(--f-tool);--soft:var(--c-tool-soft);--c:var(--c-tool)" hidden>
+    <div class="bc-main"><b>Looking for one company?</b>
+      <p>Each big AI lab's releases, on its own page.</p>
+      <div class="bc-tags"><a href="releases/google/"><span class="bc-ic logo" data-logo="Google"></span>Google</a><a href="releases/openai/"><span class="bc-ic logo" data-logo="OpenAI"></span>OpenAI</a><a href="releases/anthropic/"><span class="bc-ic logo" data-logo="Anthropic"></span>Anthropic</a><a href="releases/meta/"><span class="bc-ic logo" data-logo="Meta"></span>Meta</a><a href="releases/microsoft/"><span class="bc-ic logo" data-logo="Microsoft"></span>Microsoft</a><a href="releases/nvidia/"><span class="bc-ic logo" data-logo="Nvidia"></span>Nvidia</a><a href="releases/amazon/"><span class="bc-ic logo" data-logo="Amazon"></span>Amazon</a><a href="releases/apple/"><span class="bc-ic logo" data-logo="Apple"></span>Apple</a><a href="releases/xai/"><span class="bc-ic logo" data-logo="xAI"></span>xAI</a><a href="releases/mistral/"><span class="bc-ic logo" data-logo="Mistral"></span>Mistral</a><a href="releases/alibaba/"><span class="bc-ic logo" data-logo="Alibaba"></span>Alibaba</a><a href="releases/deepseek/"><span class="bc-ic logo" data-logo="DeepSeek"></span>DeepSeek</a><a href="releases/hugging-face/"><span class="bc-ic logo"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.25 11.535c0-3.407 1.847-6.554 4.844-8.258a9.822 9.822 0 019.687 0c2.997 1.704 4.844 4.851 4.844 8.258 0 5.266-4.337 9.535-9.687 9.535S2.25 16.8 2.25 11.535z" fill="#FF9D0B"></path><path d="M11.938 20.086c4.797 0 8.687-3.829 8.687-8.551 0-4.722-3.89-8.55-8.687-8.55-4.798 0-8.688 3.828-8.688 8.55 0 4.722 3.89 8.55 8.688 8.55z" fill="#FFD21E"></path><path d="M11.875 15.113c2.457 0 3.25-2.156 3.25-3.263 0-.576-.393-.394-1.023-.089-.582.283-1.365.675-2.224.675-1.798 0-3.25-1.693-3.25-.586 0 1.107.79 3.263 3.25 3.263h-.003z" fill="#FF323D"></path><path d="M14.76 9.21c.32.108.445.753.767.585.447-.233.707-.708.659-1.204a1.235 1.235 0 00-.879-1.059 1.262 1.262 0 00-1.33.394c-.322.384-.377.92-.14 1.36.153.283.638-.177.925-.079l-.002.003zm-5.887 0c-.32.108-.448.753-.768.585a1.226 1.226 0 01-.658-1.204c.048-.495.395-.913.878-1.059a1.262 1.262 0 011.33.394c.322.384.377.92.14 1.36-.152.283-.64-.177-.925-.079l.003.003zm1.12 5.34a2.166 2.166 0 011.325-1.106c.07-.02.144.06.219.171l.192.306c.069.1.139.175.209.175.074 0 .15-.074.223-.172l.205-.302c.08-.11.157-.188.234-.165.537.168.986.536 1.25 1.026.932-.724 1.275-1.905 1.275-2.633 0-.508-.306-.426-.81-.19l-.616.296c-.52.24-1.148.48-1.824.48-.676 0-1.302-.24-1.823-.48l-.589-.283c-.52-.248-.838-.342-.838.177 0 .703.32 1.831 1.187 2.56l.18.14z" fill="#3A3B45"></path><path d="M17.812 10.366a.806.806 0 00.813-.8c0-.441-.364-.8-.813-.8a.806.806 0 00-.812.8c0 .442.364.8.812.8zm-11.624 0a.806.806 0 00.812-.8c0-.441-.364-.8-.812-.8a.806.806 0 00-.813.8c0 .442.364.8.813.8zM4.515 13.073c-.405 0-.765.162-1.017.46a1.455 1.455 0 00-.333.925 1.801 1.801 0 00-.485-.074c-.387 0-.737.146-.985.409a1.41 1.41 0 00-.2 1.722 1.302 1.302 0 00-.447.694c-.06.222-.12.69.2 1.166a1.267 1.267 0 00-.093 1.236c.238.533.81.958 1.89 1.405l.24.096c.768.3 1.473.492 1.478.494.89.243 1.808.375 2.732.394 1.465 0 2.513-.443 3.115-1.314.93-1.342.842-2.575-.274-3.763l-.151-.154c-.692-.684-1.155-1.69-1.25-1.912-.195-.655-.71-1.383-1.562-1.383-.46.007-.889.233-1.15.605-.25-.31-.495-.553-.715-.694a1.87 1.87 0 00-.993-.312zm14.97 0c.405 0 .767.162 1.017.46.216.262.333.588.333.925.158-.047.322-.071.487-.074.388 0 .738.146.985.409a1.41 1.41 0 01.2 1.722c.22.178.377.422.445.694.06.222.12.69-.2 1.166.244.37.279.836.093 1.236-.238.533-.81.958-1.889 1.405l-.239.096c-.77.3-1.475.492-1.48.494-.89.243-1.808.375-2.732.394-1.465 0-2.513-.443-3.115-1.314-.93-1.342-.842-2.575.274-3.763l.151-.154c.695-.684 1.157-1.69 1.252-1.912.195-.655.708-1.383 1.56-1.383.46.007.889.233 1.15.605.25-.31.495-.553.718-.694.244-.162.523-.265.814-.3l.176-.012z" fill="#FF9D0B"></path><path d="M9.785 20.132c.688-.994.638-1.74-.305-2.667-.945-.928-1.495-2.288-1.495-2.288s-.205-.788-.672-.714c-.468.074-.81 1.25.17 1.971.977.721-.195 1.21-.573.534-.375-.677-1.405-2.416-1.94-2.751-.532-.332-.907-.148-.782.541.125.687 2.357 2.35 2.14 2.707-.218.362-.983-.42-.983-.42S2.953 14.9 2.43 15.46c-.52.558.398 1.026 1.7 1.803 1.308.778 1.41.985 1.225 1.28-.187.295-3.07-2.1-3.34-1.083-.27 1.011 2.943 1.304 2.745 2.006-.2.7-2.265-1.324-2.685-.537-.425.79 2.913 1.718 2.94 1.725 1.075.276 3.813.859 4.77-.522zm4.432 0c-.687-.994-.64-1.74.305-2.667.943-.928 1.493-2.288 1.493-2.288s.205-.788.675-.714c.465.074.807 1.25-.17 1.971-.98.721.195 1.21.57.534.377-.677 1.407-2.416 1.94-2.751.532-.332.91-.148.782.541-.125.687-2.355 2.35-2.137 2.707.215.362.98-.42.98-.42S21.05 14.9 21.57 15.46c.52.558-.395 1.026-1.7 1.803-1.308.778-1.408.985-1.225 1.28.187.295 3.07-2.1 3.34-1.083.27 1.011-2.94 1.304-2.743 2.006.2.7 2.263-1.324 2.685-.537.423.79-2.912 1.718-2.94 1.725-1.077.276-3.815.859-4.77-.522z" fill="#FFD21E"></path></svg></span>Hugging Face</a></div></div>
   </div>
-  <div class="by-country" id="by-policy" hidden>
-    <div><b>Looking for one kind of voice?</b>
-      <p>What governments say, what think tanks and civil society say, and the news reports, each on its own page. Plus the AI safety hub: 2026's system cards, safety evaluations and frameworks from labs and safety institutes.</p></div>
-    <div class="by-country-go"><a href="policy/governments/">Governments →</a><a href="policy/think-tanks/">Think tanks &amp; civil society →</a><a href="policy/news/">News reports →</a><a href="ai-safety-hub/">AI safety hub →</a></div>
+  <div class="by-country" id="by-policy" style="--f:var(--f-policy);--soft:var(--c-policy-soft);--c:var(--c-policy)" hidden>
+    <div class="bc-main"><b>Looking for one kind of voice?</b>
+      <p>What governments say, what think tanks and civil society say, and the news reports, each on its own page.</p>
+      <div class="bc-tags"><a href="policy/governments/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20v-8M9.5 20v-8M14.5 20v-8M19 20v-8M3 12h18L12 5z"/></svg></span>Governments</a><a href="policy/think-tanks/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg></span>Think tanks &amp; civil society</a><a href="policy/news/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M4 5h12v14H6a2 2 0 0 1-2-2zM16 9h4v8a2 2 0 0 1-2 2h-2M7.5 9h5M7.5 12.5h5M7.5 16h3"/></svg></span>News reports</a></div></div>
+    <div class="bc-feats"><span class="bc-lab">Features</span><a href="ai-safety-hub/"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg><span>AI safety hub</span><em>→</em></a></div>
   </div>
-  <div class="by-country" id="by-research" hidden>
-    <div><b>Looking for one subject?</b>
-      <p>Papers on language models, agents, vision, speech, robots, safety, reinforcement learning, efficiency, science and benchmarks, each on its own page.</p></div>
-    <div class="by-country-go"><a href="research/language-models/">Language models →</a><a href="research/agents/">Agents →</a><a href="research/vision/">Vision, image and video →</a><a href="research/speech/">Speech and audio →</a><a href="research/robotics/">Robotics and world models →</a><a href="research/safety/">Safety and security →</a><a href="research/reinforcement-learning/">Reinforcement learning →</a><a href="research/efficiency/">Efficiency and training →</a><a href="research/science/">Science and medicine →</a><a href="research/benchmarks/">Benchmarks and evaluation →</a><a href="papers-in-the-news/">Papers that made the news →</a></div>
+  <div class="by-country" id="by-research" style="--f:var(--f-research);--soft:var(--c-research-soft);--c:var(--c-research)" hidden>
+    <div class="bc-main"><b>Looking for one subject?</b>
+      <p>Papers on language models, agents, vision, speech, robots, safety, reinforcement learning, efficiency, science and benchmarks, each on its own page.</p>
+      <div class="bc-tags"><a href="research/language-models/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span>Language models</a><a href="research/agents/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M6 9h12v10H6zM12 5v4M10 13.5v1M14 13.5v1M3 13v3M21 13v3"/></svg></span>Agents</a><a href="research/vision/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></span>Vision, image and video</a><a href="research/speech/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>Speech and audio</a><a href="research/robotics/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M6 9h12v10H6zM12 5v4M10 13.5v1M14 13.5v1M3 13v3M21 13v3"/></svg></span>Robotics and world models</a><a href="research/safety/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></span>Safety and security</a><a href="research/reinforcement-learning/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M4 17l5-5 4 4 7-7M15 9h5v5"/></svg></span>Reinforcement learning</a><a href="research/efficiency/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg></span>Efficiency and training</a><a href="research/science/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span>Science and medicine</a><a href="research/benchmarks/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7M3 20h18"/></svg></span>Benchmarks and evaluation</a></div></div>
+    <div class="bc-feats"><span class="bc-lab">Features</span><a href="papers-in-the-news/"><svg viewBox="0 0 24 24"><path d="M4 5h12v14H6a2 2 0 0 1-2-2zM16 9h4v8a2 2 0 0 1-2 2h-2M7.5 9h5M7.5 12.5h5M7.5 16h3"/></svg><span>Papers that made the news</span><em>→</em></a></div>
   </div>
-  <div class="by-country" id="by-infra" hidden>
-    <div><b>Looking for one subject?</b>
-      <p>Power, water, emissions, local pushback, builds and deals, rules and permits, and hardware, each on its own page.</p></div>
-    <div class="by-country-go"><a href="infra/power-and-grid/">Power &amp; grid →</a><a href="infra/water/">Water →</a><a href="infra/emissions-and-climate/">Emissions &amp; climate →</a><a href="infra/land-and-local-pushback/">Land &amp; local pushback →</a><a href="infra/builds-and-deals/">Builds &amp; deals →</a><a href="infra/rules-and-permits/">Rules &amp; permits →</a><a href="infra/hardware-and-compute/">Hardware &amp; compute →</a></div>
+  <div class="by-country no-feats" id="by-infra" style="--f:var(--f-infra);--soft:var(--c-infra-soft);--c:var(--c-infra)" hidden>
+    <div class="bc-main"><b>Looking for one subject?</b>
+      <p>Power, water, emissions, local pushback, builds and deals, rules and permits, and hardware, each on its own page.</p>
+      <div class="bc-tags"><a href="infra/power-and-grid/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg></span>Power &amp; grid</a><a href="infra/water/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg></span>Water</a><a href="infra/emissions-and-climate/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M5 19C5 10 11 5 20 4c0 9-5 15-15 15zM5 19l8-8"/></svg></span>Emissions &amp; climate</a><a href="infra/land-and-local-pushback/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11zM12 7.5v4"/></svg></span>Land &amp; local pushback</a><a href="infra/builds-and-deals/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M4 17l5-5 4 4 7-7M15 9h5v5"/></svg></span>Builds &amp; deals</a><a href="infra/rules-and-permits/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M12 4v16M8 20h8M5 7h14M5 7l-3 6.5a3 3 0 0 0 6 0zM19 7l-3 6.5a3 3 0 0 0 6 0z"/></svg></span>Rules &amp; permits</a><a href="infra/hardware-and-compute/"><span class="bc-ic"><svg viewBox="0 0 24 24"><path d="M8 8h8v8H8zM10 3v3M14 3v3M10 18v3M14 18v3M3 10h3M3 14h3M18 10h3M18 14h3"/></svg></span>Hardware &amp; compute</a></div></div>
   </div>
   <main id="feed"></main>
   <p class="empty" id="empty" hidden></p>
@@ -1523,6 +1542,8 @@ function sectionIcon(cat){
   return tile;
 }
 const SVG_NS = "http://www.w3.org/2000/svg";
+// the Releases strip's company tiles: their logos from the table above
+document.querySelectorAll("[data-logo]").forEach(s => { s.innerHTML = LOGOS[s.dataset.logo] || ""; });
 
 function svgIcon(d){
   const svg = document.createElementNS(SVG_NS,"svg"); svg.setAttribute("viewBox","0 0 24 24");
