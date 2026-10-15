@@ -342,9 +342,8 @@ def builds_body(rows: list[dict]) -> str:
     first = _day(min((r["date"] for r in rows), default=CHECKED_TO))
     countries = [r["cells"][1] for r in rows]
     stages = [r["cells"][5] for r in rows]
-    said = ", ".join(f"{stages.count(k)} {label.lower()}" for k, (label, _) in STAGES.items() if stages.count(k))
-    intro = (f"{len(rows)} new data centres and campuses in {len(set(countries))} countries, reported since {first}: "
-             f"{said}. Each row gives who is behind it, where, and its size and cost as the story states them.")
+    intro = (f"{len(rows)} new data centres and campuses in {len(set(countries))} countries, reported since {first}. "
+             "Each row gives who is behind it, where, and its size and cost as the story states them.")
     glance = _glance(*_dates(rows), [(f"projects {label.lower()}", c, stages.count(k))
                                      for k, (label, c) in STAGES.items()])
     body = "".join(
@@ -373,8 +372,7 @@ def power_body(rows: list[dict]) -> str:
     first = _day(min((r["date"] for r in rows), default=CHECKED_TO))
     kinds = [r["cells"][1] for r in rows]
     status = [r["cells"][4] for r in rows]
-    said = ", ".join(f"{status.count(k)} {label.lower()}" for k, label in STATUSES.items() if status.count(k))
-    intro = (f"{len(rows)} deals and plans to power data centres, reported since {first}: {said}. Each row gives who "
+    intro = (f"{len(rows)} deals and plans to power data centres, reported since {first}. Each row gives who "
              "is supplying the power, what it comes from, and what it will run.")
     glance = _glance(*_dates(rows), [(f"deals {STATUSES[k].lower()}", c, status.count(k)) for k, c in
                                      (("signed", "#009E73"), ("planned", "#56B4E9"), ("dropped", "#9AA0AA"))])
@@ -403,9 +401,8 @@ def decisions_body(rows: list[dict]) -> str:
     first = _day(min((r["date"] for r in rows), default=CHECKED_TO))
     countries = [r["cells"][0] for r in rows]
     outcomes = [r["cells"][4] for r in rows]
-    said = ", ".join(f"{outcomes.count(k)} {label.lower()}" for k, (label, _) in OUTCOMES.items() if outcomes.count(k))
-    intro = (f"{len(rows)} decisions on data centres in {len(set(countries))} countries, reported since {first}: "
-             f"{said}. Each row gives where, who decided, and what they decided.")
+    intro = (f"{len(rows)} decisions on data centres in {len(set(countries))} countries, reported since {first}. "
+             "Each row gives where, who decided, and what they decided.")
     glance = _glance(*_dates(rows), [(f"decisions: {label.lower()}", c, outcomes.count(k))
                                      for k, (label, c) in OUTCOMES.items()])
     body = "".join(
