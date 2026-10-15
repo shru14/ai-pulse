@@ -108,11 +108,13 @@ def main():
                         "court.CASES as a case or a step, or to court.LEFT_OUT)")
     pp = sub.add_parser("press", help="stories that may report on a paper, not checked yet for Papers that made the "
                         "news (to check by hand and add to press.CHECKED or press.LEFT_OUT)")
-    for q in (ct, pp):
+    sh = sub.add_parser("safety", help="stories that may be a new safety document, not checked yet for the AI safety "
+                        "hub (to check by hand and add to safety.DOCS or safety.LEFT_OUT)")
+    for q in (ct, pp, sh):
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
                        "instead of the database")
-    for name, module in (("court", "court"), ("press", "press")):
+    for name, module in (("court", "court"), ("press", "press"), ("safety", "safety")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -391,21 +393,22 @@ def main():
         print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-    elif a.cmd in ("court", "press"):
-        from . import court, press
-        m = court if a.cmd == "court" else press
+    elif a.cmd in ("court", "press", "safety"):
+        from . import court, press, safety
+        m = {"court": court, "press": press, "safety": safety}[a.cmd]
         # the site's own data.json for the daily job, which has no database (its last 3 months)
         found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
         since = max(m.SINCE, (date.today() - timedelta(days=a.days)).isoformat()) if a.days else m.SINCE
         todo = m.candidates(found, since)
-        done = f"{len(court.CASES)} cases" if m is court else f"{len(press.CHECKED)} checked"
+        done = (f"{len(court.CASES)} cases" if m is court else f"{len(press.CHECKED)} checked" if m is press
+                else f"{len(safety.DOCS)} documents")
         print(f"{done}, {len(m.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-    elif a.cmd in ("court-note", "press-note"):
-        # A court/<day> or press/<day> branch's drafts, to the project inbox for approval (.github/workflows/*-note.yml)
-        from . import court, digest, press
-        m = court if a.cmd == "court-note" else press
+    elif a.cmd in ("court-note", "press-note", "safety-note"):
+        # A court/, press/ or safety/<day> branch's drafts, to the project inbox for approval (.github/workflows/*-note.yml)
+        from . import court, digest, press, safety
+        m = {"court-note": court, "press-note": press, "safety-note": safety}[a.cmd]
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch)
         if not note:
             print("Nothing new on this branch.")

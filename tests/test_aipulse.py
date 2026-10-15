@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -646,7 +646,8 @@ def test_static_build_holds_every_card(tmp_path):
     tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
     tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html",
                      tmp_path / "site" / "harm-to-rule" / "index.html", tmp_path / "site" / "jobs-blamed-on-ai" / "index.html",
-                     tmp_path / "site" / "papers-in-the-news" / "index.html", tmp_path / "site" / "ai-in-court" / "index.html"]
+                     tmp_path / "site" / "papers-in-the-news" / "index.html", tmp_path / "site" / "ai-in-court" / "index.html",
+                     tmp_path / "site" / "ai-safety-hub" / "index.html"]
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and '"kind": "tutorial"' in tutorials and "Updated" not in tutorials
@@ -3361,6 +3362,47 @@ def test_papers_that_made_the_news(monkeypatch):
     assert "Not a Research subject" in body  # AI and people isn't counted on our side
     assert ">Vision, image and video</td>" not in body  # a subject the news didn't cover isn't listed
     assert "About these counts" in body
+
+
+def test_ai_safety_hub(monkeypatch):
+    from aipulse import safety
+    # every document is complete and from a known publisher, and every model has a maker
+    assert len({d["url"] for d in safety.DOCS}) == len(safety.DOCS)
+    for d in safety.DOCS:
+        assert d["by"] in safety.PUBLISHERS and d["kind"] in safety.KINDS and d["date"] >= safety.SINCE[:7]
+        assert set(d["risks"]) <= set(safety.RISKS) and d["title"] and d["url"].startswith("https://")
+        assert "  " not in d["abstract"] and " ." not in d["abstract"] and "‍" not in d["abstract"]
+        [safety.maker(m) for m in d["models"]]
+    assert safety.maker("GLM-5.3") == ("Z.ai", "open") and safety.maker("Claude Opus 5.5") == ("Anthropic", "closed")
+    monkeypatch.setattr(safety, "DOCS", [
+        dict(date="2026-09-03", by="OpenAI", kind="card", title="Model X System Card", url="https://o/x",
+             original="https://o/x.pdf", models=("GPT-6 Astra",), risks=("cyber", "jailbreak"), abstract="We test X."),
+        dict(date="2026-07-17", by="NIST (CAISI)", kind="eval", title="Assessment of GLM", url="https://n/glm",
+             original="", models=("GLM-5.2",), risks=("cyber",), abstract=""),
+        dict(date="2026-02", by="Frontier Model Forum", kind="framework", title="Brief", url="https://f/b",
+             original="", models=(), risks=(), abstract="A brief.")])
+    monkeypatch.setattr(safety, "LEFT_OUT", {"https://o/gone"})
+    rows = safety.docs()
+    assert [r["title"] for r in rows] == ["Model X System Card", "Assessment of GLM", "Brief"]  # newest first
+    assert rows[1]["makers"] == ["Z.ai"] and rows[1]["weights"] == ["open"] and rows[2]["makers"] == []
+    cards = [{"url": "https://o/x", "title": "Model X system card", "source": "OpenAI News", "date": "2026-09-03",
+              "category": "tool"},
+             {"url": "https://o/gone", "title": "A risk report", "source": "OpenAI News", "date": "2026-09-04",
+              "category": "tool"},
+             {"url": "https://n/new", "title": "CAISI evaluation of Model Y", "source": "The Decoder",
+              "date": "2026-10-01", "category": "news"},
+             {"url": "https://n/news", "title": "Model Y launches", "source": "The Decoder", "date": "2026-10-02",
+              "category": "news"}]
+    assert [c["url"] for c in safety.candidates(cards)] == ["https://n/new"]  # not listed, left out or off-topic
+    body = safety.page_body(rows)
+    assert "3 documents published in 2026" in body and "1 system card, 1 evaluation, 1 framework &amp; guidance" in body
+    assert 'Showing <b>3</b> of 3 documents' in body and 'data-risk="cyber"' in body and "Cyber attacks <b>2</b>" in body
+    assert 'data-risk="physical"' not in body  # no chip for a risk no document covers
+    assert '<option value="open">Open weights (1)</option>' in body and "Z.ai, open weights" in body
+    assert body.index("Model X System Card") < body.index("Assessment of GLM")
+    assert "PDF ↗" in body and ">Feb 2026 · Frontier Model Forum<" in body
+    assert body.count('class="sh-ab"') == 2  # a document without an abstract shows none
+    assert "About these documents" in body
 
 
 def test_monthly_issue_pages(tmp_path):
