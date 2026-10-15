@@ -90,6 +90,8 @@ _ENTRIES = [
      "fine-tuning, reinforcement learning, safety training.", [r"post-?train(?:ing|ed)?"], False),
     ("Fine-tuning", "Training", "Training an existing model a little more on a specific set of examples, so it "
      "gets better at one task or style.", [r"fine-?tun(?:e|es|ed|ing)"], False),
+    ("Frozen model", "Training", "A model whose weights (its learned settings) are locked, so it is used as it is and "
+     "not changed by further training; new skills come from what is built around it.", [r"frozen[- ]models?"], False),
     ("LoRA", "Training", "Low-Rank Adaptation: a cheap way to fine-tune a big model by training a small add-on "
      "instead of changing every parameter.", [r"LoRAs?", r"QLoRA"], True),
     ("Reinforcement learning", "Training", "RL: training by trial and reward. The model tries, gets a score for the "
@@ -383,7 +385,8 @@ ADDED = {**dict.fromkeys(["Supervised fine-tuning", "Reward model", "On-policy d
                           "Self-supervised learning", "In-context learning", "Long-horizon task", "Multi-turn",
                           "Self-improving agent", "Full-duplex voice model", "Speech-to-speech model",
                           "Model Hardware Standard", "SynthID", "Training-free method", "Millennium Prize problems",
-                          "OpenClaw"], date(2026, 10, 10))}
+                          "OpenClaw"], date(2026, 10, 10)),
+         **dict.fromkeys(["Frozen model"], date(2026, 10, 15))}
 NEW_DAYS = 30
 
 # Technical: the words specialists use (how models are built, trained and run); every other entry is Everyday.
@@ -395,7 +398,7 @@ TECHNICAL = {"VLM", "VLA", "World model", "Diffusion model", "Transformer", "Att
              "Sandbox", "Evals", "Interpretability", "Recursive self-improvement", "TPU", "NPU", "ASIC", "HBM", "CUDA",
              "KV cache", "Speculative decoding", "BF16 and FP8", "Rack-scale system", "FLOPs", "Test-time compute",
              "SWE-bench", "Zero-shot / few-shot", "JEPA", "Latent", "World action model", "On-policy learning",
-             "Self-supervised learning", "In-context learning", "Training-free method"}
+             "Self-supervised learning", "In-context learning", "Training-free method", "Frozen model"}
 
 ENTRIES = [{"id": _key(t), "term": t, "group": g, "def": d, "match": m, "case": cs, "search": SEARCH.get(t, t),
             "added": ADDED.get(t, LAUNCH).isoformat(), "level": "Technical" if t in TECHNICAL else "Everyday"}
