@@ -114,7 +114,7 @@ def main():
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
                        "instead of the database")
-    for name, module in (("court", "court"), ("press", "press")):
+    for name, module in (("court", "court"), ("press", "press"), ("safety", "safety")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -405,10 +405,10 @@ def main():
         print(f"{done}, {len(m.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-    elif a.cmd in ("court-note", "press-note"):
-        # A court/<day> or press/<day> branch's drafts, to the project inbox for approval (.github/workflows/*-note.yml)
-        from . import court, digest, press
-        m = court if a.cmd == "court-note" else press
+    elif a.cmd in ("court-note", "press-note", "safety-note"):
+        # A court/, press/ or safety/<day> branch's drafts, to the project inbox for approval (.github/workflows/*-note.yml)
+        from . import court, digest, press, safety
+        m = {"court-note": court, "press-note": press, "safety-note": safety}[a.cmd]
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch)
         if not note:
             print("Nothing new on this branch.")

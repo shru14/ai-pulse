@@ -1479,6 +1479,20 @@ def page_body(rows: list[dict]) -> str:
             f'{_limits(rows)}</div>\n{SCRIPT}\n')
 
 
+def note(base: str, branch: str) -> tuple[str, str, str] | None:
+    """The project inbox's note for a safety/<day> branch: each document it adds and the ones it left out; None when it
+    adds nothing. `base` is main's copy of this file."""
+    from . import approve
+    had = approve.lists_in(base, ("DOCS", "LEFT_OUT"))
+    rows = [(d["title"], d["by"], KINDS[d["kind"]][0], ", ".join(RISKS[r][0] for r in d["risks"]) or "-", d["url"])
+            for d in DOCS if d["url"] not in had["DOCS"]]
+    dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    if not rows and not dropped:
+        return None
+    return approve.note("AI safety hub", f"document{'s' * (len(rows) != 1)}", branch,
+                        ("Document", "Publisher", "Type", "Risks", "Source"), rows, dropped)
+
+
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write ai-safety-hub/. Returns its path."""
     rows = docs()
