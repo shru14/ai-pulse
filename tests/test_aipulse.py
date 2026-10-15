@@ -2328,7 +2328,9 @@ def test_word_of_the_day_rotates_through_the_glossary(monkeypatch):
     assert len(set(words)) == n  # every word once before any comes back
     assert glossary.word_of_the_day(start + timedelta(days=n)) == glossary.word_of_the_day(start)
     monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    # RAG's day, or the day before if that's the weekly email's (it gives the week's word), whatever words get added
     day = start + timedelta(days=words.index("rag"))
+    day -= timedelta(days=day.weekday() == digest.WEEKLY)
     card = {"id": "w1", "title": "A RAG pipeline for support teams", "summary": "", "url": "https://ex.com/rag",
             "source": "S", "category": "news", "kind": "news", "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00"}
     _, text, html = digest.build([card], ["news"], day)
