@@ -104,6 +104,8 @@ CHECKED: dict[str, dict] = {
 # Job-cut stories checked and left out, so `python -m aipulse jobs` doesn't list them again: unconfirmed reports,
 # forecasts and plans, cuts no one blamed on AI, and stories we can't read to check the company's words.
 LEFT_OUT = {
+    "https://dplnews.com/inteligencia-artificial-en-guatemala-42-de-los-jovenes-teme-que-elimine-mas-empleos-de-los-que-crea/",  # a survey, not a cut
+    "https://www.engadget.com/2274224/california-law-bans-companies-from-relying-on-ai-to-fire-workers/",  # a law, not a cut
     "https://the-decoder.com/employee-revolt-and-failing-agents-forced-meta-to-scrap-its-ai-layoff-plan/",  # a plan
     "https://techcrunch.com/2026/07/25/the-running-list-major-tech-layoffs-in-2026-where-employers-cited-ai/",  # a list
     "https://techcrunch.com/2026/06/08/as-openai-files-for-ipo-sam-altmans-eye-scanning-company-is-doing-layoffs-report-says/",
