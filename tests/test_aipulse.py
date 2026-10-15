@@ -3371,7 +3371,7 @@ def test_ai_safety_hub(monkeypatch):
     for d in safety.DOCS:
         assert d["by"] in safety.PUBLISHERS and d["kind"] in safety.KINDS and d["date"] >= safety.SINCE[:7]
         assert set(d["risks"]) <= set(safety.RISKS) and d["title"] and d["url"].startswith("https://")
-        assert "  " not in d["abstract"] and " ." not in d["abstract"]
+        assert "  " not in d["abstract"] and " ." not in d["abstract"] and "‍" not in d["abstract"]
         [safety.maker(m) for m in d["models"]]
     assert safety.maker("GLM-5.3") == ("Z.ai", "open") and safety.maker("Claude Opus 5.5") == ("Anthropic", "closed")
     monkeypatch.setattr(safety, "DOCS", [

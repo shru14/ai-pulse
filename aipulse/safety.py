@@ -6,7 +6,7 @@ Every document in DOCS was read by hand from the publisher's own pages (the owne
 list, 2026 only): its title and date as the publisher gives them, a link to it and to its PDF or paper, the models it
 tests, the risks it covers and its abstract word for word. The abstract is the publisher's own: the document's abstract
 or executive summary (its opening paragraphs, cut at a sentence and marked with … when it runs on for pages), else the
-description the publisher gives on the page. A document with none shows none. A risk is tagged only when the document
+opening of its introduction, else the description the publisher gives on the page. A document with none shows none. A risk is tagged only when the document
 has a section or passage on it (system cards: their table of contents). A model's weights are "open" when its maker
 published them (on Hugging Face, in the stories we collect) and "closed" when it didn't.
 
@@ -374,7 +374,19 @@ DOCS: list[dict] = [
                    ' Claude Security, available to all Claude Enterprise customers. Below, we describe a set of '
                    'pre-deployment evaluations in the following areas: Responsible Scaling Policy (RSP) '
                    'evaluations. We tested Mythos 5.1’s overall level of risk in several areas, as outlined in our'
-                   ' RSP and Frontier Compliance Framework ( FCF ). …')),
+                   ' RSP and Frontier Compliance Framework (FCF). …')),
+    dict(date='2026-08-26', by='OpenAI', kind='eval',
+         title='OpenAI – Hugging Face Incident Technical Report',
+         url='https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf',
+         original="",
+         models=('GPT-5.6 Sol',), risks=('control', 'cyber', 'misalign'),
+         abstract=('In July 2026, during internal cybersecurity evaluations, OpenAI models in an internal evaluation '
+                   'environment circumvented controls intended to isolate them from the internet and performed computer '
+                   'network exploitation of OpenAI’s internal research infrastructure and Hugging Face systems. The '
+                   'incident occurred during routine testing designed to measure underlying cyber capabilities of a '
+                   'highly capable, internal-only research model, which was responsible for much of the activity, as '
+                   'well as GPT-5.6 Sol. The actions of the models were unintended and were a byproduct of the models '
+                   'attempting to solve the cybersecurity evaluations. …')),
     dict(date='2026-08-26', by='METR', kind='eval',
          title='Brief independent investigation of agents’ behavior, reasoning and collaboration in the OpenAI / '
                'Hugging Face hacking incident',
@@ -687,11 +699,11 @@ DOCS: list[dict] = [
                    'which is for general use but comes with additional safeguards that block its ability to '
                    'perform tasks in high-risk domains such as biology and cybersecurity; and Mythos 5, which has '
                    'relevant safeguards lifted but is only made available to a small number of trusted partners '
-                   '(beginning with those in Project Glasswing ). Here, we describe a set of pre-deployment '
+                   '(beginning with those in Project Glasswing). Here, we describe a set of pre-deployment '
                    'evaluations in the following areas: Responsible Scaling Policy (RSP) evaluations. Mythos 5 '
                    'advances our capability frontier–it is the most capable model we have ever trained. We tested '
                    'its overall level of risk in several areas as outlined in our RSP and Frontier Compliance '
-                   'Framework ( FCF ). …')),
+                   'Framework (FCF). …')),
     dict(date='2026-06-08', by='UK AI Security Institute', kind='eval',
          title='RealityTest: How People Probe AI Identity and Whether Models Disclose It',
          url='https://www.aisi.gov.uk/research/realitytest-how-people-probe-ai-identity-and-whether-models-disclose-it',
@@ -892,7 +904,7 @@ DOCS: list[dict] = [
                    'improve, and find some evidence for a trend for increased sensitivity to goal conflicts. '
                    'Finally, we highlight a key direction for future propensity research: the development of '
                    'theoretical frameworks and cognitive models of AI decision-making into empirically testable '
-                   'forms. \u200d')),
+                   'forms.')),
     dict(date='2026-04-23', by='OpenAI', kind='card',
          title='GPT-5.5 System Card',
          url='https://deploymentsafety.openai.com/gpt-5-5',
@@ -957,7 +969,24 @@ DOCS: list[dict] = [
                    'of target behaviors and when it fails, finding it most effective at amplifying behaviors the '
                    'model has already learned. Taken together, these results show that small, subtle edits to '
                    'training data can systematically shape model behavior, underscoring the importance of training'
-                   ' data interpretability for adversaries and defenders alike. \u200d')),
+                   ' data interpretability for adversaries and defenders alike.')),
+    dict(date='2026-04-07', by='Anthropic', kind='eval',
+         title='Alignment Risk Update: Claude Mythos Preview',
+         url='https://www-cdn.anthropic.com/3edfc1a7f947aa81841cf88305cb513f184c36ae/Alignment%20Risk%20Update_%20Claude%20Mythos%20Preview%20(Redacted,%20April%2010).pdf',
+         original="",
+         models=('Claude Mythos Preview',), risks=('control', 'cyber', 'misalign', 'tamper'),
+         abstract=('This risk report examines whether Claude Mythos Preview poses a significant risk of autonomous '
+                   'actions that contribute significantly to later significantly harmful outcomes. Our core findings '
+                   'are: 1. Mythos Preview appears to be the best-aligned model that we have released to date. However, '
+                   'like Claude Opus 4.6, Mythos Preview can sometimes employ concerning actions to work around obstacles '
+                   'to task success. 2. Mythos Preview is significantly more capable, and is used more autonomously and '
+                   'agentically, than any prior model. In particular it is very capable at software engineering and '
+                   'cybersecurity tasks, which makes it more capable at working around restrictions. 3. Our monitoring '
+                   'and alignment assessment have improved since Claude Opus 4.6 was released. 4. During the development '
+                   'of Mythos Preview, we identified errors in our training, monitoring, evaluation, and security '
+                   'processes. We do not believe these errors pose significant safety risks for a model at this '
+                   'capability level, but they reflect a standard of rigor that would be insufficient for more capable '
+                   'future models. We determine that the overall risk is very low, but higher than for previous models. \u2026')),
     dict(date='2026-04-07', by='Anthropic', kind='card',
          title='System Card: Claude Mythos Preview',
          url='https://www.anthropic.com/claude-mythos-preview-system-card',
@@ -992,7 +1021,7 @@ DOCS: list[dict] = [
                    'misconfiguration, privilege allocation mistakes, kernel flaws, and runtime/orchestration '
                    'weaknesses. We find that, when vulnerabilities are added, LLMs are able to identify and '
                    'exploit them, showing that use of evaluation like SANDBOXESCAPEBENCH is needed to ensure '
-                   'sandboxing continues to provide the encapsulation needed for highly-capable models. \u200d')),
+                   'sandboxing continues to provide the encapsulation needed for highly-capable models.')),
     dict(date='2026-03-23', by='NIST (CAISI)', kind='redteam',
          title='Insights into AI Agent Security from a Large-Scale Red-Teaming Competition',
          url='https://www.nist.gov/blogs/caissi-research-blog/insights-ai-agent-security-large-scale-red-teaming-competition',
@@ -1022,7 +1051,7 @@ DOCS: list[dict] = [
                    '2026). The best single run completed 22 of 32 steps, corresponding to roughly 6 of the '
                    'estimated 14 hours a human expert would need. On the industrial control system range, '
                    'performance remains limited, though the most recent models are the first to reliably complete '
-                   'steps, averaging 1.2-1.4 of 7 (max 3). \u200d')),
+                   'steps, averaging 1.2-1.4 of 7 (max 3).')),
     dict(date='2026-03-05', by='OpenAI', kind='card',
          title='GPT-5.4 Thinking System Card',
          url='https://deploymentsafety.openai.com/gpt-5-4-thinking',
@@ -1063,7 +1092,7 @@ DOCS: list[dict] = [
                    'more assistance than explicitly malicious framing or system-level jailbreaks. Overall, the '
                    'results suggest that current risks from text-generation models are relatively minimal. '
                    'However, this work contributes a reproducible, expert-grounded framework for tracking how '
-                   'these risks may evolve with time as models grow more capable and adversaries adapt. \u200d')),
+                   'these risks may evolve with time as models grow more capable and adversaries adapt.')),
     dict(date='2026-02-25', by='UK AI Security Institute', kind='framework',
          title='Seven simple steps for log analysis in AI systems',
          url='https://www.aisi.gov.uk/research/seven-simple-steps-for-log-analysis-in-ai-systems',
@@ -1075,13 +1104,18 @@ DOCS: list[dict] = [
                    'analysis, but a standardised approach is still missing. Here we suggest a pipeline based on '
                    'current best practices. We illustrate it with concrete code examples in the Inspect Scout '
                    'library, provide detailed guidance on each step, and highlight common pitfalls. Our framework '
-                   'provides researchers with a foundation for rigorous and reproducible log analysis. \u200d')),
+                   'provides researchers with a foundation for rigorous and reproducible log analysis.')),
     dict(date='2026-02-24', by='Anthropic', kind='eval',
          title='Risk Report: February 2026',
          url='https://anthropic.com/feb-2026-risk-report',
          original="",
          models=('Claude Opus 4.6',), risks=('cbrn', 'control', 'jailbreak', 'misalign', 'rnd', 'tamper'),
-         abstract=""),
+         abstract=('This report evaluates the degree to which Anthropic’s AI systems pose catastrophic risk in several '
+                   'categories, in light of what we know about both their capabilities and the measures we have in place '
+                   'for mitigating risk. We focus on a small number of particularly salient catastrophic risks, for '
+                   'reasons discussed below. This report is part of our implementation of version 3 of our Responsible '
+                   'Scaling Policy, and is the first such Risk Report published under that policy (see also our Frontier '
+                   'Safety Roadmap, which describes our goals and specific plans for safety mitigations). …')),
     dict(date='2026-02-24', by='Anthropic', kind='framework',
          title='Responsible Scaling Policy, Version 3.0',
          url='https://anthropic.com/responsible-scaling-policy/rsp-v3-0',
@@ -1419,8 +1453,8 @@ def _limits(rows: list[dict]) -> str:
         (f"{len(rows)} documents from {len(publishers)} publishers",
          "Published in 2026 by " + ", ".join(publishers) + ". Each was read by hand on the publisher's own pages."),
         ("From the publisher",
-         "The document's abstract or executive summary word for word, else the publisher's description of it. "
-         "Executive summaries that run for pages are cut at a sentence, marked …."),
+         "The document's abstract or executive summary word for word, else the opening of its introduction, else "
+         "the publisher's description of it. Text that runs for pages is cut at a sentence, marked …."),
         ("Risks", "A document is tagged with a risk when it has a section or passage on it. The number on each risk "
                   "is how many documents cover it."),
         ("Weights", "Open when the model's maker published its weights; closed when it didn't."),
