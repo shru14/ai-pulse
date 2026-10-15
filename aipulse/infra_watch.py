@@ -242,24 +242,76 @@ def _src(r: dict) -> str:
     return f'<a href="{escape(r["url"])}" rel="noopener" title="{escape(r["title"])}">{escape(r["source"])}</a>'
 
 
-def _counts(head: tuple[str, str], items: list[tuple[str, int]], per: int = 9) -> str:
-    """A small table of counts, rows with none left out; a long one runs on in side-by-side tables of `per` rows."""
-    items = [(label, n) for label, n in items if n]
-    return "".join(
-        f'<table class="mt jb-small"><thead><tr><th>{escape(head[0])}</th><th>{escape(head[1])}</th></tr></thead>'
-        "<tbody>" + "".join(f'<tr><td>{label}</td><td class="n">{n}</td></tr>' for label, n in items[i:i + per])
-        + "</tbody></table>" for i in range(0, len(items), per))
+def _glance(first: str, last: str, items: list[tuple[str, str, int]]) -> str:
+    """The three commonest kinds in the table's chip column as big numbers, each saying what it counts, under about
+    how long the table covers, in whole months."""
+    top = sorted((i for i in items if i[2]), key=lambda i: -i[2])[:3]
+    tiles = "".join(f'<div class="iw-big" style="--c:{c}"><b>{n}</b><span>{escape(label)}</span></div>'
+                    for label, c, n in top)
+    months = max(1, round((date.fromisoformat(last[:10]) - date.fromisoformat(first[:10])).days / 30.4))
+    span = "Past month" if months == 1 else f"Past {months} months"
+    return (f'<section class="iw-glance"><h2>At a glance <span class="iw-when">{span}</span>'
+            f'</h2>\n<div class="iw-bigs">{tiles}</div></section>\n')
 
 
-def _by_country(countries: list[str]) -> list[tuple[str, int]]:
-    return [(escape(c), countries.count(c)) for c in sorted(set(countries), key=lambda c: (-countries.count(c), c))]
+# Excel-style filters, in the reader's browser: each column heading opens a list of that column's values (a cell's
+# data-f, else its text), each with how many rows have it among the rows the other filters leave; ticking narrows the
+# table. Phones hide the headings, so the same buttons sit in a bar over the table there.
+SCRIPT = """<script>
+(()=>{const p=document.querySelector('.iw'),t=p.querySelector('.iw-t'),rows=[...t.tBodies[0].rows],
+ths=[...t.tHead.rows[0].cells],count=p.querySelector('.iw-count b'),clear=p.querySelector('.iw-clear'),
+bar=p.querySelector('.iw-fbar'),sets=ths.map(()=>null),btns=ths.map(()=>[]);let pop=null;
+const val=(r,i)=>{const c=r.cells[i];return c.dataset.f||c.textContent.trim()};
+const pass=(r,skip)=>sets.every((s,i)=>i===skip||!s||s.has(val(r,i)));
+function run(){let n=0;rows.forEach(r=>{const ok=pass(r,-1);r.hidden=!ok;n+=ok});count.textContent=n;
+clear.hidden=sets.every(s=>!s);btns.forEach((b,i)=>b.forEach(x=>x.classList.toggle('on',!!sets[i])))}
+function close(){if(pop){pop.remove();pop=null}}
+function open(i,b){if(pop&&pop.dataset.i==i){close();return}close();const counts=new Map();
+rows.forEach(r=>{if(pass(r,i)){const v=val(r,i);counts.set(v,(counts.get(v)||0)+1)}});
+const vals=[...counts.keys()];if(!ths[i].hasAttribute('data-seen'))vals.sort((a,c)=>counts.get(c)-counts.get(a)||a.localeCompare(c));
+pop=document.createElement('div');pop.className='iw-pop';pop.dataset.i=i;
+const q=document.createElement('input');q.type='search';q.placeholder='Search';q.setAttribute('aria-label','Search '+ths[i].dataset.h);
+const all=document.createElement('label');all.className='iw-all';const ab=document.createElement('input');ab.type='checkbox';
+all.append(ab,' Select all');const list=document.createElement('div');list.className='iw-vals';
+const boxes=vals.map(v=>{const l=document.createElement('label'),c=document.createElement('input'),s=document.createElement('span'),
+k=document.createElement('b');c.type='checkbox';c.checked=!sets[i]||sets[i].has(v);c.value=v;
+s.textContent=v==='–'?'None given':v;k.textContent=counts.get(v);l.append(c,s,k);list.append(l);return c});
+const sync=()=>{ab.checked=boxes.every(c=>c.checked)};
+const apply=()=>{const on=boxes.filter(c=>c.checked).map(c=>c.value);sets[i]=on.length===boxes.length?null:new Set(on);sync();run()};
+boxes.forEach(c=>c.addEventListener('change',apply));
+ab.addEventListener('change',()=>{boxes.forEach(c=>{if(!c.parentNode.hidden)c.checked=ab.checked});apply()});
+q.addEventListener('input',()=>{const w=q.value.toLowerCase();boxes.forEach(c=>c.parentNode.hidden=!c.value.toLowerCase().includes(w))});
+pop.append(q,all,list);document.body.append(pop);sync();
+const r=b.getBoundingClientRect();pop.style.top=(r.bottom+scrollY+4)+'px';
+pop.style.left=Math.max(8,Math.min(r.left+scrollX,scrollX+document.documentElement.clientWidth-pop.offsetWidth-8))+'px';q.focus()}
+ths.forEach((th,i)=>{th.dataset.h=th.textContent;const mk=()=>{const b=document.createElement('button');b.type='button';
+b.className='iw-hb';b.textContent=th.dataset.h;b.setAttribute('aria-haspopup','true');
+b.addEventListener('click',e=>{e.stopPropagation();open(i,b)});btns[i].push(b);return b};
+th.textContent='';th.append(mk());bar.append(mk())});
+clear.addEventListener('click',()=>{sets.fill(null);close();run()});
+document.addEventListener('click',e=>{if(pop&&!pop.contains(e.target))close()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+p.querySelector('.iw-wrap').addEventListener('scroll',close)})();
+</script>"""
 
 
 def _where(place: str, country: str) -> str:
-    """The place over its country; a whole-country row is just the country."""
+    """The place over its country, filtered by the country; a whole-country row is just the country."""
     if not place or place == "Whole country":
-        return escape(country)
-    return f'{escape(place)}<br><span class="meta">{escape(country)}</span>'
+        return f'<td data-f="{escape(country)}">{escape(country)}</td>'
+    return f'<td data-f="{escape(country)}">{escape(place)}<br><span class="meta">{escape(country)}</span></td>'
+
+
+def _dates(rows: list[dict]) -> tuple[str, str]:
+    """The first and last days a table's stories were reported."""
+    days = [r["date"] for r in rows] or [CHECKED_TO]
+    return min(days), max(days)
+
+
+def _when(d: str) -> str:
+    """The day a story was reported, filtered by its month."""
+    day = date.fromisoformat(d[:10])
+    return f'<td class="when" data-f="{_MONTHS[day.month - 1]} {day.year}">{_day(d)}</td>'
 
 
 def _limits(limits: list[tuple[str, str]]) -> str:
@@ -268,17 +320,21 @@ def _limits(limits: list[tuple[str, str]]) -> str:
             f'<table class="mt jb-small jb-limits"><tbody>{body}</tbody></table></section>\n')
 
 
-def _page(title: str, key: str, intro: str, small: str, heading: str, table: str, limits: str) -> str:
-    return (f'<div class="ft jb ct iw">\n<div class="ct-hero"><div><h1>{escape(title)}</h1>\n'
-            f'<p class="jb-q">{escape(QUESTIONS[key])}</p>\n<p class="intro">{escape(intro)}</p></div>{ART[key]}</div>\n'
-            f'<section class="jb-answer"><h2>At a glance</h2>\n'
-            f'<div class="jb-split ct-small ct-tables">{small}</div></section>\n'
-            f'<h2>{escape(heading)}</h2>\n{table}{limits}</div>\n')
+def _page(title: str, key: str, intro: str, glance: str, heading: str, noun: str, n: int, table: str,
+          limits: str) -> str:
+    return (f'<div class="ft jb ct iw">\n<h1>{escape(title)}</h1>\n'
+            f'<p class="jb-q">{escape(QUESTIONS[key])}</p>\n<p class="intro">{escape(intro)}</p>\n{glance}'
+            f'<h2>{escape(heading)}</h2>\n<div class="iw-fbar"></div>'
+            f'<p class="iw-count" aria-live="polite">Showing <b>{n}</b> of {n} {noun}. Pick a ▾ to filter.'
+            f' <button type="button" class="iw-clear" hidden>Clear filters</button></p>\n'
+            f'{table}{limits}</div>\n{SCRIPT}\n')
 
 
 def _table(head: tuple[str, ...], body: str) -> str:
-    return ('<table class="mt iw-t"><thead><tr>' + "".join(f"<th>{escape(h)}</th>" for h in head)
-            + f"</tr></thead><tbody>{body}</tbody></table>\n")
+    """The table in its own scrolling box, its headings staying on top."""
+    return ('<div class="iw-wrap"><table class="mt iw-t"><thead><tr>'
+            + "".join(f'<th{" data-seen" * (h == "Reported")}>{escape(h)}</th>' for h in head)
+            + f"</tr></thead><tbody>{body}</tbody></table></div>\n")
 
 
 def builds_body(rows: list[dict]) -> str:
@@ -289,10 +345,10 @@ def builds_body(rows: list[dict]) -> str:
     said = ", ".join(f"{stages.count(k)} {label.lower()}" for k, (label, _) in STAGES.items() if stages.count(k))
     intro = (f"{len(rows)} new data centres and campuses in {len(set(countries))} countries, reported since {first}: "
              f"{said}. Each row gives who is behind it, where, and its size and cost as the story states them.")
-    small = (_counts(("Stage", "Projects"), [(_chip(l, c), stages.count(k)) for k, (l, c) in STAGES.items()])
-             + _counts(("Country", "Projects"), _by_country(countries)))
+    glance = _glance(*_dates(rows), [(f"projects {label.lower()}", c, stages.count(k))
+                                     for k, (label, c) in STAGES.items()])
     body = "".join(
-        f'<tr><td class="when">{_day(r["date"])}</td><td class="who">{escape(who)}</td><td>{_where(place, country)}</td>'
+        f'<tr>{_when(r["date"])}<td class="who">{escape(who)}</td>{_where(place, country)}'
         f'<td>{escape(size) or "–"}</td><td>{escape(money) or "–"}</td><td>{_chip(*STAGES[stage])}</td>'
         f'<td class="src">{_src(r)}</td></tr>'
         for r in rows for who, country, place, size, money, stage in [r["cells"]])
@@ -309,7 +365,7 @@ def builds_body(rows: list[dict]) -> str:
          "sizes aren't added up. A dash means the story gives none."),
         ("Planning decisions", "Approvals, pauses and refusals of data centres are on Pushback & permits."),
     ])
-    return _page("Data-centre builds", "builds", intro, small, "Every project", table, limits)
+    return _page("Data-centre builds", "builds", intro, glance, "Every project", "projects", len(rows), table, limits)
 
 
 def power_body(rows: list[dict]) -> str:
@@ -320,10 +376,10 @@ def power_body(rows: list[dict]) -> str:
     said = ", ".join(f"{status.count(k)} {label.lower()}" for k, label in STATUSES.items() if status.count(k))
     intro = (f"{len(rows)} deals and plans to power data centres, reported since {first}: {said}. Each row gives who "
              "is supplying the power, what it comes from, and what it will run.")
-    small = (_counts(("Power from", "Deals"), [(_chip(l, c), kinds.count(k)) for k, (l, c) in SOURCES.items()])
-             + _counts(("Status", "Deals"), [(escape(l), status.count(k)) for k, l in STATUSES.items()]))
+    glance = _glance(*_dates(rows), [(f"deals {STATUSES[k].lower()}", c, status.count(k)) for k, c in
+                                     (("signed", "#009E73"), ("planned", "#56B4E9"), ("dropped", "#9AA0AA"))])
     body = "".join(
-        f'<tr><td class="when">{_day(r["date"])}</td><td class="who">{escape(who)}</td><td>{_chip(*SOURCES[kind])}</td>'
+        f'<tr>{_when(r["date"])}<td class="who">{escape(who)}</td><td>{_chip(*SOURCES[kind])}</td>'
         f'<td>{escape(what)}</td><td>{escape(size) or "–"}</td><td>{escape(STATUSES[st])}</td>'
         f'<td class="src">{_src(r)}</td></tr>'
         for r in rows for who, kind, what, size, st in [r["cells"]])
@@ -339,7 +395,7 @@ def power_body(rows: list[dict]) -> str:
         ("Size", "Electrical power as the story states it: 1 GW (gigawatt) is 1,000 MW (megawatts). A dash means "
          "the story gives none."),
     ])
-    return _page("Who powers AI", "power", intro, small, "Every deal", table, limits)
+    return _page("Who powers AI", "power", intro, glance, "Every deal", "deals", len(rows), table, limits)
 
 
 def decisions_body(rows: list[dict]) -> str:
@@ -350,10 +406,10 @@ def decisions_body(rows: list[dict]) -> str:
     said = ", ".join(f"{outcomes.count(k)} {label.lower()}" for k, (label, _) in OUTCOMES.items() if outcomes.count(k))
     intro = (f"{len(rows)} decisions on data centres in {len(set(countries))} countries, reported since {first}: "
              f"{said}. Each row gives where, who decided, and what they decided.")
-    small = (_counts(("Outcome", "Decisions"), [(_chip(l, c), outcomes.count(k)) for k, (l, c) in OUTCOMES.items()])
-             + _counts(("Country", "Decisions"), _by_country(countries)))
+    glance = _glance(*_dates(rows), [(f"decisions: {label.lower()}", c, outcomes.count(k))
+                                     for k, (label, c) in OUTCOMES.items()])
     body = "".join(
-        f'<tr><td class="when">{_day(r["date"])}</td><td>{_where(place, country)}</td><td class="who">{escape(who)}</td>'
+        f'<tr>{_when(r["date"])}{_where(place, country)}<td class="who">{escape(who)}</td>'
         f'<td>{escape(what)}</td><td>{_chip(*OUTCOMES[outcome])}</td><td class="src">{_src(r)}</td></tr>'
         for r in rows for country, place, who, what, outcome in [r["cells"]])
     table = _table(("Reported", "Where", "Who decided", "What", "Outcome", "Story"), body)
@@ -367,52 +423,9 @@ def decisions_body(rows: list[dict]) -> str:
          "review ordered: sent back for a fuller assessment. Pause turned down: a call to pause refused."),
         ("Who decided", "As the story names it; where it doesn't, the row says so."),
     ])
-    return _page("Pushback & permits", "decisions", intro, small, "Every decision", table, limits)
+    return _page("Pushback & permits", "decisions", intro, glance, "Every decision", "decisions", len(rows), table,
+                 limits)
 
-
-# Our own flat pictures beside each title. No real people, buildings or logos.
-_INK = 'stroke="#1B1F24" stroke-width="3" stroke-linejoin="round"'
-ART = {
-    # a data-centre hall with rows of racks, and a crane over a second hall going up
-    "builds": ('<svg class="ct-art" viewBox="0 0 320 180" role="img" aria-label="A data centre and a crane">'
-               f'<g {_INK} fill="#F4EFE6"><rect x="28" y="96" width="150" height="70"/>'
-               '<rect x="196" y="122" width="96" height="44" stroke-dasharray="8 6"/></g>'
-               f'<g {_INK} fill="#8BEC8B"><rect x="44" y="110" width="28" height="44"/>'
-               '<rect x="89" y="110" width="28" height="44"/><rect x="134" y="110" width="28" height="44"/></g>'
-               '<path d="M50 120h16M50 130h16M50 140h16M95 120h16M95 130h16M95 140h16M140 120h16M140 130h16M140 140h16"'
-               ' stroke="#1B1F24" stroke-width="2.5" stroke-linecap="round"/>'
-               f'<g {_INK} fill="none" stroke-linecap="round"><path d="M244 166V30M228 30h86M244 30l22-14 48 14M232 166h24"/>'
-               '<path d="M244 50l14-20M244 70l14-20M244 90l14-20M244 110l14-20" stroke-width="2"/><path d="M298 30v44"/></g>'
-               f'<rect x="288" y="74" width="20" height="16" fill="#E69F00" {_INK}/>'
-               '<path d="M12 166h296" stroke="#1B1F24" stroke-width="3"/></svg>'),
-    # the sun, a cooling tower, a wind turbine and a pylon, with power running to a rack
-    "power": ('<svg class="ct-art" viewBox="0 0 320 180" role="img" aria-label="The sun, a cooling tower, a wind '
-              'turbine and a pylon feeding a rack">'
-              f'<circle cx="62" cy="40" r="18" fill="#F0E442" {_INK}/>'
-              '<path d="M62 10v-6M62 76v-6M32 40h-6M98 40h-6M41 19l-4-4M87 65l-4-4M41 61l-4 4M87 15l-4 4"'
-              ' stroke="#1B1F24" stroke-width="2.5" stroke-linecap="round"/>'
-              f'<path d="M22 166c10-30 10-56 2-80h56c-8 24-8 50 2 80z" fill="#F4EFE6" {_INK}/>'
-              f'<g {_INK} fill="none" stroke-linecap="round"><path d="M130 166V72M130 72l-24-10M130 72l24-10M130 72l2 26"/>'
-              '<path d="M176 166l20-110 20 110M182 130h28M187 100h18M196 56l-26 10M196 56l26 10"/>'
-              '<path d="M222 66c30 6 40 26 44 46"/></g>'
-              f'<rect x="248" y="112" width="44" height="54" fill="#8BEC8B" {_INK}/>'
-              '<path d="M256 124h28M256 136h28M256 148h28" stroke="#1B1F24" stroke-width="2.5" stroke-linecap="round"/>'
-              f'<path d="M272 80l-10 14h10l-6 12 16-18h-10l6-8z" fill="#E69F00" {_INK} stroke-width="2"/>'
-              '<path d="M8 166h304" stroke="#1B1F24" stroke-width="3"/></svg>'),
-    # a planning notice on two posts with a round stamp on it, and a stop sign beside
-    "decisions": ('<svg class="ct-art" viewBox="0 0 320 180" role="img" aria-label="A planning notice with a stamp, '
-                  'and a stop sign">'
-                  f'<path d="M84 166V120M204 166V120" fill="none" {_INK}/>'
-                  f'<rect x="56" y="22" width="176" height="104" rx="4" fill="#F4EFE6" {_INK}/>'
-                  '<path d="M74 44h88M74 60h120M74 74h120M74 88h70M74 102h90" stroke="#1B1F24" stroke-width="2.5"'
-                  ' stroke-linecap="round"/>'
-                  f'<g transform="rotate(-14 192 96)"><circle cx="192" cy="96" r="24" fill="#8BEC8B" {_INK}/>'
-                  '<path d="M180 96l8 8 16-16" fill="none" stroke="#1B1F24" stroke-width="3.5" stroke-linecap="round"/></g>'
-                  '<path d="M262 166v-46" stroke="#1B1F24" stroke-width="3"/>'
-                  f'<path d="M244 62h36l12 12v36l-12 12h-36l-12-12V74z" fill="#D55E00" {_INK}/>'
-                  '<path d="M250 92h24" stroke="#1B1F24" stroke-width="5" stroke-linecap="round"/>'
-                  '<path d="M20 166h284" stroke="#1B1F24" stroke-width="3"/></svg>'),
-}
 
 # path: (title, what the page is, its table, its body, its question)
 PAGES = {
