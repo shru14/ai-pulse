@@ -833,7 +833,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ct-d{display:block;font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .cp .ft .ct-track a{font-weight:400;color:var(--muted);text-decoration:underline}
 @media (max-width:1000px){.cp .ct-cards{column-count:2}}
-@media (max-width:640px){.cp .ct-cards{column-count:1;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:6px;border-bottom:3px solid var(--ink)}}
+@media (max-width:640px){.cp .ct-cards{columns:auto;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:6px;border-bottom:3px solid var(--ink)}}
 """
 
 
