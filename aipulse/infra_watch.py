@@ -117,6 +117,7 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/ctrls-to-invest-us1-billion-in-bihar-to-set-up-hyperscale-ai-infrastructure/", "CtrlS Datacenters", "India", "Bodh Gaya, Bihar", "150 MW", "US$ 1bn", "announced"),
     ("https://w.media/brightray-enters-us-with-loi-for-10-mw-ai-data-center-in-indiana/", "Brightray", "US", "Indiana", "10 MW", "", "announced"),
     ("https://w.media/uruguay-signs-multi-billion-dollar-deal-for-500-mw-data-center-park/", "Solaria, with Uruguay's government", "Uruguay", "", "500 MW", "US$ 5.7bn", "announced"),
+    ("https://dcnnmagazine.com/projects-and-infrastructure/1-3gw-solar-farm-and-1gw-data-centre-proposed-in-norfolk/", "EPL Norfolk (Evolution Power)", "UK", "King's Lynn, west Norfolk", "1 GW", "", "announced"),
 ]
 
 # Power: a deal or plan to power data centres. (story, who, power from, what it powers, size, status)
@@ -181,7 +182,10 @@ DECISIONS: list[tuple[str, ...]] = [
 ]
 
 # Infra stories from after CHECKED_TO checked and left out of all three tables
-LEFT_OUT: set[str] = set()
+LEFT_OUT: set[str] = {
+    "https://w.media/airtrunk-nears-deal-to-sell-its-johor-data-centers-for-us1-billion-report/",  # sale of existing data centres
+    "https://www.thelec.net/news/articleView.html?idxno=14473",  # owner of the Cheongna project not named in the story
+}
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
 _SIZE = re.compile(r"\b\d[\d,.]*\s?(?:MW|GW|megawatts?|gigawatts?)\b", re.I)
