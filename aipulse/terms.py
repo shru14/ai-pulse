@@ -64,6 +64,11 @@ TERMS: dict[str, tuple[str, str, str]] = {
                       "robots.txt allows the feed; checked 10 Oct 2026. Its terms cover its AI products; nothing on robots, scrapers or feeds"),
     "thinkingmachines.ai": ("robots.txt", "https://thinkingmachines.ai/legal/terms/",
                             "robots.txt allows the feed; checked 10 Oct 2026. Its terms cover its API service; nothing on robots, scrapers or feeds"),
+    # Added 16 Oct 2026 for Models being retired: the labs' own deprecation pages, under the same rule
+    "platform.openai.com": ("robots.txt", "", "robots.txt allows /docs/deprecations; checked 16 Oct 2026"),
+    "platform.claude.com": ("robots.txt", "", "robots.txt allows the model deprecations page; checked 16 Oct 2026"),
+    "ai.google.dev": ("robots.txt", "https://ai.google.dev/gemini-api/terms", "robots.txt allows every page; checked 16 Oct 2026"),
+    "docs.mistral.ai": ("robots.txt", "", "robots.txt allows the models page; checked 16 Oct 2026"),
     "updates.midjourney.com": ("robots.txt", "", "robots.txt allows the feed; checked 10 Oct 2026. Its terms page refuses automated readers"),
     "runwayml.com": ("robots.txt", "", "robots.txt allows the sitemap and its runway.com posts; checked 10 Oct 2026"),
     "bfl.ai": ("robots.txt", "", "robots.txt allows the blog page and posts; checked 10 Oct 2026"),

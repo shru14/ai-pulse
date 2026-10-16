@@ -408,6 +408,8 @@ def build(conn, out: str | Path) -> int:
     places += court.build(conn, cards, out, today)  # lawsuits against AI makers and where each stands (ai-in-court/)
     places += safety.build(conn, cards, out, today)  # system cards, evaluations, red-teaming and frameworks (ai-safety-hub/)
     places += infra_watch.build(conn, cards, out, today)  # data-centre builds, power deals and permits (Infra's features)
+    from . import retired
+    places += retired.build(conn, cards, out, today)  # models the labs have set a shut-down date for (Releases' feature)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")

@@ -3696,3 +3696,51 @@ def test_jobs_blamed_on_ai(monkeypatch):
     assert '<td>2026</td><td class="n">2</td><td class="n">about 1,000</td>' in body  # by year
     assert "B&#x27;s 3,000 jobs are about 3 in 4 of the jobs we could count" in body
     assert jobs._share(14000, 46985) == "about 3 in 10" and jobs._share(34335, 46985) == "nearly 3 in 4"
+
+
+def test_models_being_retired_reads_each_labs_page_and_builds(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import retired
+    openai = ('<h3>2026-10-14: GPT-4 series</h3><table><tr><th>Shutdown date</th><th>Model / system</th>'
+              '<th>Recommended replacement</th></tr><tr><td>January 14, 2027</td><td>gpt-4o-2024-08-06</td>'
+              '<td>gpt-6-luna</td></tr><tr><td>Oct 23, 2026</td><td>o1-2024-12-17 | o1</td><td>gpt-5.6-sol</td></tr>'
+              '</table><h3>2026-06-03: Evals platform</h3><table><tr><th>Date</th><th>Update</th></tr>'
+              '<tr><td>June 3, 2026</td><td>Deprecation announced.</td></tr><tr><td>Nov 30, 2026</td>'
+              '<td>The Evals dashboard and API are scheduled to shut down.</td></tr></table>'
+              '<h3>Update to fine-tuning</h3><table><tr><th>Date</th><th>Update</th></tr>'
+              '<tr><td>Jan 6, 2027</td><td>No new jobs.</td></tr></table>')
+    google = ('<h2>Gemini 3</h2><table><tr><th>Model</th><th>Release date</th><th>Shutdown date</th>'
+              '<th>Recommended replacement</th></tr><tr><td>gemini-3.8-flash</td><td>September 2, 2026</td>'
+              '<td>No shutdown date announced</td><td></td></tr><tr><td>Preview models</td></tr>'
+              '<tr><td>gemini-3.1-flash-tts-preview</td><td>February 26, 2026</td><td>November 17, 2026</td>'
+              '<td>gemini-3.8-flash-tts</td></tr></table>')
+    mistral = ('<table><tr><td>OCR 4.0 ↗</td><td>4.0</td><td>mistral-ocr-4-0</td><td>9/29/2026 9/30/2026</td>'
+               '<td>OCR 4.1</td></tr><tr><td>Mistral Next ↗</td><td></td><td></td><td></td><td>Mistral Large 3</td></tr></table>')
+    anthropic = ('<h2>Model status</h2><table><tr><th>API model name</th><th>Current state</th></tr>'
+                 '<tr><td>claude-opus-5-5</td><td>Active</td></tr></table>'
+                 '<h3>2026-09-30: Claude Sonnet 4.5 model</h3><table><tr><th>Retirement date</th>'
+                 '<th>Deprecated model</th><th>Recommended replacement</th></tr><tr><td>November 30, 2026</td>'
+                 '<td>claude-sonnet-4-5-20250929</td><td>claude-sonnet-5-5</td></tr></table>')
+    got = {lab: retired.parse(lab, html) for lab, html in
+           (("OpenAI", openai), ("Google", google), ("Mistral", mistral), ("Anthropic", anthropic))}
+    assert [(r["model"], r["shuts"], r["replace"], r["told"]) for r in got["OpenAI"]] == [
+        ("gpt-4o-2024-08-06", "2027-01-14", "gpt-6-luna", "2026-10-14"), ("o1-2024-12-17", "2026-10-23", "gpt-5.6-sol",
+        "2026-10-14"), ("Evals platform", "2026-11-30", "", "2026-06-03")]  # undated notices and non-shutdowns left out
+    assert [(r["model"], r["shuts"], r["told"]) for r in got["Google"]] == [("gemini-3.1-flash-tts-preview", "2026-11-17", "")]
+    assert [(r["model"], r["shuts"], r["told"], r["replace"]) for r in got["Mistral"]] == [
+        ("mistral-ocr-4-0", "2026-09-30", "2026-09-29", "OCR 4.1")]
+    assert [r["model"] for r in got["Anthropic"]] == ["claude-sonnet-4-5-20250929"]  # active models have no date
+    conn = store.connect(tmp_path / "t.db")
+    pages_ = {retired.LABS[lab][0]: html.encode() for lab, html in
+              (("OpenAI", openai), ("Google", google), ("Mistral", mistral), ("Anthropic", anthropic))}
+    monkeypatch.setattr(retired.feeds, "allowed", lambda url: True)
+    assert retired.refresh(conn, fetcher=pages_.__getitem__) == "OpenAI 3, Anthropic 1, Google 1, Mistral 1"
+    retired.refresh(conn, fetcher=lambda url: b"<p>down</p>")  # a page that can't be read keeps the rows last read
+    assert len(retired.load(conn)["OpenAI"]["rows"]) == 3
+    assert retired.build(conn, [], tmp_path, date(2026, 10, 16)) == ["models-being-retired/"]
+    page = (tmp_path / "models-being-retired" / "index.html").read_text(encoding="utf-8")
+    ahead, gone = page.split("Already shut down")
+    assert ahead.index("23 Oct 2026") < ahead.index("17 Nov 2026") < ahead.index("14 Jan 2027")  # soonest first
+    assert ahead.count('class="rm-soon"') == 1 and "30 Sep 2026" in gone  # 23 Oct is within 30 days
+    assert "<code>gpt-4o-2024-08-06</code>" in page and "<td>Evals platform</td>" in page
+    assert "<b>1</b><span>models shut down in the next 30 days</span>" in page
