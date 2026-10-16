@@ -880,10 +880,21 @@ a.subscribe-btn{text-decoration:none}
 .cp .rm-t code{font:600 13px var(--mono);overflow-wrap:anywhere}
 .cp .rm-t tr.rm-soon td{background:color-mix(in srgb,#F0E442 26%,var(--bg))}
 .cp .ft .rm-t td a{font-weight:400;text-decoration:underline}
+.cp .rm h1{font-size:clamp(24px,3.6vw,30px)}
+.cp .rm .jb-q{font-size:clamp(17px,2vw,20px);max-width:none}
+.cp .rm-part[hidden],.cp .rm-t tr[hidden]{display:none}
+.cp .rm-t td.rm-d small{display:block;font:500 12px var(--mono);color:var(--muted)}
+.cp .ft .rm-t td.rm-lab a{display:inline-block;border:1.5px solid var(--line);padding:1px 7px;font:600 12.5px var(--body);text-decoration:none;white-space:nowrap}
+.cp .ft .rm-t td.rm-lab a:hover,.cp .ft .rm-t td.rm-lab a:focus-visible{background:var(--ink);color:var(--bg)}
+.cp .rm-t td:last-child,.cp .rm-t th:last-child{text-align:left}
+.cp .rm-filters .sh-tabs + .sh-tabs{margin-top:-4px}
+@media (min-width:641px){.cp .rm-t td.rm-same{color:transparent}.cp .rm-t td.rm-same small{display:none}
+  .cp .rm-t tr:has(td.rm-same) td{border-top-color:color-mix(in srgb,var(--ink) 8%,transparent)}}
 @media (max-width:640px){.cp .rm-wrap{max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
   .cp .rm-big b{font-size:34px}
   .cp .rm-t td:nth-child(4)::before{content:"Replace with ";color:var(--muted);font:500 12.5px var(--body)}
-  .cp .rm-t td:nth-child(5)::before{content:"Announced ";color:var(--muted);font:500 12.5px var(--body)}}
+  .cp .rm-t td:nth-child(5)::before{content:"Announced ";color:var(--muted);font:500 12.5px var(--body)}
+  .cp .rm-t td.rm-d small{display:inline;margin-left:8px}}
 /* Who owns a piece of whom: investors by labs, a box per deal (dashed: "up to"); phones scroll the grid sideways */
 .cp .ow-key{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13.5px;margin:10px 0 8px}
 .cp .ow-key i{display:inline-block;width:18px;height:12px;border:2px solid var(--line);margin-right:6px;vertical-align:-1px;background:color-mix(in srgb,#E69F00 30%,var(--bg))}
