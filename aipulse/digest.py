@@ -498,6 +498,8 @@ FEATURES = [
      "monthly/"),
     ("Saved stories", "Tap the bookmark on any story to keep it in Saved, in your browser. No account needed.",
      "saved/"),
+    ("Models being retired", "Every model OpenAI, Anthropic, Google and Mistral have set a shut-down date for, and "
+     "what each lab says to use instead.", "models-being-retired/"),
 ]
 
 

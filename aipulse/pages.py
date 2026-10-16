@@ -874,6 +874,21 @@ a.subscribe-btn{text-decoration:none}
 .cp .ft .iw-t td.src a{font-weight:400;color:var(--muted);text-decoration:underline}
 @media (max-width:640px){.cp table.iw-t{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
   .cp .iw-t td .iw-chip{margin:4px 0}}
+/* Models being retired: three numbers in ink boxes, then the dates; rows shutting down soon are marked */
+.cp .rm-bigs{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0 6px}
+.cp .rm-big{flex:1 1 180px;border:2px solid var(--line);box-shadow:4px 4px 0 var(--line);padding:12px 14px;background:var(--bg)}
+.cp .rm-big b{display:block;font:400 44px/1 var(--display)}
+.cp .rm-big span{display:block;margin-top:6px;font-weight:600;font-size:14.5px;line-height:1.3}
+.cp .rm-t{font-size:14.5px}
+.cp .rm-t td.rm-d{font-weight:700;white-space:nowrap}
+.cp .rm-t td.rm-t{white-space:nowrap}
+.cp .rm-t code{font:600 13px var(--mono);overflow-wrap:anywhere}
+.cp .rm-t tr.rm-soon td{background:color-mix(in srgb,#F0E442 26%,var(--bg))}
+.cp .ft .rm-t td a{font-weight:400;text-decoration:underline}
+@media (max-width:640px){.cp .rm-wrap{max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
+  .cp .rm-big b{font-size:34px}
+  .cp .rm-t td:nth-child(4)::before{content:"Replace with ";color:var(--muted);font:500 12.5px var(--body)}
+  .cp .rm-t td:nth-child(5)::before{content:"Announced ";color:var(--muted);font:500 12.5px var(--body)}}
 /* AI safety hub: the search and filters, then a card per document (its kind's colour on top), newest first */
 .cp .sh .jb-q{max-width:none}
 .cp .sh-filters{position:sticky;top:0;z-index:2;background:var(--bg);padding:12px 0 10px;margin:18px 0 6px;border-bottom:2px solid var(--ink)}

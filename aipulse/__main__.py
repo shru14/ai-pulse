@@ -156,6 +156,8 @@ def main():
                 print(f"Hacker News: {social.hacker_news(conn)} AI threads")
             except Exception as e:
                 print(f"Hacker News: not read ({e})")
+            from . import retired  # the labs' deprecation pages, for Models being retired
+            print(f"Models being retired: {retired.refresh(conn)}")
     elif a.cmd == "serve":
         store.connect(a.db).close()
         serve(a.db, a.host, a.port)
