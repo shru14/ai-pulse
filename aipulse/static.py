@@ -410,6 +410,8 @@ def build(conn, out: str | Path) -> int:
     places += infra_watch.build(conn, cards, out, today)  # data-centre builds, power deals and permits (Infra's features)
     from . import retired
     places += retired.build(conn, cards, out, today)  # models the labs have set a shut-down date for (Releases' feature)
+    from . import owners
+    places += owners.build(conn, cards, out, today)  # the big companies' stakes in AI labs (Industry's feature)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")

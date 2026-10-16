@@ -500,6 +500,8 @@ FEATURES = [
      "saved/"),
     ("Models being retired", "Every model OpenAI, Anthropic, Google and Mistral have set a shut-down date for, and "
      "what each lab says to use instead.", "models-being-retired/"),
+    ("Who owns a piece of whom", "Which big companies have money in which AI labs, each stake checked by hand against "
+     "its story.", "who-owns-a-piece-of-whom/"),
 ]
 
 

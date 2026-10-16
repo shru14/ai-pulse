@@ -884,6 +884,19 @@ a.subscribe-btn{text-decoration:none}
   .cp .rm-big b{font-size:34px}
   .cp .rm-t td:nth-child(4)::before{content:"Replace with ";color:var(--muted);font:500 12.5px var(--body)}
   .cp .rm-t td:nth-child(5)::before{content:"Announced ";color:var(--muted);font:500 12.5px var(--body)}}
+/* Who owns a piece of whom: investors by labs, a box per deal (dashed: "up to"); phones scroll the grid sideways */
+.cp .ow-key{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13.5px;margin:10px 0 8px}
+.cp .ow-key i{display:inline-block;width:18px;height:12px;border:2px solid var(--line);margin-right:6px;vertical-align:-1px;background:color-mix(in srgb,#E69F00 30%,var(--bg))}
+.cp .ow-key i.ow-up{border-style:dashed;background:color-mix(in srgb,#E69F00 14%,var(--bg))}
+.cp .ow-wrap{overflow-x:auto;overscroll-behavior-x:contain}
+.cp .ow-grid{width:100%;border-collapse:collapse;min-width:820px}
+.cp .ow-grid th{font:600 12.5px var(--body);text-transform:uppercase;letter-spacing:.05em;padding:8px 6px;border-bottom:3px solid var(--ink);vertical-align:bottom}
+.cp .ow-grid tbody th{text-transform:none;letter-spacing:0;font:700 15px var(--body);text-align:left;border-bottom:1px solid color-mix(in srgb,var(--ink) 22%,transparent);vertical-align:top;padding:12px 8px 12px 0;position:sticky;left:0;background:var(--bg)}
+.cp .ow-grid td{border-bottom:1px solid color-mix(in srgb,var(--ink) 22%,transparent);padding:10px 6px;text-align:center;vertical-align:top}
+.cp .ow-deal{display:inline-block;min-width:74px;max-width:130px;border:2px solid var(--line);padding:4px 6px;font-weight:700;font-size:13.5px;line-height:1.25;color:var(--ink);text-decoration:none;background:color-mix(in srgb,#E69F00 30%,var(--bg))}
+.cp .ow-deal small{display:block;font-weight:400;font-size:11.5px}
+.cp .ow-deal.ow-up{border-style:dashed;background:color-mix(in srgb,#E69F00 14%,var(--bg))}
+.cp .ow-deal:hover,.cp .ow-deal:focus-visible{box-shadow:3px 3px 0 var(--line)}
 /* AI safety hub: the search and filters, then a card per document (its kind's colour on top), newest first */
 .cp .sh .jb-q{max-width:none}
 .cp .sh-filters{position:sticky;top:0;z-index:2;background:var(--bg);padding:12px 0 10px;margin:18px 0 6px;border-bottom:2px solid var(--ink)}
