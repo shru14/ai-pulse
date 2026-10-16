@@ -185,15 +185,10 @@ STYLE = """
   .cp .tp h2{margin-top:26px}
 }
 a.subscribe-btn{text-decoration:none}
-/* section heads in the poster look, as the front page's bands: the title over a thick ink rule, a square of the
-   palette before it (yellow, sky, green, pink, blue in turn). The monthly issue and its insights keep their own. */
+/* section heads in the poster look, as the front page's bands: the title over a thick ink rule, no marker before it.
+   The monthly issue and its insights keep their own. */
 .cp h2:not(.mi *){display:flex;align-items:center;gap:10px;margin:36px 0 10px;padding:0 0 6px;border-top:0;border-bottom:4px solid var(--ink);
   font:400 22px/1.15 var(--display);text-transform:none;letter-spacing:0}
-.cp h2:not(.mi *)::before{content:"";flex:none;width:16px;height:16px;border:2px solid var(--line);background:var(--chip,#F0E442)}
-.cp :is(h2,section):nth-of-type(5n+2){--chip:#56B4E9}
-.cp :is(h2,section):nth-of-type(5n+3){--chip:#009E73}
-.cp :is(h2,section):nth-of-type(5n+4){--chip:#C85BC3}
-.cp :is(h2,section):nth-of-type(5n+5){--chip:#0072B2}
 /* the monthly issue and its insights keep their approved report look, as it was */
 .cp:has(> .mi) > .back{text-decoration-color:#D55E00}
 .cp .mi .topic-hero .kind{background:#D55E00}
