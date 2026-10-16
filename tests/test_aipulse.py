@@ -1,7 +1,7 @@
 import os
 import re
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 os.environ["AIPULSE_OFFLINE"] = "1"  # brand logos: cached data only, no network
@@ -2701,6 +2701,25 @@ def test_infrastructure_reaches_the_email_and_its_readers():
     assert {classify.INFRA_TAG} <= preferences.labels(story)
     assert "Chips, compute & energy" in preferences.labels(story)  # an older saved choice still matches
     assert classify.INFRA_TAG in digest.story_tags(story)
+
+
+def test_the_email_introduces_one_new_feature_a_day_each_once():
+    from aipulse import digest
+    start = digest.FEATURES_FROM
+    days = [start + timedelta(days=k) for k in range(40)]
+    shown = [digest._feature(d) for d in days]
+    # newest first, every one once, none on Sundays (the dossier's day) or before the start
+    assert [f for f in shown if f] == digest.FEATURES
+    assert all(f is None for d, f in zip(days, shown) if digest.weekly(d))
+    assert digest._feature(start - timedelta(days=1)) is None
+    # the box sits under the day's stories, with a link to the page on the site
+    day = next(d for d in days if not digest.weekly(d))
+    card = {"id": "r", "title": "A paper on AI agents", "summary": "", "url": "https://ex.com/r", "source": "arXiv",
+            "category": "research", "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00"}
+    _, text, html = digest.build([card], ["research"], day)
+    name, _, path = digest._feature(day)
+    assert f"NEW ON AI PULSE: {name}" in text and f"Have a look: {digest.rss.SITE}{path}" in text
+    assert html.index("Every story of the day in one table") < html.index(">New on AI Pulse<")
 
 
 def test_a_new_stream_s_history_resumes_where_it_stopped(tmp_path):

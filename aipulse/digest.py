@@ -473,6 +473,61 @@ def _new_stream(day: date, streams: list[str]) -> str:
             "draw on. Add it to your feed by clicking on following button")
 
 
+# Pages built lately, introduced one per email, newest first, each once: (name, one plain line, path on the site).
+# Days are counted from FEATURES_FROM (the day the email is about, sent the next morning), skipping the Sunday
+# email's day (it has the dossier), so every reader sees the same feature on the same day and none twice. A new page
+# goes at the end, with FEATURES_FROM left as it is.
+FEATURES_FROM = date(2026, 10, 18)  # Monday 19 October's email
+FEATURES = [
+    ("AI safety hub", "The safety tests, red-teaming findings, system cards and safety frameworks published in 2026, "
+     "in one place, searchable by type and risk.", "ai-safety-hub/"),
+    ("Data-centre builds", "New data centres worldwide: who is behind each, where, how big and how far along. Beside "
+     "it, who powers AI, and the decisions to approve, pause or block them.", "data-centre-builds/"),
+    ("AI in court", "Lawsuits against AI makers over copyright, privacy and people's likeness: who sued whom, where, "
+     "and where each case stands.", "ai-in-court/"),
+    ("Jobs blamed on AI", "Big job cuts the news linked to AI, sorted by the reason the company itself gave.",
+     "jobs-blamed-on-ai/"),
+    ("Papers that made the news", "The research papers news outlets reported on, by subject, next to the papers we "
+     "read ourselves.", "papers-in-the-news/"),
+    ("Harm → rule", "AI harms by subject, beside the rules proposed on the same subject.", "harm-to-rule/"),
+    ("Promised vs shipped", "When a company said it would release something, and when it did, each checked by hand.",
+     "promises/"),
+    ("Rule echoes", "How a rule on one subject (sexual deepfakes, AI companions, labelling...) spreads from place to "
+     "place.", "rule-echoes/"),
+    ("Monthly issue", "Each month of 2026 as a short booklet: the stories that mattered and the rules that moved.",
+     "monthly/"),
+    ("Saved stories", "Tap the bookmark on any story to keep it in Saved, in your browser. No account needed.",
+     "saved/"),
+]
+
+
+def _feature(day: date) -> tuple[str, str, str] | None:
+    """The page this day's email introduces: the n-th of FEATURES on the n-th day from FEATURES_FROM that isn't a
+    weekly day; nothing in the Sunday email, before, or once all have been shown."""
+    if day < FEATURES_FROM or weekly(day):
+        return None
+    n = sum(1 for k in range((day - FEATURES_FROM).days) if not weekly(FEATURES_FROM + timedelta(days=k)))
+    return FEATURES[n] if n < len(FEATURES) else None
+
+
+def _feature_box(day: date) -> tuple[list[str], str]:
+    """The email's "New on AI Pulse" box: the feature's name, its line and a link to its page."""
+    feature = _feature(day)
+    if not feature:
+        return [], ""
+    name, what, path = feature
+    link = rss.SITE + path
+    text = ["NEW ON AI PULSE: " + name, what, f"Have a look: {link}"]
+    html = (f'<div style="margin:22px 0 0;padding:14px 16px;background:#f3f4f6;border-left:4px solid {NAVY};border-radius:4px">'
+            f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:{HEADLINE};'
+            f'margin-bottom:4px">New on AI Pulse</div>'
+            f'<div style="font-size:18px;font-weight:bold;color:{NAVY}">{escape(name)}</div>'
+            f'<div style="font-size:14px;line-height:1.5;color:#3c4043;margin-top:3px">{escape(what)}</div>'
+            f'<div style="font-size:13px;margin-top:7px"><a href="{escape(link)}" style="color:{LINK};text-decoration:none">'
+            f'Have a look →</a></div></div>')
+    return text, html
+
+
 def _dossier(dossier: dict | None) -> tuple[list[str], str]:
     """The Sunday email's weekly dossier box, in every subscriber's email (`dossier`: {"ask": the reader's own form
     at its question box}, and for a reader whose questions have a dossier, weekly.note's {"link", "week", "entries"}):
@@ -804,6 +859,9 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     lines += [*(f"{k}: {v}." for k, v in said), "", f"Every story of the day in one table: {everything}"]
     html.append(f'<p style="margin:16px 0 0;font-size:14px"><a href="{escape(everything)}" style="color:{LINK};'
                 f'text-decoration:none;font-weight:bold">Every story of the day in one table →</a></p>')
+    feature_text, feature_html = _feature_box(day)  # one page built lately, under the day's stories
+    lines += ["", *feature_text] if feature_text else []
+    html.append(feature_html)
     return lines, "".join(html)
 
 
