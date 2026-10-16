@@ -3744,3 +3744,18 @@ def test_models_being_retired_reads_each_labs_page_and_builds(tmp_path, monkeypa
     assert ahead.count('class="rm-soon"') == 1 and "30 Sep 2026" in gone  # 23 Oct is within 30 days
     assert "<code>gpt-4o-2024-08-06</code>" in page and "<td>Evals platform</td>" in page
     assert "<b>1</b><span>models shut down in the next 30 days</span>" in page
+
+
+def test_who_owns_whom_grid_shows_only_deals_whose_story_we_have(tmp_path):
+    from datetime import date
+    from aipulse import owners
+    cards = [{"url": u, "source": "Outlet", "title": f"Story {n}", "date": "2026-01-01"}
+             for n, (*_, u) in enumerate(owners.DEALS) if "anthropic" in u.lower() or "openai" in u.lower()]
+    rows = owners.deals(cards)
+    assert rows and {r["lab"] for r in rows} <= {"OpenAI", "Anthropic"}
+    assert owners.build(None, cards, tmp_path, date(2026, 10, 16)) == ["who-owns-a-piece-of-whom/"]
+    page = (tmp_path / "who-owns-a-piece-of-whom" / "index.html").read_text(encoding="utf-8")
+    assert "<th scope=\"col\">OpenAI</th>" in page and "Thinking Machines" not in page  # no empty columns
+    assert 'class="ow-deal ow-up"' in page and "Up to $40B" in page  # "up to" money is dashed
+    assert "have money in both OpenAI and Anthropic" in page
+    assert owners.build(None, [], tmp_path / "none", date(2026, 10, 16)) == []
