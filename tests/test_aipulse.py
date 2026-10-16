@@ -2560,6 +2560,33 @@ def test_a_busy_weekday_is_compared_with_weekdays():
     assert [p for p in quality.problems({"research": flood}, papers + flood, day) if "usual" in p]  # 40: still held
 
 
+def test_a_busy_day_over_many_sources_is_sent_but_one_source_flooding_is_held():
+    from datetime import date, timedelta
+    from aipulse import quality
+    day = date(2026, 10, 15)  # a Thursday
+    labs = [f"Lab {i}" for i in range(20)]
+    def launch(d, i, source, extra=""):
+        return {"id": f"{d}-{i}{extra}", "category": "tool", "date": d.isoformat(), "title": f"Launch {d} {i}{extra}",
+                "url": f"https://example.com/{d}/{i}{extra}", "source": source, "summary": "x"}
+    history = []  # two weeks of ~12 releases a weekday, from 20 labs
+    for k in range(1, 15):
+        d = day - timedelta(days=k)
+        history += [launch(d, i, labs[(k + i) % 20]) for i in range(3 if d.weekday() >= 5 else 12)]
+    assert quality.usual(history, "tool", day) == 12
+    busy = [launch(day, i, labs[i % 20]) for i in range(38)]  # over 3x usual, but no lab gives more than 2
+    assert not [p for p in quality.problems({"releases": busy}, history + busy, day) if "usual" in p]
+    flood = [launch(day, i, "Lab 0", "-old") for i in range(10)]  # one lab re-dates ten old posts
+    held = [p for p in quality.problems({"releases": busy[:12] + flood}, history + busy[:12] + flood, day)
+            if "usual" in p]
+    assert held == []  # 22 stories: not over 3x usual, so not held
+    flood = [launch(day, i, "Lab 0", "-old") for i in range(30)]  # one lab re-dates thirty old posts
+    held = [p for p in quality.problems({"releases": busy[:12] + flood}, history + busy[:12] + flood, day)
+            if "usual" in p]
+    assert len(held) == 1 and "31 of them from Lab 0" in held[0]
+    wild = [launch(day, i, labs[i % 20], "-x") for i in range(61)]  # every lab at once: over 5x the stream's usual
+    assert [p for p in quality.problems({"releases": wild}, history + wild, day) if "61 stories, over 5x" in p]
+
+
 def test_a_ministrys_release_gets_its_own_summary_and_country(tmp_path):
     from aipulse import feeds, store
     from aipulse.collect import reclassify, retag

@@ -8,7 +8,9 @@ What's checked, for every story in the chosen streams (the ones the email shows)
   - no duplicates: the same link or headline never twice, and no story listed under itself;
   - clean text: a real headline (not empty or "No title"), no leftover HTML, no garbled characters, and
     every link a plain http(s) address;
-  - an unusual day: a stream with far more stories than usual (a source misbehaving), or nothing at all.
+  - an unusual day: a stream far above its usual size where one source alone brought more than a usual day's
+    worth (a source misbehaving, or re-dating old stories); a stream even further above it whatever the sources
+    (collection going wrong); or nothing at all. A busy day spread over many sources is sent.
 A thin day (a few stories) isn't a problem: it's sent, saying it was a quiet day.
 Then, before sending, every story's link is opened (dead_links): a story whose page is gone is left out of the
 email (not held; logged), so readers never click a dead link.
@@ -21,6 +23,7 @@ import socket
 import statistics
 import urllib.error
 import urllib.request
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 
@@ -38,7 +41,9 @@ HTML_LEFTOVER = re.compile(r"</?[a-z][a-z0-9]*(?:\s[^<>]*)?/?>|&(?:[a-z]+|#\d+|#
 # Mojibake (UTF-8 read as Latin-1: "â€™", "Ã©"), the replacement character and control characters.
 GARBLED = re.compile("�|â€|Ã[\u0080-¿]|Â[ -¿]|[\u0000-\u0008\u000b\u000c\u000e-\u001f]")
 LINK = re.compile(r"^https?://[^\s<>\"']+$")
-SURGE, SURGE_FLOOR, HISTORY_DAYS = 3, 25, 14  # a stream over 3x its usual day (and over 25) is held
+# A stream over 3x its usual day (and over 25) is held when one source alone gave more than a usual day's worth;
+# over 5x, it's held whatever the sources.
+SURGE, SURGE_FLOOR, WIDE_SURGE, HISTORY_DAYS = 3, 25, 5, 14
 THIN = 5  # fewer stories than this: sent, with a line saying it was a quiet day
 
 
@@ -109,9 +114,13 @@ def problems(by_stream: dict[str, list[dict]], cards: list[dict], day: date) -> 
                 elif key:
                     seen[key] = stream
         typical = usual(cards, category, day)
-        if len(day_cards) > max(SURGE * typical, SURGE_FLOOR):
-            out.append(f"{stream} has {len(day_cards)} stories, over {SURGE}x its usual {typical:g} a day: a source may "
-                       "have misbehaved (or old stories were re-dated).")
+        top, most = Counter(c.get("source") for c in day_cards).most_common(1)[0] if day_cards else (None, 0)
+        if len(day_cards) > max(WIDE_SURGE * typical, SURGE_FLOOR):
+            out.append(f"{stream} has {len(day_cards)} stories, over {WIDE_SURGE}x its usual {typical:g} a day: "
+                       "collection may have gone wrong (or old stories were re-dated).")
+        elif len(day_cards) > max(SURGE * typical, SURGE_FLOOR) and most > typical:
+            out.append(f"{stream} has {len(day_cards)} stories, over {SURGE}x its usual {typical:g} a day, {most} of them "
+                       f"from {top}: the source may have misbehaved (or old stories were re-dated).")
     if not any(by_stream.values()):
         out.append(f"No stories at all on {day}: collection may have failed.")
     return out
