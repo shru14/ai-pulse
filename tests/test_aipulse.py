@@ -3759,3 +3759,18 @@ def test_who_owns_whom_grid_shows_only_deals_whose_story_we_have(tmp_path):
     assert 'class="ow-deal ow-up"' in page and "Up to $40B" in page  # "up to" money is dashed
     assert "have money in both OpenAI and Anthropic" in page
     assert owners.build(None, [], tmp_path / "none", date(2026, 10, 16)) == []
+
+
+def test_who_owns_whom_candidates_and_the_approval_note():
+    from aipulse import owners
+    new = {"url": "https://x.example/a", "title": "Nvidia invests $2B in Mistral", "date": "2026-10-20T08:00",
+           "source": "Outlet", "category": "news"}
+    seen = {"url": owners.DEALS[0][-1], "title": "Microsoft takes 27% stake in OpenAI", "date": "2026-10-21",
+            "source": "Outlet", "category": "news"}
+    old = new | {"url": "https://x.example/b", "date": "2026-10-16T09:00"}  # read for the list already
+    other = new | {"url": "https://x.example/c", "title": "Nvidia invests in a chip startup"}  # no lab named
+    assert owners.candidates([new, seen, old, other]) == [new]
+    base = open(owners.__file__, encoding="utf-8").read().replace(owners.DEALS[-1][-1], "https://gone.example/")
+    subject, text, html = owners.note(base, "owners/2026-10-17")
+    assert "1 new deal to approve" in subject and owners.DEALS[-1][-1] in text
+    assert owners.note(open(owners.__file__, encoding="utf-8").read(), "owners/2026-10-17") is None

@@ -112,11 +112,14 @@ def main():
                         "hub (to check by hand and add to safety.DOCS or safety.LEFT_OUT)")
     iw = sub.add_parser("infra", help="Infra stories not checked yet for its features (to check by hand and add to "
                         "infra_watch.BUILDS, POWER or DECISIONS, or to infra_watch.LEFT_OUT)")
-    for q in (ct, pp, sh, iw):
+    ow = sub.add_parser("owners", help="stories of stakes in AI labs not checked yet for Who owns a piece of whom (to "
+                        "check by hand and add to owners.DEALS or owners.LEFT_OUT)")
+    for q in (ct, pp, sh, iw, ow):
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
                        "instead of the database")
-    for name, module in (("court", "court"), ("press", "press"), ("safety", "safety"), ("infra", "infra_watch")):
+    for name, module in (("court", "court"), ("press", "press"), ("safety", "safety"), ("infra", "infra_watch"),
+                         ("owners", "owners")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -397,25 +400,26 @@ def main():
         print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-    elif a.cmd in ("court", "press", "safety", "infra"):
-        from . import court, infra_watch, press, safety
-        m = {"court": court, "press": press, "safety": safety, "infra": infra_watch}[a.cmd]
+    elif a.cmd in ("court", "press", "safety", "infra", "owners"):
+        from . import court, infra_watch, owners, press, safety
+        m = {"court": court, "press": press, "safety": safety, "infra": infra_watch, "owners": owners}[a.cmd]
         # the site's own data.json for the daily job, which has no database (its last 3 months)
         found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
         start = getattr(m, "SINCE", "")
         since = max(start, (date.today() - timedelta(days=a.days)).isoformat()) if a.days else start
         todo = m.candidates(found, since)
-        since = since if m is not infra_watch else f"after {max(since, infra_watch.CHECKED_TO)}"
+        since = since if m not in (infra_watch, owners) else f"after {max(since, m.CHECKED_TO)}"
         done = (f"{len(court.CASES)} cases" if m is court else f"{len(press.CHECKED)} checked" if m is press
-                else f"{len(safety.DOCS)} documents" if m is safety
+                else f"{len(safety.DOCS)} documents" if m is safety else f"{len(owners.DEALS)} deals" if m is owners
                 else f"{len(infra_watch.BUILDS) + len(infra_watch.POWER) + len(infra_watch.DECISIONS)} rows")
         print(f"{done}, {len(m.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-    elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note"):
+    elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note", "owners-note"):
         # A court/, press/, safety/ or infra/<day> branch's drafts, to the project inbox for approval
-        from . import court, digest, infra_watch, press, safety
-        m = {"court-note": court, "press-note": press, "safety-note": safety, "infra-note": infra_watch}[a.cmd]
+        from . import court, digest, infra_watch, owners, press, safety
+        m = {"court-note": court, "press-note": press, "safety-note": safety, "infra-note": infra_watch,
+             "owners-note": owners}[a.cmd]
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch)
         if not note:
             print("Nothing new on this branch.")

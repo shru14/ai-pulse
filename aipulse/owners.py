@@ -6,6 +6,7 @@ paid in stages. Linked from Industry's strip.
 """
 from __future__ import annotations
 
+import re
 from datetime import date
 from html import escape
 from pathlib import Path
@@ -63,6 +64,40 @@ LEFT_OUT = {
     "https://siliconangle.com/2026/10/11/nvidia-reportedly-in-early-talks-to-buy-acqui-hire-or-invest-more-in-reflection-ai/":
         "Talks only",
 }
+
+
+# the newest day every story was read for DEALS and LEFT_OUT; the candidates start after it
+CHECKED_TO = "2026-10-16"
+# a headline that may be a stake in an AI lab: money words, and a lab (a column, or one that may become one)
+_MONEY = re.compile(r"\b(stakes?|invest(s|ed|ing|ment)?|backs|backed|backing|raises?|raised|funding|round|shareholders?|"
+                    r"acquir(es|ed)|merg(es|ed|er)|pours|valuation)\b", re.I)
+_LAB = re.compile(r"\b(OpenAI|Anthropic|xAI|Mistral|SSI|Safe Superintelligence|Thinking Machines|Sarvam|MiniMax|"
+                  r"DeepSeek|Moonshot|Zhipu|Z\.ai|StepFun|Perplexity|Cohere|Aleph Alpha|Reflection AI|Inflection|"
+                  r"Character\.AI|Black Forest Labs|Ai2|AI21|Sakana|Liquid AI|Poolside|Cognition)\b")
+
+
+def candidates(cards: list[dict], since: str = "") -> list[dict]:
+    """Stories from after CHECKED_TO (or `since`, if later) that no deal uses and LEFT_OUT doesn't hold and whose
+    headline names an AI lab next to money words: one per event, newest first."""
+    since = max(since, CHECKED_TO + "~")  # '~' sorts after any time of day, so CHECKED_TO itself is done
+    used = {d[-1] for d in DEALS} | set(LEFT_OUT)
+    return [c for c in sorted(cards, key=lambda c: c["date"], reverse=True)
+            if c["date"] >= since and c.get("category") != "research"
+            and not any(s["url"] in used for s in [c, *(c.get("also") or [])])
+            and _MONEY.search(c["title"]) and _LAB.search(c["title"])]
+
+
+def note(base: str, branch: str) -> tuple[str, str, str] | None:
+    """The project inbox's note for an owners/<day> branch: each deal it adds, and the stories it left out; None when
+    it adds nothing. `base` is main's copy of this file."""
+    from . import approve
+    had = approve.lists_in(base, ("DEALS", "LEFT_OUT"))
+    rows = [(i, lab, w, m, u) for i, lab, w, m, _, u in DEALS if u not in had["DEALS"]]
+    dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    if not rows and not dropped:
+        return None
+    return approve.note("Who owns a piece of whom", f"deal{'s' * (len(rows) != 1)}", branch,
+                        ("Investor", "Lab", "What", "When", "Source"), rows, dropped)
 
 
 def deals(cards: list[dict]) -> list[dict]:
