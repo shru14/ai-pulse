@@ -3902,3 +3902,11 @@ def test_pacts_candidates_and_the_approval_note():
     subject, text, html = pacts.note(base, "pacts/2026-10-18")
     assert "1 new row to approve" in subject and pacts.ORDERS[-1][-1] in text
     assert pacts.note(open(pacts.__file__, encoding="utf-8").read(), "pacts/2026-10-18") is None
+    # pledge news is a row for the owner (the lists change only from the official list), not a story left out
+    news = "https://x.example/joins"
+    pacts.LEFT_OUT[news] = "pledge: Norway ratified the AI treaty on 1 Nov 2026"
+    try:
+        subject, text, html = pacts.note(open(pacts.__file__, encoding="utf-8").read(), "pacts/2026-11-02")
+    finally:
+        del pacts.LEFT_OUT[news]
+    assert "1 new row to approve" in subject and "Norway ratified the AI treaty" in html and "left out" not in text
