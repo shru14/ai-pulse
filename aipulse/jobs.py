@@ -104,6 +104,26 @@ CHECKED: dict[str, dict] = {
 # Job-cut stories checked and left out, so `python -m aipulse jobs` doesn't list them again: unconfirmed reports,
 # forecasts and plans, cuts no one blamed on AI, and stories we can't read to check the company's words.
 LEFT_OUT = {
+    "https://the-decoder.com/meta-employees-sue-over-layoffs-they-say-were-driven-by-discriminatory-ai-selection-systems/",  # a lawsuit, not a cut
+    "https://arstechnica.com/tech-policy/2026/07/lawsuit-claims-metas-layoff-decisions-were-made-by-ai-not-humans/",  # a lawsuit, not a cut
+    "https://the-decoder.com/openai-ceo-altman-is-now-pretty-sure-ai-is-net-job-creating-which-is-quite-the-pivot-from-predicting-mass-layoffs/",  # an opinion, not a cut
+    "https://techcrunch.com/2026/06/24/ai-was-supposed-to-kill-engineering-jobs-but-new-data-suggests-theyre-the-most-resilient/",  # a study, not a cut
+    "https://arstechnica.com/ai/2026/06/oracles-21000-layoffs-help-drive-its-debt-fueled-ai-investments/",  # can't read to check: the outlet refuses automated reads
+    "https://techcrunch.com/2026/06/15/the-ai-layoff-wave-is-becoming-a-powder-keg/",  # an opinion piece, not a cut
+    "https://techcabal.com/2026/06/05/the-billion-dollar-sprint-african-startups-hit-1-3b/",  # funding news, not a cut
+    "https://techcrunch.com/video/what-happens-when-companies-become-too-ai-pilled/",  # a video discussion, not a cut
+    "https://www.technologyreview.com/2026/05/26/1137855/a-reality-check-on-the-ai-jobs-hysteria/",  # an opinion piece, not a cut
+    "https://the-decoder.com/cloudflare-ceo-prince-says-builders-and-sellers-are-safe-but-ai-is-coming-for-the-measurers/",  # an opinion, not a cut
+    "https://siliconangle.com/2026/05/19/meta-shifts-7000-employees-four-new-ai-units-ahead-mass-layoffs/",  # same cut as Meta
+    "https://techcrunch.com/2026/05/05/paypal-says-its-becoming-a-technology-company-again-that-means-ai/",  # a plan: PayPal confirmed planned layoffs but no number; the 20% is Bloomberg's report
+    "https://techcrunch.com/2026/05/05/indias-first-genai-unicorn-shifts-to-cloud-services-as-ai-model-ambitions-face-reality/",  # unconfirmed: Krutrim didn't comment on the layoffs
+    "https://the-decoder.com/fda-bets-on-ai-and-cloud-monitoring-for-clinical-trials-as-it-looks-to-rebuild-after-doge-layoffs/",  # not a company cut blamed on AI
+    "https://www.technologyreview.com/2026/04/21/1135654/agent-orchestration-ai-artificial-intelligence/",  # an essay, not a cut
+    "https://the-decoder.com/meta-boss-zuckerberg-reportedly-builds-personal-ai-agent-and-plans-flatter-hierarchies/",  # a plan, unconfirmed
+    "https://techcabal.com/2026/03/18/techcabal-daily-canal-minus/",  # can't read to check: the outlet refuses automated reads
+    "https://arstechnica.com/ai/2026/02/block-lays-off-40-of-workforce-as-it-goes-all-in-on-ai-tools/",  # same cut as Block
+    "https://techcrunch.com/2026/02/01/ai-layoffs-or-ai-washing/",  # an analysis piece, not a cut
+    "https://arstechnica.com/tech-policy/2026/01/us-cyber-defense-chief-accidentally-uploaded-secret-government-info-to-chatgpt/",  # not a job cut
     "https://dplnews.com/inteligencia-artificial-en-guatemala-42-de-los-jovenes-teme-que-elimine-mas-empleos-de-los-que-crea/",  # a survey, not a cut
     "https://www.engadget.com/2274224/california-law-bans-companies-from-relying-on-ai-to-fire-workers/",  # a law, not a cut
     "https://the-decoder.com/employee-revolt-and-failing-agents-forced-meta-to-scrap-its-ai-layoff-plan/",  # a plan
