@@ -601,6 +601,8 @@ header.top{border-bottom:4px solid var(--ink)}
 .sec-hero h2::after{display:none}
 .sec-hero p{font-size:15px;max-width:60ch}
 .sec-hero .status{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px 14px;font-size:12px}
+/* desktop: name, what it covers and the count stacked as one left-aligned column, not wrapped raggedly */
+@media (min-width:641px){.sec-hero>div{flex-direction:column;align-items:flex-start;gap:6px}}
 /* each stream's strip under its filters: its own pages as tag tiles (left), the pages built from it as features (right,
    on the stream's colour). Streams without features give the tiles the full width. */
 .by-country{display:grid;grid-template-columns:2.1fr 1fr;margin:14px 0 10px;border:3px solid var(--line);border-top:8px solid var(--f);
