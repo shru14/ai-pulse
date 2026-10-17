@@ -265,6 +265,11 @@ PLATFORM: dict[str, tuple[str, str, str]] = {
     "open.canada.ca": ("official", "https://open.canada.ca/en/open-government-licence-canada",
                        "Open Government Licence - Canada: the list of federal consultations is open data; robots.txt "
                        "allows /static/; checked 17 Oct 2026"),
+    # Added 17 Oct 2026 for Compute behind notable models
+    "epoch.ai": ("licence", "https://epoch.ai/data/ai-models",
+                 "Epoch AI's Data on AI Models: CC BY 4.0 (the dataset page's own licence field), credited on the page; "
+                 "robots.txt disallows only /assets/, /inspect-viewer/ and benchmark problems, so /data/ is allowed; "
+                 "one CSV read per full run; checked 17 Oct 2026"),
     "api.oecdai.org": ("licence", "https://oecd.ai/en/terms", "OECD.AI data, CC BY 4.0"),
     "incidentdatabase.ai": ("licence", "https://incidentdatabase.ai/terms-of-use/",
                             "Incident data CC BY-SA 4.0; only 'high-volume' bots are banned, and we read it once per run"),

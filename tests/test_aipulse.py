@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -657,7 +657,7 @@ def test_static_build_holds_every_card(tmp_path):
     front = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     for p in kind_pages.paths():
         assert f'href="{p}"' in front and (tmp_path / "site" / p / "index.html").exists() and f"<loc>https://projectaipulse.com/{p}</loc>" in sitemap
-    assert sitemap.count("<url>") == 1 + 7 + 4 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/
+    assert sitemap.count("<url>") == 1 + 7 + 6 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, lab-timelines/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -3843,6 +3843,35 @@ def test_ai_consultations_daily_job_finds_unchecked_ones_and_shows_rows_checked_
     assert "mandatory guardrails" in html and "30 Nov 2026" in html and "left out: 1 story" in text
 
 
+def test_lab_timelines_grid_by_month_collapses_one_release_labs_and_drafts_changes(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import lab_timelines as lt, retired
+    conn = store.connect(tmp_path / "t.db")
+    saved = {"OpenAI": {"rows": [{"lab": "OpenAI", "model": "o1-2024-12-17", "shuts": "2026-10-23"},
+                                 {"lab": "OpenAI", "model": "gpt-4o", "shuts": "2026-07-23"},
+                                 {"lab": "OpenAI", "model": "gpt-4", "shuts": "2027-05-01"}]}}  # past the 3 months
+    conn.execute("INSERT INTO meta VALUES (?, ?)", (retired.KEY, __import__("json").dumps(saved)))
+    assert lt.build(conn, [], tmp_path, date(2026, 10, 17)) == ["lab-timelines/"]
+    page = (tmp_path / "lab-timelines" / "index.html").read_text(encoding="utf-8")
+    assert "<th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th class=\"lt-fut\">Next 3 months</th>" in page
+    assert "1 shut down (scheduled)" in page and "gpt-4<" not in page and "o1-2024-12-17" in page
+    assert "↓ GPT-5.6 Luna 80% cheaper" in page and "+ Grok 4.5 now in the EU" in page
+    grid, few = page.split('<tbody class="lt-few" hidden>')
+    assert 'data-lab="Cisco"' in few and 'data-lab="Cisco"' not in grid.split("</tbody>")[0]  # one release: collapsed
+    assert 'data-lab="Google"' in grid and "Google released the most models" in page
+    story = {"url": "https://x.example/p", "title": "Mistral cuts API prices for Large 4", "date": "2026-10-20T08:00",
+             "source": "Outlet", "category": "news"}
+    other = story | {"url": "https://x.example/o", "title": "Mistral hires a new CFO"}
+    old = story | {"url": "https://x.example/old", "date": "2026-10-10T08:00"}
+    assert lt.candidates([story, other, old]) == [story]
+    base = open(lt.__file__, encoding="utf-8").read()
+    monkeypatch.setattr(lt, "PRICES", lt.PRICES + [("2026-10-20", "Mistral", "Large 4", "cut", "30% cheaper",
+                                                    "Now $1.40 / $4.20 per 1M tokens in / out", story["url"])])
+    assert lt.candidates([story]) == []
+    subject, text, html = lt.note(base, "timelines/2026-10-21")
+    assert subject == "AI Pulse, Lab timelines: 1 new change to approve" and "Price cut: Now $1.40" in html
+
+
 def test_who_owns_whom_grid_shows_only_deals_whose_story_we_have(tmp_path):
     from datetime import date
     from aipulse import owners
@@ -3883,3 +3912,82 @@ def test_every_feature_has_the_shared_header():
     assert linked == set(pages.FEATURES)
     head = pages.feature_head("release-cards/", "Release cards", "What came out?", "Every release.")
     assert '--f:var(--f-tool)' in head and "<h1>Release cards</h1>" in head and 'class="fh-q"' in head
+
+
+def test_pacts_and_orders_halves_keep_only_rows_whose_story_we_have(tmp_path):
+    from datetime import date
+    from aipulse import pacts
+    keep = [b for b in pacts.BANS if b[5] and b[5] != b[0]][0]  # one ban that was lifted
+    cards = [{"url": u, "source": "Outlet", "title": "Story", "date": "2026-01-01"}
+             for u in (keep[4], pacts.ORDERS[0][-1])]
+    assert pacts.build(None, cards, tmp_path, date(2026, 10, 17)) == ["ai-pacts-and-orders/"]
+    page = (tmp_path / "ai-pacts-and-orders" / "index.html").read_text(encoding="utf-8")
+    assert keep[3] in page and pacts.ORDERS[0][4] in page and pacts.DEALS[0][3] not in page
+    assert f"after {(date.fromisoformat(keep[5]) - date.fromisoformat(keep[0])).days} days" in page
+    assert "New Delhi (2026) has the most signers: 92 countries and bodies" in page  # the official lists always show
+    assert "China didn&#x27;t sign Seoul or the AI treaty; the US and the UK didn&#x27;t sign Paris" in page
+    assert 'class="pc-focus"' in page and "ratified 15/05/2026" in page and "1 ratified, in force at 5" in page
+    assert "Deals with AI companies" not in page  # no empty sections
+
+
+def test_pacts_candidates_and_the_approval_note():
+    from aipulse import pacts
+    new = {"url": "https://x.example/a", "title": "Italy fines OpenAI over ChatGPT data", "date": "2026-10-20T08:00",
+           "source": "Outlet", "category": "policy"}
+    joins = new | {"url": "https://x.example/d", "title": "Bangladesh joins the New Delhi Declaration"}
+    seen = new | {"url": pacts.ORDERS[0][-1]}
+    old = new | {"url": "https://x.example/b", "date": "2026-10-16T09:00"}  # read for the lists already
+    other = new | {"url": "https://x.example/c", "title": "OpenAI launches a new model"}  # no government acting
+    assert pacts.candidates([new, joins, seen, old, other]) == [new, joins]
+    base = open(pacts.__file__, encoding="utf-8").read().replace(pacts.ORDERS[-1][-1], "https://gone.example/")
+    subject, text, html = pacts.note(base, "pacts/2026-10-18")
+    assert "1 new row to approve" in subject and pacts.ORDERS[-1][-1] in text
+    assert pacts.note(open(pacts.__file__, encoding="utf-8").read(), "pacts/2026-10-18") is None
+    # pledge news is a row for the owner (the lists change only from the official list), not a story left out
+    news = "https://x.example/joins"
+    pacts.LEFT_OUT[news] = "pledge: Norway ratified the AI treaty on 1 Nov 2026"
+    try:
+        subject, text, html = pacts.note(open(pacts.__file__, encoding="utf-8").read(), "pacts/2026-11-02")
+    finally:
+        del pacts.LEFT_OUT[news]
+    assert "1 new row to approve" in subject and "Norway ratified the AI treaty" in html and "left out" not in text
+
+
+def test_new_tests_for_ai_rows_scores_and_candidates(tmp_path):
+    from datetime import date
+    from aipulse import new_tests as nt
+    url = "https://arxiv.org/abs/2610.18092"  # LifeSearch: 63.4%, GPT-5.6 Sol
+    cards = [{"url": url, "title": "LifeSearch: Benchmarking Deep Research Agents", "date": "2026-10-13T00:00",
+              "category": "research"},
+             {"url": "https://arxiv.org/abs/2610.99999", "title": "FooBench: a new benchmark", "date": "2026-10-17T00:00",
+              "category": "research"},
+             {"url": "https://arxiv.org/abs/2610.13644", "title": "SelectArena", "date": "2026-10-17T00:00",
+              "category": "research"}]  # left out already
+    assert nt.build(None, [], tmp_path, date(2026, 10, 17)) == []  # no checked paper among the cards: no page
+    assert nt.build(None, cards, tmp_path, date(2026, 10, 17)) == ["new-tests-for-ai/"]
+    page = (tmp_path / "new-tests-for-ai" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>New tests for AI</h1>" in page and 'style="left:63.40%"' in page and "GPT-5.6 Sol" in page
+    assert "0 of 1" in page and "<b>1</b><span>new tests for AI" in page
+    assert [c["url"] for c in nt.candidates(cards)] == ["https://arxiv.org/abs/2610.99999"]
+    assert all(s in nt.SUBJECTS for _, s, *_ in nt.TESTS.values())
+    assert nt.note(open(nt.__file__, encoding="utf-8").read(), "tests/2026-10-18") is None
+
+
+def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import compute, feeds
+    monkeypatch.setattr(feeds, "allowed", lambda url: True)
+    conn = store.connect(tmp_path / "t.db")
+    text = ("Model,Organization,Publication date,Training compute (FLOP),Confidence,Link,Model accessibility\n"
+            "GPT-4 (Mar 2023),OpenAI,2023-03-15,2.1e+25,Likely,https://openai.com/gpt-4,API access\n"
+            "GPT-3 175B (davinci),OpenAI,2020-05-28,3.14e+23,Confident,,API access\n"
+            "Big One,\"Lab A,Lab B\",2026-09-03,9.4e+26,Likely,https://a.example,Open weights (unrestricted)\n"
+            "Quiet One,Lab C,2026-09-10,,Confident,,API access\n")
+    assert compute.build(conn, [], tmp_path, date(2026, 10, 17)) == []  # not read yet: no page
+    assert compute.refresh(conn, fetcher=lambda url: text.encode()) == "3 of 4 models with an estimate"
+    assert compute.build(conn, [], tmp_path, date(2026, 10, 17)) == ["compute-behind-notable-models/"]
+    page = (tmp_path / "compute-behind-notable-models" / "index.html").read_text(encoding="utf-8")
+    assert "<b>45×</b>" in page and "Lab A, Lab B" in page and "9.4 × 10²⁶" in page and "1/67" in page
+    assert "1 of 2" in page
+    assert "have none, so they aren&#x27;t shown; 1 of them doesn&#x27;t share their weights" in page
+    assert compute.times(2.1e25, 2.1e25) == "1×" and compute.since(date(2026, 1, 5)) == "2025-10-01"

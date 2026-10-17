@@ -506,6 +506,14 @@ FEATURES = [
      "Canada's official lists.", "ai-consultations/"),
     ("Release cards", "Every major AI model release since July: whether you can download it, under what licence, "
      "where you can use it and its price at launch.", "release-cards/"),
+    ("AI pacts and orders", "What governments signed on AI, from Bletchley to New Delhi, and what they made AI companies "
+     "do: deals, bans, orders and investigations.", "ai-pacts-and-orders/"),
+    ("Lab timelines", "What each AI lab released, repriced and switched off, month by month, with the shutdowns "
+     "scheduled next.", "lab-timelines/"),
+    ("New tests for AI", "The new tests researchers built for AI since July, what each tests and how far short the "
+     "best models fall.", "new-tests-for-ai/"),
+    ("Compute behind notable models", "How much computing trained each notable AI model, measured against GPT-4, from "
+     "Epoch AI's open data.", "compute-behind-notable-models/"),
 ]
 
 
