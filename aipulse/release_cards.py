@@ -30,6 +30,52 @@ WEIGHTS = ("Open", "Weights only", "Closed")
 #  no limits stated), whether that leaves places out, price at launch on the lab's own API ($ in / $ out per 1M
 #  tokens; "|" then a note), the story or lab page, the weights' Hugging Face page)
 RELEASES = [
+    ("2026-04-17", "Alibaba", "Qwen3.6-35B-A3B", "Open", "", "Apache-2.0", "", "", False, "",
+     "https://the-decoder.com/alibabas-open-model-qwen3-6-leads-googles-gemma-4-across-agentic-coding-benchmarks/",
+     "https://huggingface.co/Qwen/Qwen3.6-35B-A3B"),
+    ("2026-04-20", "Moonshot", "Kimi K2.6", "Open", "", "Modified MIT License",
+     "Products over 100M monthly users or $20M a month must show \"Kimi K2.6\"", "", False, "",
+     "https://the-decoder.com/open-weight-kimi-k2-6-takes-on-gpt-5-4-and-claude-opus-4-6-with-agent-swarms/",
+     "https://huggingface.co/moonshotai/Kimi-K2.6"),
+    ("2026-04-23", "OpenAI", "GPT-5.5", "Closed", "API from 25 Apr", "", "", "", False, "$5 / $30",
+     "https://the-decoder.com/openai-unveils-gpt-5-5-claims-a-new-class-of-intelligence-at-double-the-api-price/", ""),
+    ("2026-04-24", "DeepSeek", "DeepSeek V4 Preview", "Open", "", "MIT", "", "", False,
+     "Flash $0.14 / $0.28; Pro $1.74 / $3.48",
+     "https://the-decoder.com/as-agentic-ai-pushes-rivals-to-raise-prices-and-cap-usage-deepseek-ships-a-good-enough-model-for-almost-nothing/",
+     "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro"),
+    ("2026-04-28", "Nvidia", "Nemotron 3 Nano Omni", "Open", "", "NVIDIA Open Model Agreement",
+     "Licence ends if you sue alleging the model infringes patents or copyright", "", False, "",
+     "https://blogs.nvidia.com/blog/nemotron-3-nano-omni-multimodal-ai-agents/",
+     "https://huggingface.co/nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16"),
+    ("2026-05-05", "OpenAI", "GPT-5.5 Instant", "Closed", "In the API as chat-latest", "", "", "", False, "",
+     "https://techcrunch.com/2026/05/05/openai-releases-gpt-5-5-instant-a-new-default-model-for-chatgpt/", ""),
+    ("2026-05-19", "Google", "Gemini 3.5 Flash", "Closed", "", "", "", "", False, "$1.50 / $9",
+     "https://the-decoder.com/googles-gemini-3-5-flash-follows-anthropic-and-openai-in-making-newer-ai-models-significantly-pricier/", ""),
+    ("2026-05-19", "Google", "Gemini Omni Flash", "Closed", "No API at launch; preview from 30 Jun", "", "", "", False, "",
+     "https://techcrunch.com/2026/05/19/googles-gemini-omni-turns-images-audio-and-text-into-video-and-thats-just-the-start/", ""),
+    ("2026-05-28", "Anthropic", "Claude Opus 4.8", "Closed", "", "", "", "", False, "$5 / $25",
+     "https://the-decoder.com/anthropic-ships-claude-opus-4-8-as-a-modest-but-tangible-improvement-that-tops-gpt-5-5-in-most-benchmarks/", ""),
+    ("2026-05-31", "Nvidia", "Cosmos 3", "Open", "", "OpenMDW-1.1", "", "", False, "",
+     "https://the-decoder.com/nvidia-bets-big-on-physical-ai-at-gtc-taipei-with-a-new-world-model-driving-brain-and-open-humanoid-robot/",
+     "https://huggingface.co/nvidia/Cosmos3-Super"),
+    ("2026-06-01", "MiniMax", "MiniMax M3", "Open", "Weights promised within 10 days", "MiniMax Community License",
+     "Companies over $20M a year need MiniMax's permission", "", False, "",
+     "https://the-decoder.com/minimax-m3-open-weight-model-with-a-million-token-context-challenges-proprietary-leaders/",
+     "https://huggingface.co/MiniMaxAI/MiniMax-M3"),
+    ("2026-06-01", "Nvidia", "Nemotron 3 Ultra", "Open", "Weights from 4 Jun", "OpenMDW-1.1", "", "", False, "",
+     "https://the-decoder.com/nvidias-nemotron-3-ultra-becomes-the-smartest-open-us-model-but-china-still-leads/",
+     "https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16"),
+    ("2026-06-09", "Google", "Gemini 3.5 Live Translate", "Closed", "Preview for developers and businesses", "", "", "",
+     False, "",
+     "https://the-decoder.com/googles-gemini-3-5-live-translate-delivers-real-time-voice-translation-across-70-languages/", ""),
+    ("2026-06-10", "Google", "DiffusionGemma", "Open", "", "Apache-2.0", "", "", False, "",
+     "https://the-decoder.com/googles-new-open-model-diffusiongemma-generates-text-from-noise-instead-of-word-by-word/",
+     "https://huggingface.co/google/diffusiongemma-26B-A4B-it"),
+    ("2026-06-15", "Z.ai", "GLM-5.2", "Open", "", "MIT", "", "", False, "",
+     "https://the-decoder.com/zhipu-ais-glm-5-2-closes-in-on-closed-source-leaders-in-coding-marathons/",
+     "https://huggingface.co/zai-org/GLM-5.2"),
+    ("2026-06-30", "Google", "Nano Banana 2 Lite", "Closed", "", "", "", "", False, "$0.034|an image at 1K",
+     "https://the-decoder.com/google-launches-nano-banana-2-lite-for-fast-ai-images-and-gemini-omni-flash-for-video-via-api/", ""),
     ("2026-07-02", "Mistral", "Leanstral 1.5", "Open", "", "Apache-2.0", "", "", False, "Free API",
      "https://mistral.ai/news/leanstral-1-5/", "https://huggingface.co/mistralai/Leanstral-1.5-119B-A6B"),
     ("2026-07-08", "OpenAI", "GPT-Live", "Closed", "No API at launch", "", "", "", False, "",
@@ -174,6 +220,32 @@ RELEASES = [
 ]
 # release stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techcrunch.com/2026/06/30/google-introduces-a-faster-cheaper-image-generator-with-nano-banana-2-lite/":
+        "same as Nano Banana 2 Lite",
+    "https://deepmind.google/blog/fluid-natural-voice-translation-with-gemini-35-live-translate/":
+        "same as Gemini 3.5 Live Translate",
+    "https://www.marktechpost.com/2026/04/24/deepseek-ai-releases-deepseek-v4-compressed-sparse-attention-and-heavily-compressed-attention-enable-one-million-token-contexts/":
+        "same as DeepSeek V4 Preview",
+    "https://huggingface.co/blog/openai-privacy-filter-web-apps": "OpenAI Privacy Filter: one news outlet within 3 days",
+    "https://the-decoder.com/googles-i-o-announcements-new-models-a-cloud-agent-that-never-sleeps-and-a-redesigned-gemini-app/":
+        "same as Gemini 3.5 Flash and Gemini Omni Flash",
+    "https://arstechnica.com/ai/2026/05/googles-gemma-4-open-ai-models-use-speculative-decoding-to-get-up-to-3x-faster/":
+        "Gemma 4 MTP drafters: speed-up add-ons for Gemma 4, not a new model",
+    "https://openai.com/index/previewing-gpt-5-6-sol": "GPT-5.6 Sol: one news outlet within 3 days",
+    "https://the-decoder.com/google-bakes-computer-control-directly-into-gemini-3-5-flash-letting-the-model-see-and-operate-your-screen/":
+        "same as Gemini 3.5 Flash",
+    "https://mistral.ai/news/ocr-4/": "Mistral OCR 4: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/06/02/alibabas-qwen-team-launches-qwen3-7-plus-adding-vision-deep-reasoning-tool-invocation-and-autonomous-iteration-on-the-bailian-platform/":
+        "Qwen3.7-Plus: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/05/21/qwen-introduces-qwen3-7-max-a-reasoning-agent-model-with-a-1m-token-context-window/":
+        "Qwen3.7-Max: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/06/02/jetbrains-releases-mellum2-a-12b-moe-model-for-fast-specialized-tasks-in-multi-model-ai-pipelines/":
+        "Mellum2: one news outlet within 3 days",
+    "https://openai.com/index/introducing-openai-privacy-filter": "OpenAI Privacy Filter: one news outlet within 3 days",
+    "https://techcrunch.com/2026/05/20/stability-ai-release-a-new-audio-model-that-can-create-six-minute-songs/":
+        "Stable Audio 3.0: some sizes open, the largest closed; its licence terms unclear",
+    "https://openai.com/index/advancing-voice-intelligence-with-new-models-in-the-api":
+        "GPT-Realtime-2: one news outlet within 3 days",
     "https://github.com/Tencent-Hunyuan/Hy3": "Hy3: one news outlet within 3 days",
     "https://www.marktechpost.com/2026/07/06/openai-gpt-realtime-2-1-mini-reasoning-realtime-api/":
         "GPT-Realtime-2.1: one news outlet within 3 days",
