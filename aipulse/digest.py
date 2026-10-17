@@ -510,6 +510,10 @@ FEATURES = [
      "do: deals, bans, orders and investigations.", "ai-pacts-and-orders/"),
     ("Lab timelines", "What each AI lab released, repriced and switched off, month by month, with the shutdowns "
      "scheduled next.", "lab-timelines/"),
+    ("New tests for AI", "The new tests researchers built for AI since July, what each tests and how far short the "
+     "best models fall.", "new-tests-for-ai/"),
+    ("Compute behind notable models", "How much computing trained each notable AI model, measured against GPT-4, from "
+     "Epoch AI's open data.", "compute-behind-notable-models/"),
 ]
 
 

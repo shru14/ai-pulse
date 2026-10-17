@@ -309,12 +309,12 @@ def body(saved: dict, today: date) -> str:
     bigs = [(len(open_), "consultations on AI open now"),
             (len(closed), "closed in the past 6 months"),
             (len(asking), "places asked in the past 6 months")]
-    out = ['<div class="ft jb rm cs">\n<h1>AI consultations</h1>\n'
-           '<p class="jb-q">Where can you tell a government what you think about AI and until when?</p>\n'
-           '<p class="intro">Consultations whose title names AI, from the official lists of the UK, the US, the EU '
-           'and Canada. Each title links to the page where you can respond while it is '
-           'open.</p>\n'
-           '<div class="rm-bigs">' + "".join(f'<div class="rm-big cs-big{i}"><b>{n}</b><span>{escape(s)}</span></div>'
+    out = ['<div class="ft jb rm cs">\n'
+           + pages.feature_head(PATH, "AI consultations",
+                                "Where can you tell a government what you think about AI and until when?",
+                                "Consultations whose title names AI, from the official lists of the UK, the US, the EU "
+                                "and Canada. Each title links to the page where you can respond while it is open.")
+           + '<div class="rm-bigs">' + "".join(f'<div class="rm-big cs-big{i}"><b>{n}</b><span>{escape(s)}</span></div>'
                                              for i, (n, s) in enumerate(bigs)) + "</div>\n"]
     out.append(_filters(len(shown), places, {"open": len(open_), "closed": len(closed)}))
     if open_:

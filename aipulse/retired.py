@@ -235,11 +235,12 @@ def body(saved: dict, today: date) -> str:
     bigs = [(near, f"models shut down in the next {SOON} days"),
             (len(ahead) - near, "more have a shut-down date set"),
             (len(gone), "shut down in the past 3 months")]
-    out = ['<div class="ft jb rm">\n<h1>Models being retired</h1>\n'
-           '<p class="jb-q">Which AI models stop working soon, and what replaces them?</p>\n'
-           f'<p class="intro">Every model {escape(names)} have set a shut-down date for, from each lab\'s own '
-           'deprecation page, read every 6 hours. After that date, apps still calling the model get an error.</p>\n'
-           '<div class="rm-bigs">' + "".join(f'<div class="rm-big"><b>{n}</b><span>{escape(s)}</span></div>'
+    out = ['<div class="ft jb rm">\n'
+           + pages.feature_head(PATH, "Models being retired", "Which AI models stop working soon, and what replaces them?",
+                                f"Every model {escape(names)} have set a shut-down date for, from each lab's own "
+                                "deprecation page, read every 6 hours. After that date, apps still calling the model "
+                                "get an error.")
+           + '<div class="rm-bigs">' + "".join(f'<div class="rm-big"><b>{n}</b><span>{escape(s)}</span></div>'
                                              for n, s in bigs) + "</div>\n"]
     out.append(_filters(ahead + gone, {"soon": near, "later": len(ahead) - near, "gone": len(gone)}))
     if ahead:

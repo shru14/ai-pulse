@@ -1,0 +1,265 @@
+"""Compute behind notable models (compute-behind-notable-models/): how much computing went into training each notable
+AI model, from Epoch AI's open dataset of notable models (CC BY 4.0, credited on the page), read on every full run.
+Each estimate is Epoch's own, with how sure Epoch is of it; models it has no estimate for are counted, never guessed.
+Numbers are shown against GPT-4's training run (Epoch's estimate), so 10× means ten times what trained GPT-4.
+
+Model data, not papers, so it is a Research feature page only, never a Research card. Linked from Research's strip.
+"""
+from __future__ import annotations
+
+import csv
+import io
+import json
+import math
+from datetime import date, datetime, timezone
+from html import escape
+from pathlib import Path
+
+from . import feeds, pages, rss, store
+
+PATH = "compute-behind-notable-models/"
+KEY = "compute"  # the meta row holding the dataset's rows and when it was last read
+CSV = "https://epoch.ai/data/notable_ai_models.csv"
+DATASET = "https://epoch.ai/data/ai-models"  # the dataset's page: its licence, criteria and documentation
+HEALTH = "Compute behind notable models: Epoch AI notable models"
+QUESTION = "How much computing went into training each notable AI model?"
+YARDSTICK = "GPT-4 (Mar 2023)"  # the row every number is measured against
+CHART_FROM = 2020  # the chart's first year
+MONTHS = 3  # "Newest estimates" and the counts beside it: from the 1st of the month this many months back
+TOP = 15  # rows in "The largest training runs"
+_MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
+
+
+def parse(text: str) -> list[dict]:
+    """The CSV's rows as the few fields the page shows: model, lab, day, training compute (FLOP, None when Epoch has
+    no estimate), how sure Epoch is, the model's own page and whether its weights can be downloaded."""
+    out = []
+    for r in csv.DictReader(io.StringIO(text)):
+        day = (r.get("Publication date") or "")[:10]
+        if not r.get("Model") or len(day) != 10:
+            continue
+        try:
+            flop = float(r["Training compute (FLOP)"]) if r.get("Training compute (FLOP)") else None
+        except ValueError:
+            flop = None
+        out.append({"model": r["Model"].strip(), "lab": ", ".join(o.strip() for o in (r.get("Organization") or "").split(",") if o.strip()), "date": day,
+                    "flop": flop, "sure": (r.get("Confidence") or "").strip(), "link": (r.get("Link") or "").strip(),
+                    "open": (r.get("Model accessibility") or "").startswith("Open weights")})
+    return out
+
+
+def refresh(conn, fetcher=feeds.fetch) -> str:
+    """Read the dataset again. When it can't be read, or yields no estimates, the rows last read are kept; the read is
+    logged in the sources table like a news source, so one failing 3 runs in a row reaches the project inbox."""
+    try:
+        if not feeds.allowed(CSV):
+            raise RuntimeError("robots.txt refuses")
+        rows = parse(fetcher(CSV).decode("utf-8", "replace"))
+        if not any(r["flop"] for r in rows):
+            raise RuntimeError("no estimates found")
+    except Exception as e:
+        store.record_source(conn, HEALTH, CSV, ok=False, error=str(e) or type(e).__name__)
+        return f"not read ({e})"
+    saved = {"read": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "rows": rows}
+    conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (KEY, json.dumps(saved)))
+    conn.commit()
+    store.record_source(conn, HEALTH, CSV, ok=True, entries=len(rows))
+    return f"{sum(bool(r['flop']) for r in rows)} of {len(rows)} models with an estimate"
+
+
+def load(conn) -> dict:
+    row = conn.execute("SELECT value FROM meta WHERE key = ?", (KEY,)).fetchone() if conn else None
+    return json.loads(row[0]) if row else {}
+
+
+# --- the page ---
+
+def _day(d: str) -> str:
+    y, m, day = d.split("-")
+    return f"{int(day)} {_MONTHS[int(m) - 1]} {y}"
+
+
+def _month(d: str) -> str:
+    return f"{_MONTHS[int(d[5:7]) - 1]} {d[:4]}"
+
+
+def times(flop: float, base: float) -> str:
+    """A training run against GPT-4's: '45×', '1.8×', 'GPT-4' for the same, '1/20' below it."""
+    r = flop / base
+    if 0.95 <= r < 1.05:
+        return "1×"
+    if r >= 10:
+        return f"{r:,.0f}×"
+    if r >= 1:
+        return f"{r:.1f}×"
+    n = 1 / r
+    return f"1/{n:,.0f}" if n < 10 else f"1/{float(f'{n:.2g}'):,.0f}"
+
+
+def flops(flop: float) -> str:
+    """9.4e26 as '9.4 × 10²⁶ FLOP'."""
+    e = math.floor(math.log10(flop))
+    m = flop / 10 ** e
+    sup = str(e).translate(str.maketrans("0123456789-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻"))
+    return f"{m:.2g} × 10{sup}"
+
+
+def since(today: date) -> str:
+    """The 1st of the month MONTHS months back: 1 Jul for any day in October."""
+    m = today.year * 12 + today.month - 1 - MONTHS
+    return f"{m // 12}-{m % 12 + 1:02d}-01"
+
+
+def _glance(rows: list[dict], base: dict, today: date) -> str:
+    est = [r for r in rows if r["flop"]]
+    big = max(est, key=lambda r: r["flop"])
+    start = since(today)
+    recent = [r for r in rows if r["date"] >= start]
+    first = min((r for r in est if r["date"][:4] == str(CHART_FROM)), key=lambda r: -r["flop"], default=None)
+    tiles = [(times(big["flop"], base["flop"]), f"GPT-4's training compute went into {big['model']} "
+              f"({_month(big['date'])}), the largest run with an estimate", "#CC79A7"),
+             (f"{sum(bool(r['flop']) for r in recent)} of {len(recent)}", f"notable models released since "
+              f"{_day(start)} that have an estimate", "#E69F00")]
+    if first:
+        tiles.append((f"{big['flop'] / first['flop']:,.0f}×", f"{big['model']}'s compute against {first['model'].split(' (')[0]}'s, "
+                      f"the largest run of {CHART_FROM}", "#56B4E9"))
+    body = "".join(f'<div class="iw-big" style="--c:{c}"><b>{escape(n)}</b><span>{escape(label)}</span></div>'
+                   for n, label, c in tiles)
+    return f'<section class="iw-glance"><h2>At a glance</h2>\n<div class="iw-bigs">{body}</div></section>\n'
+
+
+def chart(rows: list[dict], base: dict, today: date) -> str:
+    """Every model from CHART_FROM with an estimate, as a dot: left to right by release day, up by training compute on
+    a scale where each line is 100 times the one below. Each year's largest run is named."""
+    est = [r for r in rows if r["flop"] and int(r["date"][:4]) >= CHART_FROM]
+    if not est:
+        return ""
+    W, H, L, R, T, B = 900, 460, 128, 18, 14, 34
+    x0 = date(CHART_FROM, 1, 1).toordinal()
+    x1 = date(today.year + 1, 1, 1).toordinal()
+    g = math.log10(base["flop"])
+    lo = math.floor((math.log10(min(r["flop"] for r in est)) - g) / 2) * 2
+    hi = max(2, math.ceil((math.log10(max(r["flop"] for r in est)) - g) / 2) * 2)
+
+    def x(d: str) -> float:
+        return L + (date.fromisoformat(d).toordinal() - x0) / (x1 - x0) * (W - L - R)
+
+    def y(f: float) -> float:
+        return T + (hi - (math.log10(f) - g)) / (hi - lo) * (H - T - B)
+
+    parts = []
+    for k in range(lo, hi + 1, 2):  # a line every 100 times
+        yy = y(base["flop"] * 10 ** k)
+        label = "GPT-4" if k == 0 else f"{10 ** k:,}×" if k > 0 else f"1/{10 ** -k:,}"
+        parts.append(f'<line class="cg-grid{" cg-base" * (k == 0)}" x1="{L}" x2="{W - R}" y1="{yy:.1f}" y2="{yy:.1f}"/>'
+                     f'<text class="cg-y" x="{L - 8}" y="{yy + 4:.1f}">{label}</text>')
+    for yr in range(CHART_FROM, today.year + 1):
+        xx = x(f"{yr}-01-01")
+        parts.append(f'<line class="cg-tick" x1="{xx:.1f}" x2="{xx:.1f}" y1="{H - B}" y2="{H - B + 5}"/>'
+                     f'<text class="cg-x" x="{x(f"{yr}-07-01"):.1f}" y="{H - B + 22}">{yr}</text>')
+    tops = {}
+    for r in est:
+        if r["date"][:4] not in tops or r["flop"] > tops[r["date"][:4]]["flop"]:
+            tops[r["date"][:4]] = r
+    for r in sorted(est, key=lambda r: r["flop"]):
+        title = escape(f"{r['model']} ({r['lab']}, {_month(r['date'])}): {times(r['flop'], base['flop'])} GPT-4")
+        parts.append(f'<circle class="cg-dot" cx="{x(r["date"]):.1f}" cy="{y(r["flop"]):.1f}" r="3.4"><title>{title}'
+                     '</title></circle>')
+    placed = []  # (x, y) of each name written, so a name close to one already written goes under its dot
+    for r in sorted([*tops.values(), base], key=lambda r: r["date"]):
+        xx, yy = x(r["date"]), y(r["flop"])
+        anchor = ' text-anchor="end"' if xx > W - 170 else ""
+        ty = yy - 7
+        if any(abs(xx - px) < 120 and abs(ty - py) < 16 for px, py in placed):
+            ty = yy + 17
+        placed.append((xx, ty))
+        parts.append(f'<circle class="cg-top" cx="{xx:.1f}" cy="{yy:.1f}" r="4.6"/>'
+                     f'<text class="cg-name" x="{xx + (-9 if anchor else 9):.1f}" y="{ty:.1f}"{anchor}>'
+                     f'{escape(r["model"].split(" (")[0])}</text>')
+    svg = (f'<svg class="cg" viewBox="0 0 {W} {H}" role="img" aria-label="Training compute of {len(est)} notable '
+           f'models since {CHART_FROM}, against GPT-4">{"".join(parts)}</svg>')
+    return ('<section><h2>Training compute, model by model</h2>\n<p class="nt-how">Each dot is one notable model since '
+            f'{CHART_FROM} with an estimate ({len(est)} models), placed by its release day and how much computing '
+            'trained it. Each line up is 100 times the one below; GPT-4 is the bold line. The largest run of each year '
+            f'is named.</p>\n<div class="cg-wrap">{svg}</div></section>\n')
+
+
+def _rows(rows: list[dict], base: dict) -> str:
+    def name(r: dict) -> str:
+        n = escape(r["model"])
+        return f'<a href="{escape(r["link"])}" rel="noopener">{n}</a>' if r["link"].startswith("http") else n
+
+    return "".join(
+        f'<tr><td>{name(r)}</td><td>{escape(r["lab"])}</td><td>{_month(r["date"])}</td>'
+        f'<td class="pn-num"><b>{times(r["flop"], base["flop"])}</b> GPT-4<small>{flops(r["flop"])} FLOP</small></td>'
+        f'<td>{escape(r["sure"])}</td><td>{"Yes" if r["open"] else "No"}</td></tr>' for r in rows)
+
+
+_HEAD = ('<thead><tr><th>Model</th><th>Made by</th><th>Released</th><th>Training compute</th><th>How sure Epoch is</th>'
+         '<th>Weights to download</th></tr></thead>')
+
+
+def _tables(rows: list[dict], base: dict, today: date) -> str:
+    est = [r for r in rows if r["flop"]]
+    top = sorted(est, key=lambda r: -r["flop"])[:TOP]
+    start = since(today)
+    new = sorted((r for r in est if r["date"] >= start), key=lambda r: r["date"], reverse=True)
+    out = (f'<section><h2>The {len(top)} largest training runs with an estimate</h2>\n'
+           f'<table class="mt cg-table">{_HEAD}<tbody>{_rows(top, base)}</tbody></table></section>\n')
+    if new:
+        out += (f'<section><h2>Newest estimates <span class="iw-when">Released since {_day(start)}</span></h2>\n'
+                f'<table class="mt cg-table">{_HEAD}<tbody>{_rows(new, base)}</tbody></table></section>\n')
+    return out
+
+
+def _limits(rows: list[dict], base: dict, read: str, today: date) -> str:
+    start = since(today)
+    missing = [r for r in rows if not r["flop"] and r["date"] >= start]
+    closed = sum(not r["open"] for r in missing)
+    notes = [
+        ("Source", f"Epoch AI's dataset of notable AI models (CC BY 4.0), last read {_day(read[:10])}. "
+         "Notable means it meets Epoch's criteria, such as being the best at something, widely cited or "
+         "historically important."),
+        ("Estimates", "Epoch's own, from what the makers published, each marked Confident, Likely or Speculative "
+         "(Epoch's documentation says what each means)."),
+        ("Against GPT-4", f"1× is Epoch's estimate for GPT-4 ({flops(base['flop'])} FLOP, marked {base['sure']}). "
+         "FLOP counts the single calculations a computer made while training the model."),
+        *([("No estimate", f"{len(missing)} notable models released since {_day(start)} have none, so they aren't "
+            f"shown; {closed} of them {'does' if closed == 1 else 'do'}n't share their weights.")] if missing else []),
+    ]
+    body = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in notes)
+    return (f'<section><h2>About these counts</h2>\n<table class="mt pn-notes"><tbody>{body}</tbody></table>'
+            f'<p class="nt-how">Data: <a href="{DATASET}" rel="noopener">Epoch AI, Data on AI Models</a>, '
+            '<a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.</p></section>\n')
+
+
+def page_body(saved: dict, today: date) -> str:
+    rows = saved["rows"]
+    base = next(r for r in rows if r["model"] == YARDSTICK)
+    n = sum(bool(r["flop"]) for r in rows)
+    intro = (f"Epoch AI's estimates of the computing used to train {n:,} notable AI models, read from its open dataset "
+             "every day. Every number is measured against GPT-4: 1× is what trained GPT-4, 10× is ten times that. "
+             "Models with no estimate are counted, never guessed.")
+    return ('<div class="ft jb nt">\n' + pages.feature_head(PATH, "Compute behind notable models", QUESTION,
+                                                            escape(intro))
+            + _glance(rows, base, today) + chart(rows, base, today) + _tables(rows, base, today)
+            + _limits(rows, base, saved["read"], today) + '</div>\n')
+
+
+def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
+    """Write the page from the rows last read. Returns its path, or nothing before the dataset was first read."""
+    saved = load(conn)
+    if not any(r.get("flop") for r in saved.get("rows", [])) or not any(
+            r["model"] == YARDSTICK and r["flop"] for r in saved["rows"]):
+        return []
+    what = (f"{QUESTION} Epoch AI's estimates of the training compute of notable AI models, measured against GPT-4, "
+            "with the largest runs and the newest estimates.")
+    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Compute behind notable models",
+            "description": what, "url": f"{rss.SITE}{PATH}"}
+    (out / PATH).mkdir(parents=True, exist_ok=True)
+    (out / PATH / "index.html").write_text(
+        pages.page("Compute behind notable models · AI Pulse", what, PATH, page_body(saved, today), data,
+                   pages.frame(conn, len(cards)), ("/research/", "Back to Research"),
+                   "Estimates are Epoch AI's (CC BY 4.0); model names link to each model's own page."),
+        encoding="utf-8")
+    return [PATH]

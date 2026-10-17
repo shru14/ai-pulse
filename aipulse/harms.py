@@ -191,9 +191,11 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                         f'cx="8" cy="8" r="6"/></svg>A rule: {w.lower()}</span>' for k, w in _STAGES))
     what = ("AI harms by subject, and the rules on the same subject, from January 2023. The line counts the harms the AI "
             "Incident Database logged; each dot is a rule, on the day it was proposed, so its height is the harms before it.")
-    body = (f'<div class="ft">\n<h1>Harm → rule</h1>\n<p class="intro">{escape(what)} A rule that comes after harms '
-            'isn\'t shown to be caused by them.</p>\n'
-            f'<div class="ec-legend">{legend}</div>\n'
+    body = ('<div class="ft">\n'
+            + pages.feature_head(PATH, "Harm → rule", "How many AI harms came before each rule on the same subject?",
+                                 f"{escape(what)} A rule that comes after harms isn't shown "
+                                 "to be caused by them.")
+            + f'<div class="ec-legend">{legend}</div>\n'
             f'<div class="hps">{"".join(_panel(s, start, today) for s in found)}</div>\n'
             '<h2>The rules and the latest harms, by subject</h2>\n'
             f'<div class="hr-list">{"".join(_details(s) for s in found)}</div>\n</div>\n'

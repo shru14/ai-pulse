@@ -3902,6 +3902,18 @@ def test_who_owns_whom_candidates_and_the_approval_note():
     assert owners.note(open(owners.__file__, encoding="utf-8").read(), "owners/2026-10-17") is None
 
 
+def test_every_feature_has_the_shared_header():
+    """Each feature on the front page's Features panels has its colour and icon for pages.feature_head."""
+    from aipulse import pages
+    from aipulse.server import TEMPLATE
+    linked = set()
+    for panel in re.findall(r'<div class="bc-feats">(.*?)</div>', TEMPLATE.read_text(encoding="utf-8")):
+        linked |= set(re.findall(r'<a href="([^"]+)"', panel))
+    assert linked == set(pages.FEATURES)
+    head = pages.feature_head("release-cards/", "Release cards", "What came out?", "Every release.")
+    assert '--f:var(--f-tool)' in head and "<h1>Release cards</h1>" in head and 'class="fh-q"' in head
+
+
 def test_pacts_and_orders_halves_keep_only_rows_whose_story_we_have(tmp_path):
     from datetime import date
     from aipulse import pacts
@@ -3939,3 +3951,46 @@ def test_pacts_candidates_and_the_approval_note():
     finally:
         del pacts.LEFT_OUT[news]
     assert "1 new row to approve" in subject and "Norway ratified the AI treaty" in html and "left out" not in text
+
+
+def test_new_tests_for_ai_rows_scores_and_candidates(tmp_path):
+    from datetime import date
+    from aipulse import new_tests as nt
+    url = "https://arxiv.org/abs/2610.18092"  # LifeSearch: 63.4%, GPT-5.6 Sol
+    cards = [{"url": url, "title": "LifeSearch: Benchmarking Deep Research Agents", "date": "2026-10-13T00:00",
+              "category": "research"},
+             {"url": "https://arxiv.org/abs/2610.99999", "title": "FooBench: a new benchmark", "date": "2026-10-17T00:00",
+              "category": "research"},
+             {"url": "https://arxiv.org/abs/2610.13644", "title": "SelectArena", "date": "2026-10-17T00:00",
+              "category": "research"}]  # left out already
+    assert nt.build(None, [], tmp_path, date(2026, 10, 17)) == []  # no checked paper among the cards: no page
+    assert nt.build(None, cards, tmp_path, date(2026, 10, 17)) == ["new-tests-for-ai/"]
+    page = (tmp_path / "new-tests-for-ai" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>New tests for AI</h1>" in page and 'style="left:63.40%"' in page and "GPT-5.6 Sol" in page
+    assert "0 of 1" in page and "<b>1</b><span>new tests for AI" in page
+    assert [c["url"] for c in nt.candidates(cards)] == ["https://arxiv.org/abs/2610.99999"]
+    assert all(s in nt.SUBJECTS for _, s, *_ in nt.TESTS.values())
+    assert nt.note(open(nt.__file__, encoding="utf-8").read(), "tests/2026-10-18") is None
+    base = open(nt.__file__, encoding="utf-8").read().replace(url, "https://gone.example/")
+    subject, text, html = nt.note(base, "tests/2026-10-18")
+    assert "1 new test to approve" in subject and url in text and "LifeSearch" in html
+
+
+def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import compute, feeds
+    monkeypatch.setattr(feeds, "allowed", lambda url: True)
+    conn = store.connect(tmp_path / "t.db")
+    text = ("Model,Organization,Publication date,Training compute (FLOP),Confidence,Link,Model accessibility\n"
+            "GPT-4 (Mar 2023),OpenAI,2023-03-15,2.1e+25,Likely,https://openai.com/gpt-4,API access\n"
+            "GPT-3 175B (davinci),OpenAI,2020-05-28,3.14e+23,Confident,,API access\n"
+            "Big One,\"Lab A,Lab B\",2026-09-03,9.4e+26,Likely,https://a.example,Open weights (unrestricted)\n"
+            "Quiet One,Lab C,2026-09-10,,Confident,,API access\n")
+    assert compute.build(conn, [], tmp_path, date(2026, 10, 17)) == []  # not read yet: no page
+    assert compute.refresh(conn, fetcher=lambda url: text.encode()) == "3 of 4 models with an estimate"
+    assert compute.build(conn, [], tmp_path, date(2026, 10, 17)) == ["compute-behind-notable-models/"]
+    page = (tmp_path / "compute-behind-notable-models" / "index.html").read_text(encoding="utf-8")
+    assert "<b>45×</b>" in page and "Lab A, Lab B" in page and "9.4 × 10²⁶" in page and "1/67" in page
+    assert "1 of 2" in page
+    assert "have none, so they aren&#x27;t shown; 1 of them doesn&#x27;t share their weights" in page
+    assert compute.times(2.1e25, 2.1e25) == "1×" and compute.since(date(2026, 1, 5)) == "2025-10-01"

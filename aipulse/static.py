@@ -420,6 +420,9 @@ def build(conn, out: str | Path) -> int:
     places += release_cards.build(conn, cards, out, today)  # every major model release: weights, licence, price (Releases' feature)
     from . import lab_timelines
     places += lab_timelines.build(conn, cards, out, today)  # each lab's releases, price changes and shutdowns by month (Releases' feature)
+    from . import compute, new_tests
+    places += new_tests.build(conn, cards, out, today)  # new benchmarks in the papers we read and their best scores (Research's feature)
+    places += compute.build(conn, cards, out, today)  # Epoch AI's training-compute estimates for notable models (Research's feature)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")

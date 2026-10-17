@@ -239,9 +239,12 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     shutil.copy(countries.FLAGS / countries.flag("INTL"), out / "flags" / countries.flag("INTL"))
     what = ("The subjects AI laws keep coming back to, and the places that took each one up, in the order they did. "
             "Each flag sits where a place first acted; its ring shows how far it got.")
-    body = (f'<div class="ft">\n<h1>Rule echoes</h1>\n<p class="intro">{escape(what)} Open a subject to see its '
-            'official records. The same subject doesn\'t mean one place copied another.</p>\n'
-            f'<div class="ec-legend">{legend}</div>\n'
+    body = ('<div class="ft">\n'
+            + pages.feature_head(PATH, "Rule echoes",
+                                 "Which subjects do AI laws keep coming back to, and who acted first?",
+                                 f"{escape(what)} Open a subject to see its official records. "
+                                 "The same subject doesn't mean one place copied another.")
+            + f'<div class="ec-legend">{legend}</div>\n'
             f'<div class="ec-wrap"><div class="ec"><div class="ec-axis"><span></span><span class="yrs">{axis}'
             f'<span class="now" style="left:100%">Now</span></span></div>\n'
             + "\n".join(_row(t, start, days, years) for t in found)

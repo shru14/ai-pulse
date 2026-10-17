@@ -326,9 +326,8 @@ def page_body(rows: list[dict], read_by: dict[str, int], read: int) -> str:
     intro = (f"{_plural(len(rows), 'research paper')} that news outlets we read reported on since {_day(SINCE)}, each "
              "checked by hand: the paper the story is about, its subject, and what it found in one plain sentence. Next "
              "to them, the papers we read ourselves in the same months. New papers are added once checked.")
-    return (f'<div class="ft jb pn">\n<h1>Papers that made the news</h1>\n<p class="jb-q">{escape(QUESTION)}</p>\n'
-            f'<p class="intro">{escape(intro)}</p>\n'
-            f'{_front(rows)}<div class="pn-foot"><section><h2>By the numbers</h2>\n{table}</section>\n'
+    return ('<div class="ft jb pn">\n' + pages.feature_head(PATH, "Papers that made the news", QUESTION, escape(intro))
+            + f'{_front(rows)}<div class="pn-foot"><section><h2>By the numbers</h2>\n{table}</section>\n'
             f'{_limits(rows, read)}</div></div>\n')
 
 

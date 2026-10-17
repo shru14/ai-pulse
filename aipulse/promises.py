@@ -424,8 +424,10 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     marks = json.dumps(logos).replace("</", "<\\/")  # safe inside the page's <script>
     what = ("When an AI company says it will release something, how long until it ships? Promises made since 2023, "
             "each checked by hand against the day a headline says it was out, drawn from the promise to that day.")
-    body = (f'<div class="ft">\n<h1>Promised vs shipped</h1>\n<p class="intro">{escape(what)} We look for a launch '
-            'headline up to 18 months later.</p>\n<p class="intro" id="psample"></p>\n'
+    body = ('<div class="ft">\n'
+            + pages.feature_head(PATH, "Promised vs shipped", what.split("? ", 1)[0] + "?",
+                                 f"{escape(what.split('? ', 1)[1])} We look for a launch headline up to 18 months later.")
+            + '<p class="intro" id="psample"></p>\n'
             '<section class="pstats" id="pstats" aria-label="The promises in numbers"></section>\n'
             '<h2>The promises</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
