@@ -414,6 +414,8 @@ def build(conn, out: str | Path) -> int:
     places += owners.build(conn, cards, out, today)  # the big companies' stakes in AI labs (Industry's feature)
     from . import consultations
     places += consultations.build(conn, cards, out, today)  # governments asking the public about AI (Policy's feature)
+    from . import release_cards
+    places += release_cards.build(conn, cards, out, today)  # every major model release: weights, licence, price (Releases' feature)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")

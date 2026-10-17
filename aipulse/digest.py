@@ -504,6 +504,8 @@ FEATURES = [
      "its story.", "who-owns-a-piece-of-whom/"),
     ("AI consultations", "Where you can tell a government what you think about AI and until when: the UK, US, EU and "
      "Canada's official lists.", "ai-consultations/"),
+    ("Release cards", "Every major AI model release since July: whether you can download it, under what licence, "
+     "where you can use it and its price at launch.", "release-cards/"),
 ]
 
 
