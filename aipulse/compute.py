@@ -84,7 +84,11 @@ def refresh(conn, fetcher=feeds.fetch) -> str:
 
 def load(conn) -> dict:
     row = conn.execute("SELECT value FROM meta WHERE key = ?", (KEY,)).fetchone() if conn else None
-    return json.loads(row[0]) if row else {}
+    saved = json.loads(row[0]) if row else {}
+    for r in saved.get("rows", []):  # rows read before "base" and "post" were kept
+        r.setdefault("base", "")
+        r.setdefault("post", None)
+    return saved
 
 
 # --- the page ---
