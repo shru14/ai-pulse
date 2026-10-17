@@ -898,6 +898,21 @@ a.subscribe-btn{text-decoration:none}
 /* AI consultations: Models being retired's table, without its phone labels; an outcome's link under the title */
 @media (max-width:640px){.cp .cs-t td:nth-child(4)::before{content:none}}
 .cp .ft .cs-t a.cs-out{font-size:13px;color:var(--muted)}
+/* Release cards: Models being retired's table, a coloured weights tag per row (Okabe-Ito, dark text) and its own
+   phone labels */
+.cp .rc-t td{vertical-align:top}
+.cp .rc-t small{display:block;margin-top:2px;font:500 12.5px/1.35 var(--body);color:var(--muted)}
+.cp .ft .rc-t td.rc-m a{font-weight:600;text-decoration:none}
+.cp .ft .rc-t td.rc-m a:hover,.cp .ft .rc-t td.rc-m a:focus-visible{text-decoration:underline}
+.cp .rc-w{display:inline-block;padding:1px 8px;border-radius:10px;font:600 12.5px var(--body);color:#111;white-space:nowrap}
+.cp .rc-open{background:#56B4E9}.cp .rc-wo{background:#F0E442}.cp .rc-closed{background:#d9d9d9}
+.cp .rc-t td.rc-out{font-weight:600}
+.cp .rc-t .rc-none{color:var(--muted)}
+.cp .rc-t td.rc-p{white-space:nowrap}
+@media (max-width:640px){.cp .rc-t td:nth-child(4)::before{content:"Licence "}
+  .cp .rc-t td:nth-child(5)::before{content:"Where you can use it ";color:var(--muted);font:500 12.5px var(--body)}
+  .cp .rc-t td:nth-child(6)::before{content:"Launch price ";color:var(--muted);font:500 12.5px var(--body)}
+  .cp .rc-t td.rc-p{white-space:normal}}
 /* a little colour, Okabe-Ito tints with dark text: the three numbers, and each place's label */
 .cp .cs .cs-big0{background:color-mix(in srgb,#009E73 22%,var(--bg))}
 .cp .cs .cs-big1{background:color-mix(in srgb,#56B4E9 26%,var(--bg))}
