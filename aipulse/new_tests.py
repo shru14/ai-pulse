@@ -255,6 +255,127 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "GAMUT", "vision",
         "Whether long answers about photos from wearable cameras include every fact they should.",
         "58.7%", "Gemini 3.1 Pro", 58.7),
+    "https://arxiv.org/abs/2607.19407v1": (
+        "ITPEval", "language-models",
+        "Translating formal maths proofs and statements between four proof-checking systems (Lean 4, Rocq, Isabelle, "
+        "HOL Light); 6,848 theorems.",
+        "Statement translation peaks at 29.1% pass@1 and proof translation at 10.5%", "", None),
+    "https://arxiv.org/abs/2607.05783v1": (
+        "LanEvil++", "robotics",
+        "Lane-detection and driving vision-language models facing shadows, reflections, tire marks and 11 other road "
+        "illusions in simulated scenes.",
+        "Illusions cut lane-detection accuracy by 5.27% on average; shadows hurt most, by up to 7.20%", "", None),
+    "https://arxiv.org/abs/2607.04293v1": (
+        "CausalGame", "agents",
+        "Agents designing experiments in 14 interactive games with hidden biases and confounders, to tell cause from "
+        "correlation.",
+        "Best model reaches 68.0% survival against 78-85% for the analytical best; 5-7% of sessions earn credit on "
+        "causal reasoning", "", None),
+    "https://arxiv.org/abs/2606.31179": (
+        "HealthAgentBench", "agents",
+        "Agents carrying out 54 end-to-end healthcare tasks, such as modelling patient records and medical imaging, "
+        "each in its own environment.",
+        "About 42% task success for the strongest agent", "Codex GPT-5.5", None),
+    "https://arxiv.org/abs/2606.31154v1": (
+        "PPT-Eval", "agents",
+        "Computer-use agents creating and editing PowerPoint slides (120 tasks), graded by rubrics with partial credit.",
+        "Strong models such as Claude-4.5-Opus reach only a 45% success rate", "", None),
+    "https://arxiv.org/abs/2607.08964": (
+        "Long-Horizon-Terminal-Bench", "agents",
+        "Agents on 46 long terminal tasks that take hundreds of steps, with partial credit for progress.",
+        "15.2% pass@1 at a 0.95 partial-reward threshold and 10.9% at a perfect score for the strongest model", "",
+        None),
+    "https://arxiv.org/abs/2606.29887": (
+        "SafePyramid", "safety",
+        "Whether safety guardrails can spot rule violations in conversations from policies given in the prompt "
+        "(1,000 conversations, 10 domains).",
+        "The best model finds every violated rule in only 54.0%, 35.3% and 12.9% of cases on the three levels",
+        "GPT-5.5", None),
+    "https://arxiv.org/abs/2606.30026v1": (
+        "MuseBench", "vision",
+        "Models explaining why film, painting, stage and game makers made their creative choices (4,016 questions).",
+        "48.29% accuracy for the best model, against 87.18% for human experts", "", 48.29),
+    "https://arxiv.org/abs/2606.27669": (
+        "DiscoBench", "agents",
+        "Search agents noticing a vague or wrong request and asking the user a clarifying question (211 samples).",
+        "No top score in the abstract; searching again instead of asking often does worse than guessing", "", None),
+    "https://arxiv.org/abs/2606.28480": (
+        "TUA-Bench", "agents",
+        "Agents working in a terminal on 120 everyday and scientific tasks, from editing documents to email and "
+        "specialist software.",
+        "65.8% overall", "Claude Code with Claude Opus 4.8 max reasoning effort", 65.8),
+    "https://arxiv.org/abs/2606.24950v1": (
+        "MacroLens", "language-models",
+        "Forecasting prices, valuing companies and judging event effects for 4,416 small U.S. stocks from prices, "
+        "filings, news and economic data.",
+        "No result in the abstract", "", None),
+    "https://arxiv.org/abs/2606.19157v2": (
+        "IndicContextEval", "speech",
+        "Whether audio models use hints such as domain descriptions and word lists to transcribe speech in 8 Indian "
+        "languages.",
+        "No top score in the abstract; models differ substantially in how they use context", "", None),
+    "https://arxiv.org/abs/2606.16748v1": (
+        "MyPCBench", "agents",
+        "Computer-use agents acting as a personal assistant on a simulated desktop with 17 web apps and one persona "
+        "(184 tasks).",
+        "55.4% of tasks fully solved, the only model above 50%", "Claude Opus 4.6", 55.4),
+    "https://arxiv.org/abs/2606.14383": (
+        "IndustryBench-MIPU", "vision",
+        "Reading technical specifications off several photos of industrial products (4,559 products).",
+        "Precision of 86-94%, but the best recovers only 49.9% of product-level attributes", "", None),
+    "https://arxiv.org/abs/2606.13802": (
+        "Spreadsheet next-action benchmark", "agents",
+        "Predicting a user's next step in a spreadsheet from the steps so far (52 sequences, 12K actions).",
+        "No result in the abstract", "", None),
+    "https://arxiv.org/abs/2606.13385v2": (
+        "StakeBench", "safety",
+        "Online-shopping web agents tricked by hidden instructions on web pages, by who is harmed (264 attacks).",
+        "No attack goal is reliably resisted by current agents", "", None),
+    "https://arxiv.org/abs/2606.11063v1": (
+        "CIAware-Bench", "safety",
+        "Whether a model can tell its own actions from ones a safety monitor has replaced.",
+        "AUROC of 0.90 on essay writing, 0.91 on BigCodeBench, 0.86 on Bash Arena and 0.77 on SHADE-Arena",
+        "GPT-6 Astra", None),
+    "https://arxiv.org/abs/2606.09426": (
+        "WeaveBench", "agents",
+        "Computer-use agents mixing screen control, command line and code on 114 long real-world tasks.",
+        "41.2% pass rate for the best model and runtime pairing", "", 41.2),
+    "https://arxiv.org/abs/2606.09764v1": (
+        "iOSWorld", "agents",
+        "Phone agents using a person's own data across 26 simulated iOS apps (133 tasks).",
+        "52% overall for the best setup, but only 37% on tasks spanning several apps", "", 52.0),
+    "https://arxiv.org/abs/2606.08340v1": (
+        "alem", "agents",
+        "Teams of language-model agents coordinating in a long survival world of exploring, crafting, trading and "
+        "combat.",
+        "Models average only about 6% normalised return", "", None),
+    "https://arxiv.org/abs/2606.05806": (
+        "ToolMaze", "agents",
+        "Agents recovering when the tools they call fail or return wrong results.",
+        "Recovery rate falls by around 37% when failures are silent", "", None),
+    "https://arxiv.org/abs/2606.01804": (
+        "SpeechEditBench", "speech",
+        "Speech models changing one thing about a recording on instruction (seven editing tasks, English and Chinese) "
+        "while keeping the rest.",
+        "No single model does well on every kind of edit; combined edits are hard for all", "", None),
+    "https://arxiv.org/abs/2606.04460v2": (
+        "CyberGym-E2E", "safety",
+        "Agents finding real software vulnerabilities, writing exploits and patching them (920 vulnerabilities in 139 "
+        "projects).",
+        "No result in the abstract", "", None),
+    "https://arxiv.org/abs/2606.03920v1": (
+        "VSTAT", "vision",
+        "Models following objects and events through a whole video, with questions no single frame can answer.",
+        "Far below humans and only modestly above guessing from answer patterns", "", None),
+    "https://arxiv.org/abs/2606.04184v2": (
+        "GroupToM-Bench", "vision",
+        "Models reading what groups of people believe and want, and how that leads to what the group does.",
+        "A gap between current models and humans", "", None),
+    "https://arxiv.org/abs/2606.03348v1": (
+        "SynCred-Bench", "safety",
+        "Spotting AI-made fake images that look credible, with realistic embedded text and layouts (600 images).",
+        "Commercial detection services reach 57.6% at a 5% false-alarm rate; 15 multimodal models reach 10.5%", "",
+        None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
@@ -266,6 +387,9 @@ LEFT_OUT: dict[str, str] = {
     "https://arxiv.org/abs/2609.21465": "mainly a data engine and training method (OmniVChat)",
     "https://arxiv.org/abs/2608.29481v1": "tests the authors' own simulators (SIC-Agents)",
     "https://arxiv.org/abs/2608.05850v2": "mainly a new model (MameLoshnLM)",
+    "https://arxiv.org/abs/2607.05155": "mainly a scaling-law finding about how agents learn from experience (EdgeBench)",
+    "https://arxiv.org/abs/2606.19704": "a position paper on how to rank agents, not a new test",
+    "https://arxiv.org/abs/2606.09380": "Reasoning Arena is a training method, not a test",
 }
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
