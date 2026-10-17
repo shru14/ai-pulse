@@ -255,6 +255,129 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "GAMUT", "vision",
         "Whether long answers about photos from wearable cameras include every fact they should.",
         "58.7%", "Gemini 3.1 Pro", 58.7),
+    "https://arxiv.org/abs/2606.01057": (
+        "3DCodeBench", "vision",
+        "Vision-language models writing code that builds 3D objects in modeling software from text and image prompts.",
+        "Most failures come from wrong software commands, and even working results often have floating or disconnected "
+        "parts", "", None),
+    "https://arxiv.org/abs/2605.30434": (
+        "LongDS-Bench", "agents",
+        "Agents carrying a data analysis through many turns while the analysis keeps changing (68 tasks, 2,225 turns).",
+        "48.45% average accuracy", "", 48.45),
+    "https://arxiv.org/abs/2605.29059v1": (
+        "SCDBench", "language-models",
+        "Whether models can turn smart-contract machine code back into source code that behaves the same (600 contracts).",
+        "The best model perfectly decompiles only 42 of 600 contracts", "", None),
+    "https://arxiv.org/abs/2605.27141": (
+        "VitaBench 2.0", "agents",
+        "Agents learning and using a person's changing preferences from long daily histories, and asking when "
+        "information is missing.",
+        "Personalization remains highly challenging even for the best models", "", None),
+    "https://arxiv.org/abs/2605.25874": (
+        "WBench", "robotics",
+        "Interactive video world models over several turns: video quality, following the setting and the instructions, "
+        "consistency and physics.",
+        "No single model performs strongly across all dimensions", "", None),
+    "https://arxiv.org/abs/2605.26329v1": (
+        "JobBench", "agents",
+        "Agents doing the work experts most want to hand over: 130 tasks across 35 occupations.",
+        "45.9%", "Claude Opus 4.7 under Claude Code", 45.9),
+    "https://arxiv.org/abs/2605.23215": (
+        "FastKernels", "agents",
+        "Agents writing GPU code that is fast and correct inside real AI models, not only on its own.",
+        "Speedups of 1.6-6.6x on single kernels shrink to at most 1.25x end to end; only 20% of winning kernel sets "
+        "run correctly as they are", "", None),
+    "https://arxiv.org/abs/2605.22080v2": (
+        "JMed48k", "science",
+        "Vision-language models answering Japanese medical licensing exam questions, with and without the images.",
+        "No top score in the abstract; models gain from images, medical-specific ones barely use them", "", None),
+    "https://arxiv.org/abs/2605.20183": (
+        "MSAVBench", "vision",
+        "Models making videos of up to 15 shots with sound, judged on video, audio, shots and reference images.",
+        "Current systems still struggle with director-level control and fine-grained sound-picture sync", "", None),
+    "https://arxiv.org/abs/2605.18746v2": (
+        "ESI-Bench", "robotics",
+        "Whether models can move and handle things in a simulated home to gather what they need to answer spatial "
+        "questions.",
+        "Most failures come from poor choices of action, not weak seeing", "", None),
+    "https://arxiv.org/abs/2605.16679v2": (
+        "CHI-Bench (χ-Bench)", "agents",
+        "Agents running long healthcare office workflows (prior approvals, insurance reviews, care management) in a "
+        "simulated set of 20 apps.",
+        "28.0% of tasks resolved by the best agent", "", 28.0),
+    "https://arxiv.org/abs/2605.14906": (
+        "MemLens", "vision",
+        "Models remembering text and pictures across long conversations over many sessions (789 questions).",
+        "Multi-session reasoning caps most systems below 30%", "", None),
+    "https://arxiv.org/abs/2605.11633v1": (
+        "DORA", "agents",
+        "Agents handling disaster response with satellite images, maps and 108 tools: damage, evacuation plans, reports.",
+        "No top score in the abstract; the gap to expert steps widens from 7% to 56% on long pipelines", "", None),
+    "https://arxiv.org/abs/2605.10267": (
+        "IndustryBench", "language-models",
+        "Answering industrial buying questions in Chinese without breaking rules from national standards.",
+        "2.083 on a 0-3 scale for the best system", "", None),
+    "https://arxiv.org/abs/2605.10912v1": (
+        "WildClawBench", "agents",
+        "Agents doing 60 real long tasks, about 8 minutes each, inside real command-line agent tools.",
+        "62.2% overall under OpenClaw; every other model below 60%", "Claude Opus 4.7", 62.2),
+    "https://arxiv.org/abs/2605.09874v2": (
+        "EgoMemReason", "vision",
+        "Reasoning over a week of first-person video: remembering objects, events and habits (500 questions).",
+        "39.6% overall accuracy", "", 39.6),
+    "https://arxiv.org/abs/2605.08614": (
+        "DiagnosticIQ", "language-models",
+        "Picking the right maintenance action for an industrial sensor rule, in 6,690 multiple-choice questions.",
+        "Top three models within one point; every model loses 13-60% of its accuracy when distractor answers are added",
+        "", None),
+    "https://arxiv.org/abs/2605.09063v3": (
+        "Soohak", "language-models",
+        "Research-level maths problems written from scratch by 64 mathematicians, and spotting ill-posed ones.",
+        "30.4% on its Challenge subset; no model exceeds 50% at spotting ill-posed problems", "Gemini-3-Pro", 30.4),
+    "https://arxiv.org/abs/2605.08678v3": (
+        "MLS-Bench", "agents",
+        "Whether AI agents can invent new machine-learning methods that work across settings and scales (140 tasks).",
+        "Agents remain far from reliably beating human-designed methods", "", None),
+    "https://arxiv.org/abs/2605.03546v1": (
+        "ProgramBench", "agents",
+        "Rebuilding real programs, such as FFmpeg, SQLite and the PHP interpreter, from the program and its docs alone.",
+        "No model fully solves any task; the best passes 95% of tests on only 3% of tasks", "", None),
+    "https://arxiv.org/abs/2605.01809v1": (
+        "TMD-Bench", "vision",
+        "Models making music and dance together from text, judged on quality, following the prompt and rhythm match.",
+        "Veo 3 and Sora 2 make high-quality music and video, but rhythmic coupling is less consistent", "", None),
+    "https://arxiv.org/abs/2604.24964v1": (
+        "Odysseys", "agents",
+        "Web agents on 200 long tasks across many sites on the live internet, graded by rubrics.",
+        "44.5% success rate for the strongest models", "", 44.5),
+    "https://arxiv.org/abs/2604.20157v1": (
+        "HumanScore", "vision",
+        "How faithfully AI video generators show human bodies and movement, on six measures.",
+        "No top score; videos look plausible but show jitter, impossible poses and motion drift", "", None),
+    "https://arxiv.org/abs/2604.19667": (
+        "Chat2Workflow", "agents",
+        "Models building ready-to-run visual workflows for platforms such as Dify and Coze from plain-language requests.",
+        "Models grasp the goal but struggle to build correct, stable, runnable workflows", "", None),
+    "https://arxiv.org/abs/2604.19151v4": (
+        "Voice of India", "speech",
+        "Speech recognition on real unscripted phone calls in 15 Indian languages.",
+        "No score in the abstract; accuracy differs by district, audio quality, speaking rate and device", "", None),
+    "https://arxiv.org/abs/2604.18240": (
+        "AJ-Bench", "agents",
+        "Agents acting as judges: using search, data and screens to check whether another agent's work is right.",
+        "Beat plain language-model judges, but big open challenges remain", "", None),
+    "https://arxiv.org/abs/2604.17969v3": (
+        "E3VS-Bench", "robotics",
+        "Agents moving a camera freely through 99 3D scenes to answer questions that need a look from the right angle.",
+        "All models fall well short of people", "", None),
+    "https://arxiv.org/abs/2604.18584v2": (
+        "MathNet", "language-models",
+        "Olympiad maths problems from 47 countries in 17 languages: solving them and finding matching problems.",
+        "78.4% solving unaided; the highest scores came with retrieval help", "Gemini-3.1-Pro", None),
+    "https://arxiv.org/abs/2604.17283v1": (
+        "HorizonBench", "language-models",
+        "Tracking how a user's preferences change over 6 months of chat, about 4,300 turns.",
+        "52.8%, where chance is 20%", "", 52.8),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
@@ -266,6 +389,19 @@ LEFT_OUT: dict[str, str] = {
     "https://arxiv.org/abs/2609.21465": "mainly a data engine and training method (OmniVChat)",
     "https://arxiv.org/abs/2608.29481v1": "tests the authors' own simulators (SIC-Agents)",
     "https://arxiv.org/abs/2608.05850v2": "mainly a new model (MameLoshnLM)",
+    "https://arxiv.org/abs/2605.30188v2": "CalArena compares statistics methods for calibrating predictions, not AI models",
+    "https://arxiv.org/abs/2605.28398": "HRBench compares methods for switching thinking modes, not AI models",
+    "https://arxiv.org/abs/2605.28819v1": "PEFT-Arena compares finetuning methods, not AI models",
+    "https://arxiv.org/abs/2605.23271": "EvalVerse is mainly a way to judge videos (an expert-tuned judge model)",
+    "https://arxiv.org/abs/2605.20873": "PlanningBench is mainly a tool that generates planning data for tests and training",
+    "https://arxiv.org/abs/2605.12501": "mainly a data-synthesis method and a new model (Phi-Ground-Any-4B), with a benchmark",
+    "https://arxiv.org/abs/2605.12292v1": "STRABLE compares tabular learning methods, not AI models",
+    "https://arxiv.org/abs/2605.12673v1": "BenchJack is a way to check other tests",
+    "https://arxiv.org/abs/2605.10616v1": "MulTaBench compares tabular learning methods and the authors' tuning, not AI models",
+    "https://arxiv.org/abs/2605.11209v1": "mainly a sampling method for measuring rare failures, not a new test",
+    "https://arxiv.org/abs/2605.08518": "a retrospective on a competition, not a new test",
+    "https://arxiv.org/abs/2604.19071v1": "mainly a way to grade writing (Tree-of-Writing)",
+    "https://arxiv.org/abs/2604.17761": "an interpretability method for analysing failures, not a new test",
 }
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
