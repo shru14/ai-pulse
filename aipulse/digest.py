@@ -506,6 +506,8 @@ FEATURES = [
      "Canada's official lists.", "ai-consultations/"),
     ("Release cards", "Every major AI model release since July: whether you can download it, under what licence, "
      "where you can use it and its price at launch.", "release-cards/"),
+    ("AI pacts and orders", "What governments signed on AI, from Bletchley to New Delhi, and what they made AI companies "
+     "do: deals, bans, orders and investigations.", "ai-pacts-and-orders/"),
 ]
 
 
