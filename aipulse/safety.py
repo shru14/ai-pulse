@@ -599,6 +599,14 @@ DOCS: list[dict] = [
                    'February 2026, which recognize the need to strengthen multilingual capabilities and develop '
                    'evaluations for under-represented languages and cultural contexts. Evaluations and public '
                    'benchmarks for advanced cyber and CBRN capabilities are especially concentrated in English.')),
+    dict(date='2026-07-02', by='UK AI Security Institute', kind='eval',
+         title='More compute, more capability: Why AI agent evaluations need to account for test-time compute',
+         url='https://www.aisi.gov.uk/blog/more-compute-more-capability-why-ai-agent-evals-need-to-account-for-test-time-compute',
+         original="",
+         models=(), risks=('cyber',),
+         abstract=('Standard evaluations cap how much compute AI agents can use. We show that raising those caps '
+                   'changes measured capability, the difficulty of tasks agents can solve, and how fast the '
+                   'frontier appears to move.')),
     dict(date='2026-06-30', by='Anthropic', kind='card',
          title='System Card: Claude Sonnet 5',
          url='https://anthropic.com/claude-sonnet-5-system-card',
@@ -1300,6 +1308,18 @@ DOCS: list[dict] = [
 # Documents read and left out, so `python -m aipulse safety` doesn't list them again: research on training methods,
 # essays, usage studies, testimony, organisation news, a product launch, and documents from before 2026.
 LEFT_OUT: set[str] = {
+    'https://the-decoder.com/uks-ai-security-institute-finds-standard-benchmarks-systematically-underestimate-what-ai-agents-can-actually-do/',  # news about the AISI test-time compute post
+    'https://the-decoder.com/germanys-national-security-council-greenights-an-ai-safety-institute-modeled-after-the-uks-aisi/',  # news: organisation, no document
+    'https://openai.com/index/gpt-5-5-system-card',  # news about the GPT-5.5 System Card, already in DOCS
+    'https://openai.com/index/gpt-5-3-codex-system-card',  # news about the GPT-5.3-Codex System Card, already in DOCS
+    'https://openai.com/index/unlocking-self-improvement-gpt-red',  # document not readable (openai.com refuses, 403)
+    'https://openai.com/index/strengthening-societal-resilience-with-rosalind-biodefense',  # document not readable (openai.com refuses, 403)
+    'https://openai.com/index/safety-bug-bounty',  # document not readable (openai.com refuses, 403)
+    'https://openai.com/index/designing-agents-to-resist-prompt-injection',  # document not readable (openai.com refuses, 403)
+    'https://openai.com/index/instruction-hierarchy-challenge',  # document not readable (openai.com refuses, 403)
+    'https://openai.com/index/introducing-lockdown-mode-and-elevated-risk-labels-in-chatgpt',  # document not readable (openai.com refuses, 403)
+    'https://openai.com/index/ai-agent-link-safety',  # document not readable (openai.com refuses, 403)
+    'https://www.nist.gov/news-events/news/2026/01/caisi-issues-request-information-about-securing-ai-agent-systems',  # request for public comment, not a framework or evaluation
     'https://the-decoder.com/uk-ai-security-institute-finds-gpt-6-astras-rogue-attack-rate-jumped-fivefold-over-its-predecessor/',  # news about the AISI GPT-6 Astra supply-chain report, already in DOCS
     'https://the-decoder.com/white-house-reverses-course-and-restores-uk-ai-safety-institutes-access-to-frontier-models/',  # news: government policy on access, no document
     'https://www.aisi.gov.uk/research/a-decision-theoretic-formalisation-of-steganography-with-applications-to-llm-monitoring',
