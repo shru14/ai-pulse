@@ -37,6 +37,18 @@ PLACES = [
 ]
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://the-decoder.com/deepseek-makes-its-75-percent-discount-permanent-pricing-output-tokens-at-least-34x-below-gpt-5-5/":
+        "A promotion made permanent: the old price and the date it took effect aren't stated",
+    "https://the-decoder.com/metas-muse-spark-1-1-api-pricing-squeezes-openai-and-anthropic-as-the-ai-price-war-heats-up/":
+        "A new model's launch price, not a change",
+    "https://the-decoder.com/xai-drops-grok-4-3-with-steep-price-cuts-and-an-imagine-agent-mode-for-creative-projects/":
+        "A new model's launch price, not a change",
+    "https://the-decoder.com/claude-sonnet-5-continues-anthropics-pattern-of-hiding-price-increases-behind-unchanged-token-rates/":
+        "A new model at unchanged token prices, not a change",
+    "https://techcrunch.com/2026/06/29/anthropic-and-gov-newsom-forge-deal-allowing-california-government-to-use-claude-at-half-price/":
+        "A deal for California agencies, not a public API price; the models and discount aren't stated",
+    "https://the-decoder.com/openai-vs-anthropic-a-price-war-over-api-tokens-is-brewing/":
+        "Price cuts weighed, none made",
     "https://techcrunch.com/2026/07/13/anthropic-starts-localizing-claude-pricing-for-india-its-biggest-market-after-the-us/":
         "Subscription prices in India, not the API",
     "https://www.marktechpost.com/2026/09/01/anthropic-releases-claude-fable-5-1-and-claude-mythos-5-1-52-6-on-terminal-bench-science-and-75-cheaper-cache-reads/":
