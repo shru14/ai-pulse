@@ -173,6 +173,9 @@ LEFT_OUT = {
         "Talks only",
 }
 
+# a LEFT_OUT comment starting with this is pledge news (a country joining a pledge or ratifying the treaty): the lists
+# above change only from the official list, so the note asks the owner for it
+PLEDGE_NEWS = "pledge:"
 # the newest day every story was read for the lists above; the candidates start after it
 CHECKED_TO = "2026-10-17"
 _GOV = re.compile(r"\b(government|ministry|minister|Pentagon|White House|Trump|regulator|watchdog|FTC|DOJ|attorneys? "
@@ -210,6 +213,10 @@ def note(base: str, branch: str) -> tuple[str, str, str] | None:
                for b in BANS if b[4] not in had["BANS"] or (b[6] and b[6] not in had["BANS"])]
             + [(d, g, c, k, w, u) for d, g, c, k, w, u in ORDERS if u not in had["ORDERS"]])
     dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    # a country joining a pledge or ratifying the treaty: shown to the owner, who adds it from the official list
+    rows += [("", "", "", "Pledge news: check the official list", LEFT_OUT[u][len(PLEDGE_NEWS):].strip(), u)
+             for u in dropped if LEFT_OUT[u].startswith(PLEDGE_NEWS)]
+    dropped = [u for u in dropped if not LEFT_OUT[u].startswith(PLEDGE_NEWS)]
     if not rows and not dropped:
         return None
     return approve.note("AI pacts and orders", f"row{'s' * (len(rows) != 1)}", branch,
