@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from . import brands, glossary, jurisdictions, photos, preferences, rss, store, subscribers
+from . import brands, glossary, jurisdictions, preferences, rss, store, subscribers
 from .sources import SOURCES
 
 STREAM_PATHS = {"all", "releases", "industry", "research", "regulation", "policy", "infra", "about", "discussing", "today", "saved"}
@@ -63,7 +63,7 @@ def make_handler(db_path: str):
             conn = store.connect(db_path)
             try:
                 if url.path == "/" or url.path.strip("/") in STREAM_PATHS:  # the front page and each stream's
-                    self._send(photos.fill(subscribers.fill(TEMPLATE.read_text(encoding="utf-8"))).encode("utf-8"),
+                    self._send(subscribers.fill(TEMPLATE.read_text(encoding="utf-8")).encode("utf-8"),
                                "text/html; charset=utf-8")
                 elif url.path == "/api/items":
                     if qs.get("grouped") == "0":  # every story separately, for other tools
@@ -113,11 +113,6 @@ def make_handler(db_path: str):
                         meme = None
                     picture = meme and memes.render(meme)
                     self._send(picture, "image/jpeg") if picture else self._send(b"Not found", "text/plain", 404)
-                elif url.path == "/photos/credits.html":
-                    self._send(photos.credits_page().encode("utf-8"), "text/html; charset=utf-8")
-                elif url.path.startswith("/photos/") and url.path.endswith(".jpg") and "/" not in url.path[8:] \
-                        and (TEMPLATE.parent / "photos" / url.path[8:]).is_file():
-                    self._send((TEMPLATE.parent / "photos" / url.path[8:]).read_bytes(), "image/jpeg")
                 elif url.path.startswith("/feeds/") and url.path.endswith(".xml") and url.path[7:-4] in rss.FEEDS:
                     name = url.path[7:-4]
                     feed_cards, _ = store.cards(conn, rss.FEEDS[name][0], days=rss.DAYS + 1,

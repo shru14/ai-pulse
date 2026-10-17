@@ -17,7 +17,7 @@ import unicodedata
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, photos, preferences, rss, store
+from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, store
 from . import pages, subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
@@ -292,8 +292,7 @@ def build(conn, out: str | Path) -> int:
         for src in icons:
             shutil.copy(brands.ICON_DIR / Path(src).name, out / src)
     shutil.copytree(TEMPLATE.parent / "fonts", out / "fonts")  # the page's own fonts (no Google Fonts)
-    shutil.copytree(TEMPLATE.parent / "photos", out / "photos")  # the stories' photos (Wikimedia Commons, credited)
-    (out / "photos" / "credits.html").write_text(photos.credits_page(), encoding="utf-8")
+    shutil.copytree(TEMPLATE.parent / "photos", out / "photos")  # our own cartoons (topics, monthly issues)
     (out / "privacy.html").write_text(privacy_page(), encoding="utf-8")
     (out / "feeds").mkdir()
     for name in rss.FEEDS:
@@ -363,7 +362,7 @@ def build(conn, out: str | Path) -> int:
 
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
-    page = photos.fill(subscribers.fill(page)).replace("</head>", pages.counter() + "</head>", 1)
+    page = subscribers.fill(page).replace("</head>", pages.counter() + "</head>", 1)
     (out / "index.html").write_text(page, encoding="utf-8")
     (out / "about").mkdir()
     (out / "about" / "index.html").write_text(about_page(page), encoding="utf-8")  # the same page, opened at About

@@ -195,8 +195,6 @@ a.subscribe-btn{text-decoration:none}
 .cp .mi .lg.official::before,.cp .mi .timeline .official .dot{background:#D55E00}
 .cp .mi .timeline .ev.official .box{border-top-color:#D55E00}
 .cp .mi .timeline .now span{background:#D55E00}
-.cp .credits li{padding:8px 0;font-size:14px;overflow-wrap:anywhere}
-.cp .credits li a{font-weight:400;text-decoration:underline;text-underline-offset:2px}
 .cp .mt.pv td:last-child,.cp .mt.pv th:last-child{text-align:left;white-space:normal}
 @media (max-width:600px){.cp .mt.pv thead{display:none}.cp .mt.pv tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
   .cp .mt.pv td{display:block;border:0;padding:2px 0}}
@@ -1137,7 +1135,7 @@ def write_css(out: Path) -> None:
 
 def frame(conn=None, total: int = 0) -> tuple[str, str]:
     """The front page's masthead (no stream links; Subscribe and Glossary open on the front page) and footer. Without
-    a database (the photo credits and privacy pages) the masthead leaves out the story count and last update."""
+    a database (the privacy page) the masthead leaves out the story count and last update."""
     t = TEMPLATE.read_text(encoding="utf-8")
     last = ((store.last_run(conn) or {}).get("ran_at") or "") if conn else ""
     header = re.search(r'<header class="top home">.*?</header>', t, re.S).group(0)
@@ -1228,7 +1226,7 @@ def feature_head(path: str, title: str, question: str, intro: str) -> str:
 
 
 def share_tags(title: str, path: str, description: str) -> str:
-    """The head lines search results and link previews read, for a page built by hand (privacy, photo credits)."""
+    """The head lines search results and link previews read, for a page built by hand (privacy)."""
     url, description = f"{rss.SITE}{path}", escape(snippet(description))
     return (f'<meta name="description" content="{description}"><link rel="canonical" href="{url}">'
             f'<meta property="og:title" content="{escape(title)}"><meta property="og:description" content="{description}">'
