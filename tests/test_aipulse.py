@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -657,7 +657,7 @@ def test_static_build_holds_every_card(tmp_path):
     front = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     for p in kind_pages.paths():
         assert f'href="{p}"' in front and (tmp_path / "site" / p / "index.html").exists() and f"<loc>https://projectaipulse.com/{p}</loc>" in sitemap
-    assert sitemap.count("<url>") == 1 + 7 + 4 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/
+    assert sitemap.count("<url>") == 1 + 7 + 5 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, lab-timelines/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -3841,6 +3841,35 @@ def test_ai_consultations_daily_job_finds_unchecked_ones_and_shows_rows_checked_
     subject, text, html = consultations.note(base, "consultations/2026-10-20")
     assert subject == "AI Pulse, AI consultations: 1 new consultation to approve"
     assert "mandatory guardrails" in html and "30 Nov 2026" in html and "left out: 1 story" in text
+
+
+def test_lab_timelines_grid_by_month_collapses_one_release_labs_and_drafts_changes(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import lab_timelines as lt, retired
+    conn = store.connect(tmp_path / "t.db")
+    saved = {"OpenAI": {"rows": [{"lab": "OpenAI", "model": "o1-2024-12-17", "shuts": "2026-10-23"},
+                                 {"lab": "OpenAI", "model": "gpt-4o", "shuts": "2026-07-23"},
+                                 {"lab": "OpenAI", "model": "gpt-4", "shuts": "2027-05-01"}]}}  # past the 3 months
+    conn.execute("INSERT INTO meta VALUES (?, ?)", (retired.KEY, __import__("json").dumps(saved)))
+    assert lt.build(conn, [], tmp_path, date(2026, 10, 17)) == ["lab-timelines/"]
+    page = (tmp_path / "lab-timelines" / "index.html").read_text(encoding="utf-8")
+    assert "<th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th class=\"lt-fut\">Next 3 months</th>" in page
+    assert "1 shut down (scheduled)" in page and "gpt-4<" not in page and "o1-2024-12-17" in page
+    assert "↓ GPT-5.6 Luna 80% cheaper" in page and "+ Grok 4.5 now in the EU" in page
+    grid, few = page.split('<tbody class="lt-few" hidden>')
+    assert 'data-lab="Cisco"' in few and 'data-lab="Cisco"' not in grid.split("</tbody>")[0]  # one release: collapsed
+    assert 'data-lab="Google"' in grid and "Google released the most models" in page
+    story = {"url": "https://x.example/p", "title": "Mistral cuts API prices for Large 4", "date": "2026-10-20T08:00",
+             "source": "Outlet", "category": "news"}
+    other = story | {"url": "https://x.example/o", "title": "Mistral hires a new CFO"}
+    old = story | {"url": "https://x.example/old", "date": "2026-10-10T08:00"}
+    assert lt.candidates([story, other, old]) == [story]
+    base = open(lt.__file__, encoding="utf-8").read()
+    monkeypatch.setattr(lt, "PRICES", lt.PRICES + [("2026-10-20", "Mistral", "Large 4", "cut", "30% cheaper",
+                                                    "Now $1.40 / $4.20 per 1M tokens in / out", story["url"])])
+    assert lt.candidates([story]) == []
+    subject, text, html = lt.note(base, "timelines/2026-10-21")
+    assert subject == "AI Pulse, Lab timelines: 1 new change to approve" and "Price cut: Now $1.40" in html
 
 
 def test_who_owns_whom_grid_shows_only_deals_whose_story_we_have(tmp_path):

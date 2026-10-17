@@ -926,6 +926,35 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft .rc-t tr{display:table-row;padding:0}
   .cp .ft .rc-t td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 12px 8px 0}
   .cp .ft .rc-t td::before{content:none}}
+/* Lab timelines: labs down the side, months across, each cell naming what happened; the grey column is scheduled
+   shutdowns. A lab's name opens its rows as a table; on a phone the grid scrolls sideways in its box */
+.cp .lt-leg{display:flex;flex-wrap:wrap;gap:6px 20px;margin:10px 0 12px;font-size:14px;align-items:center}
+.cp .lt-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.cp .lt-o{background:#009E73}.cp .lt-wo{background:#E69F00}.cp .lt-c{background:var(--ink)}
+.cp .lt-t{table-layout:fixed;font-size:14px}
+.cp .lt-t th{font:500 11px var(--mono);letter-spacing:.05em;text-align:left}
+.cp .lt-t thead th:first-child{width:150px}
+.cp .lt-t td{vertical-align:top;line-height:1.35}
+.cp .lt-t th[scope=row]{vertical-align:top;text-transform:none;letter-spacing:0;color:var(--ink);border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 12px 10px 0}
+.cp .lt-t td:last-child,.cp .lt-t th:last-child{text-align:left;white-space:normal;padding-right:8px}
+.cp .lt-t .lt-fut{padding-left:8px}
+.cp .lt-name{all:unset;cursor:pointer;font:600 15px/1.35 var(--body);color:var(--ink)}
+.cp .lt-name:hover,.cp .lt-name:focus-visible{text-decoration:underline}
+.cp .lt-name[aria-pressed=true]{text-decoration:underline;text-decoration-thickness:2px}
+.cp .lt-r,.cp .lt-t .lt-p,.cp .lt-t .lt-s{display:block;margin:0 0 3px}
+.cp .lt-p{color:var(--accent);font-weight:600}
+.cp .lt-s{color:var(--muted)}
+.cp .lt-fut{background:color-mix(in srgb,var(--ink) 6%,var(--bg))}
+.cp .lt-few[hidden],.cp .lt-lab[hidden]{display:none}
+.cp .lt-more{all:unset;cursor:pointer;display:inline-block;margin:10px 0 4px;font-size:14px;color:var(--muted);text-decoration:underline}
+.cp .lt-lab h2{margin:22px 0 8px}
+.cp .lt-d small{display:block;margin-top:2px;font:500 12.5px/1.35 var(--body);color:var(--muted)}
+@media (max-width:640px){.cp .lt-wrap{overflow:auto;max-height:72vh}
+  .cp .ft .lt-t{min-width:760px}
+  .cp .ft .lt-t thead{display:table-header-group}
+  .cp .ft .lt-t tr{display:table-row;padding:0}
+  .cp .ft .lt-t td,.cp .ft .lt-t th{display:table-cell;padding:8px 10px 8px 0}
+  .cp .ft .lt-t td::before{content:none}}
 /* a little colour, Okabe-Ito tints with dark text: the three numbers, and each place's label */
 .cp .cs .cs-big0{background:color-mix(in srgb,#009E73 22%,var(--bg))}
 .cp .cs .cs-big1{background:color-mix(in srgb,#56B4E9 26%,var(--bg))}

@@ -506,6 +506,8 @@ FEATURES = [
      "Canada's official lists.", "ai-consultations/"),
     ("Release cards", "Every major AI model release since July: whether you can download it, under what licence, "
      "where you can use it and its price at launch.", "release-cards/"),
+    ("Lab timelines", "What each AI lab released, repriced and switched off, month by month, with the shutdowns "
+     "scheduled next.", "lab-timelines/"),
 ]
 
 
