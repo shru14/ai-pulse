@@ -52,6 +52,18 @@ ADDED: list[tuple[str, str, str, str, str, str]] = [
 ]
 # stories and list entries checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://www.dawn.com/news/2037803/anthropic-proposes-law-regulating-ai-to-us-lawmakers":
+        "a company sharing a draft bill with lawmakers, no government asking the public",
+    "https://www.federalregister.gov/documents/2026/08/12/2026-16371/request-for-information-rfi-on-modernizing-the-national-vulnerability-database-in-the-age-of":
+        "on the US list",
+    "https://www.gov.uk/government/calls-for-evidence/data-regulation-in-the-age-of-ai-and-other-data-intensive-technologies":
+        "on the UK list",
+    "https://www.federalregister.gov/documents/2026/07/10/2026-13928/proposed-information-collection-atus-artificial-intelligence-ai-questions":
+        "on the US list",
+    "https://www.federalregister.gov/documents/2026/05/28/2026-10602/ai-enabled-optimization-of-early-phase-clinical-trials-pilot-program-request-for-information":
+        "on the US list",
+    "https://www.federalregister.gov/documents/2026/04/29/2026-08281/ai-enabled-optimization-of-early-phase-clinical-trials-pilot-program-request-for-information":
+        "on the US list",
 }
 # a headline that may report a consultation: the words governments use for asking the public
 _ASKS = re.compile(r"\b(consult(s|ed|ing|ation|ations)?|public comments?|call for (evidence|views|input|comments?)|"
