@@ -3807,6 +3807,42 @@ def test_ai_consultations_reads_each_list_keeps_titles_naming_ai_and_builds(tmp_
     assert "<b>3</b><span>consultations on AI open now</span>" in page and "<b>4</b><span>places asked" in page
 
 
+def test_ai_consultations_daily_job_finds_unchecked_ones_and_shows_rows_checked_by_hand(tmp_path, monkeypatch):
+    import json
+    from datetime import date
+    from aipulse import consultations
+    story = {"url": "https://news.example/au", "title": "Australia opens consultation on AI guardrails", "summary": "",
+             "date": "2026-10-20T08:00:00", "category": "policy", "source": "Outlet"}
+    quiet = dict(story, url="https://news.example/q", summary="The minister asked for public comments on AI rules.",
+                 title="Minister speaks")  # asking the public, in the summary
+    other = dict(story, url="https://news.example/o", title="Australia opens consultation on fishing quotas")
+    old = dict(story, url="https://news.example/old", date="2026-10-01T08:00:00")
+    industry = dict(story, url="https://news.example/i", category="news")
+    assert [c["url"] for c in consultations.candidates([old, other, industry, story, quiet])] == [
+        "https://news.example/au", "https://news.example/q"]
+    monkeypatch.setattr(consultations, "LEFT_OUT", {"https://news.example/q": "not a consultation"})
+    added = ("Australia", "Safe and responsible AI: mandatory guardrails", "Department of Industry", "2026-11-30",
+             "https://consult.example/guardrails", "https://news.example/au")
+    monkeypatch.setattr(consultations, "ADDED", [added])
+    assert consultations.candidates([story, quiet]) == []  # both checked now
+    uk = {"results": [{"title": "Growing up in the online world", "link": "/government/consultations/online",
+                       "description": "Including AI chatbots", "end_date": "2026-10-30T23:59:00.000+00:00",
+                       "content_store_document_type": "open_consultation"}]}
+    empty = {"results": [], "initiativeResultDtoPage": {"last": True, "content": []}}
+    fetch = lambda url: json.dumps(uk if "gov.uk" in url else empty).encode() if "canada" not in url else b"title_en\n"
+    assert [r["title"] for r in consultations.summary_only(fetch, date(2026, 10, 17))] == ["Growing up in the online world"]
+    conn = store.connect(tmp_path / "t.db")
+    consultations.refresh(conn, fetch, date(2026, 10, 17))  # the page itself keeps titles naming AI only
+    assert consultations.build(conn, [], tmp_path, date(2026, 10, 17)) == ["ai-consultations/"]
+    page = (tmp_path / "ai-consultations" / "index.html").read_text(encoding="utf-8")
+    assert "Growing up" not in page and "mandatory guardrails" in page
+    assert 'class="rm-lab cs-australia"><span>Australia</span>' in page  # no list of its own to link
+    base = open(consultations.__file__, encoding="utf-8").read()
+    subject, text, html = consultations.note(base, "consultations/2026-10-20")
+    assert subject == "AI Pulse, AI consultations: 1 new consultation to approve"
+    assert "mandatory guardrails" in html and "30 Nov 2026" in html and "left out: 1 story" in text
+
+
 def test_who_owns_whom_grid_shows_only_deals_whose_story_we_have(tmp_path):
     from datetime import date
     from aipulse import owners

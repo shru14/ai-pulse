@@ -41,8 +41,31 @@ LISTS = {
 }
 
 
+# The daily job (python -m aipulse consultations, a scheduled Claude routine) checks by hand what the title rule
+# misses, and the owner approves each branch: consultations an official list gives whose own summary is about AI, and
+# consultations our Policy and Regulation stories report from places whose lists aren't read here. Stories and list
+# entries from after CHECKED_TO are its candidates.
+CHECKED_TO = "2026-10-17"
+# (place, the consultation's title as its official page gives it, who is asking, the last day to respond (YYYY-MM-DD),
+#  its official page, the story or list entry it was found through)
+ADDED: list[tuple[str, str, str, str, str, str]] = [
+]
+# stories and list entries checked by hand and left out, with why, so they aren't checked again
+LEFT_OUT: dict[str, str] = {
+}
+# a headline that may report a consultation: the words governments use for asking the public
+_ASKS = re.compile(r"\b(consult(s|ed|ing|ation|ations)?|public comments?|call for (evidence|views|input|comments?)|"
+                   r"requests? for (comments?|information|input)|seeks? (views|feedback|comments|input)|"
+                   r"have your say|feedback on (a |the )?draft|draft (rules|guidelines|regulations?|framework|bill))\b",
+                   re.I)
+
+
 def names_ai(title: str) -> bool:
     return bool(AI.search(title))
+
+
+def _about_ai(title: str, summary: str) -> bool:
+    return names_ai(title) or names_ai(summary)
 
 
 def _day(s: str) -> str:
@@ -52,34 +75,38 @@ def _day(s: str) -> str:
 # --- each list ---
 
 def read_uk(fetcher, since: str) -> list[dict]:
-    """GOV.UK's search API: consultations naming AI, open, closed or with the outcome published."""
+    """GOV.UK's search API: consultations naming AI in the title or summary, open, closed or with the outcome
+    published."""
     url = ("https://www.gov.uk/api/search.json?count=1000&order=-public_timestamp"
-           "&fields=title,link,end_date,organisations,content_store_document_type"
+           "&fields=title,link,description,end_date,organisations,content_store_document_type"
            + "".join(f"&filter_content_store_document_type={t}"
                      for t in ("open_consultation", "closed_consultation", "consultation_outcome")))
     rows = []
     for q in ("%22artificial+intelligence%22", "AI"):
         for r in json.loads(fetcher(f"{url}&q={q}")).get("results") or []:
             closes = _day(r.get("end_date") or "")
-            if closes >= since and names_ai(r.get("title", "")):
+            if closes >= since and _about_ai(r.get("title", ""), r.get("description") or ""):
                 link = "https://www.gov.uk" + r["link"] if r["link"].startswith("/") else r["link"]
                 orgs = [o.get("title", "") for o in r.get("organisations") or [] if o.get("title")]
                 rows.append({"place": "UK", "title": r["title"], "url": link, "who": ", ".join(orgs[:2]),
+                             "summary": r.get("description") or "",
                              "closes": closes, "outcome": link if r.get("content_store_document_type") ==
                              "consultation_outcome" else ""})
     return rows
 
 
 def read_us(fetcher, since: str) -> list[dict]:
-    """The Federal Register API: rules and notices taking comments, whose comment period ends from `since` on."""
+    """The Federal Register API: rules and notices taking comments, whose comment period ends from `since` on, naming
+    AI in the title or abstract."""
     rows = []
     for term in ("%22artificial+intelligence%22", "AI"):
         url = (f"https://www.federalregister.gov/api/v1/documents.json?per_page=1000&order=newest"
                f"&conditions%5Bterm%5D={term}&conditions%5Bcomment_date%5D%5Bgte%5D={since}"
-               + "".join(f"&fields%5B%5D={f}" for f in ("title", "html_url", "comments_close_on", "agency_names")))
+               + "".join(f"&fields%5B%5D={f}" for f in ("title", "abstract", "html_url", "comments_close_on",
+                                                                   "agency_names")))
         for d in json.loads(fetcher(url)).get("results") or []:
-            if d.get("comments_close_on") and names_ai(d.get("title", "")):
-                rows.append({"place": "US", "title": d["title"], "url": d["html_url"],
+            if d.get("comments_close_on") and _about_ai(d.get("title", ""), d.get("abstract") or ""):
+                rows.append({"place": "US", "title": d["title"], "url": d["html_url"], "summary": d.get("abstract") or "",
                              "who": ", ".join((d.get("agency_names") or [])[:2]), "closes": d["comments_close_on"],
                              "outcome": ""})
     return rows
@@ -96,7 +123,7 @@ def read_eu(fetcher, since: str) -> list[dict]:
             title = re.sub(r"\s+", " ", r.get("shortTitle") or "").strip()
             for s in r.get("currentStatuses") or []:
                 closes = (s.get("feedbackEndDate") or "")[:10].replace("/", "-")
-                if closes >= since and names_ai(title):
+                if closes >= since and names_ai(title):  # the search gives no summary
                     rows.append({"place": "EU", "title": title, "who": "European Commission", "closes": closes,
                                  "url": "https://ec.europa.eu/info/law/better-regulation/have-your-say/initiatives/"
                                         f"{int(r['id'])}_en", "outcome": ""})
@@ -110,12 +137,51 @@ def read_canada(fetcher, since: str) -> list[dict]:
     text = fetcher("https://open.canada.ca/static/consultations_open.csv").decode("utf-8-sig", "replace")
     rows = []
     for r in csv.DictReader(io.StringIO(text)):
-        if r.get("end_date", "") >= since and names_ai(r.get("title_en", "")):
+        if r.get("end_date", "") >= since and _about_ai(r.get("title_en", ""), r.get("description_en", "")):
             report = r.get("report_link_en", "")
             rows.append({"place": "Canada", "title": r["title_en"].strip(), "url": r.get("profile_page_en", ""),
+                         "summary": r.get("description_en", ""),
                          "who": r.get("owner_org_title", "").split(" | ")[0], "closes": r["end_date"][:10],
                          "outcome": report if report.startswith("http") else ""})
     return rows
+
+
+def checked() -> set[str]:
+    return {a[4] for a in ADDED} | {a[5] for a in ADDED} | set(LEFT_OUT)
+
+
+def candidates(cards: list[dict], since: str = "") -> list[dict]:
+    """Policy and Regulation stories from after CHECKED_TO (or `since`, if later) whose headline or summary names AI
+    and asking the public, that ADDED and LEFT_OUT don't hold: one per event, newest first."""
+    since, done = max(since, CHECKED_TO + "~"), checked()  # '~' sorts after any time of day
+    return [c for c in sorted(cards, key=lambda c: c["date"], reverse=True)
+            if c["date"] >= since and c.get("category") in ("policy", "regulation")
+            and not any(s["url"] in done for s in [c, *(c.get("also") or [])])
+            and _ASKS.search(f"{c['title']} {c.get('summary') or ''}")
+            and _about_ai(c["title"], c.get("summary") or "")]
+
+
+def summary_only(fetcher=feeds.fetch, today: date | None = None) -> list[dict]:
+    """The official lists' consultations from the past 6 months whose summary names AI but whose title doesn't (the
+    page leaves them out unless checked by hand), that ADDED and LEFT_OUT don't hold; closing soonest first."""
+    since = ((today or datetime.now(timezone.utc).date()) - timedelta(days=PAST)).isoformat()
+    done, out = checked(), []
+    for read in READERS.values():
+        out += [r for r in read(fetcher, since) if not names_ai(r["title"]) and r["url"] not in done]
+    return sorted({r["url"]: r for r in out}.values(), key=lambda r: r["closes"], reverse=True)
+
+
+def note(base: str, branch: str) -> tuple[str, str, str] | None:
+    """The project inbox's note for a consultations/<day> branch: each consultation it adds, and what it left out;
+    None when it adds nothing. `base` is main's copy of this file."""
+    from . import approve
+    had = approve.lists_in(base, ("ADDED", "LEFT_OUT"))
+    rows = [(p, t, w, _when(c), u, f) for p, t, w, c, u, f in ADDED if u not in had["ADDED"]]
+    dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    if not rows and not dropped:
+        return None
+    return approve.note("AI consultations", f"consultation{'s' * (len(rows) != 1)}", branch,
+                        ("Place", "Consultation", "Asked by", "Closes", "Official page", "Found through"), rows, dropped)
 
 
 def health_name(place: str) -> str:
@@ -134,7 +200,7 @@ def refresh(conn, fetcher=feeds.fetch, today: date | None = None) -> str:
     said = []
     for place, read in READERS.items():
         try:
-            rows = read(fetcher, since)
+            rows = [r for r in read(fetcher, since) if names_ai(r["title"])]
             seen, out = set(), []
             for r in rows:  # found by both searches: kept once
                 if r["url"] not in seen:
@@ -163,6 +229,18 @@ def _when(d: str) -> str:
     return f"{int(day)} {_MONTHS[int(m) - 1]} {y}"
 
 
+def _slug(place: str) -> str:
+    return re.sub(r"[^a-z]+", "-", place.lower()).strip("-")
+
+
+def _place(place: str) -> str:
+    """The place's label: a link to its official list where one is read, else its name (rows checked by hand)."""
+    if place not in LISTS:
+        return f"<span>{escape(place)}</span>"
+    url, name = LISTS[place]
+    return f'<a href="{escape(url, quote=True)}" rel="noopener" title="{escape(place)}: {escape(name)}">{escape(place)}</a>'
+
+
 def _row(r: dict, when: str, today: date, same: bool) -> str:
     days = (date.fromisoformat(r["closes"]) - today).days
     left = f'<small>{"today" if days == 0 else "in 1 day" if days == 1 else f"in {days} days"}</small>' \
@@ -176,8 +254,7 @@ def _row(r: dict, when: str, today: date, same: bool) -> str:
     return (f'<tr{mark} data-place="{r["place"]}" data-when="{when}" data-day="{r["closes"]}" data-text="{text}">'
             f'<td class="rm-d{" rm-same" if same else ""}">{_when(r["closes"])}{left}</td>'
             f'<td><a href="{escape(r["url"], quote=True)}" rel="noopener">{escape(title)}</a>{outcome}</td>'
-            f'<td>{escape(who)}</td><td class="rm-lab cs-{r["place"].lower()}"><a href="{escape(LISTS[r["place"]][0], quote=True)}" '
-            f'rel="noopener" title="{r["place"]}: {LISTS[r["place"]][1]}">{r["place"]}</a></td></tr>')
+            f'<td>{escape(who)}</td><td class="rm-lab cs-{_slug(r["place"])}">{_place(r["place"])}</td></tr>')
 
 
 def _table(rows: list[dict], when: str, today: date) -> str:
@@ -203,7 +280,7 @@ def _filters(n: int, places: list[tuple[str, int]], counts: dict) -> str:
 
 # the filters, in the reader's browser: every tag set must match, the search every word typed; a table left empty
 # is hidden, and each day's date is shown on its first row still showing (as on Models being retired)
-SCRIPT = """<script>
+SCRIPT = r"""<script>
 (()=>{const pg=document.querySelector('.cs'),rows=[...pg.querySelectorAll('tbody tr[data-place]')],q=pg.querySelector('.sh-q'),
 count=pg.querySelector('.sh-count b'),none=pg.querySelector('.sh-none'),f={place:'',when:''};
 function run(){const words=q.value.toLowerCase().split(/\s+/).filter(Boolean);let n=0;
@@ -218,13 +295,16 @@ q.addEventListener('input',run)})();
 
 
 def body(saved: dict, today: date) -> str:
-    rows = [r for p in LISTS for r in saved.get(p, {}).get("rows", [])]
+    seen = {r["url"] for p in LISTS for r in saved.get(p, {}).get("rows", [])}
+    rows = [r for p in LISTS for r in saved.get(p, {}).get("rows", [])] + [
+        {"place": p, "title": t, "who": w, "closes": c, "url": u, "outcome": ""}
+        for p, t, w, c, u, _ in ADDED if u not in seen]
     now, past = today.isoformat(), (today - timedelta(days=PAST)).isoformat()
     open_ = sorted((r for r in rows if r["closes"] >= now), key=lambda r: (r["closes"], r["place"], r["title"]))
     closed = sorted((r for r in rows if past <= r["closes"] < now), key=lambda r: (r["closes"], r["place"]),
                     reverse=True)
     shown = open_ + closed
-    places = [(p, sum(r["place"] == p for r in shown)) for p in LISTS]
+    places = [(p, sum(r["place"] == p for r in shown)) for p in dict.fromkeys([*LISTS, *(a[0] for a in ADDED)])]
     asking = [p for p, k in places if k]
     bigs = [(len(open_), "consultations on AI open now"),
             (len(closed), "closed in the past 6 months"),
@@ -243,14 +323,15 @@ def body(saved: dict, today: date) -> str:
         out.append('<section class="rm-part"><h2>Closed · past 6 months</h2>\n' + _table(closed, "closed", today)
                    + "</section>\n")
     out.append('<p class="sh-none" hidden>No consultation matches. Clear a tag or the search.</p>\n')
-    read = max((saved[p]["read"] for p in asking), default="")
+    read = max((saved[p]["read"] for p in LISTS if p in saved), default="")
     limits = [
         ("Counted", "Consultations whose own title names AI (artificial intelligence, algorithms, automated decisions, "
-                    "deepfakes, chatbots). One that covers AI only in its summary isn't here."),
+                    "deepfakes, chatbots), and ones checked by hand whose official summary is about AI or that our "
+                    "stories reported from other places."),
         ("Closes", "The last day to respond, as the list gives it. The US counts proposed rules and notices taking "
                    "comments; the EU counts every stage of Have Your Say where feedback is open."),
         ("Marked rows", f"Open consultations closing in the next {SOON} days."),
-        ("Place", "Each place's name links to its official list."),
+        ("Place", "A place's name links to its official list where we read one."),
     ]
     if any(r.get("outcome") for r in shown):
         limits.insert(3, ("Outcome published", "Shown where the list links the government's response (GOV.UK and "
@@ -266,7 +347,7 @@ def body(saved: dict, today: date) -> str:
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write the page from the rows last read. Returns its path, or nothing before any list was read."""
     saved = load(conn)
-    if not any(v.get("rows") for v in saved.values()):
+    if not any(v.get("rows") for v in saved.values()) and not ADDED:
         return []
     what = ("Where can you tell a government what you think about AI and until when? Consultations whose title names "
             "AI, from the official lists of the UK, the US, the EU and Canada.")
