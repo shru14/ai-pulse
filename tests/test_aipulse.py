@@ -3971,6 +3971,9 @@ def test_new_tests_for_ai_rows_scores_and_candidates(tmp_path):
     assert [c["url"] for c in nt.candidates(cards)] == ["https://arxiv.org/abs/2610.99999"]
     assert all(s in nt.SUBJECTS for _, s, *_ in nt.TESTS.values())
     assert nt.note(open(nt.__file__, encoding="utf-8").read(), "tests/2026-10-18") is None
+    base = open(nt.__file__, encoding="utf-8").read().replace(url, "https://gone.example/")
+    subject, text, html = nt.note(base, "tests/2026-10-18")
+    assert "1 new test to approve" in subject and url in text and "LifeSearch" in html
 
 
 def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_path, monkeypatch):
