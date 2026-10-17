@@ -2,6 +2,9 @@
 AI model, from Epoch AI's open dataset of notable models (CC BY 4.0, credited on the page), read on every full run.
 Each estimate is Epoch's own, with how sure Epoch is of it; models it has no estimate for are counted, never guessed.
 Numbers are shown against GPT-4's training run (Epoch's estimate), so 10× means ten times what trained GPT-4.
+A model built on another (Epoch's "Base model") has a figure that includes its base model's training, so it is shown
+with what it was built on and its own post-training compute where Epoch gives one, and is left out of the largest-run
+ranking and labels so a base model's training isn't counted twice.
 
 Model data, not papers, so it is a Research feature page only, never a Research card. Linked from Research's strip.
 """
@@ -32,20 +35,32 @@ _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
 def parse(text: str) -> list[dict]:
     """The CSV's rows as the few fields the page shows: model, lab, day, training compute (FLOP, None when Epoch has
-    no estimate), how sure Epoch is, the model's own page and whether its weights can be downloaded."""
+    no estimate), how sure Epoch is, the model's own page, whether its weights can be downloaded, the model it was
+    built on ('' for none) and its post-training compute (FLOP, None when Epoch gives none)."""
     out = []
     for r in csv.DictReader(io.StringIO(text)):
         day = (r.get("Publication date") or "")[:10]
         if not r.get("Model") or len(day) != 10:
             continue
-        try:
-            flop = float(r["Training compute (FLOP)"]) if r.get("Training compute (FLOP)") else None
-        except ValueError:
-            flop = None
+        flop, post = _float(r.get("Training compute (FLOP)")), _float(r.get("Finetune compute (FLOP)"))
         out.append({"model": r["Model"].strip(), "lab": ", ".join(o.strip() for o in (r.get("Organization") or "").split(",") if o.strip()), "date": day,
                     "flop": flop, "sure": (r.get("Confidence") or "").strip(), "link": (r.get("Link") or "").strip(),
-                    "open": (r.get("Model accessibility") or "").startswith("Open weights")})
+                    "open": (r.get("Model accessibility") or "").startswith("Open weights"),
+                    "base": ", ".join(b.strip() for b in (r.get("Base model") or "").split(",") if b.strip()),
+                    "post": post})
     return out
+
+
+def _float(v: str | None) -> float | None:
+    try:
+        return float(v) if v else None
+    except ValueError:
+        return None
+
+
+def own(r: dict) -> bool:
+    """A model trained from scratch, not built on another: only these are ranked as training runs."""
+    return not r.get("base")
 
 
 def refresh(conn, fetcher=feeds.fetch) -> str:
@@ -112,12 +127,12 @@ def since(today: date) -> str:
 
 def _glance(rows: list[dict], base: dict, today: date) -> str:
     est = [r for r in rows if r["flop"]]
-    big = max(est, key=lambda r: r["flop"])
+    big = max((r for r in est if own(r)), key=lambda r: r["flop"])
     start = since(today)
     recent = [r for r in rows if r["date"] >= start]
-    first = min((r for r in est if r["date"][:4] == str(CHART_FROM)), key=lambda r: -r["flop"], default=None)
+    first = min((r for r in est if own(r) and r["date"][:4] == str(CHART_FROM)), key=lambda r: -r["flop"], default=None)
     tiles = [(times(big["flop"], base["flop"]), f"GPT-4's training compute went into {big['model']} "
-              f"({_month(big['date'])}), the largest run with an estimate", "#CC79A7"),
+              f"({_month(big['date'])}), the largest run trained from scratch with an estimate", "#CC79A7"),
              (f"{sum(bool(r['flop']) for r in recent)} of {len(recent)}", f"notable models released since "
               f"{_day(start)} that have an estimate", "#E69F00")]
     if first:
@@ -130,7 +145,8 @@ def _glance(rows: list[dict], base: dict, today: date) -> str:
 
 def chart(rows: list[dict], base: dict, today: date) -> str:
     """Every model from CHART_FROM with an estimate, as a dot: left to right by release day, up by training compute on
-    a scale where each line is 100 times the one below. Each year's largest run is named."""
+    a scale where each line is 100 times the one below. A model built on another is a hollow dot, as its figure
+    includes its base model's training. Each year's largest run trained from scratch is named."""
     est = [r for r in rows if r["flop"] and int(r["date"][:4]) >= CHART_FROM]
     if not est:
         return ""
@@ -158,57 +174,91 @@ def chart(rows: list[dict], base: dict, today: date) -> str:
         parts.append(f'<line class="cg-tick" x1="{xx:.1f}" x2="{xx:.1f}" y1="{H - B}" y2="{H - B + 5}"/>'
                      f'<text class="cg-x" x="{x(f"{yr}-07-01"):.1f}" y="{H - B + 22}">{yr}</text>')
     tops = {}
-    for r in est:
+    for r in filter(own, est):
         if r["date"][:4] not in tops or r["flop"] > tops[r["date"][:4]]["flop"]:
             tops[r["date"][:4]] = r
     for r in sorted(est, key=lambda r: r["flop"]):
-        title = escape(f"{r['model']} ({r['lab']}, {_month(r['date'])}): {times(r['flop'], base['flop'])} GPT-4")
-        parts.append(f'<circle class="cg-dot" cx="{x(r["date"]):.1f}" cy="{y(r["flop"]):.1f}" r="3.4"><title>{title}'
+        title = escape(f"{r['model']} ({r['lab']}, {_month(r['date'])}): {times(r['flop'], base['flop'])} GPT-4"
+                       + (f", built on {r['base']}" if r["base"] else ""))
+        parts.append(f'<circle class="cg-dot{"" if own(r) else " cg-built"}" cx="{x(r["date"]):.1f}" cy="{y(r["flop"]):.1f}" r="3.4"><title>{title}'
                      '</title></circle>')
-    placed = []  # (x, y) of each name written, so a name close to one already written goes under its dot
-    for r in sorted([*tops.values(), base], key=lambda r: r["date"]):
-        xx, yy = x(r["date"]), y(r["flop"])
-        anchor = ' text-anchor="end"' if xx > W - 170 else ""
-        ty = yy - 7
-        if any(abs(xx - px) < 120 and abs(ty - py) < 16 for px, py in placed):
-            ty = yy + 17
-        placed.append((xx, ty))
-        parts.append(f'<circle class="cg-top" cx="{xx:.1f}" cy="{yy:.1f}" r="4.6"/>'
-                     f'<text class="cg-name" x="{xx + (-9 if anchor else 9):.1f}" y="{ty:.1f}"{anchor}>'
-                     f'{escape(r["model"].split(" (")[0])}</text>')
+    named = sorted([*tops.values(), base], key=lambda r: r["date"])
+    spots = [(x(r["date"]), y(r["flop"])) for r in named]
+    line = y(base["flop"])
+    boxes = []  # each name's box, so no name is written over another, a named dot or the GPT-4 line
+
+    def clear(b: tuple, own: int) -> bool:
+        bx, by, bw, bh = b
+        return (bx >= L and bx + bw <= W - R and by >= T and by + bh <= H - B
+                and not by - 2 < line < by + bh + 2
+                and all(bx + bw + 3 < ox or ox + ow + 3 < bx or by + bh + 2 < oy or oy + oh + 2 < by
+                        for ox, oy, ow, oh in boxes)
+                and all(not (bx - 6 < sx < bx + bw + 6 and by - 6 < sy < by + bh + 6)
+                        for i, (sx, sy) in enumerate(spots) if i != own))
+
+    for i, r in enumerate(named):
+        xx, yy = spots[i]
+        name = r["model"].split(" (")[0]
+        bw, bh = len(name) * 6.9 + 8, 18
+        # beside the dot, then centred above or below it, then off to one side, then further off with a line back
+        tries = ([(1, 0, False), (-1, 0, False), (0, -16, False), (0, 16, False)]
+                 + [(dx, dy, far) for far, dys in ((False, (-14, 14)), (True, (-30, 30, -46, 46))) for dy in dys
+                    for dx in (1, -1)])
+        for dx, dy, far in tries:
+            bx = xx + 8 if dx > 0 else xx - 8 - bw if dx < 0 else xx - bw / 2
+            b = (bx, yy + dy - bh / 2, bw, bh)
+            if clear(b, i):
+                break
+        else:
+            dx, dy, far = tries[0]
+            b = (xx + 8, yy - bh / 2, bw, bh)
+        boxes.append(b)
+        bx, by = b[0], b[1]
+        if dy:  # not level with its dot: a line shows which dot it names
+            ex = min(max(xx, bx + 6), bx + bw - 6)  # the box edge nearest the dot, so the line shows its whole length
+            ey = by + bh if by + bh < yy else by if by > yy else by + bh / 2
+            parts.append(f'<line class="cg-lead" x1="{xx:.1f}" y1="{yy:.1f}" x2="{ex:.1f}" y2="{ey:.1f}"/>')
+        parts.append(f'<rect class="cg-label" x="{bx:.1f}" y="{by:.1f}" width="{bw:.1f}" height="{bh}" rx="3"/>'
+                     f'<circle class="cg-top" cx="{xx:.1f}" cy="{yy:.1f}" r="4.6"/>'
+                     f'<text class="cg-name" x="{bx + 4:.1f}" y="{by + 13.5:.1f}">{escape(name)}</text>')
     svg = (f'<svg class="cg" viewBox="0 0 {W} {H}" role="img" aria-label="Training compute of {len(est)} notable '
            f'models since {CHART_FROM}, against GPT-4">{"".join(parts)}</svg>')
     return ('<section><h2>Training compute, model by model</h2>\n<p class="nt-how">Each dot is one notable model since '
             f'{CHART_FROM} with an estimate ({len(est)} models), placed by its release day and how much computing '
-            'trained it. Each line up is 100 times the one below; GPT-4 is the bold line. The largest run of each year '
-            f'is named.</p>\n<div class="cg-wrap">{svg}</div></section>\n')
+            'trained it. Each line up is 100 times the one below; GPT-4 is the bold line. A hollow dot is a model built '
+            "on another, so its figure includes that model's training. The largest run of each year trained from "
+            f'scratch is named.</p>\n<div class="cg-wrap">{svg}</div></section>\n')
 
 
-def _rows(rows: list[dict], base: dict) -> str:
+def _rows(rows: list[dict], base: dict, built: bool = True) -> str:
+    """Table rows; built=False leaves out "Built on" (the largest runs, where every model was trained from scratch)."""
     def name(r: dict) -> str:
         n = escape(r["model"])
         return f'<a href="{escape(r["link"])}" rel="noopener">{n}</a>' if r["link"].startswith("http") else n
 
     return "".join(
-        f'<tr><td>{name(r)}</td><td>{escape(r["lab"])}</td><td>{_month(r["date"])}</td>'
-        f'<td class="pn-num"><b>{times(r["flop"], base["flop"])}</b> GPT-4<small>{flops(r["flop"])} FLOP</small></td>'
+        f'<tr><td>{name(r)}</td><td>{escape(r["lab"])}</td>' + (f'<td>{escape(r["base"]) or "—"}</td>' if built else "")
+        + f'<td>{_month(r["date"])}</td>'
+        f'<td class="pn-num"><b>{times(r["flop"], base["flop"])}</b> GPT-4<small>{flops(r["flop"])} FLOP</small>'
+        + (f'<small>Post-training: {times(r["post"], base["flop"])} GPT-4</small>' if r["post"] else "") + '</td>'
         f'<td>{escape(r["sure"])}</td><td>{"Yes" if r["open"] else "No"}</td></tr>' for r in rows)
 
 
-_HEAD = ('<thead><tr><th>Model</th><th>Made by</th><th>Released</th><th>Training compute</th><th>How sure Epoch is</th>'
-         '<th>Weights to download</th></tr></thead>')
+def _head(built: bool = True) -> str:
+    return ('<thead><tr><th>Model</th><th>Made by</th>' + '<th>Built on</th>' * built + '<th>Released</th>'
+            '<th>Training compute</th><th>How sure Epoch is</th><th>Weights to download</th></tr></thead>')
 
 
 def _tables(rows: list[dict], base: dict, today: date) -> str:
     est = [r for r in rows if r["flop"]]
-    top = sorted(est, key=lambda r: -r["flop"])[:TOP]
+    top = sorted(filter(own, est), key=lambda r: -r["flop"])[:TOP]
     start = since(today)
     new = sorted((r for r in est if r["date"] >= start), key=lambda r: r["date"], reverse=True)
-    out = (f'<section><h2>The {len(top)} largest training runs with an estimate</h2>\n'
-           f'<table class="mt cg-table">{_HEAD}<tbody>{_rows(top, base)}</tbody></table></section>\n')
+    out = (f'<section><h2>The {len(top)} largest training runs from scratch with an estimate</h2>\n'
+           f'<table class="mt cg-table">{_head(False)}<tbody>{_rows(top, base, False)}</tbody></table></section>\n')
     if new:
         out += (f'<section><h2>Newest estimates <span class="iw-when">Released since {_day(start)}</span></h2>\n'
-                f'<table class="mt cg-table">{_HEAD}<tbody>{_rows(new, base)}</tbody></table></section>\n')
+                f'<table class="mt cg-table">{_head()}<tbody>{_rows(new, base)}</tbody></table></section>\n')
     return out
 
 
@@ -222,6 +272,9 @@ def _limits(rows: list[dict], base: dict, read: str, today: date) -> str:
          "historically important."),
         ("Estimates", "Epoch's own, from what the makers published, each marked Confident, Likely or Speculative "
          "(Epoch's documentation says what each means)."),
+        ("Built on another model", f"{sum(bool(r['base']) for r in rows if r['flop'])} models with an estimate were "
+         "built on another model. Epoch's figure for them includes the base model's training, so they aren't ranked "
+         "among the largest runs; post-training is shown on its own where Epoch gives it."),
         ("Against GPT-4", f"1× is Epoch's estimate for GPT-4 ({flops(base['flop'])} FLOP, marked {base['sure']}). "
          "FLOP counts the single calculations a computer made while training the model."),
         *([("No estimate", f"{len(missing)} notable models released since {_day(start)} have none, so they aren't "

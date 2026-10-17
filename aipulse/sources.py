@@ -375,6 +375,9 @@ SOURCES = [
     {"name": "Lil'Log", "url": "https://lilianweng.github.io/index.xml", "category": "news", "ai_only": True,
      "max_age_days": 60, "no_releases": True},  # a few long posts a year
     {"name": "METR", "url": "https://metr.org/feed.xml", "category": "news", "ai_only": True, "no_releases": True},
+    # Epoch AI (17 Oct 2026): no feed, so its publications sitemap lists the posts; robots.txt allows /publications/
+    {"name": "Epoch AI", "url": "https://epoch.ai/sitemap-publications-0.xml", "format": "page_list",
+     "link": r"^https://epoch\.ai/publications/[a-z0-9-]+$", "category": "news", "ai_only": True, "no_releases": True},
 
     # --- Infra: AI's data centres and what they draw on (power, water, land, emissions) ---
     # Checked 3 Oct 2026: each robots.txt allows reading and each publishes this feed; articles are free to read.
