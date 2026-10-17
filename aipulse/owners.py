@@ -69,6 +69,88 @@ LEFT_OUT = {
         "Round not closed",
     "https://siliconangle.com/2026/10/11/nvidia-reportedly-in-early-talks-to-buy-acqui-hire-or-invest-more-in-reflection-ai/":
         "Talks only",
+    "https://techcrunch.com/2026/04/08/aws-boss-explains-why-investing-billions-in-both-anthropic-and-openai-is-an-ok-conflict/":
+        "same as Amazon in Anthropic",
+    "https://techcrunch.com/2026/04/06/openai-alums-have-been-quietly-investing-from-a-new-potentially-100m-fund/":
+        "venture fund, not a company in a lab",
+    "https://siliconangle.com/2026/04/03/spacexs-stratospheric-ipo-hopes-openais-ridiculous-round-agentic-ai-gap/":
+        "no new stake named in an AI lab",
+    "https://techcrunch.com/2026/04/02/openai-acquires-tbpn-the-buzzy-founder-led-business-talk-show/":
+        "OpenAI buying a talk show, not an AI lab",
+    "https://openai.com/index/openai-acquires-tbpn":
+        "OpenAI buying a talk show, not an AI lab",
+    "https://techcrunch.com/2026/03/31/openai-not-yet-public-raises-3b-from-retail-investors-in-monster-122b-fund-raise/":
+        "no amounts per company; Amazon, Nvidia, SoftBank, Microsoft already in OpenAI",
+    "https://techcrunch.com/2026/03/30/mistral-ai-raises-830m-in-debt-to-set-up-a-data-center-near-paris/":
+        "debt, no share",
+    "https://the-decoder.com/openai-expands-its-record-funding-round-to-over-120-billion-as-it-eyes-a-potential-ipo-later-this-year/":
+        "no amounts per company; same as Microsoft in OpenAI",
+    "https://techcrunch.com/2026/03/23/sam-altman-openai-fusion-energy-board-helion/":
+        "talks to sell power, no share",
+    "https://techcrunch.com/2026/03/09/openai-acquires-promptfoo-to-secure-its-ai-agents/":
+        "OpenAI buying a security startup, not an AI lab",
+    "https://the-decoder.com/softbank-seeks-record-40-billion-loan-to-fund-openai-stake/":
+        "loan still under negotiation; same as SoftBank in OpenAI",
+    "https://techcrunch.com/2026/03/04/jensen-huang-says-nvidia-is-pulling-back-from-openai-and-anthropic-but-his-explanation-raises-more-questions-than-it-answers/":
+        "same as Nvidia in OpenAI and Nvidia in Anthropic",
+    "https://siliconangle.com/2026/02/27/openai-raises-megaround-anthropics-battles-multiply-saaspocalypse-widens/":
+        "same as Amazon in OpenAI",
+    "https://techcrunch.com/2026/02/27/anthropic-vs-the-pentagon-whats-actually-at-stake/":
+        "no investment in an AI lab",
+    "https://cset.georgetown.edu/article/pentagon-sets-deadline-for-anthropic-amid-high-stakes-standoff/":
+        "no investment in an AI lab",
+    "https://techcrunch.com/2026/02/25/anthropic-acquires-vercept-ai-startup-agents-computer-use-founders-investors/":
+        "Vercept builds agent tools, not stated to make AI models",
+    "https://techcrunch.com/2026/02/20/anthropic-funded-group-backs-candidate-attacked-by-rival-ai-super-pac/":
+        "political group, no share",
+    "https://techcrunch.com/2026/02/19/openai-reportedly-finalizing-100b-deal-at-more-than-850b-valuation/":
+        "reportedly, talks only",
+    "https://siliconangle.com/2026/02/13/anthropic-databricks-raise-billions-next-stop-ipos/":
+        "no investors named",
+    "https://siliconangle.com/2026/02/12/anthropic-closes-30b-round-annualized-revenue-tops-14b/":
+        "only funds named, plus Nvidia and Microsoft: same as them in Anthropic",
+    "https://techcrunch.com/2026/02/12/anthropic-raises-another-30-billion-in-series-g-with-a-new-value-of-380-billion/":
+        "investors are funds; no amounts per company",
+    "https://techcrunch.com/2026/02/09/anthropic-closes-in-on-20b-round/":
+        "round not closed; participation only expected",
+    "https://cset.georgetown.edu/article/musks-mega-merger-of-spacex-and-xai-bets-on-sci-fi-future-of-data-centers-in-space/":
+        "same as SpaceX in xAI",
+    "https://the-decoder.com/cerebras-closes-1-billion-funding-round-at-23-billion-valuation-after-landing-openai-deal/":
+        "Cerebras is a chip company, not an AI lab",
+    "https://the-decoder.com/nvidia-is-reportedly-investing-20-billion-in-openai-says-it-will-proceed-one-step-at-a-time/":
+        "reportedly, deal not final",
+    "https://techcrunch.com/2026/01/31/nvidia-ceo-pushes-back-against-report-that-his-companys-100b-openai-investment-has-stalled/":
+        "no amount done; talks and plans only",
+    "https://techcrunch.com/2026/01/29/amazon-is-reportedly-in-talks-to-invest-50-billion-in-openai/":
+        "Talks only",
+    "https://siliconangle.com/2026/01/28/openai-anthropic-reportedly-raising-billions-dollars-new-funding/":
+        "reportedly raising, not closed",
+    "https://techcrunch.com/2026/01/22/voice-ai-engine-and-openai-partner-livekit-hits-1b-valuation/":
+        "LiveKit is not an AI lab",
+    "https://the-decoder.com/openai-promises-ai-data-centers-wont-raise-local-electricity-prices/":
+        "no investment in an AI lab",
+    "https://techcrunch.com/2026/01/20/humans-a-human-centric-ai-startup-founded-by-anthropic-xai-google-alums-raised-480m-seed-round/":
+        "no amounts per investor; not stated to make AI models",
+    "https://siliconangle.com/2026/01/19/chinas-moonshot-ai-close-another-massive-funding-round-two-biggest-rivals-go-public/":
+        "Round not closed",
+    "https://the-decoder.com/new-sequoia-leadership-greenlights-first-anthropic-investment-amid-25-billion-raise/":
+        "venture fund, still preparing; Microsoft and Nvidia already in Anthropic",
+    "https://techcrunch.com/2026/01/18/sequoia-to-invest-in-anthropic-breaking-vc-taboo-on-backing-rivals-ft/":
+        "venture fund, plans only",
+    "https://techcrunch.com/2026/01/15/openai-invests-in-sam-altmans-brain-computer-interface-startup-merge-labs/":
+        "OpenAI investing in a non-AI-lab",
+    "https://techcrunch.com/2026/01/13/ai-drug-discovery-startup-converge-bio-pulls-in-25m-from-bessemer-and-execs-from-meta-openai-and-wiz/":
+        "venture fund, not an AI lab",
+    "https://siliconangle.com/2026/01/08/minimax-raises-619m-hong-kong-ipo-investor-appetite-generative-ai-remains-strong/":
+        "IPO; earlier backers only; same as Alibaba in MiniMax",
+    "https://techcrunch.com/2026/01/07/anthropic-reportedly-raising-10b-at-350b-valuation/":
+        "reportedly raising, not closed",
+    "https://siliconangle.com/2026/01/06/xai-raises-20b-funding-round-backed-nvidia-cisco/":
+        "Nvidia and Cisco took part but no amounts, equity or debt not said",
+    "https://siliconangle.com/2026/01/01/moonshot-ai-one-chinas-leading-ai-tigers-raises-500m-fill-ai-infrastructure-war-chest/":
+        "reportedly; only IDG Capital (a fund) has an amount",
+    "https://the-decoder.com/openai-merges-internal-teams-to-fix-audio-ai-accuracy-gap-ahead-of-chatgpt-hardware-push/":
+        "no investment in an AI lab",
     "https://the-decoder.com/deepseek-needs-more-cash-just-weeks-after-closing-its-first-7-billion-round/":
         "no amounts per company; Tencent, CATL put money in through a limited partnership with no voting rights, new round only in talks",
     "https://the-decoder.com/deepseek-takes-outside-money-for-the-first-time-at-a-50-billion-valuation/":
