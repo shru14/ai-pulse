@@ -266,9 +266,8 @@ def page_body(rows: list[dict]) -> str:
     uncounted = [c["company"] for c in rows if not c["n"]]
     note = (f"The ring splits the {len(rows)} cuts by the reason the company gave. Jobs are added up where a number was "
             f"given (about {_num(total)} in all)" + (f"; {_names(uncounted)} gave none." if uncounted else "."))
-    return (f'<div class="ft jb">\n<h1>Jobs blamed on AI</h1>\n<p class="jb-q">{escape(QUESTION)}</p>\n'
-            f'<p class="intro">{escape(intro)}</p>\n'
-            f'<section class="jb-answer"><h2>The cuts, by the reason the company gave</h2>\n'
+    return ('<div class="ft jb">\n' + pages.feature_head(PATH, "Jobs blamed on AI", QUESTION, escape(intro))
+            + f'<section class="jb-answer"><h2>The cuts, by the reason the company gave</h2>\n'
             f'<div class="jb-split">{_ring(rows, shown)}{table}</div>\n<p class="jb-note">{escape(note)}</p></section>\n'
             f'<section class="jb-years"><h2>The cuts, by year</h2>\n{_years(rows, shown)}\n'
             '<p class="jb-note">Each column counts the cuts announced that year, split by the reason the company gave '

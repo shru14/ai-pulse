@@ -143,11 +143,11 @@ def body(rows: list[dict]) -> str:
          "power. A dashed box is money promised \"up to\" that amount, paid in stages."),
         ("Each box", "Links to the story that reported the deal; the month is when it was reported."),
     ]
-    return (f'<div class="ft jb ow">\n<h1>Who owns a piece of whom</h1>\n'
-            f'<p class="jb-q">Which big companies have money in which AI labs?</p>\n'
-            f'<p class="intro">{len(rows)} stakes in {len(labs)} AI labs, from the news we read, each checked by hand '
-            f'against its story. {escape(_sentence(rows))}</p>\n'
-            '<p class="ow-key"><span><i></i>Money in</span><span><i class="ow-up"></i>"Up to": promised, paid in '
+    return ('<div class="ft jb ow">\n'
+            + pages.feature_head(PATH, "Who owns a piece of whom", "Which big companies have money in which AI labs?",
+                                 f"{len(rows)} stakes in {len(labs)} AI labs, from the news we read, each checked by "
+                                 f"hand against its story. {escape(_sentence(rows))}")
+            + '<p class="ow-key"><span><i></i>Money in</span><span><i class="ow-up"></i>"Up to": promised, paid in '
             'stages</span><span>Each box links to its story.</span></p>\n'
             f'<div class="ow-wrap"><table class="ow-grid"><thead>{head}</tr></thead><tbody>{grid}</tbody></table></div>\n'
             '<section class="jb-lim"><h2>About these deals</h2>\n<table class="mt jb-small jb-limits"><tbody>'

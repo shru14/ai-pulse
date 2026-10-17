@@ -803,10 +803,6 @@ a.subscribe-btn{text-decoration:none}
 .cp .ct-card{break-inside:avoid;display:inline-block;width:100%;margin:0 0 22px;padding:14px 16px 10px;border-top:5px solid var(--c);background:color-mix(in srgb,var(--c) 7%,var(--bg));border-radius:0 0 6px 6px}
 .cp .ct-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .cp .ct-meta{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.cp .ct-hero{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center}
-.cp .ct-art{width:100%;height:auto;display:block}
-@media (max-width:640px){.cp .ct-hero{grid-template-columns:1fr 130px;gap:12px;align-items:start}}
-@media (max-width:640px){.cp .ct-hero > div{display:contents}.cp .ct-hero h1,.cp .ct-hero .jb-q{grid-column:1}.cp .ct-hero .ct-art{grid-column:2;grid-row:1/3;align-self:center}.cp .ct-hero .intro{grid-column:1/-1}}
 .cp .ct-cap{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;align-items:baseline;margin:12px 0 6px;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
 .cp .ct-cap b{font:400 17px/1.2 var(--head);letter-spacing:-.01em}
 .cp .ct-cap i{grid-column:2;font:800 13px var(--body);text-transform:uppercase;letter-spacing:.06em;font-style:normal;color:var(--muted)}
@@ -981,6 +977,20 @@ a.subscribe-btn{text-decoration:none}
 @media (max-width:640px){.cp .sh-tabs{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain}.cp .sh-tab{flex:none}
   .cp .sh-sel{flex-direction:column;align-items:stretch;gap:2px}.cp .sh-sel select{max-width:none;width:100%}}
 @media (max-width:640px){.cp .sh-filters{position:static}.cp .sh-docs{display:flex;flex-direction:column;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:6px;border-bottom:3px solid var(--ink)}.cp .sh-doc{flex:none}}
+/* Every feature's header: one band on its stream's colour, the same size on every feature: its icon, name and question
+   on the left, what it covers on the right (stacked on phones) */
+.cp .fh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 30px;align-items:center;margin:18px 0 28px;
+  padding:22px 26px;background:var(--f);color:#000;border:3px solid var(--line);box-shadow:6px 6px 0 var(--line)}
+.cp .fh-t{display:flex;align-items:center;gap:16px;min-width:0}
+.cp .fh-ic{flex:none;display:grid;place-items:center;width:56px;height:56px;background:#000;color:var(--f)}
+.cp .fh-ic svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.cp .fh h1{display:block;margin:0;font:400 clamp(22px,2.4vw,26px)/1.1 var(--display);color:#000}
+.cp .fh-q{margin:6px 0 0;font:600 17px/1.35 var(--body);color:#000}
+.cp .ft .fh-d{margin:0;max-width:none;padding-left:26px;border-left:3px solid #000;font:400 16px/1.5 var(--body);color:#000}
+.cp .fh-d a{color:#000;text-decoration-thickness:2px}
+@media (max-width:640px){.cp .fh{grid-template-columns:1fr;gap:12px;padding:16px;box-shadow:4px 4px 0 var(--line)}
+  .cp .fh-ic{width:44px;height:44px}.cp .fh-ic svg{width:26px;height:26px}
+  .cp .ft .fh-d{padding:12px 0 0;border-left:0;border-top:3px solid #000;font-size:15px}}
 """
 
 
@@ -1047,6 +1057,35 @@ def counter() -> str:
 def snippet(text: str, limit: int = 160) -> str:
     """A description short enough for a search result (they cut near 160 characters): whole words, then "…"."""
     return text if len(text) <= limit else text[:limit - 1].rsplit(" ", 1)[0].rstrip(",;:·—- ") + "…"
+
+
+# Each feature's stream colour and its icon (the ones on the front page's Features panels). A new feature adds its row
+# here and starts its page with feature_head(): its name, a one-line question and what it covers.
+FEATURES = {
+    "rule-echoes/": ("reg", "M4 18a8 8 0 0 1 16 0M7 18a5 5 0 0 1 10 0M10 18a2 2 0 0 1 4 0"),
+    "harm-to-rule/": ("reg", "M12 3.5l9.5 17h-19zM12 10v5M12 17.8v.2"),
+    "ai-in-court/": ("reg", "M12 4v16M8 20h8M5 7h14M5 7l-3 6.5a3 3 0 0 0 6 0zM19 7l-3 6.5a3 3 0 0 0 6 0z"),
+    "promises/": ("news", "M4 5h16v14H4zM8 12l3 3 5-6"),
+    "jobs-blamed-on-ai/": ("news", "M4 8h16v11H4zM9 8V5h6v3M4 13h16"),
+    "who-owns-a-piece-of-whom/": ("news", "M4 5h16v14H4zM4 10h16M10 5v14"),
+    "models-being-retired/": ("tool", "M12 7v5l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6M3 4v4h4"),
+    "release-cards/": ("tool", "M4 4h16v16H4zM4 9h16M9 9v11"),
+    "ai-safety-hub/": ("policy", "M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"),
+    "ai-consultations/": ("policy", "M4 5h16v11H9l-5 4zM8 9h8M8 12h5"),
+    "papers-in-the-news/": ("research", "M4 5h12v14H6a2 2 0 0 1-2-2zM16 9h4v8a2 2 0 0 1-2 2h-2M7.5 9h5M7.5 12.5h5M7.5 16h3"),
+    "data-centre-builds/": ("infra", "M4 20V9h9v11M13 20V4h7v16M3 20h18M7 12.5h3M7 16h3M16 8h1M16 12h1M16 16h1"),
+    "who-powers-ai/": ("infra", "M13 3L5 14h6l-1 7 8-11h-6z"),
+    "pushback-and-permits/": ("infra", "M5 4h14v11H5zM9 15v5M15 15v5M8 8h8M8 11h5"),
+}
+
+
+def feature_head(path: str, title: str, question: str, intro: str) -> str:
+    """A feature's header band (the same on every feature). title and question are plain text; intro is HTML."""
+    stream, icon = FEATURES[path]
+    q = f'<p class="fh-q">{escape(question)}</p>' if question else ""
+    return (f'<header class="fh" style="--f:var(--f-{stream})"><div class="fh-t"><span class="fh-ic" aria-hidden="true">'
+            f'<svg viewBox="0 0 24 24"><path d="{icon}"/></svg></span><div><h1>{escape(title)}</h1>{q}</div></div>\n'
+            f'<p class="fh-d">{intro}</p></header>\n')
 
 
 def share_tags(title: str, path: str, description: str) -> str:

@@ -201,6 +201,7 @@ QUESTIONS = {
     "power": "Where will data centres get their electricity?",
     "decisions": "Where are data centres being approved, paused or blocked, and who decided?",
 }
+PATHS = {"builds": "data-centre-builds/", "power": "who-powers-ai/", "decisions": "pushback-and-permits/"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
 
@@ -326,8 +327,8 @@ def _limits(limits: list[tuple[str, str]]) -> str:
 
 def _page(title: str, key: str, intro: str, glance: str, heading: str, noun: str, n: int, table: str,
           limits: str) -> str:
-    return (f'<div class="ft jb ct iw">\n<h1>{escape(title)}</h1>\n'
-            f'<p class="jb-q">{escape(QUESTIONS[key])}</p>\n<p class="intro">{escape(intro)}</p>\n{glance}'
+    return ('<div class="ft jb ct iw">\n' + pages.feature_head(PATHS[key], title, QUESTIONS[key], escape(intro))
+            + f'{glance}'
             f'<h2>{escape(heading)}</h2>\n<div class="iw-fbar"></div>'
             f'<p class="iw-count" aria-live="polite">Showing <b>{n}</b> of {n} {noun}. Pick a ▾ to filter.'
             f' <button type="button" class="iw-clear" hidden>Clear filters</button></p>\n'

@@ -1453,8 +1453,8 @@ def page_body(rows: list[dict]) -> str:
                        for k, (label, _, _, many) in KINDS.items() if (n := sum(d["kind"] == k for d in rows)))
     intro = (f"{len(rows)} documents published in 2026 by AI labs, government safety institutes, independent evaluators "
              f"and industry bodies: {counts}. Search them, or pick a risk.")
-    return (f'<div class="ft jb sh">\n<h1>AI safety hub</h1>\n<p class="jb-q">{escape(QUESTION)}</p>\n'
-            f'<p class="intro">{escape(intro)}</p>\n{_filters(rows)}\n'
+    return ('<div class="ft jb sh">\n' + pages.feature_head(PATH, "AI safety hub", QUESTION, escape(intro))
+            + f'{_filters(rows)}\n'
             f'<div class="sh-docs">{"".join(_card(d) for d in rows)}</div>\n'
             '<p class="sh-none" hidden>No document matches. Clear a filter or the search.</p>\n'
             f'{_limits(rows)}</div>\n{SCRIPT}\n')

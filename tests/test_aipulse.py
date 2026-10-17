@@ -3871,3 +3871,15 @@ def test_who_owns_whom_candidates_and_the_approval_note():
     subject, text, html = owners.note(base, "owners/2026-10-17")
     assert "1 new deal to approve" in subject and owners.DEALS[-1][-1] in text
     assert owners.note(open(owners.__file__, encoding="utf-8").read(), "owners/2026-10-17") is None
+
+
+def test_every_feature_has_the_shared_header():
+    """Each feature on the front page's Features panels has its colour and icon for pages.feature_head."""
+    from aipulse import pages
+    from aipulse.server import TEMPLATE
+    linked = set()
+    for panel in re.findall(r'<div class="bc-feats">(.*?)</div>', TEMPLATE.read_text(encoding="utf-8")):
+        linked |= set(re.findall(r'<a href="([^"]+)"', panel))
+    assert linked == set(pages.FEATURES)
+    head = pages.feature_head("release-cards/", "Release cards", "What came out?", "Every release.")
+    assert '--f:var(--f-tool)' in head and "<h1>Release cards</h1>" in head and 'class="fh-q"' in head
