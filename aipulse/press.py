@@ -33,6 +33,21 @@ SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items()} | {"pe
 # Every paper the page shows, by the URL of the news story we read it in: the paper's title and address, its subject
 # (set by hand) and what it found in plain words, from its whole abstract. Checked 13 Oct 2026.
 CHECKED: dict[str, dict] = {
+    "https://the-decoder.com/ai-coding-agents-find-the-right-file-but-miss-the-exact-lines-that-matter-study-shows/":
+        dict(paper="SWE-Explore: Benchmarking How Coding Agents Explore Repositories", link="https://arxiv.org/abs/2606.07297",
+             subject="benchmarks",
+             about="Tests how well coding agents find the code that matters for a bug across 848 issues in 203 projects, "
+                   "finding they locate the right file well but are weaker at the exact lines."),
+    "https://the-decoder.com/openai-researchers-show-small-doses-of-beneficial-trait-training-make-ai-models-broadly-safer-and-harder-to-manipulate/":
+        dict(paper="Reinforcement Learning Towards Broadly and Persistently Beneficial Models",
+             link="https://arxiv.org/abs/2606.24014", subject="safety",
+             about="Shows that training AI models on realistic examples of honest, fair and careful behaviour improved "
+                   "over 80% of more than 50 outside safety tests and made the models harder to push off course."),
+    "https://the-decoder.com/ai-wont-become-a-real-coworker-until-it-stops-answering-and-starts-finishing-tasks/":
+        dict(paper="From Chatbot to Digital Colleague: The Paradigm Shift Toward Persistent Autonomous AI",
+             link="https://arxiv.org/abs/2606.14502", subject="agents",
+             about="Argues that AI is shifting from answering single questions to doing ongoing work, as models learn to "
+                   "reason longer and agents gain lasting workspaces and reusable skills."),
     "https://the-decoder.com/google-deepminds-alphaproof-nexus-solved-dozens-of-open-math-problems-and-actually-got-peer-reviewed/":
         dict(paper="Advancing mathematics research with AI-driven formal proof search",
              link="https://doi.org/10.1126/science.aej2213", subject="science",
@@ -182,6 +197,39 @@ CHECKED: dict[str, dict] = {
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://the-decoder.com/linkedin-is-the-undisputed-king-of-long-form-ai-slop-according-to-a-study-spanning-five-platforms/",  # a company study (Pangram), no paper
+    "https://the-decoder.com/terrorist-groups-are-using-every-major-ai-chatbot-for-attack-planning-and-weapons-development/",  # a report on a think-tank site (CASP), not on a preprint server or in a journal
+    "https://blogs.nvidia.com/blog/open-models-icml-2026/",  # a company blog post, more than one paper
+    "https://www.sciencedaily.com/releases/2026/06/260624025516.htm",  # a perspective on quantum mechanics, not about AI
+    "https://the-decoder.com/a-26000-student-study-shows-ais-hidden-learning-cost-takes-two-full-years-to-surface/",  # paper found on SSRN (6868618) but its abstract can't be read to check: the publisher refuses us
+    "https://the-decoder.com/uks-ai-security-institute-finds-standard-benchmarks-systematically-underestimate-what-ai-agents-can-actually-do/",  # a company research page (AI Security Institute), paper not found
+    "https://news.mit.edu/2026/mit-media-innovating-and-educating-next-250-years-america",  # a news roundup, no one paper
+    "https://the-decoder.com/openai-paper-reveals-three-gpt-5-6-pro-models-breaking-with-single-top-tier-strategy/",  # no paper named or linked, paper not found
+    "https://techcrunch.com/2026/06/30/anthropics-claude-science-bets-on-workflow-not-a-new-model-to-win-over-scientists/",  # a product launch
+    "https://www.marktechpost.com/2026/06/26/building-supervised-fine-tuning-data-from-nvidia-open-swe-traces-trajectory-parsing-patch-analysis-token-budgets-and-tool-use-metrics/",  # a tutorial; the outlet refuses automated reads, can't read to check
+    "https://www.marktechpost.com/2026/06/26/cursor-study-finds-reward-hacking-inflates-coding-agent-benchmark-scores-on-swe-bench-pro/",  # the outlet refuses automated reads; no paper found on arXiv
+    "https://news.mit.edu/2026/mit-media-exploring-how-curiosity-driven-science-essential-ingredient-americas-success",  # a news roundup, no one paper
+    "https://siliconangle.com/2026/06/25/mirendil-raises-200m-speed-scientific-research-ai/",  # a funding story, no paper
+    "https://engineering.fb.com/2026/06/25/security/privacy-aware-infrastructure-in-the-ai-native-era-an-asset-classification-case-study/",  # a company blog post (Meta)
+    "https://openai.com/index/how-agents-are-transforming-work",  # a company page
+    "https://techcrunch.com/2026/06/24/ai-researchers-continue-to-leave-google-for-its-rivals/",  # a hiring story, no paper
+    "https://the-decoder.com/ai-is-inflating-student-grades-and-the-effect-points-to-outsourced-work-not-better-learning/",  # paper found on eScholarship but its abstract can't be read to check
+    "https://www.marktechpost.com/2026/06/17/openai-releases-lifescibench-a-750-task-benchmark-grading-ai-models-on-real-life-science-research-with-expert-written-rubric/",  # a company benchmark release (OpenAI), no paper
+    "https://the-decoder.com/ai-systems-rival-doctors-in-new-nature-studies-but-one-result-suggests-the-tech-wont-age-well/",  # more than one paper (two Nature studies)
+    "https://the-decoder.com/googles-gemini-co-lead-noam-shazeer-joins-openai-after-two-year-return-stint/",  # a hiring story, no paper
+    "https://techcrunch.com/2026/06/17/only-16-percent-of-americans-think-ai-will-have-a-positive-impact-on-society-a-new-study-shows/",  # a poll, not a paper
+    "https://ainowinstitute.org/news/press/new-study-sparks-questions-over-uber-and-lyfts-ride-pricing",  # a Consumer Reports investigation, not a paper
+    "https://the-decoder.com/kpmg-fabricated-ai-case-studies-in-a-report-designed-to-sell-clients-on-ai-adoption/",  # a company report (KPMG), not a paper
+    "https://www.sciencedaily.com/releases/2026/06/260612032024.htm",  # paper found (Nature Communications) but its abstract can't be read to check: the publisher refuses us
+    "https://openai.com/index/using-codex-to-simulate-black-holes",  # a company page
+    "https://siliconangle.com/2026/06/10/hpe-unleash-ai-targets-stalled-ai-pilots-hpeaimomentum/",  # a product launch
+    "https://the-decoder.com/anthropic-study-shows-ai-needs-hours-not-weeks-to-build-exploits-from-security-patches/",  # a company research page (Anthropic), not a paper
+    "https://www.marktechpost.com/2026/06/08/a-new-study-from-harvard-and-perplexity-finds-ai-agents-perform-26-minutes-of-autonomous-work-per-session-vs-33-seconds-for-search/",  # the outlet refuses automated reads; no paper found on arXiv
+    "https://siliconangle.com/2026/06/09/tokenomics-tracking-rules-enterprise-ai-architectures-finopsx/",  # a conference interview, no paper
+    "https://openai.com/index/introducing-the-openai-economic-research-exchange",  # a company page
+    "https://www.sciencedaily.com/releases/2026/06/260604044258.htm",  # more than one paper
+    "https://siliconangle.com/2026/06/03/policy-paper-openai-diverges-white-house-ai-safety/",  # a company policy paper, not on a preprint server or in a journal
+    "https://the-decoder.com/bain-study-finds-companies-miss-ai-savings-targets-because-humans-keep-getting-in-the-way/",  # a company report (Bain), not a paper
     "https://openai.com/index/teaching-students-to-think-and-learn-through-questions",  # a company page
     "https://iafrikan.com/one-developer-cloned-adobe-africa-should-study-what-it-did-to-the-curve/",  # no paper named
     "https://metr.org/blog/2026-10-14-control-assessment-proposal/",  # a company blog post (METR)

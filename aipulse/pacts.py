@@ -152,6 +152,10 @@ ORDERS = [
      "https://techcrunch.com/2026/06/13/openai-faces-investigation-from-state-attorneys-general/"),
     ("2026-06-03", "UK", "Google", "Order", "Give publishers an opt-out from AI Overviews",
      "https://siliconangle.com/2026/06/03/uk-orders-google-provide-ai-overviews-opt-option-publishers/"),
+    ("2026-06-01", "Florida", "OpenAI", "Court case", "Sues OpenAI and Sam Altman over ignored safety warnings and "
+     "violent incidents",
+     "https://techcrunch.com/2026/06/01/florida-sues-openai-sam-altman-in-first-of-its-kind-lawsuit-over-violent-"
+     "incidents/"),
     ("2026-04-09", "Florida (Attorney General)", "OpenAI", "Investigation",
      "ChatGPT's alleged part in the Florida State University shooting",
      "https://techcrunch.com/2026/04/09/florida-ag-investigation-openai-chatgpt-shooting/"),
@@ -180,6 +184,92 @@ LEFT_OUT = {
     "6465816": "Not signed yet",
     "https://the-decoder.com/openai-and-the-trump-administration-are-negotiating-a-government-stake-in-the-ai-startup/":
         "Talks only",
+    "https://the-decoder.com/anthropics-fable-5-is-back-worldwide-after-a-two-week-go"
+    "vernment-ban-over-a-jailbreak/":
+        "same as US → Anthropic, 2026-06-13 (already ended 2026-06-30)",
+    "https://the-decoder.com/anthropics-fable-5-could-return-within-days-as-trump-adm"
+    "inistration-prepares-to-lift-restrictions/":
+        "Lifting only planned; ban already held",
+    "https://techcrunch.com/2026/06/27/asian-ai-startups-launch-mythos-like-models-as"
+    "-anthropics-export-ban-drags-on/":
+        "same as US → Anthropic, 2026-06-13; no new action",
+    "https://techcrunch.com/2026/06/15/the-us-governments-anthropic-models-ban-was-ne"
+    "ver-about-an-ai-jailbreak/":
+        "same as US → Anthropic, 2026-06-13; commentary",
+    "https://techcrunch.com/2026/06/15/cybersecurity-vets-protest-dangerous-us-govern"
+    "ment-ban-on-anthropics-most-powerful-models/":
+        "same as US → Anthropic, 2026-06-13; protest",
+    "https://techcrunch.com/video/is-the-us-governments-anthropic-ban-accidentally-he"
+    "lping-the-brand/":
+        "same as US → Anthropic, 2026-06-13; commentary",
+    "https://techcrunch.com/podcast/the-us-banned-anthropics-fable-5-release-but-the-"
+    "numbers-dont-seem-to-care/":
+        "same as US → Anthropic, 2026-06-13; commentary",
+    "https://arstechnica.com/ai/2026/06/how-anthropic-may-have-talked-itself-into-an-"
+    "ai-export-ban/":
+        "Can't read to check; same event as US → Anthropic, 2026-06-13",
+    "https://siliconangle.com/2026/06/10/anthropics-dario-amodei-wants-governments-po"
+    "wer-block-dangerous-ai-systems/":
+        "A company's call for powers; no government action against a company",
+    "https://the-decoder.com/claude-codes-complicated-china-problem-involves-bans-on-"
+    "both-sides-of-the-pacific/":
+        "Company bans only (Anthropic's terms, Alibaba's own staff); no government action",
+    "https://the-decoder.com/taiwan-raids-super-micro-offices-in-probe-over-nvidia-ch"
+    "ip-smuggling-to-china/":
+        "Super Micro is a server maker, not an AI company; the company itself is not charged",
+    "https://techcrunch.com/2026/07/10/apple-sues-openai-over-alleged-trade-secret-th"
+    "eft/":
+        "Private lawsuit",
+    "https://the-decoder.com/google-files-first-joint-lawsuit-with-fbi-over-chinese-a"
+    "i-scam-network-openai-blocks-prc-influence-clusters/":
+        "Google sues a scam network; OpenAI's own bans; no government action against an AI company",
+    "https://techcrunch.com/2026/06/12/chinese-cybercrime-operation-that-used-ai-to-s"
+    "cam-hundreds-of-thousands-of-victims-sued-by-google/":
+        "Google sues a scam network; no government action against an AI company",
+    "https://arstechnica.com/tech-policy/2026/06/google-ordered-to-put-clearer-links-"
+    "in-ai-search-and-let-uk-publishers-opt-out/":
+        "same as UK → Google, 2026-06-03 (can't read to check)",
+    "https://the-decoder.com/anthropic-bans-ai-tools-during-job-interviews-to-see-how"
+    "-candidates-actually-think/":
+        "A company's own hiring policy",
+    "https://epic.org/privacy-daily-paxton-investigates-meta-ai-glasses-over-privacy-"
+    "concerns/":
+        "Can't read to check (page refused); a Texas AG probe of Meta's AI glasses, 2026-05-20",
+    "https://arstechnica.com/tech-policy/2026/05/authors-fight-for-higher-payouts-fro"
+    "m-anthropics-1-5b-copyright-settlement/":
+        "Private lawsuit settlement",
+    "https://siliconangle.com/2026/05/01/ai-lifts-clouds-even-higher-aws-moves-stack-"
+    "elon-sam-battle-court/":
+        "Weekly roundup; Musk v. OpenAI is a private suit",
+    "https://arstechnica.com/tech-policy/2026/04/florida-probes-chatgpt-role-in-mass-"
+    "shooting-openai-says-bot-not-responsible/":
+        "Can't read to check; same event as Florida → OpenAI, 2026-04-09",
+    "https://www.marktechpost.com/2026/06/02/how-to-fine-tune-lfm2-using-qlora-and-dp"
+    "o-a-complete-step-by-step-coding-tutorial-on-google-colab/":
+        "Not a government action",
+    "https://www.marktechpost.com/2026/05/14/poetiqs-meta-system-automatically-builds"
+    "-a-model-agnostic-harness-that-improved-every-llm-tested-on-livecodebench-pro-wi"
+    "thout-fine-tuning/":
+        "Not a government action",
+    "https://huggingface.co/blog/amazon/foundation-model-building-blocks":
+        "Not a government action",
+    "https://the-decoder.com/amazon-brings-agentic-fine-tuning-to-sagemaker-with-supp"
+    "ort-for-llama-qwen-deepseek-and-nova/":
+        "Not a government action",
+    "https://www.marktechpost.com/2026/04/24/a-coding-implementation-on-microsofts-op"
+    "enmementos-with-trace-structure-analysis-context-compression-and-fine-tuning-dat"
+    "a-preparation/":
+        "Not a government action",
+    "https://www.marktechpost.com/2026/04/20/a-coding-implementation-on-microsofts-ph"
+    "i-4-mini-for-quantized-inference-reasoning-tool-use-rag-and-lora-fine-tuning/":
+        "Not a government action",
+    "https://www.marktechpost.com/2026/04/20/openai-scales-trusted-access-for-cyber-d"
+    "efense-with-gpt-5-4-cyber-a-fine-tuned-model-built-for-verified-security-defende"
+    "rs/":
+        "Not a government action",
+    "https://the-decoder.com/always-on-ray-ban-meta-glasses-powered-by-openclaw-speed"
+    "-up-everyday-tasks-in-new-study/":
+        "Not a government action",
     "https://siliconangle.com/2026/04/09/florida-ag-opens-probe-chatgpt-alleging-connection-fsu-shooting/":
         "same as Florida → OpenAI, 2026-04-09",
     "https://techcrunch.com/2026/04/10/anthropic-temporarily-banned-openclaws-creator-from-accessing-claude/":
