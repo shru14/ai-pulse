@@ -328,6 +328,7 @@ LEFT_OUT = {
     "https://the-decoder.com/us-appeals-court-allows-perplexitys-ai-shopping-agent-back-on-amazon/",
     "https://ainowinstitute.org/news/press/as-meta-agrees-to-17b-settlement-now-is-the-time-to-regulate-ai-before-its-too-late-amba-kak",
     # couldn't read the story to check who sued whom
+    "https://arstechnica.com/tech-policy/2026/05/authors-fight-for-higher-payouts-from-anthropics-1-5b-copyright-settlement/",  # can't read to check
     "https://epic.org/the-mecrury-news-does-ai-belong-in-the-exam-room-lawsuit-alleges-california-health-care-group-violated-patient-privacy/",
     "https://techcrunch.com/2023/07/14/designers-sue-shein-over-ai-ripoffs-of-their-work/",  # not an AI maker
     "https://the-decoder.com/us-court-denies-ai-image-copyright-but-this-ruling-means-little/",  # who owns AI-made work
@@ -372,6 +373,8 @@ LEFT_OUT = {
     "https://the-decoder.com/authors-sue-meta-and-openai-for-possible-ai-copyright-infringement/",
     "https://epic.org/rolling-stone-new-chatgpt-lawsuits-may-be-start-of-ais-legal-sh-tstorm/",
     # not a lawsuit over copyright, privacy or likeness against an AI maker
+    "https://arstechnica.com/tech-policy/2026/05/legal-fail-dont-use-ai-to-sue-facebook-users-for-calling-you-a-bad-date/",  # fake citations, not against an AI maker
+    "https://www.marktechpost.com/2026/05/06/when-claude-hallucinates-in-court-the-latham-watkins-incident-and-what-it-means-for-attorney-liability/",  # lawyers' fake citations
     "https://techcrunch.com/2026/09/02/openai-faces-30-more-lawsuits-tied-to-tumbler-ridge-shooting/",
     "https://epic.org/huffpost-ice-observers-sue-trump-administration-alleging-surveillance-and-retaliation/",
     "https://techcrunch.com/2026/07/13/the-wildest-allegations-in-apples-trade-secrets-lawsuit-against-openai/",
