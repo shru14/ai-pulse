@@ -51,6 +51,12 @@ DEALS = [
      "https://techcrunch.com/2026/06/15/sarvam-becomes-indias-newest-ai-unicorn-with-234-million-funding-round-led-by-hcltech/"),
     ("Alibaba", "MiniMax", "Backer before its IPO", "Dec 2025", True,
      "https://siliconangle.com/2025/12/30/minimax-moves-toward-hong-kong-ipo-chinese-ai-firms-rush-go-public/"),
+    ("Samsung", "Anthropic", "Joined $65B Series H", "May 2026", True,
+     "https://techcrunch.com/2026/05/28/anthropic-raises-65-billion-nears-1t-valuation-ahead-of-ipo/"),
+    ("SK hynix", "Anthropic", "Joined $65B Series H", "May 2026", True,
+     "https://techcrunch.com/2026/05/28/anthropic-raises-65-billion-nears-1t-valuation-ahead-of-ipo/"),
+    ("Micron", "Anthropic", "Joined $65B Series H", "May 2026", True,
+     "https://siliconangle.com/2026/05/28/anthropic-launches-claude-opus-4-8-raises-65b-new-funding/"),
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
@@ -145,6 +151,64 @@ LEFT_OUT = {
         "reportedly; only IDG Capital (a fund) has an amount",
     "https://the-decoder.com/openai-merges-internal-teams-to-fix-audio-ai-accuracy-gap-ahead-of-chatgpt-hardware-push/":
         "no investment in an AI lab",
+    "https://the-decoder.com/deepseek-needs-more-cash-just-weeks-after-closing-its-first-7-billion-round/":
+        "no amounts per company; Tencent, CATL put money in through a limited partnership with no voting rights, new round only in talks",
+    "https://the-decoder.com/deepseek-takes-outside-money-for-the-first-time-at-a-50-billion-valuation/":
+        "no amounts per company; investors went into a limited partnership, not DeepSeek itself",
+    "https://techcrunch.com/2026/05/06/deepseek-could-hit-45b-valuation-from-its-first-investment-round/":
+        "reportedly, talks only",
+    "https://siliconangle.com/2026/07/10/open-source-ai-model-developer-minimax-raises-2b-funding/":
+        "no investors named; raise not closed",
+    "https://www.technologyreview.com/2026/07/06/1140176/your-familys-300-stake-in-openai/":
+        "no company's stake named; US government stake only in talks",
+    "https://siliconangle.com/2026/07/02/openai-reportedly-give-5-stake-us-government/":
+        "reportedly floated, talks only",
+    "https://the-decoder.com/openai-reportedly-offers-the-trump-administration-a-five-percent-stake-in-the-company/":
+        "reportedly floated, talks only",
+    "https://arstechnica.com/tech-policy/2026/07/openai-floats-giving-us-5-stake-to-win-over-ai-haters/":
+        "can't read to check",
+    "https://techcrunch.com/2026/06/13/amazon-ceo-reportedly-raised-anthropic-model-concerns-before-government-crackdown/":
+        "no new amount; same as Amazon in Anthropic",
+    "https://techcrunch.com/2026/06/12/mistral-is-rumored-to-be-raising-e3b-at-e20-valuation/":
+        "rumor, talks only",
+    "https://techcrunch.com/2026/06/10/xai-fired-an-engineer-who-raised-alarms-about-grok-safety-new-lawsuit-claims/":
+        "no amount; same as SpaceX in xAI",
+    "https://the-decoder.com/moonshot-ai-targets-a-30-billion-valuation-more-than-six-times-its-late-2025-worth/":
+        "talks only; no investors named",
+    "https://techcrunch.com/2026/06/06/the-trump-administration-might-take-an-equity-stake-in-openai/":
+        "talks only",
+    "https://siliconangle.com/2026/05/27/vibe-coding-startup-cognition-doubles-valuation-new-1b-round/":
+        "venture funds only; Cognition not an AI lab",
+    "https://techcrunch.com/2026/05/27/ai-coding-startup-cognition-raises-1b-at-25b-pre-money-valuation/":
+        "venture funds only; Cognition not an AI lab",
+    "https://siliconangle.com/2026/05/21/new-anthropic-blackstone-backed-ai-services-firm-acquires-fractional-ai/":
+        "new services firm, not an AI lab",
+    "https://the-decoder.com/mistral-ai-acquires-viennese-physical-ai-startup-emmi-ai/":
+        "Mistral buying a startup, not a company's stake in a lab",
+    "https://techcrunch.com/2026/05/18/anthropic-has-acquired-the-dev-tools-startup-used-by-openai-google-and-cloudflare/":
+        "Anthropic buying a dev tools startup, not an AI lab",
+    "https://the-decoder.com/anthropics-900-billion-valuation-would-make-it-more-valuable-than-openai-for-the-first-time/":
+        "round under negotiation; Amazon and Google same as them in Anthropic",
+    "https://the-decoder.com/softbank-reportedly-slashes-openai-backed-loan-from-10-billion-to-6-billion-as-lenders-balk-at-private-ai-valuations/":
+        "loan, reported; same as SoftBank in OpenAI",
+    "https://the-decoder.com/anthropic-approaches-1-trillion-valuation-as-revenue-grows-fivefold/":
+        "new round only in talks; Google and Amazon same as them in Anthropic",
+    "https://siliconangle.com/2026/05/07/open-source-ai-developer-moonshot-ai-raises-2b-20b-valuation/":
+        "can't confirm closed; venture arms, no amounts per company",
+    "https://techcrunch.com/2026/05/07/chinas-moonshot-ai-raises-2b-at-20b-valuation-as-demand-for-open-source-ai-skyrockets/":
+        "closing not stated; Meituan's venture arm and funds, no amounts per company",
+    "https://arstechnica.com/ai/2026/05/anthropic-raises-claude-code-usage-limits-credits-new-deal-with-spacex/":
+        "can't read to check",
+    "https://techcrunch.com/2026/04/30/anthropic-potential-900b-valuation-round-could-happen-within-two-weeks/":
+        "sources, round not closed",
+    "https://siliconangle.com/2026/04/23/cognition-creator-ai-software-engineer-devin-talks-raise-hundreds-millions-25b-valuation/":
+        "talks only; Cognition not an AI lab",
+    "https://arstechnica.com/ai/2026/04/anthropic-gets-5b-investment-from-amazon-will-use-it-to-buy-amazon-chips/":
+        "can't read to check; Amazon in Anthropic is already a row",
+    "https://the-decoder.com/anthropics-revenue-surge-reportedly-fuels-talk-of-trillion-dollar-valuation/":
+        "reportedly; no investment named",
+    "https://the-decoder.com/some-openai-shareholders-reportedly-question-whether-altman-can-steer-the-company-to-a-public-offering/":
+        "no new stake named",
 }
 
 

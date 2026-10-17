@@ -1115,8 +1115,11 @@ a.subscribe-btn{text-decoration:none}
 .cp .cg-tick{stroke:var(--ink)}
 .cp .cg-y{fill:var(--muted);font-size:13px;text-anchor:end}.cp .cg-x{fill:var(--muted);font-size:13px;text-anchor:middle}
 .cp .cg-dot{fill:var(--f-research);fill-opacity:.55;stroke:color-mix(in srgb,var(--ink) 45%,transparent);stroke-width:.6}
+.cp .cg-dot.cg-built{fill:var(--bg);fill-opacity:1;stroke:var(--ink);stroke-width:1}
 .cp .cg-top{fill:var(--ink)}
-.cp .cg-name{fill:var(--ink);font-size:13px;font-weight:600;paint-order:stroke;stroke:var(--bg);stroke-width:4px}
+.cp .cg-name{fill:var(--ink);font-size:13px;font-weight:600}
+.cp .cg-label{fill:var(--bg);fill-opacity:.92;stroke:color-mix(in srgb,var(--ink) 30%,transparent);stroke-width:.8}
+.cp .cg-lead{stroke:var(--ink);stroke-width:1}
 .cp .cg-table td:nth-child(4){white-space:nowrap}.cp .cg-table td:nth-child(4) b{font:700 16px var(--body)}
 @media (max-width:640px){.cp .nt-scores li{grid-template-columns:1fr auto;gap:2px 10px}
   .cp .nt-track{grid-column:1/-1;grid-row:2}.cp .nt-pct{grid-column:2;grid-row:1;text-align:right}

@@ -164,6 +164,8 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "simonwillison.net": ("no terms", "https://simonwillison.net/about/", "Offers its Atom feeds for anyone to follow"),
     "lilianweng.github.io": ("no terms", "", "No terms page linked from the site"),
     "metr.org": ("no terms", "", "No terms page linked from the site"),
+    "epoch.ai": ("no terms", "", "No terms page (only a privacy policy, which doesn't restrict reading); robots.txt "
+                 "allows /publications/ and its sitemap; checked 17 Oct 2026"),
     # --- Infra ---
     "www.datacenterknowledge.com": ("terms read", "https://www.informatechtarget.com/terms-and-conditions",
                                     "Nothing on feeds, robots or personal use"),
