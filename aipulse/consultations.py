@@ -1,7 +1,7 @@
 """AI consultations (ai-consultations/): governments asking the public about AI, open now or closed in the past 6
 months, from each government's own list of consultations, read on every full run. Only consultations whose own title
 names AI count (a summary that mentions AI in passing doesn't). Each row is the government's own words: the title,
-who is asking, the closing date and, where the list gives one, the published outcome. Linked from Regulation's strip.
+who is asking, the closing date and, where the list gives one, the published outcome. Linked from Policy's strip.
 
 The lists (terms in terms.py): GOV.UK's search API (open, closed and outcome consultations), the US Federal Register
 API (documents taking comments), the European Commission's Have Your Say API, Canada's open data list of federal
@@ -275,7 +275,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
         pages.page("AI consultations · AI Pulse", what, PATH, body(saved, today), data,
-                   pages.frame(conn, len(cards)), ("/regulation/", "Back to Regulation"),
+                   pages.frame(conn, len(cards)), ("/policy/", "Back to Policy"),
                    "Titles, dates and who is asking are each government's own, linking to its page."),
         encoding="utf-8")
     return [PATH]
