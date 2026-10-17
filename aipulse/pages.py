@@ -898,6 +898,34 @@ a.subscribe-btn{text-decoration:none}
 /* AI consultations: Models being retired's table, without its phone labels; an outcome's link under the title */
 @media (max-width:640px){.cp .cs-t td:nth-child(4)::before{content:none}}
 .cp .ft .cs-t a.cs-out{font-size:13px;color:var(--muted)}
+/* Release cards: Models being retired's table, a coloured weights tag per row (Okabe-Ito, dark text) */
+.cp .rc-t td{vertical-align:top}
+.cp .rc-t small{display:block;margin-top:2px;font:500 12.5px/1.35 var(--body);color:var(--muted)}
+.cp .ft .rc-t td.rc-m a{font-weight:600;text-decoration:none}
+.cp .ft .rc-t td.rc-m a:hover,.cp .ft .rc-t td.rc-m a:focus-visible{text-decoration:underline}
+.cp .rc-w{display:inline-block;padding:1px 8px;border-radius:10px;font:600 12.5px var(--body);color:#111;white-space:nowrap}
+.cp .rc-open{background:#56B4E9}.cp .rc-wo{background:#F0E442}.cp .rc-closed{background:#d9d9d9}
+.cp .rc-t td.rc-out{font-weight:600}
+.cp .rc-t .rc-none{color:var(--muted)}
+.cp .rc-t td.rc-p{white-space:nowrap}
+/* its title, big numbers and column headers a size smaller; the tags as buttons; on a phone still a table, which
+   scrolls sideways in its box */
+.cp .rc h1{font-size:clamp(22px,2.4vw,24px)}
+.cp .rc .jb-q{font-size:17px}
+.cp .rc .rm-big b{font-size:30px}
+.cp .rc .rm-big span{font-size:13.5px}
+.cp .rc .rc-t th{font-size:10px;letter-spacing:.05em}
+.cp .rc .sh-tabs{gap:8px}
+.cp .rc .sh-tab{padding:5px 12px;border:2px solid var(--line);color:var(--ink)}
+.cp .rc .sh-tab[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cp .rc .sh-tab[aria-pressed=true] b{color:var(--bg)}
+@media (max-width:640px){.cp .rc .rm-big b{font-size:26px}
+  .cp .rc .rm-wrap{overflow:auto}
+  .cp .ft .rc-t{min-width:760px}
+  .cp .ft .rc-t thead{display:table-header-group}
+  .cp .ft .rc-t tr{display:table-row;padding:0}
+  .cp .ft .rc-t td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 12px 8px 0}
+  .cp .ft .rc-t td::before{content:none}}
 /* a little colour, Okabe-Ito tints with dark text: the three numbers, and each place's label */
 .cp .cs .cs-big0{background:color-mix(in srgb,#009E73 22%,var(--bg))}
 .cp .cs .cs-big1{background:color-mix(in srgb,#56B4E9 26%,var(--bg))}
