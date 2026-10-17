@@ -7,6 +7,7 @@ page and its licence text, the rest against the story or lab page it links to. L
 from __future__ import annotations
 
 import re
+from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
@@ -220,21 +221,32 @@ LEFT_OUT = {
     "https://pandaily.com/skywork-matrix-game-4-open-source-game-engine-real-time-neural-rendering-rtx-5090":
         "Matrix-Game 4.0: one news outlet within 3 days",
 }
-# the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it
+# the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
+# it on to the last day it checked, so stories that aren't model releases need no entry
 CHECKED_TO = "2026-10-17"
-# a headline that may be a model release
+WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
+# a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
+# name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
 _RELEASE = re.compile(r"\b(releases?|launch(es)?|introduc(es|ing)|unveils?|debuts?|open-sources?|drops|rolls out|ships|"
                       r"publishes|now available|is available|open weights?|open-weights?)\b", re.I)
+_MODEL = re.compile(r"(?i:\b(models?|weights|llms?)\b)|\b[A-Z][\w.]*[- ]?[A-Z]?\d+(\.\d+)?\b")
+_NOT = re.compile(r"\b(chips?|GPUs?|CPUs?|racks?|servers?|TV|HomePod|phones?|laptops?|platforms?|subscriptions?|"
+                  r"plans|benchmark|harness|framework|sandbox|lines?|residency|funding|raises)\b", re.I)
 
 
-def candidates(cards: list[dict], since: str = "") -> list[dict]:
-    """Releases stories from after CHECKED_TO (or `since`, if later) that no row uses and LEFT_OUT doesn't hold, with
-    a release word in the headline: newest first. Each needs checking for a second outlet, then the row's facts."""
+def candidates(cards: list[dict], since: str = "", today: date | None = None) -> list[dict]:
+    """Stories from after CHECKED_TO (or `since`, if later) up to WINDOW days ago, that no row uses and LEFT_OUT
+    doesn't hold: every Releases story (but GitHub versions), and other streams' headlines that look like a model
+    release. Newest first. Each needs a second outlet found among the stories, then the row's facts checked."""
     since = max(since, CHECKED_TO + "~")  # '~' sorts after any time of day, so CHECKED_TO itself is done
+    until = ((today or date.today()) - timedelta(days=WINDOW)).isoformat() + "~"
     used = {r[10] for r in RELEASES} | set(LEFT_OUT)
     return [c for c in sorted(cards, key=lambda c: c["date"], reverse=True)
-            if c["date"] >= since and c.get("category") == "tool" and "releases version" not in c["title"]
-            and not any(s["url"] in used for s in [c, *(c.get("also") or [])]) and _RELEASE.search(c["title"])]
+            if since <= c["date"] <= until and "releases version" not in c["title"]
+            and not any(s["url"] in used for s in [c, *(c.get("also") or [])])
+            and (c.get("category") == "tool" or any(_RELEASE.search(s["title"]) and _MODEL.search(s["title"])
+                                                    and not _NOT.search(s["title"])
+                                                    for s in [c, *(c.get("also") or [])]))]
 
 
 def note(base: str, branch: str) -> tuple[str, str, str] | None:
