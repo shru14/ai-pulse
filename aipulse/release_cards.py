@@ -343,7 +343,7 @@ def body(rs: list[dict]) -> str:
          "unless the cell says otherwise. Left blank when the lab sold no API access at launch."),
         ("Each model", "Links to the story or lab page its facts were checked against."),
     ]
-    return ('<div class="ft jb rm rc">\n<h1>Release cards</h1>\n<p class="jb-q">What came out, and can I use it?</p>\n'
+    return ('<div class="ft jb rm rc">\n<h1>Release cards</h1>\n<p class="jb-q">What came out and can I use it?</p>\n'
             f'<p class="intro">Every major AI model release since {since}, newest first: whether you can download '
             'it, under what licence, where you can use it and its price at launch. Each row is checked by hand '
             'against the lab\'s own page, its licence text or Hugging Face.</p>\n'
@@ -364,7 +364,7 @@ def build(conn, cards: list[dict], out: Path, today) -> list[str]:
     rs = rows()
     if not rs:
         return []
-    what = ("What came out, and can I use it? Every major AI model release since July 2026: whether you can download "
+    what = ("What came out and can I use it? Every major AI model release since July 2026: whether you can download "
             "it, under what licence, where you can use it and its price at launch, each checked by hand.")
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Release cards", "description": what,
             "url": f"{rss.SITE}{PATH}"}
