@@ -128,6 +128,55 @@ CHECKED: dict[str, dict] = {
              link="https://doi.org/10.1111/jpim.12774", subject="people",
              about="Finds that people who have faced discrimination from humans prefer AI recommendations over human ones, "
                    "because of embarrassment, and that this fades when the choice is private."),
+    "https://the-decoder.com/new-review-paper-argues-code-is-how-ai-agents-think-and-act-not-just-what-they-produce/":
+        dict(paper="Code as Agent Harness", link="https://arxiv.org/abs/2605.18747", subject="agents",
+             about="Surveys how code has become the base AI agents use to reason, act and check their work, and lists open "
+                   "challenges such as evaluation and human oversight."),
+    "https://the-decoder.com/making-ai-chatbots-helpful-weakens-their-ability-to-simulate-human-behavior-large-scale-study-finds/":
+        dict(paper="Post-training makes large language models less human-like", link="https://arxiv.org/abs/2605.07632",
+             subject="language-models",
+             about="Finds that the training that turns language models into helpful assistants makes them worse at "
+                   "predicting how people behave, across model families and sizes."),
+    "https://the-decoder.com/ai-models-follow-their-values-better-when-they-first-learn-why-those-values-matter/":
+        dict(paper="Model Spec Midtraining: Improving How Alignment Training Generalizes",
+             link="https://arxiv.org/abs/2605.02087", subject="safety",
+             about="Shows that training a model on documents explaining its rules before fine-tuning shapes how it "
+                   "generalizes, cutting one misalignment rate from 54% to 7% in Qwen3-32B."),
+    "https://the-decoder.com/mit-study-explains-why-scaling-language-models-works-so-reliably/":
+        dict(paper="Superposition Yields Robust Neural Scaling", link="https://arxiv.org/abs/2505.10465",
+             subject="language-models",
+             about="Argues that language models packing in more features than they have dimensions is a key reason their "
+                   "loss falls as they grow, and finds open models and the Chinchilla scaling laws fit this."),
+    "https://techcrunch.com/2026/05/03/in-harvard-study-ai-offered-more-accurate-diagnoses-than-emergency-room-doctors/":
+        dict(paper="Performance of a large language model on the reasoning tasks of a physician",
+             link="https://doi.org/10.1126/science.adz4433", subject="science",
+             about="Finds that a large language model beat physician baselines on hard clinical cases and in second "
+                   "opinions in a real emergency room."),
+    "https://arstechnica.com/ai/2026/05/study-ai-models-that-consider-users-feeling-are-more-likely-to-make-errors/":
+        dict(paper="Training language models to be warm can reduce accuracy and increase sycophancy",
+             link="https://doi.org/10.1038/s41586-026-10410-0", subject="safety",
+             about="Finds that models trained to sound warmer make 10 to 30 percentage points more errors and agree more "
+                   "with users' wrong beliefs, most when users sound sad."),
+    "https://the-decoder.com/just-ten-minutes-of-using-ai-as-an-answer-machine-can-measurably-erode-problem-solving-skills-new-study-finds/":
+        dict(paper="AI Assistance Reduces Persistence and Hurts Independent Performance",
+             link="https://arxiv.org/abs/2604.04721", subject="people",
+             about="Finds in randomized trials with 1,222 people that AI help improves results at first, but people then do "
+                   "worse without it and give up more often."),
+    "https://the-decoder.com/always-on-ray-ban-meta-glasses-powered-by-openclaw-speed-up-everyday-tasks-in-new-study/":
+        dict(paper="VisionClaw: Always-On AI Agents through Smart Glasses", link="https://arxiv.org/abs/2604.03486",
+             subject="agents",
+             about="Tests an always-on AI agent in smart glasses and finds, in a lab study of 12 people, that tasks finish "
+                   "faster than with versions that are not always-on or agent-based."),
+    "https://the-decoder.com/researchers-find-ai-text-is-making-the-internet-more-uniform-and-weirdly-cheerful/":
+        dict(paper="The Impact of AI-Generated Text on the Internet", link="https://arxiv.org/abs/2604.26965",
+             subject="people",
+             about="Finds that about 35% of new websites by mid-2025 were AI-generated or AI-assisted, and that more AI text "
+                   "goes with less varied meaning and a more positive tone, but not with less accuracy."),
+    "https://the-decoder.com/ai-agents-arent-replacing-software-engineering-but-expanding-it-far-beyond-code-researchers-argue/":
+        dict(paper="The Semi-Executable Stack: Agentic Software Engineering and the Expanding Scope of SE",
+             link="https://arxiv.org/abs/2604.15468", subject="agents",
+             about="Argues that AI agents don't make software engineering irrelevant but widen what is engineered, from code "
+                   "to instructions, workflows and controls."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
@@ -224,6 +273,40 @@ LEFT_OUT = {
     "https://the-decoder.com/claude-values-study/",  # a company research page, not a paper
     "https://www.sciencedaily.com/releases/2026/07/260713084850.htm",  # a book, not a paper
     "https://www.sciencedaily.com/releases/2026/07/260712011757.htm",
+    "https://the-decoder.com/anthropic-study-finds-men-use-ai-coding-agents-more-than-twice-as-often-as-women-in-social-science-research/",  # a company research page (Anthropic), not a paper
+    "https://blogs.nvidia.com/blog/icra-research-robotics-simulation-to-real-world/",  # a company blog roundup of several papers
+    "https://epic.org/the-indian-express-ai-firms-use-same-deceptive-opt-out-tactics-as-data-brokers-to-confuse-users-study-finds/",  # can't read to check: the site refuses us
+    "https://the-decoder.com/ai-hallucinated-citations-are-creeping-into-papers-that-shape-clinical-guidelines-researchers-warn/",  # paper found (The Lancet) but its abstract can't be read to check
+    "https://the-decoder.com/y-combinator-founder-paul-graham-says-ai-written-founder-emails-feel-like-being-lied-to/",  # no paper named
+    "https://the-decoder.com/the-ai-justice-gap-solution-is-slowly-turning-into-an-existential-paperwork-nightmare-for-us-federal-courts/",  # no paper named
+    "https://techcabal.com/2026/05/21/techcabal-daily-new-tax-chief-old-problem/",  # a news roundup, no paper
+    "https://the-decoder.com/openai-could-file-confidential-ipo-paperwork-within-days/",  # no paper named
+    "https://epic.org/bloomberg-law-uber-meta-hinder-users-ability-to-control-data-study-says/",  # can't read to check: the site refuses us
+    "https://siliconangle.com/2026/05/20/spacex-releases-ipo-filing-openai-reportedly-prepares-september-listing/",  # no paper named
+    "https://techcabal.com/2026/05/19/nigerias-talpro-software-enters-the-ai-hr-race/",  # no paper named
+    "https://the-decoder.com/world-action-models-give-robots-the-ability-to-simulate-consequences-before-they-move/",  # a survey paper, but the story gives no title or link and we couldn't match it on arXiv
+    "https://techcrunch.com/2026/05/16/research-repository-arxiv-will-ban-authors-for-a-year-if-they-let-ai-do-all-the-work/",  # a policy change, no paper
+    "https://the-decoder.com/arxiv-tightens-penalties-for-ai-bungling-in-scientific-papers/",  # a policy change, no paper
+    "https://the-decoder.com/anthropic-frames-ai-competition-with-china-as-a-now-or-never-moment-for-washington/",  # no paper named
+    "https://arstechnica.com/science/2026/05/preprint-server-arxiv-will-ban-submitters-of-ai-generated-hallucinations/",  # a policy change, no paper
+    "https://www.microsoft.com/en-us/research/blog/further-notes-on-our-recent-research-on-ai-delegation-and-long-horizon-reliability/",  # a company blog post (Microsoft Research)
+    "https://techcabal.com/2026/05/13/africas-ai-sovereignty-problem-is-really-an-energy-problem/",  # no paper named
+    "https://www.technologyreview.com/2026/05/11/1137090/three-things-in-ai-to-watch-according-to-a-nobel-winning-economist/",  # an interview, no paper reported on
+    "https://the-decoder.com/researchers-may-have-found-a-way-to-stop-ai-models-from-intentionally-playing-dumb-during-safety-evaluations/",  # a company blog post (Anthropic alignment blog), not a paper
+    "https://cset.georgetown.edu/article/beyond-ai-what-the-pentagon-is-missing-with-its-trimmed-critical-technologies-list/",  # a commentary, no paper
+    "https://arstechnica.com/ai/2026/05/influential-study-touting-chatgpt-in-education-retracted-over-red-flags/",  # a retraction story about a withdrawn paper
+    "https://www.marktechpost.com/2026/05/01/a-new-nvidia-research-shows-speculative-decoding-in-nemo-rl-achieves-1-8x-rollout-generation-speedup-at-8b-and-projects-2-5x-end-to-end-speedup-at-235b/",  # the outlet refuses automated reads; no paper found on arXiv
+    "https://www.marktechpost.com/2026/05/01/meta-introduces-autodata-an-agentic-framework-that-turns-ai-models-into-autonomous-data-scientists-for-high-quality-training-data-creation/",  # the outlet refuses automated reads, so the story can't be read to check
+    "https://the-decoder.com/google-deepminds-ai-co-clinician-beats-gpt-5-4-in-blind-doctor-tests-but-still-trails-experienced-physicians/",  # no paper linked or found on arXiv
+    "https://research.google/blog/four-ways-google-research-scientists-have-been-using-empirical-research-assistance/",  # a company blog post (Google Research)
+    "https://www.marktechpost.com/2026/04/25/google-deepmind-introduces-vision-banana-an-instruction-tuned-image-generator-that-beats-sam-3-on-segmentation-and-depth-anything-v3-on-metric-depth-estimation/",  # the outlet refuses automated reads, so the story can't be read to check
+    "https://the-decoder.com/us-programmer-job-growth-nearly-halved-since-chatgpt-launched-fed-study-finds/",  # a Federal Reserve working paper, not on a preprint server or in a journal
+    "https://cset.georgetown.edu/article/wikipedia-based-ai-model-reveals-the-100-technologies-to-watch/",  # a link to a Nature news article, no paper linked
+    "https://siliconangle.com/2026/04/21/ai-governance-data-thecube-insights-qlikconnect/",  # no paper named
+    "https://www.technologyreview.com/2026/04/21/1135663/artificial-scientists-ai-artificial-intelligence/",  # a feature on several efforts, no one paper
+    "https://www.sciencedaily.com/releases/2026/04/260417224505.htm",  # paper found (Technical Communication Quarterly) but its abstract can't be read to check: the publisher refuses us
+    "https://www.marktechpost.com/2026/04/19/meet-openmythos-an-open-source-pytorch-reconstruction-of-claude-mythos-where-770m-parameters-match-a-1-3b-transformer/",  # the outlet refuses automated reads; a code project, no paper found
+    "https://the-decoder.com/the-myth-of-claude-mythos-crumbles-as-small-open-models-hunt-the-same-cybersecurity-bugs-anthropic-showcased/",  # two company blog posts (AISLE, Vidoc), not a paper
 }
 
 # a headline (or the start of its summary) that may report on a paper
