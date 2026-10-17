@@ -621,7 +621,7 @@ def test_static_build_holds_every_card(tmp_path):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -657,7 +657,7 @@ def test_static_build_holds_every_card(tmp_path):
     front = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     for p in kind_pages.paths():
         assert f'href="{p}"' in front and (tmp_path / "site" / p / "index.html").exists() and f"<loc>https://projectaipulse.com/{p}</loc>" in sitemap
-    assert sitemap.count("<url>") == 1 + 7 + 5 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, lab-timelines/
+    assert sitemap.count("<url>") == 1 + 7 + 6 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, lab-timelines/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -3900,3 +3900,34 @@ def test_who_owns_whom_candidates_and_the_approval_note():
     subject, text, html = owners.note(base, "owners/2026-10-17")
     assert "1 new deal to approve" in subject and owners.DEALS[-1][-1] in text
     assert owners.note(open(owners.__file__, encoding="utf-8").read(), "owners/2026-10-17") is None
+
+
+def test_pacts_and_orders_halves_keep_only_rows_whose_story_we_have(tmp_path):
+    from datetime import date
+    from aipulse import pacts
+    keep = [b for b in pacts.BANS if b[5] and b[5] != b[0]][0]  # one ban that was lifted
+    cards = [{"url": u, "source": "Outlet", "title": "Story", "date": "2026-01-01"}
+             for u in (keep[4], pacts.ORDERS[0][-1])]
+    assert pacts.build(None, cards, tmp_path, date(2026, 10, 17)) == ["ai-pacts-and-orders/"]
+    page = (tmp_path / "ai-pacts-and-orders" / "index.html").read_text(encoding="utf-8")
+    assert keep[3] in page and pacts.ORDERS[0][4] in page and pacts.DEALS[0][3] not in page
+    assert f"after {(date.fromisoformat(keep[5]) - date.fromisoformat(keep[0])).days} days" in page
+    assert "New Delhi (2026) has the most signers: 92 countries and bodies" in page  # the official lists always show
+    assert "China didn&#x27;t sign Seoul or the AI treaty; the US and the UK didn&#x27;t sign Paris" in page
+    assert 'class="pc-focus"' in page and "ratified 15/05/2026" in page and "1 ratified, in force at 5" in page
+    assert "Deals with AI companies" not in page  # no empty sections
+
+
+def test_pacts_candidates_and_the_approval_note():
+    from aipulse import pacts
+    new = {"url": "https://x.example/a", "title": "Italy fines OpenAI over ChatGPT data", "date": "2026-10-20T08:00",
+           "source": "Outlet", "category": "policy"}
+    joins = new | {"url": "https://x.example/d", "title": "Bangladesh joins the New Delhi Declaration"}
+    seen = new | {"url": pacts.ORDERS[0][-1]}
+    old = new | {"url": "https://x.example/b", "date": "2026-10-16T09:00"}  # read for the lists already
+    other = new | {"url": "https://x.example/c", "title": "OpenAI launches a new model"}  # no government acting
+    assert pacts.candidates([new, joins, seen, old, other]) == [new, joins]
+    base = open(pacts.__file__, encoding="utf-8").read().replace(pacts.ORDERS[-1][-1], "https://gone.example/")
+    subject, text, html = pacts.note(base, "pacts/2026-10-18")
+    assert "1 new row to approve" in subject and pacts.ORDERS[-1][-1] in text
+    assert pacts.note(open(pacts.__file__, encoding="utf-8").read(), "pacts/2026-10-18") is None

@@ -962,6 +962,77 @@ a.subscribe-btn{text-decoration:none}
 .cp .ft .cs-t td.cs-uk a{background:color-mix(in srgb,#F0E442 45%,var(--bg))}
 .cp .ft .cs-t td.cs-us a{background:color-mix(in srgb,#CC79A7 35%,var(--bg))}
 .cp .ft .cs-t td.cs-eu a{background:color-mix(in srgb,#56B4E9 40%,var(--bg))}
+/* AI pacts and orders: two halves side by side (stacked on a phone), green Pacts and vermillion Orders (Okabe-Ito
+   tints, dark text); the bans as thin bars on the year, their words as page text so they read at any width */
+.cp .pc h1{font-size:clamp(24px,3.6vw,30px)}
+.cp .pc .jb-q{font-size:clamp(17px,2vw,20px);max-width:none}
+.cp .pc-halves{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;margin-top:14px}
+.cp .pc-half{border:2px solid var(--line);box-shadow:5px 5px 0 var(--line);background:var(--bg);min-width:0}
+.cp .pc-hh{padding:10px 14px 8px;border-bottom:2px solid var(--line)}
+.cp .pc-pacts .pc-hh{background:color-mix(in srgb,#009E73 24%,var(--bg))}
+.cp .pc-orders .pc-hh{background:color-mix(in srgb,#D55E00 20%,var(--bg))}
+.cp .ft .pc-hh h2{font:400 26px/1.1 var(--display);margin:0;border:0;padding:0}
+.cp .pc-hh p{margin:3px 0 0;font-size:14px;font-weight:600}
+.cp .pc-in{padding:12px 14px 14px}
+.cp .pc-lead{font:700 16.5px/1.4 var(--body);margin:2px 0 4px;padding-left:10px;border-left:5px solid var(--ink)}
+.cp .pc .pc-in h3{font:700 12px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:18px 0 8px;padding-top:8px;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
+.cp .pc-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:7px}
+.cp .ft a.pc-tile{display:block;border:2px solid var(--line);padding:7px 8px;font:400 12.5px/1.3 var(--body);color:var(--ink);text-decoration:none}
+.cp .ft a.pc-tile:hover,.cp .ft a.pc-tile:focus-visible{box-shadow:3px 3px 0 var(--line)}
+.cp .pc-tile b{display:block;font:400 30px/1 var(--display);margin:3px 0 1px}
+.cp .pc-tn{display:block;font-weight:700;font-size:13.5px}
+.cp .pc-tm{display:block}
+.cp .pc-no{display:block;margin-top:4px;font-weight:700;color:#A33F00}
+.cp .pc-all{display:block;margin-top:4px;color:var(--muted)}
+.cp .pc-bind{display:block;margin-top:4px;font-weight:700}
+.cp .pc-y.pc-rat{background:var(--ink);box-shadow:0 0 0 2px #009E73}
+:root[data-theme=dark] .cp .pc-no{color:#F5A36B}
+.cp .pc-find{font:14px var(--body);padding:6px 9px;border:2px solid var(--line);width:min(280px,100%);margin:0 0 6px;background:var(--bg);color:var(--ink)}
+.cp .pc-gw{max-height:430px;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:2px solid var(--ink)}
+.cp .pc-grid{width:100%;border-collapse:collapse}
+.cp .pc-grid th,.cp .pc-grid td{font-size:13.5px;padding:3px 4px;text-align:center;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .pc-grid thead th{position:sticky;top:0;background:var(--bg);font:600 11px var(--body);text-transform:uppercase;letter-spacing:.04em;border-top:0;border-bottom:2px solid var(--ink);vertical-align:bottom}
+.cp .pc-grid thead th small{display:block;font-size:11px;text-transform:none;letter-spacing:0}
+.cp .pc-grid th[scope=row],.cp .pc-grid thead th:first-child{text-align:left;font-weight:600}
+.cp .pc-grid tr.pc-focus th,.cp .pc-grid tr.pc-focus td{background:color-mix(in srgb,#F0E442 24%,var(--bg))}
+.cp .pc-grid tr[hidden]{display:none}
+.cp .pc-y,.cp .pc-n{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px}
+.cp .pc-y{background:#009E73;border:1.5px solid var(--ink)}
+.cp .pc-n{border:1.5px dashed color-mix(in srgb,var(--ink) 45%,transparent)}
+.cp .pc-y.pc-r{background:#D55E00}
+.cp .pc-n.pc-ring{border:1.5px solid var(--ink)}
+.cp .pc-key{display:flex;flex-wrap:wrap;gap:3px 14px;align-items:center;font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.cp .pc-key > span{display:inline-flex;gap:5px;align-items:center}
+.cp .pc-rows{width:100%;border-collapse:collapse}
+.cp .pc-rows td{font-size:13.5px;line-height:1.3;padding:6px 8px 6px 0;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent);vertical-align:top}
+.cp .pc-rows td.pc-d{white-space:nowrap;font-weight:700;width:1%}
+.cp .pc-rows td.pc-s{white-space:nowrap;width:1%;text-align:right}
+.cp .ft .pc-rows td.pc-s a,.cp .ft .pc-ban a{font-weight:400;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.cp .ft .pc-rows td.pc-s a{display:block;font-size:12px;margin-top:3px}
+.cp .pc-k{display:inline-block;font:700 11px var(--body);text-transform:uppercase;letter-spacing:.04em;border:1.5px solid var(--line);padding:0 5px;color:#111}
+.cp .pc-ord{background:#E9B9D5}.cp .pc-inv{background:#A8D8F2}.cp .pc-crt{background:#9CC3E0}
+.cp .pc-mo{display:grid;grid-template-columns:repeat(12,1fr);font-size:11px;color:var(--muted);padding:0 1.5%}
+.cp .pc-ban{margin:9px 0 2px}
+.cp .pc-ban p{margin:0 0 3px;font-size:13.5px;line-height:1.35}
+.cp .ft .pc-ban p a{text-decoration:none}
+.cp .ft .pc-ban p a:hover{text-decoration:underline}
+.cp .pc-ban p span{display:block;color:var(--muted);font-size:12.5px}
+.cp .ft .pc-ban p span a{color:var(--muted)}
+.cp .pc-ban svg{display:block;height:auto}
+.cp .pc-gl{stroke:var(--ink);stroke-opacity:.14}
+.cp .pc-today{stroke:var(--ink);stroke-dasharray:2 2}
+.cp .pc-bar{stroke:#D55E00;stroke-width:6}
+.cp .pc-bar.pc-on{stroke-dasharray:10 4}
+.cp .pc-mk{fill:#D55E00;stroke:var(--ink);stroke-width:1.5}
+.cp .pc-end{fill:var(--bg);stroke:var(--ink);stroke-width:1.5}
+.cp .pc-tick{stroke:var(--ink);stroke-width:2.5}
+@media (max-width:900px){.cp .pc-halves{grid-template-columns:1fr}}
+@media (max-width:640px){.cp .pc-gw{max-height:72vh;overflow-x:auto}.cp .pc-tiles{grid-template-columns:repeat(2,1fr)}
+  .cp .pc-grid th,.cp .pc-grid td{padding:4px 1px;font-size:13px}
+  .cp .pc-grid thead th{font-size:9.5px;letter-spacing:0}
+  .cp .pc-grid thead th small{font-size:9.5px}
+  .cp .pc-grid th[scope=row]{padding-right:4px;line-height:1.2}
+  .cp .pc-in{padding:12px 10px 14px}}
 .cp .ft .cs-t td.cs-canada a{background:color-mix(in srgb,#D55E00 28%,var(--bg))}
 /* Who owns a piece of whom: investors by labs, a box per deal (dashed: "up to"); phones scroll the grid sideways */
 .cp .ow-key{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13.5px;margin:10px 0 8px}
