@@ -152,14 +152,23 @@ ORDERS = [
      "https://techcrunch.com/2026/06/13/openai-faces-investigation-from-state-attorneys-general/"),
     ("2026-06-03", "UK", "Google", "Order", "Give publishers an opt-out from AI Overviews",
      "https://siliconangle.com/2026/06/03/uk-orders-google-provide-ai-overviews-opt-option-publishers/"),
+    ("2026-04-09", "Florida (Attorney General)", "OpenAI", "Investigation",
+     "ChatGPT's alleged part in the Florida State University shooting",
+     "https://techcrunch.com/2026/04/09/florida-ag-investigation-openai-chatgpt-shooting/"),
     ("2026-01-16", "California", "xAI", "Order", "Cease and desist over sexual deepfakes from Grok",
      "https://techcrunch.com/2026/01/16/california-ag-sends-musks-xai-a-cease-and-desist-order-over-sexual-"
      "deepfakes/"),
+    ("2026-01-14", "California (Attorney General)", "xAI", "Investigation",
+     "Grok's nonconsensual sexually explicit material",
+     "https://techcrunch.com/2026/01/14/musk-denies-awareness-of-grok-sexual-underage-images-as-california-ag-"
+     "launches-probe/"),
     ("2026-01-13", "Brazil", "Meta", "Order", "Let other companies' AI chatbots onto WhatsApp",
      "https://techcrunch.com/2026/01/13/brazil-orders-meta-to-suspend-policy-banning-third-party-ai-chatbots-from-"
      "whatsapp/"),
     ("2026-01-12", "UK (Ofcom)", "X", "Investigation", "Grok's part in sexual deepfakes",
      "https://the-decoder.com/uk-regulator-investigates-x-over-grok-ais-role-in-generating-sexualized-deepfakes/"),
+    ("2026-01-08", "EU (European Commission)", "X", "Order", "Keep all Grok-related documents through 2026",
+     "https://the-decoder.com/eu-orders-x-to-preserve-all-grok-related-documents-through-2026/"),
     ("2026-01-02", "India", "X", "Order", "Fix Grok over obscene content within 72 hours",
      "https://techcrunch.com/2026/01/02/india-orders-musks-x-to-fix-grok-over-obscene-ai-content/"),
 ]
@@ -171,6 +180,76 @@ LEFT_OUT = {
     "6465816": "Not signed yet",
     "https://the-decoder.com/openai-and-the-trump-administration-are-negotiating-a-government-stake-in-the-ai-startup/":
         "Talks only",
+    "https://siliconangle.com/2026/04/09/florida-ag-opens-probe-chatgpt-alleging-connection-fsu-shooting/":
+        "same as Florida → OpenAI, 2026-04-09",
+    "https://techcrunch.com/2026/04/10/anthropic-temporarily-banned-openclaws-creator-from-accessing-claude/":
+        "A company acting on a user",
+    "https://techcrunch.com/2026/04/10/stalking-victim-sues-openai-claims-c"
+    "hatgpt-fueled-her-abusers-delusions-and-ignored-her-warnings/":
+        "Private lawsuit",
+    "https://siliconangle.com/2026/04/08/appeals-court-rejects-anthropics-bid-block-pentagon-blacklisting/":
+        "same as the 2026-04-08 ruling on US → Anthropic, 2026-02-27",
+    "https://the-decoder.com/us-appeals-court-refuses-to-block-pentagons-blacklisting-of-anthropic/":
+        "same as the 2026-04-08 ruling on US → Anthropic, 2026-02-27",
+    "https://arstechnica.com/tech-policy/2026/04/trump-appointed-judges-ref"
+    "use-to-block-trump-blacklisting-of-anthropic-ai-tech/":
+        "same as the 2026-04-08 ruling on US → Anthropic, 2026-02-27",
+    "https://the-decoder.com/perplexity-ai-sued-over-alleged-data-sharing-with-meta-and-google/":
+        "Private class action",
+    "https://siliconangle.com/2026/03/26/judge-issues-block-pentagon-label-anthropic-supply-chain-risk/":
+        "same as the 2026-03-27 ruling on US → Anthropic, 2026-02-27",
+    "https://research.google/blog/vibe-coding-xr-accelerating-ai-xr-prototyping-with-xr-blocks-and-gemini/":
+        "Not a government action",
+    "https://techcrunch.com/2026/03/17/openai-expands-government-footprint-with-aws-deal/":
+        "A deal between two companies (AWS to distribute OpenAI to government customers), no government signing",
+    "https://arstechnica.com/tech-policy/2026/03/elon-musks-xai-sued-for-tu"
+    "rning-three-girls-real-photos-into-ai-csam/":
+        "Private lawsuit",
+    "https://techcrunch.com/2026/03/16/merriam-webster-openai-encyclopedia-brittanica-lawsuit/": "Private lawsuit",
+    "https://the-decoder.com/bytedance-secures-access-to-nvidia-blackwell-c"
+    "luster-in-malaysia-circumventing-us-export-ban-on-china/":
+        "Companies' deal, not a government action",
+    "https://the-decoder.com/amazon-gets-court-order-blocking-perplexitys-ai-shopping-agent/":
+        "A company's suit against a company",
+    "https://siliconangle.com/2026/03/09/anthropic-sues-scrap-trump-administrations-claude-ban/":
+        "A company suing the government; the ban is already held (US → Anthropic, 2026-02-27)",
+    "https://the-decoder.com/despite-pentagon-ban-google-aws-and-microsoft-stick-with-anthropics-ai-models/":
+        "Companies acting on their own; ban already held",
+    "https://techcrunch.com/2026/03/07/openai-robotics-lead-caitlin-kalinowski-quits-in-response-to-pentagon-deal/":
+        "An employee quitting; deal already held",
+    "https://techcabal.com/2026/03/06/kenyan-watchdog-asks-regulator-to-probe-meta-ai-glasses/":
+        "A rights group asking a regulator, no action by a government",
+    "https://siliconangle.com/2026/03/06/anthropic-says-productive-discussions-pentagon-claude-but-plans-sue-ban/":
+        "Talks only",
+    "https://arstechnica.com/tech-policy/2026/03/musk-fails-to-block-califo"
+    "rnia-data-disclosure-law-he-fears-will-ruin-xai/":
+        "A company's suit against a state law, no order on a named company",
+    "https://techcrunch.com/2026/03/06/claudes-consumer-growth-surge-continues-after-pentagon-deal-debacle/":
+        "Business story; ban already held",
+    "https://techcrunch.com/2026/03/04/father-sues-google-claiming-gemini-chatbot-drove-son-into-fatal-delusion/":
+        "Private lawsuit",
+    "https://ainowinstitute.org/news/12263": "Opinion; same as US (Pentagon) → OpenAI, 2026-02-28",
+    "https://siliconangle.com/2026/03/03/openai-revises-pentagon-contract-address-surveillance-concerns/":
+        "same as US (Pentagon) → OpenAI, 2026-02-28",
+    "https://techcrunch.com/2026/03/01/openai-shares-more-details-about-its-agreement-with-the-pentagon/":
+        "same as US (Pentagon) → OpenAI, 2026-02-28",
+    "https://the-decoder.com/openai-calls-stuart-russell-a-doomer-in-court-"
+    "after-its-ceo-co-signed-his-ai-extinction-warning/":
+        "Private court case (Musk v. OpenAI)",
+    "https://the-decoder.com/trump-orders-all-federal-agencies-to-drop-anth"
+    "ropic-after-the-ai-company-refused-to-bend-its-terms-for-the-pentagon/":
+        "same as US → Anthropic, 2026-02-27",
+    "https://the-decoder.com/anthropic-refuses-pentagon-demand-to-loosen-mi"
+    "litary-ai-restrictions-faces-defense-production-act-threat/":
+        "Threat only",
+    "https://the-decoder.com/elon-musks-ai-company-finally-blocks-nude-imag"
+    "e-generation-following-pressure-from-regulators/":
+        "A company acting on its own",
+    "https://arstechnica.com/ai/2026/01/google-removes-some-ai-health-summa"
+    "ries-after-investigation-finds-dangerous-flaws/":
+        "A company acting on its own after a newspaper investigation",
+    "https://the-decoder.com/china-investigates-metas-manus-acquisition-for-export-control-violations/":
+        "Reported by the Financial Times only, not confirmed in the story",
 }
 
 # a LEFT_OUT comment starting with this is pledge news (a country joining a pledge or ratifying the treaty): the lists
