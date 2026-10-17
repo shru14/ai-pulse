@@ -97,8 +97,10 @@ def main():
     gn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/glossary.py, to compare with")
     gn.add_argument("--branch", required=True, help="the branch the words are on (glossary/<day>)")
     gn.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
-    sub.add_parser("promises", help="promises the matcher finds that aren't checked yet, and launches it finds for checked "
-                   "ones (to check by hand and add to promises.CHECKED)")
+    pr = sub.add_parser("promises", help="promises the matcher finds that aren't checked yet, and launches it finds for "
+                        "checked ones (to check by hand and add to promises.CHECKED)")
+    pr.add_argument("--data", metavar="FILE", help="add the stories in the site's data.json (or data.json.gz) the "
+                    "database doesn't have (the daily job's seed database ends where the data file's 3 months begin)")
     jb = sub.add_parser("jobs", help="job-cut stories not checked yet for Jobs blamed on AI (to check by hand and add to "
                         "jobs.CHECKED or jobs.LEFT_OUT)")
     jb.add_argument("--days", type=int, default=30, help="stories from the last DAYS days (default 30; 0 for all since 2023)")
@@ -125,13 +127,23 @@ def main():
                         "LEFT_OUT)")
     nt = sub.add_parser("tests", help="Research papers naming a benchmark, not checked yet for New tests for AI (to "
                         "check by hand and add to new_tests.TESTS or new_tests.LEFT_OUT)")
+    bl = sub.add_parser("backlog", help="a feature's stories not checked yet between two days, from every headline: the "
+                        "database joined with the data file (for filling a feature back, a batch at a time)")
+    bl.add_argument("feature", choices=["court", "jobs", "press", "safety", "owners", "consultations", "releases",
+                                        "timelines", "pacts", "tests"])
+    bl.add_argument("--from", dest="start", required=True, metavar="DAY", help="the first day (YYYY-MM-DD)")
+    bl.add_argument("--to", dest="end", required=True, metavar="DAY", help="the day after the last (YYYY-MM-DD)")
+    bl.add_argument("--data", metavar="FILE", help="add the stories in the site's data.json (or data.json.gz) the "
+                    "database doesn't have")
+    bl.add_argument("--two-outlets", action="store_true", help="only stories another outlet also reported")
     for q in (ct, pp, sh, iw, ow, cs, rc, lt, pa, nt):
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
                        "instead of the database")
     for name, module in (("court", "court"), ("press", "press"), ("safety", "safety"), ("infra", "infra_watch"),
                          ("owners", "owners"), ("consultations", "consultations"), ("releases", "release_cards"),
-                         ("timelines", "lab_timelines"), ("pacts", "pacts"), ("tests", "new_tests")):
+                         ("timelines", "lab_timelines"), ("pacts", "pacts"), ("tests", "new_tests"),
+                         ("promises", "promises")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -411,12 +423,31 @@ def main():
     elif a.cmd == "promises":
         from . import promises
         found, _ = store.cards(store.connect(a.db), limit=10**9)
+        if a.data:
+            have = {c["url"] for c in found}
+            found += [c for c in site_data(a.data) if c["url"] not in have]
         todo = promises.candidates(found, date.today())
         print(f"{len(promises.CHECKED)} checked. To check ({len(todo)}): the promise, then the launch the matcher suggests")
         for p in todo:
             print(f"  {p['date']} {p['company']}: {p['title']}\n    {p['url']}")
             if p.get("launch"):
                 print(f"    -> {p['launch']['date']} {p['launch']['title']}\n       {p['launch']['url']}")
+    elif a.cmd == "backlog":
+        import importlib
+        m = importlib.import_module("aipulse." + {"releases": "release_cards", "timelines": "lab_timelines",
+                                                  "tests": "new_tests"}.get(a.feature, a.feature))
+        found, _ = store.cards(store.connect(a.db), limit=10**9)
+        if a.data:
+            have = {c["url"] for c in found}
+            found += [c for c in site_data(a.data) if c["url"] not in have]
+        found = [c for c in found if a.start <= c["date"][:10] < a.end]
+        if a.two_outlets:
+            found = [c for c in found if any(s["source"] != c["source"] for s in c.get("also") or [])]
+        m.CHECKED_TO = "0"  # the window decides, not the day the daily job has checked up to
+        todo = m.candidates(found, a.start)
+        print(f"{a.feature}: {len(m.LEFT_OUT)} left out. To check from {a.start} to before {a.end} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
     elif a.cmd == "jobs":
         from . import jobs
         # the site's own data.json for the daily job, which has no database (its last 3 months)
@@ -466,13 +497,14 @@ def main():
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
     elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note", "owners-note", "consultations-note",
-                   "releases-note", "timelines-note", "pacts-note", "tests-note"):
+                   "releases-note", "timelines-note", "pacts-note", "tests-note", "promises-note"):
         # A court/, press/, safety/ or infra/<day> branch's drafts, to the project inbox for approval
         from . import (consultations, court, digest, infra_watch, lab_timelines, new_tests, owners, pacts, press,
-                       release_cards, safety)
+                       promises, release_cards, safety)
         m = {"court-note": court, "press-note": press, "safety-note": safety, "infra-note": infra_watch,
              "owners-note": owners, "consultations-note": consultations, "releases-note": release_cards,
-             "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests}[a.cmd]
+             "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests,
+             "promises-note": promises}[a.cmd]
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch)
         if not note:
             print("Nothing new on this branch.")
