@@ -605,9 +605,11 @@ def test_reclassify_leaves_official_bill_cards_alone(tmp_path):
     assert card["jurisdictions"] == ["EU"] and card["action"] == "law"
 
 
-def test_static_build_holds_every_card(tmp_path):
+def test_static_build_holds_every_card(tmp_path, monkeypatch):
     import json
+    from aipulse import consultations
     from aipulse.static import build
+    monkeypatch.setattr(consultations, "ADDED", [])  # the page is built once a list is read or a row checked by hand
     conn = store.connect(tmp_path / "t.db")
     sources = [{"name": "Fixture", "url": "rss", "category": "news"}]
     collect(conn, sources, max_age_days=100000, fetcher=lambda u: (FIX / "sample_rss.xml").read_bytes(),
@@ -3746,10 +3748,11 @@ def test_models_being_retired_reads_each_labs_page_and_builds(tmp_path, monkeypa
     assert "<b>1</b><span>models shut down in the next 30 days</span>" in page
 
 
-def test_ai_consultations_reads_each_list_keeps_titles_naming_ai_and_builds(tmp_path):
+def test_ai_consultations_reads_each_list_keeps_titles_naming_ai_and_builds(tmp_path, monkeypatch):
     import json
     from datetime import date
     from aipulse import consultations
+    monkeypatch.setattr(consultations, "ADDED", [])  # the lists' rows only, not the ones checked by hand
     uk = {"results": [
         {"title": "Copyright and AI: technical measures", "link": "/government/consultations/copyright-ai",
          "end_date": "2026-11-20T23:59:00.000+00:00", "organisations": [{"title": "Intellectual Property Office"}],
@@ -3900,6 +3903,17 @@ def test_who_owns_whom_candidates_and_the_approval_note():
     subject, text, html = owners.note(base, "owners/2026-10-17")
     assert "1 new deal to approve" in subject and owners.DEALS[-1][-1] in text
     assert owners.note(open(owners.__file__, encoding="utf-8").read(), "owners/2026-10-17") is None
+
+
+def test_promises_approval_note_lists_new_promises_and_found_launches():
+    from aipulse import promises
+    src = open(promises.__file__, encoding="utf-8").read()
+    shipped = next(u for u, v in promises.CHECKED.items() if v)
+    left = next(u for u, v in promises.CHECKED.items() if v is None)
+    base = src.replace(f'    "{left}": None,', "").replace(promises.CHECKED[shipped], "")  # a launch found since
+    subject, text, html = promises.note(base, "promises/2026-10-18")
+    assert "1 new promise to approve" in subject and promises.CHECKED[shipped] in text and "1 story" in text
+    assert promises.note(src, "promises/2026-10-18") is None
 
 
 def test_every_feature_has_the_shared_header():

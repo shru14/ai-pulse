@@ -97,8 +97,10 @@ def main():
     gn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/glossary.py, to compare with")
     gn.add_argument("--branch", required=True, help="the branch the words are on (glossary/<day>)")
     gn.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
-    sub.add_parser("promises", help="promises the matcher finds that aren't checked yet, and launches it finds for checked "
-                   "ones (to check by hand and add to promises.CHECKED)")
+    pr = sub.add_parser("promises", help="promises the matcher finds that aren't checked yet, and launches it finds for "
+                        "checked ones (to check by hand and add to promises.CHECKED)")
+    pr.add_argument("--data", metavar="FILE", help="add the stories in the site's data.json (or data.json.gz) the "
+                    "database doesn't have (the daily job's seed database ends where the data file's 3 months begin)")
     jb = sub.add_parser("jobs", help="job-cut stories not checked yet for Jobs blamed on AI (to check by hand and add to "
                         "jobs.CHECKED or jobs.LEFT_OUT)")
     jb.add_argument("--days", type=int, default=30, help="stories from the last DAYS days (default 30; 0 for all since 2023)")
@@ -131,7 +133,8 @@ def main():
                        "instead of the database")
     for name, module in (("court", "court"), ("press", "press"), ("safety", "safety"), ("infra", "infra_watch"),
                          ("owners", "owners"), ("consultations", "consultations"), ("releases", "release_cards"),
-                         ("timelines", "lab_timelines"), ("pacts", "pacts"), ("tests", "new_tests")):
+                         ("timelines", "lab_timelines"), ("pacts", "pacts"), ("tests", "new_tests"),
+                         ("promises", "promises")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -411,6 +414,9 @@ def main():
     elif a.cmd == "promises":
         from . import promises
         found, _ = store.cards(store.connect(a.db), limit=10**9)
+        if a.data:
+            have = {c["url"] for c in found}
+            found += [c for c in site_data(a.data) if c["url"] not in have]
         todo = promises.candidates(found, date.today())
         print(f"{len(promises.CHECKED)} checked. To check ({len(todo)}): the promise, then the launch the matcher suggests")
         for p in todo:
@@ -466,13 +472,14 @@ def main():
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
     elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note", "owners-note", "consultations-note",
-                   "releases-note", "timelines-note", "pacts-note", "tests-note"):
+                   "releases-note", "timelines-note", "pacts-note", "tests-note", "promises-note"):
         # A court/, press/, safety/ or infra/<day> branch's drafts, to the project inbox for approval
         from . import (consultations, court, digest, infra_watch, lab_timelines, new_tests, owners, pacts, press,
-                       release_cards, safety)
+                       promises, release_cards, safety)
         m = {"court-note": court, "press-note": press, "safety-note": safety, "infra-note": infra_watch,
              "owners-note": owners, "consultations-note": consultations, "releases-note": release_cards,
-             "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests}[a.cmd]
+             "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests,
+             "promises-note": promises}[a.cmd]
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch)
         if not note:
             print("Nothing new on this branch.")
