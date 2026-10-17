@@ -161,6 +161,11 @@ def main():
                 print(f"Hacker News: not read ({e})")
             from . import retired  # the labs' deprecation pages, for Models being retired
             print(f"Models being retired: {retired.refresh(conn)}")
+            from . import consultations  # governments' official lists of consultations, for AI consultations
+            try:
+                print(f"AI consultations: {consultations.refresh(conn)}")
+            except Exception as e:  # the page keeps the rows last read; the stories are already saved
+                print(f"AI consultations: not read ({e})")
     elif a.cmd == "serve":
         store.connect(a.db).close()
         serve(a.db, a.host, a.port)
@@ -255,9 +260,11 @@ def main():
         # Sources failing store.FAILING_AFTER runs in a row, told once each (it resets when one works again)
         from . import digest
         from .collect import source_alert
+        from .consultations import LISTS
         from .sources import SOURCES
         conn = store.connect(a.db)
-        rows = store.newly_failing(conn, [s["url"] for s in SOURCES])
+        # the news sources, and the official lists AI consultations reads (consultations.refresh logs them)
+        rows = store.newly_failing(conn, [s["url"] for s in SOURCES] + [url for url, _ in LISTS.values()])
         if not rows:
             print("No source has newly stopped working.")
         elif a.dry_run:

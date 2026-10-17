@@ -3746,6 +3746,67 @@ def test_models_being_retired_reads_each_labs_page_and_builds(tmp_path, monkeypa
     assert "<b>1</b><span>models shut down in the next 30 days</span>" in page
 
 
+def test_ai_consultations_reads_each_list_keeps_titles_naming_ai_and_builds(tmp_path):
+    import json
+    from datetime import date
+    from aipulse import consultations
+    uk = {"results": [
+        {"title": "Copyright and AI: technical measures", "link": "/government/consultations/copyright-ai",
+         "end_date": "2026-11-20T23:59:00.000+00:00", "organisations": [{"title": "Intellectual Property Office"}],
+         "content_store_document_type": "open_consultation"},
+        {"title": "Growing up in the online world", "link": "/government/consultations/online",  # AI only in its summary
+         "end_date": "2026-05-26T23:59:00.000+01:00", "content_store_document_type": "consultation_outcome"},
+        {"title": "Algorithmic transparency standard", "link": "/government/consultations/ats",
+         "end_date": "2026-06-01T23:59:00.000+01:00", "content_store_document_type": "consultation_outcome"},
+        {"title": "AI Management Essentials", "link": "/government/consultations/ame",  # closed too long ago
+         "end_date": "2025-01-29T23:59:00.000+00:00", "content_store_document_type": "consultation_outcome"}]}
+    us = {"results": [
+        {"title": "Policy Statement Concerning Artificial Intelligence Systems", "html_url": "https://fr.example/1",
+         "comments_close_on": "2026-10-20", "agency_names": ["Federal Trade Commission"]},
+        {"title": "Aquatic Invasive Species (AIS) Rules", "html_url": "https://fr.example/2",
+         "comments_close_on": "2026-10-25", "agency_names": ["Interior Department"]}]}
+    eu = {"initiativeResultDtoPage": {"last": True, "content": [
+        {"id": 19292.0, "shortTitle": "\rArticles 75c – 75d AI Act Implementing Act",
+         "currentStatuses": [{"feedbackEndDate": "2026/11/09 23:59:59"}]},
+        {"id": 14709.0, "shortTitle": "Digital Networks Act", "currentStatuses": [{"feedbackEndDate": "2026/09/07 00:00:00"}]}]}}
+    ca = ("\ufeffregistration_number,title_en,start_date,end_date,status,profile_page_en,report_link_en,owner_org_title\n"
+          "C-1,Consultation on trust in artificial intelligence,2026-07-23,2026-09-23,O,https://ca.example/ai,N/A,"
+          "Innovation Canada | Innovation Canada FR\n"
+          "C-2,Algorithmic pricing and competition,2025-06-10,2026-08-04,C,https://ca.example/ap,https://ca.example/r,"
+          "Innovation Canada | Innovation Canada FR\n")
+    def fetch(url):
+        if "gov.uk" in url:
+            return json.dumps(uk).encode()
+        if "federalregister" in url:
+            return json.dumps(us).encode()
+        if "europa" in url:
+            return json.dumps(eu).encode()
+        if "canada" in url:
+            return ca.encode()
+        raise OSError("down")
+    conn = store.connect(tmp_path / "t.db")
+    today = date(2026, 10, 17)
+    assert consultations.refresh(conn, fetch, today) == "UK 2, US 1, EU 1, Canada 2"  # one per title, both searches
+    consultations.refresh(conn, lambda url: (_ for _ in ()).throw(OSError("down")), today)  # a list down keeps its rows
+    assert len(consultations.load(conn)["Canada"]["rows"]) == 2
+    for _ in range(2):  # a list down 3 runs in a row is failing, for source-alert to tell the inbox
+        consultations.refresh(conn, lambda url: (_ for _ in ()).throw(OSError("down")), today)
+    assert [r["name"] for r in store.newly_failing(conn, [u for u, _ in consultations.LISTS.values()])] == [
+        "AI consultations: Consulting with Canadians (Canada)", "AI consultations: Federal Register (US)",
+        "AI consultations: GOV.UK consultations (UK)", "AI consultations: Have Your Say (EU)"]
+    consultations.refresh(conn, fetch, today)  # working again: no longer failing
+    assert not store.newly_failing(conn, [u for u, _ in consultations.LISTS.values()])
+    assert consultations.build(conn, [], tmp_path, today) == ["ai-consultations/"]
+    page = (tmp_path / "ai-consultations" / "index.html").read_text(encoding="utf-8")
+    open_, closed = page.split("Closed · past 6 months</h2>")
+    assert open_.index("20 Oct 2026") < open_.index("9 Nov 2026") < open_.index("20 Nov 2026")  # closing soonest first
+    assert open_.count('class="rm-soon"') == 1  # 20 Oct is within 14 days
+    assert closed.index("23 Sep 2026") < closed.index("4 Aug 2026") < closed.index("1 Jun 2026")  # latest first
+    assert "Growing up" not in page and "AIS" not in page and "Digital Networks" not in page
+    assert 'href="https://ca.example/r" rel="noopener">Outcome published' in page and "Innovation Canada FR" not in page
+    assert "<b>3</b><span>consultations on AI open now</span>" in page and "<b>4</b><span>places asked" in page
+
+
 def test_who_owns_whom_grid_shows_only_deals_whose_story_we_have(tmp_path):
     from datetime import date
     from aipulse import owners

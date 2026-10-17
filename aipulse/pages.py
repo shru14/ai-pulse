@@ -895,6 +895,17 @@ a.subscribe-btn{text-decoration:none}
   .cp .rm-t td:nth-child(4)::before{content:"Replace with ";color:var(--muted);font:500 12.5px var(--body)}
   .cp .rm-t td:nth-child(5)::before{content:"Announced ";color:var(--muted);font:500 12.5px var(--body)}
   .cp .rm-t td.rm-d small{display:inline;margin-left:8px}}
+/* AI consultations: Models being retired's table, without its phone labels; an outcome's link under the title */
+@media (max-width:640px){.cp .cs-t td:nth-child(4)::before{content:none}}
+.cp .ft .cs-t a.cs-out{font-size:13px;color:var(--muted)}
+/* a little colour, Okabe-Ito tints with dark text: the three numbers, and each place's label */
+.cp .cs .cs-big0{background:color-mix(in srgb,#009E73 22%,var(--bg))}
+.cp .cs .cs-big1{background:color-mix(in srgb,#56B4E9 26%,var(--bg))}
+.cp .cs .cs-big2{background:color-mix(in srgb,#E69F00 26%,var(--bg))}
+.cp .ft .cs-t td.cs-uk a{background:color-mix(in srgb,#F0E442 45%,var(--bg))}
+.cp .ft .cs-t td.cs-us a{background:color-mix(in srgb,#CC79A7 35%,var(--bg))}
+.cp .ft .cs-t td.cs-eu a{background:color-mix(in srgb,#56B4E9 40%,var(--bg))}
+.cp .ft .cs-t td.cs-canada a{background:color-mix(in srgb,#D55E00 28%,var(--bg))}
 /* Who owns a piece of whom: investors by labs, a box per deal (dashed: "up to"); phones scroll the grid sideways */
 .cp .ow-key{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13.5px;margin:10px 0 8px}
 .cp .ow-key i{display:inline-block;width:18px;height:12px;border:2px solid var(--line);margin-right:6px;vertical-align:-1px;background:color-mix(in srgb,#E69F00 30%,var(--bg))}
