@@ -258,6 +258,13 @@ PLATFORM: dict[str, tuple[str, str, str]] = {
     "ws.parlament.ch": ("official", "", "Swiss Parliament open data: open use with the source named"),
     "api.oireachtas.ie": ("official", "https://www.oireachtas.ie/en/open-data/license/", "Oireachtas (Open Data) PSI Licence, CC BY 4.0"),
     "data.stortinget.no": ("official", "https://data.stortinget.no/", "Norwegian Licence for Open Government Data, credited"),
+    # Added 17 Oct 2026 for AI consultations (www.gov.uk and www.federalregister.gov are above, under Sources)
+    "ec.europa.eu": ("official", "https://commission.europa.eu/legal-notice_en",
+                     "Have Your Say's public API; European Commission: reuse allowed with acknowledgement; robots.txt "
+                     "allows /info/; checked 17 Oct 2026"),
+    "open.canada.ca": ("official", "https://open.canada.ca/en/open-government-licence-canada",
+                       "Open Government Licence - Canada: the list of federal consultations is open data; robots.txt "
+                       "allows /static/; checked 17 Oct 2026"),
     "api.oecdai.org": ("licence", "https://oecd.ai/en/terms", "OECD.AI data, CC BY 4.0"),
     "incidentdatabase.ai": ("licence", "https://incidentdatabase.ai/terms-of-use/",
                             "Incident data CC BY-SA 4.0; only 'high-volume' bots are banned, and we read it once per run"),

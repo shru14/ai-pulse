@@ -502,6 +502,8 @@ FEATURES = [
      "what each lab says to use instead.", "models-being-retired/"),
     ("Who owns a piece of whom", "Which big companies have money in which AI labs, each stake checked by hand against "
      "its story.", "who-owns-a-piece-of-whom/"),
+    ("AI consultations", "Where you can tell a government what you think about AI and until when: the UK, US, EU and "
+     "Canada's official lists.", "ai-consultations/"),
 ]
 
 
