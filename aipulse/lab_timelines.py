@@ -45,6 +45,34 @@ LEFT_OUT = {
         "A new model's launch price, not a change",
     "https://the-decoder.com/alibaba-launches-qwen-audio-3-1-with-five-new-models-and-slashes-ai-audio-prices-by-up-to-95-percent/":
         "New models' launch prices, not a change",
+    "https://the-decoder.com/anthropic-drops-the-surcharge-for-million-token-context-windows-making-opus-4-6-and-sonnet-4-6-far-cheaper/":
+        "Long-context surcharge dropped, standard price unchanged; its date and the API aren't stated",
+    "https://siliconangle.com/2026/04/09/anthropic-openai-target-big-businesses-enterprise-grade-controls-lower-pricing/":
+        "Subscription plan prices, not the API",
+    "https://techcrunch.com/2026/04/09/chatgpt-pro-plan-100-month-codex/":
+        "Subscription price, not the API",
+    "https://the-decoder.com/openai-shifts-to-usage-based-pricing-for-codex-in-chatgpt-business-plans/":
+        "Codex plan pricing, not the API",
+    "https://openai.com/index/codex-flexible-pricing-for-teams":
+        "Codex plan pricing, not the API",
+    "https://the-decoder.com/claude-cowork-expands-to-all-paid-plans-on-macos-and-windows-with-new-org-controls/":
+        "An app's plans, not a model reaching places",
+    "https://techcrunch.com/2026/03/26/bytedances-new-ai-video-generation-model-dreamina-seedance-2-0-comes-to-capcut/":
+        "An app, not a model reaching countries or regions",
+    "https://deepmind.google/blog/gemini-3-1-flash-lite-built-for-intelligence-at-scale/":
+        "A new model's launch price, not a change",
+    "https://the-decoder.com/bytedances-seed2-0-adds-even-more-price-pressure-on-western-ai-models/":
+        "New models' launch prices, not a change",
+    "https://the-decoder.com/chinese-ai-lab-zhipu-releases-glm-5-under-mit-license-claims-parity-with-top-western-models/":
+        "A new model's release, not a change",
+    "https://techcrunch.com/2026/01/27/googles-ai-plus-plan-rolls-out-to-all-markets-including-the-u-s/":
+        "A subscription plan, not a model",
+    "https://openai.com/index/introducing-chatgpt-go":
+        "A subscription plan, not a model",
+    "https://techcrunch.com/2026/02/04/alexa-amazons-ai-assistant-is-now-available-to-everyone-in-the-u-s/":
+        "An assistant app, not a model",
+    "https://techcrunch.com/2026/01/05/alexa-without-an-echo-amazons-ai-chatbot-comes-to-the-web-and-a-revamped-alexa-app/":
+        "An assistant app, not a model",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-17"
