@@ -127,6 +127,15 @@ def main():
                         "LEFT_OUT)")
     nt = sub.add_parser("tests", help="Research papers naming a benchmark, not checked yet for New tests for AI (to "
                         "check by hand and add to new_tests.TESTS or new_tests.LEFT_OUT)")
+    bl = sub.add_parser("backlog", help="a feature's stories not checked yet between two days, from every headline: the "
+                        "database joined with the data file (for filling a feature back, a batch at a time)")
+    bl.add_argument("feature", choices=["court", "jobs", "press", "safety", "owners", "consultations", "releases",
+                                        "timelines", "pacts", "tests"])
+    bl.add_argument("--from", dest="start", required=True, metavar="DAY", help="the first day (YYYY-MM-DD)")
+    bl.add_argument("--to", dest="end", required=True, metavar="DAY", help="the day after the last (YYYY-MM-DD)")
+    bl.add_argument("--data", metavar="FILE", help="add the stories in the site's data.json (or data.json.gz) the "
+                    "database doesn't have")
+    bl.add_argument("--two-outlets", action="store_true", help="only stories another outlet also reported")
     for q in (ct, pp, sh, iw, ow, cs, rc, lt, pa, nt):
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
@@ -423,6 +432,22 @@ def main():
             print(f"  {p['date']} {p['company']}: {p['title']}\n    {p['url']}")
             if p.get("launch"):
                 print(f"    -> {p['launch']['date']} {p['launch']['title']}\n       {p['launch']['url']}")
+    elif a.cmd == "backlog":
+        import importlib
+        m = importlib.import_module("aipulse." + {"releases": "release_cards", "timelines": "lab_timelines",
+                                                  "tests": "new_tests"}.get(a.feature, a.feature))
+        found, _ = store.cards(store.connect(a.db), limit=10**9)
+        if a.data:
+            have = {c["url"] for c in found}
+            found += [c for c in site_data(a.data) if c["url"] not in have]
+        found = [c for c in found if a.start <= c["date"][:10] < a.end]
+        if a.two_outlets:
+            found = [c for c in found if any(s["source"] != c["source"] for s in c.get("also") or [])]
+        m.CHECKED_TO = "0"  # the window decides, not the day the daily job has checked up to
+        todo = m.candidates(found, a.start)
+        print(f"{a.feature}: {len(m.LEFT_OUT)} left out. To check from {a.start} to before {a.end} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
     elif a.cmd == "jobs":
         from . import jobs
         # the site's own data.json for the daily job, which has no database (its last 3 months)
