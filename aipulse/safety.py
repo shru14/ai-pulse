@@ -83,6 +83,28 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-10-16', by='NIST (CAISI)', kind='framework',
+         title='Key Practices for Incident Readiness and Response in Super Intelligence Training and Evaluation',
+         url='https://www.nist.gov/news-events/news/2026/10/key-practices-incident-readiness-and-response-super-intelligence-training',
+         original='https://www.nist.gov/system/files/documents/2026/10/16/Key_Practices_for_Incident_Readiness_and_Response_in_Super_Intelligence%20_Training_and_Evaluation.pdf',
+         models=(), risks=('control',),
+         abstract=('This document sets out ten voluntary key practices to guide emerging approaches in the '
+                   'management of incidents that might occur during the training and evaluation of super '
+                   'intelligence (SI) agents. While these incidents highlight the importance of traditional '
+                   'cybersecurity principles and practices, they also introduce novel considerations for incident '
+                   'prevention, response, and reporting. These novel considerations primarily stem from the '
+                   'agentic nature and advanced cyber capabilities of cutting-edge SI systems.')),
+    dict(date='2026-10-15', by='OpenAI', kind='card',
+         title='GPT-Live-1.1 system card',
+         url='https://deploymentsafety.openai.com/gpt-live-1-1',
+         original='https://deploymentsafety.openai.com/gpt-live-1-1/gpt-live-1-1.pdf',
+         models=('GPT-Live-1.1', 'GPT-Live-1.1 Quip'), risks=('cbrn', 'cyber', 'harm', 'misalign', 'rnd'),
+         abstract=('GPT-Live-1.1 and GPT-Live-1.1 Quip are our most recent iterations in the GPT-Live model family, '
+                   'voice models designed to make conversations with AI feel more natural and intelligent. As with '
+                   'their predecessors, these models are full-duplex, meaning they can listen and respond '
+                   'continuously instead of waiting for a clearly defined turn to end. This means they can follow '
+                   'pauses, interruptions, and changes in pace, and decide in the moment whether to respond or keep '
+                   'listening.')),
     dict(date='2026-10-14', by='METR', kind='framework',
          title='Our approach to working with AI companies',
          url='https://metr.org/blog/2026-10-14-our-approach-to-risk-assessment/',
@@ -1308,6 +1330,8 @@ DOCS: list[dict] = [
 # Documents read and left out, so `python -m aipulse safety` doesn't list them again: research on training methods,
 # essays, usage studies, testimony, organisation news, a product launch, and documents from before 2026.
 LEFT_OUT: set[str] = {
+    'https://www.anthropic.com/news/an-update-on-independent-evaluators',  # news: organisation, no document (Anthropic gives METR employee-like access)
+    'https://www.anthropic.com/research/ecdsa-curve-origins',  # cryptography finding, not a safety document
     'https://the-decoder.com/uks-ai-security-institute-finds-standard-benchmarks-systematically-underestimate-what-ai-agents-can-actually-do/',  # news about the AISI test-time compute post
     'https://the-decoder.com/germanys-national-security-council-greenights-an-ai-safety-institute-modeled-after-the-uks-aisi/',  # news: organisation, no document
     'https://openai.com/index/gpt-5-5-system-card',  # news about the GPT-5.5 System Card, already in DOCS
