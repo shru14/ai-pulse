@@ -250,10 +250,10 @@ def body(ev: list[dict], today: date) -> str:
     more = (f'<button type="button" class="lt-more" aria-expanded="false" '
             f'data-show="{len(few)} more labs with one release each: show them" data-hide="Hide them">'
             f'{len(few)} more labs with one release each: show them</button>' if few else "")
-    return ('<div class="ft jb rm lt">\n<h1>Lab timelines</h1>\n<p class="jb-q">Who ships, who reprices, who switches '
-            'models off?</p>\n'
-            f'<p class="intro">{escape(_lead(by, today))}</p>\n'
-            '<div class="lt-leg"><span><b class="lt-dot lt-o"></b>Open weights</span><span><b class="lt-dot lt-wo"></b>'
+    return ('<div class="ft jb rm lt">\n'
+            + pages.feature_head(PATH, "Lab timelines", "Who ships, who reprices, who switches models off?",
+                                 escape(_lead(by, today)))
+            + '<div class="lt-leg"><span><b class="lt-dot lt-o"></b>Open weights</span><span><b class="lt-dot lt-wo"></b>'
             'Weights only</span><span><b class="lt-dot lt-c"></b>Closed</span><span class="lt-p">↓ price cut · ↑ price '
             'rise · + new places</span><span class="lt-s">grey = scheduled</span></div>\n'
             '<div class="rm-wrap lt-wrap"><table class="mt lt-t"><thead><tr><th>Lab</th>' + head

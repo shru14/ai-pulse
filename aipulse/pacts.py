@@ -564,11 +564,12 @@ def body(cards: list[dict], today: date) -> str:
          "until they happen."),
         ("Courts", "Only cases a government brought or answers; every other AI case is in AI in court."),
     ]
-    return (f'<div class="ft jb pc">\n<h1>AI pacts and orders</h1>\n'
-            '<p class="jb-q">What have governments signed on AI, and what have they made AI companies do?</p>\n'
-            '<p class="intro">The AI pledges and the AI treaty, from each official list of who signed; deals, bans, orders and '
-            'investigations from our stories, each checked by hand.</p>\n'
-            f'<div class="pc-halves">{_pacts(_pledges(), deals)}{_orders(bans, orders, today)}</div>\n'
+    return ('<div class="ft jb pc">\n'
+            + pages.feature_head(PATH, "AI pacts and orders",
+                                 "What have governments signed on AI, and what have they made AI companies do?",
+                                 "The AI pledges and the AI treaty, from each official list of who signed; deals, bans, "
+                                 "orders and investigations from our stories, each checked by hand.")
+            + f'<div class="pc-halves">{_pacts(_pledges(), deals)}{_orders(bans, orders, today)}</div>\n'
             '<section class="jb-lim"><h2>About these rows</h2>\n<table class="mt jb-small jb-limits"><tbody>'
             + "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits)
             + f"</tbody></table></section></div>\n{_JS}")
