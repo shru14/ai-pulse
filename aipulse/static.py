@@ -48,10 +48,9 @@ AI_TRAINING_BOTS = ("GPTBot", "Google-Extended", "CCBot", "ClaudeBot", "anthropi
 
 
 def robots_txt() -> str:
-    """robots.txt: search engines read the site (not the readers' dossier data or the unlisted api/); AI-training bots
-    read nothing."""
+    """robots.txt: search engines read the site (not the readers' dossier data); AI-training bots read nothing."""
     blocked = "".join(f"User-agent: {bot}\nDisallow: /\n\n" for bot in AI_TRAINING_BOTS)
-    return f"{blocked}User-agent: *\nDisallow: /dossier/\nDisallow: /api/\n\nSitemap: {rss.SITE}sitemap.xml\n"
+    return f"{blocked}User-agent: *\nDisallow: /dossier/\n\nSitemap: {rss.SITE}sitemap.xml\n"
 
 
 UNDATED = ("standards/", *kind_pages.paths())  # pages without a date of their own: they change only when an entry is added
@@ -423,8 +422,6 @@ def build(conn, out: str | Path) -> int:
     from . import compute, new_tests
     places += new_tests.build(conn, cards, out, today)  # new benchmarks in the papers we read and their best scores (Research's feature)
     places += compute.build(conn, cards, out, today)  # Epoch AI's training-compute estimates for notable models (Research's feature)
-    from . import api
-    api.build(conn, cards, out, today)  # the features' rows as JSON (api/v1/), unlisted: not in the sitemap
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
