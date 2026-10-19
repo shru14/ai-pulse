@@ -2714,14 +2714,14 @@ def test_the_email_introduces_one_new_feature_a_day_each_once():
     assert [f for f in shown if f] == digest.FEATURES
     assert all(f is None for d, f in zip(days, shown) if digest.weekly(d))
     assert digest._feature(start - timedelta(days=1)) is None
-    # the box sits under the day's stories, with a link to the page on the site
+    # a small strip at the top, above the day's stories, with a link to the page on the site
     day = next(d for d in days if not digest.weekly(d))
     card = {"id": "r", "title": "A paper on AI agents", "summary": "", "url": "https://ex.com/r", "source": "arXiv",
             "category": "research", "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00"}
     _, text, html = digest.build([card], ["research"], day)
     name, _, path = digest._feature(day)
     assert f"NEW ON AI PULSE: {name}" in text and f"Have a look: {digest.rss.SITE}{path}" in text
-    assert html.index("Every story of the day in one table") < html.index(">New on AI Pulse<")
+    assert html.index("New on AI Pulse:") < html.index("A paper on AI agents") < html.index("Every story of the day in one table")
 
 
 def test_a_new_stream_s_history_resumes_where_it_stopped(tmp_path):

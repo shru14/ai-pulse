@@ -534,13 +534,10 @@ def _feature_box(day: date) -> tuple[list[str], str]:
     name, what, path = feature
     link = rss.SITE + path
     text = ["NEW ON AI PULSE: " + name, what, f"Have a look: {link}"]
-    html = (f'<div style="margin:22px 0 0;padding:14px 16px;background:#f3f4f6;border-left:4px solid {NAVY};border-radius:4px">'
-            f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:{HEADLINE};'
-            f'margin-bottom:4px">New on AI Pulse</div>'
-            f'<div style="font-size:18px;font-weight:bold;color:{NAVY}">{escape(name)}</div>'
-            f'<div style="font-size:14px;line-height:1.5;color:#3c4043;margin-top:3px">{escape(what)}</div>'
-            f'<div style="font-size:13px;margin-top:7px"><a href="{escape(link)}" style="color:{LINK};text-decoration:none">'
-            f'Have a look →</a></div></div>')
+    # a small yellow strip at the top of the email, a line or two of small type
+    html = (f'<div style="margin:0 0 10px;padding:6px 10px;background:#F0E442;color:{INK};font-size:12px;line-height:1.4;'
+            f'border-radius:4px"><b>New on AI Pulse: {escape(name)}.</b> {escape(what)} '
+            f'<a href="{escape(link)}" style="color:{INK};font-weight:bold">Have a look →</a></div>')
     return text, html
 
 
@@ -767,6 +764,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         week_text, week_html = [], ""
         word_text, word_html = _word(cards, day, streams, prefs, [_biggest(by_stream, streams), top, todays])
         meme_text, meme_html = _meme(cards, day)
+    feature_text, feature_html = _feature_box(day)  # one page built lately, a small strip at the top
     dossier_text, dossier_html = _dossier(dossier)  # Sundays, for a reader with questions: their weekly dossier
     # the new stream's note carries a highlighted button to the sign-up form (`change`: the reader's own link,
     # which opens it with their email and choices filled in), so readers see their choices can be changed
@@ -774,7 +772,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     news_button = (f'<a href="{escape(go)}" style="display:inline-block;margin-top:8px;background:{NAVY};color:#ffffff;'
                    f'font-size:13px;font-weight:bold;text-decoration:none;padding:7px 12px;border-radius:5px">'
                    f'{escape(go_words)} →</a>' if news and go else "")
-    lines = [hello, "", *counts, *([made_for] if made_for else []), *([news] if news else []),
+    lines = [hello, "", *counts, *([" ".join(feature_text)] if feature_text else []), *([made_for] if made_for else []), *([news] if news else []),
              *([f"{go_words}: {go}"] if news_button else []),
              *([quiet] if quiet else []), *(["", *week_text] if week_text else []),
              *([*dossier_text, ""] if dossier_text else []), *(["", *word_text, ""] if word_text else []),
@@ -784,6 +782,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     note = lambda words, style: f'<p style="margin:0 0 10px;font-size:13px;line-height:1.5;{style}">{escape(words)}</p>'
     html = ["".join(f'<p style="margin:0 0 {4 if k < len(counts) - 1 else 10}px;font-size:15px;line-height:1.5;color:#3c4043">'
                     f'{escape(c)}</p>' for k, c in enumerate(counts))
+            + feature_html
             + (note(made_for, f"color:{GREY}") if made_for else "")
             + (f'<div style="margin:0 0 10px;font-size:13px;line-height:1.5;background:#e3f6d5;color:#2b5d0a;'
                f'padding:8px 10px 10px;border-radius:4px">{escape(news)}{"<br>" + news_button if news_button else ""}</div>'
@@ -875,9 +874,6 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     lines += [*(f"{k}: {v}." for k, v in said), "", f"Every story of the day in one table: {everything}"]
     html.append(f'<p style="margin:16px 0 0;font-size:14px"><a href="{escape(everything)}" style="color:{LINK};'
                 f'text-decoration:none;font-weight:bold">Every story of the day in one table →</a></p>')
-    feature_text, feature_html = _feature_box(day)  # one page built lately, under the day's stories
-    lines += ["", *feature_text] if feature_text else []
-    html.append(feature_html)
     return lines, "".join(html)
 
 
