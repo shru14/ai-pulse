@@ -449,8 +449,10 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                f'<span class="meta">{_day(b["latest"])}</span></span>' if b["latest"] else "")
             + "</span></a>")
     what = "Pick a topic to see how it unfolded, from the first report to today, with laws and news on one timeline."
-    body = (f'<div class="ti">\n<h1>Follow the story</h1>\n<p class="intro">{escape(what)}</p>\n'
-            f'<div class="topics">{"".join(cards_html)}</div>\n</div>\n{CARDS_JS}\n')
+    body = (f'<div class="ti">\n' + pages.band("all", "M3 12h18M7 12v.01M12 12v.01M17 12v.01M7 8V5M12 16v3M17 8V5",
+                                              "photos/cartoons/pages/topics.svg", "Follow the story",
+                                              "How did the biggest AI stories unfold?", escape(what))
+            + f'<div class="topics">{"".join(cards_html)}</div>\n</div>\n{CARDS_JS}\n')
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Topics", "description": what,
             "url": f"{rss.SITE}topics/"}
     (out / "topics" / "index.html").write_text(

@@ -127,17 +127,20 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         data = {"@context": "https://schema.org", "@type": "ItemList", "name": heading(code, name),
                 "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": record(c, name)}
                                     for i, c in enumerate(items[:100])]}
-        body = (f'<h1><img class="flag" src="flags/{flag(code)}" alt="">{escape(heading(code, name))}</h1>\n'
-                f'<p class="intro">Official records, newest first.<br>'
-                f'<a href="/tracker/">All places</a></p>\n' + "\n".join(sections))
+        ask = "What have international bodies agreed on AI?" if code == "INTL" else f"What has {place(name)} decided on AI?"
+        body = (pages.band("reg", f'<img src="flags/{flag(code)}" alt="">', "photos/cartoons/pages/tracker.svg",
+                           heading(code, name), ask, 'Official records of bills, laws, regulators and standards, newest '
+                           'first, each with its stage and a link to the source. <a href="/tracker/">All places</a>')
+                + "\n".join(sections))
         (out / path).mkdir(parents=True, exist_ok=True)
         (out / path / "index.html").write_text(pages.page(title, description, path, body, data, parts, back, note), encoding="utf-8")
         paths.append(path)
     links = "\n".join(f'<a href="/tracker/{slug(names[code])}/"><img class="flag" src="flags/{flag(code)}" alt="">{escape(names[code])}</a>' for code in places)
-    body = (f'<h1>AI laws by country</h1>\n<p class="intro">The Regulation tracker\'s official records, a page per '
-            f'place. Places with fewer records are on the live tracker.<br>'
-            f'<a href="/standards/">AI standards</a></p>\n'
-            f'<div class="places">\n{links}\n</div>')
+    body = (pages.band("reg", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
+                       "photos/cartoons/pages/tracker.svg", "AI laws by country", "Where are AI rules being made?",
+                       "The Regulation tracker's official records, a page per place. Places with fewer records are on "
+                       'the live tracker. <a href="/standards/">AI standards</a>')
+            + f'<div class="places">\n{links}\n</div>')
     data = {"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "name": "AI laws by country", "url": f"{rss.SITE}tracker/"},
         dataset([c for code in by_place for c in by_place[code]], [names[code] for code in places], today)]}
@@ -182,9 +185,11 @@ def standards_page(conn, cards: list[dict], out: Path) -> list[str]:
     parts = pages.frame(conn, len(cards))
     back = ("/regulation/", "Back to the live Regulation tracker page")
     note = 'Official records only, each linking to its source.'
-    body = ('<div class="sd">\n<h1>AI standards</h1>\n<p class="intro">Published standards for AI from ISO/IEC, IEEE and national '
-            'bodies, newest first, each linking to its official page. <a href="/tracker/">AI laws by country</a></p>\n'
-            '<div class="cols">\n' + "\n".join(sections) + "\n</div>\n</div>")
+    body = ('<div class="sd">\n' + pages.band("reg", "M6 3h9l4 4v14H6zM15 3v4h4M9 12h7M9 16h7", "photos/cartoons/pages/standards.svg",
+                                               "AI standards", "Which AI standards have been published?",
+                                               "Published standards for AI from ISO/IEC, IEEE and national bodies, newest "
+                                               'first, each linking to its official page. <a href="/tracker/">AI laws by country</a>')
+            + '<div class="cols">\n' + "\n".join(sections) + "\n</div>\n</div>")
     data = {"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "name": "AI standards", "url": f"{rss.SITE}standards/"},
         {"@type": "ItemList", "name": "AI standards", "itemListElement": [

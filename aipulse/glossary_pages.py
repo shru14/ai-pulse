@@ -14,6 +14,8 @@ from pathlib import Path
 
 from . import glossary, pages, rss
 
+BOOK = "M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5M4 19.5A2.5 2.5 0 0 1 6.5 17H19M9 7h6M9 10.5h4"  # the header band's icon
+
 # A word's latest stories, found in the reader's browser in data.json (about the last 3 months) as the site's
 # underlines find them, newest first, 10 at a time: publishers' headlines stay out of the page itself, as on the
 # tracker's country pages.
@@ -145,8 +147,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 else "Not in the last 7 days' stories.")
         if e["added"] > glossary.LAUNCH.isoformat():
             seen += f" Added to the glossary on {_day(e['added'])}."
-        body = (f'<span class="kind">AI glossary · {escape(e["group"])}</span>\n'
-                f'<h1 class="word">{escape(e["term"])}</h1>\n<p class="def">{meaning}</p>\n<p class="intro">{seen}</p>\n'
+        body = (pages.band("research", BOOK, "photos/cartoons/pages/glossary.svg", e["term"], f"What does {e['term']} mean?",
+                           meaning, f'<span class="kind">AI glossary · {escape(e["group"])}</span>')
+                + f'<p class="intro">{seen}</p>\n'
                 + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
                    f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'
                    + cloud([(by_id[i], k) for i, k in together[e["id"]].most_common(TOGETHER)], "Often in the same stories",
@@ -174,8 +177,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     jump = "".join(f'<a href="/glossary/#{"num" if k == "#" else k}">{k}</a>' for k in letters)
     sections = "\n".join(f'<section><h2 id="{"num" if k == "#" else k}">{k}</h2>\n<ul class="terms">\n'
                          + "\n".join(_row(e) for e in es) + "\n</ul></section>" for k, es in letters.items())
-    body = (f'<h1>AI glossary</h1>\n<p class="intro">The hard words in AI news, in plain English: {len(words)} words, '
-            f'A to Z. New words are added as new stories use them.</p>\n'
+    body = (pages.band("research", BOOK, "photos/cartoons/pages/glossary.svg", "AI glossary",
+                       "What do the hard words in AI news mean?", f"The hard words in AI news, in plain English: "
+                       f"{len(words)} words, A to Z. New words are added as new stories use them.")
             + (f'<h2>In the news · past 7 days</h2>\n<p class="intro">The glossary words in the last 7 days\' stories; '
                f'the bigger the word, the more stories used it.</p>\n'
                + cloud([(by_id[i], n) for i, n in recent.most_common(CLOUD)], "In the news · past 7 days") if recent else "")

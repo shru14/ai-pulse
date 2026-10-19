@@ -480,12 +480,8 @@ a.subscribe-btn{text-decoration:none}
   .cp .mi .chapter .yr::before{top:-10px;width:16px;height:16px;border:2px solid var(--line);border-radius:0;background:var(--focus)}
   .cp .mi .chapter.wk .yr span{font-size:22px}}
 /* insights: the cover, the key findings, and each exhibit headed by its finding */
-.cp .ins-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-top:4px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0 18px;margin-top:8px}
-.cp .ins-head .kind{font:600 12.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.cp .ins-head h1{margin:8px 0 0;font-size:clamp(22px,2.8vw,34px);line-height:1.25}
-.cp .ins-side{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-.cp .ins-head .no{font:400 clamp(44px,6vw,68px)/1 var(--display);color:transparent;-webkit-text-stroke:1.5px var(--ink)}
 .cp .ins-pdf{font:600 12px var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--bg);border:1px solid var(--ink);padding:6px 10px;cursor:pointer}
+.cp .fh .ins-pdf{display:block;margin-top:10px;background:transparent;color:#000;border:2px solid #000}
 .cp .ins-pdf:hover,.cp .ins-pdf:focus-visible{background:var(--mark);color:#000}
 /* funding pace: a column a month, the biggest round its darker top */
 .cp .ins-pace{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;align-items:end;height:200px;max-width:900px;border-bottom:1px solid var(--line)}
@@ -530,7 +526,6 @@ a.subscribe-btn{text-decoration:none}
   .cp .kf .fd{animation:ins-fade .4s both;animation-delay:calc(var(--i) * 70ms + 150ms)}}
 @keyframes ins-flap{from{transform:rotateX(90deg)}to{transform:none}}
 @keyframes ins-fade{from{opacity:0}to{opacity:1}}
-.cp .ins-head h1 .hl{background:#F0E442;color:#000;padding:0 10px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .cp .ex{--ctx:color-mix(in srgb,var(--hue) 38%,var(--bg));--ctx2:color-mix(in srgb,var(--hue) 18%,var(--bg));--focus:var(--hue);margin-top:52px;padding-top:12px;border-top:3px solid var(--hue);scroll-margin-top:calc(var(--bar-h,64px) + 12px)}
 .cp .ex-k{display:flex;align-items:baseline;gap:12px;margin:0;font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .cp .ex-k b{background:var(--hue);border:1px solid var(--line);color:#141925;padding:0 6px;font-weight:600}
@@ -665,8 +660,8 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-tiles .ch{font:600 12px var(--mono)}
 @media (max-width:1000px){.cp .ins-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media print{
-  body:has(.ins-head) header.top,body:has(.ins-head) footer,body:has(.ins-head) .back,.cp .ins-pdf,.cp .mi .issue-nav{display:none!important}
-  body:has(.ins-head){background:#fff!important;color:#000}
+  body:has(.ins-top) header.top,body:has(.ins-top) footer,body:has(.ins-top) .back,.cp .ins-pdf,.cp .mi .issue-nav{display:none!important}
+  body:has(.ins-top){background:#fff!important;color:#000}
   .cp .mi,:root[data-theme] .cp .mi{--bg:#fff;--ink:#000;--muted:#3B3B3B;--line:#000;--ctx:#AADAF4;--ctx2:#D9ECF6;--focus:#0072B2;
     --f-tool:#009E73;--f-news:#56B4E9;--f-research:#C85BC3;--f-reg:#F85C48;--f-policy:#E69F00;--f-infra:#8BEC8B;--f-all:#F0E442}
   .cp .ex{break-inside:avoid;page-break-inside:avoid;margin-top:28px}
@@ -674,7 +669,6 @@ a.subscribe-btn{text-decoration:none}
   .cp .kf .fl,.cp .kf .fd{animation:none!important}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (max-width:700px){
-  .cp .ins-head .no{display:none}
   .cp .kf thead,.cp .kf .gt span{display:none}
   .cp .kf .st{font-size:9px;letter-spacing:.04em;white-space:normal;width:44px}
   .cp .kf td{font-size:13px}
@@ -1076,17 +1070,7 @@ a.subscribe-btn{text-decoration:none}
 @media (max-width:640px){.cp .sh-tabs{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain}.cp .sh-tab{flex:none}
   .cp .sh-sel{flex-direction:column;align-items:stretch;gap:2px}.cp .sh-sel select{max-width:none;width:100%}}
 @media (max-width:640px){.cp .sh-filters{position:static}.cp .sh-docs{display:flex;flex-direction:column;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:6px;border-bottom:3px solid var(--ink)}.cp .sh-doc{flex:none}}
-/* Every feature's header: one band on its stream's colour, the same size on every feature: its icon, name and question
-   on the left, what it covers on the right (stacked on phones) */
-.cp .fh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px 30px;align-items:center;margin:18px 0 28px;
-  padding:22px 26px;background:var(--f);color:#000;border:3px solid var(--line);box-shadow:6px 6px 0 var(--line)}
-.cp .fh-t{display:flex;align-items:center;gap:16px;min-width:0}
-.cp .fh-ic{flex:none;display:grid;place-items:center;width:56px;height:56px;background:#000;color:var(--f)}
-.cp .fh-ic svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.cp .fh h1{display:block;margin:0;font:400 clamp(22px,2.4vw,26px)/1.1 var(--display);color:#000}
-.cp .fh-q{margin:6px 0 0;font:600 17px/1.35 var(--body);color:#000}
-.cp .ft .fh-d{margin:0;max-width:none;padding-left:26px;border-left:3px solid #000;font:400 16px/1.5 var(--body);color:#000}
-.cp .fh-d a{color:#000;text-decoration-thickness:2px}
+.cp .fh .kind{margin:10px 0 0;color:#000}  /* a glossary word's group, under its question */
 /* "Cite this": a ready-made citation under the question, opened over the page so the band keeps its size */
 .cp .fh-cite{position:relative;margin-top:10px}
 .cp .fh-cite summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 10px;border:2px solid #000;
@@ -1099,13 +1083,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh-cite-box .fh-cite-src{font-size:13px}
 .cp .fh-cite-box button{padding:4px 12px;border:2px solid var(--line);background:var(--ink);color:var(--bg);
   font:700 13px/1.3 var(--body);cursor:pointer}
-/* our own cartoon at the right end (templates/photos/cartoons/features/) */
-.cp .fh-art{display:block;height:140px;width:auto;margin:-10px -6px -14px 0}
-@media (max-width:640px){.cp .fh{grid-template-columns:1fr;gap:12px;padding:16px;box-shadow:4px 4px 0 var(--line)}
-  .cp .fh-ic{width:44px;height:44px}.cp .fh-ic svg{width:26px;height:26px}
-  .cp .ft .fh-d{padding:12px 0 0;border-left:0;border-top:3px solid #000;font-size:15px}
-  .cp .fh-art{height:110px;justify-self:end;margin:0 0 -8px}
-  .cp .fh-cite-box{position:static;width:auto;margin-top:8px}}
+@media (max-width:640px){.cp .fh-cite-box{position:static;width:auto;margin-top:8px}}
 /* New tests for AI and Compute behind notable models (Research's features) */
 .cp .nt .nt-how{margin:0 0 14px;max-width:none;font-size:14.5px;color:var(--muted)}
 .cp .nt-scores{list-style:none;margin:0 0 34px;padding:0;border-top:2px solid var(--line)}
@@ -1243,14 +1221,22 @@ def cite(path: str, title: str) -> str:
             '.then(()=>{this.textContent=&quot;Copied&quot;})">Copy</button></div></details>')
 
 
+def band(colour: str, icon: str, art: str, title: str, question: str, intro: str, extra: str = "") -> str:
+    """Every page's header band: `colour` a stream's key (--f-<colour>), `icon` a 24×24 path or ready HTML (a flag,
+    a logo), `art` our own cartoon's address, `extra` HTML under the question. title and question are plain text;
+    intro is HTML."""
+    pic = icon.startswith("<")
+    ic = icon if pic else f'<svg viewBox="0 0 24 24"><path d="{icon}"/></svg>'
+    q = f'<p class="fh-q">{escape(question)}</p>' if question else ""
+    return (f'<header class="fh" style="--f:var(--f-{colour})"><div class="fh-t"><span class="fh-ic{" pic" * pic}" '
+            f'aria-hidden="true">{ic}</span><div><h1>{escape(title)}</h1>{q}{extra}</div></div>\n'
+            f'<p class="fh-d">{intro}</p><img class="fh-art" src="{art}" alt="" aria-hidden="true"></header>\n')
+
+
 def feature_head(path: str, title: str, question: str, intro: str) -> str:
     """A feature's header band (the same on every feature). title and question are plain text; intro is HTML."""
     stream, icon = FEATURES[path]
-    q = f'<p class="fh-q">{escape(question)}</p>' if question else ""
-    return (f'<header class="fh" style="--f:var(--f-{stream})"><div class="fh-t"><span class="fh-ic" aria-hidden="true">'
-            f'<svg viewBox="0 0 24 24"><path d="{icon}"/></svg></span><div><h1>{escape(title)}</h1>{q}{cite(path, title)}</div></div>\n'
-            f'<p class="fh-d">{intro}</p><img class="fh-art" src="photos/cartoons/features/{path.strip("/")}.svg" alt="" '
-            f'aria-hidden="true"></header>\n')
+    return band(stream, icon, f"photos/cartoons/features/{path.strip('/')}.svg", title, question, intro, cite(path, title))
 
 
 def share_tags(title: str, path: str, description: str) -> str:

@@ -267,6 +267,41 @@ def tile_names(cat: str) -> list[str]:
     return sorted(classify.TOPIC_TAGS)
 
 
+# Each page's one-line question in its header band: by address, else by stream ({0} its name, {1} in lower case)
+ASK = {
+    "industry/opinion/": "What are people saying about AI?",
+    "industry/company-blogs/": "What are AI companies posting on their blogs?",
+    "industry/studies/": "What are studies of AI finding?",
+    "industry/ai-incidents/": "Where has AI gone wrong?",
+    "industry/tutorials/": "How do you build and use AI?",
+    "industry/events/": "What happened at AI events?",
+    "releases": "What has {0} released lately?",
+    "policy/governments/": "What are governments saying about AI?",
+    "policy/think-tanks/": "What are think tanks and civil society saying about AI?",
+    "policy/news/": "What is the news reporting on AI policy?",
+    "research": "What's new in AI research on {1}?",
+    "infra/power-and-grid/": "Where will AI's electricity come from?",
+    "infra/water/": "How much water does AI use?",
+    "infra/emissions-and-climate/": "What does AI cost the climate?",
+    "infra/land-and-local-pushback/": "Where are data centres meeting local resistance?",
+    "infra/builds-and-deals/": "What data centres are being built?",
+    "infra/rules-and-permits/": "What rules do data centres have to follow?",
+    "infra/hardware-and-compute/": "What machines does AI run on?",
+}
+
+
+def _icon(p: str, label: str) -> str:
+    """A page's icon in its header band: the one its tile on the front page's stream strip has (a company's logo for
+    a Releases page), as a path or ready HTML (pages.band)."""
+    m = re.search(rf'<a href="{re.escape(p)}"><span class="bc-ic[^"]*"(?: data-logo="[^"]*")?>(.*?)</span>',
+                  TEMPLATE.read_text(encoding="utf-8"))
+    if m and m.group(1):
+        inner = m.group(1)
+        d = re.fullmatch(r'<svg viewBox="0 0 24 24"><path d="([^"]+)"/></svg>', inner)
+        return d.group(1) if d else inner
+    return logos([label]).get(label) or f"<b>{escape(label[:1])}</b>"
+
+
 def build(conn, cards: list[dict], out: Path) -> list[str]:
     """Write every stream's pages. Returns their paths."""
     parts = pages.frame(conn, len(cards))
@@ -275,15 +310,16 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
     firms = safe({"of": of, "logo": logos(set(of.values()))})
     every = stream_pages(cards)
     paths = []
-    for cat, p, _, heading, what, rule in every:
+    for cat, p, label, heading, what, rule in every:
         home, name = STREAMS[cat]
         others = " · ".join(f'<a href="/{q}">{escape(label)}</a>' for c, q, label, *_ in every if c == cat)
         tiles = (f'<script type="application/json" id="firms">{firms}</script>\n' if rule.get("kind") == "blog" else
                  f'<script type="application/json" id="topics">{safe(tile_names(cat))}</script>\n')
         noun, nouns = ("paper", "papers") if cat == "research" else ("story", "stories")
         where = "the paper" if cat == "research" else "the outlet's own page"
-        body = (f'<div class="kd"><h1>{escape(heading)}</h1>\n<p class="intro">{escape(what)}</p>\n'
-                f'<p class="intro"><span id="stories-count">The {nouns}</span> in the last 3 months, newest first, '
+        body = (f'<div class="kd">' + pages.band(cat, _icon(p, label), f"photos/cartoons/streams/{cat}.svg", heading,
+                                                 ASK.get(p) or ASK[p.split("/")[0]].format(label, label.lower()), escape(what))
+                + f'<p class="intro"><span id="stories-count">The {nouns}</span> in the last 3 months, newest first, '
                 f'each linking to {escape(where)}.</p>\n'
                 + '<div class="places companies" id="cats"></div>\n' + tiles
                 + f'<script type="application/json" id="rule">{safe(rule)}</script>\n'

@@ -710,7 +710,7 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     page = (tmp_path / "glossary" / "mixture-of-experts" / "index.html").read_text(encoding="utf-8")
     # the site's masthead and footer, the meaning with the other words in it linked, related terms, the stories
     assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="site.css"' in page
-    assert '<h1 class="word">Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
+    assert '<h1>Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
     assert "<h2>Related terms</h2>" in page and page.count('<li><div><a href="/glossary/') == glossary_pages.RELATED
     assert '<span class="kind">AI glossary · Models</span>' in page and "Added to the glossary" not in page
     assert "Mentioned in 1 story in the last 7 days." in page and '/all/?' not in page
@@ -742,7 +742,7 @@ def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
     paths = countries.build(conn, cards, tmp_path, date(2026, 10, 6))
     assert paths == ["tracker/", "tracker/united-kingdom/"]  # India: one official record, news stories don't count
     page = (tmp_path / "tracker" / "united-kingdom" / "index.html").read_text(encoding="utf-8")
-    assert '<h1><img class="flag" src="flags/gb.svg" alt="">AI laws and bills in the United Kingdom</h1>' in page and "<h2>Proposals</h2>" in page
+    assert '<img src="flags/gb.svg" alt=""></span><div><h1>AI laws and bills in the United Kingdom</h1>' in page and "<h2>Proposals</h2>" in page
     assert "<h2>AI bodies</h2>" in page and page.index("AI Act 3") < page.index("AI Act 1")  # newest first
     assert 'rel="canonical" href="https://projectaipulse.com/tracker/united-kingdom/"' in page
     assert 'href="/tracker/united-kingdom/"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
