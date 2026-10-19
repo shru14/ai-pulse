@@ -57,7 +57,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 | Infra | Data-centre builds | Daily, checked by hand |
 | Infra | Who powers AI | Daily, checked by hand |
 | Infra | Pushback & permits | Daily, checked by hand |
-| Infra | Chip export rules | Checked by hand; new moves added once checked |
+| Infra | Chip export rules | Daily, checked by hand |
 
 ### Regulation
 
