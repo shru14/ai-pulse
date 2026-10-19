@@ -667,7 +667,7 @@ a.subscribe-btn{text-decoration:none}
   body:has(.ins-head) header.top,body:has(.ins-head) footer,body:has(.ins-head) .back,.cp .ins-pdf,.cp .mi .issue-nav{display:none!important}
   body:has(.ins-head){background:#fff!important;color:#000}
   .cp .mi,:root[data-theme] .cp .mi{--bg:#fff;--ink:#000;--muted:#3B3B3B;--line:#000;--ctx:#AADAF4;--ctx2:#D9ECF6;--focus:#0072B2;
-    --f-tool:#009E73;--f-news:#56B4E9;--f-research:#C85BC3;--f-reg:#D55E00;--f-policy:#E69F00;--f-infra:#8BEC8B;--f-all:#F0E442}
+    --f-tool:#009E73;--f-news:#56B4E9;--f-research:#C85BC3;--f-reg:#F85C48;--f-policy:#E69F00;--f-infra:#8BEC8B;--f-all:#F0E442}
   .cp .ex{break-inside:avoid;page-break-inside:avoid;margin-top:28px}
   .cp .ins-kf{break-after:page}
   .cp .kf .fl,.cp .kf .fd{animation:none!important}
