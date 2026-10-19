@@ -1064,6 +1064,57 @@ a.subscribe-btn{text-decoration:none}
 .cp .ft.fx .fx-c a{display:inline;margin:0;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .cp .ft.fx td.fx-s > .fx-c > a{color:var(--ink)}
 .cp .fx-in{background:#A6DCC6}.cp .fx-li{background:#A8D8F2}.cp .fx-ch{background:#F2D27A}.cp .fx-an{background:#F3B08A}.cp .fx-aw{background:#DDDDDD}
+/* Chip export rules: a grid of chips (rows) by US decision (columns), a coloured cell per answer with its symbol so
+   colour is never the only cue; then three short lists in columns, stacked on phones (the grid shrinks to fit) */
+.cp .ce .fx-in{background:#A6DCC6}.cp .ce .fx-ch{background:#F2D27A}.cp .ce .fx-an{background:#F3B08A}.cp .ce .fx-aw{background:#DDDDDD}
+.cp .ce-hero{margin:20px 0 6px;border:2px solid var(--ink);padding:16px 18px 14px}
+.cp .ce .ce-hero h2{margin:0 0 8px}
+.cp .ce-big{font:600 17px/1.4 var(--body);margin:0 0 14px;max-width:62ch}
+.cp .ce-grid{width:100%;border-collapse:separate;border-spacing:4px;table-layout:fixed}
+.cp .ce-grid th,.cp .ce-grid td{border:0;padding:0}
+.cp .ce-grid thead th{font:700 13px var(--body);text-align:center;vertical-align:bottom;padding-bottom:4px}
+.cp .ce-grid thead a{color:inherit}
+.cp .ce-when{display:block;font:600 10.5px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.cp .ce-grid th.ce-chip{text-align:left;width:22%}
+.cp .ce-chip span{display:block;font:500 11px var(--body);color:var(--muted)}
+.cp .ce-grid tbody th{text-align:left;font:700 15px var(--body);padding-right:6px;white-space:nowrap}
+.cp .ce-grid tbody th small{font:500 11.5px var(--body);color:var(--muted)}
+.cp .ce-co,.cp .ce-grid tbody th em{display:block;font:600 10px var(--mono);font-style:normal;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.cp .ce-grid td{height:42px;text-align:center;font:700 19px var(--body);color:#111;border-radius:3px}
+.cp .ce-grid td i{display:block;font:700 10.5px var(--body);font-style:normal;margin-top:-2px}
+.cp .ce .ok{background:#009E73}.cp .ce .cb{background:#F0E442}.cp .ce .no{background:#D55E00}
+.cp .ce .na{background:repeating-linear-gradient(135deg,rgba(128,128,128,.3) 0 2px,transparent 2px 7px);border:1px solid rgba(128,128,128,.35)}
+.cp .ce-grid td.ce-now{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
+.cp .ce-grid thead th.ce-now{text-decoration:underline;text-underline-offset:3px}
+.cp .ce-key{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;margin:12px 0 0}
+.cp .ce-key span{display:inline-flex;align-items:center;gap:6px}
+.cp .ce-k{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:3px;font-size:12px;color:#111;box-sizing:border-box}
+.cp .ce-cn{font-size:13px;margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line)}
+.cp .ce-hw{font-size:13px;margin:10px 0 0;padding:8px 10px;border-left:6px solid #D55E00;background:rgba(128,128,128,.08)}
+.cp .ce .ce-sec{margin:30px 0 12px}
+.cp .ce-themes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cp .ce-th{border-top:6px solid #0072B2;padding-top:8px}
+.cp .ce-th.cnh{border-top-color:#E69F00}
+.cp .ce .ce-th h3{font:800 17px var(--body);margin:0}
+.cp .ce-sub{font-size:12.5px;color:var(--muted);margin:2px 0 8px}
+.cp .ce-th ol{list-style:none;margin:0;padding:0}
+.cp .ce-th li{padding:8px 0 9px 12px;border-bottom:1px solid var(--line);position:relative;font-size:13.5px;line-height:1.35}
+.cp .ce-th li:before{content:"";position:absolute;left:0;top:13px;width:6px;height:6px;border-radius:50%;background:#0072B2}
+.cp .ce-th.cnh li:before,.cp .ce-th li.ot:before{background:#E69F00}
+.cp .ce-th li time{display:block;font:700 11.5px var(--mono);color:var(--muted)}
+.cp .ce-th li b{display:block}
+.cp .ce-l{display:block;color:var(--muted);font-size:12.5px}
+.cp .ce-f{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:5px;font-size:12px}
+.cp .ce-f a{color:var(--muted)}
+.cp .ce-th li.eased{opacity:.62}
+.cp .ce-el{margin:24px 0 6px;font-size:14px;border-left:4px solid var(--ink);padding-left:10px}
+.cp .ce-notes{font-size:11.5px;color:var(--muted);margin:12px 0 0;padding-left:18px}
+.cp .ce-notes a{color:var(--muted)}
+@media (max-width:700px){.cp .ce-hero{padding:12px 10px}.cp .ce-big{font-size:15px}.cp .ce-grid{border-spacing:2px}
+.cp .ce-grid th.ce-chip{width:27%}.cp .ce-chip span{font-size:8px}.cp .ce-grid thead th{font-size:10.5px}
+.cp .ce-when{font-size:8px;letter-spacing:0}.cp .ce-grid tbody th{font-size:12.5px;white-space:normal;line-height:1.15}
+.cp .ce-grid tbody th small{display:block;font-size:10px}.cp .ce-co,.cp .ce-grid tbody th em{font-size:8px;letter-spacing:0}
+.cp .ce-grid td{height:34px;font-size:15px}.cp .ce-grid td i{font-size:8px}.cp .ce-themes{grid-template-columns:1fr;gap:22px}}
 @media (max-width:640px){.cp .pc-gw{max-height:72vh;overflow-x:auto}.cp .pc-tiles{grid-template-columns:repeat(2,1fr)}
   .cp .pc-grid th,.cp .pc-grid td{padding:4px 1px;font-size:13px}
   .cp .pc-grid thead th{font-size:9.5px;letter-spacing:0}
@@ -1257,6 +1308,7 @@ FEATURES = {
     "data-centre-builds/": ("infra", "M4 20V9h9v11M13 20V4h7v16M3 20h18M7 12.5h3M7 16h3M16 8h1M16 12h1M16 16h1"),
     "who-powers-ai/": ("infra", "M13 3L5 14h6l-1 7 8-11h-6z"),
     "pushback-and-permits/": ("infra", "M5 4h14v11H5zM9 15v5M15 15v5M8 8h8M8 11h5"),
+    "chip-export-rules/": ("infra", "M7 7h10v10H7zM10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"),
 }
 
 

@@ -57,6 +57,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 | Infra | Data-centre builds | Daily, checked by hand |
 | Infra | Who powers AI | Daily, checked by hand |
 | Infra | Pushback & permits | Daily, checked by hand |
+| Infra | Chip export rules | Checked by hand; new moves added once checked |
 
 ### Regulation
 
@@ -94,6 +95,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 - **[Data-centre builds](https://projectaipulse.com/data-centre-builds/):** new data centres worldwide since 15 July 2026: who is behind each, where, its size and cost as the story states them (never added up), and whether it is announced, being built or open, each checked by hand against its story.
 - **[Who powers AI](https://projectaipulse.com/who-powers-ai/):** deals and plans to power data centres since 15 July 2026: who supplies the power, what it comes from (nuclear, gas, renewables, fuel cells or a utility), what it will run, and whether it is signed, planned or dropped, each checked by hand against its story.
 - **[Pushback & permits](https://projectaipulse.com/pushback-and-permits/):** decisions on data centres since 15 July 2026 by governments, councils, courts and grid operators: where, who decided, and whether they approved, paused, blocked or limited them, each checked by hand against its story.
+- **[Chip export rules](https://projectaipulse.com/chip-export-rules/):** what Nvidia and AMD could sell to China under each US decision since 2022, a chip per row and a decision per column (from the rules in the Federal Register, public domain, and the companies' own SEC filings), then the other moves: limits on chipmaking tools and memory, rules for the rest of the world, and China's answers (official notices from MOFCOM, SAMR, METI and the Dutch Government Gazette). Each row says whether it still stands; the few resting on a news report are footnoted.
 
 ## How we keep it legal
 
