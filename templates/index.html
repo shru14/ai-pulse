@@ -827,10 +827,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 @media (max-width:1100px){.today-row{grid-template-columns:1fr}}
 @media (max-width:760px){.mag-sections{grid-template-columns:1fr}
   .today-cards{grid-template-columns:1fr;gap:12px}
-  .tcard{display:grid;grid-template-columns:120px 1fr}
-  .tcard .timg{aspect-ratio:auto;min-height:100%;border-bottom:0!important;border-right:3px solid var(--ink)!important}
-  .tcard .tb{min-width:0}
-  .tcard .timg .mchip{left:6px;top:6px;font-size:10px;padding:3px 6px}}
+  .tcard .timg{aspect-ratio:2/1}}
 /* Phones: a short masthead and email strip, the week's three tiles side by side to swipe */
 @media (max-width:560px){
   .lede strong{font-size:19px}
@@ -845,7 +842,6 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   .sub-strip .sub-hint{margin:0;font-size:12.5px}
   .sub-strip .sub-tile-go{width:100%}
   .band-head h2{font-size:22px}
-  .tcard{grid-template-columns:104px 1fr}
   .tcard h3{font-size:15px}
   .mag-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:0 16px 10px;scroll-padding-inline:16px;scrollbar-width:none}
   .mag-row::-webkit-scrollbar{display:none}
