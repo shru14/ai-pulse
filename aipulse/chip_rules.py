@@ -73,6 +73,10 @@ BUYERS = [
     ("2025-09-30", "US", "Firms 50% owned by a blacklisted company are blacklisted too",
      "Closes a route through subsidiaries", "https://www.federalregister.gov/documents/2025/09/30/2025-19001",
      "paused", "Paused to 9 Nov 2026", "https://www.federalregister.gov/documents/2025/11/12/2025-19846"),
+    ("2025-07-14", "Malaysia", "US AI chips need a Malaysian permit to leave or pass through the country",
+     "",
+     "https://www.miti.gov.my/miti/resources/Media%20Release/[FINAL]%5FMITI%5FPress%5FStmt%5FMalaysia%5FRegulates%5F"
+     "Trade%5Fof%5FUS%5FAI%5FChips%5F2025-07-14.pdf", "force", "", ""),
     ("2025-06-14", "Taiwan", "Huawei and SMIC put on Taiwan's export blacklist", "",
      "https://techcrunch.com/2025/06/15/taiwan-places-export-controls-on-huawei-and-smic/", "force", "", ""),
     ("2025-01-16", "US", "Chip factories must check who designed an advanced chip before making it", "",
@@ -110,7 +114,7 @@ CHINA = [
 
 # Official sites: a link to one is the notice; a link anywhere else is a news report, footnoted under the page
 OFFICIAL = ("federalregister.gov", "sec.gov", "bis.gov", "mofcom.gov.cn", "samr.gov.cn", "meti.go.jp",
-            "officielebekendmakingen.nl")
+            "officielebekendmakingen.nl", "miti.gov.my")
 
 # China's own side of the H200, from reports (China publishes no notice of which firms may import)
 CHINA_SIDE = [
