@@ -874,6 +874,11 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 /* the menu: a button before the name opens a booklet's sections page on the left (About first) (the bar above stays). It is the
    section bar turned on its side: ruled rows, ink text, the stream's colour on the outer edge on hover and on the open one. */
 .menu-btn{order:-1}
+/* an edge tab: from the masthead's top edge down to the end of the top row, flush left, a rule after it, the icon over a small MENU */
+header.top .menu-btn{width:auto;height:46px;margin:-10px 0 0;padding:0 14px 0 2px;border:0;border-right:2px solid var(--ink);background:none;
+  flex-direction:column;justify-content:center;gap:3px;font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+header.top .menu-btn svg{width:22px;height:22px}
+header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))}
 .side-menu{margin:0 auto 0 0;height:100%;max-height:100%;width:min(390px,calc(100vw - 40px));border:0;border-right:3px solid var(--ink);
   padding:0 0 24px;background:var(--bg);color:var(--ink);overflow-y:auto}
 .side-menu[open]{animation:sm-in .22s ease-out}
@@ -904,7 +909,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .side-menu nav .sm-link[aria-current]{background:color-mix(in srgb,var(--ink) 8%,var(--bg))}
 .side-menu nav .sm-link::after{content:"  \2192"}
 @media (max-width:400px){.sm-tab img{width:40px;height:40px}.sm-tab span{font-size:12px}}
-@media (max-width:560px){header.top .menu-btn span{display:none}header.top .menu-btn{width:34px;padding:0;justify-content:center}}
+@media (max-width:560px){header.top .menu-btn{padding:0 8px 0 0}header.top .menu-btn span{display:inline;font-size:9px}}
 @media (max-width:359px){header.top .brand h1{display:none}}  /* the smallest phones: the logo alone */
 /* Phones: a long section scrolls inside its own box and a row of cards swipes sideways, so a page is a few screens */
 @media (max-width:640px){
