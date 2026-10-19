@@ -151,6 +151,68 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     return ["tracker/", *paths]
 
 
+TYPE_PAGES = {  # the Regulation strip's buttons: one kind of record from every place, path → (kind, title, question, intro)
+    "tracker/laws-adopted/": ("law", "AI laws adopted", "Which places have passed AI laws?",
+                              "Laws, decrees and rules on AI that governments have adopted, from every place on the "
+                              "tracker, newest first, each linking to the official text."),
+    "tracker/bills/": ("proposal", "AI bills", "Which AI bills are lawmakers working on?",
+                       "AI bills put before legislatures, from every place on the tracker, newest first, each with "
+                       "its latest stage and a link to the legislature's page."),
+    "tracker/ai-bodies/": ("body", "AI bodies", "Who has been set up to oversee AI?",
+                           "AI offices, councils, units and panels that governments have set up, from every place on "
+                           "the tracker, newest first, each linking to its record on OECD.AI."),
+}
+
+
+def type_pages(conn, cards: list[dict], out: Path) -> list[str]:
+    """TYPE_PAGES: one kind of official record from every place, as one table, newest first. A place with its own
+    page (build, run first) links to it."""
+    names = {code: m["name"] for code, m in jurisdictions.meta().items()}
+    records = [c for c in cards if c["category"] == "regulation" and c["source"] in OFFICIAL_SOURCES]
+    with_page = {p.name for p in (out / "tracker").iterdir() if p.is_dir()} if (out / "tracker").exists() else set()
+    parts = pages.frame(conn, len(cards))
+    back = ("/regulation/", "Back to the live Regulation tracker page")
+    note = 'Official records only, each linking to its source.'
+    (out / "flags").mkdir(parents=True, exist_ok=True)
+    paths = []
+    for path, (kind, title, question, intro) in TYPE_PAGES.items():
+        items = sorted((c for c in records if (c.get("action") or "proposal") == kind), key=lambda c: c["date"], reverse=True)
+        if not items:
+            continue
+        bills = kind == "proposal"
+        rows = []
+        for c in items:
+            code = next((code for code in c.get("jurisdictions") or [] if code in names), "INTL")
+            name = names.get(code, "International")
+            where = escape(name)
+            if (FLAGS / flag(code)).exists():
+                shutil.copy(FLAGS / flag(code), out / "flags" / flag(code))
+                where = f'<img class="flag" src="/flags/{flag(code)}" alt="">{where}'
+            if slug(name) in with_page:
+                where = f'<a href="/tracker/{slug(name)}/">{where}</a>'
+            stage = ""
+            if bills:
+                steps = _history(conn, c.get("bill", ""))
+                stage = f'<td class="tp-stage">{escape(LABELS.get(code, LABELS["US"]).get(steps[-1]["stage"], "") if steps else "")}</td>'
+            rows.append(f'<tr><td class="tp-where">{where}</td><td class="tp-title"><a href="{escape(c["url"])}">{escape(c["title"].strip())}</a>'
+                        f'<div class="meta">{escape(c["source"])}</div></td>{stage}<td>{_day(c["date"])}</td></tr>')
+        head = "<tr><th>Place</th><th>Title</th>" + ("<th>Stage</th>" if bills else "") + "<th>Date</th></tr>"
+        others = " · ".join(f'<a href="/{p}">{t[1]}</a>' for p, t in TYPE_PAGES.items() if p != path)
+        body = (pages.band("reg", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
+                           "photos/cartoons/pages/tracker.svg", title, question,
+                           f'{intro} <a href="/tracker/">AI laws by country</a> · {others}')
+                + f'<table class="mt tp-t"><thead>{head}</thead><tbody>\n' + "\n".join(rows) + "\n</tbody></table>")
+        data = {"@context": "https://schema.org", "@type": "ItemList", "name": title,
+                "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": record(c, names.get(
+                    next((x for x in c.get("jurisdictions") or [] if x in names), "INTL"), "International"))}
+                    for i, c in enumerate(items[:100])]}
+        (out / path).mkdir(parents=True, exist_ok=True)
+        (out / path / "index.html").write_text(pages.page(f"{title} · AI Pulse", intro, path, body, data, parts, back, note),
+                                               encoding="utf-8")
+        paths.append(path)
+    return paths
+
+
 def _month(c: dict) -> str:
     """ISO gives only a standard's month of publication (standards.py dates it the 1st)."""
     d = date.fromisoformat(c["date"][:10])
