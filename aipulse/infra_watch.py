@@ -39,7 +39,7 @@ STATUSES = {"signed": "Signed", "planned": "Planned or in talks", "dropped": "Dr
 OUTCOMES = {
     "approved": ("Approved", "#009E73"),
     "paused": ("Paused", "#E69F00"),
-    "blocked": ("Blocked", "#D55E00"),
+    "blocked": ("Blocked", "#F85C48"),
     "limits": ("New limits", "#CC79A7"),
     "review": ("More review ordered", "#56B4E9"),
     "refused": ("Pause turned down", "#9AA0AA"),

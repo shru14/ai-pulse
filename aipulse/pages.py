@@ -190,11 +190,11 @@ a.subscribe-btn{text-decoration:none}
 .cp h2:not(.mi *){display:flex;align-items:center;gap:10px;margin:36px 0 10px;padding:0 0 6px;border-top:0;border-bottom:4px solid var(--ink);
   font:400 22px/1.15 var(--display);text-transform:none;letter-spacing:0}
 /* the monthly issue and its insights keep their approved report look, as it was */
-.cp:has(> .mi) > .back{text-decoration-color:#D55E00}
-.cp .mi .topic-hero .kind{background:#D55E00}
-.cp .mi .lg.official::before,.cp .mi .timeline .official .dot{background:#D55E00}
-.cp .mi .timeline .ev.official .box{border-top-color:#D55E00}
-.cp .mi .timeline .now span{background:#D55E00}
+.cp:has(> .mi) > .back{text-decoration-color:#F85C48}
+.cp .mi .topic-hero .kind{background:#F85C48}
+.cp .mi .lg.official::before,.cp .mi .timeline .official .dot{background:#F85C48}
+.cp .mi .timeline .ev.official .box{border-top-color:#F85C48}
+.cp .mi .timeline .now span{background:#F85C48}
 .cp .mt.pv td:last-child,.cp .mt.pv th:last-child{text-align:left;white-space:normal}
 @media (max-width:600px){.cp .mt.pv thead{display:none}.cp .mt.pv tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
   .cp .mt.pv td{display:block;border:0;padding:2px 0}}
@@ -643,7 +643,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-risk td,.cp .ins-risk th{padding:6px 10px 6px 0}
 .cp .ins-risk th:not(:first-child),.cp .ins-risk td.hx{text-align:center;width:90px}
 .cp .ins-risk td:first-child{font-weight:600}
-.cp .ins-risk td.hx{font:600 17px var(--body);background:color-mix(in srgb,#D55E00 var(--a),transparent)}
+.cp .ins-risk td.hx{font:600 17px var(--body);background:color-mix(in srgb,#F85C48 var(--a),transparent)}
 .cp .ins-risk td.z{color:var(--muted);background:none;font:400 14px var(--body)}
 /* themes rising and fading: was → now */
 .cp .ins-move{list-style:none;margin:0;padding:0}
@@ -964,7 +964,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .pc-half{border:2px solid var(--line);box-shadow:5px 5px 0 var(--line);background:var(--bg);min-width:0}
 .cp .pc-hh{padding:10px 14px 8px;border-bottom:2px solid var(--line)}
 .cp .pc-pacts .pc-hh{background:color-mix(in srgb,#009E73 24%,var(--bg))}
-.cp .pc-orders .pc-hh{background:color-mix(in srgb,#D55E00 20%,var(--bg))}
+.cp .pc-orders .pc-hh{background:color-mix(in srgb,#F85C48 20%,var(--bg))}
 .cp .ft .pc-hh h2{font:400 26px/1.1 var(--display);margin:0;border:0;padding:0}
 .cp .pc-hh p{margin:3px 0 0;font-size:14px;font-weight:600}
 .cp .pc-in{padding:12px 14px 14px}
@@ -993,7 +993,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .pc-y,.cp .pc-n{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px}
 .cp .pc-y{background:#009E73;border:1.5px solid var(--ink)}
 .cp .pc-n{border:1.5px dashed color-mix(in srgb,var(--ink) 45%,transparent)}
-.cp .pc-y.pc-r{background:#D55E00}
+.cp .pc-y.pc-r{background:#F85C48}
 .cp .pc-n.pc-ring{border:1.5px solid var(--ink)}
 .cp .pc-key{display:flex;flex-wrap:wrap;gap:3px 14px;align-items:center;font-size:12.5px;color:var(--muted);margin:6px 0 0}
 .cp .pc-key > span{display:inline-flex;gap:5px;align-items:center}
@@ -1015,9 +1015,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .pc-ban svg{display:block;height:auto}
 .cp .pc-gl{stroke:var(--ink);stroke-opacity:.14}
 .cp .pc-today{stroke:var(--ink);stroke-dasharray:2 2}
-.cp .pc-bar{stroke:#D55E00;stroke-width:6}
+.cp .pc-bar{stroke:#F85C48;stroke-width:6}
 .cp .pc-bar.pc-on{stroke-dasharray:10 4}
-.cp .pc-mk{fill:#D55E00;stroke:var(--ink);stroke-width:1.5}
+.cp .pc-mk{fill:#F85C48;stroke:var(--ink);stroke-width:1.5}
 .cp .pc-end{fill:var(--bg);stroke:var(--ink);stroke-width:1.5}
 .cp .pc-tick{stroke:var(--ink);stroke-width:2.5}
 @media (max-width:900px){.cp .pc-halves{grid-template-columns:1fr}}
@@ -1027,7 +1027,7 @@ a.subscribe-btn{text-decoration:none}
   .cp .pc-grid thead th small{font-size:9.5px}
   .cp .pc-grid th[scope=row]{padding-right:4px;line-height:1.2}
   .cp .pc-in{padding:12px 10px 14px}}
-.cp .ft .cs-t td.cs-canada a{background:color-mix(in srgb,#D55E00 28%,var(--bg))}
+.cp .ft .cs-t td.cs-canada a{background:color-mix(in srgb,#F85C48 28%,var(--bg))}
 /* Who owns a piece of whom: investors by labs, a box per deal (dashed: "up to"); phones scroll the grid sideways */
 .cp .ow-key{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13.5px;margin:10px 0 8px}
 .cp .ow-key i{display:inline-block;width:18px;height:12px;border:2px solid var(--line);margin-right:6px;vertical-align:-1px;background:color-mix(in srgb,#E69F00 30%,var(--bg))}

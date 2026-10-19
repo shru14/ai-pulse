@@ -36,7 +36,7 @@ KINDS = {
              "system cards"),
     "eval": ("Evaluation", "Tests of what models can do or how they behave, or a way to run such tests.", "#009E73",
              "evaluations"),
-    "redteam": ("Red-teaming", "Attacks on models and their safeguards, to find what gets through.", "#D55E00",
+    "redteam": ("Red-teaming", "Attacks on models and their safeguards, to find what gets through.", "#F85C48",
                 "red-teaming reports"),
     "framework": ("Framework & guidance", "Rules, practices and proposals for testing and managing AI risks.", "#E69F00",
                   "frameworks and guidance"),
