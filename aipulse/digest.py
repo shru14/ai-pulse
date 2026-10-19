@@ -526,6 +526,22 @@ def _feature(day: date) -> tuple[str, str, str] | None:
     return FEATURES[n] if n < len(FEATURES) else None
 
 
+def _review_box() -> tuple[list[str], str]:
+    """The email's review strip, above the footer: "How useful is AI Pulse to you?" and 1 to 5, each a link to the
+    site's review form (review/) with that number picked; the form asks four more quick questions."""
+    link = rss.SITE + "review/"
+    text = ["HOW USEFUL IS AI PULSE TO YOU? Tap a number, then four more quick questions: " + link]
+    cells = "".join(f'<td style="padding:0 6px 0 0"><a href="{escape(link)}#useful-{n}" style="display:inline-block;width:34px;'
+                    f'padding:6px 0;text-align:center;border:1px solid {NAVY};border-radius:5px;color:{NAVY};font-size:14px;'
+                    f'font-weight:bold;text-decoration:none">{n}</a></td>' for n in range(1, 6))
+    html = (f'<div style="margin:24px 0 0;padding:10px 12px 12px;background:#f4f6fa;border-radius:4px">'
+            f'<div style="font-size:14px;font-weight:bold;color:{INK};margin-bottom:8px">How useful is AI Pulse to you?</div>'
+            f'<table role="presentation" cellpadding="0" cellspacing="0"><tr>{cells}'
+            f'<td style="font-size:12px;color:{GREY};padding-left:4px">1 not useful · 5 very useful</td></tr></table>'
+            f'<div style="font-size:12px;color:{GREY};margin-top:8px">Tap a number, then four more quick questions.</div></div>')
+    return text, html
+
+
 def _feature_box(day: date) -> tuple[list[str], str]:
     """The email's "New on AI Pulse" box: the feature's name, its line and a link to its page."""
     feature = _feature(day)
@@ -926,7 +942,9 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     settings = (["Get AI Pulse daily in your inbox: " + change] if web else
                 [forward, f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
                  f"{change_words}: {change}", f"Unsubscribe: {stop}"])
-    text = [*open_text, *table_text, "", *settings, f"AI Pulse is free and non-commercial: {rss.SITE}"]
+    review_text, review_html = _review_box() if layout == "short" and not web else ([], "")
+    text = [*open_text, *table_text, *(["", *review_text] if review_text else []), "", *settings,
+            f"AI Pulse is free and non-commercial: {rss.SITE}"]
     settings_html = (f'<a href="{escape(change)}" style="color:{GREY}">Get AI Pulse daily in your inbox</a><br>' if web else
                      f'<span style="color:{INK}">Know someone who&#39;d like this? Forward this email; they can '
                      f'<a href="{rss.SITE}#subscribe" style="color:{LINK}">sign up free</a>.</span><br>'
@@ -941,7 +959,7 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
             '<td align="center" style="padding:12px 8px 24px">'
             '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;'
             f'border-radius:6px;font-family:Arial,sans-serif;color:{INK}">{band}<tr><td style="padding:{top}px 20px 10px">'
-            + open_html + table_html
+            + open_html + table_html + review_html
             + f'<p style="margin-top:28px;padding-top:12px;border-top:1px solid #e3e5e8;color:{GREY};font-size:13px;'
               f'line-height:1.6">' + settings_html
             + f'AI Pulse is free and non-commercial · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'

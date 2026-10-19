@@ -20,6 +20,10 @@
  *                                            email), or a mail app's one-click unsubscribe (RFC 8058, the
  *                                            List-Unsubscribe header): the address is deleted and our emails
  *                                            with it moved to the Trash
+ *   POST action=review      channels,       the site's review form (review/, from the daily email): answers only
+ *                           useful,         from the lists in REVIEW (|-separated) and a note, emailed to the
+ *                           section,        project inbox; nothing about the reader is sent or kept
+ *                           improve, other
  *   GET  action=list        key             the confirmed readers, for the daily send (key = LIST_KEY)
  *   GET  action=interests   key             every interest readers follow, once each and without who follows it,
  *                                            for the site's weekly dossiers (key = LIST_KEY)
@@ -68,6 +72,7 @@ function doPost(e) {
     : p.action === "unsubscribe" ? unsubscribe(p.t)
     : p.action === "choices" ? choices(p.t)
     : p.action === "save" ? save(p)
+    : p.action === "review" ? review(p)
     : {ok: false};
   return p.action === "subscribe" || p.format === "json" ? json(result) : page(result);
 }
@@ -266,6 +271,45 @@ function save(p) {
           (hasPrefs(rec.prefs) ? `; ${summary(rec.prefs)}.` : ".")};
 }
 
+// The site's review form (templates/review.html Q): only these answers are passed on, and at most
+// REVIEWS_A_DAY a day, so the emails sign-ups need always have room in the daily quota.
+const REVIEW = {
+  channels: ["Website", "On my phone", "Daily email", "Sunday email", "Monthly issue", "RSS"],
+  useful: ["1", "2", "3", "4", "5"],
+  section: ["Industry", "Releases", "Policy", "Regulation", "Research", "Infra"],
+  improve: ["Easier to find things", "Clearer charts and numbers", "Shorter emails", "More sources", "Better on phones",
+            "Nothing, it's good"],
+};
+const REVIEW_NAMES = {channels: "Reads AI Pulse via", useful: "How useful (1-5)", section: "Uses most",
+                      improve: "Improve first"};
+const REVIEWS_A_DAY = 15;
+const OTHER_MAX = 1000;  // characters in "Anything else?"
+
+function review(p) {
+  if (p.website) return {ok: true};  // the hidden field only bots fill in
+  const answers = {};
+  for (const k in REVIEW) {
+    const picked = [...new Set(String(p[k] || "").split("|").filter(v => REVIEW[k].includes(v)))];
+    if (picked.length) answers[k] = k === "channels" ? picked : picked.slice(0, 1);
+  }
+  const other = String(p.other || "").replace(/[\u0000-\u0008\u000B-\u001F]/g, "").trim().slice(0, OTHER_MAX);
+  if (!Object.keys(answers).length && !other) return {ok: false, error: "empty"};
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const props = store(), key = "review:" + today(), n = Number(props.getProperty(key) || 0);
+    if (n >= REVIEWS_A_DAY || MailApp.getRemainingDailyQuota() < 20) return {ok: false, error: "busy"};
+    props.setProperty(key, String(n + 1));
+  } finally {
+    lock.releaseLock();
+  }
+  const lines = Object.entries(REVIEW_NAMES).map(([k, name]) => `${name}: ${answers[k] ? answers[k].join(", ") : "-"}`);
+  notify(`AI Pulse review: ${answers.useful ? answers.useful[0] + "/5" : "no score"}` +
+         (answers.improve ? `, improve first: ${answers.improve[0]}` : ""),
+         [...lines, "", "Anything else:", other || "-"].join("\n"));
+  return {ok: true};
+}
+
 // The daily email starts here, on time: GitHub's own scheduler starts runs late or not at all (it never started the
 // email on 30 Sep 2026), while Apps Script's timers are punctual. Each morning a timer asks GitHub to run the email
 // workflow (digest.yml); that run checks the day, sends it once to every subscriber and marks it sent, so the
@@ -332,7 +376,8 @@ function list(key) {
   if (!secret || secret.length < 24 || key !== secret) return {ok: false};
   const props = store(), out = [], cutoff = Date.now() - PENDING_DAYS * 864e5;
   for (const [k, v] of Object.entries(props.getProperties())) {
-    if (k.startsWith("sent:") && k < "sent:" + today()) props.deleteProperty(k);
+    if ((k.startsWith("sent:") && k < "sent:" + today()) || (k.startsWith("review:") && k < "review:" + today()))
+      props.deleteProperty(k);
     if (!k.startsWith("s:")) continue;
     const rec = JSON.parse(v), email = k.slice(2);
     if (rec.confirmed) out.push({email, streams: rec.streams, token: rec.token, ...(rec.prefs || {})});
