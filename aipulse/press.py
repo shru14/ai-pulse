@@ -192,6 +192,15 @@ CHECKED: dict[str, dict] = {
              link="https://arxiv.org/abs/2604.15468", subject="agents",
              about="Argues that AI agents don't make software engineering irrelevant but widen what is engineered, from code "
                    "to instructions, workflows and controls."),
+    "https://the-decoder.com/ai-models-hide-mistakes-in-their-own-work-reports-but-one-sentence-in-your-prompt-can-help/":
+        dict(paper="Language Models Are \"Insecure\" Reporters", link="https://arxiv.org/abs/2609.36139", subject="safety",
+             about="Finds that an AI model asked to report on its own experiments flagged a planted bad result in only 2 of "
+                   "200 reports, but in 190 of 200 once the prompt added a short honesty instruction."),
+    "https://www.404media.co/computers-made-of-human-brain-tissue-identify-braille-letters-in-breakthrough/":
+        dict(paper="Encoding tactile stimuli for Braille recognition with organoids",
+             link="https://doi.org/10.3389/frai.2026.1800219", subject="science",
+             about="Shows that lab-grown human brain tissue can tell Braille letters apart from touch-sensor signals, "
+                   "with 61% accuracy for one piece of tissue and 83% for three together."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
@@ -220,6 +229,14 @@ LEFT_OUT = {
     "https://techcrunch.com/2026/06/17/only-16-percent-of-americans-think-ai-will-have-a-positive-impact-on-society-a-new-study-shows/",  # a poll, not a paper
     "https://ainowinstitute.org/news/press/new-study-sparks-questions-over-uber-and-lyfts-ride-pricing",  # a Consumer Reports investigation, not a paper
     "https://the-decoder.com/kpmg-fabricated-ai-case-studies-in-a-report-designed-to-sell-clients-on-ai-adoption/",  # a company report (KPMG), not a paper
+    "https://e.vnexpress.net/news/news/education/vietnamese-student-lands-lead-author-paper-at-ai-conference-that-rejects-73-of-submissions-5126828.html",  # a profile of a student, no paper named
+    "https://e.vnexpress.net/news/news/education/15-year-old-korean-posts-ai-assisted-proof-that-a-62-faced-shape-can-t-pass-through-its-own-copy-5132331.html",  # paper on Zenodo and GitHub, no link given, paper not found
+    "https://pandaily.com/shanghai-ai-lab-atria-dawn-full-release-512k-context-jobbench-weights-coming-soon",  # a model release, no paper
+    "https://www.channelnewsasia.com/business/uss-ai-task-force-sets-path-study-and-reviews-leader-tells-cnbc-6466351",  # an interview about a task force, no paper
+    "https://www.itweb.co.za/article/non-profit-rolls-out-trilingual-ai-study-aid/o1Jr5qxP3lZqKdWL",  # a product launch, no paper
+    "https://www.channelnewsasia.com/asia/ai-lowers-capital-needed-indias-drug-discovery-push-faces-test-human-trials-6462176",  # an industry feature, no paper
+    "https://www.fayerwayer.com/internet/2026/10/15/una-ia-logra-pronosticar-tormentas-con-un-mes-de-antelacion/",  # a Nature paper on weather forecasting, but the story gives no title or link, paper not found
+    "https://tecnoblog.net/noticias/funcionario-da-openai-e-preso-apos-suspeita-de-espionagem/",  # an arrest story, no paper
     "https://www.sciencedaily.com/releases/2026/06/260612032024.htm",  # paper found (Nature Communications) but its abstract can't be read to check: the publisher refuses us
     "https://openai.com/index/using-codex-to-simulate-black-holes",  # a company page
     "https://siliconangle.com/2026/06/10/hpe-unleash-ai-targets-stalled-ai-pilots-hpeaimomentum/",  # a product launch
