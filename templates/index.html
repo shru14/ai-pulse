@@ -883,7 +883,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .sm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 14px;margin-bottom:14px;border-bottom:3px solid var(--ink)}
 .sm-brand{display:flex;align-items:center;gap:8px;font:400 18px/1 var(--display);letter-spacing:-.02em}  /* the masthead's logo and name, smaller */
 .sm-brand .mark{width:26px;height:26px;border-radius:7px}.sm-brand .mark svg{width:18px;height:18px}
-.sm-head b{display:block;font:400 30px/1 var(--head);margin-top:10px}
+.sm-head .sm-tag{display:block;font-size:13px;line-height:1.35;color:var(--muted);margin-top:8px}
 .side-menu .sub-close{position:static;flex:none}
 .side-menu nav{display:flex;flex-direction:column;margin:0 18px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
 .side-menu nav a.sm-tab{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:2px 12px;padding:12px 10px 12px 12px;
@@ -968,7 +968,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   <!-- Latest: the newest stories as they arrived (with each update), gliding past (still for readers who turn motion off) -->
   <div class="ticker" id="ticker" hidden><span class="live">Latest</span><div class="tk-view" role="region" aria-label="Latest stories"><div class="tk-track" id="tk-track"></div></div></div>
   <dialog class="side-menu" id="side-menu" aria-label="Sections">
-    <div class="sm-head"><div><span class="sm-brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>AI Pulse</span><b>Sections</b></div><form method="dialog"><button class="sub-close" aria-label="Close">×</button></form></div>
+    <div class="sm-head"><div><span class="sm-brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>AI Pulse</span><span class="sm-tag">Your briefing on what's happening in AI worldwide.</span></div><form method="dialog"><button class="sub-close" aria-label="Close">×</button></form></div>
     <nav>
       <a href="/about/" data-go="about" class="sm-link">About AI Pulse</a>
       <a href="/releases/" data-go="tool" class="sm-tab k-tool"><i>01</i><b>Releases</b><span></span><img src="photos/cartoons/streams/tool.svg" alt=""></a>
