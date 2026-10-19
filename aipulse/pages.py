@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
 
@@ -1086,12 +1087,25 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh-q{margin:6px 0 0;font:600 17px/1.35 var(--body);color:#000}
 .cp .ft .fh-d{margin:0;max-width:none;padding-left:26px;border-left:3px solid #000;font:400 16px/1.5 var(--body);color:#000}
 .cp .fh-d a{color:#000;text-decoration-thickness:2px}
+/* "Cite this": a ready-made citation under the question, opened over the page so the band keeps its size */
+.cp .fh-cite{position:relative;margin-top:10px}
+.cp .fh-cite summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 10px;border:2px solid #000;
+  font:700 13px/1.3 var(--body);color:#000;background:transparent}
+.cp .fh-cite summary::-webkit-details-marker{display:none}
+.cp .fh-cite[open] summary{background:#000;color:var(--f)}
+.cp .fh-cite-box{position:absolute;z-index:5;left:0;top:calc(100% + 6px);width:min(440px,80vw);padding:14px;
+  background:var(--bg);color:var(--ink);border:3px solid var(--line);box-shadow:4px 4px 0 var(--line)}
+.cp .fh-cite-box p{margin:0 0 10px;font:400 14px/1.45 var(--body);color:inherit}
+.cp .fh-cite-box .fh-cite-src{font-size:13px}
+.cp .fh-cite-box button{padding:4px 12px;border:2px solid var(--line);background:var(--ink);color:var(--bg);
+  font:700 13px/1.3 var(--body);cursor:pointer}
 /* our own cartoon at the right end (templates/photos/cartoons/features/) */
 .cp .fh-art{display:block;height:140px;width:auto;margin:-10px -6px -14px 0}
 @media (max-width:640px){.cp .fh{grid-template-columns:1fr;gap:12px;padding:16px;box-shadow:4px 4px 0 var(--line)}
   .cp .fh-ic{width:44px;height:44px}.cp .fh-ic svg{width:26px;height:26px}
   .cp .ft .fh-d{padding:12px 0 0;border-left:0;border-top:3px solid #000;font-size:15px}
-  .cp .fh-art{height:110px;justify-self:end;margin:0 0 -8px}}
+  .cp .fh-art{height:110px;justify-self:end;margin:0 0 -8px}
+  .cp .fh-cite-box{position:static;width:auto;margin-top:8px}}
 /* New tests for AI and Compute behind notable models (Research's features) */
 .cp .nt .nt-how{margin:0 0 14px;max-width:none;font-size:14.5px;color:var(--muted)}
 .cp .nt-scores{list-style:none;margin:0 0 34px;padding:0;border-top:2px solid var(--line)}
@@ -1219,12 +1233,22 @@ FEATURES = {
 }
 
 
+def cite(path: str, title: str) -> str:
+    """A feature's "Cite this" box: one citation with the page's address and the day it was built, and a Copy button."""
+    day = datetime.now(timezone.utc)
+    text = f'AI Pulse. "{title}." {rss.SITE}{path} (data as of {day.day} {day:%b %Y}).'
+    return (f'<details class="fh-cite"><summary>Cite this</summary><div class="fh-cite-box"><p>{escape(text)}</p>'
+            '<p class="fh-cite-src">Quoting one row? Cite the source linked in that row as well.</p>'
+            '<button type="button" onclick="navigator.clipboard.writeText(this.parentNode.firstChild.textContent)'
+            '.then(()=>{this.textContent=&quot;Copied&quot;})">Copy</button></div></details>')
+
+
 def feature_head(path: str, title: str, question: str, intro: str) -> str:
     """A feature's header band (the same on every feature). title and question are plain text; intro is HTML."""
     stream, icon = FEATURES[path]
     q = f'<p class="fh-q">{escape(question)}</p>' if question else ""
     return (f'<header class="fh" style="--f:var(--f-{stream})"><div class="fh-t"><span class="fh-ic" aria-hidden="true">'
-            f'<svg viewBox="0 0 24 24"><path d="{icon}"/></svg></span><div><h1>{escape(title)}</h1>{q}</div></div>\n'
+            f'<svg viewBox="0 0 24 24"><path d="{icon}"/></svg></span><div><h1>{escape(title)}</h1>{q}{cite(path, title)}</div></div>\n'
             f'<p class="fh-d">{intro}</p><img class="fh-art" src="photos/cartoons/features/{path.strip("/")}.svg" alt="" '
             f'aria-hidden="true"></header>\n')
 
