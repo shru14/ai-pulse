@@ -118,6 +118,7 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/brightray-enters-us-with-loi-for-10-mw-ai-data-center-in-indiana/", "Brightray", "US", "Indiana", "10 MW", "", "announced"),
     ("https://w.media/uruguay-signs-multi-billion-dollar-deal-for-500-mw-data-center-park/", "Solaria, with Uruguay's government", "Uruguay", "", "500 MW", "US$ 5.7bn", "announced"),
     ("https://dcnnmagazine.com/projects-and-infrastructure/1-3gw-solar-farm-and-1gw-data-centre-proposed-in-norfolk/", "EPL Norfolk (Evolution Power)", "UK", "King's Lynn, west Norfolk", "1 GW", "", "announced"),
+    ("https://w.media/canadian-government-eyes-up-to-us-1-3-billion-for-60-mw-data-center/", "Defence Construction Canada, for the Communications Security Establishment", "Canada", "Ottawa, Ontario", "60 MW", "CA$ 1.5-1.85bn, estimated", "announced"),
 ]
 
 # Power: a deal or plan to power data centres. (story, who, power from, what it powers, size, status)
