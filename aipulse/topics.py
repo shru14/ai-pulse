@@ -405,8 +405,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         status = '<span class="done">Concluded</span>' if done else ""
         related = " · ".join(f'<a href="/{path(r)}">{escape(TOPICS[r]["name"])}</a>' for r in t.get("related", ()))
         body = (f'<div class="tp">\n<div class="topic-hero">{_photo(slug)}<div class="over"><span class="kind">'
-                f'{escape(t["kind"])}</span>{status}<h1>{escape(t["name"])}</h1><div class="badges">{badges}</div></div></div>\n'
-                f'<p class="intro">{escape(t["what"])}</p>\n'
+                f'{escape(t["kind"])}</span>{status}<h1>{escape(t["name"])}</h1><p class="what">{escape(t["what"])}</p>'
+                f'<div class="badges">{badges}</div></div></div>\n'
                 '<section class="moments" id="moments" hidden><h2>Key moments</h2><ul class="mlist"></ul></section>\n'
                 '<h2>How it unfolded</h2>\n'
                 + ('<p class="legend"><span class="lg official">Official record</span>'
