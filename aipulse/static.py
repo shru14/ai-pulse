@@ -424,6 +424,8 @@ def build(conn, out: str | Path) -> int:
     places += consultations.build(conn, cards, out, today)  # governments asking the public about AI (Policy's feature)
     from . import fines
     places += fines.build(conn, cards, out, today)  # regulators' bans, fines and settlements over AI (Regulation's feature)
+    from . import chip_rules
+    places += chip_rules.build(conn, cards, out, today)  # what AI chips may go to China, and every chip export rule (Infra's feature)
     from . import pacts
     places += pacts.build(conn, cards, out, today)  # pledges governments signed and what they made AI companies do (Policy's feature)
     from . import release_cards

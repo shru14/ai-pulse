@@ -623,7 +623,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "review", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "chip-export-rules", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -659,7 +659,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     front = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     for p in kind_pages.paths():
         assert f'href="{p}"' in front and (tmp_path / "site" / p / "index.html").exists() and f"<loc>https://projectaipulse.com/{p}</loc>" in sitemap
-    assert sitemap.count("<url>") == 1 + 7 + 7 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, lab-timelines/
+    assert sitemap.count("<url>") == 1 + 7 + 8 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, lab-timelines/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -4002,6 +4002,41 @@ def test_fines_candidates_and_the_approval_note():
     subject, text, html = fines.note(base, "fines/2026-10-20")
     assert "1 new row to approve" in subject and sec in text
     assert fines.note(open(fines.__file__, encoding="utf-8").read(), "fines/2026-10-20") is None
+
+
+def test_chip_export_rules_grid_lists_and_notes(tmp_path):
+    from datetime import date
+    from aipulse import chip_rules as cr
+    assert cr.build(None, [], tmp_path, date(2026, 10, 19)) == ["chip-export-rules/"]
+    page = (tmp_path / "chip-export-rules" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>Chip export rules</h1>" in page and "photos/cartoons/features/chip-export-rules.svg" in page
+    # a row per chip, a cell per US decision; the lead line holds only while every chip made for China was caught
+    assert all(len(c[4]) == len(cr.COLUMNS) for c in cr.CHIPS) and cr.caught()
+    assert page.count('<td class="') == len(cr.CHIPS) * len(cr.COLUMNS)
+    assert "Every chip Nvidia and AMD made for China was caught by a later rule." in page
+    # each list row links its official notice, or carries a footnote naming the outlet that reported it
+    rows = cr.TOOLS + cr.BUYERS + cr.CHINA
+    assert page.count("<li class=") == len(rows) and page.count(">notice</a>") == sum(cr.official(r[4]) for r in rows)
+    assert all(r[4] in cr.REPORTS for r in rows if not cr.official(r[4])) and all(u in cr.REPORTS for u in cr.CHINA_SIDE)
+    assert page.count("<li>Reported by ") == len(cr.CHINA_SIDE) + sum(not cr.official(r[4]) for r in rows)
+    assert "<sup>1, 2</sup>" in page and ">Paused to 9 Nov 2026<" in page and ">update</a>" in page
+    # newest first in each list
+    assert page.index("2 Sep 2025") < page.index("13 Oct 2022")
+
+
+def test_chip_rules_candidates_and_the_approval_note():
+    from aipulse import chip_rules as cr
+    new = {"url": "https://x.example/a", "title": "US tightens export controls on AI chips to Malaysia",
+           "date": "2026-10-20T08:00", "source": "Outlet", "category": "policy"}
+    fr = cr.BUYERS[0][4]
+    seen = new | {"url": fr}
+    old = new | {"url": "https://x.example/b", "date": "2026-10-18T09:00"}  # read for the lists already
+    other = new | {"url": "https://x.example/c", "title": "Nvidia unveils a new gaming chip"}  # no rule
+    assert cr.candidates([new, seen, old, other]) == [new]
+    base = open(cr.__file__, encoding="utf-8").read().replace(fr, "https://gone.example/")
+    subject, text, html = cr.note(base, "chips/2026-10-20")
+    assert "1 new row to approve" in subject and fr in text
+    assert cr.note(open(cr.__file__, encoding="utf-8").read(), "chips/2026-10-20") is None
 
 
 def test_new_tests_for_ai_rows_scores_and_candidates(tmp_path):
