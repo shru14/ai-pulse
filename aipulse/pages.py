@@ -1077,7 +1077,7 @@ a.subscribe-btn{text-decoration:none}
 @media (max-width:640px){.cp .sh-filters{position:static}.cp .sh-docs{display:flex;flex-direction:column;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:6px;border-bottom:3px solid var(--ink)}.cp .sh-doc{flex:none}}
 /* Every feature's header: one band on its stream's colour, the same size on every feature: its icon, name and question
    on the left, what it covers on the right (stacked on phones) */
-.cp .fh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 30px;align-items:center;margin:18px 0 28px;
+.cp .fh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px 30px;align-items:center;margin:18px 0 28px;
   padding:22px 26px;background:var(--f);color:#000;border:3px solid var(--line);box-shadow:6px 6px 0 var(--line)}
 .cp .fh-t{display:flex;align-items:center;gap:16px;min-width:0}
 .cp .fh-ic{flex:none;display:grid;place-items:center;width:56px;height:56px;background:#000;color:var(--f)}
@@ -1086,9 +1086,12 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh-q{margin:6px 0 0;font:600 17px/1.35 var(--body);color:#000}
 .cp .ft .fh-d{margin:0;max-width:none;padding-left:26px;border-left:3px solid #000;font:400 16px/1.5 var(--body);color:#000}
 .cp .fh-d a{color:#000;text-decoration-thickness:2px}
+/* our own cartoon at the right end (templates/photos/cartoons/features/) */
+.cp .fh-art{display:block;height:140px;width:auto;margin:-10px -6px -14px 0}
 @media (max-width:640px){.cp .fh{grid-template-columns:1fr;gap:12px;padding:16px;box-shadow:4px 4px 0 var(--line)}
   .cp .fh-ic{width:44px;height:44px}.cp .fh-ic svg{width:26px;height:26px}
-  .cp .ft .fh-d{padding:12px 0 0;border-left:0;border-top:3px solid #000;font-size:15px}}
+  .cp .ft .fh-d{padding:12px 0 0;border-left:0;border-top:3px solid #000;font-size:15px}
+  .cp .fh-art{height:110px;justify-self:end;margin:0 0 -8px}}
 /* New tests for AI and Compute behind notable models (Research's features) */
 .cp .nt .nt-how{margin:0 0 14px;max-width:none;font-size:14.5px;color:var(--muted)}
 .cp .nt-scores{list-style:none;margin:0 0 34px;padding:0;border-top:2px solid var(--line)}
@@ -1222,7 +1225,8 @@ def feature_head(path: str, title: str, question: str, intro: str) -> str:
     q = f'<p class="fh-q">{escape(question)}</p>' if question else ""
     return (f'<header class="fh" style="--f:var(--f-{stream})"><div class="fh-t"><span class="fh-ic" aria-hidden="true">'
             f'<svg viewBox="0 0 24 24"><path d="{icon}"/></svg></span><div><h1>{escape(title)}</h1>{q}</div></div>\n'
-            f'<p class="fh-d">{intro}</p></header>\n')
+            f'<p class="fh-d">{intro}</p><img class="fh-art" src="photos/cartoons/features/{path.strip("/")}.svg" alt="" '
+            f'aria-hidden="true"></header>\n')
 
 
 def share_tags(title: str, path: str, description: str) -> str:

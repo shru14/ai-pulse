@@ -597,6 +597,9 @@ header.top{border-bottom:4px solid var(--ink)}
 .sec-hero .status{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px 14px;font-size:12px}
 /* desktop: name, what it covers and the count stacked as one left-aligned column, not wrapped raggedly */
 @media (min-width:641px){.sec-hero>div{flex-direction:column;align-items:flex-start;gap:6px}}
+/* our own cartoon on the right of the header (templates/photos/cartoons/streams/); below the labels on a phone */
+.sec-hero .cart{flex:none;height:160px;width:auto;margin:-6px 0 -10px auto}
+@media (max-width:640px){.sec-hero{flex-wrap:wrap}.sec-hero .cart{height:110px;margin:4px 0 -12px auto}}
 /* each stream's strip under its filters: its own pages as tag tiles (left), the pages built from it as features (right,
    on the stream's colour). Streams without features give the tiles the full width. */
 .by-country{display:grid;grid-template-columns:2.1fr 1fr;margin:14px 0 10px;border:3px solid var(--line);border-top:8px solid var(--f);
@@ -1113,6 +1116,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
     <span class="art" id="sec-art" aria-hidden="true"></span>
     <span class="ico" id="sec-ico" aria-hidden="true"></span>
     <div><h2 id="sec-title"></h2><p id="sec-desc"></p><div class="status" id="status">Loading feed…</div></div>
+    <img class="cart" id="sec-cart" alt="" aria-hidden="true">
   </div>
 
   <div class="controls">
@@ -1301,6 +1305,7 @@ function showPage(){
   $("by-kind").hidden = state.cat !== "news";
   ["tool", "policy", "research", "infra"].forEach(c => $("by-" + c).hidden = state.cat !== c);
   $("sec-art").innerHTML = heroArt(state.cat);
+  $("sec-cart").src = "photos/cartoons/streams/" + state.cat + ".svg";
   $("sec-ico").replaceWith(Object.assign(sectionIcon(state.cat), {id: "sec-ico"}));
   document.title = PAGE_TITLE[state.cat] + " · AI Pulse";
   const soon = SOON.has(state.cat);
