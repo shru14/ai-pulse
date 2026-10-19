@@ -691,6 +691,26 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .tk-item a{color:var(--ink);text-decoration:none}
 .tk-item a:hover{text-decoration:underline}
 @media (prefers-reduced-motion: reduce){.tk-track{animation:none}.tk-view{overflow-x:auto}}
+/* Every page's header band (pages.band): one band on a stream's colour, the same size on every page: its icon, name and
+   question on the left, what it covers on the right, our own cartoon at the right end (stacked on phones) */
+:is(.cp,.about-page) .fh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px 30px;align-items:center;margin:18px 0 28px;
+  padding:22px 26px;background:var(--f);color:#000;border:3px solid var(--line);box-shadow:6px 6px 0 var(--line)}
+:is(.cp,.about-page) .fh-t{display:flex;align-items:center;gap:16px;min-width:0}
+:is(.cp,.about-page) .fh-ic{flex:none;display:grid;place-items:center;width:56px;height:56px;background:#000;color:var(--f)}
+:is(.cp,.about-page) .fh-ic svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+:is(.cp,.about-page) .fh-ic.pic{background:#fff;border:2px solid #000}
+:is(.cp,.about-page) .fh-ic.pic svg{fill:#000;stroke:none}
+:is(.cp,.about-page) .fh-ic.pic img{display:block;width:44px;height:33px;object-fit:cover;border:1px solid #000}
+:is(.cp,.about-page) .fh :is(h1,h2){display:block;margin:0;font:400 clamp(22px,2.4vw,26px)/1.1 var(--display);color:#000}
+:is(.cp,.about-page) .fh-q{margin:6px 0 0;font:600 17px/1.35 var(--body);color:#000}
+:is(.cp,.about-page) .fh .fh-d{margin:0;max-width:none;padding-left:26px;border-left:3px solid #000;font:400 16px/1.5 var(--body);color:#000}
+:is(.cp,.about-page) .fh-d a{color:#000;text-decoration-thickness:2px}
+:is(.cp,.about-page) .fh-art{display:block;height:140px;width:auto;margin:-10px -6px -14px 0}
+@media (max-width:640px){:is(.cp,.about-page) .fh{grid-template-columns:1fr;gap:12px;padding:16px;box-shadow:4px 4px 0 var(--line)}
+  :is(.cp,.about-page) .fh-ic{width:44px;height:44px}:is(.cp,.about-page) .fh-ic svg{width:26px;height:26px}
+  :is(.cp,.about-page) .fh-ic.pic img{width:36px;height:27px}
+  :is(.cp,.about-page) .fh .fh-d{padding:12px 0 0;border-left:0;border-top:3px solid #000;font-size:15px}
+  :is(.cp,.about-page) .fh-art{height:110px;justify-self:end;margin:0 0 -8px}}
 /* Today in AI, People are discussing: a heading band like the streams' */
 .band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;border-bottom:4px solid var(--ink);padding-bottom:6px;margin-bottom:16px}
 .band-head h2{font:400 26px/1.1 var(--head);margin:0}
@@ -1147,20 +1167,23 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 
   <!-- Today in AI, in full: every story of the last two days, by how many outlets carry it (the front page shows ten) -->
   <section class="about-page" id="today-page" hidden>
-    <div class="band-head"><h2>Today in AI</h2><span class="kicker">Every story of the last 2 days, most reported first</span></div>
+    <header class="fh" style="--f:var(--f-all)"><div class="fh-t"><span class="fh-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20v-7h4v7M10 20V8h4v12M15 20v-5h4v5"/></svg></span><div><h2>Today in AI</h2><p class="fh-q">Which AI stories are the most reported right now?</p></div></div>
+      <p class="fh-d">Every story of the last 2 days, ranked by how many different outlets report it, with how far each has moved up or down since 00:00 UTC.</p><img class="fh-art" src="/photos/cartoons/pages/today.svg" alt="" aria-hidden="true"></header>
     <table class="board-t"><thead><tr><th>#</th><th>Story</th><th title="How many different outlets reported this story">Outlets reporting</th><th title="Places moved up or down since 00:00 UTC; new = not in the top 30 then">Rank change today</th></tr></thead>
       <tbody id="today-rows"></tbody></table>
   </section>
 
   <!-- People are discussing, in full: every AI thread kept from Hacker News (the front page shows five) -->
   <section class="about-page" id="discussing-page" hidden>
-    <div class="band-head"><h2>People are discussing</h2><span class="kicker">AI threads on Hacker News, last 2 days</span></div>
+    <header class="fh" style="--f:var(--f-policy)"><div class="fh-t"><span class="fh-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5h13v9H8l-5 4zM19 9h2v9l-3-2.5h-7v-1.5"/></svg></span><div><h2>People are discussing</h2><p class="fh-q">Which AI threads are people talking about?</p></div></div>
+      <p class="fh-d">AI threads on Hacker News from the last 2 days, with how many comments and points each has. Each links to the thread.</p><img class="fh-art" src="/photos/cartoons/pages/discussing.svg" alt="" aria-hidden="true"></header>
     <table class="disc-t"><thead><tr><th>Thread</th><th>Comments</th><th>Points</th></tr></thead><tbody id="disc-rows"></tbody></table>
   </section>
 
   <!-- Saved stories: the ones the reader bookmarked, newest saved first, kept in this browser only -->
   <section class="about-page" id="saved-page" hidden>
-    <div class="band-head"><h2>Saved stories</h2><span class="kicker">Kept in this browser only</span></div>
+    <header class="fh" style="--f:var(--f-news)"><div class="fh-t"><span class="fh-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg></span><div><h2>Saved stories</h2><p class="fh-q">What did you keep to read later?</p></div></div>
+      <p class="fh-d">The stories you bookmarked, newest saved first. They are kept in this browser only, so they won't show on another device.</p><img class="fh-art" src="/photos/cartoons/pages/saved.svg" alt="" aria-hidden="true"></header>
     <table class="disc-t saved-t"><thead><tr><th>Story</th><th><span class="vh">Remove</span></th></tr></thead><tbody id="saved-rows"></tbody></table>
     <p class="tile-note" id="saved-none" hidden>Nothing saved yet. Tap the bookmark on any story to keep it here.</p>
   </section>

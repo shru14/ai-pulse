@@ -544,7 +544,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             f'<span class="meta">{s["month"][:4]}</span></span></a>')
     what = ("A booklet for every month since January 2026: what happened in brief, the stories that mattered most, "
             "stream by stream, and the words to know.")
-    body = (f'<h1>The month in AI</h1>\n<p class="intro">{escape(what)}</p>\n'
+    body = (pages.band("all", "M4 6h16v14H4zM4 10h16M8 3v5M16 3v5", "photos/cartoons/pages/monthly.svg", "The month in AI",
+                       "What happened in AI each month?", escape(what))
             + "".join(f'<h2>{y}</h2>\n<div class="shelf">{"".join(c)}</div>\n' for y, c in years.items()))
     ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "The month in AI", "description": what,
           "url": f"{rss.SITE}monthly/"}

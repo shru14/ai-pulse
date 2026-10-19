@@ -733,11 +733,14 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                                                encoding="utf-8")
         prev = f'<a href="/{path(issues[i - 1])}">← {monthly.name(issues[i - 1])}</a>' if i else "<span></span>"
         nxt = f'<a href="/{path(issues[i + 1])}">{monthly.name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
-        html = (f'<div class="mi">\n<div class="ins-head"><div><span class="kind">AI Pulse · Monthly report · Insights</span>'
-                f'<h1><span class="hl">{monthly.name(m)} in numbers</span></h1></div><div class="ins-side"><span class="no">{monthly.number(m):02d}</span><button class="ins-pdf" type="button" onclick="window.print()">Save as PDF</button></div></div>\n{body(m, x)}'
-                f'<nav class="issue-nav">{prev}<a href="/{monthly.path(m)}">Back to the issue</a>{nxt}</nav>\n</div>')
         what = (f"What the AI news of {monthly.name(m)} adds up to: how it compares with the months before, what made the "
                 "busiest days, and the companies, themes and places in the news.")
+        html = (f'<div class="mi">\n<div class="ins-top">'
+                + pages.band("all", "M4 20h16M4 20V4M8 16v-4M12 16V8M16 16v-6", "photos/cartoons/pages/monthly.svg",
+                             f"{monthly.name(m)} in numbers", f"What did {monthly.name(m)}'s AI news add up to?", escape(what),
+                             '<button class="ins-pdf" type="button" onclick="window.print()">Save as PDF</button>')
+                + f'</div>\n{body(m, x)}'
+                f'<nav class="issue-nav">{prev}<a href="/{monthly.path(m)}">Back to the issue</a>{nxt}</nav>\n</div>')
         ld = {"@context": "https://schema.org", "@type": "WebPage", "name": f"{monthly.name(m)} in numbers",
               "description": what, "url": f"{rss.SITE}{p}"}
         (out / p).mkdir(parents=True, exist_ok=True)

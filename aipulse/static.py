@@ -107,8 +107,10 @@ def privacy_page() -> str:
     rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>" for a, b, c in PRIVACY_ROWS)
     mail = '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a>'
     what = "What AI Pulse keeps about you: nothing about site visitors, and for the daily email only what it needs to send it."
-    body = (f'<h1>Privacy</h1>\n<p class="intro">AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}.</p>\n'
-            '<h2>The site</h2><p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site '
+    body = (pages.band("infra", "M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0v3", "photos/cartoons/pages/privacy.svg", "Privacy",
+                       "What does AI Pulse keep about you?",
+                       f"AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}.")
+            + '<h2>The site</h2><p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site '
             'you came from, your browser, system, country and screen size. No IP address, cookie or ID is kept. '
             'Your settings stay in your own browser. GitHub Pages, '
             'which hosts the site, may log IP addresses for security.</p>'
@@ -263,9 +265,11 @@ def daily_index(conn, total: int, days: list[date], out: Path) -> None:
         sunday = " <span class=\"grp\">Sunday's email: the week in AI</span>" if digest.weekly(d) else ""
         months.setdefault(f"{d:%B %Y}", []).append(
             f'<li><a href="/daily/{d.isoformat()}.html">{digest.long_day(d)}</a>{sunday}</li>')
-    body = ('<h1>Daily editions</h1>\n<p class="intro">Every morning\'s email as a page: the day before in AI, every '
-            'story from every stream in one tagged table. On Sundays the email is the weekly edition: the week in AI '
-            '(Monday to Saturday), then Saturday\'s stories. <a href="/#subscribe">Get it in your inbox</a></p>\n'
+    body = (pages.band("news", "M3 6h18v12H3zM3 6l9 7 9-7", "photos/cartoons/pages/daily.svg", "Daily editions",
+                       "What was in each morning's email?",
+                       "Every morning's email as a page: the day before in AI, every story from every stream in one "
+                       "tagged table. On Sundays the email is the weekly edition: the week in AI (Monday to Saturday), "
+                       'then Saturday\'s stories. <a href="/#subscribe">Get it in your inbox</a>')
             + "\n".join(f'<h2>{m}</h2>\n<ul class="days">\n' + "\n".join(rows) + "\n</ul>" for m, rows in months.items()))
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI Pulse daily editions",
             "url": f"{rss.SITE}daily/"}
