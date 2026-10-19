@@ -4,12 +4,17 @@ numbers, and the daily and weekly emails' picks, one file each.
 Unlisted: nothing on the site links here, the sitemap leaves it out and robots.txt asks search engines not to read it.
 Only what we built (the hand-checked lists and what we worked out from the stories), never the raw stream: a row
 keeps the story's link, outlet, date and headline as its page shows them, and drops long text written by others
-(abstracts, incident summaries). A new feature adds one line to ENDPOINTS.
+(abstracts, incident summaries). A new feature adds one line to ENDPOINTS and its date field to DATES.
+
+Asking for part of a file: query() keeps the rows between two dates (each file names its row date field) and those
+whose fields match, the same way the query page (api/v1/, QUERY_JS) does in the browser and `aipulse api` does on a
+PC. GitHub Pages serves files only, so a file's own link can't take ?from=.
 """
 from __future__ import annotations
 
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from html import escape
 from pathlib import Path
 
 from . import (compute, consultations, court, digest, echoes, glossary, harms, infra_watch, insights, jobs,
@@ -19,7 +24,8 @@ from . import today as board
 
 PATH = "api/v1/"
 # others' long text, our own matching patterns, and a story's internals (its id, cluster, other outlets' versions)
-DROP = {"abstract", "summary", "words", "id", "cluster", "also", "added_at", "authors", "category", "lifecycle"}
+DROP = {"abstract", "summary", "words", "id", "cluster", "also", "added_at", "authors", "category", "lifecycle",
+        "match", "search", "case"}
 
 
 def _clean(x):
@@ -40,17 +46,23 @@ def _infra(table, names):
                                        for r in infra_watch._with_stories(table, cards)]
 
 
+def _month_of(when: str) -> str:
+    """'Nov 2023' as '2023-11' (a row's month, for the date filter)."""
+    return datetime.strptime(when, "%b %Y").strftime("%Y-%m")
+
+
 def _pacts(conn, cards, today):
+    """One list, each row's `type` saying which it is: pledge, deal, ban or order."""
     have = _urls(cards)
-    return {"pledges": [{"name": p[0], "when": p[1], "url": p[2], "source": p[3], "signed": list(p[4]),
-                         "joined_later": p[5]} for p in pacts._pledges()],
-            "deals": [{"date": d, "government": g, "company": c, "what": w, "url": u}
-                      for d, g, c, w, u in pacts.DEALS if u in have],
-            "bans": [{"date": b[0], "government": b[1], "company": b[2], "what": b[3], "url": b[4],
-                      "ended": b[5] or "", "ended_url": b[6] or "", "how_ended": b[7] or ""}
-                     for b in pacts.BANS if b[4] in have],
-            "orders": [{"date": d, "government": g, "company": c, "kind": k, "what": w, "url": u}
-                       for d, g, c, k, w, u in pacts.ORDERS if u in have]}
+    return ([{"type": "pledge", "date": _month_of(p[1]), "name": p[0], "url": p[2], "source": p[3],
+              "signed": list(p[4]), "joined_later": p[5]} for p in pacts._pledges()]
+            + [{"type": "deal", "date": d, "government": g, "company": c, "what": w, "url": u}
+               for d, g, c, w, u in pacts.DEALS if u in have]
+            + [{"type": "ban", "date": b[0], "government": b[1], "company": b[2], "what": b[3], "url": b[4],
+                "ended": b[5] or "", "ended_url": b[6] or "", "how_ended": b[7] or ""}
+               for b in pacts.BANS if b[4] in have]
+            + [{"type": "order", "date": d, "government": g, "company": c, "kind": k, "what": w, "url": u}
+               for d, g, c, k, w, u in pacts.ORDERS if u in have])
 
 
 def _saved(module):
@@ -199,7 +211,7 @@ ENDPOINTS = {
     "jobs": ("Jobs blamed on AI", jobs.PATH, "a job cut the news linked to AI, with the reason the company gave",
              lambda conn, cards, today: jobs.cuts(cards)),
     "owners": ("Who owns a piece of whom", owners.PATH, "a company's stake in an AI lab",
-               lambda conn, cards, today: owners.deals(cards)),
+               lambda conn, cards, today: [dict(r, month=_month_of(r["when"])) for r in owners.deals(cards)]),
     "promises": ("Promised vs shipped", promises.PATH, "a company's promise and whether it shipped",
                  lambda conn, cards, today: promises.promises(cards, today)),
     "release-cards": ("Release cards", release_cards.PATH, "a major model release: weights, licence, price",
@@ -236,17 +248,112 @@ ENDPOINTS = {
 }
 
 
+# each file's row date: the field the from/to filter reads (YYYY-MM-DD, or YYYY-MM for a month); None: no row date
+# (the rows are subjects, each holding its own dated lists)
+DATES = {"court": "latest", "safety": "date", "pacts": "date", "consultations": "closes", "jobs": "date",
+         "owners": "month", "promises": "date", "release-cards": "day", "lab-timelines": "day",
+         "models-being-retired": "shuts", "new-tests": "date", "papers-in-the-news": "date", "compute": "date",
+         "data-centre-builds": "date", "who-powers-ai": "date", "pushback-and-permits": "date", "harm-to-rule": None,
+         "rule-echoes": None, "glossary": "added", "monthly": "month", "monthly-insights": "month", "daily": "date",
+         "weekly": "to", "today": "date"}
+
+
+def _text(v) -> str:
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if isinstance(v, (dict, list)):
+        return json.dumps(v, ensure_ascii=False)
+    return "" if v is None else str(v)
+
+
+def _matches(v, wanted: str) -> bool:
+    """A field against a filter: any of its |-separated values, in any case. Text (or a list's item, or anything
+    nested) contains it; a number or true/false equals it."""
+    options = [w.strip().lower() for w in wanted.split("|") if w.strip()]
+    items = v if isinstance(v, list) else [v]
+    return any((o in _text(i).lower()) if isinstance(i, (str, dict, list)) else _text(i).lower() == o
+               for i in items for o in options)
+
+
+def _within(d: str, start: str, end: str) -> bool:
+    """Is a row's date (a day, a month or a year) inside start..end (both kept)? A month counts if it overlaps."""
+    return bool(d) and (not start or d >= start[:len(d)]) and (not end or d <= end[:len(d)])
+
+
+def query(doc: dict, start: str = "", end: str = "", where: dict[str, str] | None = None, q: str = "",
+          limit: int = 0) -> dict:
+    """A file's rows from `start` to `end` (YYYY-MM-DD, either may be empty) whose fields match each `where`
+    value and whose text contains `q`, the first `limit` (0: all). A row with no date is left out once a date is
+    asked for. Keep in step with QUERY_JS."""
+    field = doc.get("date_field")
+    rows = doc["rows"]
+    if (start or end) and field:
+        rows = [r for r in rows if _within(str(r.get(field) or "")[:10], start, end)]
+    for k, v in (where or {}).items():
+        rows = [r for r in rows if _matches(r.get(k), v)]
+    if q:
+        rows = [r for r in rows if q.lower() in json.dumps(r, ensure_ascii=False).lower()]
+    shown = rows[:limit] if limit else rows
+    return {**{k: doc[k] for k in ("name", "title", "page", "row", "updated", "date_field") if k in doc},
+            "asked": {"from": start, "to": end, "where": where or {}, "q": q, "limit": limit},
+            "matched": len(rows), "count": len(shown), "rows": shown}
+
+
+QUERY_JS = (Path(__file__).resolve().parent.parent / "templates" / "api-query.js").read_text(encoding="utf-8")
+
+
+def query_page(conn, cards: list[dict]) -> str:
+    """api/v1/index.html: pick a file, dates and filters; the link keeps them (?name=&from=&to=&where=field:value)."""
+    from . import pages
+    options = "".join(f'<option value="{n}">{escape(t[0])}</option>' for n, t in ENDPOINTS.items())
+    body = ('<h1>AI Pulse data</h1>\n<p class="intro">Pick the data, the dates and any filters. The link keeps them, '
+            'so it can be saved or shared. Each filter is <code>field:value</code> on its own line; <code>|</code> '
+            'between values means either.</p>\n'
+            '<form id="aq" class="aq">\n'
+            f'<label>Data <select name="name"><option value="">Choose…</option>{options}</select></label>\n'
+            '<label>From <input type="date" name="from"></label>\n<label>To <input type="date" name="to"></label>\n'
+            '<label>Filters <textarea name="where" rows="2" placeholder="status:won&#10;where:Japan|Germany">'
+            '</textarea></label>\n<label>Search <input type="search" name="q"></label>\n'
+            '<label>At most <input type="number" name="limit" min="1" placeholder="all"></label>\n'
+            '<button type="submit">Show</button>\n</form>\n'
+            '<p class="meta" id="aq-fields"></p>\n<p class="meta" id="aq-meta"></p>\n'
+            '<button type="button" id="aq-dl" hidden>Download JSON</button>\n<pre id="aq-out" class="aq-out"></pre>\n'
+            '<style>.aq{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end;'
+            'margin:12px 0}.aq label{display:grid;gap:4px;font-size:13px;min-width:0}.aq textarea,.aq input,.aq select{font:inherit;'
+            'padding:6px;border:1px solid #9aa0aa;border-radius:4px;background:transparent;color:inherit;width:100%;'
+            'min-width:0;box-sizing:border-box}'
+            '.aq-out{overflow:auto;max-height:70vh;padding:12px;border:1px solid #9aa0aa;border-radius:4px;'
+            'font-size:12.5px;white-space:pre-wrap;word-break:break-word}</style>\n'
+            f'<script>\n{QUERY_JS}</script>\n')
+    html = pages.page("AI Pulse data · AI Pulse", "Ask the AI Pulse data files for dates and filters.", PATH, body,
+                      {"@context": "https://schema.org", "@type": "WebPage", "name": "AI Pulse data"},
+                      pages.frame(conn, len(cards)), ("/", "Back to AI Pulse"))
+    return html.replace('<meta name="description"', '<meta name="robots" content="noindex">\n<meta name="description"', 1)
+
+
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
-    """Write api/v1/: a file per feature and index.json listing them. Returns nothing: no page for the sitemap."""
+    """Write api/v1/: a file per feature, index.json listing them and the query page. Returns nothing: no page for
+    the sitemap."""
     (out / PATH).mkdir(parents=True, exist_ok=True)
     listed = []
     for name, (title, page, row, rows) in ENDPOINTS.items():
         found = _clean(rows(conn, cards, today))
-        n = sum(len(v) for v in found.values()) if isinstance(found, dict) else len(found)
         (out / PATH / f"{name}.json").write_text(json.dumps(
             {"name": name, "title": title, "page": f"{rss.SITE}{page}", "row": row, "updated": today.isoformat(),
-             "count": n, "rows": found}, separators=(",", ":"), ensure_ascii=False, default=str), encoding="utf-8")
-        listed.append({"name": name, "title": title, "url": f"{rss.SITE}{PATH}{name}.json", "count": n})
+             "date_field": DATES[name], "count": len(found), "rows": found}, separators=(",", ":"),
+            ensure_ascii=False, default=str), encoding="utf-8")
+        listed.append({"name": name, "title": title, "url": f"{rss.SITE}{PATH}{name}.json", "count": len(found),
+                       "date_field": DATES[name]})
     (out / PATH / "index.json").write_text(json.dumps({"updated": today.isoformat(), "endpoints": listed},
                                                       separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+    (out / PATH / "index.html").write_text(query_page(conn, cards), encoding="utf-8")
     return []
+
+
+def fetch(name: str, site: str = rss.SITE, folder: str = "") -> dict:
+    """A file as published, or from a local build's folder."""
+    if folder:
+        return json.loads((Path(folder) / PATH / f"{name}.json").read_text(encoding="utf-8"))
+    from urllib.request import Request, urlopen
+    with urlopen(Request(f"{site}{PATH}{name}.json", headers={"User-Agent": "AIPulse"}), timeout=60) as r:
+        return json.loads(r.read().decode("utf-8"))

@@ -166,8 +166,25 @@ def main():
     sub.add_parser("audit", help="check every source's robots.txt and terms again (on a PC, monthly; see aipulse/terms.py)")
     pr = sub.add_parser("prune", help="delete stories older than N days")
     pr.add_argument("--keep-days", type=int, default=365)
+    ap = sub.add_parser("api", help="one of the site's data files (api/v1/), for some dates and filters, as JSON")
+    ap.add_argument("name", nargs="?", help="the file, e.g. court; none: list them")
+    ap.add_argument("--from", dest="start", default="", help="from this day (YYYY-MM-DD)")
+    ap.add_argument("--to", dest="end", default="", help="to this day (YYYY-MM-DD)")
+    ap.add_argument("--where", action="append", default=[], help="field:value (| between values: either); repeat for more")
+    ap.add_argument("--q", default="", help="only rows whose text has this")
+    ap.add_argument("--limit", type=int, default=0, help="at most this many rows")
+    ap.add_argument("--folder", default="", help="read a local build (e.g. site) instead of the published site")
 
     a = p.parse_args()
+    if a.cmd == "api":
+        from . import api
+        if not a.name:
+            print("\n".join(f"{n:22} dates from: {f or '-'}" for n, f in api.DATES.items()))
+            return
+        where = dict(w.split(":", 1) for w in a.where if ":" in w)
+        print(json.dumps(api.query(api.fetch(a.name, folder=a.folder), a.start, a.end, where, a.q, a.limit),
+                         indent=2, ensure_ascii=False))
+        return
     if a.log:
         sys.stdout = sys.stderr = open(a.log, "a", encoding="utf-8", buffering=1)
 
