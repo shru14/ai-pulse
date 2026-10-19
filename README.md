@@ -41,6 +41,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 | Regulation | Rule echoes | With the tracker, every 6 h |
 | Regulation | Harm → rule | With the tracker and the AI Incident Database, every 6 h |
 | Regulation | AI in court | Daily, checked by hand |
+| Regulation | AI fines and bans | Daily, checked by hand |
 | Industry | Promised vs shipped | Daily, checked by hand |
 | Industry | Jobs blamed on AI | Daily, checked by hand |
 | Industry | Who owns a piece of whom | Daily, checked by hand |
@@ -62,6 +63,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 - **[Rule echoes](https://projectaipulse.com/rule-echoes/):** the subjects AI laws keep coming back to, and the places that took each one up, in order, from the tracker's official records.
 - **[Harm → rule](https://projectaipulse.com/harm-to-rule/):** AI harms the AI Incident Database logged since 2023, by subject, beside the tracker's rules on the same subject; a rule that follows harms isn't shown to be caused by them.
 - **[AI in court](https://projectaipulse.com/ai-in-court/):** lawsuits against AI makers over copyright, privacy and people's likeness since 2023, in several countries: who sued whom, the country of the court, and where each case stands, step by step (filed, an early ruling, partly settled, decided, settled or thrown out), each step checked by hand against the story that reported it; a new step is added once checked, so a case's status follows the rulings.
+- **[AI fines and bans](https://projectaipulse.com/ai-fines-and-bans/):** two halves, like AI pacts and orders. Bans: AI products a regulator banned, blocked or stopped since 2022 (privacy, consumer and communications regulators), and whether each was lifted. Fines: fines and settlements paid to a regulator over AI since 2022, each amount in the currency it was set in and never added up, with whether it still stands, is challenged in court or was annulled. Every row checked by hand and linked to the regulator's own notice (a news report where the regulator published none); investigations not yet decided, lawsuits by people and courts fining lawyers are left out, and what governments made AI companies do stays on AI pacts and orders.
 
 ### Industry
 

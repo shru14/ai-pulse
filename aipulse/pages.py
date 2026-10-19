@@ -1023,6 +1023,12 @@ a.subscribe-btn{text-decoration:none}
 .cp .pc-end{fill:var(--bg);stroke:var(--ink);stroke-width:1.5}
 .cp .pc-tick{stroke:var(--ink);stroke-width:2.5}
 @media (max-width:900px){.cp .pc-halves{grid-template-columns:1fr}}
+/* AI fines and bans: the AI pacts and orders halves, a tag per row for where it stands and a muted line under it */
+.cp .fx .pc-rows td.pc-s{width:136px;min-width:136px;white-space:normal}
+.cp .fx .pc-k{white-space:nowrap}
+.cp .fx-c{display:block;color:var(--muted);font-size:12px;line-height:1.3;margin-top:3px}
+.cp .ft .fx .fx-c a{display:inline;margin:0;font-size:12px;color:var(--muted)}
+.cp .fx-in{background:#A6DCC6}.cp .fx-li{background:#A8D8F2}.cp .fx-ch{background:#F2D27A}.cp .fx-an{background:#F3B08A}.cp .fx-aw{background:#DDDDDD}
 @media (max-width:640px){.cp .pc-gw{max-height:72vh;overflow-x:auto}.cp .pc-tiles{grid-template-columns:repeat(2,1fr)}
   .cp .pc-grid th,.cp .pc-grid td{padding:4px 1px;font-size:13px}
   .cp .pc-grid thead th{font-size:9.5px;letter-spacing:0}
@@ -1199,6 +1205,7 @@ def snippet(text: str, limit: int = 160) -> str:
 FEATURES = {
     "rule-echoes/": ("reg", "M4 18a8 8 0 0 1 16 0M7 18a5 5 0 0 1 10 0M10 18a2 2 0 0 1 4 0"),
     "harm-to-rule/": ("reg", "M12 3.5l9.5 17h-19zM12 10v5M12 17.8v.2"),
+    "ai-fines-and-bans/": ("reg", "M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M5.6 5.6l12.8 12.8"),
     "ai-in-court/": ("reg", "M12 4v16M8 20h8M5 7h14M5 7l-3 6.5a3 3 0 0 0 6 0zM19 7l-3 6.5a3 3 0 0 0 6 0z"),
     "promises/": ("news", "M4 5h16v14H4zM8 12l3 3 5-6"),
     "jobs-blamed-on-ai/": ("news", "M4 8h16v11H4zM9 8V5h6v3M4 13h16"),
