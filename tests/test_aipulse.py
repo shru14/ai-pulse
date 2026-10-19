@@ -622,7 +622,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "api", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "social.json", "today", "today.json", "topics", "monthly",
         "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -636,10 +636,13 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert '<meta name="description"' in page and 'og:image" content="https://projectaipulse.com/og.png"' in page
     robots = (tmp_path / "site" / "robots.txt").read_text(encoding="utf-8")
     assert "User-agent: GPTBot\nDisallow: /" in robots and "Sitemap: https://projectaipulse.com/sitemap.xml" in robots
-    assert "User-agent: *\nDisallow: /dossier/\nDisallow: /api/" in robots
-    # the features' data as JSON: a file per feature, listed in index.json, unlisted, without others' long text
+    assert "User-agent: *\nDisallow: /dossier/" in robots and "/api/" not in robots
+    # our data as JSON, for our own use: never in the site, written by `aipulse api --build` (a file per feature,
+    # listed in index.json, without others' long text)
     from aipulse import api
-    v1 = tmp_path / "site" / "api" / "v1"
+    assert api.build_local(conn, tmp_path / "api-data") == len(api.ENDPOINTS)
+    v1 = tmp_path / "api-data" / "api" / "v1"
+    assert (tmp_path / "api-data" / "site.css").exists()
     assert [e["name"] for e in json.loads((v1 / "index.json").read_text(encoding="utf-8"))["endpoints"]] == list(api.ENDPOINTS)
     court_api = json.loads((v1 / "court.json").read_text(encoding="utf-8"))
     assert court_api["page"] == "https://projectaipulse.com/ai-in-court/" and court_api["count"] == len(court_api["rows"])

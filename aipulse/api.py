@@ -1,14 +1,14 @@
 """What we built as JSON, at api/v1/<name>.json: the rows each feature page draws, the monthly issues and their
 numbers, and the daily and weekly emails' picks, one file each.
 
-Unlisted: nothing on the site links here, the sitemap leaves it out and robots.txt asks search engines not to read it.
-Only what we built (the hand-checked lists and what we worked out from the stories), never the raw stream: a row
+For our own use, not published: the site's build leaves it out; `aipulse api --build` writes it on a PC, into FOLDER
+(not in git). Only what we built (the hand-checked lists and what we worked out from the stories), never the raw stream: a row
 keeps the story's link, outlet, date and headline as its page shows them, and drops long text written by others
 (abstracts, incident summaries). A new feature adds one line to ENDPOINTS and its date field to DATES.
 
 Asking for part of a file: query() keeps the rows between two dates (each file names its row date field) and those
-whose fields match, the same way the query page (api/v1/, QUERY_JS) does in the browser and `aipulse api` does on a
-PC. GitHub Pages serves files only, so a file's own link can't take ?from=.
+whose fields match, the same way the query page (api/v1/index.html, QUERY_JS) does in the browser and `aipulse api`
+does in the terminal.
 """
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ from . import (compute, consultations, court, digest, echoes, glossary, harms, i
 from . import today as board
 
 PATH = "api/v1/"
+FOLDER = "api-data"  # where `aipulse api --build` writes (FOLDER/api/v1/), ignored by git
 # others' long text, our own matching patterns, and a story's internals (its id, cluster, other outlets' versions)
 DROP = {"abstract", "summary", "words", "id", "cluster", "also", "added_at", "authors", "category", "lifecycle",
         "match", "search", "case"}
@@ -350,10 +351,21 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     return []
 
 
-def fetch(name: str, site: str = rss.SITE, folder: str = "") -> dict:
-    """A file as published, or from a local build's folder."""
-    if folder:
-        return json.loads((Path(folder) / PATH / f"{name}.json").read_text(encoding="utf-8"))
-    from urllib.request import Request, urlopen
-    with urlopen(Request(f"{site}{PATH}{name}.json", headers={"User-Agent": "AIPulse"}), timeout=60) as r:
-        return json.loads(r.read().decode("utf-8"))
+def build_local(conn, folder: str = FOLDER) -> int:
+    """Write the files and the query page (with the site's styles and fonts) into `folder`. Returns how many files."""
+    import shutil
+    from datetime import timezone
+    from . import pages, store
+    from .server import EU_MEMBERS, TEMPLATE
+    out = Path(folder)
+    out.mkdir(parents=True, exist_ok=True)
+    cards, _ = store.cards(conn, limit=10**9, eu_members=EU_MEMBERS)
+    build(conn, cards, out, datetime.now(timezone.utc).date())
+    pages.write_css(out)
+    shutil.copytree(TEMPLATE.parent / "fonts", out / "fonts", dirs_exist_ok=True)
+    return len(ENDPOINTS)
+
+
+def fetch(name: str, folder: str = FOLDER) -> dict:
+    """A file from the local build (`aipulse api --build`)."""
+    return json.loads((Path(folder) / PATH / f"{name}.json").read_text(encoding="utf-8"))
