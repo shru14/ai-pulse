@@ -858,7 +858,7 @@ a.subscribe-btn{text-decoration:none}
 .iw-pop .iw-vals{max-height:260px;overflow-y:auto}
 .iw-pop label span{flex:1}
 .iw-pop label b{font:500 12px var(--mono);color:var(--muted)}
-.cp .iw-t tr[hidden]{display:none}
+.cp .iw-t tr[hidden],.cp .xf-t tr[hidden]{display:none}
 @media (max-width:640px){.cp .iw-fbar{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
   .cp .iw-fbar .iw-hb{font:600 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1.5px solid var(--line);padding:5px 8px}
   .cp .iw-fbar .iw-hb.on{color:var(--ink);border-color:var(--ink)}

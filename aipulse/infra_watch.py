@@ -262,9 +262,10 @@ def _glance(first: str, last: str, items: list[tuple[str, str, int]]) -> str:
 
 # Excel-style filters, in the reader's browser: each column heading opens a list of that column's values (a cell's
 # data-f, else its text), each with how many rows have it among the rows the other filters leave; ticking narrows the
-# table. Phones hide the headings, so the same buttons sit in a bar over the table there.
+# table. Phones hide the headings, so the same buttons sit in a bar over the table there. Each .iw box on a page
+# (AI fines and bans has two) filters its own table.
 SCRIPT = """<script>
-(()=>{const p=document.querySelector('.iw'),t=p.querySelector('.iw-t'),rows=[...t.tBodies[0].rows],
+document.querySelectorAll('.iw').forEach(p=>{const t=p.querySelector('.iw-t,.xf-t'),rows=[...t.tBodies[0].rows],
 ths=[...t.tHead.rows[0].cells],count=p.querySelector('.iw-count b'),clear=p.querySelector('.iw-clear'),
 bar=p.querySelector('.iw-fbar'),sets=ths.map(()=>null),btns=ths.map(()=>[]);let pop=null;
 const val=(r,i)=>{const c=r.cells[i];return c.dataset.f||c.textContent.trim()};
@@ -297,7 +298,7 @@ th.textContent='';th.append(mk());bar.append(mk())});
 clear.addEventListener('click',()=>{sets.fill(null);close();run()});
 document.addEventListener('click',e=>{if(pop&&!pop.contains(e.target))close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-p.querySelector('.iw-wrap').addEventListener('scroll',close)})();
+p.querySelector('.iw-wrap')?.addEventListener('scroll',close)});
 </script>"""
 
 

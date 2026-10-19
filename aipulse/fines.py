@@ -13,7 +13,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import pages, rss
+from . import infra_watch, pages, rss
 
 PATH = "ai-fines-and-bans/"
 SINCE = "2022-01-01"
@@ -187,14 +187,22 @@ def _link(url: str) -> str:
 def _row(rid: str, day: str, reg: str, country: str, company: str, cells: str, url: str, tag: tuple[str, str],
          after: str) -> str:
     """A row in real columns: day, company, regulator over its country, `cells` (what it did and why), where it
-    stands. Its id is what its dot on the time line links to."""
-    return (f'<tr id="{rid}"><td class="pc-d">{_short(day)}</td><td><b>{escape(company)}</b></td>'
-            f'<td>{escape(reg)}<span class="fx-c">{escape(country)}</span></td>{cells}<td class="fx-s">'
+    stands. Its id is what its dot on the time line links to; each cell's data-f is what its column filters by."""
+    return (f'<tr id="{rid}"><td class="pc-d" data-f="{day[:4]}">{_short(day)}</td><td><b>{escape(company)}</b></td>'
+            f'<td data-f="{escape(f"{reg}, {country}")}">{escape(reg)}<span class="fx-c">{escape(country)}</span></td>'
+            f'{cells}<td class="fx-s" data-f="{escape(tag[0])}">'
             f'<span class="pc-k {tag[1]}">{escape(tag[0])}</span>{after}<span class="fx-c">{_link(url)}</span></td></tr>')
 
 
 def _head(*cols: str) -> str:
-    return "<thead><tr>" + "".join(f"<th>{c}</th>" for c in cols) + "</tr></thead>"
+    """Headings that open Excel-style filters; the dates list newest first rather than by count."""
+    return "<thead><tr>" + "".join(f'<th{" data-seen" * (c == "Date")}>{c}</th>' for c in cols) + "</tr></thead>"
+
+
+def _count(n: int, noun: str) -> str:
+    """The filter bar phones show for the hidden headings, and how many rows the filters leave."""
+    return (f'<div class="iw-fbar"></div><p class="iw-count" aria-live="polite">Showing <b>{n}</b> of {n} {noun}. '
+            'Pick a ▾ to filter. <button type="button" class="iw-clear" hidden>Clear filters</button></p>')
 
 
 def _and(n: int, one: str, many: str) -> str:
@@ -230,13 +238,14 @@ def _strip(bans: list, fines: list, today: date) -> str:
 def body(today: date) -> str:
     bans = sorted(BANS, key=lambda r: r[0], reverse=True)
     fines = sorted(FINES, key=lambda r: r[0], reverse=True)
-    brows = "".join(_row(f"fx-b{n}", d, reg, c, co, f'<td><b>{escape(w)}</b><span class="fx-c">{escape(why)}</span></td>',
+    brows = "".join(_row(f"fx-b{n}", d, reg, c, co, f'<td data-f="{escape(w)}"><b>{escape(w)}</b><span class="fx-c">{escape(why)}</span></td>',
                          u, ("Lifted", "fx-li") if end else ("In force", "fx-in"),
                          f'<span class="fx-c"><a href="{escape(eu)}" rel="noopener">{escape(en)}, {_short(end)}</a></span>'
                          if end else "")
                     for n, (d, reg, c, co, w, why, u, end, en, eu) in enumerate(bans))
     frows = "".join(_row(f"fx-f{n}", d, reg, c, co,
-                         f'<td class="fx-n">{escape(amt)}<span class="fx-c">{kind}</span></td><td>{escape(why)}</td>',
+                         f'<td class="fx-n" data-f="{kind.capitalize()}">{escape(amt)}<span class="fx-c">{kind}</span></td>'
+                         f'<td>{escape(why)}</td>',
                          u, STATUSES[st],
                          (f'<span class="fx-c">' + (f'<a href="{escape(su)}" rel="noopener">{escape(sn)}</a>' if su
                                                     else escape(sn)) + '</span>') if sn else "")
@@ -273,16 +282,16 @@ def body(today: date) -> str:
                                  "says whether the action was lifted, challenged or annulled.")
             + _strip(bans, fines, today) + '<div class="fx-stack">'
             f'<section class="pc-half pc-orders"><div class="pc-hh"><h2>Bans</h2><p>AI products a regulator banned, '
-            f'blocked or stopped · since {SINCE[:4]}</p></div><div class="pc-in"><p class="pc-lead">{escape(blead)}</p>'
-            f'<table class="pc-rows fx-t">{_head("Date", "Company", "Regulator", "What and why", "Where it stands")}'
+            f'blocked or stopped · since {SINCE[:4]}</p></div><div class="pc-in iw"><p class="pc-lead">{escape(blead)}</p>'
+            f'{_count(len(bans), "bans")}<table class="pc-rows fx-t xf-t">{_head("Date", "Company", "Regulator", "What and why", "Where it stands")}'
             f'<tbody>{brows}</tbody></table></div></section>'
             f'<section class="pc-half pc-pacts"><div class="pc-hh"><h2>Fines</h2><p>Fines and settlements over AI · '
-            f'since {SINCE[:4]}</p></div><div class="pc-in"><p class="pc-lead">{escape(flead)}</p>'
-            f'<table class="pc-rows fx-t">{_head("Date", "Company", "Regulator", "Amount", "Why", "Where it stands")}'
+            f'since {SINCE[:4]}</p></div><div class="pc-in iw"><p class="pc-lead">{escape(flead)}</p>'
+            f'{_count(len(fines), "fines")}<table class="pc-rows fx-t xf-t">{_head("Date", "Company", "Regulator", "Amount", "Why", "Where it stands")}'
             f'<tbody>{frows}</tbody></table></div></section></div>\n'
             '<section class="jb-lim"><h2>About these rows</h2>\n<table class="mt jb-small jb-limits"><tbody>'
             + "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits)
-            + "</tbody></table></section></div>\n")
+            + "</tbody></table></section></div>\n" + infra_watch.SCRIPT + "\n")
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
