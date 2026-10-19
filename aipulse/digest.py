@@ -384,24 +384,8 @@ def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: set[str] = fro
 
 def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
           tiers: list[list[dict]] | None = None) -> tuple[list[str], str]:
-    """The word of the day: the hardest specialist word in the day's biggest stories in this reader's email, else
-    in their top 10, else anywhere in their email (`tiers`), and not one the week before gave; else
-    glossary.word_of_the_day among SPECIALIST. With its meaning, the story that used it (a headline that shows it first) and a
-    link to it in the site's glossary."""
-    streams = streams or list(rss.FEEDS)
-    week = set()
-    for back in range(1, 8):  # the words the week before gave (their biggest stories), so none comes back within a week
-        by_day = _leave_out(by_streams(cards, streams, day - timedelta(days=back)), prefs)[0]
-        week.add(_pick_word(cards, [_biggest(by_day, streams)])[0])
-    wid, stories = _pick_word(cards, tiers or [], week - {None})
-    e = next(x for x in glossary.ENTRIES if x["id"] == wid) if wid else glossary.word_of_the_day(day, SPECIALIST)
-    if wid:
-        used = [c for c in stories if wid in _terms(c)]
-    else:
-        since = (day - timedelta(days=6)).isoformat()
-        used = [c for c in cards if since <= (c.get("date") or "") <= day.isoformat() and glossary.mentions(e["id"], _text(c))]
-    # A headline that shows the word beats one whose summary does; then the latest, then the most reported
-    story = max(used, key=lambda c: (glossary.mentions(e["id"], c.get("title") or ""), c["date"], _outlets(c)), default=None)
+    """The word of the day: its meaning, the story that used it and a link to it in the site's glossary."""
+    e, story = word_of_the_day(cards, day, streams, prefs, tiers)
     more = f"{rss.SITE}glossary/"  # the glossary page, every word A to Z
     text = ["WORD OF THE DAY: " + e["term"], e["def"], *([f"Where it came up: {story['title']} {story['url']}"] if story else []),
             f"More words in the AI Pulse glossary: {more}"]
@@ -416,6 +400,29 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
             + f'<div style="font-size:13px;margin-top:7px"><a href="{escape(more)}" style="color:{LINK};text-decoration:none">'
               f'More words in the AI Pulse glossary →</a></div></div>')
     return text, html
+
+
+def word_of_the_day(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
+                    tiers: list[list[dict]] | None = None) -> tuple[dict, dict | None]:
+    """The word of the day: the hardest specialist word in the day's biggest stories in this reader's email, else
+    in their top 10, else anywhere in their email (`tiers`), and not one the week before gave; else
+    glossary.word_of_the_day among SPECIALIST. Returns its glossary entry and the story that used it (a headline that
+    shows it first)."""
+    streams = streams or list(rss.FEEDS)
+    week = set()
+    for back in range(1, 8):  # the words the week before gave (their biggest stories), so none comes back within a week
+        by_day = _leave_out(by_streams(cards, streams, day - timedelta(days=back)), prefs)[0]
+        week.add(_pick_word(cards, [_biggest(by_day, streams)])[0])
+    wid, stories = _pick_word(cards, tiers or [], week - {None})
+    e = next(x for x in glossary.ENTRIES if x["id"] == wid) if wid else glossary.word_of_the_day(day, SPECIALIST)
+    if wid:
+        used = [c for c in stories if wid in _terms(c)]
+    else:
+        since = (day - timedelta(days=6)).isoformat()
+        used = [c for c in cards if since <= (c.get("date") or "") <= day.isoformat() and glossary.mentions(e["id"], _text(c))]
+    # A headline that shows the word beats one whose summary does; then the latest, then the most reported
+    story = max(used, key=lambda c: (glossary.mentions(e["id"], c.get("title") or ""), c["date"], _outlets(c)), default=None)
+    return e, story
 
 
 # Pictures that travel inside the email (content ID -> JPEG or PNG), so the memes and the dossier's icon show in
@@ -710,6 +717,14 @@ def _the_week(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[
     return text, html + meme_html
 
 
+def top_stories(todays: list[dict]) -> list[dict]:
+    """The stories that mattered most, before a reader's own picks: on a lighter day every story, else the TOP
+    biggest (tutorials and the like left out)."""
+    if len(todays) <= LIGHT:
+        return sorted([c for c in todays if _fits_top(c)], key=_rank, reverse=True)
+    return sorted([c for c in todays if c.get("kind") not in SIDE_KINDS and _fits_top(c)], key=_rank, reverse=True)[:TOP]
+
+
 def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[str], day: date,
            prefs: dict | None = None, left: list[dict] | None = None, dossier: dict | None = None,
            change: tuple[str, str] = ("", "")) -> tuple[list[str], str]:
@@ -738,8 +753,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
                   f"{day:%A}: {intro[0].lower() + intro[1:] if intro.startswith('A lighter') else intro}"]
     quiet = _quiet(by_stream, cards, streams, day) if todays else ""  # an empty day (a Sunday) says so once
     everything = full_page(day)  # every story of the day, whatever streams this reader chose
-    top = (sorted([c for c in todays if _fits_top(c)], key=_rank, reverse=True) if light else
-           sorted([c for c in todays if c.get("kind") not in SIDE_KINDS and _fits_top(c)], key=_rank, reverse=True)[:TOP])
+    top = top_stories(todays)
     prefs = prefs or {}
     tuned = bool(prefs.get("more") or prefs.get("words"))
     _, theirs = _mine(prefs)
