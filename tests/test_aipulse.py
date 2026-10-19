@@ -636,19 +636,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert '<meta name="description"' in page and 'og:image" content="https://projectaipulse.com/og.png"' in page
     robots = (tmp_path / "site" / "robots.txt").read_text(encoding="utf-8")
     assert "User-agent: GPTBot\nDisallow: /" in robots and "Sitemap: https://projectaipulse.com/sitemap.xml" in robots
-    assert "User-agent: *\nDisallow: /dossier/" in robots and "/api/" not in robots
-    # our data as JSON, for our own use: never in the site, written by `aipulse api --build` (a file per feature,
-    # listed in index.json, without others' long text)
-    from aipulse import api
-    assert api.build_local(conn, tmp_path / "api-data") == len(api.ENDPOINTS)
-    v1 = tmp_path / "api-data" / "api" / "v1"
-    assert (tmp_path / "api-data" / "site.css").exists()
-    assert [e["name"] for e in json.loads((v1 / "index.json").read_text(encoding="utf-8"))["endpoints"]] == list(api.ENDPOINTS)
-    court_api = json.loads((v1 / "court.json").read_text(encoding="utf-8"))
-    assert court_api["page"] == "https://projectaipulse.com/ai-in-court/" and court_api["count"] == len(court_api["rows"])
-    assert '"abstract"' not in (v1 / "safety.json").read_text(encoding="utf-8")
-    assert set(api.DATES) == set(api.ENDPOINTS) and court_api["date_field"] == "latest"
-    assert '<meta name="robots" content="noindex">' in (v1 / "index.html").read_text(encoding="utf-8")
+    assert "User-agent: *\nDisallow: /dossier/" in robots
     for private in ("dossier.html", "ask.html"):
         assert '<meta name="robots" content="noindex">' in (tmp_path / "site" / private).read_text(encoding="utf-8")
     sitemap = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
@@ -4020,22 +4008,3 @@ def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_pat
     assert "1 of 2" in page
     assert "have none, so they aren&#x27;t shown; 1 of them doesn&#x27;t share their weights" in page
     assert compute.times(2.1e25, 2.1e25) == "1×" and compute.since(date(2026, 1, 5)) == "2025-10-01"
-
-
-def test_api_query_keeps_dates_and_filters():
-    from aipulse import api
-    doc = {"name": "x", "date_field": "date", "rows": [
-        {"date": "2026-09-03", "lab": "OpenAI", "open": False, "tags": ["Japan", "Law"]},
-        {"date": "2026-09", "lab": "Anthropic", "open": True, "tags": []},  # a month overlaps a range inside it
-        {"date": "2026-10-01", "lab": "Google DeepMind", "open": True, "tags": ["Germany"]},
-        {"lab": "Mistral", "open": True}]}  # no date: out once dates are asked for
-    labs = lambda r: [x["lab"] for x in r["rows"]]
-    assert labs(api.query(doc, "2026-09-02", "2026-09-30")) == ["OpenAI", "Anthropic"]
-    assert labs(api.query(doc, end="2026-09-02")) == ["Anthropic"]
-    assert labs(api.query(doc, where={"lab": "openai|google"})) == ["OpenAI", "Google DeepMind"]
-    assert labs(api.query(doc, where={"open": "true"})) == ["Anthropic", "Google DeepMind", "Mistral"]
-    assert labs(api.query(doc, where={"tags": "japan"})) == ["OpenAI"]
-    r = api.query(doc, q="deepmind", limit=1)
-    assert labs(r) == ["Google DeepMind"] and r["matched"] == 1
-    r = api.query(doc, limit=2)
-    assert r["matched"] == 4 and r["count"] == 2

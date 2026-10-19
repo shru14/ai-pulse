@@ -20,6 +20,3 @@ __pycache__/
 data/translate-models/
 data/embed-models/
 data/summary-models/
-
-# our data files, for our own use only (aipulse api --build)
-api-data/
