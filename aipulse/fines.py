@@ -184,28 +184,63 @@ def _link(url: str) -> str:
     return f'<a href="{escape(url)}" rel="noopener">{word}</a>'
 
 
-def _row(day: str, reg: str, country: str, company: str, what: str, why: str, url: str, tag: tuple[str, str],
+def _row(rid: str, day: str, reg: str, country: str, company: str, cells: str, url: str, tag: tuple[str, str],
          after: str) -> str:
-    return (f'<tr><td class="pc-d">{_short(day)}</td><td><b>{escape(reg)}, {escape(country)}</b> → {escape(company)}'
-            f'<br><b>{escape(what)}</b>. {escape(why)}</td><td class="pc-s"><span class="pc-k {tag[1]}">'
-            f'{escape(tag[0])}</span>{after}{_link(url)}</td></tr>')
+    """A row in real columns: day, company, regulator over its country, `cells` (what it did and why), where it
+    stands. Its id is what its dot on the time line links to."""
+    return (f'<tr id="{rid}"><td class="pc-d">{_short(day)}</td><td><b>{escape(company)}</b></td>'
+            f'<td>{escape(reg)}<span class="fx-c">{escape(country)}</span></td>{cells}<td class="fx-s">'
+            f'<span class="pc-k {tag[1]}">{escape(tag[0])}</span>{after}<span class="fx-c">{_link(url)}</span></td></tr>')
+
+
+def _head(*cols: str) -> str:
+    return "<thead><tr>" + "".join(f"<th>{c}</th>" for c in cols) + "</tr></thead>"
 
 
 def _and(n: int, one: str, many: str) -> str:
     return f"{n} {one if n == 1 else many}"
 
 
+def _strip(bans: list, fines: list, today: date) -> str:
+    """Every action as a dot on one time line from SINCE to the end of this year, bans above and fines below,
+    coloured by where it stands; pointing at a dot names its action, clicking it jumps to its row."""
+    lo, hi = date.fromisoformat(SINCE), date(today.year, 12, 31)
+    x = lambda d: round((date.fromisoformat(d) - lo).days / (hi - lo).days * 100, 2)
+
+    def dot(rid: str, d: str, tag: tuple[str, str], tip: str) -> str:
+        side = " fx-l" if x(d) > 60 else ""  # near the right edge the tip opens to the left
+        return (f'<a class="fx-dot {tag[1]}{side}" href="{PATH}#{rid}" style="left:{x(d)}%" aria-label="{escape(tip)}" '
+                f'data-tip="{escape(tip)}"></a>')
+    years = "".join(f'<i class="fx-gl" style="left:{x(f"{y}-01-01")}%"></i>'
+                    f'<span class="fx-yr" style="left:{x(f"{y}-07-01")}%">{y}</span>' for y in range(lo.year, hi.year + 1))
+    b = "".join(dot(f"fx-b{n}", d, ("Lifted", "fx-li") if end else ("In force", "fx-in"),
+                    f"{_short(d)} · {co} · {w} · {'Lifted' if end else 'In force'}")
+                for n, (d, reg, c, co, w, why, u, end, en, eu) in enumerate(bans))
+    f = "".join(dot(f"fx-f{n}", d, STATUSES[st], f"{_short(d)} · {co} · {amt} {kind} · {STATUSES[st][0]}")
+                for n, (d, reg, c, co, amt, kind, why, u, st, sn, su) in enumerate(fines))
+    key = "".join(f'<span class="pc-k {c}">{escape(t)}</span>'
+                  for t, c in [("In force", "fx-in"), ("Lifted", "fx-li")] + [v for k, v in STATUSES.items() if k != "force"])
+    return (f'<section class="fx-tl"><h2>Every action since {SINCE[:4]}</h2><div class="fx-strip">{years}'
+            f'<span class="fx-lane" style="top:6px">Bans · {len(bans)}</span><div class="fx-row" style="top:44px">{b}</div>'
+            f'<span class="fx-lane" style="top:70px">Fines · {len(fines)}</span><div class="fx-row" style="top:108px">{f}'
+            f'</div></div><p class="fx-key">{key}<span>One dot per action: point at a dot to see it, click to jump to '
+            f'its row.</span></p></section>')
+
+
 def body(today: date) -> str:
     bans = sorted(BANS, key=lambda r: r[0], reverse=True)
     fines = sorted(FINES, key=lambda r: r[0], reverse=True)
-    brows = "".join(_row(d, reg, c, co, w, why, u, ("Lifted", "fx-li") if end else ("In force", "fx-in"),
+    brows = "".join(_row(f"fx-b{n}", d, reg, c, co, f'<td><b>{escape(w)}</b><span class="fx-c">{escape(why)}</span></td>',
+                         u, ("Lifted", "fx-li") if end else ("In force", "fx-in"),
                          f'<span class="fx-c"><a href="{escape(eu)}" rel="noopener">{escape(en)}, {_short(end)}</a></span>'
                          if end else "")
-                    for d, reg, c, co, w, why, u, end, en, eu in bans)
-    frows = "".join(_row(d, reg, c, co, f"{amt} {kind}", why, u, STATUSES[st],
+                    for n, (d, reg, c, co, w, why, u, end, en, eu) in enumerate(bans))
+    frows = "".join(_row(f"fx-f{n}", d, reg, c, co,
+                         f'<td class="fx-n">{escape(amt)}<span class="fx-c">{kind}</span></td><td>{escape(why)}</td>',
+                         u, STATUSES[st],
                          (f'<span class="fx-c">' + (f'<a href="{escape(su)}" rel="noopener">{escape(sn)}</a>' if su
                                                     else escape(sn)) + '</span>') if sn else "")
-                    for d, reg, c, co, amt, kind, why, u, st, sn, su in fines)
+                    for n, (d, reg, c, co, amt, kind, why, u, st, sn, su) in enumerate(fines))
     on = sum(r[7] is None for r in bans)
     blead = (f"{_and(len(bans), 'ban or stop order', 'bans and stop orders')} in "
              f"{_and(len({r[2] for r in bans}), 'country', 'countries')}; {on} still in force.")
@@ -236,13 +271,15 @@ def body(today: date) -> str:
                                  f"Bans, blocks, fines and settlements regulators have decided against AI makers and "
                                  f"companies using AI since {SINCE[:4]}. Each row links to the regulator's notice and "
                                  "says whether the action was lifted, challenged or annulled.")
-            + '<div class="pc-halves">'
+            + _strip(bans, fines, today) + '<div class="fx-stack">'
             f'<section class="pc-half pc-orders"><div class="pc-hh"><h2>Bans</h2><p>AI products a regulator banned, '
             f'blocked or stopped · since {SINCE[:4]}</p></div><div class="pc-in"><p class="pc-lead">{escape(blead)}</p>'
-            f'<table class="pc-rows">{brows}</table></div></section>'
+            f'<table class="pc-rows fx-t">{_head("Date", "Company", "Regulator", "What and why", "Where it stands")}'
+            f'<tbody>{brows}</tbody></table></div></section>'
             f'<section class="pc-half pc-pacts"><div class="pc-hh"><h2>Fines</h2><p>Fines and settlements over AI · '
             f'since {SINCE[:4]}</p></div><div class="pc-in"><p class="pc-lead">{escape(flead)}</p>'
-            f'<table class="pc-rows">{frows}</table></div></section></div>\n'
+            f'<table class="pc-rows fx-t">{_head("Date", "Company", "Regulator", "Amount", "Why", "Where it stands")}'
+            f'<tbody>{frows}</tbody></table></div></section></div>\n'
             '<section class="jb-lim"><h2>About these rows</h2>\n<table class="mt jb-small jb-limits"><tbody>'
             + "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits)
             + "</tbody></table></section></div>\n")
