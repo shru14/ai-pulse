@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Review AI Pulse</title>
+<!-- The readers' review form, opened from the daily email's "How useful is AI Pulse to you?" strip
+     (review/#useful-<1..5>: the number they tapped, picked already). Five short questions, the first four buttons;
+     "Send" posts them to the sign-up web app (action=review), which emails them to the project inbox. Nothing
+     about the reader is sent: no address, no token. -->
+<style>
+  body{margin:0;background:#e9eef7;color:#1a1a1a;font-family:Arial,Helvetica,sans-serif}
+  .paper{max-width:640px;margin:12px auto 24px;background:#ffffff;border-radius:6px;overflow:hidden}
+  .band{background:#14213d;color:#fff;padding:22px 20px 18px}
+  .band .brand{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px}
+  .band h1{font-size:22px;line-height:1.3;margin:0}
+  .band .span{font-size:13px;color:#c9d3ef;margin-top:4px}
+  .inner{padding:18px 20px 16px;display:grid;gap:20px}
+  @media (max-width:520px){.paper{margin:0;border-radius:0}.inner{padding:16px 14px 12px}}
+  fieldset{border:0;margin:0;padding:0 0 0 12px;border-left:4px solid var(--c,#14213d);min-width:0}
+  legend{font-size:15px;font-weight:bold;padding:0;margin-bottom:8px}
+  .hint{font-weight:normal;color:#5f6368;font-size:13px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{position:relative}
+  .chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+  .chip span{display:inline-block;padding:7px 13px;border:1px solid #c9ced6;border-radius:999px;background:#fff;font-size:14px}
+  .chip input:checked+span{background:#14213d;color:#fff;border-color:#14213d}
+  .chip input:focus-visible+span{outline:2px solid #1c3faa;outline-offset:2px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+  .scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:300px}
+  .scale .chip span{display:block;text-align:center;padding:7px 0}
+  .ends{display:flex;justify-content:space-between;font-size:12px;color:#5f6368;max-width:300px;margin-top:4px}
+  textarea{width:100%;box-sizing:border-box;min-height:64px;resize:vertical;border:1px solid #c9ced6;border-radius:6px;
+    font:15px/1.4 Arial,Helvetica,sans-serif;padding:9px 10px;color:#1a1a1a}
+  textarea:focus{outline:2px solid #1c3faa;outline-offset:1px}
+  .hp{position:absolute;left:-9999px}
+  .go{display:block;width:100%;border:0;border-radius:8px;background:#14213d;color:#fff;font:bold 16px Arial,sans-serif;padding:13px;cursor:pointer}
+  .go:disabled{opacity:.6;cursor:default}
+  #status{margin:0;font-size:14px;line-height:1.5}
+  #status.ok{color:#2b5d0a} #status.err{color:#b3261e}
+  .back{font-size:13px;margin:0}
+  .back a{color:#1c3faa}
+</style>
+</head>
+<body>
+<div class="paper">
+  <div class="band"><div class="brand">AI Pulse</div><h1>How are we doing?</h1>
+    <div class="span">Five quick questions, about a minute. Nothing about you is sent with your answers.</div></div>
+  <form class="inner" id="f" novalidate>
+    <fieldset style="--c:#F0E442"><legend>1. How do you read AI Pulse? <span class="hint">Pick any</span></legend>
+      <div class="chips" id="q-channels"></div></fieldset>
+    <fieldset style="--c:#56B4E9"><legend>2. How useful is it to you?</legend>
+      <div class="scale chips" id="q-useful"></div><div class="ends"><span>Not useful</span><span>Very useful</span></div></fieldset>
+    <fieldset style="--c:#009E73"><legend>3. Which section do you use most?</legend>
+      <div class="chips" id="q-section"></div></fieldset>
+    <fieldset style="--c:#F85C48"><legend>4. What should we improve first?</legend>
+      <div class="chips" id="q-improve"></div></fieldset>
+    <fieldset style="--c:#8BEC8B"><legend><label for="other">5. Anything else? <span class="hint">Optional</span></label></legend>
+      <textarea id="other" maxlength="1000"></textarea></fieldset>
+    <input class="hp" type="text" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="go" type="submit" id="send">Send</button>
+    <p id="status" role="status"></p>
+    <p class="back"><a href="../">Back to AI Pulse</a></p>
+  </form>
+</div>
+<script>
+const SIGNUP_URL = "__SIGNUP_URL__";
+// the answers the web app accepts (apps-script/Code.gs REVIEW): change both together
+const Q = {
+  channels: {multi: true, opts: ["Website", "On my phone", "Daily email", "Sunday email", "Monthly issue", "RSS"]},
+  useful: {opts: ["1", "2", "3", "4", "5"]},
+  section: {opts: [["Industry", "#56B4E9"], ["Releases", "#009E73"], ["Policy", "#E69F00"], ["Regulation", "#F85C48"],
+                   ["Research", "#C85BC3"], ["Infra", "#8BEC8B"]]},
+  improve: {opts: ["Easier to find things", "Clearer charts and numbers", "Shorter emails", "More sources",
+                   "Better on phones", "Nothing, it's good"]},
+};
+for (const [k, q] of Object.entries(Q)) {
+  const box = document.getElementById("q-" + k);
+  q.opts.forEach((o, i) => {
+    const [label, colour] = Array.isArray(o) ? o : [o];
+    const l = document.createElement("label"), inp = document.createElement("input"), s = document.createElement("span");
+    l.className = "chip";
+    inp.type = q.multi ? "checkbox" : "radio"; inp.name = k; inp.id = `${k}-${label.replace(/\W+/g, "-")}`; inp.value = label;
+    if (colour) { const d = document.createElement("i"); d.className = "dot"; d.style.background = colour; s.append(d); }
+    s.append(label); l.append(inp, s); box.append(l);
+  });
+}
+// the email's strip links here with the number the reader tapped
+const tapped = /^#useful-([1-5])$/.exec(location.hash);
+if (tapped) document.getElementById("useful-" + tapped[1]).checked = true;
+
+const form = document.getElementById("f"), send = document.getElementById("send"), status = document.getElementById("status");
+const say = (t, c) => { status.textContent = t; status.className = c || ""; };
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  const fields = {action: "review", format: "json", website: document.getElementById("website").value};
+  for (const k of Object.keys(Q)) fields[k] = [...form.querySelectorAll(`input[name="${k}"]:checked`)].map(i => i.value).join("|");
+  fields.other = document.getElementById("other").value.trim();
+  if (!Object.keys(Q).some(k => fields[k]) && !fields.other) return say("Answer at least one question first.", "err");
+  send.disabled = true; say("Sending…");
+  fetch(SIGNUP_URL, {method: "POST", body: new URLSearchParams(fields)}).then(r => r.json()).then(r => {
+    if (r.ok) { form.querySelectorAll("fieldset,.go").forEach(x => x.hidden = true); say("Thank you! Your answers are with the AI Pulse team.", "ok"); }
+    else { send.disabled = false; say(r.error === "busy" ? "Lots of answers today: please try again tomorrow." : "That didn't go through. Please try again.", "err"); }
+  }).catch(() => { send.disabled = false; say("That didn't go through. Check your connection and try again.", "err"); });
+});
+</script>
+</body>
+</html>
