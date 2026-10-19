@@ -1,0 +1,32 @@
+# The daily Chip export rules job (a scheduled Claude routine) drafts newly checked rows on a chips/<day> branch; this emails
+# the project inbox what that branch adds, to approve. Nothing goes on the site until the branch is merged into main
+# (only with the owner's yes). Sent with the same Gmail account as the glossary's and the job cuts' notes.
+name: Chip export rules to approve
+
+on:
+  push:
+    branches: ["chips/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  note:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Email the new rows to the project inbox
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: |
+          git show origin/main:aipulse/chip_rules.py > "$RUNNER_TEMP/base_chip_rules.py"
+          python -m aipulse chips-note --base "$RUNNER_TEMP/base_chip_rules.py" --branch "$GITHUB_REF_NAME"
