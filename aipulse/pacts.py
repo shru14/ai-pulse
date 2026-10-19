@@ -131,10 +131,6 @@ BANS = [
      [("2026-03-27", "a judge blocks the ban"), ("2026-04-08", "an appeals court refuses to pause the Pentagon's bar"),
       ("2026-08-28", "a court rules the Pentagon's label unlawful"),
       ("2026-09-25", "an appeals court upholds the military bar")]),
-    ("2026-01-11", "Indonesia", "xAI", "Grok blocked over sexual deepfakes",
-     "https://techcrunch.com/2026/01/11/indonesia-blocks-grok-over-non-consensual-sexualized-deepfakes/",
-     "2026-02-01", "https://techcrunch.com/2026/02/01/indonesia-conditionally-lifts-ban-on-grok/",
-     "lifted with conditions", []),
 ]
 
 # Orders, investigations and court cases a government brought: (day, government, company, kind, what, its story)
@@ -178,6 +174,10 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techcrunch.com/2026/01/11/indonesia-blocks-grok-over-non-consensual-sexualized-deepfakes/":
+        "A regulator's ban: on AI fines and bans",
+    "https://techcrunch.com/2026/02/01/indonesia-conditionally-lifts-ban-on-grok/":
+        "A regulator's ban lifted: on AI fines and bans",
     "https://the-decoder.com/white-house-worried-about-compute-limits-as-it-blocks-wider-access-to-anthropics-mythos/":
         "Reported by the Wall Street Journal only",
     "https://www.channelnewsasia.com/business/germany-unveil-nvidia-ai-agreement-next-week-government-sources-say-"
@@ -561,7 +561,7 @@ def body(cards: list[dict], today: date) -> str:
          "written one way across the lists."),
         ("Deals, bans, orders", "Something a government did to or with a named AI company, each checked by hand "
          "against the story that reported it, which each row links. Talks, reported plans and threats are left out "
-         "until they happen."),
+         "until they happen. Bans and fines a regulator decided under the law are on AI fines and bans."),
         ("Courts", "Only cases a government brought or answers; every other AI case is in AI in court."),
     ]
     return ('<div class="ft jb pc">\n'

@@ -514,6 +514,8 @@ FEATURES = [
      "best models fall.", "new-tests-for-ai/"),
     ("Compute behind notable models", "How much computing trained each notable AI model, measured against GPT-4, from "
      "Epoch AI's open data.", "compute-behind-notable-models/"),
+    ("AI fines and bans", "Every AI product a regulator has banned or blocked, and every fine and settlement over "
+     "AI since 2022, with whether each still stands.", "ai-fines-and-bans/"),
 ]
 
 
