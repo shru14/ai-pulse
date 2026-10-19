@@ -871,6 +871,36 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   header.top .saved-btn{display:none}  /* no room on the row: phones have it at the end of the stream bar */
   .secnav .saved-nav:not([hidden]){display:inline-flex}
 }
+/* the menu: a button before the name opens a booklet's contents page on the left (the bar above stays). Each stream is
+   a chapter tab in its own colour (dark text, as on the strips): number, name, what it covers, its cartoon. */
+.menu-btn{order:-1}
+.side-menu{margin:0 auto 0 0;height:100%;max-height:100%;width:min(390px,calc(100vw - 40px));border:0;border-right:3px solid var(--ink);
+  padding:0 0 24px;background:var(--bg);color:var(--ink);overflow-y:auto}
+.side-menu[open]{animation:sm-in .22s ease-out}
+@keyframes sm-in{from{transform:translateX(-24px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.side-menu[open]{animation:none}}
+.side-menu::backdrop{background:rgba(10,12,18,.5)}
+.sm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 14px;margin-bottom:14px;border-bottom:3px solid var(--ink)}
+.sm-head small{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sm-head b{display:block;font:400 30px/1 var(--head);margin-top:4px}
+.side-menu .sub-close{position:static;flex:none}
+.side-menu nav{display:flex;flex-direction:column;gap:10px;padding:0 18px 0 0}
+.side-menu nav a.sm-tab{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:2px 12px;padding:12px 12px 12px 18px;
+  background:var(--cat-f);color:#000000;border:3px solid var(--ink);border-left:0;box-shadow:5px 5px 0 var(--ink);text-decoration:none;
+  transition:transform .15s,box-shadow .15s}
+.sm-tab i{grid-row:1/3;font:400 26px/1 var(--head);font-style:normal;opacity:.55}
+.sm-tab b{font:400 19px/1.1 var(--head)}
+.sm-tab span{grid-column:2;font:500 12.5px/1.35 var(--body)}
+.sm-tab img{grid-row:1/3;grid-column:3;width:58px;height:58px;object-fit:contain}
+.side-menu nav a.sm-tab:hover,.side-menu nav a.sm-tab:focus-visible{transform:translateX(8px);box-shadow:5px 5px 0 var(--ink)}
+.side-menu nav a.sm-tab[aria-current]{transform:translateX(14px)}
+.side-menu nav a.sm-tab[aria-current] b::after{content:"you are here";display:block;margin-top:2px;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;vertical-align:middle}
+.side-menu nav a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.side-menu nav .sm-about{margin:12px 0 0 18px;padding:12px 0;border-top:2px solid var(--ink);color:var(--ink);text-decoration:none;font:600 15px var(--body)}
+.side-menu nav .sm-about::after{content:"  \2192"}
+@media (prefers-reduced-motion:reduce){.side-menu nav a.sm-tab{transition:none}}
+@media (max-width:400px){.sm-tab img{width:44px;height:44px}.sm-tab span{font-size:12px}}
+@media (max-width:560px){header.top .menu-btn span{display:none}header.top .menu-btn{width:34px;padding:0;justify-content:center}}
 @media (max-width:359px){header.top .brand h1{display:none}}  /* the smallest phones: the logo alone */
 /* Phones: a long section scrolls inside its own box and a row of cards swipes sideways, so a page is a few screens */
 @media (max-width:640px){
@@ -888,6 +918,10 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 
 <div class="wrap">
   <header class="top home">
+    <button class="subscribe-btn menu-btn" id="menu-open" type="button" aria-haspopup="dialog" aria-controls="side-menu" title="Every section">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <span>Menu</span>
+    </button>
     <a class="brand" href="/" data-go="home">
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>
       <h1>AI Pulse</h1>
@@ -929,6 +963,18 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   </header>
   <!-- Latest: the newest stories as they arrived (with each update), gliding past (still for readers who turn motion off) -->
   <div class="ticker" id="ticker" hidden><span class="live">Latest</span><div class="tk-view" role="region" aria-label="Latest stories"><div class="tk-track" id="tk-track"></div></div></div>
+  <dialog class="side-menu" id="side-menu" aria-label="Sections">
+    <div class="sm-head"><div><small>AI Pulse</small><b>Contents</b></div><form method="dialog"><button class="sub-close" aria-label="Close">×</button></form></div>
+    <nav>
+      <a href="/releases/" data-go="tool" class="sm-tab k-tool"><i>01</i><b>Releases</b><span></span><img src="photos/cartoons/streams/tool.svg" alt=""></a>
+      <a href="/industry/" data-go="news" class="sm-tab k-news"><i>02</i><b>Industry</b><span></span><img src="photos/cartoons/streams/news.svg" alt=""></a>
+      <a href="/research/" data-go="research" class="sm-tab k-research"><i>03</i><b>Research</b><span></span><img src="photos/cartoons/streams/research.svg" alt=""></a>
+      <a href="/regulation/" data-go="regulation" class="sm-tab k-regulation"><i>04</i><b>Regulation tracker</b><span></span><img src="photos/cartoons/streams/regulation.svg" alt=""></a>
+      <a href="/policy/" data-go="policy" class="sm-tab k-policy"><i>05</i><b>Policy</b><span></span><img src="photos/cartoons/streams/policy.svg" alt=""></a>
+      <a href="/infra/" data-go="infra" class="sm-tab k-infra"><i>06</i><b>Infra</b><span></span><img src="photos/cartoons/streams/infra.svg" alt=""></a>
+      <a href="/about/" data-go="about" class="sm-about">About AI Pulse</a>
+    </nav>
+  </dialog>
   <dialog class="subscribe glossary" id="glossary" aria-labelledby="glossary-title">
     <form method="dialog" class="sub-close-form"><button class="sub-close" aria-label="Close">×</button></form>
     <div class="gl-head">
@@ -1283,7 +1329,7 @@ function showPage(){
   $("about-page").hidden = !about; $("discussing-page").hidden = !disc; $("today-page").hidden = !tday; $("saved-page").hidden = !saved;
   $("subscribe-open").hidden = $("glossary-open").hidden = home; $("az-open").hidden = !home;
   // (the front page has its own Subscribe and Glossary: the email strip, the word of the week)
-  document.querySelectorAll("#secnav a, .about-link").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
+  document.querySelectorAll("#secnav a, #side-menu nav a, .about-link").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
   const open = document.querySelector("#secnav a[aria-current]"), nav = $("secnav");  // on a phone, the open one in sight
   if(open && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = open.offsetLeft - nav.offsetLeft - 16;
   if(tday){ document.title = "Today in AI · AI Pulse"; renderTodayPage(); loadHome(); return; }
@@ -2534,6 +2580,11 @@ function renderGlossary(){
   if(!shown.length) body.append(el("p","gl-none","No word matches. Try another spelling, or tap the chosen group again to clear it."));
 }
 $("glossary-open").addEventListener("click", () => openGlossary());
+// the menu: opens the panel; a section in it opens that page and closes the panel, as does a click beside it
+const sideMenu = $("side-menu");
+sideMenu.querySelectorAll(".sm-tab").forEach(a => a.querySelector("span").textContent = SECTION_DESC[a.dataset.go]);
+$("menu-open").addEventListener("click", () => sideMenu.showModal());
+sideMenu.addEventListener("click", e => { if(e.target === sideMenu || e.target.closest("a")) sideMenu.close(); });
 $("gl-q").addEventListener("input", renderGlossary);
 glDialog.addEventListener("click", e => { if(e.target === glDialog) glDialog.close(); });  // a click outside closes it
 // From the daily email: #glossary opens the list, #glossary=moe opens it at that word (once the list has loaded).
