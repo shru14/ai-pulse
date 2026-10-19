@@ -70,6 +70,8 @@ CHECKED: dict[str, str | None] = {
     "https://techcrunch.com/2025/01/22/samsungs-smartthings-to-introduce-ai-features-that-simplify-your-daily-routines/": "",
     "https://techcrunch.com/2024/08/29/ibm-cloud-will-offer-intel-gaudi-3-chips-next-year/": "",  # shipped, no headline in our data
     "https://siliconangle.com/2024/04/11/report-apple-planning-bring-new-ai-focused-m4-chips-entire-line-macs/": "",  # likewise
+    "https://blogs.nvidia.com/blog/twitch-multiencode-av1-livestreaming/": "",  # beta due later in Jan 2024, no headline in our data
+    "https://techcrunch.com/2025/07/10/grok-is-coming-to-tesla-vehicles-next-week-says-elon-musk/": "",  # no headline in our data
     # left out
     "https://techcrunch.com/2025/05/07/apple-is-looking-to-add-ai-search-engines-to-safari/": None,  # court testimony, not a promise
     "https://techcrunch.com/2025/03/17/openai-to-start-testing-chatgpt-connectors-for-google-drive-and-slack/": None,  # a test
@@ -80,6 +82,19 @@ CHECKED: dict[str, str | None] = {
     "https://siliconangle.com/2024/12/16/salesforce-launch-agentforce-2-0-change-digital-labor-enterprise/": None,  # announced Dec 2024, available Feb 2025
     "https://the-decoder.com/amazon-to-launch-ai-enhanced-alexa-subscription-in-october/": None,  # unveiled Feb 2025, out from late Mar
     "https://siliconangle.com/2023/05/23/microsofts-ai-powered-copilot-coming-windows-11/": None,  # announced 21 Sep 2023, out 26 Sep
+    "https://siliconangle.com/2026/03/27/anthropic-launch-new-claude-mythos-model-advanced-reasoning-features/": None,  # a leaked draft; Mythos 5 still partners-only in Jun 2026
+    "https://arstechnica.com/google/2026/02/gemini-can-now-generate-ai-music-for-you-no-lyrics-required/": None,  # launch day's
+    "https://openai.com/index/disney-sora-agreement": None,  # a deal, nothing named to ship
+    "https://arstechnica.com/google/2025/10/googles-nano-banana-ai-image-editor-is-coming-to-search-photos-and-notebooklm/": None,  # several products, no single launch day
+    "https://arstechnica.com/apple/2025/05/cue-apple-will-add-ai-search-in-mobile-safari-challenging-google/": None,  # court testimony, as the entry above
+    "https://blogs.nvidia.com/blog/nvidia-accelerated-quantum-research-center/": None,  # a facility, nothing named to ship
+    "https://techcrunch.com/2024/03/11/elon-musk-says-xai-will-open-source-grok-this-week/": None,  # same promise as the siliconangle entry above
+    "https://www.technologyreview.com/2024/02/15/1088401/openai-amazing-new-generative-ai-video-model-sora/": None,  # a preview, no plan to release
+    "https://blogs.nvidia.com/blog/singtel-sovereign-ai/": None,  # a partnership, no date or launch
+    "https://techcrunch.com/2023/10/04/google-photos-ai-powered-magic-editor-feature-to-ship-with-pixel-8-and-8-pro/": None,  # due 12 Oct 2023, no headline gives the day it was out
+    "https://blogs.nvidia.com/blog/gtc-keynote-spring-2023/": None,  # DGX Cloud on Azure "next quarter"; DGX Cloud itself out 25 Jul 2023 (Oracle)
+    "https://blogs.nvidia.com/blog/geforce-now-thursday-feb-23/": None,  # games "soon", tied to the Activision deal
+    "https://siliconangle.com/2023/01/04/report-microsoft-will-add-chatgpt-powered-search-feature-bing/": None,  # a report from sources, no company word
 }
 
 _V = (r"(launch|release|ship|roll out|unveil|debut|open[- ]source|introduce|bring|add|offer|start|begin"
