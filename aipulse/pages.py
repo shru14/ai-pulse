@@ -107,15 +107,22 @@ STYLE = """
   .cp .sd section{flex:0 0 85%;scroll-snap-align:start}}
 .cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .tp{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
-.cp .topic-hero{position:relative;height:clamp(240px,34vw,380px);margin-top:16px;border:2px solid var(--line);overflow:hidden;box-shadow:6px 6px 0 var(--line)}
+.cp .topic-hero{position:relative;height:clamp(150px,18vw,220px);margin-top:16px;border:2px solid var(--line);overflow:hidden;box-shadow:6px 6px 0 var(--line)}
 .cp .topic-hero .photo{object-position:right center}  /* the cartoon sits on the right, clear of the title */
-.cp .topic-hero .over{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;padding:clamp(18px,3vw,34px);background:linear-gradient(100deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.55) 45%,transparent 80%),linear-gradient(transparent 50%,rgba(0,0,0,.6))}
+.cp .topic-hero .over{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:clamp(18px,3vw,34px);background:linear-gradient(100deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.55) 45%,transparent 80%),linear-gradient(transparent 50%,rgba(0,0,0,.6))}
 .cp .topic-hero .kind{margin:0;background:#F0E442;color:#000;align-self:flex-start;padding:2px 8px;border:2px solid var(--line)}
-.cp .topic-hero h1{color:#fff;margin:0;font-size:clamp(34px,6vw,64px);max-width:16ch}
+.cp .topic-hero h1{color:#fff;margin:0;font-size:clamp(28px,4vw,44px);max-width:16ch}
 .cp .topic-hero .done{position:static;align-self:flex-start}
 .cp .topic-hero .badges .flag{width:36px;height:27px}
 .cp .topic-hero .badges .logo{width:34px;height:34px}
-.cp .tp > .intro{margin:18px 0 6px;font-size:clamp(17px,2vw,20px);line-height:1.45;color:var(--ink);max-width:62ch}
+/* a topic's description sits in its header box, which grows to fit it on narrow screens */
+.cp .tp .topic-hero{height:auto}
+.cp .tp .topic-hero .photo{position:absolute;inset:0}
+.cp .tp .topic-hero .over{position:relative;min-height:clamp(150px,18vw,220px);box-sizing:border-box}
+.cp .tp .topic-hero .what{margin:0;color:#fff;font-size:clamp(14px,1.5vw,17px);line-height:1.4;max-width:52ch}
+@media (max-width:640px){.cp .tp .topic-hero{background:#1b1f27}  /* phones: the cartoon keeps to the right, the text to its left */
+  .cp .tp .topic-hero .photo{inset:50% 12px auto auto;transform:translateY(-50%);width:30%;height:auto;aspect-ratio:1;border:2px solid var(--line)}  /* the drawing half, whole */
+  .cp .tp .topic-hero .over{padding-right:calc(30% + 24px);background:none}}
 .cp .tp h2{margin-top:34px}
 .cp .mlist{list-style:none;margin:12px 0 0;padding:0}
 .cp .mlist li{position:relative;padding:5px 0 5px 28px;font-size:15.5px;line-height:1.35;border:0}
