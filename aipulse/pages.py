@@ -920,7 +920,10 @@ a.subscribe-btn{text-decoration:none}
 .cp .rc-t .rc-none{color:var(--muted)}
 .cp .rc-t td.rc-p{white-space:nowrap}
 .cp .rc-t td.rc-s{white-space:nowrap}.cp .rc-t td.rc-s small{white-space:normal;max-width:190px}
-.cp .rc-t td.rc-s-day{font-weight:700}.cp .rc-t td.rc-s-none{color:var(--muted)}
+.cp .rc-s-day{background:#009E73}.cp .rc-s-later{background:#E69F00}
+.cp .rc-s-none{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px #8C8C8C}
+.cp .ft .rc-t td.rc-s a{text-decoration:none}.cp .ft .rc-t td.rc-s a .rc-w::after{content:" ↗"}
+.cp .ft .rc-t td.rc-s a:hover .rc-w,.cp .ft .rc-t td.rc-s a:focus-visible .rc-w{outline:2px solid var(--ink)}
 /* its title, big numbers and column headers a size smaller; the tags as buttons; on a phone still a table, which
    scrolls sideways in its box */
 .cp .rc h1{font-size:clamp(22px,2.4vw,24px)}

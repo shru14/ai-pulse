@@ -423,9 +423,12 @@ def _row(r: dict) -> str:
     text = escape(" ".join((r["model"], r["lab"], r["country"], r["licence"])).lower(), quote=True)
     s = r["safety"]
     said = {"day": "Day one", "later": f"{s['late']} day{'s' * (s['late'] != 1)} later",
-            "none": f"None found <small>checked {_day(s['checked']).rsplit(' ', 1)[0]}</small>"}[s["when"]]
+            "none": "None found"}[s["when"]]
+    pill = f'<span class="rc-w rc-s-{s["when"]}">{said}</span>'
     link = s["url"] and s["when"] != "none"
-    report = (f'<a href="{escape(s["url"])}" rel="noopener">{said}</a>' if link else said) + small(s["note"])
+    checked = f"checked {_day(s['checked']).rsplit(' ', 1)[0]}" if s["when"] == "none" else ""
+    report = (f'<a href="{escape(s["url"])}" rel="noopener">{pill}</a>' if link else pill) + small(checked) \
+        + small(s["note"])
     return (f'<tr data-w="{r["weights"]}" data-out="{"1" if r["out"] else ""}" data-s="{s["when"]}" '
             f'data-text="{text}">'
             f'<td class="rm-d">{_day(r["day"])}</td>'
@@ -435,7 +438,7 @@ def _row(r: dict) -> str:
             f'<td>{lic}{small(r["limit"])}</td>'
             f'<td{" class=rc-out" if r["out"] else ""}>{where}</td>'
             f'<td class="rc-p">{escape(price) or "–"}{small(why)}</td>'
-            f'<td class="rc-s rc-s-{s["when"]}">{report}</td></tr>')
+            f'<td class="rc-s">{report}</td></tr>')
 
 
 def _filters(rs: list[dict]) -> str:
