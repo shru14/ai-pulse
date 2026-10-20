@@ -4174,3 +4174,17 @@ def test_buyouts_candidates_and_the_approval_note():
     subject, text, html = bo.note(base, "buyouts/2026-10-21")
     assert "1 new deal to approve" in subject and bo.DEALS[-1][7] in text
     assert bo.note(open(bo.__file__, encoding="utf-8").read(), "buyouts/2026-10-21") is None
+
+
+def test_release_safety_reports(monkeypatch):
+    from datetime import date
+    from aipulse import release_cards as rc
+    assert rc.safety("2026-09-01", "Claude Fable 5.1")["when"] == "day"
+    late = rc.safety("2026-10-05", "Beam")
+    assert (late["when"], late["late"]) == ("later", 11)
+    none = rc.safety("2026-07-08", "Grok 4.5")  # long past the recheck window: shown as last looked for on the first check
+    assert (none["when"], none["checked"]) == ("none", rc.FIRST_CHECKED)
+    monkeypatch.setattr(rc, "SAFETY_CHECKED", "2026-11-30")
+    assert rc.safety("2026-10-15", "Step 5 Preview")["checked"] == "2026-11-14"  # looked for until 30 days after launch
+    assert "Step 5 Preview" in rc.safety_due(date(2026, 10, 20)) and "Grok 4.5" not in rc.safety_due(date(2026, 10, 20))
+    assert "Safety report on day one" in rc.body(rc.rows())

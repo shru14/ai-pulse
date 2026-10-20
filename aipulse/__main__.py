@@ -526,6 +526,9 @@ def main():
         print(f"{done}, {len(m.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+        if m is release_cards:
+            due = release_cards.safety_due()
+            print(f"Safety reports to look for again ({len(due)}): {', '.join(due) or 'none'}")
     elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note", "owners-note", "consultations-note",
                    "releases-note", "timelines-note", "pacts-note", "tests-note", "promises-note", "fines-note",
                    "chips-note", "buyouts-note"):
