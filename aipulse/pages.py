@@ -1216,7 +1216,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh-cite-box .fh-cite-src{font-size:13px}
 .cp .fh-cite-box button{padding:4px 12px;border:2px solid var(--line);background:var(--ink);color:var(--bg);
   font:700 13px/1.3 var(--body);cursor:pointer}
-@media (max-width:640px){.cp .fh-cite-box{position:static;width:auto;margin-top:8px}}
+.cp .fh-cite-box{padding-right:36px}
+.cp .fh-cite-box .fh-cite-x{position:absolute;top:6px;right:8px;padding:0 6px;border:0;background:none;color:var(--ink);font:700 20px/1 var(--body)}
+@media (max-width:640px){.cp .fh-cite-box{position:relative;width:auto;margin-top:8px}}
 /* New tests for AI and Compute behind notable models (Research's features) */
 .cp .nt .nt-how{margin:0 0 14px;max-width:none;font-size:14.5px;color:var(--muted)}
 .cp .nt-scores{list-style:none;margin:0 0 34px;padding:0;border-top:2px solid var(--line)}
@@ -1354,7 +1356,12 @@ def cite(path: str, title: str) -> str:
     return (f'<details class="fh-cite"><summary>Cite this</summary><div class="fh-cite-box"><p>{escape(text)}</p>'
             '<p class="fh-cite-src">Quoting one row? Cite the source linked in that row as well.</p>'
             '<button type="button" onclick="navigator.clipboard.writeText(this.parentNode.firstChild.textContent)'
-            '.then(()=>{this.textContent=&quot;Copied&quot;})">Copy</button></div></details>')
+            '.then(()=>{this.textContent=&quot;Copied&quot;})">Copy</button>'
+            '<button type="button" class="fh-cite-x" aria-label="Close" onclick="this.closest(&quot;details&quot;).open=false">&times;</button>'
+            '</div></details>'
+            # Close it too on a click outside the box or on Esc
+            '<script>document.addEventListener("click",e=>document.querySelectorAll(".fh-cite[open]").forEach(d=>{if(!d.contains(e.target))d.open=false}));'
+            'document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".fh-cite[open]").forEach(d=>d.open=false)})</script>')
 
 
 def band(colour: str, icon: str, art: str, title: str, question: str, intro: str, extra: str = "") -> str:
