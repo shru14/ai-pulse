@@ -109,18 +109,20 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             rows = []
             for c in (c for c in items if (c.get("action") or "proposal") == kind):
                 steps = _history(conn, c.get("bill", ""))
-                now = steps[-1] if steps else None
-                stage = (LABELS.get(code, LABELS["US"]).get(now["stage"], "") if now else "")
+                stage = LABELS.get(code, LABELS["US"]).get(steps[-1]["stage"], "") if steps else ""
                 trail = (" → ".join(f'{escape(s.get("text") or s["stage"])} ({_day(s["date"])})' for s in steps)
                          if len(steps) > 1 else "")
-                # the stages end on the latest date already: the line above them doesn't say it again
-                said = trail and _day(now["date"]) == _day(c["date"])
-                meta = " · ".join(x for x in (stage, "" if said else _day(c["date"]), c["source"]) if x)
-                rows.append(f'<li><a href="{escape(c["url"])}">{escape(c["title"].strip())}</a>'
-                            f'<div class="meta">{escape(meta)}</div>'
-                            + (f'<div class="steps">{trail}</div>' if trail else "") + "</li>")
-            if rows:
-                sections.append(f'<h2>{label}</h2>\n<ul>\n' + "\n".join(rows) + "\n</ul>")
+                rows.append((f'<td><a href="{escape(c["url"])}">{escape(c["title"].strip())}</a></td>'
+                             f'<td>{escape(c["source"])}</td>', stage, trail, _day(c["date"])))
+            if rows:  # a grid per kind; Stage and Steps columns only where a record has them
+                staged, stepped = any(r[1] for r in rows), any(r[2] for r in rows)
+                head = ("<tr><th>Title</th><th>Source</th>" + ("<th>Stage</th>" if staged else "")
+                        + ("<th>Steps</th>" if stepped else "") + "<th>Date</th></tr>")
+                body_rows = "\n".join(f'<tr>{cells}' + (f'<td>{escape(stage)}</td>' if staged else "")
+                                      + (f'<td class="gt-steps">{trail}</td>' if stepped else "")
+                                      + f'<td>{day}</td></tr>' for cells, stage, trail, day in rows)
+                sections.append(f'<h2>{label}</h2>\n<div class="gt-wrap"><table class="gt"><thead>{head}</thead><tbody>\n'
+                                + body_rows + "\n</tbody></table></div>")
         title = f"{heading(code, name)} · AI Pulse"
         description = (f"AI bills, laws, regulators and standards {'from international bodies' if code == 'INTL' else 'in ' + place(name)}"
                        f": official records with their stages and links to the sources, updated every 6 hours.")

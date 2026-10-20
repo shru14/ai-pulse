@@ -104,6 +104,13 @@ STYLE = """
 .cp .sd h2{font:400 22px/1.15 var(--display);letter-spacing:.01em}
 .cp .tp-t .tp-where{white-space:nowrap;font-weight:600}  /* laws adopted, bills, AI bodies: the place, its flag */
 .cp .tp-t .flag{width:24px;height:18px;vertical-align:-3px;margin-right:8px}
+.cp .gt-wrap{overflow-x:auto;margin:10px 0 28px}  /* a place's page: each kind of record as a ruled grid */
+.cp table.gt{width:100%;border-collapse:collapse;font-size:14.5px;border:2px solid var(--line)}
+.cp .gt th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:color-mix(in srgb,var(--ink) 10%,var(--bg));padding:8px 10px;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent)}
+.cp .gt td{padding:8px 10px;vertical-align:top;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);line-height:1.35}
+.cp .gt td a{color:var(--ink);font-weight:600;text-decoration:none}.cp .gt td a:hover{text-decoration:underline}
+.cp .gt td:first-child{min-width:220px}.cp .gt td:not(:first-child):not(.gt-steps){white-space:nowrap}
+.cp .gt .gt-steps{font-size:13.5px;color:var(--muted);min-width:200px}
 @media (max-width:640px){.cp .tp-t thead{display:none}  /* phones: place and date, then the title, then the stage */
   .cp .tp-t tr{display:grid;grid-template-columns:1fr auto;column-gap:12px;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 0}
   .cp .mt.tp-t td{border:0;padding:2px 0}.cp .tp-t .tp-title{grid-column:1/-1;order:3}.cp .tp-t .tp-stage{grid-column:1/-1;order:4;color:var(--muted);font-size:14px}}

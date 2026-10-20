@@ -744,6 +744,7 @@ def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
     page = (tmp_path / "tracker" / "united-kingdom" / "index.html").read_text(encoding="utf-8")
     assert '<img src="flags/gb.svg" alt=""></span><div><h1>AI laws and bills in the United Kingdom</h1>' in page and "<h2>Proposals</h2>" in page
     assert "<h2>AI bodies</h2>" in page and page.index("AI Act 3") < page.index("AI Act 1")  # newest first
+    assert page.count('<table class="gt">') == 2 and '<li><a href="https://e.com/' not in page  # a table per kind: Proposals, AI bodies
     assert 'rel="canonical" href="https://projectaipulse.com/tracker/united-kingdom/"' in page
     assert 'href="/tracker/united-kingdom/"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
     # labels for search engines: each bill is Legislation; tracker.csv is a Dataset (Google Dataset Search)
