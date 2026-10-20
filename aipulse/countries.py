@@ -12,11 +12,11 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import jurisdictions, pages, rss
+from . import infra_watch, jurisdictions, pages, rss
 from .bills import LABELS, OFFICIAL_SOURCES
 
 MIN_RECORDS = 2  # the owner's choice, 12 Oct 2026 (was 3)
-KINDS = [("law", "Laws adopted"), ("proposal", "Proposals"), ("body", "AI bodies"), ("standard", "Standards")]
+KINDS = [("law", "Laws adopted"), ("proposal", "Proposals"), ("body", "AI bodies")]  # standards: standards/ only
 
 
 def slug(name: str) -> str:
@@ -32,7 +32,7 @@ def place(name: str) -> str:
 
 
 def heading(code: str, name: str) -> str:
-    return "AI rules from international bodies" if code == "INTL" else f"AI laws and bills in {place(name)}"
+    return f"AI laws and bills in {place(name)}"
 
 
 def _day(iso: str) -> str:
@@ -83,16 +83,16 @@ def dataset(records: list[dict], places: list[str], today: date) -> dict:
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
-    """Write tracker/ and a page per place with MIN_RECORDS official records or more. Returns their paths."""
+    """Write tracker/ and a page per place with MIN_RECORDS official records or more. Returns their paths.
+    Standards are on standards/ alone, and international bodies aren't a place: their records are on the type pages."""
     names = {code: m["name"] for code, m in jurisdictions.meta().items()}
     by_place: dict[str, list[dict]] = {}
     for c in cards:
-        if c["category"] == "regulation" and c["source"] in OFFICIAL_SOURCES:
+        if c["category"] == "regulation" and c["source"] in OFFICIAL_SOURCES and c.get("action") != "standard":
             for code in c.get("jurisdictions") or []:
-                if code in names:
+                if code in names and code != "INTL":
                     by_place.setdefault(code, []).append(c)
-    places = sorted((code for code, items in by_place.items() if len(items) >= MIN_RECORDS),
-                    key=lambda code: (code != "INTL", names[code]))
+    places = sorted((code for code, items in by_place.items() if len(items) >= MIN_RECORDS), key=lambda code: names[code])
     parts = pages.frame(conn, len(cards))
     pages.write_css(out)
     back = ("/regulation/", "Back to the live Regulation tracker page")
@@ -122,14 +122,14 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             if rows:
                 sections.append(f'<h2>{label}</h2>\n<ul>\n' + "\n".join(rows) + "\n</ul>")
         title = f"{heading(code, name)} · AI Pulse"
-        description = (f"AI bills, laws, regulators and standards {'from international bodies' if code == 'INTL' else 'in ' + place(name)}"
+        description = (f"AI bills, laws and regulators in {place(name)}"
                        f": official records with their stages and links to the sources, updated every 6 hours.")
         data = {"@context": "https://schema.org", "@type": "ItemList", "name": heading(code, name),
                 "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": record(c, name)}
                                     for i, c in enumerate(items[:100])]}
-        ask = "What have international bodies agreed on AI?" if code == "INTL" else f"What has {place(name)} decided on AI?"
+        ask = f"What has {place(name)} decided on AI?"
         body = (pages.band("reg", f'<img src="flags/{flag(code)}" alt="">', "photos/cartoons/pages/tracker.svg",
-                           heading(code, name), ask, 'Official records of bills, laws, regulators and standards, newest '
+                           heading(code, name), ask, 'Official records of bills, laws and regulators, newest '
                            'first, each with its stage and a link to the source. <a href="/tracker/">All places</a>')
                 + "\n".join(sections))
         (out / path).mkdir(parents=True, exist_ok=True)
@@ -146,7 +146,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         dataset([c for code in by_place for c in by_place[code]], [names[code] for code in places], today)]}
     (out / "tracker").mkdir(parents=True, exist_ok=True)
     (out / "tracker" / "index.html").write_text(
-        pages.page("AI laws by country · AI Pulse", "AI bills, laws, regulators and standards by country, from official "
+        pages.page("AI laws by country · AI Pulse", "AI bills, laws and regulators by country, from official "
               "records, updated every 6 hours.", "tracker/", body, data, parts, back, note), encoding="utf-8")
     return ["tracker/", *paths]
 
@@ -165,8 +165,8 @@ TYPE_PAGES = {  # the Regulation strip's buttons: one kind of record from every 
 
 
 def type_pages(conn, cards: list[dict], out: Path) -> list[str]:
-    """TYPE_PAGES: one kind of official record from every place, as one table, newest first. A place with its own
-    page (build, run first) links to it."""
+    """TYPE_PAGES: one kind of official record from every place, as one table, newest first, with the Infra pages'
+    column filters (place, stage, source, month). A place with its own page (build, run first) links to it."""
     names = {code: m["name"] for code, m in jurisdictions.meta().items()}
     records = [c for c in cards if c["category"] == "regulation" and c["source"] in OFFICIAL_SOURCES]
     with_page = {p.name for p in (out / "tracker").iterdir() if p.is_dir()} if (out / "tracker").exists() else set()
@@ -193,15 +193,21 @@ def type_pages(conn, cards: list[dict], out: Path) -> list[str]:
             stage = ""
             if bills:
                 steps = _history(conn, c.get("bill", ""))
-                stage = f'<td class="tp-stage">{escape(LABELS.get(code, LABELS["US"]).get(steps[-1]["stage"], "") if steps else "")}</td>'
-            rows.append(f'<tr><td class="tp-where">{where}</td><td class="tp-title"><a href="{escape(c["url"])}">{escape(c["title"].strip())}</a>'
-                        f'<div class="meta">{escape(c["source"])}</div></td>{stage}<td>{_day(c["date"])}</td></tr>')
-        head = "<tr><th>Place</th><th>Title</th>" + ("<th>Stage</th>" if bills else "") + "<th>Date</th></tr>"
+                stage = f'<td class="tp-stage">{escape(LABELS.get(code, LABELS["US"]).get(steps[-1]["stage"], "") if steps else "") or "–"}</td>'
+            rows.append(f'<tr><td class="tp-where" data-f="{escape(name)}">{where}</td><td class="tp-title"><a href="{escape(c["url"])}">'
+                        f'{escape(c["title"].strip())}</a></td>{stage}<td class="tp-src">{escape(c["source"])}</td>'
+                        f'<td class="tp-date" data-f="{date.fromisoformat(c["date"][:10]):%b %Y}">{_day(c["date"])}</td></tr>')
+        head = ("<tr><th>Place</th><th data-nof>Title</th>" + ("<th>Stage</th>" if bills else "")
+                + "<th>Source</th><th data-seen>Date</th></tr>")
+        noun = {"law": "laws", "proposal": "bills", "body": "bodies"}[kind]
         others = " · ".join(f'<a href="/{p}">{t[1]}</a>' for p, t in TYPE_PAGES.items() if p != path)
-        body = (pages.band("reg", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
-                           "photos/cartoons/pages/tracker.svg", title, question,
-                           f'{intro} <a href="/tracker/">AI laws by country</a> · {others}')
-                + f'<table class="mt tp-t"><thead>{head}</thead><tbody>\n' + "\n".join(rows) + "\n</tbody></table>")
+        body = ('<div class="iw">' + pages.band("reg", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
+                                                "photos/cartoons/pages/tracker.svg", title, question,
+                                                f'{intro} <a href="/tracker/">AI laws by country</a> · {others}')
+                + f'<div class="iw-fbar"></div><p class="iw-count" aria-live="polite">Showing <b>{len(rows)}</b> of {len(rows)} '
+                  f'{noun}. Pick a ▾ to filter. <button type="button" class="iw-clear" hidden>Clear filters</button></p>\n'
+                + f'<div class="iw-wrap"><table class="mt tp-t iw-t"><thead>{head}</thead><tbody>\n' + "\n".join(rows)
+                + f"\n</tbody></table></div></div>\n{infra_watch.SCRIPT}\n")
         data = {"@context": "https://schema.org", "@type": "ItemList", "name": title,
                 "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": record(c, names.get(
                     next((x for x in c.get("jurisdictions") or [] if x in names), "INTL"), "International"))}

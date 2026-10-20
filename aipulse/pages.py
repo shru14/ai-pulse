@@ -106,7 +106,8 @@ STYLE = """
 .cp .tp-t .flag{width:24px;height:18px;vertical-align:-3px;margin-right:8px}
 @media (max-width:640px){.cp .tp-t thead{display:none}  /* phones: place and date, then the title, then the stage */
   .cp .tp-t tr{display:grid;grid-template-columns:1fr auto;column-gap:12px;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 0}
-  .cp .mt.tp-t td{border:0;padding:2px 0}.cp .tp-t .tp-title{grid-column:1/-1;order:3}.cp .tp-t .tp-stage{grid-column:1/-1;order:4;color:var(--muted);font-size:14px}}
+  .cp .mt.tp-t td{border:0;padding:2px 0}.cp .tp-t .tp-title{grid-column:1/-1;order:3}.cp .tp-t .tp-stage{grid-column:1/-1;order:4;color:var(--muted);font-size:14px}
+  .cp .tp-t .tp-src{grid-column:1/-1;order:5;color:var(--muted);font-size:14px}}
 .cp .sd .what{font-size:14.5px}
 @media (max-width:860px){.cp .sd .cols{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;padding-bottom:8px}
   .cp .sd section{flex:0 0 85%;scroll-snap-align:start}}
