@@ -524,6 +524,8 @@ FEATURES = [
      "UK in full, and whose AI they run (Microsoft, OpenAI, Google...).", "government-ai-use/"),
     ("Who publishes AI research on Hugging Face", "Which companies put out the most AI papers this year, the research "
      "subject that is rising, and the researchers we follow who published most.", "who-publishes-ai-research/"),
+    ("The model economy", "What new AI models cost against the ones before them, and how many days' warning each "
+     "lab gives before a model shuts down.", "model-economy/"),
 ]
 
 

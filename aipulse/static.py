@@ -436,6 +436,8 @@ def build(conn, out: str | Path) -> int:
     places += release_cards.build(conn, cards, out, today)  # every major model release: weights, licence, price (Releases' feature)
     from . import lab_timelines
     places += lab_timelines.build(conn, cards, out, today)  # each lab's releases, price changes and shutdowns by month (Releases' feature)
+    from . import model_economy
+    places += model_economy.build(conn, cards, out, today)  # launch prices against the model before, and shutdown warning (Releases' feature)
     from . import compute, new_tests
     places += new_tests.build(conn, cards, out, today)  # new benchmarks in the papers we read and their best scores (Research's feature)
     places += compute.build(conn, cards, out, today)  # Epoch AI's training-compute estimates for notable models (Research's feature)

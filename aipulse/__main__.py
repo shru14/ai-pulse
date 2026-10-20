@@ -122,6 +122,8 @@ def main():
                         "to release_cards.RELEASES or release_cards.LEFT_OUT)")
     lt = sub.add_parser("timelines", help="stories of price changes and new places not checked yet for Lab timelines (to "
                         "check by hand and add to lab_timelines.PRICES, PLACES or LEFT_OUT)")
+    me = sub.add_parser("economy", help="Release cards models with a launch price not checked yet for The model economy "
+                        "(to find the model before it in the same line and add to model_economy.BEFORE or LEFT_OUT)")
     pa = sub.add_parser("pacts", help="stories of a government acting on or with an AI company, or of pledge news, not "
                         "checked yet for AI pacts and orders (to check by hand and add to pacts.DEALS, BANS, ORDERS or "
                         "LEFT_OUT)")
@@ -149,7 +151,7 @@ def main():
     bl.add_argument("--data", metavar="FILE", help="add the stories in the site's data.json (or data.json.gz) the "
                     "database doesn't have")
     bl.add_argument("--two-outlets", action="store_true", help="only stories another outlet also reported")
-    for q in (ct, pp, sh, iw, ow, cs, rc, lt, pa, nt, fb, cr, bo, gv):
+    for q in (ct, pp, sh, iw, ow, cs, rc, lt, me, pa, nt, fb, cr, bo, gv):
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
                        "instead of the database")
@@ -526,12 +528,13 @@ def main():
             print(f"  {c['test']}: {c['date']} {c['title']}\n    {c['url']}")
             for x in c["said"]:
                 print(f"      > {x}")
-    elif a.cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "pacts", "tests", "fines",
-                   "chips", "buyouts"):
-        from . import buyouts, chip_rules, court, fines, infra_watch, lab_timelines, new_tests, owners, pacts, press, release_cards, safety
+    elif a.cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "economy", "pacts", "tests",
+                   "fines", "chips", "buyouts"):
+        from . import (buyouts, chip_rules, court, fines, infra_watch, lab_timelines, model_economy, new_tests, owners, pacts,
+                       press, release_cards, safety)
         m = {"court": court, "press": press, "safety": safety, "infra": infra_watch, "owners": owners,
-             "releases": release_cards, "timelines": lab_timelines, "pacts": pacts, "tests": new_tests,
-             "fines": fines, "chips": chip_rules, "buyouts": buyouts}[a.cmd]
+             "releases": release_cards, "timelines": lab_timelines, "economy": model_economy, "pacts": pacts,
+             "tests": new_tests, "fines": fines, "chips": chip_rules, "buyouts": buyouts}[a.cmd]
         # the site's own data.json for the daily job, which has no database (its last 3 months)
         found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
         start = getattr(m, "SINCE", "")
@@ -542,6 +545,7 @@ def main():
                 else f"{len(safety.DOCS)} documents" if m is safety else f"{len(owners.DEALS)} deals" if m is owners
                 else f"{len(release_cards.RELEASES)} releases" if m is release_cards
                 else f"{len(lab_timelines.PRICES) + len(lab_timelines.PLACES)} changes" if m is lab_timelines
+                else f"{len(model_economy.BEFORE)} pairs" if m is model_economy
                 else f"{len(pacts.DEALS) + len(pacts.BANS) + len(pacts.ORDERS)} rows" if m is pacts
                 else f"{len(new_tests.TESTS)} tests" if m is new_tests
                 else f"{len(fines.BANS) + len(fines.FINES)} rows" if m is fines
