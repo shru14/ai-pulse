@@ -854,7 +854,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .iw-count{margin:4px 0 8px;font:500 13px var(--mono);color:var(--muted)}
 .cp .iw-count b{color:var(--ink)}
 .cp .iw-clear{margin-left:10px;padding:0;border:0;background:none;color:var(--ink);font:600 13px var(--body);text-decoration:underline;cursor:pointer}
-.cp .iw-wrap{max-height:78vh;overflow:auto;overscroll-behavior:contain;border-bottom:3px solid var(--ink)}
+.cp .iw-wrap{max-height:78vh;overflow:auto;overscroll-behavior:contain;padding-right:16px;border-bottom:3px solid var(--ink)}
 .cp .iw-wrap thead th{position:sticky;top:0;z-index:1;background:var(--bg)}
 .cp .iw-hb{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:2px 0;cursor:pointer;white-space:nowrap}
 .cp .iw-hb::after{content:" ▾";color:var(--muted)}
