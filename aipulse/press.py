@@ -21,7 +21,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import kind_pages, pages, rss
+from . import code_links, kind_pages, pages, rss
 
 PATH = "papers-in-the-news/"
 SINCE = "2026-07-13"
@@ -420,11 +420,13 @@ def _plural(n: int, word: str) -> str:
 
 def _clip(r: dict, lead: bool = False) -> str:
     """One paper as a newspaper clipping: its subject, the outlet's headline, what the paper found in plain words, then
-    the paper and the story's outlet and date."""
+    the paper with its code and demo links, and the story's outlet and date."""
+    links = code_links.html(r.get("links", {}))
     return (f'<article class="np-clip{" np-lead" * lead}"><div class="np-kick">{escape(SUBJECTS[r["subject"]])}</div>'
             f'<h3><a href="{escape(r["url"])}" rel="noopener">{escape(r["title"])}</a></h3>'
             f'<p class="np-deck">{escape(r["about"])}</p>'
-            f'<p class="np-by">The paper: <a href="{escape(r["link"])}" rel="noopener">{escape(r["paper"])}</a></p>'
+            f'<p class="np-by">The paper: <a href="{escape(r["link"])}" rel="noopener">{escape(r["paper"])}</a>'
+            f'{" · " + links if links else ""}</p>'
             f'<p class="np-by">{escape(r["source"])} · {_day(r["date"])}</p></article>')
 
 
@@ -482,6 +484,9 @@ def page_body(rows: list[dict], read_by: dict[str, int], read: int) -> str:
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     """Write papers-in-the-news/. Returns its path."""
     rows = papers(cards)
+    saved = code_links.load(conn)
+    for r in rows:
+        r["links"] = code_links.of(saved, r["link"])
     read_by, read = read_subjects(cards)
     (out / PATH).mkdir(parents=True, exist_ok=True)
     what = (f"{QUESTION} Research papers the news reported on since {_day(SINCE)}, each checked by hand, by subject, "

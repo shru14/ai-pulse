@@ -1194,6 +1194,8 @@ a.subscribe-btn{text-decoration:none}
 .cp .nt-table td:first-child{width:12rem}.cp .nt-table td:nth-child(3){width:17rem}
 .cp .nt-table td small,.cp .cg-table td small{display:block;margin-top:2px;font-size:13px;color:var(--muted)}
 .cp .nt-table td:last-child{white-space:nowrap;color:var(--muted);font-size:14px}
+.cp .nt-table td small.nt-beat{margin-top:6px;color:var(--ink)}.cp .ft .nt-table td small.nt-beat a{font-weight:400;text-decoration:underline}
+.cp .nt-table td.cl{font-size:14px;white-space:nowrap}.cp .ft .nt-table td.cl a{font-weight:400;text-decoration:underline}
 .cp .cg-wrap{margin:0 0 34px;border-top:2px solid var(--line);padding-top:10px}
 .cp .cg{display:block;width:100%;height:auto;font-family:var(--body)}
 .cp .cg-grid{stroke:color-mix(in srgb,var(--ink) 16%,transparent);stroke-width:1}

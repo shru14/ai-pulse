@@ -9,6 +9,10 @@ from arXiv, not the stored summary) when the row is checked, by Claude as the gl
 A best result is the abstract's own number and model; a percentage is kept (for the score line) only when the abstract
 gives the top score as a percentage or out of 100.
 
+Each row shows its paper's code and demo links (code_links). A test a later paper beat, on the same measure, gets a
+"Beaten" note from BEATEN, checked by hand from the later paper's whole abstract; beat_candidates() lists later papers
+that name a test (`python -m aipulse tests-beaten`).
+
 The sample starts on SINCE. Research papers after CHECKED_TO whose title names a benchmark are candidates()
 (`python -m aipulse tests`). Linked from Research's strip on the front page.
 """
@@ -20,7 +24,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import kind_pages, pages, rss
+from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
@@ -527,6 +531,20 @@ LEFT_OUT: dict[str, str] = {
     "https://arxiv.org/abs/2604.19071v1": "mainly a way to grade writing (Tree-of-Writing)",
     "https://arxiv.org/abs/2604.17761": "an interpretability method for analysing failures, not a new test",
 }
+# Tests a later paper beat, by the test's address in TESTS: (the later paper's address, the day arXiv announced it, what
+# it reports in its abstract's own numbers and words, and who got it as the abstract names them). A test counts as beaten
+# only when the later abstract gives a better result on the same measure than the row's best result; gains over the
+# later paper's own baseline, other measures or other versions of the test don't count. Checked to BEATS_CHECKED_TO.
+BEATEN: dict[str, tuple[str, str, str, str]] = {
+    "https://arxiv.org/abs/2608.12593v1": (
+        "https://arxiv.org/abs/2609.39140", "2026-09-30", "Solves 100% of the public DiG-bench games",
+        "the Schema agent harness"),
+    "https://arxiv.org/abs/2606.09426": (
+        "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
+        "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
+}
+BEATS_CHECKED_TO = "2026-10-19"
+_ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
 
@@ -534,7 +552,7 @@ def tests(cards: list[dict]) -> list[dict]:
     """The rows in TESTS whose paper we have, newest first, each with its paper (title, date, url)."""
     by_url = {c["url"]: c for c in cards}
     out = [{"url": url, "name": n, "subject": s, "tests": t, "best": b, "model": m, "pct": p,
-            "paper": by_url[url]["title"].strip(), "date": by_url[url]["date"][:10]}
+            "paper": by_url[url]["title"].strip(), "date": by_url[url]["date"][:10], "beaten": BEATEN.get(url)}
            for url, (n, s, t, b, m, p) in TESTS.items() if url in by_url]
     return sorted(out, key=lambda r: r["date"], reverse=True)
 
@@ -546,6 +564,40 @@ def candidates(cards: list[dict], since: str = "") -> list[dict]:
     return [c for c in sorted(cards, key=lambda c: c["date"], reverse=True)
             if c["category"] == "research" and c["date"][:10] > after and BENCHY.search(c["title"])
             and c["url"] not in TESTS and c["url"] not in LEFT_OUT]
+
+
+def _key(name: str) -> str:
+    """The words to look for in later abstracts: the test's name without what's in brackets."""
+    return re.sub(r"\s*\(.*?\)", "", name).strip()
+
+
+def beat_candidates(since: str = BEATS_CHECKED_TO, fetcher=None) -> list[dict]:
+    """Papers on arXiv announced after `since` whose abstract names one of TESTS (not beaten yet, its own paper
+    excluded), with the sentences that name it: to check by hand for a better result on the same measure. Ten names
+    a request, a request every 3.5 s, as arXiv asks."""
+    import time
+    import xml.etree.ElementTree as ET
+    from urllib.parse import urlencode
+    from . import feeds
+    fetcher = fetcher or feeds.fetch
+    names = {_key(n): url for url, (n, *_) in TESTS.items() if url not in BEATEN}
+    out = []
+    keys = sorted(names)
+    for i in range(0, len(keys), 10):
+        if i:
+            time.sleep(3.5)
+        q = " OR ".join(f'abs:"{k}"' for k in keys[i:i + 10])
+        xml = ET.fromstring(fetcher(f"{code_links.ARXIV_API}?" + urlencode(
+            {"search_query": q, "max_results": 100, "sortBy": "submittedDate"})))
+        for e in xml.findall("a:entry", _ATOM):
+            day, text = e.findtext("a:published", "", _ATOM)[:10], " ".join(e.findtext("a:summary", "", _ATOM).split())
+            aid = code_links.arxiv_id(e.findtext("a:id", "", _ATOM))
+            for k in keys[i:i + 10]:
+                said = [x for x in re.split(r"(?<=[.!?])\s+", text) if k.lower() in x.lower()]
+                if said and day > since and aid != code_links.arxiv_id(names[k]):
+                    out.append({"test": k, "url": f"https://arxiv.org/abs/{aid}", "date": day,
+                                "title": " ".join(e.findtext("a:title", "", _ATOM).split()), "said": said[:3]})
+    return sorted(out, key=lambda c: (c["test"].lower(), c["date"]))
 
 
 def _day(d: str) -> str:
@@ -590,8 +642,9 @@ def _scores(rows: list[dict]) -> str:
             f'names it.</p>\n<ol class="nt-scores">{lines}</ol></section>\n')
 
 
-def _table(rows: list[dict]) -> str:
-    """Every test, by subject (the most tests first), newest first within each."""
+def _table(rows: list[dict], links: dict) -> str:
+    """Every test, by subject (the most tests first), newest first within each, with its paper's code and demo
+    links."""
     groups = {k: [r for r in rows if r["subject"] == k] for k in SUBJECTS}
     out = []
     for k in sorted((k for k in groups if groups[k]), key=lambda k: -len(groups[k])):
@@ -599,10 +652,13 @@ def _table(rows: list[dict]) -> str:
             f'<tr><td><a href="{escape(r["url"])}" rel="noopener" title="{escape(r["paper"])}">{escape(r["name"])}</a>'
             f'</td><td>{escape(r["tests"])}</td><td>{escape(r["best"])}'
             + (f'<small>{escape(r["model"])}</small>' if r["model"] else "")
-            + f'</td><td>{_day(r["date"])}</td></tr>' for r in groups[k])
+            + (f'<small class="nt-beat">Beaten {_day(r["beaten"][1])}: <a href="{escape(r["beaten"][0])}" '
+               f'rel="noopener">{escape(r["beaten"][2])}</a>, by {escape(r["beaten"][3])}</small>' if r["beaten"] else "")
+            + f'</td><td class="cl">{code_links.html(code_links.of(links, r["url"]))}</td><td>{_day(r["date"])}</td></tr>'
+            for r in groups[k])
         out.append(f'<h3>{escape(SUBJECTS[k])} <span class="nt-n">{_plural(len(groups[k]), "test")}</span></h3>\n'
                    '<table class="mt nt-table"><thead><tr><th>Test</th><th>What it tests</th>'
-                   f'<th>Best result reported</th><th>Paper</th></tr></thead><tbody>{body}</tbody></table>\n')
+                   f'<th>Best result reported</th><th>Links</th><th>Paper</th></tr></thead><tbody>{body}</tbody></table>\n')
     return f'<section><h2>Every test, by subject</h2>\n{"".join(out)}</section>\n'
 
 
@@ -617,17 +673,22 @@ def _limits(rows: list[dict]) -> str:
         ("Best result", "The paper's own words and numbers, from its whole abstract. Each test is scored its own way, "
          "so a score is only comparable with others on the same test."),
         ("Subjects", "Set by hand, one per test, from the Research stream's subjects."),
+        ("Links", "The links the authors give in the paper's abstract on arXiv, and the code and project page Hugging "
+         "Face lists for it: Code (a code host), Data (a dataset), Try it (a demo in the browser), Site (the project's "
+         "own page). Read again every week."),
+        ("Beaten", f"{_plural(len(BEATEN), 'test')} where a later paper's abstract reports a better result on the same "
+         "measure, checked by hand. Gains over a later paper's own starting point don't count."),
     ]
     body = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in notes)
     return f'<section><h2>About these counts</h2>\n<table class="mt pn-notes"><tbody>{body}</tbody></table></section>\n'
 
 
-def page_body(rows: list[dict]) -> str:
+def page_body(rows: list[dict], links: dict | None = None) -> str:
     intro = (f"{_plural(len(rows), 'new test')} for AI in the research papers we read since {_day(SINCE)}, each read "
              "by hand: what it tests in one plain line, and the best result its paper reports, with the model that got "
              "it where the paper names one. New tests are added once checked.")
     return ('<div class="ft jb nt">\n' + pages.feature_head(PATH, "New tests for AI", QUESTION, escape(intro))
-            + _glance(rows) + _scores(rows) + _table(rows) + _limits(rows) + '</div>\n')
+            + _glance(rows) + _scores(rows) + _table(rows, links or {}) + _limits(rows) + '</div>\n')
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
@@ -641,7 +702,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "New tests for AI",
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH / "index.html").write_text(
-        pages.page("New tests for AI · AI Pulse", what, PATH, page_body(rows), data, pages.frame(conn, len(cards)),
+        pages.page("New tests for AI · AI Pulse", what, PATH, page_body(rows, code_links.load(conn)), data, pages.frame(conn, len(cards)),
                    ("/research/", "Back to Research"),
                    "Test names link to their paper. New tests are added once checked by hand."),
         encoding="utf-8")
@@ -652,9 +713,11 @@ def note(base: str, branch: str) -> tuple[str, str, str] | None:
     """The project inbox's note for a tests/<day> branch: each test it adds and the papers it left out; None when it
     adds nothing. `base` is main's copy of this file."""
     from . import approve
-    had = approve.lists_in(base, ("TESTS", "LEFT_OUT"))
+    had = approve.lists_in(base, ("TESTS", "LEFT_OUT", "BEATEN"))
     rows = [(n, SUBJECTS.get(s, s), t, f"{b} ({m})" if m else b, u)
             for u, (n, s, t, b, m, _) in TESTS.items() if u not in had["TESTS"]]
+    rows += [(TESTS[u][0], "Beaten", f"{TESTS[u][3]} ({TESTS[u][4]})" if TESTS[u][4] else TESTS[u][3],
+              f"{r} ({by}), {_day(d)}", p) for u, (p, d, r, by) in BEATEN.items() if p not in had["BEATEN"]]
     dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
     if not rows and not dropped:
         return None

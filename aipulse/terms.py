@@ -230,7 +230,8 @@ TERMS: dict[str, tuple[str, str, str]] = {
                        "Says nothing against robots, scrapers or automated access, and allows commercial use; robots.txt "
                        "allows /api/. Its one limit, 'You may not alter, reproduce, republish, license any of our "
                        "proprietary materials', doesn't touch what is read: Daily Papers lists others' papers (arXiv), "
-                       "and the model lists give only a model's name, date and likes (no model card text)"),
+                       "the model lists give only a model's name, date and likes (no model card text), and the papers API gives only a "
+                       "paper's code repository and project page addresses (Code and demo links)"),
 }
 
 # Everything else the platform reads or shows: the regulation tracker's official records (bills.py, oecd.py,

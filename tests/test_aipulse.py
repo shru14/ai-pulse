@@ -4082,6 +4082,43 @@ def test_new_tests_for_ai_rows_scores_and_candidates(tmp_path):
     assert "1 new test to approve" in subject and url in text and "LifeSearch" in html
 
 
+def test_code_links_sorted_by_kind_read_weekly_and_shown_on_both_pages(tmp_path):
+    import json
+    from datetime import date, datetime, timezone
+    from aipulse import code_links as cl, new_tests as nt, store
+    assert cl.sort(["https://arxiv.org/abs/1", "https://github.com/a/b.", "https://huggingface.co/datasets/a/b",
+                    "https://huggingface.co/a", "https://huggingface.co/spaces/a/b", "https://a.github.io/x/",
+                    "https://github.com/c/d"]) == {
+        "Code": "https://github.com/a/b", "Data": "https://huggingface.co/datasets/a/b",
+        "Try it": "https://huggingface.co/spaces/a/b", "Site": "https://a.github.io/x/"}
+    assert cl.kind("https://github.com/org") is None and cl.arxiv_id("https://arxiv.org/abs/2608.12593v1") == "2608.12593"
+    feed = ('<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom"><entry>'
+            '<id>http://arxiv.org/abs/2610.18092v1</id><summary>Code at https://github.com/x/life.</summary>'
+            '<arxiv:comment>Site: https://life.example/</arxiv:comment></entry></feed>').encode()
+    asked = []
+    def fetch(url):
+        asked.append(url)
+        if url.startswith(cl.HF_API):
+            return json.dumps({"githubRepo": "https://github.com/y/other", "projectPage": None}).encode()
+        return feed
+    conn = store.connect(str(tmp_path / "t.db"))
+    url = "https://arxiv.org/abs/2610.18092"
+    now = datetime(2026, 10, 20, tzinfo=timezone.utc)
+    assert "1 papers read, 1 with links" in cl.refresh(conn, [url, "https://doi.org/x"], fetch, now)
+    assert cl.of(cl.load(conn), url) == {"Code": "https://github.com/x/life", "Site": "https://life.example/"}
+    assert cl.refresh(conn, [url], fetch, now) == "all read this week" and len(asked) == 2
+    cards = [{"url": url, "title": "LifeSearch", "date": "2026-10-13T00:00", "category": "research"}]
+    nt.build(conn, cards, tmp_path, date(2026, 10, 20))
+    page = (tmp_path / "new-tests-for-ai" / "index.html").read_text(encoding="utf-8")
+    assert '<td class="cl"><a href="https://github.com/x/life" rel="noopener">Code</a> · <a' in page
+    weave = "https://arxiv.org/abs/2606.09426"
+    rows = nt.tests([{"url": weave, "title": "WeaveBench", "date": "2026-06-08T00:00", "category": "research"}])
+    assert "Beaten 3 Aug 2026" in nt._table(rows, {})
+    base = open(nt.__file__, encoding="utf-8").read().replace("https://arxiv.org/abs/2608.01964", "https://gone.example/")
+    subject, text, html = nt.note(base, "tests/2026-10-21")
+    assert "WeaveBench" in html and "Beaten" in html and "2608.01964" in text
+
+
 def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_path, monkeypatch):
     from datetime import date
     from aipulse import compute, feeds

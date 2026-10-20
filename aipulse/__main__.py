@@ -132,6 +132,9 @@ def main():
                         "hand and add to chip_rules.TOOLS, BUYERS, CHINA or LEFT_OUT)")
     nt = sub.add_parser("tests", help="Research papers naming a benchmark, not checked yet for New tests for AI (to "
                         "check by hand and add to new_tests.TESTS or new_tests.LEFT_OUT)")
+    tb = sub.add_parser("tests-beaten", help="later arXiv papers naming a test on New tests for AI, to check by hand "
+                        "for a better result on the same measure (and add to new_tests.BEATEN)")
+    tb.add_argument("--since", default="", help="announced after this day (default: new_tests.BEATS_CHECKED_TO)")
     bl = sub.add_parser("backlog", help="a feature's stories not checked yet between two days, from every headline: the "
                         "database joined with the data file (for filling a feature back, a batch at a time)")
     bl.add_argument("feature", choices=["court", "jobs", "press", "safety", "owners", "consultations", "releases",
@@ -200,6 +203,12 @@ def main():
                 print(f"Compute behind notable models: {compute.refresh(conn)}")
             except Exception as e:
                 print(f"Compute behind notable models: not read ({e})")
+            from . import code_links, new_tests, press  # the papers' own code and demo links, for those two pages
+            try:
+                papers = [*new_tests.TESTS, *(r["link"] for r in press.CHECKED.values())]
+                print(f"Code and demo links: {code_links.refresh(conn, papers)}")
+            except Exception as e:
+                print(f"Code and demo links: not read ({e})")
     elif a.cmd == "serve":
         store.connect(a.db).close()
         serve(a.db, a.host, a.port)
@@ -481,6 +490,15 @@ def main():
                       f"Summary: {r['summary'][:600]}")
         except Exception as e:
             print(f"Official lists not read ({e})")
+    elif a.cmd == "tests-beaten":
+        from . import new_tests
+        found = new_tests.beat_candidates(a.since or new_tests.BEATS_CHECKED_TO)
+        print(f"{len(new_tests.BEATEN)} beaten. Later papers naming a test, after "
+              f"{a.since or new_tests.BEATS_CHECKED_TO} ({len(found)}):")
+        for c in found:
+            print(f"  {c['test']}: {c['date']} {c['title']}\n    {c['url']}")
+            for x in c["said"]:
+                print(f"      > {x}")
     elif a.cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "pacts", "tests", "fines",
                    "chips"):
         from . import chip_rules, court, fines, infra_watch, lab_timelines, new_tests, owners, pacts, press, release_cards, safety
