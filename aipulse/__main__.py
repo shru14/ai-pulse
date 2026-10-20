@@ -132,6 +132,9 @@ def main():
                         "hand and add to chip_rules.TOOLS, BUYERS, CHINA or LEFT_OUT)")
     bo = sub.add_parser("buyouts", help="stories of a company being bought, merged or hired away whole, not checked "
                         "yet for AI buyouts (to check by hand and add to buyouts.DEALS or buyouts.LEFT_OUT)")
+    gv = sub.add_parser("govai", help="stories of a government publishing a list of the AI it uses, not checked yet "
+                        "for What governments use AI for, and the hand-kept lists read again (to check by hand and "
+                        "update gov_ai.OTHERS, RECHECK or LEFT_OUT)")
     nt = sub.add_parser("tests", help="Research papers naming a benchmark, not checked yet for New tests for AI (to "
                         "check by hand and add to new_tests.TESTS or new_tests.LEFT_OUT)")
     tb = sub.add_parser("tests-beaten", help="later arXiv papers naming a test on New tests for AI, to check by hand "
@@ -146,14 +149,14 @@ def main():
     bl.add_argument("--data", metavar="FILE", help="add the stories in the site's data.json (or data.json.gz) the "
                     "database doesn't have")
     bl.add_argument("--two-outlets", action="store_true", help="only stories another outlet also reported")
-    for q in (ct, pp, sh, iw, ow, cs, rc, lt, pa, nt, fb, cr, bo):
+    for q in (ct, pp, sh, iw, ow, cs, rc, lt, pa, nt, fb, cr, bo, gv):
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
                        "instead of the database")
     for name, module in (("court", "court"), ("press", "press"), ("safety", "safety"), ("infra", "infra_watch"),
                          ("owners", "owners"), ("consultations", "consultations"), ("releases", "release_cards"),
                          ("timelines", "lab_timelines"), ("pacts", "pacts"), ("tests", "new_tests"), ("fines", "fines"),
-                         ("chips", "chip_rules"), ("promises", "promises"), ("buyouts", "buyouts")):
+                         ("chips", "chip_rules"), ("promises", "promises"), ("buyouts", "buyouts"), ("govai", "gov_ai")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -500,6 +503,20 @@ def main():
                       f"Summary: {r['summary'][:600]}")
         except Exception as e:
             print(f"Official lists not read ({e})")
+    elif a.cmd == "govai":
+        # the daily job's to-check list for What governments use AI for: stories of a government's list of its own AI,
+        # and each hand-kept list's page read again (live)
+        from . import gov_ai
+        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
+        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
+        todo = gov_ai.candidates(found, since)
+        print(f"{len(gov_ai.OTHERS)} lists kept by hand, {len(gov_ai.RECHECK)} to recheck, {len(gov_ai.LEFT_OUT)} left "
+              f"out. Stories to check after {max(since, gov_ai.CHECKED_TO)} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+        print("Hand-kept lists read again:")
+        for place, shown, now in gov_ai.recheck():
+            print(f"  {place}: shown '{shown}'; {now}")
     elif a.cmd == "tests-beaten":
         from . import new_tests
         found = new_tests.beat_candidates(a.since or new_tests.BEATS_CHECKED_TO)
@@ -539,14 +556,15 @@ def main():
             print(f"Safety reports to look for again ({len(due)}): {', '.join(due) or 'none'}")
     elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note", "owners-note", "consultations-note",
                    "releases-note", "timelines-note", "pacts-note", "tests-note", "promises-note", "fines-note",
-                   "chips-note", "buyouts-note"):
+                   "chips-note", "buyouts-note", "govai-note"):
         # A court/, press/, safety/ or infra/<day> branch's drafts, to the project inbox for approval
-        from . import (buyouts, chip_rules, consultations, court, digest, fines, infra_watch, lab_timelines, new_tests, owners, pacts, press,
+        from . import (buyouts, chip_rules, consultations, court, digest, fines, gov_ai, infra_watch, lab_timelines, new_tests, owners, pacts, press,
                        promises, release_cards, safety)
         m = {"court-note": court, "press-note": press, "safety-note": safety, "infra-note": infra_watch,
              "owners-note": owners, "consultations-note": consultations, "releases-note": release_cards,
              "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests,
-             "promises-note": promises, "fines-note": fines, "chips-note": chip_rules, "buyouts-note": buyouts}[a.cmd]
+             "promises-note": promises, "fines-note": fines, "chips-note": chip_rules, "buyouts-note": buyouts,
+             "govai-note": gov_ai}[a.cmd]
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch)
         if not note:
             print("Nothing new on this branch.")

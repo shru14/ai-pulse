@@ -42,8 +42,7 @@ PLACES = {
            "Algorithmic Transparency Records", "Department for Science, Innovation and Technology"),
 }
 # The other governments' own lists, checked by hand (official ones only: France's inventory is kept by an independent
-# observatory and Chile's by a university, so they aren't here). Scotland's register (certificate expired) and
-# Australia's list of transparency statements (no answer) couldn't be opened on 20 Oct 2026: recheck.
+# observatory and Chile's by a university: LEFT_OUT). Lists that couldn't be opened wait in RECHECK.
 # (place, flag, the list's name, its page, what it holds, who keeps it, tag, checked on)
 OTHERS = [
     ("Norway", "no", "Offentlige KI-tiltak", "https://ki.norge.no/ki-tiltak", "149 initiatives",
@@ -56,6 +55,87 @@ OTHERS = [
 ]
 # what each full list holds, for the tag in "Who tells you"
 FULL_TAG = {"US": "Every use", "NL": "Every algorithm", "CA": "Every system", "UK": "Tools chosen to record"}
+
+# The daily job (python -m aipulse govai, a scheduled Claude routine) keeps OTHERS right, and the owner approves each
+# govai/<day> branch: what each list's own page says it holds today (COUNTS reads it), the lists that couldn't be
+# opened (RECHECK), and Policy, Regulation and Industry stories from after CHECKED_TO reporting a government publishing
+# a list of the AI it uses.
+CHECKED_TO = "2026-10-20"
+# where each list's page states how many entries it holds (read live; the job updates OTHERS when it changes)
+COUNTS = {
+    "Norway": r"(\d[\d\s.,]*)\s*tiltak\b",
+    "Estonia": r"umbes\s+(\d+)\s+korral",
+    "Brazil": r"(\d[\d.]*)\s+soluç(?:ões|oes) de IA em operaç",
+}
+# official lists that couldn't be opened when last checked: (place, flag, the list's name, its page, who keeps it, why)
+RECHECK = [
+    ("Scotland", "gb-sct", "Scottish AI Register", "https://www.scottishairegister.com/", "Scottish Government",
+     "its security certificate had expired (20 Oct 2026)"),
+    ("Australia", "au", "AI transparency statements", "https://www.digital.gov.au/policy/ai/list-of-transparency-statements",
+     "Digital Transformation Agency", "the site didn't answer our reader (20 Oct 2026)"),
+]
+# stories and lists checked by hand and left out, with why, so they aren't checked again
+LEFT_OUT: dict[str, str] = {
+    "https://www.data.gouv.fr/datasets/inventaire-des-algorithmes-publics-de-lodap":
+        "France: kept by an independent observatory (ODAP), not the government",
+    "https://algoritmospublicos.cl/": "Chile: kept by a university (GobLab UAI), not the government",
+}
+# a headline or summary that may report a government's list of the AI it uses
+_LIST = re.compile(r"\b(AI|artificial intelligence|algorithm(ic|s)?)\b[^.]{0,60}\b(register|registry|inventory|"
+                   r"inventories|transparency (record|statement)s?|use cases?)\b|\b(register|registry|inventory) of "
+                   r"(AI|artificial intelligence|algorithms)\b", re.I)
+_GOV = re.compile(r"\b(government|ministry|minister|department|agency|agencies|public sector|federal|council|"
+                  r"municipal|state|OMB|GAO|civil service|public bod(y|ies)|parliament)\b", re.I)
+
+
+def candidates(cards: list[dict], since: str = "") -> list[dict]:
+    """Policy, Regulation and Industry stories from after CHECKED_TO (or `since`, if later) that may report a
+    government's list of its own AI, not in LEFT_OUT or OTHERS: newest first."""
+    since = max(since, CHECKED_TO + "~")  # '~' sorts after any time of day
+    done = set(LEFT_OUT) | {o[3] for o in OTHERS} | {r[3] for r in RECHECK} | {p[3] for p in PLACES.values()}
+    return [c for c in sorted(cards, key=lambda c: c["date"], reverse=True)
+            if c["date"] >= since and c.get("category") in ("policy", "regulation", "news")
+            and not any(s["url"] in done for s in [c, *(c.get("also") or [])])
+            and _LIST.search(text := f"{c['title']} {c.get('summary') or ''}") and _GOV.search(text)]
+
+
+def recheck(fetcher=feeds.fetch) -> list[tuple[str, str, str]]:
+    """Each hand-kept list's page read again: (place, what OTHERS shows, what its page says now, or why it couldn't be
+    read); then each RECHECK list, whether it opens now."""
+    import html as _html
+    out = []
+    for place, _, _, url, holds, *_ in OTHERS:
+        try:
+            text = _html.unescape(re.sub(r"<[^>]+>", " ", fetcher(url).decode("utf-8", "replace")))
+            m = re.search(COUNTS.get(place, r"$^"), text, re.I)
+            out.append((place, holds, f"page says {m.group(1).strip()}" if m else "no count found on the page"))
+        except Exception as e:
+            out.append((place, holds, f"not read ({e})"))
+    for place, _, _, url, _, why in RECHECK:
+        try:
+            fetcher(url)
+            out.append((place, f"couldn't be opened: {why}", "opens now: check it"))
+        except Exception as e:
+            out.append((place, f"couldn't be opened: {why}", f"still not read ({e})"))
+    return out
+
+
+def note(base: str, branch: str) -> tuple[str, str, str] | None:
+    """The project inbox's note for a govai/<day> branch: each list it adds to or changes in OTHERS, and what it left
+    out; None when it changes nothing. `base` is main's copy of this file."""
+    import ast
+    from . import approve
+    had_rows = set()
+    for node in ast.parse(base).body:
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "OTHERS" for t in node.targets):
+            had_rows = {tuple(r) for r in ast.literal_eval(node.value)}
+    had = approve.lists_in(base, ("LEFT_OUT",))
+    rows = [(o[0], o[2], o[4], o[5], o[6], _when(o[7]), o[3]) for o in OTHERS if tuple(o) not in had_rows]
+    dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    if not rows and not dropped:
+        return None
+    return approve.note("What governments use AI for", f"government list{'s' * (len(rows) != 1)}", branch,
+                        ("Place", "List", "Holds", "Kept by", "Covers", "Checked", "Its page"), rows, dropped)
 
 # OMB publishes each year's inventory in a repository of its own; the newest one found is read
 US_CSV = ("https://raw.githubusercontent.com/ombegov/{y}-Federal-Agency-AI-Use-Case-Inventory/HEAD/Data/"

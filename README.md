@@ -52,7 +52,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 | Policy | AI safety hub | Daily, checked by hand |
 | Policy | AI consultations | Official lists every 6 h; daily, other consultations checked by hand |
 | Policy | AI pacts and orders | Daily, checked by hand |
-| Policy | What governments use AI for | Daily, from each government's register |
+| Policy | What governments use AI for | Full lists daily; daily, the other lists and new ones checked by hand |
 | Research | Papers that made the news | Daily, checked by hand |
 | Research | New tests for AI | Daily, checked by hand |
 | Research | Compute behind notable models | Every 6 h, from Epoch AI |
