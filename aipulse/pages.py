@@ -1025,6 +1025,13 @@ a.subscribe-btn{text-decoration:none}
 .cp .ft .pc-rows td.pc-s a{display:block;font-size:12px;margin-top:3px}
 .cp .pc-k{display:inline-block;font:700 11px var(--body);text-transform:uppercase;letter-spacing:.04em;border:1.5px solid var(--line);padding:0 5px;color:#111}
 .cp .pc-ord{background:#E9B9D5}.cp .pc-inv{background:#A8D8F2}.cp .pc-crt{background:#F2D27A}
+/* The model economy: a second name under the title; tags for cheaper / same / pricier and for under 30, 30-89 and 90+
+   days of warning */
+.cp .fh-sub{margin:2px 0 0;font:700 17px/1.3 var(--body);color:#000}
+.cp .me-same{background:var(--bg);color:var(--ink)}.cp .me-mixed{background:#F2D27A}.cp .me-mid{background:#E69F00}
+.cp .me-models{margin-top:22px}.cp .me .me-more{margin-top:10px}
+.cp .ft.me .pc-rows a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+@media (max-width:640px){.cp .me td[data-l]::before{content:attr(data-l) ": ";color:var(--muted);font-size:12.5px}}
 /* AI fines and bans: a dot per action on one time line (each linking to its row), then the AI pacts and orders boxes
    stacked, each a table in real columns with a tag for where it stands and a muted line under it */
 .cp .fx-tl{margin:26px 0 22px}
@@ -1404,6 +1411,7 @@ FEATURES = {
     "new-tests-for-ai/": ("research", "M9 4h6v3H9zM7 5.5H5V20h14V5.5h-2M8.5 13l2.5 2.5 4.5-4.5"),
     "compute-behind-notable-models/": ("research", "M4 20h16M4 20V4M8 16.5v.01M11.5 13v.01M15 9.5v.01M18.5 6v.01"),
     "lab-timelines/": ("tool", "M3 6h18M3 12h18M3 18h18M8 4v4M15 10v4M11 16v4"),
+    "model-economy/": ("tool", "M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 2.6 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3"),
     "ai-pacts-and-orders/": ("policy", "M7 4h10v16H7zM10 8h4M10 11.5h4M9.5 16l1.5 1.5 3-3"),
     "government-ai-use/": ("policy", "M4 21h16M6 18v-8M10 18v-8M14 18v-8M18 18v-8M3 10l9-6 9 6z"),
     "data-centre-builds/": ("infra", "M4 20V9h9v11M13 20V4h7v16M3 20h18M7 12.5h3M7 16h3M16 8h1M16 12h1M16 16h1"),
@@ -1428,22 +1436,24 @@ def cite(path: str, title: str) -> str:
             'document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".fh-cite[open]").forEach(d=>d.open=false)})</script>')
 
 
-def band(colour: str, icon: str, art: str, title: str, question: str, intro: str, extra: str = "") -> str:
+def band(colour: str, icon: str, art: str, title: str, question: str, intro: str, extra: str = "", sub: str = "") -> str:
     """Every page's header band: `colour` a stream's key (--f-<colour>), `icon` a 24×24 path or ready HTML (a flag,
-    a logo), `art` our own cartoon's address, `extra` HTML under the question. title and question are plain text;
-    intro is HTML."""
+    a logo), `art` our own cartoon's address, `extra` HTML under the question, `sub` a second name under the title.
+    title, question and sub are plain text; intro is HTML."""
     pic = icon.startswith("<")
     ic = icon if pic else f'<svg viewBox="0 0 24 24"><path d="{icon}"/></svg>'
-    q = f'<p class="fh-q">{escape(question)}</p>' if question else ""
+    q = (f'<p class="fh-sub">{escape(sub)}</p>' if sub else "") + (f'<p class="fh-q">{escape(question)}</p>' if question else "")
     return (f'<header class="fh" style="--f:var(--f-{colour})"><div class="fh-t"><span class="fh-ic{" pic" * pic}" '
             f'aria-hidden="true">{ic}</span><div><h1>{escape(title)}</h1>{q}{extra}</div></div>\n'
             f'<p class="fh-d">{intro}</p><img class="fh-art" src="{art}" alt="" aria-hidden="true"></header>\n')
 
 
-def feature_head(path: str, title: str, question: str, intro: str) -> str:
-    """A feature's header band (the same on every feature). title and question are plain text; intro is HTML."""
+def feature_head(path: str, title: str, question: str, intro: str, sub: str = "") -> str:
+    """A feature's header band (the same on every feature). title, question and sub (a second name under the title)
+    are plain text; intro is HTML."""
     stream, icon = FEATURES[path]
-    return band(stream, icon, f"photos/cartoons/features/{path.strip('/')}.svg", title, question, intro, cite(path, title))
+    return band(stream, icon, f"photos/cartoons/features/{path.strip('/')}.svg", title, question, intro, cite(path, title),
+                sub)
 
 
 def share_tags(title: str, path: str, description: str) -> str:

@@ -623,7 +623,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "review", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "chip-export-rules", "ai-buyouts", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "chip-export-rules", "ai-buyouts", "lab-timelines", "model-economy", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -664,7 +664,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     for old, new in kind_pages.MOVED.items():  # an old address sends readers to the new one
         assert f'url=/{new}"' in (tmp_path / "site" / old / "index.html").read_text(encoding="utf-8")
         assert f"/{old}<" not in sitemap
-    assert sitemap.count("<url>") == 1 + 7 + 9 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, ai-buyouts/, lab-timelines/
+    assert sitemap.count("<url>") == 1 + 7 + 10 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, ai-buyouts/, lab-timelines/, model-economy/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -4318,3 +4318,31 @@ def test_government_ai_use_daily_job_finds_list_stories_rereads_counts_and_notes
     assert subject == "AI Pulse, What governments use AI for: 1 new government list to approve"
     assert "151 initiatives" in text and "22 Oct 2026" in text and "Estonia" not in text
     assert "left out: 1 story" in text
+
+
+def test_model_economy_prices_against_the_model_before_and_shutdown_warning(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import model_economy as me, retired
+    conn = store.connect(tmp_path / "t.db")
+    saved = {"OpenAI": {"rows": [
+        {"lab": "OpenAI", "model": "gpt-a", "shuts": "2026-12-01", "told": "2026-06-01", "kind": "model", "replace": "gpt-b"},
+        {"lab": "OpenAI", "model": "Evals platform", "shuts": "2026-11-30", "told": "2026-06-03", "kind": "product", "replace": ""},
+        {"lab": "OpenAI", "model": "gpt-old", "shuts": "2025-12-01", "told": "2025-06-01", "kind": "model", "replace": ""}]},
+        "Mistral": {"rows": [{"lab": "Mistral", "model": "m-ocr", "shuts": "2026-09-30", "told": "2026-09-29",
+                              "kind": "model", "replace": "OCR 4.1"}]},
+        "Google": {"rows": [{"lab": "Google", "model": "gemini-x", "shuts": "2026-11-17", "told": "", "kind": "model",
+                             "replace": "gemini-y"}]}}
+    conn.execute("INSERT INTO meta VALUES (?, ?)", (retired.KEY, __import__("json").dumps(saved)))
+    assert me.build(conn, [], tmp_path, date(2026, 10, 20)) == ["model-economy/"]
+    page = (tmp_path / "model-economy" / "index.html").read_text(encoding="utf-8")
+    assert '<h1>The model economy</h1><p class="fh-sub">The cost of keeping up</p>' in page
+    ps = {p["model"]: p for p in me.prices()}
+    assert ps["Claude Opus 5.5"]["say"] == "20% cheaper" and ps["Claude Opus 5.5"]["was_price"] == "$5 / $25"
+    assert ps["Gemini 3.7 Flash"]["way"] == "down" and ps["Grok 4.7"]["say"] == "Same"
+    assert ps["DeepSeek V4.1 Flash"]["way"] == "up" and ps["Gemini 3.7 Flash"]["price_note"] == "Introductory, until 31 Dec"
+    assert "2 launched cheaper, 1 pricier and 6 at the same price" in page
+    assert "Evals platform" not in page and "gpt-old" not in page  # a whole product; before 2026
+    assert "OpenAI gives the most warning: a median of 183 days. The shortest was Mistral&#x27;s: 1 day." in page
+    assert "Its page gives no day it told developers" in page and "gemini-x" not in page
+    assert me._per_token("$0.005 / $0.018|a minute of audio") is None and me._per_token("$4 / $20") == (4, 20)
+    assert not any(c["title"].startswith(("Claude Opus 5.5", "Gemini 3.8 Live")) for c in me.candidates())
