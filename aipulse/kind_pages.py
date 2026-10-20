@@ -59,6 +59,9 @@ POLICY_TOPICS = {"Law": "Courts & law", "Copyright": "Copyright", "Security": "S
                  "Export Controls": "Chips & exports", "Privacy": "Privacy", "Antitrust": "Antitrust",
                  "Deepfakes": "Deepfakes"}
 
+# Pages that moved: old address -> new (Policy's think tanks split into rights groups and institutes, 20 Oct 2026)
+MOVED = {"policy/think-tanks/": "policy/rights-groups/"}
+
 # Research, by subject, read from a paper's title (a paper can have several; one with none is on no page). The
 # reader's browser matches them too, so they use only what Python and JavaScript read alike.
 SUBJECTS = {
@@ -371,4 +374,11 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
                                                        (f"/{home}/", f"Back to {name}"), f"More from {name}: {others}"),
                                             encoding="utf-8")
         paths.append(p)
+    for old, new in MOVED.items():  # old addresses send readers on (not in the sitemap)
+        (out / old).mkdir(parents=True, exist_ok=True)
+        (out / old / "index.html").write_text(
+            f'<!doctype html><meta charset="utf-8"><title>Moved · AI Pulse</title><link rel="canonical" '
+            f'href="https://projectaipulse.com/{new}"><meta name="robots" content="noindex">'
+            f'<meta http-equiv="refresh" content="0; url=/{new}"><p><a href="/{new}">This page has moved.</a></p>',
+            encoding="utf-8")
     return paths
