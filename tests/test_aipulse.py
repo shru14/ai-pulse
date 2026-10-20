@@ -642,8 +642,10 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     sitemap = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
     tracker_pages = list((tmp_path / "site" / "tracker").glob("**/index.html"))
     tracker_pages += list((tmp_path / "site" / "glossary").glob("**/index.html"))  # and the glossary's
+    from aipulse.kind_pages import MOVED
     for stream in ("industry", "releases", "policy", "research", "infra"):  # and each stream's pages within it
-        tracker_pages += list((tmp_path / "site" / stream).glob("*/index.html"))
+        tracker_pages += [q for q in (tmp_path / "site" / stream).glob("*/index.html")  # not the moved addresses
+                          if f"{stream}/{q.parent.name}/" not in MOVED]
     tracker_pages += list((tmp_path / "site" / "topics").glob("**/index.html"))  # and the topics, a page each
     tracker_pages += list((tmp_path / "site" / "monthly").glob("**/index.html"))  # and the monthly issues
     tracker_pages += [tmp_path / "site" / "rule-echoes" / "index.html", tmp_path / "site" / "promises" / "index.html",
@@ -659,6 +661,9 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     front = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     for p in kind_pages.paths():
         assert f'href="{p}"' in front and (tmp_path / "site" / p / "index.html").exists() and f"<loc>https://projectaipulse.com/{p}</loc>" in sitemap
+    for old, new in kind_pages.MOVED.items():  # an old address sends readers to the new one
+        assert f'url=/{new}"' in (tmp_path / "site" / old / "index.html").read_text(encoding="utf-8")
+        assert f"/{old}<" not in sitemap
     assert sitemap.count("<url>") == 1 + 7 + 9 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, ai-buyouts/, lab-timelines/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
