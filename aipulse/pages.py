@@ -1073,7 +1073,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .fx-c{display:block;color:var(--muted);font-size:12px;line-height:1.3;margin-top:3px}
 .cp .ft.fx .fx-c a{display:inline;margin:0;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .cp .ft.fx td.fx-s > .fx-c > a{color:var(--ink)}
-.cp .fx-in{background:#A6DCC6}.cp .fx-li{background:#A8D8F2}.cp .fx-ch{background:#F2D27A}.cp .fx-an{background:#F3B08A}.cp .fx-aw{background:#DDDDDD}
+.cp .fx .pc-hh{background:var(--f-reg)}
+.cp .fx .pc-hh h2,.cp .fx .pc-hh p{color:#141925}
+.cp .fx-in{background:#F85C48}.cp .fx-li{background:#56B4E9}.cp .fx-ch{background:#F0E442}.cp .fx-an{background:#8C8C8C}.cp .fx .fx-aw{background:var(--bg);border-style:dashed;color:var(--ink)}
 /* Chip export rules: a grid of chips (rows) by US decision (columns), a coloured cell per answer with its symbol so
    colour is never the only cue; then three short lists in columns, stacked on phones (the grid shrinks to fit) */
 .cp .ce .fx-in{background:#A6DCC6}.cp .ce .fx-ch{background:#F2D27A}.cp .ce .fx-an{background:#F3B08A}.cp .ce .fx-aw{background:#DDDDDD}
