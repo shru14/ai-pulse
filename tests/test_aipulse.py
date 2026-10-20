@@ -4188,3 +4188,19 @@ def test_release_safety_reports(monkeypatch):
     assert rc.safety("2026-10-15", "Step 5 Preview")["checked"] == "2026-11-14"  # looked for until 30 days after launch
     assert "Step 5 Preview" in rc.safety_due(date(2026, 10, 20)) and "Grok 4.5" not in rc.safety_due(date(2026, 10, 20))
     assert "Safety report on day one" in rc.body(rc.rows())
+
+
+def test_lab_timelines_pulled(monkeypatch):
+    from datetime import date
+    from aipulse import lab_timelines as lt
+    today = date(2026, 10, 20)
+    assert "pulled" not in lt.body(lt.events({}, today), today)  # no mark, legend or note until a model is pulled
+    monkeypatch.setattr(lt, "PULLED", [("2026-08-05", "OpenAI", "GPT-Live", "a test reason", "https://x.example/p")])
+    page = lt.body(lt.events({}, today), today)
+    assert "✕ GPT-Live pulled" in page and "✕ pulled</span>" in page and "✕ Pulled" in page
+    base = open(lt.__file__, encoding="utf-8").read()
+    subject, text, html = lt.note(base, "timelines/2026-10-21")
+    assert "Pulled: a test reason" in text
+    story = {"date": "2026-10-19", "title": "Lab pulls its new model after backlash", "url": "https://x.example/q",
+             "source": "Verge", "category": "news"}
+    assert lt.candidates([story]) == [story]

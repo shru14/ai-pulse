@@ -957,8 +957,8 @@ a.subscribe-btn{text-decoration:none}
 .cp .lt-name{all:unset;cursor:pointer;font:600 15px/1.35 var(--body);color:var(--ink)}
 .cp .lt-name:hover,.cp .lt-name:focus-visible{text-decoration:underline}
 .cp .lt-name[aria-pressed=true]{text-decoration:underline;text-decoration-thickness:2px}
-.cp .lt-r,.cp .lt-t .lt-p,.cp .lt-t .lt-s{display:block;margin:0 0 3px}
-.cp .lt-p{color:var(--accent);font-weight:600}
+.cp .lt-r,.cp .lt-t .lt-p,.cp .lt-t .lt-x,.cp .lt-t .lt-s{display:block;margin:0 0 3px}
+.cp .lt-p{color:var(--accent);font-weight:600}.cp .lt-x{color:#D55E00;font-weight:700}
 .cp .lt-s{color:var(--muted)}
 .cp .lt-fut{background:color-mix(in srgb,var(--ink) 6%,var(--bg))}
 .cp .lt-few[hidden],.cp .lt-lab[hidden]{display:none}

@@ -35,6 +35,9 @@ PLACES = [
     ("2026-10-13", "Google", "Gemini 4 Argon", "now worldwide",
      "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-argon/"),
 ]
+# a model the lab took away from its users after launch (not one cancelled before it, nor a feature or app): (day,
+#  lab, model, why in a few words as the lab or story gives it, the story or lab page)
+PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
     "https://the-decoder.com/deepseek-makes-its-75-percent-discount-permanent-pricing-output-tokens-at-least-34x-below-gpt-5-5/":
@@ -92,25 +95,28 @@ CHECKED_TO = "2026-10-17"
 _PRICE = re.compile(r"\b(price[sd]?|pricing|cheaper|dearer|discount|per million|per 1M|halves|slash(es)?)\b", re.I)
 _PLACE = re.compile(r"\b(now available|available (in|to)|rolls? out (in|to)|expands? to|arrives? in|launch(es)? in|"
                     r"comes? to|reaches)\b", re.I)
+_PULL = re.compile(r"\b(pull(s|ed)?|withdraw[sn]?|withdrew|roll(s|ed)? back|rollback|revert(s|ed)?|takes? down|"
+                   r"taken down|removes?|suspend(s|ed)?|disables?)\b", re.I)
 
 
 def candidates(cards: list[dict], since: str = "", today: date | None = None) -> list[dict]:
     """Stories from after CHECKED_TO (or `since`, if later) that no row uses and LEFT_OUT doesn't hold, whose headline
-    may be an AI model's price change or its reaching new places. Newest first."""
+    may be an AI model's price change, its reaching new places or its being pulled. Newest first."""
     since = max(since, CHECKED_TO + "~")
-    used = {r[-1] for r in PRICES + PLACES} | set(LEFT_OUT)
+    used = {r[-1] for r in PRICES + PLACES + PULLED} | set(LEFT_OUT)
     return [c for c in sorted(cards, key=lambda c: c["date"], reverse=True)
             if c["date"] >= since and not any(s["url"] in used for s in [c, *(c.get("also") or [])])
-            and any(_PRICE.search(s["title"]) or _PLACE.search(s["title"]) for s in [c, *(c.get("also") or [])])]
+            and any(_PRICE.search(s["title"]) or _PLACE.search(s["title"]) or _PULL.search(s["title"]) for s in [c, *(c.get("also") or [])])]
 
 
 def note(base: str, branch: str) -> tuple[str, str, str] | None:
     """The project inbox's note for a timelines/<day> branch: each price change and new place it adds, and the
     stories it left out; None when it adds nothing. `base` is main's copy of this file."""
     from . import approve
-    had = approve.lists_in(base, ("PRICES", "PLACES", "LEFT_OUT"))
+    had = approve.lists_in(base, ("PRICES", "PLACES", "PULLED", "LEFT_OUT"))
     rows = [(d, lab, m, f"Price {k}: {detail}", u) for d, lab, m, k, _, detail, u in PRICES if u not in had["PRICES"]]
     rows += [(d, lab, m, where, u) for d, lab, m, where, u in PLACES if u not in had["PLACES"]]
+    rows += [(d, lab, m, f"Pulled: {why}", u) for d, lab, m, why, u in PULLED if u not in had["PULLED"]]
     dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
     if not rows and not dropped:
         return None
@@ -129,6 +135,8 @@ def events(saved: dict, today: date) -> list[dict]:
            for d, lab, m, k, short, detail, u in PRICES if d >= SINCE]
     ev += [{"day": d, "lab": lab, "kind": "place", "text": f"{m} {where}", "detail": "", "url": u}
            for d, lab, m, where, u in PLACES if d >= SINCE]
+    ev += [{"day": d, "lab": lab, "kind": "pulled", "text": f"{m} pulled", "detail": why, "url": u}
+           for d, lab, m, why, u in PULLED if d >= SINCE]
     for lab, got in saved.items():
         days = defaultdict(list)
         for r in got.get("rows", []):
@@ -159,6 +167,7 @@ def _cell(es: list[dict], ahead: bool) -> str:
            for e in es if e["kind"] == "release"]
     out += [f'<span class="lt-p">{"↓" if e["kind"] == "cut" else "↑" if e["kind"] == "rise" else "+"} '
             f'{escape(e["text"])}</span>' for e in es if e["kind"] in ("cut", "rise", "place")]
+    out += [f'<span class="lt-x">✕ {escape(e["text"])}</span>' for e in es if e["kind"] == "pulled"]
     n = sum(e["n"] for e in es if e["kind"] == "shut")
     if n:
         out.append(f'<span class="lt-s">{n} shut down{" (scheduled)" if ahead else ""}</span>')
@@ -166,7 +175,8 @@ def _cell(es: list[dict], ahead: bool) -> str:
 
 
 def _details(lab: str, es: list[dict], today: date) -> str:
-    what = {"release": "Release", "cut": "Price cut", "rise": "Price rise", "place": "New places", "shut": "Shut down"}
+    what = {"release": "Release", "cut": "Price cut", "rise": "Price rise", "place": "New places", "pulled": "Pulled",
+            "shut": "Shut down"}
     rows = []
     for e in sorted(es, key=lambda e: e["day"], reverse=True):
         if e["kind"] == "shut":
@@ -244,6 +254,8 @@ def body(ev: list[dict], today: date) -> str:
         ("+ New places", "A model reaching countries or regions after its launch, as the lab or a story names them."),
         ("Shut down", "From Models being retired: models OpenAI, Anthropic, Google and Mistral switched off, or have "
          "set a date to switch off within the next three months (the grey column). Other labs publish no such dates."),
+    ] + ([("✕ Pulled", "A model the lab took away from its users after launching it, as the lab or a story says. A "
+           "model cancelled before launch, or a feature taken out of an app, is not counted.")] if PULLED else []) + [
         ("Each lab", "Tap a lab's name for its rows as a table, each linking to its source."),
     ]
     few_rows = (f'<tbody class="lt-few" hidden>{"".join(row(lab) for lab in few)}</tbody>' if few else "")
@@ -255,7 +267,8 @@ def body(ev: list[dict], today: date) -> str:
                                  escape(_lead(by, today)))
             + '<div class="lt-leg"><span><b class="lt-dot lt-o"></b>Open weights</span><span><b class="lt-dot lt-wo"></b>'
             'Weights only</span><span><b class="lt-dot lt-c"></b>Closed</span><span class="lt-p">↓ price cut · ↑ price '
-            'rise · + new places</span><span class="lt-s">grey = scheduled</span></div>\n'
+            'rise · + new places</span>' + ('<span class="lt-x">✕ pulled</span>' if PULLED else "")
+            + '<span class="lt-s">grey = scheduled</span></div>\n'
             '<div class="rm-wrap lt-wrap"><table class="mt lt-t"><thead><tr><th>Lab</th>' + head
             + '<th class="lt-fut">Next 3 months</th></tr></thead><tbody>' + "".join(row(lab) for lab in main)
             + "</tbody>" + few_rows + "</table></div>\n" + more
