@@ -200,6 +200,11 @@ def main():
                 print(f"Compute behind notable models: {compute.refresh(conn)}")
             except Exception as e:
                 print(f"Compute behind notable models: not read ({e})")
+            from . import gov_ai  # three governments' registers of the AI they use, once a day
+            try:
+                print(f"What governments use AI for: {gov_ai.refresh(conn)}")
+            except Exception as e:
+                print(f"What governments use AI for: not read ({e})")
     elif a.cmd == "serve":
         store.connect(a.db).close()
         serve(a.db, a.host, a.port)
@@ -299,8 +304,11 @@ def main():
         conn = store.connect(a.db)
         # the news sources, the official lists AI consultations reads (consultations.refresh logs them) and Epoch AI's
         # dataset (compute.refresh logs it)
+        # and the registers What governments use AI for reads (gov_ai.refresh logs them)
         from .compute import CSV
-        rows = store.newly_failing(conn, [s["url"] for s in SOURCES] + [url for url, _ in LISTS.values()] + [CSV])
+        from .gov_ai import REGISTERS
+        rows = store.newly_failing(conn, [s["url"] for s in SOURCES] + [url for url, _ in LISTS.values()] + [CSV]
+                                   + [url for url, _ in REGISTERS.values()])
         if not rows:
             print("No source has newly stopped working.")
         elif a.dry_run:

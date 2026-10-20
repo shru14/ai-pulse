@@ -518,6 +518,8 @@ FEATURES = [
      "AI since 2022, with whether each still stands.", "ai-fines-and-bans/"),
     ("Chip export rules", "What Nvidia and AMD could sell to China under each US rule since 2022, and how China "
      "answered.", "chip-export-rules/"),
+    ("What governments use AI for", "What the US, the Netherlands and the UK say they use AI for, from their own "
+     "registers, and which uses can affect people's rights or safety.", "government-ai-use/"),
 ]
 
 

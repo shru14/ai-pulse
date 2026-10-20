@@ -1058,6 +1058,35 @@ a.subscribe-btn{text-decoration:none}
 .cp .fx .pc-hh{background:var(--f-reg)}
 .cp .fx .pc-hh h2,.cp .fx .pc-hh p{color:#141925}
 .cp .fx-in{background:#F85C48}.cp .fx-li{background:#56B4E9}.cp .fx-ch{background:#F0E442}.cp .fx-an{background:#8C8C8C}.cp .fx .fx-aw{background:var(--bg);border-style:dashed;color:var(--ink)}
+/* What governments use AI for: AI pacts and orders' stacked boxes, one per register (Okabe-Ito tints, dark text),
+   each with two small count tables side by side and a scrolling table; the US table has Excel-style filters */
+.cp .gv-lead{font:400 21px/1.4 var(--body);margin:22px 0 4px;max-width:900px}
+.cp .gv-lead b{font-weight:700}
+.cp .gv .gv-us .pc-hh{background:color-mix(in srgb,#CC79A7 30%,var(--bg))}
+.cp .gv .gv-nl .pc-hh{background:color-mix(in srgb,#E69F00 30%,var(--bg))}
+.cp .gv .gv-uk .pc-hh{background:color-mix(in srgb,#56B4E9 32%,var(--bg))}
+.cp .ft.gv .pc-hh a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.cp .gv-f{width:26px;height:18px;object-fit:cover;border:1px solid var(--line);margin-right:10px;vertical-align:-1px}
+.cp .gv-two{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:6px}
+.cp .gv-two table{width:100%;border-collapse:collapse}
+.cp .gv-two td{font-size:13.5px;padding:4px 8px 4px 0;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+.cp .gv-n{text-align:right;font:700 13.5px var(--mono);width:1%;white-space:nowrap}
+.cp .gv-sc{max-height:520px;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:2px solid var(--ink)}
+.cp .gv-t thead th{position:sticky;top:0;z-index:1;background:var(--bg);text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 10px 6px 0;border-bottom:3px solid var(--ink)}
+.cp .gv-t td{padding:8px 10px 8px 0}
+.cp .ft.gv .gv-t td a{color:var(--ink);font-weight:600;text-decoration:none}
+.cp .ft.gv .gv-t td a:hover{text-decoration:underline}
+.cp .gv-us-t td:first-child{width:150px}
+.cp .gv .pc-k{white-space:nowrap}
+.cp .gv-live{background:#A6DCC6}.cp .gv-trial{background:#F2D27A}.cp .gv-off{background:#DDDDDD}.cp .gv-high{background:#E9B9D5}
+@media (max-width:640px){.cp .gv-two{grid-template-columns:1fr}
+  .cp .gv-sc{max-height:72vh}
+  .cp .gv-t thead{display:none}
+  .cp .gv-t tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent);padding:6px 0}
+  .cp .gv-t td{display:inline-block;border:0;padding:2px 8px 2px 0;vertical-align:middle}
+  .cp .gv-t td:nth-child(2){display:block}
+  .cp .gv-us-t td:first-child{width:auto}
+  .cp .gv-us-t td:first-child .fx-c{display:none}}
 /* Chip export rules: a grid of chips (rows) by US decision (columns), a coloured cell per answer with its symbol so
    colour is never the only cue; then three short lists in columns, stacked on phones (the grid shrinks to fit) */
 .cp .ce .fx-in{background:#A6DCC6}.cp .ce .fx-ch{background:#F2D27A}.cp .ce .fx-an{background:#F3B08A}.cp .ce .fx-aw{background:#DDDDDD}
@@ -1299,6 +1328,7 @@ FEATURES = {
     "compute-behind-notable-models/": ("research", "M4 20h16M4 20V4M8 16.5v.01M11.5 13v.01M15 9.5v.01M18.5 6v.01"),
     "lab-timelines/": ("tool", "M3 6h18M3 12h18M3 18h18M8 4v4M15 10v4M11 16v4"),
     "ai-pacts-and-orders/": ("policy", "M7 4h10v16H7zM10 8h4M10 11.5h4M9.5 16l1.5 1.5 3-3"),
+    "government-ai-use/": ("policy", "M4 21h16M6 18v-8M10 18v-8M14 18v-8M18 18v-8M3 10l9-6 9 6z"),
     "data-centre-builds/": ("infra", "M4 20V9h9v11M13 20V4h7v16M3 20h18M7 12.5h3M7 16h3M16 8h1M16 12h1M16 16h1"),
     "who-powers-ai/": ("infra", "M13 3L5 14h6l-1 7 8-11h-6z"),
     "pushback-and-permits/": ("infra", "M5 4h14v11H5zM9 15v5M15 15v5M8 8h8M8 11h5"),

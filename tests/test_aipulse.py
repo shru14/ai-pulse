@@ -4100,3 +4100,54 @@ def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_pat
     assert "1 of 2" in page
     assert "have none, so they aren&#x27;t shown; 1 of them doesn&#x27;t share their weights" in page
     assert compute.times(2.1e25, 2.1e25) == "1×" and compute.since(date(2026, 1, 5)) == "2025-10-01"
+
+
+def test_government_ai_use_reads_each_register_once_a_day_and_builds(tmp_path):
+    import json
+    from datetime import datetime, timezone
+    from aipulse import gov_ai
+    us = ("﻿agency,agency_name,use_case_name,development_stage,is_high_impact,topic_area,classification,problem_solved\n"
+          "VA,Department of Veterans Affairs,Suicide risk model,Deployed,High-impact,Health and Medical,Classical ML,Flags veterans at risk\n"
+          "NASA,National Aeronautics and Space Administration,Crater finder,Pre-deployment,Not High-impact,Science,Computer Vision,Maps craters\n"
+          "DOJ,Department of Justice,,Deployed,High-impact,Law Enforcement,NLP,No name given\n")
+    nl = ('﻿"name","organization","description_short","category","status","publication_category","algorithm_id"\n'
+          '"Werkzoekenden matchen","Gemeente Delft","Matchplaats ondersteunt de werkconsulent","Sociale zekerheid","In gebruik","Hoog-risico AI-systeem","111"\n'
+          '"Anonimiseren","Gemeente Midden-Groningen","Gevoelige informatie verbergen","Organisatie en bedrijfsvoering","In gebruik","Overige algoritmes","222"\n')
+    uk = {"results": [
+        {"title": "HMRC: VAT Assist", "link": "/algorithmic-transparency-records/hmrc-vat-assist",
+         "description": "Compares tax return data", "public_timestamp": "2026-09-09T10:00:00Z"},
+        {"title": "Disclosure and Barring Service Barring Referral AI Summary Tool",  # no "body: tool" colon
+         "link": "/algorithmic-transparency-records/dbs", "description": "Summaries", "public_timestamp": "2026-10-14T10:00:00Z"}]}
+    asked = []
+    def fetch(url):
+        asked.append(url)
+        if "2025-Federal" in url:
+            return us.encode()
+        if "Federal" in url:
+            raise OSError("404")  # next year's inventory isn't out yet
+        if "algoritmes" in url:
+            return nl.encode()
+        if "gov.uk" in url:
+            return json.dumps(uk).encode()
+        raise OSError("down")
+    conn = store.connect(tmp_path / "t.db")
+    assert gov_ai.build(conn, [], tmp_path, date(2026, 10, 20)) == []  # nothing read yet
+    now = datetime(2026, 10, 20, 6, tzinfo=timezone.utc)
+    assert gov_ai.refresh(conn, fetch, now) == "US 2, NL 2, UK 2"
+    n = len(asked)
+    assert gov_ai.refresh(conn, fetch, now.replace(hour=12)) == "US read today, NL read today, UK read today"
+    assert len(asked) == n  # once a day
+    down = lambda url: (_ for _ in ()).throw(OSError("down"))
+    for h in (1, 2, 3):  # a register down 3 days running keeps its rows and is failing, for source-alert
+        gov_ai.refresh(conn, down, now.replace(day=20 + h))
+    assert len(gov_ai.load(conn)["US"]["rows"]) == 2
+    assert len(store.newly_failing(conn, [u for u, _ in gov_ai.REGISTERS.values()])) == 3
+    assert gov_ai.build(conn, [], tmp_path, date(2026, 10, 20)) == ["government-ai-use/"]
+    page = (tmp_path / "government-ai-use" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>What governments use AI for</h1>" in page and "photos/cartoons/features/government-ai-use.svg" in page
+    assert "<b>2 AI uses</b>; <b>1</b> in use or on trial are high-impact" in page  # the unnamed DOJ row is left out
+    assert page.index("Suicide risk model") < page.index("Crater finder")  # high-impact first
+    assert 'href="https://algoritmes.overheid.nl/nl/algoritme/111"' in page and "Anonimiseren" not in page  # high-risk only
+    assert "2 algorithms in the national Algorithm Register; 1 marked" in page and "Social security" in page
+    assert page.index("14 Oct 2026") < page.index("9 Sep 2026") and "<b>HMRC</b>" in page
+    assert ">Disclosure and Barring Service Barring Referral AI Summary Tool</a>" in page
