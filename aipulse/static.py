@@ -430,6 +430,8 @@ def build(conn, out: str | Path) -> int:
     places += chip_rules.build(conn, cards, out, today)  # what AI chips may go to China, and every chip export rule (Infra's feature)
     from . import pacts
     places += pacts.build(conn, cards, out, today)  # pledges governments signed and what they made AI companies do (Policy's feature)
+    from . import gov_ai
+    places += gov_ai.build(conn, cards, out, today)  # what governments' own registers say they use AI for (Policy's feature)
     from . import release_cards
     places += release_cards.build(conn, cards, out, today)  # every major model release: weights, licence, price (Releases' feature)
     from . import lab_timelines

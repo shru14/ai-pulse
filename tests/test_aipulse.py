@@ -4204,3 +4204,80 @@ def test_lab_timelines_pulled(monkeypatch):
     story = {"date": "2026-10-19", "title": "Lab pulls its new model after backlash", "url": "https://x.example/q",
              "source": "Verge", "category": "news"}
     assert lt.candidates([story]) == [story]
+
+
+def test_government_ai_use_reads_each_list_once_a_day_and_builds_the_page_and_each_lists_page(tmp_path):
+    import json
+    from datetime import datetime, timezone
+    from aipulse import gov_ai
+    us = ("﻿agency,agency_name,use_case_name,development_stage,is_high_impact,topic_area,classification,problem_solved,vendor_name\n"
+          "VA,Department of Veterans Affairs,Suicide risk model,Deployed,High-impact,Health and Medical,Classical ML,Flags veterans at risk,\n"
+          "NASA,National Aeronautics and Space Administration,Crater finder,Pre-deployment,Not High-impact,Science,Computer Vision,Maps craters,\n"
+          "GSA,General Services Administration,Copilot Chat,Deployed,Not High-impact,Admin Functions,Generative AI,Drafts emails,Microsoft\n"
+          "NASA,National Aeronautics and Space Administration,Amazon basin canopy model,Pilot,Not High-impact,Science,Classical ML,Maps forest,\n"
+          "DOJ,Department of Justice,,Deployed,High-impact,Law Enforcement,NLP,No name given,\n")
+    ca = ("﻿name_ai_system_en,government_organization,description_ai_system_en,ai_system_primary_users_en,developed_by_en,"
+          "vendor_information,ai_system_status_en,involves_personal_information\n"
+          "Primary Inspection Kiosk,Canada Border Services Agency / Agence des services frontaliers,Self-service for travellers,"
+          "Members of public,Vendor,,In production ,Y\n"
+          "Copilot for staff,Statistics Canada / Statistique Canada,Drafting,GC employees,Vendor,Microsoft Azure,in production,N\n")
+    nl = ('﻿"name","organization","description_short","category","status","publication_category","algorithm_id","provider"\n'
+          '"Werkzoekenden matchen","Gemeente Delft","Matchplaats ondersteunt de werkconsulent","Sociale zekerheid","In gebruik","Hoog-risico AI-systeem","111",""\n'
+          '"Anonimiseren","Gemeente Midden-Groningen","Gevoelige informatie verbergen","Organisatie en bedrijfsvoering","In gebruik","Overige algoritmes","222","Microsoft"\n')
+    uk = {"results": [
+        {"title": "HMRC: VAT Assist", "link": "/algorithmic-transparency-records/hmrc-vat-assist",
+         "description": "Compares tax return data", "public_timestamp": "2026-09-09T10:00:00Z"},
+        {"title": "Disclosure and Barring Service Barring Referral AI Summary Tool",  # no "Body: Tool" colon
+         "link": "/algorithmic-transparency-records/dbs", "description": "Summaries", "public_timestamp": "2026-10-14T10:00:00Z"}]}
+    asked = []
+    def fetch(url):
+        asked.append(url)
+        if "2025-Federal" in url:
+            return us.encode()
+        if "Federal" in url:
+            raise OSError("404")  # next year's inventory isn't out yet
+        if "package_show" in url:
+            return json.dumps({"result": {"resources": [{"format": "PDF", "url": "https://ca.example/log.pdf"},
+                                                        {"format": "CSV", "url": "https://ca.example/register.csv"}]}}).encode()
+        if "ca.example/register.csv" in url:
+            return ca.encode()
+        if "algoritmes" in url:
+            return nl.encode()
+        if "gov.uk" in url:
+            return json.dumps(uk).encode()
+        raise OSError("down")
+    conn = store.connect(tmp_path / "t.db")
+    today = date(2026, 10, 20)
+    assert gov_ai.build(conn, [], tmp_path, today) == []  # nothing read yet
+    now = datetime(2026, 10, 20, 6, tzinfo=timezone.utc)
+    assert gov_ai.refresh(conn, fetch, now) == "US 4, NL 2, CA 2, UK 2"
+    n = len(asked)
+    assert gov_ai.refresh(conn, fetch, now.replace(hour=12)) == "US read today, NL read today, CA read today, UK read today"
+    assert len(asked) == n  # once a day
+    down = lambda url: (_ for _ in ()).throw(OSError("down"))
+    for d in (1, 2, 3):  # a list down 3 days running keeps its rows and is failing, for source-alert
+        gov_ai.refresh(conn, down, now.replace(day=20 + d))
+    assert len(gov_ai.load(conn)["US"]["rows"]) == 4
+    assert len(store.newly_failing(conn, [p[3] for p in gov_ai.PLACES.values()])) == 4
+    saved = gov_ai.load(conn)
+    assert gov_ai.suppliers(saved["US"]["rows"])["Microsoft"] == 1 and gov_ai.suppliers(saved["US"]["rows"])["Amazon"] == 0
+    assert gov_ai.build(conn, [], tmp_path, today) == ["government-ai-use/", "government-ai-use/united-states/",
+                                                         "government-ai-use/netherlands/", "government-ai-use/canada/",
+                                                         "government-ai-use/united-kingdom/"]
+    page = (tmp_path / "government-ai-use" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>What governments use AI for</h1>" in page and "photos/cartoons/features/government-ai-use.svg" in page
+    assert "<b>4 governments</b> publish a full list" in page and "Norway" in page and "Checked 20 Oct 2026" in page
+    assert "In all 3 that name suppliers, <b>Microsoft</b> is named most (1 US, 1 Canadian, 1 Dutch)." in page
+    assert page.index('href="government-ai-use/united-states/">Explore') < page.index("Norway")  # biggest list first
+    assert "Suicide risk model" in page and "Crater finder" not in page  # cards show only uses that touch people
+    assert "Primary Inspection Kiosk" in page and "<b>Canada Border Services Agency</b>" in page
+    us_page = (tmp_path / "government-ai-use" / "united-states" / "index.html").read_text(encoding="utf-8")
+    assert us_page.index("Suicide risk model") < us_page.index("Copilot Chat") < us_page.index("Crater finder")
+    assert "<h1>What the United States uses AI for</h1>" in us_page and "Showing <b>4</b> of 4" in us_page
+    nl_page = (tmp_path / "government-ai-use" / "netherlands" / "index.html").read_text(encoding="utf-8")
+    assert 'href="https://algoritmes.overheid.nl/nl/algoritme/111"' in nl_page and nl_page.index("Werkzoekenden") < nl_page.index("Anonimiseren")
+    ca_page = (tmp_path / "government-ai-use" / "canada" / "index.html").read_text(encoding="utf-8")
+    assert ca_page.count('data-f="In production"') == 2  # "In production " and "in production" read as one status
+    uk_page = (tmp_path / "government-ai-use" / "united-kingdom" / "index.html").read_text(encoding="utf-8")
+    assert uk_page.index("14 Oct 2026") < uk_page.index("9 Sep 2026") and "<b>HMRC</b>" in uk_page
+    assert ">Disclosure and Barring Service Barring Referral AI Summary Tool</a>" in uk_page

@@ -520,6 +520,8 @@ FEATURES = [
      "answered.", "chip-export-rules/"),
     ("AI buyouts", "Every AI company bought, merged in or hired away whole in 2026: who bought it, for how much "
      "and whether the deal is done.", "ai-buyouts/"),
+    ("What governments use AI for", "Every government list of the AI it uses: the US, Canada, the Netherlands and the "
+     "UK in full, and whose AI they run (Microsoft, OpenAI, Google...).", "government-ai-use/"),
 ]
 
 

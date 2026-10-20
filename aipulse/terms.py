@@ -266,8 +266,18 @@ PLATFORM: dict[str, tuple[str, str, str]] = {
                      "Have Your Say's public API; European Commission: reuse allowed with acknowledgement; robots.txt "
                      "allows /info/; checked 17 Oct 2026"),
     "open.canada.ca": ("official", "https://open.canada.ca/en/open-government-licence-canada",
-                       "Open Government Licence - Canada: the list of federal consultations is open data; robots.txt "
-                       "allows /static/; checked 17 Oct 2026"),
+                       "Open Government Licence - Canada: the list of federal consultations and the Government of "
+                       "Canada AI Register are open data; robots.txt allows /static/ and /data/; checked 17 and 20 "
+                       "Oct 2026"),
+    # Added 20 Oct 2026 for What governments use AI for (www.gov.uk is above, under Sources)
+    "raw.githubusercontent.com": ("official", "https://github.com/ombegov/2025-Federal-Agency-AI-Use-Case-Inventory",
+                                  "OMB's consolidated Federal Agency AI Use Case Inventory: a US government work, "
+                                  "public domain; GitHub serves the raw file (no robots.txt); one CSV read a day; "
+                                  "checked 20 Oct 2026"),
+    "algoritmes.overheid.nl": ("official", "https://algoritmes.overheid.nl/nl/footer/copyright",
+                               "Dutch Algorithm Register: 'De inhoud van deze website mag worden hergebruikt' (the "
+                               "site's content may be reused); its own CSV download; robots.txt allows all; one read a "
+                               "day; checked 20 Oct 2026"),
     # Added 17 Oct 2026 for Compute behind notable models
     "epoch.ai": ("licence", "https://epoch.ai/data/ai-models",
                  "Epoch AI's Data on AI Models: CC BY 4.0 (the dataset page's own licence field), credited on the page; "
