@@ -420,6 +420,8 @@ def build(conn, out: str | Path) -> int:
     places += retired.build(conn, cards, out, today)  # models the labs have set a shut-down date for (Releases' feature)
     from . import owners
     places += owners.build(conn, cards, out, today)  # the big companies' stakes in AI labs (Industry's feature)
+    from . import buyouts
+    places += buyouts.build(conn, cards, out, today)  # every AI company bought in 2026 (Industry's feature)
     from . import consultations
     places += consultations.build(conn, cards, out, today)  # governments asking the public about AI (Policy's feature)
     from . import fines

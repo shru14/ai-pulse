@@ -623,7 +623,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "review", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "chip-export-rules", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "chip-export-rules", "ai-buyouts", "lab-timelines", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -659,7 +659,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     front = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     for p in kind_pages.paths():
         assert f'href="{p}"' in front and (tmp_path / "site" / p / "index.html").exists() and f"<loc>https://projectaipulse.com/{p}</loc>" in sitemap
-    assert sitemap.count("<url>") == 1 + 7 + 8 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, lab-timelines/
+    assert sitemap.count("<url>") == 1 + 7 + 9 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, ai-buyouts/, lab-timelines/
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -4099,3 +4099,40 @@ def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_pat
     assert "1 of 2" in page
     assert "have none, so they aren&#x27;t shown; 1 of them doesn&#x27;t share their weights" in page
     assert compute.times(2.1e25, 2.1e25) == "1×" and compute.since(date(2026, 1, 5)) == "2025-10-01"
+
+
+def test_buyouts_shopping_lists_table_and_links(tmp_path):
+    from datetime import date
+    from aipulse import buyouts as bo
+    assert bo.build(None, [], tmp_path, date(2026, 10, 20)) == ["ai-buyouts/"]
+    page = (tmp_path / "ai-buyouts" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>AI buyouts</h1>" in page and page.count('<td class="pc-d"') == len(bo.DEALS)
+    # a row per buyer with two or more deals, a dot per deal there, each linking to its row in the table
+    count = {}
+    for r in bo.DEALS:
+        count[r[1]] = count.get(r[1], 0) + 1
+    assert page.count('class="by-r"') == sum(n > 1 for n in count.values())
+    assert page.count('class="by-dot') == sum(n for n in count.values() if n > 1)
+    assert all(f'id="by-{n}"' in page for n in range(len(bo.DEALS)))
+    assert page.count('href="ai-buyouts/#by-') == page.count('class="by-dot')
+    assert "<b>OpenAI</b> made the most deals" in page and "<b>Cursor</b> for <b>$60B in stock</b>" in page
+    assert ">Blocked<" in page and "China ordered the deal undone" in page
+    assert all(r[6] in bo.STATUSES and (r[5] is None) == (r[4] in ("Not disclosed", "Low nine figures")) for r in bo.DEALS)
+    assert not set(r[7] for r in bo.DEALS) & set(bo.LEFT_OUT)
+    # newest first
+    assert page.index("<b>Elementary Data</b>") < page.index("<b>Convogo (team)</b>")
+
+
+def test_buyouts_candidates_and_the_approval_note():
+    from aipulse import buyouts as bo
+    new = {"url": "https://x.example/a", "title": "Okta acquires AI agent security startup Foo",
+           "date": "2026-10-21T08:00", "source": "Outlet", "category": "news"}
+    seen = new | {"url": bo.DEALS[-1][7]}
+    old = new | {"url": "https://x.example/b", "date": "2026-10-19T09:00"}  # read for the list already
+    chips = new | {"url": "https://x.example/c", "title": "Lab to buy $10B of Nvidia chips"}  # not buying a company
+    paper = new | {"url": "https://x.example/d", "category": "research"}
+    assert bo.candidates([new, seen, old, chips, paper]) == [new]
+    base = open(bo.__file__, encoding="utf-8").read().replace(bo.DEALS[-1][7], "https://gone.example/")
+    subject, text, html = bo.note(base, "buyouts/2026-10-21")
+    assert "1 new deal to approve" in subject and bo.DEALS[-1][7] in text
+    assert bo.note(open(bo.__file__, encoding="utf-8").read(), "buyouts/2026-10-21") is None

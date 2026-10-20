@@ -518,6 +518,8 @@ FEATURES = [
      "AI since 2022, with whether each still stands.", "ai-fines-and-bans/"),
     ("Chip export rules", "What Nvidia and AMD could sell to China under each US rule since 2022, and how China "
      "answered.", "chip-export-rules/"),
+    ("AI buyouts", "Every AI company bought, merged in or hired away whole in 2026: who bought it, for how much "
+     "and whether the deal is done.", "ai-buyouts/"),
 ]
 
 
