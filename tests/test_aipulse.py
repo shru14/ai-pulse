@@ -4281,3 +4281,35 @@ def test_government_ai_use_reads_each_list_once_a_day_and_builds_the_page_and_ea
     uk_page = (tmp_path / "government-ai-use" / "united-kingdom" / "index.html").read_text(encoding="utf-8")
     assert uk_page.index("14 Oct 2026") < uk_page.index("9 Sep 2026") and "<b>HMRC</b>" in uk_page
     assert ">Disclosure and Barring Service Barring Referral AI Summary Tool</a>" in uk_page
+
+
+def test_government_ai_use_daily_job_finds_list_stories_rereads_counts_and_notes_changes(monkeypatch):
+    from aipulse import gov_ai
+    story = {"date": "2026-10-22", "title": "Scotland makes its AI register mandatory for all public bodies",
+             "url": "https://news.example/sct", "source": "X", "category": "news"}
+    business = {"date": "2026-10-22", "title": "Retailer shares 50 AI use cases with investors",
+                "url": "https://news.example/biz", "source": "X", "category": "news"}
+    old = dict(story, date="2026-10-01", url="https://news.example/old")
+    assert [c["url"] for c in gov_ai.candidates([story, business, old])] == ["https://news.example/sct"]
+    base = open(gov_ai.__file__, encoding="utf-8").read()
+    assert gov_ai.note(base, "govai/2026-10-22") is None  # nothing changed
+    pages = {"https://ki.norge.no/ki-tiltak": b"<p>151 tiltak</p>",
+             "https://www.kratid.ee/kasutuslood-kratid": b"rakendatud kratte umbes 200 korral",
+             "https://www.gov.br/governodigital/pt-br/infraestrutura-nacional-de-dados/inteligencia-artificial-1":
+                 b"<b>182</b> solu&ccedil;&otilde;es de IA em opera&ccedil;&atilde;o"}
+    def fetch(url):
+        if url in pages:
+            return pages[url]
+        raise OSError("down")
+    got = {p: now for p, _, now in gov_ai.recheck(fetch)}
+    assert got["Norway"] == "page says 151" and got["Estonia"] == "page says 200" and got["Brazil"] == "page says 182"
+    assert got["Scotland"].startswith("still not read")
+    monkeypatch.setattr(gov_ai, "LEFT_OUT", {**gov_ai.LEFT_OUT, "https://news.example/sct": "already on the page"})
+    assert gov_ai.candidates([story]) == []
+    monkeypatch.setattr(gov_ai, "OTHERS", [("Norway", "no", "Offentlige KI-tiltak", "https://ki.norge.no/ki-tiltak",
+                                             "151 initiatives", "KI Norge (Digdir)", "Reported by choice", "2026-10-22"),
+                                            *gov_ai.OTHERS[1:]])
+    subject, text, html = gov_ai.note(base, "govai/2026-10-22")
+    assert subject == "AI Pulse, What governments use AI for: 1 new government list to approve"
+    assert "151 initiatives" in text and "22 Oct 2026" in text and "Estonia" not in text
+    assert "left out: 1 story" in text
