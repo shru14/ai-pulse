@@ -419,7 +419,7 @@ def build(conn, out: str | Path) -> int:
     from . import retired
     places += retired.build(conn, cards, out, today)  # models the labs have set a shut-down date for (Releases' feature)
     from . import owners
-    places += owners.build(conn, cards, out, today)  # the big companies' stakes in AI labs (Industry's feature)
+    places += owners.build(conn, cards, out, today)  # AI money: $1B+ deals, stakes in AI labs, money that comes back (Industry's feature)
     from . import buyouts
     places += buyouts.build(conn, cards, out, today)  # every AI company bought in 2026 (Industry's feature)
     from . import consultations
