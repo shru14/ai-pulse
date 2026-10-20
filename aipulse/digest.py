@@ -522,6 +522,8 @@ FEATURES = [
      "and whether the deal is done.", "ai-buyouts/"),
     ("What governments use AI for", "Every government list of the AI it uses: the US, Canada, the Netherlands and the "
      "UK in full, and whose AI they run (Microsoft, OpenAI, Google...).", "government-ai-use/"),
+    ("Who publishes AI research on Hugging Face", "Which companies put out the most AI papers this year, the research "
+     "subject that is rising, and the researchers we follow who published most.", "who-publishes-ai-research/"),
 ]
 
 

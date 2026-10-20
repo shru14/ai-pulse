@@ -4144,6 +4144,33 @@ def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_pat
     assert compute.times(2.1e25, 2.1e25) == "1×" and compute.since(date(2026, 1, 5)) == "2025-10-01"
 
 
+def test_who_publishes_counts_company_papers_finds_the_rising_subject_and_top_researchers(tmp_path):
+    from datetime import date
+    from aipulse import publishers as wp
+    def paper(i, d, title, *tags):
+        return {"id": f"p{i}", "category": "research", "date": d, "title": title, "tags": [*tags, "Research"]}
+    cards = [paper(1, "2025-12-30", "Old agents paper", "Tencent")]  # last year: not counted
+    for m in range(1, 10):  # agents papers grow from 1 in 4 to 3 in 4
+        for k in range(4):
+            agents = k < (1 if m <= 3 else 3 if m >= 7 else 2)
+            cards.append(paper(m * 10 + k, f"2026-{m:02d}-1{k}", "An agents harness" if agents else "Image segmentation",
+                               "Tencent", "NVIDIA", "Nvidia", "Dacheng Tao"))
+    cards.append(paper(999, "2026-10-02", "A speech model", "Google"))  # 1 paper: under MIN, not listed
+    cards.append({"id": "n", "category": "news", "date": "2026-05-01", "title": "Tencent agents", "tags": ["Tencent"]})
+    day = date(2026, 10, 20)
+    rows = wp.papers(cards, day)
+    assert [(r["name"], r["home"], r["papers"]) for r in wp.companies(rows)] == [("Nvidia", "United States", 36),
+                                                                                ("Tencent", "China", 36)]
+    subject, months, shares = wp.rising(rows, day)
+    assert subject == "Agents" and shares[0] == 25 and shares[8] == 75 and months[-1] == "2026-10"
+    assert wp.people(rows) == [{"name": "Dacheng Tao", "papers": 36, "subjects": ["Agents", "Vision, image and video"]}]  # 18 each
+    assert wp.build(None, cards, tmp_path, day) == ["who-publishes-ai-research/"]
+    page = (tmp_path / "who-publishes-ai-research" / "index.html").read_text(encoding="utf-8")
+    assert "<h1>Who publishes AI research on Hugging Face</h1>" in page and "Rising: Agents" in page
+    assert "25% → 75%" in page and "Oct so far" in page and "36 vs 36" in page
+    assert wp.build(None, [], tmp_path, day) == []
+
+
 def test_buyouts_shopping_lists_table_and_links(tmp_path):
     from datetime import date
     from aipulse import buyouts as bo
