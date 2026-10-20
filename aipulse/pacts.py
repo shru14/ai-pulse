@@ -113,6 +113,10 @@ DEALS = [
 # Bans and holds, drawn start to end: (day it began, government, company, what, its story, the day it ended or None
 # when no end has been reported, the story of its end, what the end was, court rulings on the way (day, what))
 BANS = [
+    ("2026-10-19", "US (Homeland Security)", "DeepSeek", "DeepSeek products to be removed from federal civilian "
+     "agencies and barred from their purchases",
+     "https://siliconangle.com/2026/10/19/trump-administration-orders-ban-on-deepseek-in-federal-agencies/", None, "",
+     "", []),
     ("2026-06-26", "US", "OpenAI", "GPT-5.6 only for customers the government approves, one by one",
      "https://the-decoder.com/openais-gpt-5-6-rollout-now-requires-us-government-approval-on-a-customer-by-"
      "customer-basis/", None, "", "", []),
@@ -173,6 +177,11 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://www.engadget.com/2290535/homeland-security-bans-deepseek-use-in-federal-civilian-agencies/":
+        "Same as US (Homeland Security) → DeepSeek, 2026-10-19",
+    "https://olhardigital.com.br/2026/10/20/pro/resumo-do-od-lula-acusa-meta-japao-lanca-sonda-a-marte-novo-"
+    "financiamento-da-openai-e-mais/":
+        "A campaign's planned electoral complaint against Meta, not filed or a government action",
     "https://techcrunch.com/2026/01/11/indonesia-blocks-grok-over-non-consensual-sexualized-deepfakes/":
         "A regulator's ban: on AI fines and bans",
     "https://techcrunch.com/2026/02/01/indonesia-conditionally-lifts-ban-on-grok/":
