@@ -919,6 +919,8 @@ a.subscribe-btn{text-decoration:none}
 .cp .rc-t td.rc-out{font-weight:600}
 .cp .rc-t .rc-none{color:var(--muted)}
 .cp .rc-t td.rc-p{white-space:nowrap}
+.cp .rc-t td.rc-s{white-space:nowrap}.cp .rc-t td.rc-s small{white-space:normal;max-width:190px}
+.cp .rc-t td.rc-s-day{font-weight:700}.cp .rc-t td.rc-s-none{color:var(--muted)}
 /* its title, big numbers and column headers a size smaller; the tags as buttons; on a phone still a table, which
    scrolls sideways in its box */
 .cp .rc h1{font-size:clamp(22px,2.4vw,24px)}
@@ -932,7 +934,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .rc .sh-tab[aria-pressed=true] b{color:var(--bg)}
 @media (max-width:640px){.cp .rc .rm-big b{font-size:26px}
   .cp .rc .rm-wrap{overflow:auto}
-  .cp .ft .rc-t{min-width:760px}
+  .cp .ft .rc-t{min-width:880px}
   .cp .ft .rc-t thead{display:table-header-group}
   .cp .ft .rc-t tr{display:table-row;padding:0}
   .cp .ft .rc-t td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 12px 8px 0}

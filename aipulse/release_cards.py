@@ -218,6 +218,47 @@ RELEASES = [
      "https://www.marktechpost.com/2026/10/16/stepfun-releases-step-5-preview-open-weights-600b-moe-27b-active-1m-context/",
      "https://huggingface.co/stepfun-ai/Step-5-Preview"),
 ]
+# the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
+# gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
+# here, or with no day, had none on the lab's own pages when last checked; text on safety with no results doesn't count.
+# The daily job looks again for each release still without one until RECHECK days after its launch, and moves
+# SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
+FIRST_CHECKED = "2026-10-20"
+SAFETY_CHECKED = "2026-10-20"
+RECHECK = 30
+SAFETY = {
+    "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
+    "Muse Spark 1.1": ("2026-07-09", "https://ai.meta.com/static-resource/muse-spark-1-1-evaluation-report", ""),
+    "Inkling": ("2026-07-15", "https://huggingface.co/thinkingmachines/Inkling", "In its model card"),
+    "Claude Opus 5": ("2026-07-24", "https://anthropic.com/claude-opus-5-system-card", ""),
+    "MAI-Cyber-1-Flash": ("2026-07-27", "https://microsoft.ai/pdf/MAI-Cyber-1-Flash-Model-Card.pdf", "In its model card"),
+    "Inkling Small": ("2026-07-31", "https://huggingface.co/thinkingmachines/Inkling-Small", "In its model card"),
+    "Muse Glimmer": ("2026-08-10", "https://huggingface.co/meta-models/Muse-Glimmer-30B", "In its model card"),
+    "Gemini 3.7 Flash": ("2026-08-13", "https://deepmind.google/models/model-cards/gemini-3-7-flash/", "In its model card"),
+    "Palmyra X6": ("2026-08-17", "https://arxiv.org/abs/2608.16620", "In its technical report"),
+    "Claude Fable 5.1": ("2026-09-01", "https://www.anthropic.com/claude-fable-5-1-mythos-5-1-system-card", ""),
+    "Gemini 3.8 Flash": ("2026-09-02", "https://deepmind.google/models/model-cards/gemini-3-8-flash/", "In its model card"),
+    "GPT-6 Astra": ("2026-09-03", "https://deploymentsafety.openai.com/gpt-6-astra", ""),
+    "GPT-6 Sol and Luna": ("2026-09-22", "https://deploymentsafety.openai.com/gpt-6-astra",
+                           "An appendix to the GPT-6 Astra card"),
+    "Claude Opus 5.5": ("2026-09-22", "https://www.anthropic.com/claude-opus-5-5-system-card", ""),
+    "Claude Sonnet 5.5": ("2026-09-28", "https://www.anthropic.com/claude-sonnet-5-5-system-card", ""),
+    "GPT-6.1 Sol": ("2026-09-29", "https://deploymentsafety.openai.com/gpt-6-1-sol", ""),
+    "Claude Haiku 5.5": ("2026-10-07", "https://www.anthropic.com/claude-haiku-5-5-system-card", ""),
+    "Muse Wonder": ("2026-10-12", "https://research.meta.ai/static/muse-wonder-model-card", "In its model card"),
+    "Gemini 4 Argon": ("2026-09-30", "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-argon/",
+                       "In the launch post; model card 13 Oct"),
+    "Muse Spark Open": ("2026-10-15", "https://huggingface.co/meta-models/Muse-Spark-Open-816B-A42B",
+                        "In its model card"),
+    "Beam": ("2026-10-16", "https://reflection.ai/beam-safety-report", "With the weights"),
+    "Grok 4.7": ("2026-09-21", "https://x.ai/news/grok-4-7", "In the launch post"),
+    "Mistral Large 4": ("2026-10-06", "https://mistral.ai/news/mistral-large-4/", "In the launch post"),
+    "Gemini Robotics 2": ("2026-07-29", "https://storage.googleapis.com/deepmind-media/gemini-robotics/Gemini-Robotics-2-Safety.pdf", ""),
+    "Gemini 3.8 Live": ("", "https://deepmind.google/models/model-cards/gemini-3-8-audio/",
+                        "Model card gives no test results for it"),
+    "Gemini 3.5 Transcribe": ("", "https://deepmind.google/models/model-cards/gemini-3-5-audio/",
+                              "Model card gives no test results for it"),
+}
 # release stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
     "https://techcrunch.com/2026/06/30/google-introduces-a-faster-cheaper-image-generator-with-nano-banana-2-lite/":
@@ -306,6 +347,13 @@ _NOT = re.compile(r"\b(chips?|GPUs?|CPUs?|racks?|servers?|TV|HomePod|phones?|lap
                   r"plans|benchmark|harness|framework|sandbox|lines?|residency|funding|raises)\b", re.I)
 
 
+def safety_due(today: date | None = None) -> list[str]:
+    """Releases still without a safety report that the daily job should look for again: launched RECHECK days ago or
+    less."""
+    since = ((today or date.today()) - timedelta(days=RECHECK)).isoformat()
+    return [m for d, _, m, *_ in sorted(RELEASES, reverse=True) if d >= max(since, SINCE) and not SAFETY.get(m, ("",))[0]]
+
+
 def candidates(cards: list[dict], since: str = "", today: date | None = None) -> list[dict]:
     """Stories from after CHECKED_TO (or `since`, if later) up to WINDOW days ago, that no row uses and LEFT_OUT
     doesn't hold: every Releases story (but GitHub versions), and other streams' headlines that look like a model
@@ -322,22 +370,37 @@ def candidates(cards: list[dict], since: str = "", today: date | None = None) ->
 
 
 def note(base: str, branch: str) -> tuple[str, str, str] | None:
-    """The project inbox's note for a releases/<day> branch: each release it adds, and the stories it left out; None
-    when it adds nothing. `base` is main's copy of this file."""
+    """The project inbox's note for a releases/<day> branch: each release it adds or finds a safety report for, and
+    the stories it left out; None when it adds nothing. `base` is main's copy of this file."""
     from . import approve
-    had = approve.lists_in(base, ("RELEASES", "LEFT_OUT"))
-    rows = [(d, lab, m, w, lic or "–", (p.split("|")[0] or "–"), u) for d, lab, m, w, _, lic, _, _, _, p, u, _ in RELEASES
-            if u not in had["RELEASES"]]
+    had = approve.lists_in(base, ("RELEASES", "LEFT_OUT", "SAFETY"))
+
+    def report(d: str, m: str) -> str:
+        s = safety(d, m)
+        said = {"day": "Day one", "later": f"{s['late']} day{'s' * (s['late'] != 1)} later", "none": "None found"}
+        return said[s["when"]] + (f" ({s['url']})" if s["url"] and s["when"] != "none" else "")
+    rows = [(d, lab, m, w, lic or "–", (p.split("|")[0] or "–"), report(d, m), u)
+            for d, lab, m, w, _, lic, _, _, _, p, u, _ in RELEASES
+            if u not in had["RELEASES"] or SAFETY.get(m, ("", ""))[1] not in had["SAFETY"] | {""}]
     dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
     if not rows and not dropped:
         return None
     return approve.note("Release cards", f"release{'s' * (len(rows) != 1)}", branch,
-                        ("Day", "Lab", "Model", "Weights", "Licence", "Price", "Source"), rows, dropped)
+                        ("Day", "Lab", "Model", "Weights", "Licence", "Price", "Safety report", "Source"), rows, dropped)
+
+
+def safety(day: str, model: str) -> dict:
+    """When the release's safety report came: "day" (on or before launch), "later" with its days, or "none"."""
+    on, url, note = SAFETY.get(model, ("", "", ""))
+    late = (date.fromisoformat(on) - date.fromisoformat(day)).days if on else 0
+    last = (date.fromisoformat(day) + timedelta(days=RECHECK)).isoformat()  # the last day it is looked for
+    return {"when": "none" if not on else "later" if late > 0 else "day", "late": late, "url": url, "note": note,
+            "checked": min(SAFETY_CHECKED, max(last, FIRST_CHECKED))}
 
 
 def rows() -> list[dict]:
     return [{"day": d, "lab": lab, "country": COUNTRY.get(lab, ""), "model": m, "weights": w, "note": n, "licence": lic,
-             "limit": lim, "where": where, "out": out, "price": p, "url": u, "hf": hf}
+             "limit": lim, "where": where, "out": out, "price": p, "url": u, "hf": hf, "safety": safety(d, m)}
             for d, lab, m, w, n, lic, lim, where, out, p, u, hf in sorted(RELEASES, key=lambda r: r[0], reverse=True)
             if d >= SINCE]
 
@@ -358,20 +421,28 @@ def _row(r: dict) -> str:
     price, _, why = r["price"].partition("|")
     where = escape(r["where"]) if r["where"] else '<span class="rc-none">No limits stated</span>'
     text = escape(" ".join((r["model"], r["lab"], r["country"], r["licence"])).lower(), quote=True)
-    return (f'<tr data-w="{r["weights"]}" data-out="{"1" if r["out"] else ""}" data-text="{text}">'
+    s = r["safety"]
+    said = {"day": "Day one", "later": f"{s['late']} day{'s' * (s['late'] != 1)} later",
+            "none": f"None found <small>checked {_day(s['checked']).rsplit(' ', 1)[0]}</small>"}[s["when"]]
+    link = s["url"] and s["when"] != "none"
+    report = (f'<a href="{escape(s["url"])}" rel="noopener">{said}</a>' if link else said) + small(s["note"])
+    return (f'<tr data-w="{r["weights"]}" data-out="{"1" if r["out"] else ""}" data-s="{s["when"]}" '
+            f'data-text="{text}">'
             f'<td class="rm-d">{_day(r["day"])}</td>'
             f'<td class="rc-m"><a href="{escape(r["url"])}" rel="noopener">{escape(r["model"])}</a>'
             f'{small(r["lab"] + (" · " + r["country"] if r["country"] else ""))}</td>'
             f'<td><span class="rc-w {tag}">{escape(r["weights"])}</span>{small(r["note"])}</td>'
             f'<td>{lic}{small(r["limit"])}</td>'
             f'<td{" class=rc-out" if r["out"] else ""}>{where}</td>'
-            f'<td class="rc-p">{escape(price) or "–"}{small(why)}</td></tr>')
+            f'<td class="rc-p">{escape(price) or "–"}{small(why)}</td>'
+            f'<td class="rc-s rc-s-{s["when"]}">{report}</td></tr>')
 
 
 def _filters(rs: list[dict]) -> str:
     """One row of tags: weights, then the releases that left places out; and a search of models, labs, countries."""
     items = [("w", w, w, sum(r["weights"] == w for r in rs)) for w in WEIGHTS] + \
-            [("out", "1", "Left some places out", sum(r["out"] for r in rs))]
+            [("out", "1", "Left some places out", sum(r["out"] for r in rs)),
+             ("s", "day", "Safety report on day one", sum(r["safety"]["when"] == "day" for r in rs))]
     return ('<div class="sh-filters rm-filters"><div class="sh-tabs" role="group" aria-label="Show">'
             f'<button type="button" class="sh-tab" data-f="" data-v="" aria-pressed="true">All <b>{len(rs)}</b></button>'
             + "".join(f'<button type="button" class="sh-tab" data-f="{f}" data-v="{v}" aria-pressed="false">{escape(t)} '
@@ -400,7 +471,9 @@ def body(rs: list[dict]) -> str:
     china = sum(r["country"] == "China" for r in down)
     bigs = [(f"{len(down)} of {len(rs)}", f"major releases since {since} came with weights you can download"),
             (f"{china}", f"of those {len(down)} came from labs in China"),
-            (f"{sum(r['out'] for r in rs)}", f"releases since {since} left some places out at launch")]
+            (f"{sum(r['out'] for r in rs)}", f"releases since {since} left some places out at launch"),
+            (f"{sum(r['safety']['when'] == 'day' for r in rs)} of {len(rs)}",
+             f"major releases since {since} had a report of their safety tests out on launch day")]
     limits = [
         ("What counts", "A new AI model that at least two news outlets reported within three days of its launch. The "
          "lab's own posts, its partners' blogs and hosting services don't count towards the two."),
@@ -413,19 +486,24 @@ def body(rs: list[dict]) -> str:
          "any, not that it works everywhere."),
         ("Launch price", "The lab's own API price on launch day, in US dollars, for 1 million tokens in and out "
          "unless the cell says otherwise. Left blank when the lab sold no API access at launch."),
+        ("Safety report", "The lab's first document giving results of its safety tests on the model: a system card, "
+         "a safety report, a launch post that gives results, or a model card or technical report with a safety "
+         "section that gives them. Day one: out by launch day. \"None found\" means none was on the lab's own pages "
+         "on the date shown; a line saying the model was tested, with no results, doesn't count."),
         ("Each model", "Links to the story or lab page its facts were checked against."),
     ]
     return ('<div class="ft jb rm rc">\n'
             + pages.feature_head(PATH, "Release cards", "What came out and can I use it?",
                                  f"Every major AI model release since {since}, newest first: whether you can download "
-                                 "it, under what licence, where you can use it and its price at launch. Each row is "
+                                 "it, under what licence, where you can use it, its price at launch and whether the "
+                                 "lab published its safety test results. Each row is "
                                  "checked by hand against the lab's own page, its licence text or Hugging Face.")
             + '<div class="rm-bigs">' + "".join(f'<div class="rm-big"><b>{escape(n)}</b><span>{escape(s)}</span></div>'
                                               for n, s in bigs) + "</div>\n"
             + _filters(rs)
             + '<div class="rm-wrap"><table class="mt rm-t rc-t"><thead><tr><th>Released</th><th>Model</th>'
               '<th>Weights</th><th>Licence</th><th>Where you can use it</th>'
-              '<th>Launch price (in / out, per 1M tokens)</th></tr></thead><tbody>'
+              '<th>Launch price (in / out, per 1M tokens)</th><th>Safety report</th></tr></thead><tbody>'
             + "".join(_row(r) for r in rs) + "</tbody></table></div>\n"
             '<p class="sh-none" hidden>No release matches. Clear the tag or the search.</p>\n'
             '<section class="jb-lim"><h2>About these releases</h2>\n<table class="mt jb-small jb-limits"><tbody>'
