@@ -387,7 +387,7 @@ def build(conn, out: str | Path) -> int:
     (out / "dossier.html").write_text((TEMPLATE.parent / "dossier.html").read_text(encoding="utf-8"), encoding="utf-8")
     # the Sunday email's "Get my dossier" button opens it, to ask the dossier's questions
     (out / "ask.html").write_text(subscribers.fill((TEMPLATE.parent / "ask.html").read_text(encoding="utf-8")), encoding="utf-8")
-    # the daily email's review strip opens it: five questions, sent to the project inbox (not in the sitemap)
+    # the daily email's review strip opens it: six questions, sent to the project inbox (not in the sitemap)
     (out / "review").mkdir()
     (out / "review" / "index.html").write_text(subscribers.fill((TEMPLATE.parent / "review.html").read_text(encoding="utf-8")),
                                                encoding="utf-8")

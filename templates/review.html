@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Review AI Pulse</title>
 <!-- The readers' review form, opened from the daily email's "How useful is AI Pulse to you?" strip
-     (review/#useful-<1..5>: the number they tapped, picked already). Five short questions, the first four buttons;
+     (review/#useful-<1..5>: the number they tapped, picked already). Six short questions, the first five buttons;
      "Send" posts them to the sign-up web app (action=review), which emails them to the project inbox. Nothing
      about the reader is sent: no address, no token. -->
 <style>
@@ -46,17 +46,19 @@
 <body>
 <div class="paper">
   <div class="band"><div class="brand">AI Pulse</div><h1>How are we doing?</h1>
-    <div class="span">Five quick questions, about a minute. Nothing about you is sent with your answers.</div></div>
+    <div class="span">Six quick questions, about a minute. Nothing about you is sent with your answers.</div></div>
   <form class="inner" id="f" novalidate>
     <fieldset style="--c:#F0E442"><legend>1. How do you read AI Pulse? <span class="hint">Pick any</span></legend>
       <div class="chips" id="q-channels"></div></fieldset>
-    <fieldset style="--c:#56B4E9"><legend>2. How useful is it to you?</legend>
+    <fieldset style="--c:#E69F00"><legend>2. What do you use it for? <span class="hint">Pick any</span></legend>
+      <div class="chips" id="q-uses"></div></fieldset>
+    <fieldset style="--c:#56B4E9"><legend>3. How useful is it to you?</legend>
       <div class="scale chips" id="q-useful"></div><div class="ends"><span>Not useful</span><span>Very useful</span></div></fieldset>
-    <fieldset style="--c:#009E73"><legend>3. Which section do you use most?</legend>
+    <fieldset style="--c:#009E73"><legend>4. Which section do you use most?</legend>
       <div class="chips" id="q-section"></div></fieldset>
-    <fieldset style="--c:#F85C48"><legend>4. What should we improve first?</legend>
+    <fieldset style="--c:#F85C48"><legend>5. What should we improve first?</legend>
       <div class="chips" id="q-improve"></div></fieldset>
-    <fieldset style="--c:#8BEC8B"><legend><label for="other">5. Anything else? <span class="hint">Optional</span></label></legend>
+    <fieldset style="--c:#8BEC8B"><legend><label for="other">6. Anything else? <span class="hint">Optional</span></label></legend>
       <textarea id="other" maxlength="1000"></textarea></fieldset>
     <input class="hp" type="text" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     <button class="go" type="submit" id="send">Send</button>
@@ -69,6 +71,8 @@ const SIGNUP_URL = "__SIGNUP_URL__";
 // the answers the web app accepts (apps-script/Code.gs REVIEW): change both together
 const Q = {
   channels: {multi: true, opts: ["Website", "On my phone", "Daily email", "Sunday email", "Monthly issue", "RSS"]},
+  uses: {multi: true, opts: ["Keeping up with AI", "My job", "Research or study", "Teaching", "Writing or reporting",
+                             "Policy or legal work", "Investing or business decisions", "Building with AI"]},
   useful: {opts: ["1", "2", "3", "4", "5"]},
   section: {opts: [["Industry", "#56B4E9"], ["Releases", "#009E73"], ["Policy", "#E69F00"], ["Regulation", "#F85C48"],
                    ["Research", "#C85BC3"], ["Infra", "#8BEC8B"]]},
