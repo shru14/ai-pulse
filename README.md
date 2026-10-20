@@ -20,7 +20,7 @@ six streams and links every card to the original.
 
 - **Front page:** the latest stories, Today in AI ranked by how widely each story is reported, what people are discussing, the week's story, word and meme, the newest monthly issues and the topics most in the news.
 - **Six streams**, each with its own page, filters and search back to 2023.
-- **Pages within the streams:** Industry by kind of story (opinion, company blogs, studies, AI incidents, tutorials, events), Releases by company (a page per big AI lab), Policy by who is speaking (governments, think tanks and civil society, news reports), Research by subject (read from each paper's title) and Infra by subject (power, water, emissions, local pushback, builds and deals, rules and permits, hardware).
+- **Pages within the streams:** Industry by kind of story (opinion, company blogs, studies, AI incidents, tutorials, events), Releases by company (a page per big AI lab), Policy by who is speaking (governments, rights and advocacy groups, research institutes, AI companies, news reports), Research by subject (read from each paper's title) and Infra by subject (power, water, emissions, local pushback, builds and deals, rules and permits, hardware).
 - **One card per event**, in English (stories in other languages are translated offline).
 - **Email**, daily or weekly, with the streams and topics you pick.
 - **Weekly dossier:** your own questions, answered with the week's stories.

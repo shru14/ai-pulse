@@ -374,7 +374,7 @@ SOURCES = [
     {"name": "Simon Willison", "url": "https://simonwillison.net/atom/entries/", "category": "news", "no_releases": True},
     {"name": "Lil'Log", "url": "https://lilianweng.github.io/index.xml", "category": "news", "ai_only": True,
      "max_age_days": 60, "no_releases": True},  # a few long posts a year
-    {"name": "METR", "url": "https://metr.org/feed.xml", "category": "news", "ai_only": True, "no_releases": True},
+    {"name": "METR", "url": "https://metr.org/feed.xml", "category": "news", "voice": "institute", "ai_only": True, "no_releases": True},
     # Epoch AI (17 Oct 2026): no feed, so its publications sitemap lists the posts; robots.txt allows /publications/
     {"name": "Epoch AI", "url": "https://epoch.ai/sitemap-publications-0.xml", "format": "page_list",
      "link": r"^https://epoch\.ai/publications/[a-z0-9-]+$", "category": "news", "ai_only": True, "no_releases": True},
@@ -434,21 +434,23 @@ SOURCES = [
      "infra_filter": True},
 
     # --- Policy and politics ---
+    # "voice" sorts who is speaking for Policy's pages (kind_pages.SPEAKERS): rights and advocacy groups, research
+    # institutes, or international public bodies (on the governments page).
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
     # the publisher's own site feed carries its explainers and analysis.
-    {"name": "EU AI Act Newsletter", "url": "https://artificialintelligenceact.eu/feed/", "category": "policy"},
-    {"name": "CSET", "url": "https://cset.georgetown.edu/feed/", "category": "policy", "ai_only": True, "paged": True},
-    {"name": "AI Now Institute", "url": "https://ainowinstitute.org/feed", "category": "policy", "ai_only": True,
+    {"name": "EU AI Act Newsletter", "url": "https://artificialintelligenceact.eu/feed/", "category": "policy", "voice": "rights"},
+    {"name": "CSET", "url": "https://cset.georgetown.edu/feed/", "category": "policy", "voice": "institute", "ai_only": True, "paged": True},
+    {"name": "AI Now Institute", "url": "https://ainowinstitute.org/feed", "category": "policy", "voice": "rights", "ai_only": True,
      "paged": True},
-    {"name": "Future of Life Institute", "url": "https://futureoflife.org/feed/", "category": "policy", "ai_only": True},
-    {"name": "EFF", "url": "https://www.eff.org/rss/updates.xml", "category": "policy", "ai_in_title": True},
-    {"name": "EPIC", "url": "https://epic.org/feed/", "category": "policy", "paged": True},
+    {"name": "Future of Life Institute", "url": "https://futureoflife.org/feed/", "category": "policy", "voice": "rights", "ai_only": True},
+    {"name": "EFF", "url": "https://www.eff.org/rss/updates.xml", "category": "policy", "voice": "rights", "ai_in_title": True},
+    {"name": "EPIC", "url": "https://epic.org/feed/", "category": "policy", "voice": "rights", "paged": True},
     # Added from the sources review (6 Oct 2026). ITU allows non-commercial use with credit (itu.int terms of use).
-    {"name": "CLTC (UC Berkeley)", "url": "https://cltc.berkeley.edu/feed/", "category": "policy"},
-    {"name": "ITU", "url": "https://www.itu.int/hub/feed/", "category": "policy"},
+    {"name": "CLTC (UC Berkeley)", "url": "https://cltc.berkeley.edu/feed/", "category": "policy", "voice": "institute"},
+    {"name": "ITU", "url": "https://www.itu.int/hub/feed/", "category": "policy", "voice": "intl"},
     # Added 7 Oct 2026: Partnership on AI and Smart Africa (no terms restrict their feeds)
-    {"name": "Partnership on AI", "url": "https://partnershiponai.org/feed/", "category": "policy", "ai_only": True},
-    {"name": "Smart Africa", "url": "https://smartafrica.org/feed/", "category": "policy", "ai_in_title": True},
+    {"name": "Partnership on AI", "url": "https://partnershiponai.org/feed/", "category": "policy", "voice": "institute", "ai_only": True},
+    {"name": "Smart Africa", "url": "https://smartafrica.org/feed/", "category": "policy", "voice": "intl", "ai_in_title": True},
     # Governments' own publications (US federal records and GOV.UK are public-domain / Open Government Licence).
     {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"],
      "government": True},
