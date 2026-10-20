@@ -143,7 +143,8 @@ TOPICS = {
         name="OpenAI's device", kind="Company",
         what="OpenAI's first hardware, designed with Jony Ive after it bought his company io.",
         words=r"\bOpenAI\b.{0,60}\b(device|hardware|gadget|smart speaker|Jony Ive)\b|\bJony Ive\b.{0,60}\bOpenAI\b",
-        exclude=r"\b(recording|surveillance|covert) devices?\b|\bspy\b|\bplant(ed|ing|s)?\b.{0,20}\bdevices?\b|\b(prosecutors?|FBI|DOJ|arrest\w*)\b"),
+        exclude=r"\b(recording|surveillance|covert) devices?\b|\bspy\b|\bplant(ed|ing|s)?\b.{0,20}\bdevices?\b|\b(prosecutors?|FBI|DOJ|arrest\w*)\b"
+                r"|\b(AMD|Broadcom)\b|\bhardware-efficient\b|\bverification device\b|\bWorld\b.{0,30}\b(Orb|verification)\b"),
     "ai-music-labels": dict(
         name="Suno, Udio and the record labels", kind="Courts",
         what="The record labels' fight with AI music makers Suno and Udio, from lawsuits to licensing deals.",
