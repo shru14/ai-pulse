@@ -738,9 +738,12 @@ def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
     card = lambda i, source, code, action="proposal": {"category": "regulation", "source": source, "title": f"AI Act {i}",
         "date": f"2026-0{i}-01", "jurisdictions": [code], "action": action, "url": f"https://e.com/{code}{i}", "bill": ""}
     cards = ([card(i, "UK Parliament", "GB") for i in range(1, 4)] + [card(4, "OECD.AI", "GB", "body")]
-             + [card(i, "TechCrunch AI", "IN") for i in range(1, 6)] + [card(1, "Parliament of India", "IN")])
+             + [card(i, "TechCrunch AI", "IN") for i in range(1, 6)] + [card(1, "Parliament of India", "IN")]
+             + [card(i, "ISO/IEC", "INTL", "standard") for i in range(1, 4)] + [card(5, "OECD.AI", "GB", "standard")])
     paths = countries.build(conn, cards, tmp_path, date(2026, 10, 6))
     assert paths == ["tracker/", "tracker/united-kingdom/"]  # India: one official record, news stories don't count
+    # international bodies aren't a place, and standards are on standards/ alone
+    assert "<h2>Standards</h2>" not in (tmp_path / "tracker" / "united-kingdom" / "index.html").read_text(encoding="utf-8")
     page = (tmp_path / "tracker" / "united-kingdom" / "index.html").read_text(encoding="utf-8")
     assert '<img src="flags/gb.svg" alt=""></span><div><h1>AI laws and bills in the United Kingdom</h1>' in page and "<h2>Proposals</h2>" in page
     assert "<h2>AI bodies</h2>" in page and page.index("AI Act 3") < page.index("AI Act 1")  # newest first
@@ -754,6 +757,21 @@ def test_tracker_has_a_page_per_country_with_official_records_only(tmp_path):
     assert "← Back to the live Regulation tracker page" in page and 'src="flags/gb.svg"' in page
     assert 'src="flags/gb.svg"' in (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8")
     assert (tmp_path / "flags" / "gb.svg").is_file() and not (tmp_path / "flags" / "in.svg").exists()
+
+
+def test_type_pages_are_tables_with_column_filters(tmp_path):
+    from aipulse import countries
+    conn = store.connect(tmp_path / "t.db")
+    card = lambda i, source, code, action: {"category": "regulation", "source": source, "title": f"AI Act {i}",
+        "date": f"2026-0{i}-01", "jurisdictions": [code], "action": action, "url": f"https://e.com/{code}{i}", "bill": ""}
+    cards = [card(1, "UK Parliament", "GB", "proposal"), card(2, "congress.gov", "US", "proposal"),
+             card(3, "OECD.AI", "INTL", "body"), card(4, "OECD.AI", "GB", "law")]
+    assert countries.type_pages(conn, cards, tmp_path) == ["tracker/laws-adopted/", "tracker/bills/", "tracker/ai-bodies/"]
+    page = (tmp_path / "tracker" / "bills" / "index.html").read_text(encoding="utf-8")
+    assert "<th>Place</th><th data-nof>Title</th><th>Stage</th><th>Source</th><th data-seen>Date</th>" in page
+    assert 'data-f="United Kingdom"' in page and 'data-f="Feb 2026"' in page and "Showing <b>2</b> of 2 bills" in page
+    assert "hasAttribute('data-nof')" in page and '<td class="tp-src">congress.gov</td>' in page
+    assert "<th>Stage</th>" not in (tmp_path / "tracker" / "ai-bodies" / "index.html").read_text(encoding="utf-8")
 
 
 def test_standards_have_one_page_without_a_date(tmp_path):

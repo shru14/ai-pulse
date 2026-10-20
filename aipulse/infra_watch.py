@@ -263,7 +263,8 @@ def _glance(first: str, last: str, items: list[tuple[str, str, int]]) -> str:
 # Excel-style filters, in the reader's browser: each column heading opens a list of that column's values (a cell's
 # data-f, else its text), each with how many rows have it among the rows the other filters leave; ticking narrows the
 # table. Phones hide the headings, so the same buttons sit in a bar over the table there. Each .iw box on a page
-# (AI fines and bans has two) filters its own table.
+# (AI fines and bans has two) filters its own table. A heading with data-nof
+# (a column of titles, each its own) gets no filter.
 SCRIPT = """<script>
 document.querySelectorAll('.iw').forEach(p=>{const t=p.querySelector('.iw-t,.xf-t'),rows=[...t.tBodies[0].rows],
 ths=[...t.tHead.rows[0].cells],count=p.querySelector('.iw-count b'),clear=p.querySelector('.iw-clear'),
@@ -291,7 +292,7 @@ q.addEventListener('input',()=>{const w=q.value.toLowerCase();boxes.forEach(c=>c
 pop.append(q,all,list);document.body.append(pop);sync();
 const r=b.getBoundingClientRect();pop.style.top=(r.bottom+scrollY+4)+'px';
 pop.style.left=Math.max(8,Math.min(r.left+scrollX,scrollX+document.documentElement.clientWidth-pop.offsetWidth-8))+'px';q.focus()}
-ths.forEach((th,i)=>{th.dataset.h=th.textContent;const mk=()=>{const b=document.createElement('button');b.type='button';
+ths.forEach((th,i)=>{if(th.hasAttribute('data-nof'))return;th.dataset.h=th.textContent;const mk=()=>{const b=document.createElement('button');b.type='button';
 b.className='iw-hb';b.textContent=th.dataset.h;b.setAttribute('aria-haspopup','true');
 b.addEventListener('click',e=>{e.stopPropagation();open(i,b)});btns[i].push(b);return b};
 th.textContent='';th.append(mk());bar.append(mk())});
