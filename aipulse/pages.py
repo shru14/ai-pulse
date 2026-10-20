@@ -1297,6 +1297,12 @@ a.subscribe-btn{text-decoration:none}
 .cp .nt-table td:first-child{width:12rem}.cp .nt-table td:nth-child(3){width:17rem}
 .cp .nt-table td small,.cp .cg-table td small{display:block;margin-top:2px;font-size:13px;color:var(--muted)}
 .cp .nt-table td:last-child{white-space:nowrap;color:var(--muted);font-size:14px}
+/* Who publishes AI research on Hugging Face (Research's feature) */
+.cp .wp-table td:first-child{width:14rem}.cp .wp-more{margin:10px 0 0}.cp .wp-more summary{cursor:pointer;font-weight:600}
+.cp .wp-rise{border-left:4px solid var(--f-research);padding-left:14px}
+.cp .wp-chart{display:block;width:100%;max-width:640px;height:auto}
+.cp .wp-chart polyline{fill:none;stroke:var(--f-research);stroke-width:2}.cp .wp-chart circle{fill:var(--f-research)}
+.cp .wp-chart text{font:12px var(--body);fill:var(--ink);text-anchor:middle}.cp .wp-chart .wp-m{fill:var(--muted)}
 .cp .nt-table td small.nt-beat{margin-top:6px;color:var(--ink)}.cp .ft .nt-table td small.nt-beat a{font-weight:400;text-decoration:underline}
 .cp .nt-table td.cl{font-size:14px;white-space:nowrap}.cp .ft .nt-table td.cl a{font-weight:400;text-decoration:underline}
 .cp .cg-wrap{margin:0 0 34px;border-top:2px solid var(--line);padding-top:10px}
@@ -1403,6 +1409,7 @@ FEATURES = {
     "papers-in-the-news/": ("research", "M4 5h12v14H6a2 2 0 0 1-2-2zM16 9h4v8a2 2 0 0 1-2 2h-2M7.5 9h5M7.5 12.5h5M7.5 16h3"),
     "new-tests-for-ai/": ("research", "M9 4h6v3H9zM7 5.5H5V20h14V5.5h-2M8.5 13l2.5 2.5 4.5-4.5"),
     "compute-behind-notable-models/": ("research", "M4 20h16M4 20V4M8 16.5v.01M11.5 13v.01M15 9.5v.01M18.5 6v.01"),
+    "who-publishes-ai-research/": ("research", "M4 20V9h4v11M10 20V5h4v15M16 20v-8h4v8M3 20h18"),
     "lab-timelines/": ("tool", "M3 6h18M3 12h18M3 18h18M8 4v4M15 10v4M11 16v4"),
     "ai-pacts-and-orders/": ("policy", "M7 4h10v16H7zM10 8h4M10 11.5h4M9.5 16l1.5 1.5 3-3"),
     "government-ai-use/": ("policy", "M4 21h16M6 18v-8M10 18v-8M14 18v-8M18 18v-8M3 10l9-6 9 6z"),
