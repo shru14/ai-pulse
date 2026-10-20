@@ -1058,6 +1058,46 @@ a.subscribe-btn{text-decoration:none}
 .cp .fx .pc-hh{background:var(--f-reg)}
 .cp .fx .pc-hh h2,.cp .fx .pc-hh p{color:#141925}
 .cp .fx-in{background:#F85C48}.cp .fx-li{background:#56B4E9}.cp .fx-ch{background:#F0E442}.cp .fx-an{background:#8C8C8C}.cp .fx .fx-aw{background:var(--bg);border-style:dashed;color:var(--ink)}
+/* AI buyouts: a quotable lead, then a shopping list per buyer (a row with a dot per deal along the year; the dot's area
+   grows with the price, hollow when none was given, dashed while only agreed, a cross when blocked; each links to its
+   row), then every deal in the fines and bans' table look. Names keep their size on phones; the tracks shrink */
+.cp .by-lead{font:400 21px/1.4 var(--body);margin:24px 0 4px;max-width:900px}
+.cp .by-sub{font-size:13.5px;color:var(--muted);margin:0 0 6px}
+.cp .by-ls{margin:22px 0 28px}
+.cp .by .by-ls h2,.cp .by .by-all h2{margin:0 0 8px}
+.cp .by-key{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-size:13px;color:var(--muted);margin:0 0 10px}
+.cp .by-key > span{display:inline-flex;gap:6px;align-items:center}
+.cp .by-k{display:inline-block;width:13px;height:13px;border-radius:50%;border:1.5px solid var(--ink);background:var(--f-news)}
+.cp .by-k.by-a{border-style:dashed}.cp .by-k.by-un{background:var(--bg)}
+.cp .by-kx{color:var(--f-reg);font-size:15px;line-height:1}
+.cp .by-g{--nw:170px;position:relative;padding-top:24px}
+.cp .by-ax{position:absolute;top:0;bottom:0;left:var(--nw);right:0;pointer-events:none}
+.cp .by-gl{position:absolute;top:20px;bottom:0;border-left:1px dashed color-mix(in srgb,var(--ink) 22%,transparent)}
+.cp .by-mo{position:absolute;top:0;padding-left:4px;font:600 12px var(--mono);color:var(--muted)}
+.cp .by-r{display:grid;grid-template-columns:var(--nw) 1fr;align-items:center;border-bottom:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .by-n{font-weight:700;font-size:15px;line-height:1.2;padding-right:10px}
+.cp .by-n b{font:600 12.5px var(--mono);color:var(--muted);margin-left:4px}
+.cp .by-tr{position:relative;height:50px}
+.cp .by-tr::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid color-mix(in srgb,var(--ink) 35%,transparent)}
+.cp .by-dot{position:absolute;top:50%;width:var(--s);height:var(--s);border:1.5px solid var(--ink);border-radius:50%;background:var(--f-news);transform:translate(-50%,-50%);box-sizing:border-box;z-index:1}
+.cp .by-dot.by-a{border-style:dashed}.cp .by-dot.by-un{background:var(--bg)}
+.cp .by-dot.by-x{width:18px;height:18px;border:0;border-radius:0;background:linear-gradient(45deg,transparent 41%,var(--f-reg) 41% 59%,transparent 59%),linear-gradient(-45deg,transparent 41%,var(--f-reg) 41% 59%,transparent 59%)}
+.cp .by-dot:hover,.cp .by-dot:focus-visible{z-index:3;outline:2px solid var(--ink);outline-offset:2px}
+.cp .by-dot:hover::after,.cp .by-dot:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:-4px;background:#111;color:#fff;font:500 12.5px/1.3 var(--body);padding:5px 8px;white-space:nowrap;border:0;transform:none}
+.cp .by-dot.by-l:hover::after,.cp .by-dot.by-l:focus-visible::after{left:auto;right:-4px}
+.cp .by-lb{position:absolute;top:50%;transform:translateY(-50%);font:600 12.5px var(--body);white-space:nowrap;pointer-events:none}
+.cp .by-lb.by-up{top:1px;transform:none}
+.cp .by-one{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.cp .by-all{margin:0 0 26px}
+.cp .fx-t td.by-p{white-space:nowrap;font:700 13.5px var(--mono)}
+.cp .pc-k.by-b{background:#56B4E9}.cp .pc-k.by-a{background:var(--bg);border-style:dashed;color:var(--ink)}.cp .pc-k.by-x{background:#F85C48}
+@media (max-width:640px){.cp .by-g{--nw:92px}
+  .cp .by-n{font-size:13px}
+  .cp .by-mo{font-size:10px;padding-left:2px}
+  .cp .by-dot{width:max(9px,calc(var(--s) * .62));height:max(9px,calc(var(--s) * .62))}
+  .cp .by-lb{top:3px;transform:none;font-size:10.5px}
+  .cp .by-dot:hover::after,.cp .by-dot:focus-visible::after{white-space:normal;width:190px}
+  .cp .fx-t td.by-p{white-space:normal}}
 /* Chip export rules: a grid of chips (rows) by US decision (columns), a coloured cell per answer with its symbol so
    colour is never the only cue; then three short lists in columns, stacked on phones (the grid shrinks to fit) */
 .cp .ce .fx-in{background:#A6DCC6}.cp .ce .fx-ch{background:#F2D27A}.cp .ce .fx-an{background:#F3B08A}.cp .ce .fx-aw{background:#DDDDDD}
@@ -1176,7 +1216,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh-cite-box .fh-cite-src{font-size:13px}
 .cp .fh-cite-box button{padding:4px 12px;border:2px solid var(--line);background:var(--ink);color:var(--bg);
   font:700 13px/1.3 var(--body);cursor:pointer}
-@media (max-width:640px){.cp .fh-cite-box{position:static;width:auto;margin-top:8px}}
+.cp .fh-cite-box{padding-right:36px}
+.cp .fh-cite-box .fh-cite-x{position:absolute;top:6px;right:8px;padding:0 6px;border:0;background:none;color:var(--ink);font:700 20px/1 var(--body)}
+@media (max-width:640px){.cp .fh-cite-box{position:relative;width:auto;margin-top:8px}}
 /* New tests for AI and Compute behind notable models (Research's features) */
 .cp .nt .nt-how{margin:0 0 14px;max-width:none;font-size:14.5px;color:var(--muted)}
 .cp .nt-scores{list-style:none;margin:0 0 34px;padding:0;border-top:2px solid var(--line)}
@@ -1292,6 +1334,7 @@ FEATURES = {
     "promises/": ("news", "M4 5h16v14H4zM8 12l3 3 5-6"),
     "jobs-blamed-on-ai/": ("news", "M4 8h16v11H4zM9 8V5h6v3M4 13h16"),
     "who-owns-a-piece-of-whom/": ("news", "M4 5h16v14H4zM4 10h16M10 5v14"),
+    "ai-buyouts/": ("news", "M2 4h3l2.5 11h11L21 7H6.2M9.5 19.5h.01M17 19.5h.01"),
     "models-being-retired/": ("tool", "M12 7v5l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6M3 4v4h4"),
     "release-cards/": ("tool", "M4 4h16v16H4zM4 9h16M9 9v11"),
     "ai-safety-hub/": ("policy", "M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"),
@@ -1315,7 +1358,12 @@ def cite(path: str, title: str) -> str:
     return (f'<details class="fh-cite"><summary>Cite this</summary><div class="fh-cite-box"><p>{escape(text)}</p>'
             '<p class="fh-cite-src">Quoting one row? Cite the source linked in that row as well.</p>'
             '<button type="button" onclick="navigator.clipboard.writeText(this.parentNode.firstChild.textContent)'
-            '.then(()=>{this.textContent=&quot;Copied&quot;})">Copy</button></div></details>')
+            '.then(()=>{this.textContent=&quot;Copied&quot;})">Copy</button>'
+            '<button type="button" class="fh-cite-x" aria-label="Close" onclick="this.closest(&quot;details&quot;).open=false">&times;</button>'
+            '</div></details>'
+            # Close it too on a click outside the box or on Esc
+            '<script>document.addEventListener("click",e=>document.querySelectorAll(".fh-cite[open]").forEach(d=>{if(!d.contains(e.target))d.open=false}));'
+            'document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".fh-cite[open]").forEach(d=>d.open=false)})</script>')
 
 
 def band(colour: str, icon: str, art: str, title: str, question: str, intro: str, extra: str = "") -> str:
