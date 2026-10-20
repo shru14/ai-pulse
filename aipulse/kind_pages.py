@@ -174,6 +174,7 @@ STORIES_JS = r"""<script>
     };
     const names = Object.keys(count).filter(g => g !== "Other").sort((a, b) => count[b] - count[a] || a.localeCompare(b));
     if(count.Other) names.push("Other");
+    if(names.length === 1 && names[0] === "Other") return tiles.remove();  // one tile sorting nothing: none
     tiles.replaceChildren(...names.map(g => tile(g, count[g], newest[g])));
   };
   const show = () => {
