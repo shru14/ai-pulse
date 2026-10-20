@@ -1,7 +1,7 @@
-# The daily Who owns a piece of whom job (a scheduled Claude routine) drafts newly checked entries on an owners/<day> branch; this emails
+# The daily AI money (Who owns a piece of whom) job (a scheduled Claude routine) drafts newly checked entries on an owners/<day> branch; this emails
 # the project inbox what that branch adds, to approve. Nothing goes on the site until the branch is merged into main
 # (only with the owner's yes). Sent with the same Gmail account as the glossary's and the job cuts' notes.
-name: Who owns a piece of whom deals to approve
+name: AI money deals to approve
 
 on:
   push:
@@ -29,4 +29,6 @@ jobs:
           DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
         run: |
           git show origin/main:aipulse/owners.py > "$RUNNER_TEMP/base_owners.py"
-          python -m aipulse owners-note --base "$RUNNER_TEMP/base_owners.py" --branch "$GITHUB_REF_NAME"
+          git show origin/main:aipulse/ai_money.py > "$RUNNER_TEMP/base_money.py" 2>/dev/null || : > "$RUNNER_TEMP/base_money.py"
+          python -m aipulse owners-note --base "$RUNNER_TEMP/base_owners.py" --base-money "$RUNNER_TEMP/base_money.py" \
+            --branch "$GITHUB_REF_NAME"

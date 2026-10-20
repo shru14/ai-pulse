@@ -1,4 +1,6 @@
-"""Who owns a piece of whom (who-owns-a-piece-of-whom/): the big companies with money in the AI labs, as a grid of
+"""AI money, first built as Who owns a piece of whom (who-owns-a-piece-of-whom/, the address kept): the big money in
+AI month by month, the deals where it comes back and every $1B+ deal (ai_money.py), around the stakes grid: the big
+companies with money in the AI labs, as a grid of
 investors (rows) by labs (columns), a box per deal. Every deal was checked by hand against the story that reported it,
 and only done deals are kept: talks, reported plans and rounds where the story says it isn't known whether the money
 bought a share are left out. Amounts are as each story gives them, never added up; "up to" marks money promised and
@@ -11,7 +13,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import pages, rss
+from . import ai_money, infra_watch, pages, rss
 
 PATH = "who-owns-a-piece-of-whom/"
 # the labs, as columns, in this order
@@ -233,17 +235,20 @@ def candidates(cards: list[dict], since: str = "") -> list[dict]:
             and _MONEY.search(c["title"]) and _LAB.search(c["title"])]
 
 
-def note(base: str, branch: str) -> tuple[str, str, str] | None:
-    """The project inbox's note for an owners/<day> branch: each deal it adds, and the stories it left out; None when
-    it adds nothing. `base` is main's copy of this file."""
+def note(base: str, branch: str, money_base: str | None = None) -> tuple[str, str, str] | None:
+    """The project inbox's note for an owners/<day> branch: each deal it adds (stakes here, $1B+ deals in ai_money.py),
+    and the stories it left out; None when it adds nothing. `base` is main's copy of this file, `money_base` of
+    ai_money.py ("" when main has none; None leaves those out)."""
     from . import approve
     had = approve.lists_in(base, ("DEALS", "LEFT_OUT"))
     rows = [(i, lab, w, m, u) for i, lab, w, m, _, u in DEALS if u not in had["DEALS"]]
     dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    more, skipped = ai_money.note_rows(money_base) if money_base is not None else ([], [])
+    rows, dropped = rows + more, dropped + skipped
     if not rows and not dropped:
         return None
-    return approve.note("Who owns a piece of whom", f"deal{'s' * (len(rows) != 1)}", branch,
-                        ("Investor", "Lab", "What", "When", "Source"), rows, dropped)
+    return approve.note("AI money", f"deal{'s' * (len(rows) != 1)}", branch,
+                        ("Who", "With", "What", "When", "Source"), rows, dropped)
 
 
 def deals(cards: list[dict]) -> list[dict]:
@@ -269,7 +274,7 @@ def _sentence(rows: list[dict]) -> str:
     return ("; ".join(said) + ".") if said else ""
 
 
-def body(rows: list[dict]) -> str:
+def body(rows: list[dict], today: date | None = None) -> str:
     investors = list(dict.fromkeys(r["investor"] for r in rows))
     labs = [lab for lab in LABS if any(r["lab"] == lab for r in rows)]
     cell = {(r["investor"], r["lab"]): r for r in rows}
@@ -289,29 +294,37 @@ def body(rows: list[dict]) -> str:
          "power. A dashed box is money promised \"up to\" that amount, paid in stages."),
         ("Each box", "Links to the story that reported the deal; the month is when it was reported."),
     ]
-    return ('<div class="ft jb ow">\n'
-            + pages.feature_head(PATH, "Who owns a piece of whom", "Which big companies have money in which AI labs?",
-                                 f"{len(rows)} stakes in {len(labs)} AI labs, from the news we read, each checked by "
-                                 f"hand against its story. {escape(_sentence(rows))}")
-            + '<p class="ow-key"><span><i></i>Money in</span><span><i class="ow-up"></i>"Up to": promised, paid in '
+    lanes, circles, table = ai_money.sections(today or date.today())
+    return ('<div class="ft jb ow pc fx by am">\n'
+            + pages.feature_head(PATH, "AI money", "Where is the big money in AI going?",
+                                 "Every funding round, compute deal and buyout of $1B or more since 1 Jan 2026, the big "
+                                 "companies' stakes in the AI labs, and the deals where the money comes back, each "
+                                 "checked by hand against its story.", "Who owns a piece of whom")
+            + lanes
+            + '<section class="ow-st"><h2>Who owns a piece of whom</h2>'
+            f'<p class="ins-say">{len(rows)} stakes in {len(labs)} AI labs, from the news we read, each checked by hand '
+            f'against its story. {escape(_sentence(rows))}</p>'
+            '<p class="ow-key"><span><i></i>Money in</span><span><i class="ow-up"></i>"Up to": promised, paid in '
             'stages</span><span>Each box links to its story.</span></p>\n'
-            f'<div class="ow-wrap"><table class="ow-grid"><thead>{head}</tr></thead><tbody>{grid}</tbody></table></div>\n'
-            '<section class="jb-lim"><h2>About these deals</h2>\n<table class="mt jb-small jb-limits"><tbody>'
-            + "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits)
-            + "</tbody></table></section></div>\n")
+            f'<div class="ow-wrap"><table class="ow-grid"><thead>{head}</tr></thead><tbody>{grid}</tbody></table></div>'
+            '</section>\n'
+            + circles + table
+            + '<section class="jb-lim"><h2>About these deals</h2>\n<table class="mt jb-small jb-limits"><tbody>'
+            + "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits + ai_money.LIMITS)
+            + "</tbody></table></section></div>\n" + infra_watch.SCRIPT + "\n")
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     rows = deals(cards)
     if not rows:
         return []
-    what = ("Which big companies have money in which AI labs? The biggest stakes in AI labs, each checked by hand "
-            "against the story that reported it.")
-    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Who owns a piece of whom",
+    what = ("Where is the big money in AI going? Every $1B+ funding round, compute deal and buyout in 2026, the big "
+            "companies' stakes in the AI labs, and the deals where the money comes back, each checked by hand.")
+    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI money",
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page("Who owns a piece of whom · AI Pulse", what, PATH, body(rows), data, pages.frame(conn, len(cards)),
+        pages.page("AI money · AI Pulse", what, PATH, body(rows, today), data, pages.frame(conn, len(cards)),
                    ("/industry/", "Back to Industry"),
                    "Amounts are the outlets' own, each box linking to its story. New deals are added once checked "
                    "by hand."),

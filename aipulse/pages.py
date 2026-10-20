@@ -1110,6 +1110,20 @@ a.subscribe-btn{text-decoration:none}
   .cp .by-lb{top:3px;transform:none;font-size:10.5px}
   .cp .by-dot:hover::after,.cp .by-dot:focus-visible::after{white-space:normal;width:190px}
   .cp .fx-t td.by-p{white-space:normal}}
+/* AI money (who-owns-a-piece-of-whom/): Buyouts' lanes, a dot colour per kind (Okabe-Ito blue, orange, reddish purple), dashed
+   for a figure from a news report; "Money that comes back" as two plain tables */
+.cp .am .by-lead{max-width:none}
+.cp .am-lane .by-tr{height:84px}.cp .am-lane .by-tr::before,.cp .am-lane .by-dot{top:62%}
+.cp .am-lb{position:absolute;top:2px;transform:translateX(-50%);font:600 12.5px var(--body);white-space:nowrap;pointer-events:none}
+.cp .am-lb-l{transform:translateX(-14px)}.cp .am-lb-r{transform:translateX(calc(-100% + 14px))}
+@media (max-width:640px){.cp .am-lb{font-size:10.5px}}
+.cp .by-dot.am-round,.cp .by-k.am-k-round,.cp .pc-k.am-t-round{background:var(--f-news)}
+.cp .by-dot.am-compute,.cp .by-k.am-k-compute,.cp .pc-k.am-t-compute{background:var(--f-policy)}
+.cp .by-dot.am-buyout,.cp .by-k.am-k-buyout,.cp .pc-k.am-t-buyout{background:var(--f-research)}
+.cp .by-dot.am-r,.cp .by-k.am-k-r{border-style:dashed}.cp .by-k.am-k-r{background:var(--bg)}
+.cp .am-rep{display:inline-block;margin-left:6px;font:600 11px var(--mono);text-transform:uppercase;color:var(--muted)}
+.cp .am-cc,.cp .ow-st{margin:30px 0 26px}.cp .am-cc h3{margin:18px 0 6px;font-size:16px}
+.cp .am-ct{width:100%}.cp .am-ct td{vertical-align:top}.cp .am-ct td .fx-c{display:block;font-size:12.5px;color:var(--muted)}
 /* What governments use AI for: a lead line; "Who tells you" (every list, a tag for what it covers); "Whose AI they
    run" (suppliers by list, a dot whose area grows with the count, and the number); a card per full list (2 a row,
    1 on phones), each linking to its own page: AI pacts and orders' boxes in Okabe-Ito tints, dark text */
