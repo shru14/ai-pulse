@@ -20,7 +20,7 @@
  *                                            email), or a mail app's one-click unsubscribe (RFC 8058, the
  *                                            List-Unsubscribe header): the address is deleted and our emails
  *                                            with it moved to the Trash
- *   POST action=review      channels,       the site's review form (review/, from the daily email): answers only
+ *   POST action=review      channels, uses, the site's review form (review/, from the daily email): answers only
  *                           useful,         from the lists in REVIEW (|-separated) and a note, emailed to the
  *                           section,        project inbox; nothing about the reader is sent or kept
  *                           improve, other
@@ -275,12 +275,14 @@ function save(p) {
 // REVIEWS_A_DAY a day, so the emails sign-ups need always have room in the daily quota.
 const REVIEW = {
   channels: ["Website", "On my phone", "Daily email", "Sunday email", "Monthly issue", "RSS"],
+  uses: ["Keeping up with AI", "My job", "Research or study", "Teaching", "Writing or reporting", "Policy or legal work",
+         "Investing or business decisions", "Building with AI"],
   useful: ["1", "2", "3", "4", "5"],
   section: ["Industry", "Releases", "Policy", "Regulation", "Research", "Infra"],
   improve: ["Easier to find things", "Clearer charts and numbers", "Shorter emails", "More sources", "Better on phones",
             "Nothing, it's good"],
 };
-const REVIEW_NAMES = {channels: "Reads AI Pulse via", useful: "How useful (1-5)", section: "Uses most",
+const REVIEW_NAMES = {channels: "Reads AI Pulse via", uses: "Uses it for", useful: "How useful (1-5)", section: "Uses most",
                       improve: "Improve first"};
 const REVIEWS_A_DAY = 15;
 const OTHER_MAX = 1000;  // characters in "Anything else?"
@@ -290,7 +292,7 @@ function review(p) {
   const answers = {};
   for (const k in REVIEW) {
     const picked = [...new Set(String(p[k] || "").split("|").filter(v => REVIEW[k].includes(v)))];
-    if (picked.length) answers[k] = k === "channels" ? picked : picked.slice(0, 1);
+    if (picked.length) answers[k] = k === "channels" || k === "uses" ? picked : picked.slice(0, 1);
   }
   const other = String(p.other || "").replace(/[\u0000-\u0008\u000B-\u001F]/g, "").trim().slice(0, OTHER_MAX);
   if (!Object.keys(answers).length && !other) return {ok: false, error: "empty"};
