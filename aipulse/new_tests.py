@@ -503,9 +503,15 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "HorizonBench", "language-models",
         "Tracking how a user's preferences change over 6 months of chat, about 4,300 turns.",
         "52.8%, where chance is 20%", "", 52.8),
+    "https://arxiv.org/abs/2610.23986": (
+        "BlenderWorld", "agents",
+        "Whether AI agents can build or edit 3D scenes in Blender from text, image, video or written references.",
+        "GPT-6-Astra has the highest overall fused score, 79.9, ahead of Opus-5 (73.0) and GPT-5.6-Sol (67.7)",
+        "GPT-6-Astra", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://arxiv.org/abs/2610.26081": "mainly a new model (DeOverlay), with a benchmark",
     "https://arxiv.org/abs/2610.13644": "SelectArena compares statistics methods for picking data columns, not AI models",
     "https://arxiv.org/abs/2610.13947": "mainly a new 3D-generation system (Artisan)",
     "https://arxiv.org/abs/2610.10619": "TestJack is a way to check other tests' results",
