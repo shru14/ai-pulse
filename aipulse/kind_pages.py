@@ -15,7 +15,7 @@ from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import brands, classify, digest, jurisdictions, pages, rss, sources
+from . import brands, classify, countries, digest, jurisdictions, pages, rss, sources
 from .server import TEMPLATE
 
 # kind (classify.news_kind): (address under industry/, heading, what's on the page)
@@ -36,16 +36,28 @@ KINDS = {
 RELEASE_COMPANIES = ["Google", "OpenAI", "Anthropic", "Meta", "Microsoft", "Nvidia", "Amazon", "Apple", "xAI",
                      "Mistral", "Alibaba", "DeepSeek", "Hugging Face"]
 
-# Policy, by who is speaking: governments are the sources marked government (sources.SOURCES), think tanks and
-# civil society the other sources that publish only policy, and every other outlet is reporting.
+# Policy, by who is speaking: governments are the sources marked government, with the international public bodies
+# (voice "intl"); rights groups and research institutes the sources whose voice says so (sources.SOURCES); AI
+# companies their own blogs (the Releases sources); and every other outlet is reporting.
 SPEAKERS = {
     "governments": ("Governments", "AI policy from governments", "What governments, ministries and public bodies "
                     "publish on AI, on their own sites."),
-    "think-tanks": ("Think tanks & civil society", "AI policy from think tanks and civil society",
-                    "What research institutes, advocacy groups and policy newsletters publish on AI."),
+    "rights-groups": ("Rights & advocacy groups", "AI policy from rights and advocacy groups",
+                      "What digital rights, civil liberties and advocacy groups publish on AI."),
+    "institutes": ("Research institutes", "AI policy from research institutes",
+                   "What policy research institutes publish on AI: studies, evaluations and briefs."),
+    "ai-companies": ("AI companies", "AI policy from AI companies",
+                     "What AI companies say about policy and safety, on their own blogs."),
     "news": ("News reports", "AI policy in the news", "News outlets' reports on what governments, courts and "
              "politicians do about AI."),
 }
+
+# Policy's news reports, by the clear policy subjects among the topic tags (tag: its tile's name); the other
+# Policy pages have a tile per speaker (speakers())
+POLICY_TOPICS = {"Law": "Courts & law", "Copyright": "Copyright", "Security": "Security", "Safety": "Safety",
+                 "Defense": "Defence", "Elections": "Elections", "Education": "Education", "Chips": "Chips & exports",
+                 "Export Controls": "Chips & exports", "Privacy": "Privacy", "Antitrust": "Antitrust",
+                 "Deepfakes": "Deepfakes"}
 
 # Research, by subject, read from a paper's title (a paper can have several; one with none is on no page). The
 # reader's browser matches them too, so they use only what Python and JavaScript read alike.
@@ -132,10 +144,12 @@ STORIES_JS = r"""<script>
     else {
       // topics (or the page's other tile names) with 3+ stories, the most-told first (at most 11); a story in
       // none of them is under Other
-      const topics = new Set(JSON.parse(document.getElementById("topics").textContent)), n = {};
+      // (a list of tags, or tag: its tile's name)
+      const named = json("topics"), topics = new Set(Array.isArray(named) ? named : Object.keys(named)), n = {};
+      const as = t => Array.isArray(named) ? t : named[t];
       all.forEach(c => c.tags.filter(t => topics.has(t)).forEach(t => n[t] = (n[t] || 0) + 1));
       const top = new Set(Object.keys(n).filter(t => n[t] >= 3).sort((a, b) => n[b] - n[a] || a.localeCompare(b)).slice(0, 11));
-      groups = c => { const g = c.tags.filter(t => top.has(t)); return g.length ? g : ["Other"]; };
+      groups = c => { const g = [...new Set(c.tags.filter(t => top.has(t)).map(as))]; return g.length ? g : ["Other"]; };
     }
     const count = {}, newest = {};
     all.forEach(c => groups(c).forEach(g => { count[g] = (count[g] || 0) + 1; newest[g] = newest[g] || c; }));
@@ -241,9 +255,12 @@ def stream_pages(cards: list[dict] = ()) -> list[tuple[str, str, str, str, str, 
     out += [("tool", f"releases/{slug(n)}/", n, f"AI releases from {n}",
              f"{n}'s new AI models and products, from its own blogs and the news.",
              {"ids": ids.get(n, [])}) for n in RELEASE_COMPANIES]
-    gov = sorted(s["name"] for s in sources.SOURCES if s.get("government"))
-    tanks = sorted(s["name"] for s in sources.SOURCES if s.get("category") == "policy" and not s.get("government"))
-    rules = {"governments": {"sources": gov}, "think-tanks": {"sources": tanks}, "news": {"notSources": gov + tanks}}
+    voices = {a: sorted(s["name"] for s in sources.SOURCES if s.get("voice") == v)
+              for a, v in (("rights-groups", "rights"), ("institutes", "institute"))}
+    voices["governments"] = sorted(s["name"] for s in sources.SOURCES if s.get("government") or s.get("voice") == "intl")
+    voices["ai-companies"] = sorted(s["name"] for s in sources.SOURCES if s["category"] == "tool")
+    rules = {a: {"sources": n} for a, n in voices.items()}
+    rules["news"] = {"notSources": [n for ns in voices.values() for n in ns]}
     out += [("policy", f"policy/{a}/", label, h, w, rules[a]) for a, (label, h, w) in SPEAKERS.items()]
     out += [("research", f"research/{a}/", label, f"AI papers on {label.lower()}", w, {"title": rx})
             for a, (label, w, rx) in SUBJECTS.items()]
@@ -257,9 +274,11 @@ def paths() -> list[str]:
     return [p for _, p, *_ in stream_pages()]
 
 
-def tile_names(cat: str) -> list[str]:
+def tile_names(cat: str, path: str = "") -> list[str] | dict[str, str]:
     """What a page's tiles group its stories by: Research's papers by company and scholar, Infra's stories by
-    place, the rest by topic."""
+    place, Policy's news reports by policy subject (tag: tile name), the rest by topic."""
+    if path == "policy/news/":
+        return POLICY_TOPICS
     if cat == "research":
         return sorted(classify.paper_homes())
     if cat == "infra":
@@ -277,7 +296,9 @@ ASK = {
     "industry/events/": "What happened at AI events?",
     "releases": "What has {0} released lately?",
     "policy/governments/": "What are governments saying about AI?",
-    "policy/think-tanks/": "What are think tanks and civil society saying about AI?",
+    "policy/rights-groups/": "What are rights and advocacy groups saying about AI?",
+    "policy/institutes/": "What are research institutes finding about AI policy?",
+    "policy/ai-companies/": "What are AI companies saying about AI policy?",
     "policy/news/": "What is the news reporting on AI policy?",
     "research": "What's new in AI research on {1}?",
     "infra/power-and-grid/": "Where will AI's electricity come from?",
@@ -302,6 +323,21 @@ def _icon(p: str, label: str) -> str:
     return logos([label]).get(label) or f"<b>{escape(label[:1])}</b>"
 
 
+def speakers(path: str, rule: dict) -> dict | None:
+    """A Policy page's tiles per speaker, as company blogs' are per company ({"of": source: tile, "logo": tile:
+    markup}): governments by country with its flag (international bodies under a globe), the companies by
+    company with their logos, the groups and institutes by name. None for the news reports."""
+    if not path.startswith("policy/") or path == "policy/news/":
+        return None
+    if path == "policy/governments/":
+        code = {s["name"]: (s.get("jurisdictions") or ["INTL"])[0] for s in sources.SOURCES}
+        place = {n: jurisdictions.JURISDICTIONS[code[n]][0] for n in rule["sources"]}
+        return {"of": place, "logo": {jurisdictions.JURISDICTIONS[c][0]: f'<img src="/flags/{countries.flag(c)}" alt="">'
+                                      for c in {code[n] for n in rule["sources"]}}}
+    of = {n: company(n) if path == "policy/ai-companies/" else n for n in rule["sources"]}
+    return {"of": of, "logo": logos(set(of.values()))}
+
+
 def build(conn, cards: list[dict], out: Path) -> list[str]:
     """Write every stream's pages. Returns their paths."""
     parts = pages.frame(conn, len(cards))
@@ -313,8 +349,10 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
     for cat, p, label, heading, what, rule in every:
         home, name = STREAMS[cat]
         others = " · ".join(f'<a href="/{q}">{escape(label)}</a>' for c, q, label, *_ in every if c == cat)
+        who = speakers(p, rule)
         tiles = (f'<script type="application/json" id="firms">{firms}</script>\n' if rule.get("kind") == "blog" else
-                 f'<script type="application/json" id="topics">{safe(tile_names(cat))}</script>\n')
+                 f'<script type="application/json" id="firms">{safe(who)}</script>\n' if who else
+                 f'<script type="application/json" id="topics">{safe(tile_names(cat, p))}</script>\n')
         noun, nouns = ("paper", "papers") if cat == "research" else ("story", "stories")
         where = "the paper" if cat == "research" else "the outlet's own page"
         body = (f'<div class="kd">' + pages.band(cat, _icon(p, label), f"photos/cartoons/streams/{cat}.svg", heading,
