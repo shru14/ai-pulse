@@ -31,7 +31,7 @@ STYLE = """
 .cp li a:hover,.cp li a:focus-visible{text-decoration:underline}
 .cp .meta{color:var(--muted);font-size:14px;margin-top:2px}
 .cp .steps{color:var(--muted);font-size:13.5px;margin-top:2px}
-.cp .what{font-size:15px;margin-top:4px;max-width:64ch}
+.cp .what{font-size:15px;margin-top:4px}
 .cp .places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:20px}
 .cp .places a{display:flex;align-items:center;gap:12px;border:2px solid var(--line);background:var(--bg);padding:12px 14px;color:var(--ink);font-weight:600;text-decoration:none}
 .cp .places a:hover,.cp .places a:focus-visible{background:#F0E442;color:#000}
@@ -46,7 +46,7 @@ STYLE = """
 .cp .companies button[aria-pressed="true"]{box-shadow:5px 5px 0 #0072B2}
 .cp .companies .logo{color:#141925;font:700 15px var(--body)}
 .cp .companies small{margin-left:auto;color:var(--muted);font-size:13px}
-.cp .def{font-size:17px;line-height:1.55;margin:10px 0 14px;max-width:64ch}
+.cp .def{font-size:17px;line-height:1.55;margin:10px 0 14px}
 .cp .def a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px}
 .cp .more-stories{margin-top:14px;font:600 15px var(--body);color:#fff;background:#0072B2;border:2px solid var(--line);padding:9px 16px;cursor:pointer}
 .cp .more-stories[hidden]{display:none}
@@ -336,7 +336,7 @@ a.subscribe-btn{text-decoration:none}
   .cp .chapter.wk .yr small{position:static;display:inline;margin-left:10px}}
 .cp:has(> .ft) > .back,.cp:has(> .ft) > .note{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .ft{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}  /* the timelines run wide */
-.cp .ft > .intro{max-width:70ch;font-size:17px;line-height:1.5;color:var(--ink)}
+.cp .ft > .intro{font-size:17px;line-height:1.5;color:var(--ink)}
 .cp .ft h3{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
 .cp .ps{display:inline-block;font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#000;background:#fff;border:2px solid var(--line);padding:0 5px;white-space:nowrap}
 .cp .ft .mt td:last-child,.cp .ft .mt th:last-child{text-align:left;white-space:normal}
@@ -372,7 +372,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .pin.r0 img{opacity:.4;border-style:dashed}
 .cp .pin:hover{transform:scale(1.25);z-index:3}
 .cp .er .det{padding:2px 18px 18px 34px}
-.cp .er .det p{max-width:70ch;margin:8px 0 4px;line-height:1.5}
+.cp .er .det p{margin:8px 0 4px;line-height:1.5}
 /* harm → rule: a panel per subject, the harms logged so far as a line and each rule a dot on it */
 .cp .hps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:16px}
 .cp .hp{display:block;border:2px solid var(--line);background:var(--bg);box-shadow:5px 5px 0 var(--line);padding:12px 14px 6px;color:var(--ink);text-decoration:none}
@@ -729,8 +729,8 @@ a.subscribe-btn{text-decoration:none}
   .cp .mt.sl td:nth-child(2),.cp .mt.sl td:nth-child(3){min-width:170px}
 }
 /* Jobs blamed on AI: the question, one plain bar per reason, then a chapter per reason with its cuts */
-.cp .jb-q{font:400 clamp(20px,2.6vw,26px)/1.3 var(--body);margin:0 0 10px;max-width:46ch}
-.cp .jb .jb-answer > .intro,.cp .jb .jb-ch > .intro{max-width:70ch;font-size:17px;line-height:1.5;color:var(--ink)}
+.cp .jb-q{font:400 clamp(20px,2.6vw,26px)/1.3 var(--body);margin:0 0 10px}
+.cp .jb .jb-answer > .intro,.cp .jb .jb-ch > .intro{font-size:17px;line-height:1.5;color:var(--ink)}
 .cp .jb-split{display:flex;flex-wrap:wrap;gap:16px 44px;align-items:center;margin-top:8px}
 .cp .jb-ring{width:230px;flex:none;fill:none;stroke-width:26}
 .cp .jb-ring text{fill:var(--muted);stroke:none;font:500 13px var(--mono);text-anchor:middle}
@@ -1073,7 +1073,7 @@ a.subscribe-btn{text-decoration:none}
 /* AI buyouts: a quotable lead, then a shopping list per buyer (a row with a dot per deal along the year; the dot's area
    grows with the price, hollow when none was given, dashed while only agreed, a cross when blocked; each links to its
    row), then every deal in the fines and bans' table look. Names keep their size on phones; the tracks shrink */
-.cp .by-lead{font:400 21px/1.4 var(--body);margin:24px 0 4px;max-width:900px}
+.cp .by-lead{font:400 21px/1.4 var(--body);margin:24px 0 4px}
 .cp .by-sub{font-size:13.5px;color:var(--muted);margin:0 0 6px}
 .cp .by-ls{margin:22px 0 28px}
 .cp .by .by-ls h2,.cp .by .by-all h2{margin:0 0 8px}
@@ -1113,7 +1113,7 @@ a.subscribe-btn{text-decoration:none}
 /* What governments use AI for: a lead line; "Who tells you" (every list, a tag for what it covers); "Whose AI they
    run" (suppliers by list, a dot whose area grows with the count, and the number); a card per full list (2 a row,
    1 on phones), each linking to its own page: AI pacts and orders' boxes in Okabe-Ito tints, dark text */
-.cp .gv-lead{font:400 22px/1.4 var(--body);margin:22px 0 18px;max-width:920px}
+.cp .gv-lead{font:400 22px/1.4 var(--body);margin:22px 0 18px}
 .cp .gv-lead b{font-weight:700}
 .cp .ft.gv h2.gv-h{font:400 28px/1.15 var(--display);margin:34px 0 4px}
 .cp .gv p.gv-sub{margin:0 0 12px;color:var(--muted);font-size:15px}
@@ -1171,7 +1171,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ce .fx-in{background:#A6DCC6}.cp .ce .fx-ch{background:#F2D27A}.cp .ce .fx-an{background:#F3B08A}.cp .ce .fx-aw{background:#DDDDDD}
 .cp .ce-hero{margin:20px 0 6px;border:2px solid var(--ink);padding:16px 18px 14px}
 .cp .ce .ce-hero h2{margin:0 0 8px}
-.cp .ce-big{font:600 17px/1.4 var(--body);margin:0 0 14px;max-width:62ch}
+.cp .ce-big{font:600 17px/1.4 var(--body);margin:0 0 14px}
 .cp .ce-grid{width:100%;border-collapse:separate;border-spacing:4px;table-layout:fixed}
 .cp .ce-grid th,.cp .ce-grid td{border:0;padding:0}
 .cp .ce-grid thead th{font:700 13px var(--body);text-align:center;vertical-align:bottom;padding-bottom:4px}
