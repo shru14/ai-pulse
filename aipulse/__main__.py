@@ -304,11 +304,11 @@ def main():
         conn = store.connect(a.db)
         # the news sources, the official lists AI consultations reads (consultations.refresh logs them) and Epoch AI's
         # dataset (compute.refresh logs it)
-        # and the registers What governments use AI for reads (gov_ai.refresh logs them)
+        # and the lists What governments use AI for reads (gov_ai.refresh logs them)
         from .compute import CSV
-        from .gov_ai import REGISTERS
+        from .gov_ai import PLACES
         rows = store.newly_failing(conn, [s["url"] for s in SOURCES] + [url for url, _ in LISTS.values()] + [CSV]
-                                   + [url for url, _ in REGISTERS.values()])
+                                   + [p[3] for p in PLACES.values()])
         if not rows:
             print("No source has newly stopped working.")
         elif a.dry_run:

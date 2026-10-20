@@ -265,8 +265,9 @@ PLATFORM: dict[str, tuple[str, str, str]] = {
                      "Have Your Say's public API; European Commission: reuse allowed with acknowledgement; robots.txt "
                      "allows /info/; checked 17 Oct 2026"),
     "open.canada.ca": ("official", "https://open.canada.ca/en/open-government-licence-canada",
-                       "Open Government Licence - Canada: the list of federal consultations is open data; robots.txt "
-                       "allows /static/; checked 17 Oct 2026"),
+                       "Open Government Licence - Canada: the list of federal consultations and the Government of "
+                       "Canada AI Register are open data; robots.txt allows /static/ and /data/; checked 17 and 20 "
+                       "Oct 2026"),
     # Added 20 Oct 2026 for What governments use AI for (www.gov.uk is above, under Sources)
     "raw.githubusercontent.com": ("official", "https://github.com/ombegov/2025-Federal-Agency-AI-Use-Case-Inventory",
                                   "OMB's consolidated Federal Agency AI Use Case Inventory: a US government work, "

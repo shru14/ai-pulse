@@ -1058,35 +1058,62 @@ a.subscribe-btn{text-decoration:none}
 .cp .fx .pc-hh{background:var(--f-reg)}
 .cp .fx .pc-hh h2,.cp .fx .pc-hh p{color:#141925}
 .cp .fx-in{background:#F85C48}.cp .fx-li{background:#56B4E9}.cp .fx-ch{background:#F0E442}.cp .fx-an{background:#8C8C8C}.cp .fx .fx-aw{background:var(--bg);border-style:dashed;color:var(--ink)}
-/* What governments use AI for: AI pacts and orders' stacked boxes, one per register (Okabe-Ito tints, dark text),
-   each with two small count tables side by side and a scrolling table; the US table has Excel-style filters */
-.cp .gv-lead{font:400 21px/1.4 var(--body);margin:22px 0 4px;max-width:900px}
+/* What governments use AI for: a lead line; "Who tells you" (every list, a tag for what it covers); "Whose AI they
+   run" (suppliers by list, a dot whose area grows with the count, and the number); a card per full list (2 a row,
+   1 on phones), each linking to its own page: AI pacts and orders' boxes in Okabe-Ito tints, dark text */
+.cp .gv-lead{font:400 22px/1.4 var(--body);margin:22px 0 18px;max-width:920px}
 .cp .gv-lead b{font-weight:700}
+.cp .ft.gv h2.gv-h{font:400 28px/1.15 var(--display);margin:34px 0 4px}
+.cp .gv p.gv-sub{margin:0 0 12px;color:var(--muted);font-size:15px}
+.cp .gv-f{width:24px;height:16px;object-fit:cover;border:1px solid var(--line);margin-right:9px;vertical-align:-2px}
+.cp .gv-who,.cp .gv-whose{width:100%;border-collapse:collapse}
+.cp .gv-who th,.cp .gv-whose thead th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 12px 6px 0;border-bottom:3px solid var(--ink)}
+.cp .gv-who td{padding:8px 12px 8px 0;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent);font-size:14.5px;vertical-align:top}
+.cp .gv-n{font:700 14px var(--mono);white-space:nowrap}
+.cp .ft.gv .gv-who a,.cp .ft.gv .gv-t td a{color:var(--ink);font-weight:600;text-decoration:none}
+.cp .ft.gv .gv-who a:hover,.cp .ft.gv .gv-t td a:hover{text-decoration:underline}
+.cp .ft.gv a.gv-go,.cp .ft.gv a.gv-all{font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.cp .gv-chk{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.cp .gv-live{background:#A6DCC6}.cp .gv-trial{background:#F2D27A}.cp .gv-off{background:#DDDDDD}.cp .gv-high{background:#E9B9D5}
+.cp .gv .pc-k{white-space:nowrap}
+.cp .gv-whose{max-width:760px;table-layout:fixed}
+.cp .gv-whose thead th:first-child{width:130px}
+.cp .gv-whose tbody th{text-align:left;font:600 14.5px var(--body);padding:0 10px 0 0;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .gv-whose td{height:50px;padding:0;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent);font:700 13.5px var(--mono);white-space:nowrap}
+.cp .gv-dot{display:inline-block;vertical-align:middle;border-radius:50%;background:var(--f-policy);border:1.5px solid var(--ink);margin-right:8px}
+.cp .gv-whose td.gv-z{color:var(--muted);font-weight:400}
+.cp .gv-cards{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:10px}
 .cp .gv .gv-us .pc-hh{background:color-mix(in srgb,#CC79A7 30%,var(--bg))}
+.cp .gv .gv-ca .pc-hh{background:color-mix(in srgb,#D55E00 22%,var(--bg))}
 .cp .gv .gv-nl .pc-hh{background:color-mix(in srgb,#E69F00 30%,var(--bg))}
 .cp .gv .gv-uk .pc-hh{background:color-mix(in srgb,#56B4E9 32%,var(--bg))}
-.cp .ft.gv .pc-hh a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
-.cp .gv-f{width:26px;height:18px;object-fit:cover;border:1px solid var(--line);margin-right:10px;vertical-align:-1px}
-.cp .gv-two{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:6px}
-.cp .gv-two table{width:100%;border-collapse:collapse}
-.cp .gv-two td{font-size:13.5px;padding:4px 8px 4px 0;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
-.cp .gv-n{text-align:right;font:700 13.5px var(--mono);width:1%;white-space:nowrap}
-.cp .gv-sc{max-height:520px;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:2px solid var(--ink)}
+.cp .ft.gv .gv-card h2{font:400 24px/1.1 var(--display);margin:0;border:0;padding:0}
+.cp .gv-big{margin:4px 0 8px;font-size:15px}.cp .gv-big b{font:400 44px/1 var(--display);margin-right:6px}
+.cp .gv-facts{width:100%;border-collapse:collapse;margin-bottom:6px}
+.cp .gv-facts.gv-wide{max-width:640px}
+.cp .gv-facts td{font-size:13.5px;padding:5px 0;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+.cp .gv-facts td:last-child{text-align:right;padding-left:10px}.cp .gv-facts b{font:700 14px var(--mono)}
+.cp .gv-ex{list-style:none;margin:0;padding:0}
+.cp .gv-ex li{font-size:13.5px;padding:6px 0;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .ft.gv a.gv-all{display:inline-block;margin-top:10px}
+.cp .gv-sc{max-height:620px;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:2px solid var(--ink)}
 .cp .gv-t thead th{position:sticky;top:0;z-index:1;background:var(--bg);text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 10px 6px 0;border-bottom:3px solid var(--ink)}
 .cp .gv-t td{padding:8px 10px 8px 0}
-.cp .ft.gv .gv-t td a{color:var(--ink);font-weight:600;text-decoration:none}
-.cp .ft.gv .gv-t td a:hover{text-decoration:underline}
 .cp .gv-us-t td:first-child{width:150px}
-.cp .gv .pc-k{white-space:nowrap}
-.cp .gv-live{background:#A6DCC6}.cp .gv-trial{background:#F2D27A}.cp .gv-off{background:#DDDDDD}.cp .gv-high{background:#E9B9D5}
-@media (max-width:640px){.cp .gv-two{grid-template-columns:1fr}
+@media (max-width:640px){.cp .gv-cards{grid-template-columns:1fr}
+  .cp .gv-who thead{display:none}
+  .cp .gv-who tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent);padding:6px 0}
+  .cp .gv-who td{display:inline-block;border:0;padding:2px 10px 2px 0}
+  .cp .gv-who td:nth-child(2){display:block}
+  .cp .gv-whose thead th:first-child{width:92px}.cp .gv-whose thead th{letter-spacing:0;font-size:10.5px}
+  .cp .gv-whose .gv-f{display:block;margin-bottom:3px}
+  .cp .gv-dot{margin-right:4px}
   .cp .gv-sc{max-height:72vh}
   .cp .gv-t thead{display:none}
   .cp .gv-t tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent);padding:6px 0}
   .cp .gv-t td{display:inline-block;border:0;padding:2px 8px 2px 0;vertical-align:middle}
   .cp .gv-t td:nth-child(2){display:block}
-  .cp .gv-us-t td:first-child{width:auto}
-  .cp .gv-us-t td:first-child .fx-c{display:none}}
+  .cp .gv-us-t td:first-child{width:auto}.cp .gv-us-t td:first-child .fx-c{display:none}}
 /* Chip export rules: a grid of chips (rows) by US decision (columns), a coloured cell per answer with its symbol so
    colour is never the only cue; then three short lists in columns, stacked on phones (the grid shrinks to fit) */
 .cp .ce .fx-in{background:#A6DCC6}.cp .ce .fx-ch{background:#F2D27A}.cp .ce .fx-an{background:#F3B08A}.cp .ce .fx-aw{background:#DDDDDD}

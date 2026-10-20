@@ -1,12 +1,15 @@
-"""What governments use AI for (government-ai-use/): three governments' own registers of the AI and algorithms they
-use, read once a day on full runs, one box each. The US: every use in the federal agencies' yearly inventory, which the
-White House budget office (OMB) puts together on GitHub, with Excel-style filters (agency, area, kind of AI, stage,
-high-impact). The Netherlands: the national Algorithm Register's counts, and every system a public body marked as a
-high-risk AI system under the EU AI Act, names and descriptions in Dutch as registered. The UK: every algorithmic
-transparency record on GOV.UK, newest first. Each register's own words and categories; linked from Policy's strip.
+"""What governments use AI for (government-ai-use/): the lists governments publish of the AI they themselves use.
+The page: who publishes such a list (the four read in full here, and the others checked by hand), whose AI they run
+(the suppliers named in the registers that name one), then a card per full list linking to its own page with every
+entry and Excel-style filters. Each government's own words and categories; linked from Policy's strip.
 
-Terms (terms.py): the US inventory is a US government work (public domain); GOV.UK is under the Open Government Licence
-v3.0; the Dutch register's copyright page says its content may be reused. robots.txt allows all three.
+The four full lists, read once a day on full runs (terms in terms.py; robots.txt allows each):
+- United States: the federal agencies' yearly AI use case inventory, as the White House budget office (OMB) puts it
+  together on GitHub (a US government work, public domain).
+- Canada: the Government of Canada AI Register on the open data portal (Open Government Licence - Canada).
+- Netherlands: the national Algorithm Register's own download (its copyright page: the content may be reused); names
+  and descriptions stay in Dutch as registered, only its areas and statuses are given in English.
+- United Kingdom: the algorithmic transparency records on GOV.UK (Open Government Licence v3.0).
 """
 from __future__ import annotations
 
@@ -14,6 +17,8 @@ import collections
 import csv
 import io
 import json
+import math
+import re
 from datetime import date, datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
@@ -21,26 +26,47 @@ from pathlib import Path
 from . import feeds, infra_watch, pages, rss, store
 
 PATH = "government-ai-use/"
-KEY = "gov_ai"  # the meta row holding each register's rows and when it was last read
-EVERY = timedelta(hours=20)  # a register is read again on the first full run this long after the last (once a day)
+KEY = "gov_ai"  # the meta row holding each list's rows and when it was last read
+EVERY = timedelta(hours=20)  # a list is read again on the first full run this long after the last (once a day)
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
-# place: (the register's own page, its name)
-REGISTERS = {
-    "US": ("https://github.com/ombegov/2025-Federal-Agency-AI-Use-Case-Inventory",
-           "Federal Agency AI Use Case Inventory"),
-    "NL": ("https://algoritmes.overheid.nl/nl/algoritme", "Algoritmeregister"),
-    "UK": ("https://www.gov.uk/algorithmic-transparency-records", "Algorithmic Transparency Records"),
+# place: (its page's address under PATH, flag, name, the list's own page, the list's name, who keeps it)
+PLACES = {
+    "US": ("united-states/", "us", "United States", "https://github.com/ombegov/2025-Federal-Agency-AI-Use-Case-Inventory",
+           "Federal Agency AI Use Case Inventory", "White House budget office (OMB)"),
+    "NL": ("netherlands/", "nl", "Netherlands", "https://algoritmes.overheid.nl/nl/algoritme", "Algoritmeregister",
+           "Ministry of the Interior"),
+    "CA": ("canada/", "ca", "Canada", "https://open.canada.ca/data/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b",
+           "Government of Canada AI Register", "Treasury Board of Canada Secretariat"),
+    "UK": ("united-kingdom/", "gb", "United Kingdom", "https://www.gov.uk/algorithmic-transparency-records",
+           "Algorithmic Transparency Records", "Department for Science, Innovation and Technology"),
 }
+# The other governments' own lists, checked by hand (official ones only: France's inventory is kept by an independent
+# observatory and Chile's by a university, so they aren't here). Scotland's register (certificate expired) and
+# Australia's list of transparency statements (no answer) couldn't be opened on 20 Oct 2026: recheck.
+# (place, flag, the list's name, its page, what it holds, who keeps it, tag, checked on)
+OTHERS = [
+    ("Norway", "no", "Offentlige KI-tiltak", "https://ki.norge.no/ki-tiltak", "149 initiatives",
+     "KI Norge (Digdir)", "Reported by choice", "2026-10-20"),
+    ("Estonia", "ee", "Kratid: AI use stories", "https://www.kratid.ee/kasutuslood-kratid", "about 200 uses",
+     "Ministry of Justice and Digital Affairs", "Selected stories", "2026-10-20"),
+    ("Brazil", "br", "AI in the federal executive",
+     "https://www.gov.br/governodigital/pt-br/infraestrutura-nacional-de-dados/inteligencia-artificial-1",
+     "182 in operation", "Ministry of Management (MGI)", "A count, no list", "2026-10-20"),
+]
+# what each full list holds, for the tag in "Who tells you"
+FULL_TAG = {"US": "Every use", "NL": "Every algorithm", "CA": "Every system", "UK": "Tools chosen to record"}
+
 # OMB publishes each year's inventory in a repository of its own; the newest one found is read
 US_CSV = ("https://raw.githubusercontent.com/ombegov/{y}-Federal-Agency-AI-Use-Case-Inventory/HEAD/Data/"
           "{y}_individually_reported_AI_use_cases.csv")
 US_FIRST = 2025
+CA_DATASET = "https://open.canada.ca/data/api/action/package_show?id=fcbc0200-79ba-4fa4-94a6-00e32facea6b"
 NL_CSV = "https://algoritmes.overheid.nl/api/downloads/NLD?filetype=csv"
 NL_ENTRY = "https://algoritmes.overheid.nl/nl/algoritme/{id}"
 UK_API = ("https://www.gov.uk/api/search.json?filter_format=algorithmic_transparency_record&count=1000"
           "&order=-public_timestamp&fields=title,link,description,public_timestamp")
-# The Dutch register's own areas and statuses, in English (our words; the rows themselves stay in Dutch)
+# The Dutch register's own areas, statuses and kinds, in English (our words; the entries themselves stay in Dutch)
 NL_AREAS = {
     "Organisatie en bedrijfsvoering": "Running the organisation", "Sociale zekerheid": "Social security",
     "Openbare orde en veiligheid": "Public order and safety", "Overheidsfinanciën": "Public finances",
@@ -51,9 +77,43 @@ NL_AREAS = {
     "Internationaal": "International", "Onderwijs": "Education", "Zorg": "Care", "Energie": "Energy",
 }
 NL_STATUSES = {"In gebruik": "In use", "In ontwikkeling": "Being built", "Buiten gebruik": "No longer used"}
-NL_HIGH = "Hoog-risico AI-systeem"  # the register's own category for a high-risk AI system (EU AI Act)
-US_STAGES = ("Deployed", "Pilot", "Pre-deployment", "Retired")
+NL_KINDS = {"Hoog-risico AI-systeem": "High-risk AI system", "Impactvolle algoritmes": "Impactful algorithm",
+            "Overige algoritmes": "Other algorithm"}
+NL_HIGH = "High-risk AI system"  # the register's own mark for a high-risk AI system under the EU AI Act
 US_HIGH = "High-impact"
+US_STAGES = ("Deployed", "Pilot", "Pre-deployment", "Retired")
+CA_PUBLIC = ("Members of public", "Both employees and public")
+# Suppliers: an entry counts for a company when its supplier field names the company or one of its AI products, or
+# its own name names one of those products (company names alone could be something else there: "Amazon basin").
+# Checked by hand against every match on 20 Oct 2026. "Azure OpenAI" names both Microsoft and OpenAI.
+# company: (in the supplier field, in the entry's name)
+SUPPLIERS = {
+    "Microsoft": (r"\bmicrosoft\b|\bcopilot\b|\bazure\b", r"\bmicrosoft\b|\bcopilot\b|\bazure\b"),
+    "OpenAI": (r"\bopenai\b|\bchatgpt\b", r"\bopenai\b|\bchatgpt\b"),
+    "Google": (r"\bgoogle\b|\bgemini\b|\bvertex ai\b", r"\bgoogle\b|\bgemini (code assist|ai|for)\b|\bvertex ai\b|^gemini\b"),
+    "Amazon": (r"\bamazon\b|\baws\b|\brekognition\b",
+               r"\baws\b|\bamazon (web services|q|connect|bedrock|transcribe|comprehend|textract|lex|polly|rekognition|"
+               r"sagemaker)\b|\brekognition\b"),
+    "Palantir": (r"\bpalantir\b", r"\bpalantir\b"),
+    "ServiceNow": (r"\bservicenow\b", r"\bservicenow\b"),
+    "IBM": (r"\bibm\b|\bwatsonx?\b", r"\bibm\b|\bwatsonx\b"),
+    "Anthropic": (r"\banthropic\b|\bclaude\b", r"\banthropic\b|\bclaude (code|ai|for|chat)\b|^claude\b"),
+}
+NAMES_SUPPLIER = ("US", "CA", "NL")  # the lists with a supplier field
+# Entries that touch people, shown on each card: names as registered, checked by hand; if a list no longer has them,
+# the card takes the first entries its own rule gives
+EXAMPLES = {
+    "US": ["Passive Body Scanner", "AI-Assisted Resume Screening Tool", "Passenger Security Assessment Model"],
+    "CA": ["Primary Inspection Kiosk", "Develop a public facing Generative AI Chatbot for general enquiries leveraging "
+           "ChatGPT LLM", "AgPal Chat"],
+    "NL": ["Biometrische identificatie en verificatie van vreemdelingen", "Werkzoekenden matchen met vacatures", "Bodycam"],
+    "UK": ["Check-In with your probation officer (E-Supervision)", "BenchNotes", "VAT Assist"],
+}
+
+
+def _the(place: str) -> str:
+    """A place's name as a sentence needs it: "the United States", "Canada"."""
+    return f"the {place}" if place.startswith(("United", "Netherlands")) else place
 
 
 def _short(text: str, n: int = 160) -> str:
@@ -61,64 +121,84 @@ def _short(text: str, n: int = 160) -> str:
     return t if len(t) <= n else t[:n].rsplit(" ", 1)[0].rstrip(",;:") + "…"
 
 
-# --- each register ---
+def _csv(raw: bytes) -> list[dict]:
+    return list(csv.DictReader(io.StringIO(raw.decode("utf-8-sig", "replace"))))
+
+
+# --- each list ---
 
 def read_us(fetcher, today: date) -> dict:
     """The newest yearly federal inventory OMB has published: every use an agency listed."""
     for y in range(today.year, US_FIRST - 1, -1):
         url = US_CSV.format(y=y)
         try:
-            text = fetcher(url).decode("utf-8-sig", "replace")
+            raw = fetcher(url)
         except Exception:
             if y > US_FIRST:  # that year's inventory isn't out yet
                 continue
             raise
-        rows = []
-        for r in csv.DictReader(io.StringIO(text)):
-            name = (r.get("use_case_name") or "").strip()
-            if not name:
-                continue
-            rows.append({"ag": r.get("agency", "").strip(), "agency": r.get("agency_name", "").strip(), "name": name,
-                         "what": _short(r.get("problem_solved") or r.get("benefits") or ""),
-                         "area": r.get("topic_area", "").strip(), "kind": r.get("classification", "").strip(),
-                         "stage": r.get("development_stage", "").strip(), "impact": r.get("is_high_impact", "").strip()})
-        return {"year": y, "url": url, "rows": rows}
+        rows = [{"ag": r.get("agency", "").strip(), "body": r.get("agency_name", "").strip(),
+                 "name": r["use_case_name"].strip(), "what": _short(r.get("problem_solved") or r.get("benefits") or ""),
+                 "area": r.get("topic_area", "").strip(), "kind": r.get("classification", "").strip(),
+                 "stage": r.get("development_stage", "").strip(), "impact": r.get("is_high_impact", "").strip(),
+                 "vendor": r.get("vendor_name", "").strip()}
+                for r in _csv(raw) if (r.get("use_case_name") or "").strip()]
+        return {"year": y, "rows": rows}
     return {}
 
 
+def read_ca(fetcher, today: date) -> dict:
+    """The Government of Canada AI Register: the newest CSV its open data record lists."""
+    found = json.loads(fetcher(CA_DATASET))["result"]
+    url = next(r["url"] for r in found["resources"] if (r.get("format") or "").upper() == "CSV")
+
+    def status(s: str) -> str:
+        s = " ".join(s.split())
+        return s[:1].upper() + s[1:].lower() if s else ""
+    rows = [{"body": r.get("government_organization", "").split(" / ")[0].strip(),
+             "name": r["name_ai_system_en"].strip(), "what": _short(r.get("description_ai_system_en", "")),
+             "users": r.get("ai_system_primary_users_en", "").strip(), "by": r.get("developed_by_en", "").strip(),
+             "vendor": r.get("vendor_information", "").strip(), "status": status(r.get("ai_system_status_en", "")),
+             "personal": r.get("involves_personal_information", "").strip()}
+            for r in _csv(fetcher(url)) if (r.get("name_ai_system_en") or "").strip()]
+    return {"rows": rows}
+
+
 def read_nl(fetcher, today: date) -> dict:
-    """The Dutch Algorithm Register's own download: its counts by area and status, and every high-risk AI system."""
-    text = fetcher(NL_CSV).decode("utf-8-sig", "replace")
-    rows = list(csv.DictReader(io.StringIO(text)))
-    high = [{"org": r["organization"].strip(), "name": r["name"].strip(), "what": _short(r.get("description_short", "")),
-             "area": r.get("category", "").split(",")[0].strip(), "status": r.get("status", "").strip(),
-             "id": r.get("algorithm_id", "").strip()}
-            for r in rows if r.get("publication_category") == NL_HIGH and r.get("name")]
-    return {"total": len(rows), "high": high,
-            "areas": collections.Counter(r.get("category", "").split(",")[0].strip() for r in rows),
-            "statuses": collections.Counter(r.get("status", "").strip() for r in rows)}
+    """The Dutch Algorithm Register's own download: every algorithm registered."""
+    rows = [{"body": r["organization"].strip(), "name": r["name"].strip(), "what": _short(r.get("description_short", "")),
+             "area": NL_AREAS.get(r.get("category", "").split(",")[0].strip(), r.get("category", "").split(",")[0].strip()),
+             "status": NL_STATUSES.get(r.get("status", "").strip(), r.get("status", "").strip()),
+             "kind": NL_KINDS.get(r.get("publication_category", ""), r.get("publication_category", "")),
+             "vendor": " ".join(r.get("provider", "").split()), "id": r.get("algorithm_id", "").strip()}
+            for r in _csv(fetcher(NL_CSV)) if (r.get("name") or "").strip()]
+    return {"rows": rows}
 
 
 def read_uk(fetcher, today: date) -> dict:
-    """Every algorithmic transparency record on GOV.UK, through its search API."""
-    found = json.loads(fetcher(UK_API)).get("results") or []
-    rows = [{"title": r["title"].strip(), "day": (r.get("public_timestamp") or "")[:10],
-             "what": _short(r.get("description") or ""),
-             "url": "https://www.gov.uk" + r["link"] if r["link"].startswith("/") else r["link"]}
-            for r in found if r.get("title") and r.get("link")]
+    """Every algorithmic transparency record on GOV.UK, through its search API. A title is "Body: Tool"."""
+    rows = []
+    for r in json.loads(fetcher(UK_API)).get("results") or []:
+        if not (r.get("title") and r.get("link")):
+            continue
+        body, _, tool = r["title"].partition(":")
+        body, tool = (body.strip(), tool.strip()) if tool.strip() else ("", r["title"].strip())
+        rows.append({"body": body, "name": tool, "what": _short(r.get("description") or ""),
+                     "day": (r.get("public_timestamp") or "")[:10],
+                     "url": "https://www.gov.uk" + r["link"] if r["link"].startswith("/") else r["link"]})
     return {"rows": sorted(rows, key=lambda r: r["day"], reverse=True)}
 
 
-READERS = {"US": read_us, "NL": read_nl, "UK": read_uk}
+READERS = {"US": read_us, "NL": read_nl, "CA": read_ca, "UK": read_uk}
 
 
 def health_name(place: str) -> str:
-    return f"What governments use AI for: {REGISTERS[place][1]} ({place})"
+    return f"What governments use AI for: {PLACES[place][4]} ({place})"
 
 
 def refresh(conn, fetcher=feeds.fetch, now: datetime | None = None) -> str:
-    """Read each register again once a day. A register that can't be read keeps the rows last read, and is logged in
-    the sources table like a news source, so one failing 3 runs in a row reaches the project inbox
+    """Read each list again once a day. A list that can't be read keeps the rows last read, and is logged in the
+    sources table like a news source, so one failing 3 runs in a row reaches the project inbox
     (python -m aipulse source-alert)."""
     now = now or datetime.now(timezone.utc)
     saved, said = load(conn), []
@@ -129,14 +209,12 @@ def refresh(conn, fetcher=feeds.fetch, now: datetime | None = None) -> str:
             continue
         try:
             got = read(fetcher, now.date())
-            n = len(got.get("rows") or []) or got.get("total", 0)
             saved[place] = {"read": now.strftime("%Y-%m-%dT%H:%MZ"), **got}
-            said.append(f"{place} {n}")
-            store.record_source(conn, health_name(place), REGISTERS[place][0], ok=True, entries=n)
+            said.append(f"{place} {len(got.get('rows') or [])}")
+            store.record_source(conn, health_name(place), PLACES[place][3], ok=True, entries=len(got.get("rows") or []))
         except Exception as e:
             said.append(f"{place} not read ({e})")
-            store.record_source(conn, health_name(place), REGISTERS[place][0], ok=False,
-                                error=str(e) or type(e).__name__)
+            store.record_source(conn, health_name(place), PLACES[place][3], ok=False, error=str(e) or type(e).__name__)
     conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (KEY, json.dumps(saved)))
     conn.commit()
     return ", ".join(said)
@@ -147,163 +225,280 @@ def load(conn) -> dict:
     return json.loads(row[0]) if row else {}
 
 
-# --- the page ---
+# --- what the page says about each list ---
 
 def _when(d: str) -> str:
     y, m, day = d[:10].split("-")
     return f"{int(day)} {_MONTHS[int(m) - 1]} {y}"
 
 
-def _counts(title: str, pairs) -> str:
-    """A small table of a register's own categories and how many entries each has, biggest first."""
-    return (f'<div><h3>{escape(title)}</h3><table>'
-            + "".join(f'<tr><td>{escape(k)}</td><td class="gv-n">{v:,}</td></tr>' for k, v in pairs) + "</table></div>")
+def suppliers(rows: list[dict]) -> dict[str, int]:
+    """How many entries name each supplier, in their supplier field or (a product) in their name."""
+    out = {}
+    for v, (field, name) in SUPPLIERS.items():
+        fx, nx = re.compile(field, re.I), re.compile(name, re.I)
+        out[v] = sum(bool(fx.search(r.get("vendor", "")) or nx.search(r["name"])) for r in rows)
+    return out
 
 
-def _box(place: str, flag: str, name: str, lead: str, inner: str) -> str:
-    url, register = REGISTERS[place]
-    return (f'<section class="pc-half gv-{place.lower()}"><div class="pc-hh"><h2><img src="flags/{flag}.svg" alt="" '
-            f'class="gv-f">{escape(name)}</h2><p>{lead} · <a href="{escape(url, quote=True)}" rel="noopener">'
-            f'{escape(register)}</a></p></div><div class="pc-in">{inner}</div></section>\n')
+def _touch(place: str, rows: list[dict]) -> list[dict]:
+    """The entries that touch people, by each list's own answer: US high-impact uses in use or on trial; Canadian
+    systems the public uses; Dutch high-risk AI systems; for the UK, every record (each is a tool the public meets or
+    one that informs decisions about people, by the standard's own scope)."""
+    if place == "US":
+        return [r for r in rows if r["impact"] == US_HIGH and r["stage"] in ("Deployed", "Pilot")]
+    if place == "CA":
+        return [r for r in rows if r["users"] in CA_PUBLIC]
+    if place == "NL":
+        return [r for r in rows if r["kind"] == NL_HIGH]
+    return rows
 
 
-def _tag(text: str, cls: str) -> str:
-    return f'<span class="pc-k {cls}">{escape(text)}</span>'
+def _top(counter: collections.Counter) -> tuple[str, int]:
+    k = [(a, n) for a, n in counter.most_common() if a and a != "Other"]
+    return k[0] if k else ("", 0)
 
 
-def _us(us: dict) -> tuple[str, str]:
-    """The US box and the page's lead line."""
-    rows = us.get("rows") or []
-    high = [r for r in rows if r["impact"] == US_HIGH]
-    live = [r for r in high if r["stage"] in ("Deployed", "Pilot")]
-    top = collections.Counter(r["agency"] for r in live).most_common(2)
-    agencies = len({r["agency"] for r in rows})
-    order = {s: i for i, s in enumerate(US_STAGES)}
-    rows = sorted(rows, key=lambda r: (r["impact"] != US_HIGH, order.get(r["stage"], 9), r["agency"], r["name"]))
-    stage = {"Deployed": "gv-live", "Pilot": "gv-trial"}
-    trs = "".join(
-        f'<tr><td data-f="{escape(r["agency"] or "–")}"><b title="{escape(r["agency"])}">{escape(r["ag"] or r["agency"])}</b>'
-        f'<span class="fx-c">{escape(r["agency"])}</span></td>'
-        f'<td>{escape(r["name"])}<span class="fx-c">{escape(r["what"])}</span></td>'
-        f'<td>{escape(r["area"] or "–")}</td><td>{escape(r["kind"] or "–")}</td>'
-        f'<td data-f="{escape(r["stage"] or "–")}">{_tag(r["stage"], stage.get(r["stage"], "gv-off")) if r["stage"] else "–"}</td>'
-        f'<td data-f="{escape(r["impact"] or "–")}">'
-        f'{_tag(r["impact"], "gv-high") if r["impact"] == US_HIGH else escape(r["impact"] or "–")}</td></tr>'
-        for r in rows)
-    lead = (f'US federal agencies list <b>{len(rows):,} AI uses</b>; <b>{len(live)}</b> in use or on trial are '
-            "high-impact, meaning they can affect people's rights or safety"
-            + (f', most at <b>{escape(top[0][0])}</b> ({top[0][1]})' if top else "")
-            + (f" and {escape(top[1][0])} ({top[1][1]})" if len(top) > 1 else "") + ".")
-    head = "".join(f'<th{" data-nof" * (h == "AI use and what it does")}>{h}</th>'
-                   for h in ("Agency", "AI use and what it does", "Used for", "Kind of AI", "Stage", "High-impact"))
-    inner = ('<div class="gv-two">'
-             + _counts("Used for", collections.Counter(r["area"] or "Not given" for r in rows).most_common(8))
-             + _counts("Kind of AI", collections.Counter(r["kind"] or "Not given" for r in rows).most_common(8))
-             + "</div>"
-             f'<h3>Every use, high-impact first</h3><div class="iw">'
-             f'<div class="iw-fbar"></div><p class="iw-count" aria-live="polite">Showing <b>{len(rows):,}</b> of '
-             f'{len(rows):,} uses. Pick a ▾ to filter. <button type="button" class="iw-clear" hidden>Clear filters'
-             f'</button></p><div class="gv-sc"><table class="pc-rows xf-t gv-t gv-us-t"><thead><tr>{head}</tr></thead>'
-             f"<tbody>{trs}</tbody></table></div></div>")
-    box = _box("US", "us", "United States · federal agencies",
-               f"{len(rows):,} AI uses listed by {agencies} agencies in the {us.get('year', '')} inventory, put "
-               "together by the White House budget office (OMB)", inner)
-    return box, lead
-
-
-def _nl(nl: dict) -> str:
-    high = sorted(nl.get("high") or [], key=lambda r: (list(NL_STATUSES).index(r["status"])
-                                                         if r["status"] in NL_STATUSES else 9, r["org"], r["name"]))
-    status = {"In gebruik": "gv-live", "In ontwikkeling": "gv-trial"}
-    trs = "".join(
-        f'<tr><td><b>{escape(r["org"])}</b></td><td><a href="{escape(NL_ENTRY.format(id=r["id"]), quote=True)}" '
-        f'rel="noopener" lang="nl">{escape(r["name"])}</a><span class="fx-c" lang="nl">{escape(r["what"])}</span></td>'
-        f'<td>{escape(NL_AREAS.get(r["area"], r["area"]) or "–")}</td>'
-        f'<td>{_tag(NL_STATUSES.get(r["status"], r["status"]), status.get(r["status"], "gv-off"))}</td></tr>'
-        for r in high)
-    areas = collections.Counter()
-    for k, v in (nl.get("areas") or {}).items():
-        areas[NL_AREAS.get(k, k) or "Not given"] += v
-    statuses = [(NL_STATUSES.get(k, k) or "Not given", v)
-                for k, v in sorted((nl.get("statuses") or {}).items(), key=lambda kv: -kv[1])]
-    inner = ('<div class="gv-two">' + _counts("Used for", areas.most_common(8))
-             + _counts("Where they stand", statuses) + "</div>"
-             f'<h3>High-risk AI systems ({len(high)}) · names and descriptions in Dutch, as registered</h3>'
-             '<div class="gv-sc"><table class="pc-rows gv-t"><thead><tr><th>Public body</th><th>System and what it does'
-             f"</th><th>Area</th><th>Status</th></tr></thead><tbody>{trs}</tbody></table></div>")
-    return _box("NL", "nl", "Netherlands · all public bodies",
-                f"{nl.get('total', 0):,} algorithms in the national Algorithm Register; {len(high)} marked by the body "
-                "itself as a high-risk AI system under the EU AI Act", inner)
-
-
-def _uk(uk: dict) -> str:
-    rows = uk.get("rows") or []
-    this_year = str(datetime.now(timezone.utc).year)
+def _facts(place: str, rows: list[dict], today: date) -> tuple[str, str, list[tuple[str, str]]]:
+    """A card's big number, what it counts, and three facts, each saying what it counts."""
+    touch = len(_touch(place, rows))
+    if place == "US":
+        area, n_area = _top(collections.Counter(r["area"] for r in rows))
+        body, n_body = _top(collections.Counter(r["body"] for r in rows))
+        return f"{len(rows):,}", f"AI uses at {len({r['body'] for r in rows})} federal agencies", [
+            ("High-impact (the agency's own flag), in use or on trial", f"<b>{touch:,}</b>"),
+            ("Biggest area", f"{escape(area)} <b>{n_area:,}</b>"), ("Most uses", f"{escape(body)} <b>{n_body:,}</b>")]
+    if place == "CA":
+        return f"{len(rows):,}", f"AI systems at {len({r['body'] for r in rows})} federal bodies", [
+            ("Used by the public", f"<b>{touch:,}</b>"),
+            ("Use personal information", f"<b>{sum(r['personal'] == 'Y' for r in rows):,}</b>"),
+            ("In production", f"<b>{sum(r['status'] == 'In production' for r in rows):,}</b>")]
+    if place == "NL":
+        area, n_area = _top(collections.Counter(r["area"] for r in rows))
+        return f"{len(rows):,}", "algorithms, every level of government", [
+            ("High-risk AI under the EU AI Act (the body's own mark)", f"<b>{touch:,}</b>"),
+            ("Biggest area", f"{escape(area)} <b>{n_area:,}</b>"),
+            ("In use", f"<b>{sum(r['status'] == 'In use' for r in rows):,}</b>")]
+    bodies = collections.Counter(r["body"] for r in rows if r["body"])
+    most = bodies.most_common(1)[0][1] if bodies else 0
+    tops = [b for b, n in bodies.most_common() if n == most][:2]
     first = min((r["day"][:4] for r in rows if r["day"]), default="")
-
-    def split(title: str) -> tuple[str, str]:
-        body, _, tool = title.partition(":")
-        return (body.strip(), tool.strip()) if tool.strip() else ("", title)
-    trs = []
-    for r in rows:
-        body, tool = split(r["title"])
-        trs.append(f'<tr><td class="pc-d">{_when(r["day"]) if r["day"] else "–"}</td><td><b>{escape(body or "–")}</b></td>'
-                   f'<td><a href="{escape(r["url"], quote=True)}" rel="noopener">{escape(tool)}</a>'
-                   f'<span class="fx-c">{escape(r["what"])}</span></td></tr>')
-    inner = ("<h3>Every record, newest first</h3>"
-             '<div class="gv-sc"><table class="pc-rows gv-t"><thead><tr><th>Published</th><th>Public body</th>'
-             f'<th>Tool and what it does</th></tr></thead><tbody>{"".join(trs)}</tbody></table></div>')
-    n_year = sum(r["day"][:4] == this_year for r in rows)
-    return _box("UK", "gb", "United Kingdom · public bodies",
-                f"{len(rows)} algorithmic transparency records published on GOV.UK"
-                + (f" since {first} ({n_year} so far in {this_year})" if first else ""), inner)
+    return f"{len(rows):,}", f"transparency records since {first}", [
+        (f"Published in {today.year}", f"<b>{sum(r['day'][:4] == str(today.year) for r in rows):,}</b>"),
+        ("Most records", f"{escape(' and '.join(tops))} <b>{most}</b>{' each' * (len(tops) > 1)}"),
+        ("Newest", _when(rows[0]["day"]) if rows and rows[0]["day"] else "–")]
 
 
-def body(saved: dict) -> str:
-    us_box, lead = _us(saved["US"]) if saved.get("US", {}).get("rows") else ("", "")
-    boxes = us_box + (_nl(saved["NL"]) if saved.get("NL", {}).get("total") else "") \
-        + (_uk(saved["UK"]) if saved.get("UK", {}).get("rows") else "")
-    read = max((v.get("read", "") for v in saved.values()), default="")
+# --- the main page ---
+
+def _who(saved: dict) -> str:
+    full = [(p, PLACES[p], saved[p]["rows"]) for p in PLACES if saved.get(p, {}).get("rows")]
+    full.sort(key=lambda x: -len(x[2]))
+    unit = {"US": "uses", "NL": "algorithms", "CA": "systems", "UK": "records"}
+    rows = [f'<tr><td><img src="flags/{fl}.svg" alt="" class="gv-f"><b>{escape(name)}</b></td>'
+            f'<td><a href="{escape(url, quote=True)}" rel="noopener">{escape(reg)}</a><span class="fx-c">{escape(kept)}</span></td>'
+            f'<td class="gv-n">{len(rows):,} {unit[p]}</td><td><span class="pc-k gv-live">{FULL_TAG[p]}</span></td>'
+            f'<td><a class="gv-go" href="{PATH}{sub}">Explore →</a></td></tr>'
+            for p, (sub, fl, name, url, reg, kept), rows in full]
+    rows += [f'<tr><td><img src="flags/{fl}.svg" alt="" class="gv-f"><b>{escape(name)}</b></td>'
+             f'<td><a href="{escape(url, quote=True)}" rel="noopener">{escape(reg)}</a><span class="fx-c">{escape(kept)}</span></td>'
+             f'<td class="gv-n">{escape(n)}</td><td><span class="pc-k gv-trial">{escape(tag)}</span></td>'
+             f'<td class="gv-chk">Checked {_when(day)}</td></tr>'
+             for name, fl, reg, url, n, kept, tag, day in OTHERS]
+    return ('<h2 class="gv-h">Who tells you</h2><p class="gv-sub">Every government list of its own AI we found. The '
+            "first ones are read in full every day; the others are checked by hand.</p>"
+            '<div class="gv-scroll"><table class="gv-who"><thead><tr><th>Government</th><th>Its list</th><th>Holds</th>'
+            "<th>What it covers</th><th></th></tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>\n")
+
+
+def _whose(counts: dict[str, dict[str, int]]) -> str:
+    """Suppliers (rows) by list (columns): a dot whose area grows with the number of entries, and the number."""
+    places = [p for p in NAMES_SUPPLIER if p in counts]
+    biggest = max([n for c in counts.values() for n in c.values()] or [1]) or 1
+    order = sorted(SUPPLIERS, key=lambda v: -sum(counts[p][v] for p in places))
+
+    def cell(n: int) -> str:
+        if not n:
+            return '<td class="gv-z">–</td>'
+        d = 8 + 34 * math.sqrt(n / biggest)
+        return f'<td><span class="gv-dot" style="width:{d:.0f}px;height:{d:.0f}px"></span><b>{n:,}</b></td>'
+    head = "".join(f'<th><img src="flags/{PLACES[p][1]}.svg" alt="" class="gv-f">{escape(PLACES[p][2])}</th>' for p in places)
+    body = "".join(f'<tr><th scope="row">{escape(v)}</th>' + "".join(cell(counts[p][v]) for p in places) + "</tr>"
+                   for v in order if any(counts[p][v] for p in places))
+    return ('<h2 class="gv-h">Whose AI they run</h2><p class="gv-sub">Entries naming each company or one of its AI '
+            "products (Copilot, ChatGPT, Gemini, AWS…) as supplier or in their name, in the lists that name a supplier. "
+            "One entry can name two (Azure OpenAI counts for Microsoft and OpenAI).</p>"
+            f'<table class="gv-whose"><thead><tr><th></th>{head}</tr></thead><tbody>{body}</tbody></table>\n')
+
+
+def _card(place: str, rows: list[dict], today: date) -> str:
+    sub, flag, name = PLACES[place][:3]
+    big, unit, facts = _facts(place, rows, today)
+    touch = _touch(place, rows)
+    picked = [r for n in EXAMPLES.get(place, []) for r in touch if r["name"] == n][:3] or touch[:3]
+    ex = "".join(f'<li><b>{escape(r["body"] or r.get("ag", ""))}</b> · <span{" lang=nl" * (place == "NL")}>'
+                 f'{escape(r["name"])}</span><span class="fx-c"{" lang=nl" * (place == "NL")}>{escape(_short(r["what"], 95))}</span></li>'
+                 for r in picked)
+    fa = "".join(f"<tr><td>{escape(a)}</td><td>{b}</td></tr>" for a, b in facts)
+    return (f'<section class="pc-half gv-card gv-{place.lower()}"><div class="pc-hh"><h2><img src="flags/{flag}.svg" '
+            f'alt="" class="gv-f">{escape(name)}</h2></div><div class="pc-in"><p class="gv-big"><b>{big}</b> '
+            f'{escape(unit)}</p><table class="gv-facts">{fa}</table>'
+            + (f'<h3>Uses that touch people</h3><ul class="gv-ex">{ex}</ul>' if ex else "")
+            + f'<a class="gv-all" href="{PATH}{sub}">See all {len(rows):,} →</a></div></section>')
+
+
+def _lead(saved: dict, counts: dict[str, dict[str, int]]) -> str:
+    full = [p for p in PLACES if saved.get(p, {}).get("rows")]
+    out = (f"<b>{len(full)} governments</b> publish a full list of the AI they use as open data; {len(OTHERS)} more "
+           "publish part of one, or a count.")
+    tops = {p: max(counts[p], key=counts[p].get) for p in counts if any(counts[p].values())}
+    if len(tops) > 1 and len(set(tops.values())) == 1:
+        v = next(iter(tops.values()))
+        out += (f" In all {len(tops)} that name suppliers, <b>{escape(v)}</b> is named most ("
+                + ", ".join(f"{counts[p][v]:,} {adj}" for p, adj in (("US", "US"), ("CA", "Canadian"), ("NL", "Dutch"))
+                            if p in tops) + ").")
+    return f'<p class="gv-lead">{out}</p>\n'
+
+
+def _about(read: str) -> str:
+    """The notes under each page; `read` is when the lists were last read."""
     limits = [
-        ("Counted", "What each government lists in its own register, in its own categories. Registers count different "
-                    "things: the US lists AI uses, the Dutch register every algorithm (AI or not), the UK the tools a "
-                    "public body chose to publish a record for."),
-        ("High-impact (US)", "The agency's own answer to whether a use can affect people's rights or safety, under the "
-                             "White House's rules for federal AI (OMB memo M-25-21)."),
-        ("High-risk (NL)", "The public body's own answer to whether a system is a high-risk AI system under the EU AI "
-                           "Act."),
-        ("Left out", "Uses an agency kept out of its public inventory, as OMB's rules allow. The Department of Defense "
-                     "and the intelligence agencies aren't in the US inventory."),
-        ("Links", "Dutch and UK rows link to their official entry; US rows come from OMB's file, linked above."),
+        ("Counted", "What each government lists, in its own categories. The lists count different things: the US its "
+                    "AI uses, Canada its AI systems, the Netherlands every algorithm (AI or not), the UK the tools a "
+                    "public body published a record for."),
+        ("Uses that touch people", "Each list's own answer: US uses the agency calls high-impact (they can affect "
+                                   "people's rights or safety) that are in use or on trial; Canadian systems the public "
+                                   "uses; Dutch systems the body marked as high-risk AI under the EU AI Act; every UK "
+                                   "record."),
+        ("Suppliers", "Counted from each entry's supplier field and its name, matched to company and product names "
+                      "and checked by hand. Entries with no supplier given aren't counted."),
+        ("Other lists", "Only lists a government keeps itself. France's inventory is kept by an independent "
+                        "observatory and Chile's by a university, so they aren't counted."),
+        ("Left out", "Uses an agency kept out of its public list, as the rules allow. The US Department of Defense and "
+                     "intelligence agencies aren't in the US inventory."),
     ]
     if read:
         limits.append(("Last read", f"{_when(read)}, {read[11:16]} UTC (once a day)"))
+    return ('<section class="jb-lim"><h2>About these counts</h2>\n<table class="mt jb-small jb-limits"><tbody>'
+            + "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits)
+            + "</tbody></table></section>\n")
+
+
+def body(saved: dict, today: date) -> str:
+    counts = {p: suppliers(saved[p]["rows"]) for p in NAMES_SUPPLIER if saved.get(p, {}).get("rows")}
+    cards = "".join(_card(p, saved[p]["rows"], today) for p in PLACES if saved.get(p, {}).get("rows"))
     return ('<div class="ft pc gv">\n'
             + pages.feature_head(PATH, "What governments use AI for",
-                                 "Which jobs do governments give to AI, and which ones touch people's lives?",
-                                 "Read from three governments' own registers of the AI they use: the US federal "
-                                 "inventory, the Dutch Algorithm Register and the UK's algorithmic transparency "
-                                 "records, each in its own words.")
-            + (f'<p class="gv-lead">{lead}</p>\n' if lead else "")
-            + f'<div class="pc-stack">{boxes}</div>\n'
-            '<section class="jb-lim"><h2>About these counts</h2>\n<table class="mt jb-small jb-limits"><tbody>'
-            + "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits)
-            + "</tbody></table></section></div>\n" + infra_watch.SCRIPT + "\n")
+                                 "Which jobs do governments give to AI, and whose AI do they run?",
+                                 "From the lists governments publish of the AI they use: every one we found, four "
+                                 "read in full every day, each in its own words.")
+            + _lead(saved, counts) + _who(saved) + (_whose(counts) if counts else "")
+            + '<h2 class="gv-h">The full lists</h2><p class="gv-sub">Each government\'s own numbers, by its own '
+              f'definitions.</p><div class="gv-cards">{cards}</div>\n'
+            + _about(max((v.get("read", "") for v in saved.values()), default="")) + "</div>\n")
+
+
+# --- each list's own page: every entry, with Excel-style filters ---
+
+def _cell(text: str, f: str | None = None, cls: str = "") -> str:
+    fv = f' data-f="{escape(f or "–", quote=True)}"' if f is not None else ""
+    return f'<td{fv}{f" class={cls}" if cls else ""}>{text or "–"}</td>'
+
+
+def _tag(text: str, cls: str) -> str:
+    return f'<span class="pc-k {cls}">{escape(text)}</span>' if text else "–"
+
+
+def _table_rows(place: str, rows: list[dict]) -> tuple[list[str], str]:
+    live = {"Deployed": "gv-live", "In production": "gv-live", "In use": "gv-live",
+            "Pilot": "gv-trial", "In development": "gv-trial", "Being built": "gv-trial"}
+    if place == "US":
+        order = {s: i for i, s in enumerate(US_STAGES)}
+        rows = sorted(rows, key=lambda r: (r["impact"] != US_HIGH, order.get(r["stage"], 9), r["body"], r["name"]))
+        head = ["Agency", "AI use and what it does", "Used for", "Kind of AI", "Stage", "High-impact"]
+        trs = "".join(
+            "<tr>" + _cell(f'<b title="{escape(r["body"])}">{escape(r["ag"] or r["body"])}</b>'
+                           f'<span class="fx-c">{escape(r["body"])}</span>', r["body"])
+            + _cell(f'{escape(r["name"])}<span class="fx-c">{escape(r["what"])}</span>')
+            + _cell(escape(r["area"]), r["area"]) + _cell(escape(r["kind"]), r["kind"])
+            + _cell(_tag(r["stage"], live.get(r["stage"], "gv-off")), r["stage"])
+            + _cell(_tag(r["impact"], "gv-high") if r["impact"] == US_HIGH else escape(r["impact"]), r["impact"]) + "</tr>"
+            for r in rows)
+    elif place == "CA":
+        rows = sorted(rows, key=lambda r: (r["users"] not in CA_PUBLIC, r["status"] != "In production", r["body"], r["name"]))
+        head = ["Public body", "AI system and what it does", "Used by", "Supplier", "Status"]
+        trs = "".join(
+            "<tr>" + _cell(f'<b>{escape(r["body"])}</b>', r["body"])
+            + _cell(f'{escape(r["name"])}<span class="fx-c">{escape(r["what"])}</span>')
+            + _cell(escape(r["users"]), r["users"]) + _cell(escape(r["vendor"] or r["by"]), r["vendor"] or r["by"])
+            + _cell(_tag(r["status"], live.get(r["status"], "gv-off")), r["status"]) + "</tr>"
+            for r in rows)
+    elif place == "NL":
+        kinds = {k: i for i, k in enumerate(NL_KINDS.values())}
+        rows = sorted(rows, key=lambda r: (kinds.get(r["kind"], 9), r["status"] != "In use", r["body"], r["name"]))
+        head = ["Public body", "Algorithm and what it does", "Kind", "Area", "Status"]
+        trs = "".join(
+            "<tr>" + _cell(f'<b>{escape(r["body"])}</b>', r["body"])
+            + _cell(f'<a href="{escape(NL_ENTRY.format(id=r["id"]), quote=True)}" rel="noopener" lang="nl">'
+                    f'{escape(r["name"])}</a><span class="fx-c" lang="nl">{escape(r["what"])}</span>')
+            + _cell(_tag(r["kind"], "gv-high") if r["kind"] == NL_HIGH else escape(r["kind"]), r["kind"])
+            + _cell(escape(r["area"]), r["area"]) + _cell(_tag(r["status"], live.get(r["status"], "gv-off")), r["status"])
+            + "</tr>" for r in rows)
+    else:
+        head = ["Published", "Public body", "Tool and what it does"]
+        trs = "".join(
+            "<tr>" + _cell(_when(r["day"]) if r["day"] else "", r["day"][:4], "pc-d") + _cell(f'<b>{escape(r["body"])}</b>', r["body"])
+            + _cell(f'<a href="{escape(r["url"], quote=True)}" rel="noopener">{escape(r["name"])}</a>'
+                    f'<span class="fx-c">{escape(r["what"])}</span>') + "</tr>"
+            for r in rows)
+    return head, trs
+
+
+def place_body(place: str, data: dict, today: date) -> str:
+    sub, flag, name, url, reg, kept = PLACES[place]
+    rows = data["rows"]
+    big, unit, facts = _facts(place, rows, today)
+    head, trs = _table_rows(place, rows)
+    nofilter = {"AI use and what it does", "AI system and what it does", "Algorithm and what it does", "Tool and what it does"}
+    ths = "".join(f'<th{" data-nof" * (h in nofilter)}{" data-seen" * (h == "Published")}>{h}</th>' for h in head)
+    first = {"US": "high-impact uses first", "CA": "systems the public uses first", "NL": "high-risk AI first",
+             "UK": "newest first"}[place]
+    dutch = " Names and descriptions are in Dutch, as registered." if place == "NL" else ""
+    return ('<div class="ft pc gv">\n'
+            + pages.band("policy", f'<img src="flags/{flag}.svg" alt="">', f"photos/cartoons/features/{PATH.strip('/')}.svg",
+                         f"What {_the(name)} uses AI for", f"Every entry in the {reg}.",
+                         f'From the <a href="{escape(url, quote=True)}" rel="noopener">{escape(reg)}</a>, kept by '
+                         f"{escape(kept)}.{dutch} Pick a ▾ to filter.")
+            + f'<p class="gv-lead"><b>{big}</b> {escape(unit)}.</p><table class="gv-facts gv-wide">'
+            + "".join(f"<tr><td>{escape(a)}</td><td>{b}</td></tr>" for a, b in facts) + "</table>"
+            f'<h2 class="gv-h">Every entry, {first}</h2><div class="iw"><div class="iw-fbar"></div>'
+            f'<p class="iw-count" aria-live="polite">Showing <b>{len(rows):,}</b> of {len(rows):,}. Pick a ▾ to filter. '
+            '<button type="button" class="iw-clear" hidden>Clear filters</button></p><div class="gv-sc">'
+            f'<table class="pc-rows xf-t gv-t gv-{place.lower()}-t"><thead><tr>{ths}</tr></thead><tbody>{trs}</tbody>'
+            f'</table></div></div>\n' + _about(data.get("read", "")) + "</div>\n" + infra_watch.SCRIPT + "\n")
 
 
 def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
-    """Write the page from the registers last read. Returns its path, or nothing before any register was read."""
+    """Write the page and each full list's own page from the lists last read. Returns their paths, or nothing before
+    any list was read."""
     saved = load(conn)
-    if not any(v.get("rows") or v.get("total") for v in saved.values()):
+    if not any(v.get("rows") for v in saved.values()):
         return []
-    what = ("Which jobs do governments give to AI, and which ones touch people's lives? Read from the US federal AI "
-            "inventory, the Dutch Algorithm Register and the UK's algorithmic transparency records.")
-    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "What governments use AI for",
-            "description": what, "url": f"{rss.SITE}{PATH}"}
-    (out / PATH).mkdir(parents=True, exist_ok=True)
-    (out / PATH / "index.html").write_text(
-        pages.page("What governments use AI for · AI Pulse", what, PATH, body(saved), data,
-                   pages.frame(conn, len(cards)), ("/policy/", "Back to Policy"),
-                   "Every row is the government's own entry, in its own words."),
-        encoding="utf-8")
-    return [PATH]
+    what = ("Which jobs do governments give to AI, and whose AI do they run? From the lists governments publish of the "
+            "AI they use: the US, Canada, the Netherlands and the UK in full, and the others we found.")
+    written = []
+    for path, title, desc, html_body, back in [
+        (PATH, "What governments use AI for", what, body(saved, today), ("/policy/", "Back to Policy")),
+        *[(PATH + PLACES[p][0], f"What {_the(PLACES[p][2])} uses AI for",
+           f"Every entry in the {PLACES[p][4]}, kept by {PLACES[p][5]}, with filters.",
+           place_body(p, saved[p], today), (f"/{PATH}", "Back to What governments use AI for"))
+          for p in PLACES if saved.get(p, {}).get("rows")]]:
+        data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": title, "description": desc,
+                "url": f"{rss.SITE}{path}"}
+        (out / path).mkdir(parents=True, exist_ok=True)
+        (out / path / "index.html").write_text(
+            pages.page(f"{title} · AI Pulse", desc, path, html_body, data, pages.frame(conn, len(cards)), back,
+                       "Every entry is the government's own, in its own words."),
+            encoding="utf-8")
+        written.append(path)
+    return written
