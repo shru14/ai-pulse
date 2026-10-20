@@ -3958,8 +3958,9 @@ def test_pacts_and_orders_halves_keep_only_rows_whose_story_we_have(tmp_path):
     assert keep[3] in page and pacts.ORDERS[0][4] in page and pacts.DEALS[0][3] not in page
     assert f"after {(date.fromisoformat(keep[5]) - date.fromisoformat(keep[0])).days} days" in page
     assert "New Delhi (2026) has the most signers: 92 countries and bodies" in page  # the official lists always show
-    assert "China didn&#x27;t sign Seoul or the AI treaty; the US and the UK didn&#x27;t sign Paris" in page
-    assert 'class="pc-focus"' in page and "ratified 15/05/2026" in page and "1 ratified, in force at 5" in page
+    assert "fx-an\">China didn't sign" in page and "fx-an\">US didn't sign" in page  # US, UK, China per pledge
+    assert 'class="pc-focus"' in page and "ratified 15/05/2026" in page and "law once 5 countries ratify; 1 so far" in page
+    assert '<span class="pc-k fx-li">Lifted</span>' in page  # each ban tagged where it stands
     assert "Deals with AI companies" not in page  # no empty sections
 
 

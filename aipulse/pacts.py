@@ -1,8 +1,7 @@
-"""AI pacts and orders (ai-pacts-and-orders/): two halves side by side. Pacts: what governments signed, the summit
-pledges on AI and the Council of Europe's AI treaty with who signed each (from each official signatory list, kept here by hand: the lists hardly change once
-a summit is over, and some sit behind pages our reader can't open) and the deals governments signed with AI companies.
-Orders: what governments made AI companies do, each ban or hold from start to end on the year's timeline, then the
-orders, investigations and court cases. Every deal, ban and order was checked by hand against the story that reported
+"""AI pacts and orders (ai-pacts-and-orders/): four sections one under another, each a plain table. Pledges: the summit
+pledges on AI and the Council of Europe's AI treaty, whether the US, the UK and China signed, every country folded below (from each official signatory list, kept here by hand: the lists hardly change once
+a summit is over, and some sit behind pages our reader can't open). Deals governments signed with AI companies. Bans,
+each tagged where it stands. Orders, investigations and court cases. Every deal, ban and order was checked by hand against the story that reported
 it; talks, reported plans and threats are left out until they happen. Linked from Policy's strip.
 """
 from __future__ import annotations
@@ -418,18 +417,6 @@ def _cap(s: str) -> str:
     return s[:1].upper() + s[1:]
 
 
-def _gaps(pl: list[tuple]) -> str:
-    """Which of FOCUS stayed out of which pledges: 'China didn't sign Seoul or the AI treaty; the US and the UK didn't
-    sign Paris.'"""
-    by: dict[tuple, list[str]] = {}
-    for p in pl:
-        out = tuple(c for c in FOCUS if c not in _names(p))
-        if out:
-            by.setdefault(out, []).append(p[0])
-    said = [f"{_and(list(out))} didn't sign {' or '.join(SAY.get(n, n) for n in ns)}" for out, ns in by.items()]
-    return _cap("; ".join(said) + ".") if said else ""
-
-
 YES, NO = '<i class="pc-y" title="signed"></i>', '<i class="pc-n" title="didn&#39;t sign"></i>'
 PIN = ' class="pc-focus"'
 RAT = '<i class="pc-y pc-rat" title="ratified {}"></i>'
@@ -439,18 +426,39 @@ def _ratified(p: tuple) -> dict[str, str]:
     return {SAME.get(n, n): d for n, d in RATIFIED.get(p[0], {}).items()}
 
 
-def _pacts(pl: list[tuple], deals: list[tuple]) -> str:
+SHORT = {"United States": "US", "United Kingdom": "UK"}
+
+
+def _box(cls: str, title: str, question: str, inner: str) -> str:
+    """One section of the page: a coloured heading with its plain question, then its table."""
+    return (f'<section class="pc-half {cls}"><div class="pc-hh"><h2>{title}</h2><p>{escape(question)}</p></div>'
+            f'<div class="pc-in">{inner}</div></section>')
+
+
+def _head(*cols: str) -> str:
+    return "<thead><tr>" + "".join(f"<th>{c}</th>" for c in cols) + "</tr></thead>"
+
+
+def _story(u: str) -> str:
+    return f'<span class="fx-c"><a href="{escape(u)}" rel="noopener">story</a></span>'
+
+
+def _pledges_box(pl: list[tuple]) -> str:
+    """The pledges and the treaty, a row each: when, how many signed, and whether the US, the UK and China did; every
+    country's answer folded below."""
     sets = [_names(p) for p in pl]
     most = max(range(len(pl)), key=lambda i: len(sets[i]))
-    lead = f"{pl[most][0]} ({pl[most][1][-4:]}) has the most signers: {len(sets[most])} countries and bodies. {_gaps(pl)}"
-    tiles = "".join(
-        f'<a class="pc-tile" href="{escape(p[2])}" rel="noopener" title="The signers, on {escape(p[3])}">'
-        f'<span class="pc-tn">{escape(p[0])}</span><span class="pc-tm">{p[1]}</span><b>{len(s)}</b>signed'
-        + (f'<span class="pc-bind">Binding: {len(_ratified(p))} ratified, in force at {IN_FORCE_AT}</span>'
-           if p[0] in RATIFIED else "")
-        + (f'<span class="pc-no">{escape(_cap(_and([c for c in FOCUS if c not in s])))} didn\'t sign</span>'
-           if any(c not in s for c in FOCUS) else f'<span class="pc-all">{escape(_cap(_and(FOCUS)))} all signed</span>')
-        + "</a>" for p, s in zip(pl, sets))
+    lead = f"{pl[most][0]} ({pl[most][1][-4:]}) has the most signers: {len(sets[most])} countries and bodies."
+    rows = ""
+    for p, s in zip(pl, sets):
+        who = "".join(f'<span class="pc-k fx-in">{SHORT.get(c, c)} signed</span>' if c in s else
+                      f'<span class="pc-k fx-an">{SHORT.get(c, c)} didn\'t sign</span>' for c in FOCUS)
+        bind = (f'<span class="fx-c">Binding treaty: law once {IN_FORCE_AT} countries ratify; {len(_ratified(p))} '
+                'so far</span>' if p[0] in RATIFIED else "")
+        rows += (f'<tr><td class="pc-d">{p[1]}</td><td><b>{escape(p[0])}</b>{bind}</td>'
+                 f'<td><b>{len(s)}</b> countries and bodies</td>'
+                 f'<td class="pc-who">{who}<span class="fx-c"><a href="{escape(p[2])}" rel="noopener">official list'
+                 f'</a></span></td></tr>')
     rats = [_ratified(p) for p in pl]
     every = set().union(*sets)
     rest = sorted(every - set(FOCUS), key=lambda c: (-sum(c in s for s in sets), c))
@@ -463,84 +471,63 @@ def _pacts(pl: list[tuple], deals: list[tuple]) -> str:
     grid = (f'<div class="pc-gw"><table class="pc-grid"><thead>{head}</thead><tbody>'
             + "".join(row(c, True) for c in FOCUS) + "".join(row(c, False) for c in rest) + "</tbody></table></div>")
     later = [f"{c} joined {p[0]} on {d}" for p in pl for c, d in p[5].items()]
-    drows = "".join(f'<tr><td class="pc-d">{_short(d)}</td><td><b>{escape(g)}</b> ↔ {escape(c)}<br>{escape(w)}</td>'
-                    f'<td class="pc-s"><a href="{escape(u)}" rel="noopener">story</a></td></tr>' for d, g, c, w, u in deals)
-    return (f'<section class="pc-half pc-pacts"><div class="pc-hh"><h2>Pacts</h2><p>What governments signed</p></div>'
-            f'<div class="pc-in"><p class="pc-lead">{escape(lead)}</p>'
-            f'<h3>The pledges and the treaty</h3><div class="pc-tiles">{tiles}</div>'
-            f'<h3>Who signed which</h3><input class="pc-find" type="search" placeholder="Find a country" '
-            f'aria-label="Find a country">{grid}'
-            '<p class="pc-key"><span><i class="pc-y"></i> signed</span>'
-            + ('<span><i class="pc-y pc-rat"></i> ratified</span>' if any(rats) else "")
-            + '<span><i class="pc-n"></i> didn\'t sign</span>'
-            f'<span>{len(every)} countries and bodies; each tile links to its official list</span></p>'
-            + (f'<p class="pc-key">{escape("; ".join(later))}.</p>' if later else "")
-            + (f'<h3>Deals with AI companies · {_day(deals[0][0]).year}</h3><table class="pc-rows">{drows}</table>'
-               if deals else "")
-            + "</div></section>")
+    return _box("pc-pacts", "Pledges", "Which AI pledges have governments signed?",
+                f'<p class="pc-lead">{escape(lead)}</p>'
+                f'<table class="pc-rows fx-t">{_head("Signed", "Pledge", "Signed by", "The US, the UK and China")}'
+                f'<tbody>{rows}</tbody></table>'
+                f'<details class="pc-every"><summary>See every country ({len(every)})</summary>'
+                '<input class="pc-find" type="search" placeholder="Find a country" aria-label="Find a country">'
+                f'{grid}<p class="pc-key"><span><i class="pc-y"></i> signed</span>'
+                + ('<span><i class="pc-y pc-rat"></i> ratified</span>' if any(rats) else "")
+                + '<span><i class="pc-n"></i> didn\'t sign</span></p>'
+                + (f'<p class="pc-key">{escape("; ".join(later))}.</p>' if later else "") + "</details>")
 
 
-def _strip(start: date, end: date | None, marks: list, today: date) -> str:
-    """One ban's bar on the year's timeline: a dot at its start, a ring at its end (a square for a one-off, dashed on to
-    today when no end is reported), a tick for each court ruling."""
-    y0, y1 = date(today.year, 1, 1), date(today.year, 12, 31)
-
-    def x(d: date) -> float:
-        return round(8 + 524 * (d - y0).days / (y1 - y0).days, 1)
-    g = "".join(f'<line x1="{x(date(today.year, m, 1))}" y1="0" x2="{x(date(today.year, m, 1))}" y2="20" '
-                'class="pc-gl"/>' for m in range(1, 13))
-    g += f'<line x1="{x(today)}" y1="0" x2="{x(today)}" y2="20" class="pc-today"/>'
-    xa = x(max(start, y0))
-    if end == start:
-        g += f'<rect x="{xa - 5}" y="5" width="10" height="10" class="pc-mk"/>'
-    else:
-        xb = x(end or today)
-        g += (f'<line x1="{xa}" y1="10" x2="{xb}" y2="10" class="pc-bar{"" if end else " pc-on"}"/>'
-              f'<circle cx="{xa}" cy="10" r="5" class="pc-mk"/>')
-        if end:
-            g += f'<circle cx="{xb}" cy="10" r="5" class="pc-end"/>'
-        g += "".join(f'<line x1="{x(_day(d))}" y1="2" x2="{x(_day(d))}" y2="18" class="pc-tick"/>' for d, _ in marks)
-    return f'<svg viewBox="0 0 540 20" width="100%" aria-hidden="true">{g}</svg>'
+def _deals_box(deals: list[tuple]) -> str:
+    rows = "".join(f'<tr><td class="pc-d">{_short(d)}</td><td><b>{escape(g)}</b></td><td>{escape(c)}</td>'
+                   f'<td>{escape(w)}{_story(u)}</td></tr>' for d, g, c, w, u in deals)
+    return _box("pc-pacts", "Deals", f"What have governments agreed with AI companies? · {len(deals)} in "
+                f"{_day(deals[0][0]).year}",
+                f'<table class="pc-rows fx-t">{_head("Date", "Government", "Company", "The deal")}<tbody>{rows}'
+                "</tbody></table>")
 
 
-def _orders(bans: list[tuple], orders: list[tuple], today: date) -> str:
-    lifted = [b for b in bans if b[5] and b[5] != b[0]]
-    lead = ""
-    if lifted:
-        b = max(lifted, key=lambda b: b[0])
-        lead = f"{b[2]}: {b[3]} by order of {_and([b[1]])}, for {(_day(b[5]) - _day(b[0])).days} days. "
-    still = [b for b in bans if not b[5]]
-    if still:
-        lead += f"{len(still)} {'ban or hold has' if len(still) == 1 else 'bans and holds have'} no end reported"
-        court = [b for b in still if b[8]]
-        lead += (f", among them the {court[0][1]} bar on {court[0][2]}, still in court." if court else ".")
-    months = "".join(f"<span>{date(2000, m, 1):%b}</span>" for m in range(1, 13))
-    items = []
+# where a ban stands, as AI fines and bans tags it: (tag, colour class)
+STANDS = {"in": ("In force", "fx-in"), "lifted": ("Lifted", "fx-li"), "court": ("Challenged in court", "fx-ch"),
+          "final": ("Final", "fx-aw")}
+
+
+def _stands(end: str | None, start: str, marks: list) -> tuple[str, str]:
+    return STANDS["final" if end == start else "lifted" if end else "court" if marks else "in"]
+
+
+def _bans_box(bans: list[tuple], today: date) -> str:
+    rows = ""
     for d, g, c, w, u, end, eu, enote, marks in bans:
-        if end == d:
-            when = f"{_short(d)} · {enote}"
-        elif end:
-            when = (f'{_short(d)} · <a href="{escape(eu)}" rel="noopener">{escape(enote)} {_short(end)}</a>, after '
-                    f'{(_day(end) - _day(d)).days} days')
-        else:
-            when = f"{_short(d)} · no end reported"
+        tag, cls = _stands(end, d, marks)
+        after = ""
+        if end and end != d:
+            after = (f'<span class="fx-c"><a href="{escape(eu)}" rel="noopener">{escape(_cap(enote))} {_short(end)}'
+                     f'</a>, after {(_day(end) - _day(d)).days} days</span>')
         if marks:
-            when += "<br>" + "; ".join(f"{_short(md)}: {escape(mt)}" for md, mt in marks)
-        items.append(f'<div class="pc-ban"><p><a href="{escape(u)}" rel="noopener"><b>{escape(g)} → {escape(c)}:</b> '
-                     f'{escape(w)}</a><span>{when}</span></p>{_strip(_day(d), _day(end) if end else None, marks, today)}</div>')
+            after += ("<details><summary>" + f"{len(marks)} court ruling{'s' if len(marks) > 1 else ''}</summary>"
+                      + "".join(f"<p>{_short(md)}: {escape(mt)}</p>" for md, mt in marks) + "</details>")
+        rows += (f'<tr><td class="pc-d">{_short(d)}</td><td><b>{escape(g)}</b></td><td>{escape(c)}</td>'
+                 f'<td>{escape(w)}{_story(u)}</td><td class="fx-s"><span class="pc-k {cls}">{tag}</span>{after}</td></tr>')
+    return _box("pc-orders", "Bans", f"Which AI products have governments stopped? · {len(bans)} in {today.year}",
+                f'<table class="pc-rows fx-t">{_head("Began", "Government", "Company", "What", "Where it stands")}'
+                f"<tbody>{rows}</tbody></table>")
+
+
+def _orders_box(orders: list[tuple], today: date) -> str:
     kinds = {"Order": "pc-ord", "Investigation": "pc-inv", "Court case": "pc-crt"}
-    orows = "".join(f'<tr><td class="pc-d">{_short(d)}</td><td><b>{escape(g)}</b> → {escape(c)}<br>{escape(w)}</td>'
-                    f'<td class="pc-s"><span class="pc-k {kinds[k]}">{"Opened" if k == "Investigation" else k}</span>'
-                    f'<a href="{escape(u)}" rel="noopener">story</a></td></tr>' for d, g, c, k, w, u in orders)
-    return (f'<section class="pc-half pc-orders"><div class="pc-hh"><h2>Orders</h2><p>What governments made AI '
-            f'companies do · {today.year}</p></div><div class="pc-in">'
-            + (f'<p class="pc-lead">{escape(lead)}</p>' if lead else "")
-            + (f'<h3>Bans and holds, start to end</h3><div class="pc-tl"><div class="pc-mo">{months}</div>{"".join(items)}</div>'
-               '<p class="pc-key"><span><i class="pc-y pc-r"></i> began</span><span><i class="pc-n pc-ring"></i> ended</span>'
-               '<span>dashed: no end reported</span><span>| court ruling</span><span>dotted line: today</span></p>'
-               if bans else "")
-            + (f'<h3>Orders and investigations</h3><table class="pc-rows">{orows}</table>' if orders else "")
-            + "</div></section>")
+    rows = "".join(f'<tr><td class="pc-d">{_short(d)}</td><td><b>{escape(g)}</b></td><td>{escape(c)}</td>'
+                   f'<td>{escape(w)}{_story(u)}</td><td class="fx-s"><span class="pc-k {kinds[k]}">{k}</span></td></tr>'
+                   for d, g, c, k, w, u in orders)
+    return _box("pc-orders", "Orders and investigations", "What have governments ordered AI companies to do, or "
+                f"looked into? · {len(orders)} in {today.year}",
+                f'<table class="pc-rows fx-t">{_head("Date", "Government", "Company", "What", "Kind")}'
+                f"<tbody>{rows}</tbody></table>")
 
 
 _JS = """<script>(()=>{const f=document.querySelector('.pc-find');if(!f)return;
@@ -549,7 +536,7 @@ document.querySelectorAll('.pc-grid tbody tr').forEach(r=>{r.hidden=!!q&&!r.data
 
 
 def body(cards: list[dict], today: date) -> str:
-    """The page's two halves, each row kept only if its story is among the site's cards (the official lists always)."""
+    """The page's four sections, each row kept only if its story is among the site's cards (the official lists always)."""
     have = {s["url"] for c in cards for s in [c, *(c.get("also") or [])]}
     year = str(today.year)
     deals = [r for r in DEALS if r[-1] in have and r[0][:4] == year]
@@ -569,7 +556,8 @@ def body(cards: list[dict], today: date) -> str:
                                  "What have governments signed on AI, and what have they made AI companies do?",
                                  "The AI pledges and the AI treaty, from each official list of who signed; deals, bans, "
                                  "orders and investigations from our stories, each checked by hand.")
-            + f'<div class="pc-halves">{_pacts(_pledges(), deals)}{_orders(bans, orders, today)}</div>\n'
+            + '<div class="pc-stack">' + _pledges_box(_pledges()) + (_deals_box(deals) if deals else "")
+            + (_bans_box(bans, today) if bans else "") + (_orders_box(orders, today) if orders else "") + "</div>\n"
             '<section class="jb-lim"><h2>About these rows</h2>\n<table class="mt jb-small jb-limits"><tbody>'
             + "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in limits)
             + f"</tbody></table></section></div>\n{_JS}")
