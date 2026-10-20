@@ -88,9 +88,13 @@ LEFT_OUT = {
         "An assistant app, not a model",
     "https://techcrunch.com/2026/01/05/alexa-without-an-echo-amazons-ai-chatbot-comes-to-the-web-and-a-revamped-alexa-app/":
         "An assistant app, not a model",
+    "https://www.minimax.io/blog/minimax-m31f":
+        "A new model's launch price, not a change",
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=279066":
+        "A temporary Google cut: the model, prices and dates aren't stated",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
-CHECKED_TO = "2026-10-17"
+CHECKED_TO = "2026-10-18"
 # a headline that may be a price change or a model reaching new places
 _PRICE = re.compile(r"\b(price[sd]?|pricing|cheaper|dearer|discount|per million|per 1M|halves|slash(es)?)\b", re.I)
 _PLACE = re.compile(r"\b(now available|available (in|to)|rolls? out (in|to)|expands? to|arrives? in|launch(es)? in|"
