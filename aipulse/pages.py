@@ -104,7 +104,7 @@ STYLE = """
 .cp .sd h2{font:400 22px/1.15 var(--display);letter-spacing:.01em}
 .cp .tp-t .tp-where{white-space:nowrap;font-weight:600}  /* laws adopted, bills, AI bodies: the place, its flag */
 .cp .tp-t .flag{width:24px;height:18px;vertical-align:-3px;margin-right:8px}
-@media (min-width:641px){.cp .tp-grp tr:not(.tp-rep) td{border-top:2px solid var(--line)}.cp .tp-grp .tp-rep .tp-where span{visibility:hidden}}  /* AI bodies: by place */
+@media (min-width:641px){.cp .tp-grp tr:not(.tp-rep) td{border-top:2px solid var(--line)}.cp .tp-grp .tp-rep .tp-where span{visibility:hidden}}  /* laws adopted, bills, AI bodies: by place */
 .cp .gt-wrap{overflow-x:auto;margin:10px 0 28px}  /* a place's page: each kind of record as a ruled grid */
 .cp table.gt{width:100%;border-collapse:collapse;font-size:14.5px;border:2px solid var(--line)}
 .cp .gt th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:color-mix(in srgb,var(--ink) 10%,var(--bg));padding:8px 10px;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent)}

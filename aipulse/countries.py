@@ -156,13 +156,13 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
 TYPE_PAGES = {  # the Regulation strip's buttons: one kind of record from every place, path → (kind, title, question, intro)
     "tracker/laws-adopted/": ("law", "AI laws adopted", "Which places have passed AI laws?",
                               "Laws, decrees and rules on AI that governments have adopted, from every place on the "
-                              "tracker, newest first, each linking to the official text."),
+                              "tracker, by place, newest first, each linking to the official text."),
     "tracker/bills/": ("proposal", "AI bills", "Which AI bills are lawmakers working on?",
-                       "AI bills put before legislatures, from every place on the tracker, newest first, each with "
+                       "AI bills put before legislatures, from every place on the tracker, by place, newest first, each with "
                        "its latest stage and a link to the legislature's page."),
     "tracker/ai-bodies/": ("body", "AI bodies", "Who has been set up to oversee AI?",
                            "AI offices, councils, units and panels that governments have set up, from every place on "
-                           "the tracker, newest first, each linking to its record on OECD.AI."),
+                           "the tracker, by place, newest first, each linking to its record on OECD.AI."),
 }
 
 
@@ -175,7 +175,7 @@ new MutationObserver(f).observe(b,{subtree:true,attributes:true,attributeFilter:
 
 
 def type_pages(conn, cards: list[dict], out: Path) -> list[str]:
-    """TYPE_PAGES: one kind of official record from every place, as one table, newest first, with the Infra pages'
+    """TYPE_PAGES: one kind of official record from every place, as one table grouped by place, newest first in each, with the Infra pages'
     column filters (place, stage, source, month). A place with its own page (build, run first) links to it."""
     names = {code: m["name"] for code, m in jurisdictions.meta().items()}
     records = [c for c in cards if c["category"] == "regulation" and c["source"] in OFFICIAL_SOURCES]
@@ -189,12 +189,11 @@ def type_pages(conn, cards: list[dict], out: Path) -> list[str]:
         items = sorted((c for c in records if (c.get("action") or "proposal") == kind), key=lambda c: c["date"], reverse=True)
         if not items:
             continue
-        bills, grouped = kind == "proposal", kind == "body"
-        grp = " tp-grp" if grouped else ""
-        if grouped:  # AI bodies: grouped by place (A to Z, International last), newest first within each
-            def place(c):
-                return names.get(next((x for x in c.get("jurisdictions") or [] if x in names), "INTL"), "International")
-            items.sort(key=lambda c: (place(c) == "International", place(c)))
+        bills = kind == "proposal"
+
+        def place(c):
+            return names.get(next((x for x in c.get("jurisdictions") or [] if x in names), "INTL"), "International")
+        items.sort(key=lambda c: (place(c) == "International", place(c)))  # by place (A to Z, International last), newest first in each
         rows = []
         for c in items:
             code = next((code for code in c.get("jurisdictions") or [] if code in names), "INTL")
@@ -209,8 +208,7 @@ def type_pages(conn, cards: list[dict], out: Path) -> list[str]:
             if bills:
                 steps = _history(conn, c.get("bill", ""))
                 stage = f'<td class="tp-stage">{escape(LABELS.get(code, LABELS["US"]).get(steps[-1]["stage"], "") if steps else "") or "–"}</td>'
-            if grouped:
-                where = f"<span>{where}</span>"
+            where = f"<span>{where}</span>"
             rows.append(f'<tr><td class="tp-where" data-f="{escape(name)}">{where}</td><td class="tp-title"><a href="{escape(c["url"])}">'
                         f'{escape(c["title"].strip())}</a></td>{stage}<td class="tp-src">{escape(c["source"])}</td>'
                         f'<td class="tp-date" data-f="{date.fromisoformat(c["date"][:10]):%b %Y}">{_day(c["date"])}</td></tr>')
@@ -223,8 +221,8 @@ def type_pages(conn, cards: list[dict], out: Path) -> list[str]:
                                                 f'{intro} <a href="/tracker/">AI laws by country</a> · {others}')
                 + f'<div class="iw-fbar"></div><p class="iw-count" aria-live="polite">Showing <b>{len(rows)}</b> of {len(rows)} '
                   f'{noun}. Pick a ▾ to filter. <button type="button" class="iw-clear" hidden>Clear filters</button></p>\n'
-                + f'<div class="iw-wrap"><table class="mt tp-t iw-t{grp}"><thead>{head}</thead><tbody>\n' + "\n".join(rows)
-                + f"\n</tbody></table></div></div>\n{infra_watch.SCRIPT}\n" + (GROUP_SCRIPT if grouped else ""))
+                + f'<div class="iw-wrap"><table class="mt tp-t iw-t tp-grp"><thead>{head}</thead><tbody>\n' + "\n".join(rows)
+                + f"\n</tbody></table></div></div>\n{infra_watch.SCRIPT}\n{GROUP_SCRIPT}")
         data = {"@context": "https://schema.org", "@type": "ItemList", "name": title,
                 "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": record(c, names.get(
                     next((x for x in c.get("jurisdictions") or [] if x in names), "INTL"), "International"))}
