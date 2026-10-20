@@ -11,7 +11,9 @@ from __future__ import annotations
 from datetime import date, timedelta
 from html import escape
 
-from . import buyouts
+import re
+
+from . import buyouts, money
 
 PATH = "who-owns-a-piece-of-whom/"
 SINCE = "2026-01-01"
@@ -135,6 +137,40 @@ SHARES_BACK = [
      "https://the-decoder.com/anthropic-signs-11-6-billion-cloud-deal-with-akamai-pushing-its-compute-spending-past-500-billion-in-under-a-year/",
      "", True),
 ]
+
+# stories checked by hand for ROUNDS and COMPUTE and left out, with why, so they aren't checked again
+SKIPPED: dict[str, str] = {}
+# the newest day every story was read for the lists above; the daily candidates start after it
+CHECKED_TO = "2026-10-20"
+_MONEY = re.compile(r"\b(rais\w*|round|funding|financing|series [a-h]|seed|valu\w*|compute|cloud|data cent(?:er|re)s?|GPUs?|"
+                    r"chips?|gigawatts?|capacity)\b", re.I)
+
+
+def candidates(cards: list[dict], since: str = "") -> list[dict]:
+    """Stories after CHECKED_TO (or `since`, if later) whose headline names $1B or more next to a funding or compute
+    word, that no list here uses and SKIPPED doesn't hold, newest first. Buyouts are AI buyouts' own candidates."""
+    since = max(since, CHECKED_TO + "~")
+    used = ({r[-1] for r in ROUNDS + COMPUTE} | {u for r in INVEST_SELL + SHARES_BACK for u in r[6:8] if u}
+            | set(SKIPPED))
+    return [c for c in sorted(cards, key=lambda c: c["date"], reverse=True)
+            if c["date"] >= since and c.get("category") != "research"
+            and not any(s["url"] in used for s in [c, *(c.get("also") or [])])
+            and max((x for _, x in money.amounts(c["title"])), default=0) >= 1e9
+            and _MONEY.search(c["title"]) and not money.ACQUIRE.search(c["title"])]
+
+
+def note_rows(base: str) -> tuple[list[tuple[str, ...]], list[str]]:
+    """The rows a branch adds to this file against `base` (main's copy, "" when main has none), as (who, with, what,
+    when, story), and the stories it left out."""
+    from . import approve
+    had = approve.lists_in(base, ("ROUNDS", "COMPUTE", "INVEST_SELL", "SHARES_BACK", "SKIPPED")) if base else {}
+    seen = set().union(*had.values()) if had else set()
+    rows = [(f"Round: {w}", n, s, d, u) for d, w, s, b, n, u in ROUNDS if u not in seen]
+    rows += [(f"Compute: {w}", o, s + " (reported)" * r, d, u) for d, w, o, s, b, r, u in COMPUTE if u not in seen]
+    rows += [(f"Comes back: {x}", y, f"{put}; {back}", m1, u1)
+             for x, y, put, m1, back, m2, u1, u2, rep in INVEST_SELL + SHARES_BACK if u1 not in seen]
+    return rows, [u for u in SKIPPED if u not in seen]
+
 
 LANES = [("round", "Funding rounds"), ("compute", "Compute deals"), ("buyout", "Buyouts")]
 REP = '<span class="am-rep" title="The figure comes from a news report, not the companies">reported</span>'

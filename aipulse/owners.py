@@ -235,17 +235,20 @@ def candidates(cards: list[dict], since: str = "") -> list[dict]:
             and _MONEY.search(c["title"]) and _LAB.search(c["title"])]
 
 
-def note(base: str, branch: str) -> tuple[str, str, str] | None:
-    """The project inbox's note for an owners/<day> branch: each deal it adds, and the stories it left out; None when
-    it adds nothing. `base` is main's copy of this file."""
+def note(base: str, branch: str, money_base: str | None = None) -> tuple[str, str, str] | None:
+    """The project inbox's note for an owners/<day> branch: each deal it adds (stakes here, $1B+ deals in ai_money.py),
+    and the stories it left out; None when it adds nothing. `base` is main's copy of this file, `money_base` of
+    ai_money.py ("" when main has none; None leaves those out)."""
     from . import approve
     had = approve.lists_in(base, ("DEALS", "LEFT_OUT"))
     rows = [(i, lab, w, m, u) for i, lab, w, m, _, u in DEALS if u not in had["DEALS"]]
     dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
+    more, skipped = ai_money.note_rows(money_base) if money_base is not None else ([], [])
+    rows, dropped = rows + more, dropped + skipped
     if not rows and not dropped:
         return None
-    return approve.note("Who owns a piece of whom", f"deal{'s' * (len(rows) != 1)}", branch,
-                        ("Investor", "Lab", "What", "When", "Source"), rows, dropped)
+    return approve.note("AI money", f"deal{'s' * (len(rows) != 1)}", branch,
+                        ("Who", "With", "What", "When", "Source"), rows, dropped)
 
 
 def deals(cards: list[dict]) -> list[dict]:

@@ -114,8 +114,8 @@ def main():
                         "hub (to check by hand and add to safety.DOCS or safety.LEFT_OUT)")
     iw = sub.add_parser("infra", help="Infra stories not checked yet for its features (to check by hand and add to "
                         "infra_watch.BUILDS, POWER or DECISIONS, or to infra_watch.LEFT_OUT)")
-    ow = sub.add_parser("owners", help="stories of stakes in AI labs not checked yet for Who owns a piece of whom (to "
-                        "check by hand and add to owners.DEALS or owners.LEFT_OUT)")
+    ow = sub.add_parser("owners", help="stories not checked yet for AI money: stakes in AI labs (owners.DEALS or LEFT_OUT) and "
+                        "$1B+ rounds and compute deals (ai_money.ROUNDS, COMPUTE or SKIPPED)")
     cs = sub.add_parser("consultations", help="stories and official list entries not checked yet for AI consultations "
                         "(to check by hand and add to consultations.ADDED or consultations.LEFT_OUT)")
     rc = sub.add_parser("releases", help="release stories not checked yet for Release cards (to check by hand and add "
@@ -163,6 +163,8 @@ def main():
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
         q.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
+        if name == "owners":
+            q.add_argument("--base-money", metavar="FILE", help="main's aipulse/ai_money.py (AI money's $1B+ deals)")
     jn = sub.add_parser("jobs-note", help="email the project inbox the cuts a jobs/ branch adds, to approve")
     jn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/jobs.py, to compare with")
     jn.add_argument("--branch", required=True, help="the branch the cuts are on (jobs/<day>)")
@@ -555,6 +557,13 @@ def main():
         print(f"{done}, {len(m.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+        if m is owners:  # AI money's $1B+ rounds and compute deals, on the same page
+            from . import ai_money
+            more = ai_money.candidates(found, since if a.days else "")
+            print(f"AI money: {len(ai_money.ROUNDS)} rounds, {len(ai_money.COMPUTE)} compute deals, {len(ai_money.SKIPPED)} "
+                  f"left out. To check after {ai_money.CHECKED_TO} ({len(more)}):")
+            for c in more:
+                print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
         if m is release_cards:
             due = release_cards.safety_due()
             print(f"Safety reports to look for again ({len(due)}): {', '.join(due) or 'none'}")
@@ -569,7 +578,8 @@ def main():
              "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests,
              "promises-note": promises, "fines-note": fines, "chips-note": chip_rules, "buyouts-note": buyouts,
              "govai-note": gov_ai}[a.cmd]
-        note = m.note(open(a.base, encoding="utf-8").read(), a.branch)
+        extra = [open(a.base_money, encoding="utf-8").read()] if getattr(a, "base_money", None) else []
+        note = m.note(open(a.base, encoding="utf-8").read(), a.branch, *extra)
         if not note:
             print("Nothing new on this branch.")
         elif a.dry_run:

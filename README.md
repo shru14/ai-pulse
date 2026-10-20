@@ -44,7 +44,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 | Regulation | AI fines and bans | Daily, checked by hand |
 | Industry | Promised vs shipped | Daily, checked by hand |
 | Industry | Jobs blamed on AI | Daily, checked by hand |
-| Industry | Who owns a piece of whom | Daily, checked by hand |
+| Industry | AI money | Daily, checked by hand |
 | Industry | AI buyouts | Daily, checked by hand |
 | Releases | Models being retired | Every 6 h, from each lab's page |
 | Releases | Release cards | Daily, checked by hand |
@@ -73,7 +73,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 
 - **[Promised vs shipped](https://projectaipulse.com/promises/):** when an AI company says it will release something, the later headline saying it did, found by rules from headlines alone (no AI model) and shown only once checked by hand, with the day each launch was actually out.
 - **[Jobs blamed on AI](https://projectaipulse.com/jobs-blamed-on-ai/):** big job cuts the news linked to AI since 2023, each checked by hand against the reason the company itself gave (it didn't say AI, AI now does the work, cuts to spend on AI, or AI took its customers); only cuts the company confirmed, each with its source.
-- **[Who owns a piece of whom](https://projectaipulse.com/who-owns-a-piece-of-whom/):** the big companies with money in AI labs, as a grid of investors by labs, a box per deal: what the story says each put in or holds, never added up, "up to" amounts marked; only done deals, each checked by hand against its story.
+- **[AI money](https://projectaipulse.com/who-owns-a-piece-of-whom/):** where the big money in AI is going: every funding round, compute deal and buyout of $1B or more since 1 January 2026 as a dot per deal along the year, the big companies' stakes in AI labs as a grid of investors by labs (what the story says each put in or holds, "up to" amounts marked), and the deals where the money comes back (a company invests, and the company it invested in buys its chips or cloud). Only closed rounds and signed deals, each checked by hand against its story; amounts as the stories give them, never added up.
 - **[AI buyouts](https://projectaipulse.com/ai-buyouts/):** every AI company bought, merged in or hired away whole since 1 January 2026 (or any company an AI lab bought), as a shopping list per buyer (a dot per deal along the year, bigger for a bigger price) and a table that filters like Excel: buyer, company bought, price as the story gives it (marked "reported" when it came from a news report, never added up) and whether the deal is done, agreed or blocked. Each deal checked by hand against its story; talks, letters of intent and "reportedly" deals are left out.
 
 ### Releases

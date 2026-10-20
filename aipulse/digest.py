@@ -500,8 +500,8 @@ FEATURES = [
      "saved/"),
     ("Models being retired", "Every model OpenAI, Anthropic, Google and Mistral have set a shut-down date for, and "
      "what each lab says to use instead.", "models-being-retired/"),
-    ("Who owns a piece of whom", "Which big companies have money in which AI labs, each stake checked by hand against "
-     "its story.", "who-owns-a-piece-of-whom/"),
+    ("AI money", "Where the big money in AI is going: every $1B+ round, compute deal and buyout, who owns a piece of "
+     "which AI lab, and the deals where the money comes back.", "who-owns-a-piece-of-whom/"),
     ("AI consultations", "Where you can tell a government what you think about AI and until when: the UK, US, EU and "
      "Canada's official lists.", "ai-consultations/"),
     ("Release cards", "Every major AI model release since July: whether you can download it, under what licence, "
