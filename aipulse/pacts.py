@@ -451,8 +451,8 @@ def _pledges_box(pl: list[tuple]) -> str:
     lead = f"{pl[most][0]} ({pl[most][1][-4:]}) has the most signers: {len(sets[most])} countries and bodies."
     rows = ""
     for p, s in zip(pl, sets):
-        who = "".join(f'<span class="pc-k fx-in">{SHORT.get(c, c)} signed</span>' if c in s else
-                      f'<span class="pc-k fx-an">{SHORT.get(c, c)} didn\'t sign</span>' for c in FOCUS)
+        who = "".join(f'<span class="pc-k pc-yes">{SHORT.get(c, c)} signed</span>' if c in s else
+                      f'<span class="pc-k pc-no">{SHORT.get(c, c)} didn\'t sign</span>' for c in FOCUS)
         bind = (f'<span class="fx-c">Binding treaty: law once {IN_FORCE_AT} countries ratify; {len(_ratified(p))} '
                 'so far</span>' if p[0] in RATIFIED else "")
         rows += (f'<tr><td class="pc-d">{p[1]}</td><td><b>{escape(p[0])}</b>{bind}</td>'

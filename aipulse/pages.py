@@ -979,6 +979,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .pc .jb-q{font-size:clamp(17px,2vw,20px);max-width:none}
 .cp .pc-stack{display:grid;gap:26px;margin-top:14px}
 .cp .pc-stack .pc-rows td{font-size:14px}
+.cp .pc-yes{background:#A6DCC6}.cp .pc-no{background:#F3B08A}
 .cp .pc-who .pc-k{margin:0 5px 4px 0;text-transform:none;letter-spacing:0;font-size:12.5px;padding:1px 6px}
 @media (min-width:641px){.cp .fx-t td.pc-who{width:330px}}
 .cp .ft .pc-stack .fx-c a{color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-weight:400}
