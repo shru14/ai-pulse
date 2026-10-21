@@ -1445,6 +1445,43 @@ a.subscribe-btn{text-decoration:none}
 }
 .cp .ow-labs{display:none}
 @media (max-width:640px){.cp .ow-labs{display:flex}}
+/* Phones: a table's row as a small card, its name on top and the rest side by side underneath (not one value a line);
+   the tables re-laid out on their own above keep theirs */
+@media (max-width:640px){
+  .cp .ft table.mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes){display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:4px}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) tbody{display:block}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) tr{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:7px 12px;
+    margin:0 0 8px;padding:9px 10px;border:1.5px solid var(--line);box-shadow:2px 2px 0 var(--line);background:var(--bg)}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) tr[hidden]{display:none}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td{display:block;font-size:12.5px;line-height:1.4;padding:0;border:0;text-align:left;white-space:normal;width:auto}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td:first-child,
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td.wd{grid-column:1/-1}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td:first-child{font-size:14px;font-weight:600}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td:empty{display:none}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td[data-l]::before{content:attr(data-l);display:block;margin:0 0 1px;
+    font:600 9px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  /* the deal lists: date on the left, the rest flowing beside it */
+  .cp .fx-t tr{column-gap:10px;padding:5px 0}
+  .cp .fx-t td{font-size:12px;padding:1px 0}
+  .cp table.nt-table{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}  /* each subject's tests in a box */
+  /* New tests' best scores: the name, score and dot on one short line each */
+  .cp .nt-scores li{padding:4px 0;gap:0 8px}
+  .cp .nt-scores a{font-size:12.5px}
+  .cp .nt-pct{font-size:11px}.cp .nt-pct b{font-size:12.5px}
+  .cp .nt-track{height:10px}
+  .cp .nt-track i{width:10px;height:10px;margin:-5px 0 0 -5px}
+  /* Papers that made the news: a newspaper on a phone, the lead across the top, then two ruled columns, small serif */
+  .cp .np-mast{font-size:10px;padding:5px 0}
+  .cp .np-lead{padding:12px 0;text-align:center}
+  .cp .np-lead h3{font-size:18px}
+  .cp .np-lead .np-deck{font-size:12.5px}
+  .cp .np-cols{column-count:2;column-gap:14px;margin-top:10px}
+  .cp .np-cols .np-clip{padding:0 0 9px;margin:0 0 9px}
+  .cp .np-clip h3{font-size:13px;line-height:1.22;margin:2px 0 4px}
+  .cp .np-deck{font-size:11px;line-height:1.4;margin:0 0 4px}
+  .cp .np-kick{font-size:8.5px;letter-spacing:.05em}
+  .cp .np-by{font-size:10px;line-height:1.35}
+}
 """
 
 
@@ -1588,7 +1625,13 @@ def cite(path: str, title: str) -> str:
             '</div></details>'
             # Close it too on a click outside the box or on Esc
             '<script>document.addEventListener("click",e=>document.querySelectorAll(".fh-cite[open]").forEach(d=>{if(!d.contains(e.target))d.open=false}));'
-            'document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".fh-cite[open]").forEach(d=>d.open=false)})</script>')
+            'document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".fh-cite[open]").forEach(d=>d.open=false)});'
+            # phones show a table's row as a card: each cell is labelled with its column's heading (data-l), and a long
+            # one runs the card's width
+            'addEventListener("DOMContentLoaded",()=>document.querySelectorAll(".ft table.mt").forEach(t=>{'
+            'const h=[...t.querySelectorAll("thead th")].map(x=>x.textContent.trim());if(!h.length)return;'
+            't.querySelectorAll("tbody tr").forEach(r=>[...r.children].forEach((c,i)=>{'
+            'if(i&&h[i]&&!c.dataset.l)c.dataset.l=h[i];if(c.textContent.trim().length>38)c.classList.add("wd")}))}))</script>')
 
 
 def band(colour: str, icon: str, art: str, title: str, question: str, intro: str, extra: str = "", sub: str = "") -> str:
