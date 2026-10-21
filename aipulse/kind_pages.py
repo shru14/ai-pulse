@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 from datetime import date, timedelta
 from html import escape
 from pathlib import Path
@@ -354,6 +355,10 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
         home, name = STREAMS[cat]
         others = " · ".join(f'<a href="/{q}">{escape(label)}</a>' for c, q, label, *_ in every if c == cat)
         who = speakers(p, rule)
+        if p == "policy/governments/":  # its tiles' flags, which no other page may have copied (Malaysia's)
+            (out / "flags").mkdir(parents=True, exist_ok=True)
+            for f in re.findall(r'/flags/([\w-]+\.svg)', "".join(who["logo"].values())):
+                shutil.copy(countries.FLAGS / f, out / "flags" / f)
         tiles = (f'<script type="application/json" id="firms">{firms}</script>\n' if rule.get("kind") == "blog" else
                  f'<script type="application/json" id="firms">{safe(who)}</script>\n' if who else
                  f'<script type="application/json" id="topics">{safe(tile_names(cat, p))}</script>\n')

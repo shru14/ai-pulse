@@ -496,16 +496,31 @@ SOURCES = [
      "government": True,
      "url": "https://www.gov.uk/api/search.json?q=%22artificial+intelligence%22&order=-public_timestamp&count=50"
             "&fields=title,link,description,public_timestamp"},
+    # The EU: the Commission's digital policy news and the data protection board's (© European Union, reused with
+    # acknowledgement). Their laws and proposals still go to the tracker; everything else naming AI is Policy.
+    {"name": "European Data Protection Board", "url": "https://www.edpb.europa.eu/feed/news_en", "category": "policy",
+     "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    {"name": "European Commission: Digital Strategy", "url": "https://digital-strategy.ec.europa.eu/en/rss.xml",
+     "category": "policy", "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    # Beyond the English-speaking governments (added 21 Oct 2026); their titles are translated offline (translate.py)
+    # before the AI test. Germany: the federal government's press office, every ministry's news in one feed.
+    {"name": "Bundesregierung (Germany)", "url": "https://www.bundesregierung.de/service/rss/breg-de/1151244/feed.xml",
+     "category": "policy", "jurisdictions": ["DE"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    # France: DINUM, the state's digital directorate (it runs the "Numérique et IA" pact). No feed: its news list.
+    {"name": "DINUM (France)", "format": "dinum", "url": "https://www.numerique.gouv.fr/actualites/", "category": "policy",
+     "jurisdictions": ["FR"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    # Spain: AESIA, the AI supervisory agency under the EU AI Act. No feed: its news page lists every post.
+    {"name": "AESIA (Spain)", "url": "https://aesia.digital.gob.es/es/actualidad", "format": "page_list",
+     "link": r"^https://aesia\.digital\.gob\.es/es/actualidad/\d{8}-[a-z0-9-]+$", "category": "policy",
+     "ai_only": True, "jurisdictions": ["ES"], "government": True},
+    # Brazil: the Ministry of Science, Technology and Innovation (it runs the Brazilian AI Plan). Its news page,
+    # filed by period ("noticias-julho-outubro-2026").
+    {"name": "MCTI (Brazil)", "url": "https://www.gov.br/mcti/pt-br/acompanhe-o-mcti/noticias", "format": "page_list",
+     "link": r"^https://www\.gov\.br/mcti/pt-br/acompanhe-o-mcti/noticias/noticias-[a-z0-9-]+/[a-z0-9-]+$",
+     "category": "policy", "ai_in_title": True, "jurisdictions": ["BR"], "government": True},
 ]
 
 # --- Regulation tracker: proposals and adopted laws ---
-_REG = {"category": "regulation"}
-SOURCES += [
-    {**_REG, "name": "European Data Protection Board", "url": "https://www.edpb.europa.eu/feed/news_en",
-     "jurisdictions": ["EU"]},
-    {**_REG, "name": "European Commission: Digital Strategy", "url": "https://digital-strategy.ec.europa.eu/en/rss.xml",
-     "jurisdictions": ["EU"]},
-]
 
 # --- Research: AI ethics, philosophy and law scholars, followed daily ---
 # Their arXiv papers are picked up by the author matching further down, and filed under Research (a paper
