@@ -40,6 +40,14 @@ PLACES = [
 PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://openai.com/index/chatgpt-ads-expands-26-new-countries":
+        "An ads product in ChatGPT reaching countries, not an AI model",
+    "https://cloud.google.com/blog/products/ai-machine-learning/claude-opus-55-and-claude-sonnet-55-available-in-antigravity/":
+        "Models added to another company's product, not reaching countries or regions",
+    "https://techcrunch.com/2026/10/20/us-orders-federal-agencies-to-remove-chinas-deepseek-ai-from-their-systems/":
+        "A government order to remove it, not the lab taking the model away",
+    "https://aws.amazon.com/blogs/machine-learning/pegasus-1-5-from-twelvelabs-is-now-available-in-amazon-bedrock/":
+        "A model added to a cloud platform, not countries or regions",
     "https://the-decoder.com/deepseek-makes-its-75-percent-discount-permanent-pricing-output-tokens-at-least-34x-below-gpt-5-5/":
         "A promotion made permanent: the old price and the date it took effect aren't stated",
     "https://the-decoder.com/metas-muse-spark-1-1-api-pricing-squeezes-openai-and-anthropic-as-the-ai-price-war-heats-up/":
