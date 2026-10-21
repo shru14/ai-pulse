@@ -331,12 +331,16 @@ LEFT_OUT = {
     "https://www.liquid.ai/blog/lfm2-5-24b-a2b": "LFM2.5-24B-A2B: one news outlet (and Hugging Face's blog) within 3 days",
     "https://www.liquid.ai/blog/d1-ultra": "d1-ultra: one news outlet within 3 days",
     "https://api-docs.deepseek.com/news/news261017": "DeepSeek V4.1 Flash 1017: one news outlet within 3 days",
+    "https://pandaily.com/deepseek-v4-1-flash-1017-official-release-mit-weights-terminal-bench-wish-style-programming":
+        "same as DeepSeek V4.1 Flash 1017: an update to V4.1 Flash, not a new model",
+    "https://siliconangle.com/2026/10/18/deepseek-releases-updated-v4-1-flash-model-it-says-completes-tasks-faster/":
+        "same as DeepSeek V4.1 Flash 1017: an update to V4.1 Flash, not a new model",
     "https://pandaily.com/skywork-matrix-game-4-open-source-game-engine-real-time-neural-rendering-rtx-5090":
         "Matrix-Game 4.0: one news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-10-17"
+CHECKED_TO = "2026-10-18"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
