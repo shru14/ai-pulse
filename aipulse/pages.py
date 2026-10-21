@@ -112,6 +112,16 @@ STYLE = """
 .cp .gt td a{color:var(--ink);font-weight:600;text-decoration:none}.cp .gt td a:hover{text-decoration:underline}
 .cp .gt td:first-child{min-width:220px}.cp .gt td:not(:first-child):not(.gt-steps){white-space:nowrap}
 .cp .gt .gt-steps{font-size:13.5px;color:var(--muted);min-width:200px}
+/* phones: each record a card, its title on top, source, stage and date labelled side by side under it (data-l) */
+@media (max-width:640px){.cp .gt-wrap{overflow:visible}
+  .cp table.gt,.cp .gt tbody{display:block;border:0}
+  .cp .gt thead{display:none}
+  .cp .gt tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;margin:0 0 8px;padding:9px 10px;border:1.5px solid var(--line);box-shadow:2px 2px 0 var(--line)}
+  .cp .gt td{display:block;border:0;padding:0;min-width:0!important;white-space:normal!important;font-size:12.5px}
+  .cp .gt td:first-child{grid-column:1/-1;font-size:13.5px}
+  .cp .gt td.gt-steps{grid-column:1/-1;order:1;font-size:12px;color:var(--muted)}  /* steps last, under source, stage and date */
+  .cp .gt td:empty{display:none}
+  .cp .gt td[data-l]::before{content:attr(data-l);display:block;font:600 9px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:1px}}
 @media (max-width:640px){.cp .tp-t thead{display:none}  /* phones: place and date, then the title, then the stage */
   .cp .tp-t tr{display:grid;grid-template-columns:1fr auto;column-gap:12px;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 0}
   .cp .mt.tp-t td{border:0;padding:2px 0}.cp .tp-t .tp-title{grid-column:1/-1;order:3}.cp .tp-t .tp-stage{grid-column:1/-1;order:4;color:var(--muted);font-size:14px}

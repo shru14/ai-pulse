@@ -113,14 +113,14 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 trail = (" → ".join(f'{escape(s.get("text") or s["stage"])} ({_day(s["date"])})' for s in steps)
                          if len(steps) > 1 else "")
                 rows.append((f'<td><a href="{escape(c["url"])}">{escape(c["title"].strip())}</a></td>'
-                             f'<td>{escape(c["source"])}</td>', stage, trail, _day(c["date"])))
+                             f'<td data-l="Source">{escape(c["source"])}</td>', stage, trail, _day(c["date"])))
             if rows:  # a grid per kind; Stage and Steps columns only where a record has them
                 staged, stepped = any(r[1] for r in rows), any(r[2] for r in rows)
                 head = ("<tr><th>Title</th><th>Source</th>" + ("<th>Stage</th>" if staged else "")
                         + ("<th>Steps</th>" if stepped else "") + "<th>Date</th></tr>")
-                body_rows = "\n".join(f'<tr>{cells}' + (f'<td>{escape(stage)}</td>' if staged else "")
-                                      + (f'<td class="gt-steps">{trail}</td>' if stepped else "")
-                                      + f'<td>{day}</td></tr>' for cells, stage, trail, day in rows)
+                body_rows = "\n".join(f'<tr>{cells}' + (f'<td data-l="Stage">{escape(stage)}</td>' if staged else "")
+                                      + (f'<td class="gt-steps" data-l="Steps">{trail}</td>' if stepped else "")
+                                      + f'<td data-l="Date">{day}</td></tr>' for cells, stage, trail, day in rows)
                 sections.append(f'<h2>{label}</h2>\n<div class="gt-wrap"><table class="gt"><thead>{head}</thead><tbody>\n'
                                 + body_rows + "\n</tbody></table></div>")
         title = f"{heading(code, name)} · AI Pulse"
