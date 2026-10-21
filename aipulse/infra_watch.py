@@ -118,7 +118,9 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/brightray-enters-us-with-loi-for-10-mw-ai-data-center-in-indiana/", "Brightray", "US", "Indiana", "10 MW", "", "announced"),
     ("https://w.media/uruguay-signs-multi-billion-dollar-deal-for-500-mw-data-center-park/", "Solaria, with Uruguay's government", "Uruguay", "", "500 MW", "US$ 5.7bn", "announced"),
     ("https://dcnnmagazine.com/projects-and-infrastructure/1-3gw-solar-farm-and-1gw-data-centre-proposed-in-norfolk/", "EPL Norfolk (Evolution Power)", "UK", "King's Lynn, west Norfolk", "1 GW", "", "announced"),
-    ("https://w.media/canadian-government-eyes-up-to-us-1-3-billion-for-60-mw-data-center/", "Defence Construction Canada, for the Communications Security Establishment", "Canada", "Ottawa, Ontario", "60 MW", "CA$ 1.5-1.85bn, estimated", "announced"),
+    ("https://w.media/canadian-government-eyes-up-to-us-1-3-billion-for-60-mw-data-center/", "Defence Construction Canada, for the Communications Security Establishment", "Canada", "Ottawa, Ontario", "60 MW", "CA$ 1.5-1.85bn, estimated", "announced"),    ("https://w.media/everwind-plans-us-7-billion-nova-scotia-data-center-campus-with-anthropic-as-tenant/", "EverWind, with Anthropic as tenant", "Canada", "Point Tupper, Richmond County, Nova Scotia", "95 MW first, 420 MW by 2028", "Over CA$ 8bn for the campus", "announced"),
+    ("https://w.media/digital-realty-breaks-ground-on-22-mw-ankara-data-center/", "Digital Realty and Rönesans Infrastructure", "Türkiye", "Ankara", "22 MW", "", "building"),
+
 ]
 
 # Power: a deal or plan to power data centres. (story, who, power from, what it powers, size, status)
@@ -143,7 +145,8 @@ POWER: list[tuple[str, ...]] = [
     ("https://www.thelec.net/news/articleView.html?idxno=14464", "HD Hyundai Infracore, for ERock", "gas", "Gas generator engines at data centres in the US, a 390 billion won order", "", "signed"),
     ("https://www.thelec.net/news/articleView.html?idxno=14499", "SK Eternix and Mastern", "hydrogen", "A data centre run on fuel cells, South Korea", "", "planned"),
     ("https://www.xataka.com/energia/google-se-asegura-20-anos-energia-nuclear-para-alimentar-sus-centros-datos", "Google", "nuclear", "Google's data centres, for 20 years", "", "signed"),
-    ("https://w.media/tata-power-announces-us-1-5-billion-mumbai-grid-expansion-for-data-centers/", "Tata Power", "utility", "A US$ 1.5bn grid expansion for data centres in Mumbai, India", "", "planned"),
+    ("https://w.media/tata-power-announces-us-1-5-billion-mumbai-grid-expansion-for-data-centers/", "Tata Power", "utility", "A US$ 1.5bn grid expansion for data centres in Mumbai, India", "", "planned"),    ("https://www.xataka.com/empresas-y-economia/amazon-ha-encontrado-solucion-al-colosal-consumo-sus-centros-datos-para-ia-12-reactores-nucleares-smr-antigua-central-carbon", "Amazon, X-energy and AEP", "nuclear", "12 small reactors at the former Breed coal plant site, Sullivan County, Indiana, US; Amazon would help fund it and be the first customer", "About 960 MW", "planned"),
+
 ]
 
 # Decisions on data centres by governments, councils, courts and grid operators; calls, protests and proposals aren't
@@ -186,6 +189,16 @@ DECISIONS: list[tuple[str, ...]] = [
 LEFT_OUT: set[str] = {
     "https://w.media/airtrunk-nears-deal-to-sell-its-johor-data-centers-for-us1-billion-report/",  # sale of existing data centres
     "https://www.thelec.net/news/articleView.html?idxno=14473",  # owner of the Cheongna project not named in the story
+    "https://www.thelec.net/news/articleView.html?idxno=14800",  # supercapacitor orders, parts
+    "https://www.thelec.net/news/articleView.html?idxno=14726",  # supercapacitor orders, parts
+    "http://www.bernama.com/en/news.php?id=2623689",  # a GPU cluster, not a new data centre
+    "https://www.foodandwaterwatch.org/press/2026/10/20/as-110-new-jersey-municipalities-have-blocked-ai-data-centers-advocates-and-impacted-residents-call-for-statewide-moratorium/",  # call for a statewide moratorium; no state decision
+    "https://w.media/nextdc-cuts-fy27-guidance-pauses-new-projects-over-m3-power-delay/",  # the company's own pause, not a government decision
+    "https://w.media/aolani-inks-malaysia-deal-for-500mw-ai-capacity-projects-580mw-commitment-by-2027/",  # lease of capacity; no builder or site named
+    "https://www.404media.co/it-aint-right-texas-said-it-would-halt-data-center-permits-the-state-is-pushing-ahead-anyway/",  # the Texas pause is disputed in the story; unclear what was decided
+    "http://www.bernama.com/en/news.php?id=2622718",  # market forecast
+    "https://www.canarymedia.com/articles/batteries/illinois-storage-procurement-incentives-results",  # grid batteries, not data centres
+    "http://www.bernama.com/en/news.php?id=2622651",  # works contract; the data centre's owner not named
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
