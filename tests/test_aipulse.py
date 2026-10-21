@@ -4065,12 +4065,13 @@ def test_chip_rules_candidates_and_the_approval_note():
 
 
 def test_new_tests_for_ai_rows_scores_and_candidates(tmp_path):
-    from datetime import date
+    from datetime import date, timedelta
     from aipulse import new_tests as nt
     url = "https://arxiv.org/abs/2610.18092"  # LifeSearch: 63.4%, GPT-5.6 Sol
+    after = (date.fromisoformat(nt.CHECKED_TO) + timedelta(days=1)).isoformat()  # a day the routine hasn't checked yet
     cards = [{"url": url, "title": "LifeSearch: Benchmarking Deep Research Agents", "date": "2026-10-13T00:00",
               "category": "research"},
-             {"url": "https://arxiv.org/abs/2610.99999", "title": "FooBench: a new benchmark", "date": "2026-10-17T00:00",
+             {"url": "https://arxiv.org/abs/2610.99999", "title": "FooBench: a new benchmark", "date": after + "T00:00",
               "category": "research"},
              {"url": "https://arxiv.org/abs/2610.13644", "title": "SelectArena", "date": "2026-10-17T00:00",
               "category": "research"}]  # left out already
