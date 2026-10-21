@@ -701,9 +701,9 @@ def body(month: str, x: dict) -> str:
         lead = score[k][1] if k in top and score[k][1] < len(parts) else 0
         rest = " ".join(parts[:lead] + parts[lead + 1:])
         heads.append([parts[lead]] + ([rest] if rest else []))
-    # ...on a departures board: split-flap numbers, each exhibit's colour as its "airline", the exhibit as its gate
+    # ...on a departures board: circled numbers, each exhibit's colour as its "airline", the exhibit as its gate
     def flap(n):
-        return "".join(f'<b class="fl">{d}</b>' for d in f"{n:02d}")
+        return f'<b class="fl">{n}</b>'
     found = "".join(f'<tr style="--hue:var(--f-{HUE[k]});--i:{i}"><td class="no">{flap(i)}</td>'
                     f'<td class="fd"><i class="air"></i>{escape(hd[0])}</td><td class="st">{"Stands out" if k in top else ""}</td>'
                     f'<td class="gt"><a href="/{path(month)}#{k}" aria-label="Exhibit {i}"><span>EX</span>{flap(i)}</a></td></tr>'

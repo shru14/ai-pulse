@@ -243,12 +243,12 @@ a.subscribe-btn{text-decoration:none}
 .cp .mi .topic-hero .num{color:#fff;font:600 14px var(--mono);letter-spacing:.06em}
 .cp .contents{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:6px 14px;list-style:none;margin:18px 0 0;padding:12px 0;border-bottom:2px solid var(--line);counter-reset:c}
 .cp .contents li{padding:0;border:0;counter-increment:c;font-size:14px;white-space:nowrap}
-.cp .contents li::before{content:counter(c,decimal-leading-zero);font:600 12px var(--mono);color:var(--ink);margin-right:7px}
+.cp .contents li::before{content:counter(c);display:inline-grid;place-items:center;width:18px;height:18px;border:1.5px solid currentColor;border-radius:50%;font:600 11px var(--mono);color:var(--ink);margin-right:7px;vertical-align:1px}
 .cp .contents a{font-weight:600;color:var(--ink);text-decoration:none}
 .cp .contents a:hover{text-decoration:underline}
 .cp .sheet{margin-top:34px;counter-increment:sheet}
 .cp .mi{counter-reset:sheet}
-.cp .sheet > h2::before{content:counter(sheet,decimal-leading-zero);margin-right:10px;color:var(--ink)}
+.cp .sheet > h2::before{content:counter(sheet);display:inline-grid;place-items:center;width:1.4em;height:1.4em;border:2px solid currentColor;border-radius:50%;font-size:.8em;margin-right:10px;color:var(--ink);vertical-align:.1em}
 .cp .brief{font-size:clamp(16px,1.6vw,17.5px);line-height:1.65;margin:12px 0 0;border-left:6px solid var(--line);padding-left:16px}
 .cp .brief mark{color:inherit;font-weight:600;background:linear-gradient(transparent 58%,color-mix(in srgb,#F0E442 75%,transparent) 58%)}
 .cp table.mt{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
@@ -502,7 +502,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .mi{--ctx:#AADAF4;--ctx2:#D9ECF6;--focus:#0072B2;--mark:#F0E442;--rule:color-mix(in srgb,var(--ink) 22%,transparent)}
 :root[data-theme="dark"] .cp .mi{--ctx:#2D5670;--ctx2:#1C3240;--focus:#56B4E9}
 .cp .mi .sheet > h2{display:flex;align-items:center;gap:12px;border-top:2px solid var(--line);padding-top:12px;font:400 clamp(21px,2.3vw,27px)/1.15 var(--display);text-transform:none;letter-spacing:0}
-.cp .mi .sheet > h2::before{content:counter(sheet);display:inline-grid;place-items:center;flex:none;width:30px;height:30px;margin:0;background:var(--ink);color:var(--bg);font:400 15px var(--display)}
+.cp .mi .sheet > h2::before{content:counter(sheet);display:inline-grid;place-items:center;flex:none;width:30px;height:30px;margin:0;border-radius:50%;background:var(--ink);color:var(--bg);font:400 15px var(--display)}
 .cp .mi .contents li::before{color:var(--muted)}
 .cp .mi .brief{border-left-color:var(--line)}
 .cp .mi .issue-nav{border-top:2px solid var(--line)}
@@ -545,13 +545,12 @@ a.subscribe-btn{text-decoration:none}
 .cp .kf th:last-child{text-align:right;padding-right:0}
 .cp .kf td{border-top:1px solid #2A303C;padding:8px 12px 8px 0;vertical-align:middle;font:400 14.5px/1.45 var(--mono);color:#F2F2F2}
 .cp .kf .no{width:58px;white-space:nowrap}
-.cp .fl{position:relative;display:inline-grid;place-items:center;width:20px;height:26px;margin-right:2px;background:linear-gradient(#262C39 50%,#1D222D 50%);color:var(--board);font:600 15px var(--mono);border-radius:2px}
-.cp .fl::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid #0B0E13}
+.cp .fl{display:inline-grid;place-items:center;width:26px;height:26px;border:1.5px solid var(--board);border-radius:50%;color:var(--board);font:600 14px var(--mono)}
 .cp .kf .air{display:inline-block;width:10px;height:10px;margin-right:10px;background:var(--hue);vertical-align:0}
 .cp .kf .st{white-space:nowrap;font:600 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--board)}
 .cp .kf .gt{white-space:nowrap;text-align:right;padding-right:0}
 .cp .kf .gt a{display:inline-flex;align-items:center;gap:6px;color:var(--board);text-decoration:none;font:600 11px var(--mono);letter-spacing:.08em}
-.cp .kf .gt .fl{width:16px;height:22px;font-size:13px}
+.cp .kf .gt .fl{width:22px;height:22px;font-size:12px}
 .cp .kf .gt a:hover .fl,.cp .kf .gt a:focus-visible .fl{background:var(--board);color:#141925}
 @media (prefers-reduced-motion:no-preference){
   .cp .kf .fl{animation:ins-flap .5s cubic-bezier(.3,1.4,.5,1) both;animation-delay:calc(var(--i) * 70ms)}

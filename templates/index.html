@@ -920,13 +920,12 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 .sm-head .sm-tag{display:block;font-size:13px;line-height:1.35;color:var(--muted);margin-top:8px}
 .side-menu .sub-close{position:static;flex:none}
 .side-menu nav{display:flex;flex-direction:column;margin:0 18px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
-.side-menu nav a.sm-tab{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:2px 12px;padding:12px 10px 12px 12px;
+.side-menu nav a.sm-tab{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 12px;padding:12px 10px 12px 12px;
   border-left:5px solid transparent;background:none;color:var(--ink);text-decoration:none}
 .side-menu nav a.sm-tab + a.sm-tab{border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
-.sm-tab i{grid-row:1/3;font:600 12px var(--mono);font-style:normal;color:var(--muted)}
 .sm-tab b{font:600 16px/1.2 var(--body)}
-.sm-tab span{grid-column:2;font:400 12.5px/1.35 var(--body);color:var(--muted)}
-.sm-tab img{grid-row:1/3;grid-column:3;width:48px;height:48px;object-fit:contain}
+.sm-tab span{grid-column:1;font:400 12.5px/1.35 var(--body);color:var(--muted)}
+.sm-tab img{grid-row:1/3;grid-column:2;width:48px;height:48px;object-fit:contain}
 .side-menu nav a.sm-tab:hover{border-left-color:var(--cat-f)}
 .side-menu nav a.sm-tab[aria-current]{border-left-color:var(--cat-f);background:color-mix(in srgb,var(--cat-f) 16%,var(--bg))}
 .side-menu nav a.sm-tab[aria-current] b::after{content:"you are here";display:block;margin-top:2px;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -1120,12 +1119,12 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
     <div class="sm-head"><div><span class="sm-brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>AI Pulse</span><span class="sm-tag">Your briefing on what's happening in AI worldwide.</span></div><form method="dialog"><button class="sub-close" aria-label="Close">×</button></form></div>
     <nav>
       <a href="/about/" data-go="about" class="sm-link">About AI Pulse</a>
-      <a href="/releases/" data-go="tool" class="sm-tab k-tool"><i>01</i><b>Releases</b><span></span><img src="photos/cartoons/streams/tool.svg" alt=""></a>
-      <a href="/industry/" data-go="news" class="sm-tab k-news"><i>02</i><b>Industry</b><span></span><img src="photos/cartoons/streams/news.svg" alt=""></a>
-      <a href="/research/" data-go="research" class="sm-tab k-research"><i>03</i><b>Research</b><span></span><img src="photos/cartoons/streams/research.svg" alt=""></a>
-      <a href="/regulation/" data-go="regulation" class="sm-tab k-regulation"><i>04</i><b>Regulation tracker</b><span></span><img src="photos/cartoons/streams/regulation.svg" alt=""></a>
-      <a href="/policy/" data-go="policy" class="sm-tab k-policy"><i>05</i><b>Policy</b><span></span><img src="photos/cartoons/streams/policy.svg" alt=""></a>
-      <a href="/infra/" data-go="infra" class="sm-tab k-infra"><i>06</i><b>Infra</b><span></span><img src="photos/cartoons/streams/infra.svg" alt=""></a>
+      <a href="/releases/" data-go="tool" class="sm-tab k-tool"><b>Releases</b><span></span><img src="photos/cartoons/streams/tool.svg" alt=""></a>
+      <a href="/industry/" data-go="news" class="sm-tab k-news"><b>Industry</b><span></span><img src="photos/cartoons/streams/news.svg" alt=""></a>
+      <a href="/research/" data-go="research" class="sm-tab k-research"><b>Research</b><span></span><img src="photos/cartoons/streams/research.svg" alt=""></a>
+      <a href="/regulation/" data-go="regulation" class="sm-tab k-regulation"><b>Regulation tracker</b><span></span><img src="photos/cartoons/streams/regulation.svg" alt=""></a>
+      <a href="/policy/" data-go="policy" class="sm-tab k-policy"><b>Policy</b><span></span><img src="photos/cartoons/streams/policy.svg" alt=""></a>
+      <a href="/infra/" data-go="infra" class="sm-tab k-infra"><b>Infra</b><span></span><img src="photos/cartoons/streams/infra.svg" alt=""></a>
       <a href="/today/" data-go="today" class="sm-link sm-more">Today in AI</a>
       <a href="/discussing/" data-go="discussing" class="sm-link">People are discussing</a>
       <a href="/monthly/" class="sm-link">Monthly issues</a>
