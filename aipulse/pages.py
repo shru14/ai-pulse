@@ -1344,13 +1344,91 @@ a.subscribe-btn{text-decoration:none}
   .cp .nt-table td:first-child,.cp .nt-table td:nth-child(3){width:auto}
   .cp .cg-table td:nth-child(5)::before{content:"How sure Epoch is: ";color:var(--muted)}
   .cp .cg-table td:nth-child(6)::before{content:"Weights to download: ";color:var(--muted)}}
+/* Phones, on every feature and page band: small type and a short header band (title and question beside a small
+   cartoon, the description under them), small big-number tiles three to a row, smaller tabs, headings and tables */
+@media (max-width:640px){
+  :is(.cp,.about-page) .fh{grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;margin:12px 0 18px;padding:12px;border-width:2px;box-shadow:3px 3px 0 var(--line)}
+  :is(.cp,.about-page) .fh-t{grid-column:1;grid-row:1;gap:10px;align-items:flex-start}
+  :is(.cp,.about-page) .fh-ic{width:32px;height:32px}
+  :is(.cp,.about-page) .fh-ic svg{width:19px;height:19px}
+  :is(.cp,.about-page) .fh-ic.pic img{width:28px;height:21px}
+  :is(.cp,.about-page) .fh :is(h1,h2){font-size:19px}
+  :is(.cp,.about-page) .fh-q,.cp .fh-sub{font-size:13px;margin-top:4px}
+  :is(.cp,.about-page) .fh-art{grid-column:2;grid-row:1;align-self:start;height:56px;margin:0}
+  :is(.cp,.about-page) .fh .fh-d{grid-column:1/-1;padding:8px 0 0;border-top-width:2px;font-size:12.5px;line-height:1.45}
+  .cp .fh-cite{margin-top:6px}
+  .cp .fh-cite summary{font-size:11px;padding:2px 8px}
+  .cp h2{font-size:12.5px;margin-top:22px;border-top-width:4px;padding-top:8px}
+  .cp .rm-bigs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .cp .rm-bigs:has(>:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}  /* four: two by two */
+  .cp .rm-big{min-width:0;padding:8px;box-shadow:2px 2px 0 var(--line)}
+  .cp .rm-big b,.cp .rc .rm-big b{font-size:22px}
+  .cp .rm-big span,.cp .rc .rm-big span{font-size:11px;margin-top:4px}
+  .cp .gv-big{font-size:12.5px}.cp .gv-big b{font-size:26px}
+  .cp .st-hero b{font-size:24px}
+  .cp .sh-tabs{gap:4px 14px}
+  .cp .sh-tab{font-size:12.5px}.cp .sh-tab b{font-size:10.5px}
+  .cp table.mt{font-size:13px}
+  .cp .mt th{font-size:9.5px}
+  .cp .mt td{padding:7px 10px 7px 0}
+  .cp .mt .meta{font-size:11.5px}
+  .cp .mt .name{font-size:13px!important}
+  .cp p{font-size:13.5px}
+  /* each feature's own section headings, question lines, tables and tags: the same smaller sizes */
+  .cp .jb h2{font-size:16px;margin:28px 0 8px}
+  .cp .jb-q,.cp .rm .jb-q,.cp .rc .jb-q{font-size:14px}
+  .cp .sd h2,.cp .ft.gv .gv-card h2{font-size:17px}
+  .cp .ft .pc-hh h2,.cp .ft.gv h2.gv-h,.cp .mi .sheet > h2{font-size:18px}
+  .cp .rm-t{font-size:13px}
+  .cp .rm-t code{font-size:11.5px}
+  .cp .rm-t td.rm-d small{font-size:10.5px}
+  .cp .ft .rm-t td.rm-lab a{font-size:11px}
+  .cp .rm-t td:nth-child(4)::before,.cp .rm-t td:nth-child(5)::before{font-size:11px}
+  .cp .rc .sh-tab{padding:3px 8px}
+  .cp .rc-w{font-size:11px}
+  .cp .rc-t small{font-size:11px}
+  .cp .rc .rc-t th{font-size:9px}
+}
 """
 
 
+def phone_type(css: str, scale: float = .85, floor: float = 11) -> str:
+    """Every page's type the same size smaller on phones: each `.cp` rule's font size of 14px or more, scaled down
+    (a clamp() by its smallest size), in one ≤640px block. Rules a phone block already sizes keep theirs; search
+    boxes keep 16px (smaller makes iPhones zoom in on a tap)."""
+    rules, tuned, depth, media = [], set(), 0, ""
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    for m in re.finditer(r"([^{}]*)\{|\}", css):
+        if m.group(0) == "}":
+            depth -= 1
+            if depth == 0:
+                media = ""
+            continue
+        head = m.group(1).strip()
+        if head.startswith("@media"):
+            media, depth = head, depth + 1
+            continue
+        body, depth = css[m.end():css.index("}", m.end())], depth + 1
+        for sel in (s.strip() for s in head.split(",")):
+            if "max-width" in media and "font" in body:
+                tuned.add(sel)
+            elif not media:
+                rules.append((sel, body))
+    sizes = {}
+    for sel, body in rules:
+        f = re.search(r"font(?:-size)?\s*:[^;]*?(?:clamp\()?(\d+(?:\.\d+)?)px", body)
+        if not (sel.startswith(".cp ") and f) or sel in tuned or re.search(r"input|select|search|::?(?:before|after)", sel):
+            continue
+        if (px := float(f.group(1))) >= 14:
+            sizes[sel] = f"{max(floor, round(px * scale * 2) / 2):g}px"
+    return "@media (max-width:640px){\n" + "\n".join(f"  {s}{{font-size:{v}}}" for s, v in sizes.items()) + "\n}\n"
+
+
 def write_css(out: Path) -> None:
-    """site.css: the front page's styles (its masthead and footer) and these pages' own."""
+    """site.css: the front page's styles (its masthead and footer) and these pages' own, then these pages' type a size
+    smaller on phones."""
     style = re.search(r"<style>(.*?)</style>", TEMPLATE.read_text(encoding="utf-8"), re.S).group(1)
-    (out / "site.css").write_text(style + STYLE, encoding="utf-8")
+    (out / "site.css").write_text(style + STYLE + phone_type(STYLE), encoding="utf-8")
 
 
 def frame(conn=None, total: int = 0) -> tuple[str, str]:
