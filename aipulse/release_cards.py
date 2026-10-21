@@ -437,7 +437,7 @@ def _row(r: dict) -> str:
             f'<td><span class="rc-w {tag}">{escape(r["weights"])}</span>{small(r["note"])}</td>'
             f'<td>{lic}{small(r["limit"])}</td>'
             f'<td{" class=rc-out" if r["out"] else ""}>{where}</td>'
-            f'<td class="rc-p">{escape(price) or "–"}{small(why)}</td>'
+            f'<td class="rc-p{" rc-p0" * (not price)}">{escape(price) or "–"}{small(why)}</td>'
             f'<td class="rc-s">{report}</td></tr>')
 
 

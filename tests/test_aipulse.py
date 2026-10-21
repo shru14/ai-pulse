@@ -4368,7 +4368,8 @@ def test_model_economy_prices_against_the_model_before_and_shutdown_warning(tmp_
     assert ps["Claude Opus 5.5"]["say"] == "20% cheaper" and ps["Claude Opus 5.5"]["was_price"] == "$5 / $25"
     assert ps["Gemini 3.7 Flash"]["way"] == "down" and ps["Grok 4.7"]["say"] == "Same"
     assert ps["DeepSeek V4.1 Flash"]["way"] == "up" and ps["Gemini 3.7 Flash"]["price_note"] == "Introductory, until 31 Dec"
-    assert "2 launched cheaper, 1 pricier and 6 at the same price" in page
+    assert "Of 9 new models, 6 kept the price of the model before, 2 cost less and 1 cost more." in page
+    assert ps["DeepSeek V4.1 Flash"]["say"] == "Pricier: in +7%, out +114%" and "$5 in · $25 out" in page
     assert "Evals platform" not in page and "gpt-old" not in page  # a whole product; before 2026
     assert "OpenAI gives the most warning: a median of 183 days. The shortest was Mistral&#x27;s: 1 day." in page
     assert "Its page gives no day it told developers" in page and "gemini-x" not in page

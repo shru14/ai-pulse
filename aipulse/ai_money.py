@@ -274,15 +274,18 @@ def _circle(rows: list) -> str:
     def link(u, words):
         return f'<a href="{escape(u)}" rel="noopener">{escape(words)}</a>'
     return "".join(
-        f'<tr><td><b>{escape(a)}</b></td><td><b>{escape(b)}</b></td>'
-        f'<td>{link(u1, put)}<span class="fx-c">{m1}</span></td>'
-        f'<td>{link(u2 or u1, back)}{REP if rep else ""}<span class="fx-c">{m2}</span></td></tr>'
+        f'<tr><td class="am-who"><b>{escape(a)}</b></td>'
+        f'<td class="am-loop"><span class="am-go">{link(u1, put)} <small>{m1}</small></span>'
+        f'<span class="am-back">{link(u2 or u1, back)}{REP if rep else ""} <small>{m2}</small></span></td>'
+        f'<td class="am-who"><b>{escape(b)}</b></td></tr>'
         for a, b, put, m1, back, m2, u1, u2, rep in rows)
 
 
 def _circles() -> str:
     makers = sorted({r[0] for r in INVEST_SELL})
-    head = '<thead><tr><th>From</th><th>Into</th><th>What went in</th><th>What comes back</th></tr></thead>'
+    # each row a loop: what went in on the arrow to the right, what comes back on the arrow below it, to the left
+    head = ('<thead><tr><th>From</th><th><span class="am-go-k">What went in</span> · '
+            '<span class="am-back-k">What comes back</span></th><th>Into</th></tr></thead>')
     return ('<section class="am-cc"><h2>Money that comes back</h2>'
             f'<p class="ins-say">{escape(", ".join(makers[:-1]))} and {escape(makers[-1])} each put money into a company '
             'that, in the same deal or an earlier one, agreed to buy their chips or cloud.</p>'

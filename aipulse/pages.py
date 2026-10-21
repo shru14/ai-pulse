@@ -1055,6 +1055,18 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh-sub{margin:2px 0 0;font:700 17px/1.3 var(--body);color:#000}
 .cp .me-same{background:var(--bg);color:var(--ink)}.cp .me-mixed{background:#F2D27A}.cp .me-mid{background:#E69F00}
 .cp .me-models{margin-top:22px}.cp .me .me-more{margin-top:10px}
+/* Launch prices: a line's models together (a heavier rule between lines), each price under its model, "in" and "out"
+   spelled out; on a phone the model before and the new one side by side */
+.cp .me-unit{font-size:13.5px;color:var(--muted);margin:6px 0 8px}
+.cp .me-p{display:block;margin-top:3px;font:500 13px var(--mono)}
+.cp .me-prices tr.me-top td{border-top:2px solid var(--ink)}
+.cp .me-prices td:nth-child(3)::before{content:"→ ";font-weight:700}
+@media (max-width:640px){.cp .ft .fx-t.me-prices tr{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .cp .ft .fx-t.me-prices td{grid-column:auto}
+  .cp .ft .fx-t.me-prices td:first-child,.cp .ft .fx-t.me-prices td:last-child{grid-column:1/-1;font-weight:700}
+  .cp .ft .fx-t.me-prices td:is(:nth-child(2),:nth-child(3))::before{content:attr(data-l);display:block;font:600 9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .cp .ft .fx-t.me-prices td:is(:first-child,:last-child)::before{content:none}
+  .cp .ft .fx-t.me-prices tr.me-top{border-top:2px solid var(--ink)}.cp .ft .fx-t.me-prices tr.me-top td{border-top:0}}
 .cp .ft.me .pc-rows a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 @media (max-width:640px){.cp .me td[data-l]::before{content:attr(data-l) ": ";color:var(--muted);font-size:12.5px}}
 /* AI fines and bans: a dot per action on one time line (each linking to its row), then the AI pacts and orders boxes
@@ -1149,6 +1161,19 @@ a.subscribe-btn{text-decoration:none}
 .cp .am-rep{display:inline-block;margin-left:6px;font:600 11px var(--mono);text-transform:uppercase;color:var(--muted)}
 .cp .am-cc,.cp .ow-st{margin:30px 0 26px}.cp .am-cc h3{margin:18px 0 6px;font-size:16px}
 .cp .am-ct{width:100%}.cp .am-ct td{vertical-align:top}.cp .am-ct td .fx-c{display:block;font-size:12.5px;color:var(--muted)}
+/* Money that comes back as loops: the investor and the company in boxes at either end, what went in on a blue arrow
+   to the right, what comes back on a vermillion arrow under it, to the left (Okabe-Ito) */
+.cp .am-ct td.am-who{width:150px;vertical-align:middle;text-align:center}
+.cp .am-ct td.am-who b{display:block;border:2px solid var(--line);padding:6px 8px;font-size:14.5px;background:var(--bg)}
+.cp .am-ct td.am-loop{padding:10px 12px}
+.cp .am-go,.cp .am-back{display:block;position:relative;font-size:14px;line-height:1.3}
+.cp .am-go{padding:0 12px 4px;border-bottom:3px solid #0072B2}
+.cp .am-back{padding:4px 12px 0;margin-top:6px;border-top:3px solid #D55E00}
+.cp .am-go::after,.cp .am-back::before{content:"";position:absolute;width:0;height:0;border:7px solid transparent}
+.cp .am-go::after{right:-2px;bottom:-8.5px;border-left:11px solid #0072B2;border-right:0}
+.cp .am-back::before{left:-2px;top:-8.5px;border-right:11px solid #D55E00;border-left:0}
+.cp .am-go small,.cp .am-back small{font-size:12px;color:var(--muted);white-space:nowrap}
+.cp .am-go-k{border-bottom:3px solid #0072B2}.cp .am-back-k{border-bottom:3px solid #D55E00}
 /* What governments use AI for: a lead line; "Who tells you" (every list, a tag for what it covers); "Whose AI they
    run" (suppliers by list, a dot whose area grows with the count, and the number); a card per full list (2 a row,
    1 on phones), each linking to its own page: AI pacts and orders' boxes in Okabe-Ito tints, dark text */
@@ -1425,11 +1450,11 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft :is(.jb-small,.jb-rt) td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:5px 10px 5px 0}
   .cp .ft :is(.jb-small,.jb-rt) td:last-child{padding-right:0}
   /* every filterable list of deals, fines or uses: a box to scroll in, as Infra's tables (the filters stay above it) */
-  .cp table.xf-t,.cp table.am-ct,.cp table.fx-t{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
-  /* Money that comes back, stacked: each line says which column it was */
-  .cp .am-ct td::before{color:var(--muted);font:500 11px var(--body)}
-  .cp .am-ct td:nth-child(1)::before{content:"From: "}.cp .am-ct td:nth-child(2)::before{content:"Into: "}
-  .cp .am-ct td:nth-child(3)::before{content:"What went in: "}.cp .am-ct td:nth-child(4)::before{content:"What comes back: "}
+  .cp table.xf-t,.cp table.fx-t{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
+  /* Money that comes back: the same loops, the boxes narrower */
+  .cp .ft table.am-ct{display:table}.cp .ft .am-ct tr{display:table-row}.cp .ft .am-ct :is(td,th){display:table-cell}
+  .cp .am-ct td.am-who{width:78px;padding:0}.cp .am-ct td.am-who b{font-size:11.5px;padding:4px 3px;hyphens:auto}
+  .cp .am-ct td.am-loop{padding:8px 6px}.cp .am-go,.cp .am-back{font-size:12.5px;padding-left:8px;padding-right:8px}
   /* AI money: the stakes lab by lab, a card each to swipe, each investor's box beside its name (the grid is for
      wide screens) */
   .cp .ow-wrap{display:none}
@@ -1455,23 +1480,26 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft .lt-t td::before{content:attr(data-l);font:600 10px/1.6 var(--mono);text-transform:uppercase;color:var(--muted)}
   .cp .ft .lt-t td > *{grid-column:2}
   .cp .ft .lt-t td.lt-fut{padding-left:0;margin:0 -10px -8px;padding:6px 10px 8px}
-  /* Release cards: a card per release, its facts labelled, in the box that scrolls */
+  /* Release cards: a short card per release in the box that scrolls: model and date, the weights and safety tags side
+     by side, then licence, places and price a labelled line each (no price line when the lab sold no API access) */
   .cp .rc .rm-wrap{overflow-x:visible;overflow-y:auto}
   .cp .ft .rc-t{min-width:0;display:block}
   .cp .ft .rc-t thead{display:none}
   .cp .ft .rc-t tbody{display:block}
-  .cp .ft .rc-t tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;padding:9px 10px;margin:0 0 8px;border:2px solid var(--line)}
+  .cp .ft .rc-t tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;padding:8px 10px;margin:0 0 6px;border:2px solid var(--line)}
   .cp .ft .rc-t tr[hidden]{display:none}
-  .cp .ft .rc-t td{display:block;border:0;padding:0;white-space:normal;font-size:12.5px}
+  .cp .ft .rc-t td{display:block;border:0;padding:0;white-space:normal;font-size:12.5px;line-height:1.35}
   .cp .ft .rc-t td:nth-child(2){grid-column:1;grid-row:1}
   .cp .ft .rc-t td:nth-child(1){grid-column:2;grid-row:1;text-align:right;font-size:11.5px}
-  .cp .ft .rc-t td:nth-child(6){grid-column:2;grid-row:2}  /* weights and price side by side */
-  .cp .ft .rc-t td:nth-child(4),.cp .ft .rc-t td:nth-child(5),.cp .ft .rc-t td:nth-child(7){grid-column:1/-1}
-  .cp .ft .rc-t td:nth-child(n+3)::before{display:block;font:600 9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-  .cp .ft .rc-t td:nth-child(3)::before{content:"Weights"}.cp .ft .rc-t td:nth-child(4)::before{content:"Licence"}
-  .cp .ft .rc-t td:nth-child(5)::before{content:"Where you can use it"}
-  .cp .ft .rc-t td:nth-child(6)::before{content:"Launch price (in / out, per 1M tokens)"}
-  .cp .ft .rc-t td:nth-child(7)::before{content:"Safety report"}
+  .cp .ft .rc-t td:nth-child(3){grid-column:1;grid-row:2}.cp .ft .rc-t td:nth-child(7){grid-column:2;grid-row:2}
+  .cp .ft .rc-t td:nth-child(n+4):not(:nth-child(7)){grid-column:1/-1}
+  .cp .ft .rc-t td.rc-p0{display:none}
+  .cp .ft .rc-t td:nth-child(n+3) small{display:inline;margin:0 0 0 4px}
+  .cp .ft .rc-t td:nth-child(n+3)::before{color:var(--muted);font:500 11px var(--body)}
+  .cp .ft .rc-t td:nth-child(3)::before{content:"Weights "}.cp .ft .rc-t td:nth-child(4)::before{content:"Licence: "}
+  .cp .ft .rc-t td:nth-child(5)::before{content:"Where you can use it: "}
+  .cp .ft .rc-t td:nth-child(6)::before{content:"Launch price (in / out, per 1M tokens): "}
+  .cp .ft .rc-t td:nth-child(7)::before{content:"Safety report "}
 }
 .cp .ow-labs{display:none}
 @media (max-width:640px){.cp .ow-labs{display:flex}}
@@ -1500,6 +1528,7 @@ a.subscribe-btn{text-decoration:none}
   .cp .pc-stack .fx-t .pc-who .pc-k{text-transform:none;font-size:10.5px;font-weight:600;letter-spacing:0;padding:0 4px;margin-right:2px}  /* signers as written (US signed), on one line */
   .cp .fx-t td[data-l]:not(.pc-d)::before{content:attr(data-l) ": ";color:var(--muted);font:500 10.5px var(--body)}  /* each value says its column */
   .cp .fx-t tr{grid-template-columns:62px minmax(0,1fr);column-gap:10px;padding:5px 0}  /* one date column: values line up */
+  .cp .ft .fx-t td.pc-d{white-space:normal;width:auto;font-size:12px}  /* the year under the day, so a long date never runs into the values */
   .cp .fx-t td{font-size:12px;padding:1px 0}
   .cp table.nt-table{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}  /* each subject's tests in a box */
   /* New tests' best scores: the name, score and dot on one short line each */

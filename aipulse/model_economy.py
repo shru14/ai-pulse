@@ -83,7 +83,9 @@ def prices() -> list[dict]:
         else:
             way, say = "mixed", "Input " + ("cheaper" if new[0] < was[0] else "pricier") + ", output " + \
                 ("cheaper" if new[1] < was[1] else "pricier")
-        note = r["price"].split("|")[1] if "|" in r["price"] else ""
+        if say in ("Cheaper", "Pricier"):  # in and out moved by different amounts: say both
+            say += ": in " + ", out ".join(f"{round(100 * (n / w - 1)):+d}%" for n, w in zip(new, was))
+        note =r["price"].split("|")[1] if "|" in r["price"] else ""
         out.append(r | {"was_model": was_model, "was_price": was_price, "was_url": was_url, "way": way, "say": say,
                         "price_note": note[:1].upper() + note[1:]})
     return out
@@ -101,23 +103,46 @@ def warnings(saved: dict) -> list[dict]:
 _WAY = {"down": "pc-yes", "same": "me-same", "up": "pc-no", "mixed": "me-mixed"}
 
 
+def _line(model: str) -> str:
+    """The first model of `model`'s line, following BEFORE back, so a line's rows sit together."""
+    while isinstance(BEFORE.get(model), str):
+        model = BEFORE[model]
+    return BEFORE[model][0] if model in BEFORE else model
+
+
+def _price(p: str) -> str:
+    """'$5 / $25' as '$5 in · $25 out'."""
+    m = _PRICE.match(p.strip())
+    return f"${m[1]} in · ${m[2]} out" if m else p
+
+
 def _prices_box(ps: list[dict]) -> str:
     n = {w: sum(p["way"] == w for p in ps) for w in _WAY}
-    said = [f"{n['down']} launched cheaper", f"{n['up']} pricier", f"{n['same']} at the same price"] \
-        + [f"{n['mixed']} cheaper on one side and pricier on the other"] * bool(n["mixed"])
-    lead = (f"Of the {len(ps)} new models with an earlier one in the same line, " + ", ".join(said[:-1])
-            + f" and {said[-1]}.")
+    said = [f"{n['same']} kept the price of the model before", f"{n['down']} cost less", f"{n['up']} cost more"] \
+        + [f"{n['mixed']} cost less on one side and more on the other"] * bool(n["mixed"])
+    lead = f"Of {len(ps)} new models, " + ", ".join(said[:-1]) + f" and {said[-1]}."
+    newest: dict[str, str] = {}
+    for p in ps:
+        newest[_line(p["model"])] = max(newest.get(_line(p["model"]), ""), p["day"])
+    # a line's rows together, newest first; the line with the newest launch on top
+    ps = sorted(ps, key=lambda p: (newest[_line(p["model"])], _line(p["model"]), p["day"]), reverse=True)
     rows = "".join(
-        f'<tr><td class="pc-d">{_day(p["day"])}</td><td><a href="{escape(p["url"])}" rel="noopener"><b>'
-        f'{escape(p["model"])}</b></a>' + (f'<span class="fx-c">{escape(p["price_note"])}</span>' if p["price_note"] else "")
-        + f'</td><td>{escape(p["lab"])}</td><td><b>{escape(p["price"].split("|")[0])}</b></td>'
-        f'<td data-l="Before">{escape(p["was_model"])}<span class="fx-c"><a href="{escape(p["was_url"])}" rel="noopener">'
-        f'{escape(p["was_price"])}</a></span></td><td><span class="pc-k {_WAY[p["way"]]}">{escape(p["say"])}</span></td></tr>'
-        for p in ps)
+        f'<tr class="{"me-top" if k and _line(ps[k - 1]["model"]) != _line(p["model"]) else ""}">'
+        f'<td>{escape(p["lab"])}</td>'
+        f'<td data-l="Before">{escape(p["was_model"])}<span class="me-p"><a href="{escape(p["was_url"])}" '
+        f'rel="noopener">{escape(_price(p["was_price"]))}</a></span></td>'
+        f'<td data-l="New"><a href="{escape(p["url"])}" rel="noopener"><b>{escape(p["model"])}</b></a>'
+        f'<span class="me-p"><b>{escape(_price(p["price"].split("|")[0]))}</b></span>'
+        + (f'<span class="fx-c">{escape(p["price_note"])}</span>' if p["price_note"] else "")
+        + f'<span class="fx-c">Launched {_day(p["day"])}</span></td>'
+        f'<td><span class="pc-k {_WAY[p["way"]]}">{escape(p["say"])}</span></td></tr>'
+        for k, p in enumerate(ps))
     return _box("Launch prices", "Is the new model cheaper or pricier than the one before it?",
-                f'<p class="pc-lead">{escape(lead)}</p><table class="pc-rows fx-t"><thead><tr><th>Launched</th>'
-                '<th>Model</th><th>Lab</th><th>Price at launch<span class="fx-c">$ in / $ out, 1M tokens</span></th>'
-                f'<th>The model before</th><th>Against it</th></tr></thead><tbody>{rows}</tbody></table>')
+                f'<p class="pc-lead">{escape(lead)}</p><p class="me-unit">Each price is in US dollars per million '
+                "tokens (the chunks of text a model reads and writes), on the lab's own API at launch: one price for "
+                'text sent in, one for text the model writes out.</p><table class="pc-rows fx-t me-prices"><thead>'
+                '<tr><th>Lab</th><th>The model before</th><th>The new model</th><th>Price change</th></tr></thead>'
+                f'<tbody>{rows}</tbody></table>')
 
 
 def _tag(n: int) -> str:
@@ -178,8 +203,8 @@ open=t.hidden;t.hidden=!open;b.setAttribute('aria-expanded',open);b.textContent=
 
 def body(ps: list[dict], ws: list[dict]) -> str:
     limits = [
-        ("Launch prices", "The price on the lab's own API when the model launched, per million tokens read ($ in) "
-         "and written ($ out), from Release cards. The model before is the last one in the same line (Opus after "
+        ("Launch prices", "The price on the lab's own API when the model launched, per million tokens sent in "
+         "and written out, from Release cards. The model before is the last one in the same line (Opus after "
          "Opus, Flash after Flash), its launch price checked by hand against its story or the lab's page. Models "
          "priced per image, minute or hour, and models with no earlier one in their line, aren't shown."),
         ("Warning", "The days between the day a lab told developers a model will shut down and the shutdown, from "
