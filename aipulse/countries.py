@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import re
 import shutil
+import unicodedata
 from datetime import date
 from html import escape
 from pathlib import Path
@@ -20,6 +21,13 @@ KINDS = [("law", "Laws adopted"), ("proposal", "Proposals"), ("body", "AI bodies
 
 
 def slug(name: str) -> str:
+    """The page's address: accents dropped first, so Türkiye is turkiye, not t-rkiye."""
+    plain = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", plain.lower()).strip("-")
+
+
+def _old_slug(name: str) -> str:
+    """The address before accents were dropped (t-rkiye), kept as a forward to the new one."""
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
@@ -137,6 +145,11 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         (out / path).mkdir(parents=True, exist_ok=True)
         (out / path / "index.html").write_text(pages.page(title, description, path, body, data, parts, back, note), encoding="utf-8")
         paths.append(path)
+        if (old := _old_slug(name)) != slug(name):  # links to the old address still land on the page
+            (out / "tracker" / old).mkdir(parents=True, exist_ok=True)
+            (out / "tracker" / old / "index.html").write_text(
+                f'<!doctype html><meta charset="utf-8"><link rel="canonical" href="/{path}">'
+                f'<meta http-equiv="refresh" content="0; url=/{path}"><a href="/{path}">{escape(name)}</a>', encoding="utf-8")
     links = "\n".join(f'<a href="/tracker/{slug(names[code])}/"><img class="flag" src="flags/{flag(code)}" alt="">{escape(names[code])}</a>' for code in places)
     body = (pages.band("reg", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",
                        "photos/cartoons/pages/tracker.svg", "AI laws by country", "Where are AI rules being made?",

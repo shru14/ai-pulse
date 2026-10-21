@@ -4373,3 +4373,23 @@ def test_model_economy_prices_against_the_model_before_and_shutdown_warning(tmp_
     assert "Its page gives no day it told developers" in page and "gemini-x" not in page
     assert me._per_token("$0.005 / $0.018|a minute of audio") is None and me._per_token("$4 / $20") == (4, 20)
     assert not any(c["title"].startswith(("Claude Opus 5.5", "Gemini 3.8 Live")) for c in me.candidates())
+
+
+def test_a_story_is_never_dated_after_the_day_it_was_found(tmp_path):
+    conn = store.connect(tmp_path / "d.db")
+    later = (date.today() + timedelta(days=40)).isoformat()
+    store.insert(conn, {"title": "Industry event in December", "summary": "", "url": "https://x.com/e",
+                        "source": "X", "category": "infra", "date": later})
+    store.insert(conn, {"title": "Act comes into force", "summary": "", "url": "https://x.com/r",
+                        "source": "X", "category": "regulation", "date": later})
+    conn.commit()
+    got = dict(conn.execute("SELECT category, date FROM items").fetchall())
+    assert got["infra"] <= date.today().isoformat() and got["regulation"] == later
+    conn.execute("UPDATE items SET date = ? WHERE category = 'infra'", (later,))  # one stored before the rule
+    conn.commit()
+    assert store.connect(tmp_path / "d.db").execute("SELECT date FROM items WHERE category = 'infra'").fetchone()[0] < later
+
+
+def test_a_place_with_an_accent_gets_a_plain_address():
+    from aipulse import countries
+    assert countries.slug("Türkiye") == "turkiye" and countries.slug("United Kingdom") == "united-kingdom"

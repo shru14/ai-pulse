@@ -90,6 +90,10 @@ def item_id(url: str) -> str:
     return hashlib.sha1(normalize_url(url).encode()).hexdigest()[:16]
 
 
+FUTURE = ("UPDATE items SET date = substr(added_at, 1, 10) WHERE category != 'regulation' "
+          "AND substr(date, 1, 10) > substr(added_at, 1, 10)")
+
+
 def connect(path: str | Path) -> sqlite3.Connection:
     conn = sqlite3.connect(path, timeout=30)
     conn.row_factory = sqlite3.Row
@@ -101,6 +105,11 @@ def connect(path: str | Path) -> sqlite3.Connection:
     # rows go. Only dropped when there: opening the database shouldn't wait for another process's write lock.
     if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='models'").fetchone():
         conn.execute("DROP TABLE models")
+        conn.commit()
+    # a story dated after the day we found it is an event's date, not the story's (Data Center Knowledge listed a
+    # December conference in October): it takes the day it was found. Tracker records keep their official dates.
+    if conn.execute(FUTURE.replace("UPDATE items SET date = substr(added_at, 1, 10)", "SELECT 1 FROM items")).fetchone():
+        conn.execute(FUTURE)
         conn.commit()
     if "alerted" not in {r["name"] for r in conn.execute("PRAGMA table_info(sources)")}:
         conn.execute("ALTER TABLE sources ADD COLUMN alerted INTEGER NOT NULL DEFAULT 0")
@@ -154,13 +163,15 @@ def insert(conn: sqlite3.Connection, item: dict) -> bool:
     """Insert if new (by URL or identical title). Returns True when added."""
     if title_exists(conn, item["title"]):
         return False
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    if item["category"] != "regulation" and str(item["date"])[:10] > now[:10]:  # an event's date, not the story's
+        item = {**item, "date": now[:10]}
     cur = conn.execute(
         "INSERT OR IGNORE INTO items (id,title,summary,url,source,category,date,tags,authors,jurisdictions,action,"
         "added_at,cluster) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (item_id(item["url"]), item["title"], item["summary"], item["url"], item["source"], item["category"],
          item["date"], ",".join(item.get("tags", [])), ",".join(item.get("authors", [])),
-         ",".join(item.get("jurisdictions", [])), item.get("action") or "",
-         datetime.now(timezone.utc).isoformat(timespec="seconds"), item_id(item["url"])),
+         ",".join(item.get("jurisdictions", [])), item.get("action") or "", now, item_id(item["url"])),
     )
     return cur.rowcount == 1
 
