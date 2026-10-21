@@ -1395,7 +1395,7 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft :is(.jb-small,.jb-rt) td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:5px 10px 5px 0}
   .cp .ft :is(.jb-small,.jb-rt) td:last-child{padding-right:0}
   /* every filterable list of deals, fines or uses: a box to scroll in, as Infra's tables (the filters stay above it) */
-  .cp table.xf-t,.cp table.am-ct{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
+  .cp table.xf-t,.cp table.am-ct,.cp table.fx-t{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
   /* Money that comes back, stacked: each line says which column it was */
   .cp .am-ct td::before{color:var(--muted);font:500 11px var(--body)}
   .cp .am-ct td:nth-child(1)::before{content:"From: "}.cp .am-ct td:nth-child(2)::before{content:"Into: "}
@@ -1461,7 +1461,15 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td[data-l]::before{content:attr(data-l);display:block;margin:0 0 1px;
     font:600 9px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   /* the deal lists: date on the left, the rest flowing beside it */
-  .cp .fx-t tr{column-gap:10px;padding:5px 0}
+  .cp .pc-k{font-size:10px;font-weight:600;letter-spacing:.03em;padding:0 4px;line-height:1.5}  /* status tags lighter than the words they tag */
+  .cp .fx-t .pc-who .pc-k{margin:1px 3px 1px 0;font-size:10.5px;font-weight:600;padding:0 4px}
+  .cp .fx-t td.pc-who::before{display:block;margin-bottom:2px}
+  /* AI pacts and orders: each row's tag first, under the date's line, and every tag on the page one style */
+  .cp .pc-stack .fx-t td.fx-s{order:-1;margin-bottom:2px}
+  .cp .pc-stack .pc-k,.cp .pc-stack .fx-t .pc-who .pc-k{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:0 4px;line-height:1.6}
+  .cp .pc-stack .fx-t .pc-who .pc-k{text-transform:none;font-size:10.5px;font-weight:600;letter-spacing:0;padding:0 4px;margin-right:2px}  /* signers as written (US signed), on one line */
+  .cp .fx-t td[data-l]:not(.pc-d)::before{content:attr(data-l) ": ";color:var(--muted);font:500 10.5px var(--body)}  /* each value says its column */
+  .cp .fx-t tr{grid-template-columns:62px minmax(0,1fr);column-gap:10px;padding:5px 0}  /* one date column: values line up */
   .cp .fx-t td{font-size:12px;padding:1px 0}
   .cp table.nt-table{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}  /* each subject's tests in a box */
   /* New tests' best scores: the name, score and dot on one short line each */
@@ -1628,7 +1636,7 @@ def cite(path: str, title: str) -> str:
             'document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".fh-cite[open]").forEach(d=>d.open=false)});'
             # phones show a table's row as a card: each cell is labelled with its column's heading (data-l), and a long
             # one runs the card's width
-            'addEventListener("DOMContentLoaded",()=>document.querySelectorAll(".ft table.mt").forEach(t=>{'
+            'addEventListener("DOMContentLoaded",()=>document.querySelectorAll(".ft table.mt,.ft table.fx-t").forEach(t=>{'
             'const h=[...t.querySelectorAll("thead th")].map(x=>x.textContent.trim());if(!h.length)return;'
             't.querySelectorAll("tbody tr").forEach(r=>[...r.children].forEach((c,i)=>{'
             'if(i&&h[i]&&!c.dataset.l)c.dataset.l=h[i];if(c.textContent.trim().length>38)c.classList.add("wd")}))}))</script>')
