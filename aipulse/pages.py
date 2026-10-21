@@ -727,11 +727,15 @@ a.subscribe-btn{text-decoration:none}
   .cp .ins-drv td.n{grid-column:2;grid-row:1}}
 /* Phones: long lists scroll inside their own box and rows of cards swipe sideways (the front page's rule, for these pages) */
 @media (max-width:640px){
-  .cp .topics,.cp .sgrid,.cp .blocks,.cp .tiles{display:flex;flex-direction:row;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:12px;padding:0 4px 10px 0;align-items:stretch}
-  .cp .topics>*,.cp .sgrid>*{flex:0 0 84%;min-width:0;scroll-snap-align:start}
+  .cp .sgrid,.cp .blocks,.cp .tiles{display:flex;flex-direction:row;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:12px;padding:0 4px 10px 0;align-items:stretch}
+  .cp .sgrid>*{flex:0 0 84%;min-width:0;scroll-snap-align:start}
   .cp .blocks>*{flex:0 0 72%;min-width:0;scroll-snap-align:start}
   .cp .tiles>*{flex:0 0 46%;min-width:0;scroll-snap-align:start}
-  .cp .topics .pic{height:130px}
+  .cp .topics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}  /* Follow the story: all topics in a two-up grid, no swiping */
+  .cp .topics .pic{height:96px}
+  .cp .topics .txt{gap:6px;padding:10px 10px 12px}
+  .cp .topics b{font-size:16px}
+  .cp .topics .last .lt{font-size:13px}
   .cp .places{grid-auto-flow:column;grid-template-rows:repeat(2,auto);grid-template-columns:none;grid-auto-columns:46%;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:10px}
   .cp .places>*{scroll-snap-align:start;min-width:0}
   .cp > ul,.cp .pr-list,.cp #az,#kind-stories,#word-stories{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
