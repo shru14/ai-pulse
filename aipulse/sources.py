@@ -451,15 +451,18 @@ SOURCES = [
     {"name": "Partnership on AI", "url": "https://partnershiponai.org/feed/", "category": "policy", "voice": "institute", "ai_only": True},
     # Added 21 Oct 2026, for voices beyond the US and UK (ITU, Smart Africa, NTIA, DARPA, NSF and the State Duma were
     # dropped the same day: none had put a story on the site in two weeks, their feeds are mostly not about AI).
-    # Tech Policy Press is a newsroom, so it has no voice and goes on Policy's News reports page.
-    {"name": "Tech Policy Press", "url": "https://techpolicy.press/rss/feed.xml", "category": "policy"},
+    # Tech Policy Press is a newsroom, so it has no voice and goes on Policy's News reports page. Each keeps its
+    # last 3 months (max_age_days), so the first run fills them back and later runs add only what is new.
+    {"name": "Tech Policy Press", "url": "https://techpolicy.press/rss/feed.xml", "category": "policy", "max_age_days": 92},
     {"name": "Montreal AI Ethics Institute", "url": "https://montrealethics.ai/feed/", "category": "policy",
-     "voice": "institute", "ai_only": True},
-    {"name": "CIPESA", "url": "https://cipesa.org/feed/", "category": "policy", "voice": "rights"},
-    {"name": "Research ICT Africa", "url": "https://researchictafrica.net/feed/", "category": "policy", "voice": "institute"},
-    {"name": "InternetLab", "url": "https://internetlab.org.br/en/feed/", "category": "policy", "voice": "institute"},
+     "voice": "institute", "ai_only": True, "max_age_days": 92},
+    {"name": "CIPESA", "url": "https://cipesa.org/feed/", "category": "policy", "voice": "rights", "max_age_days": 92},
+    {"name": "Research ICT Africa", "url": "https://researchictafrica.net/feed/", "category": "policy", "voice": "institute",
+     "max_age_days": 92},
+    {"name": "InternetLab", "url": "https://internetlab.org.br/en/feed/", "category": "policy", "voice": "institute",
+     "max_age_days": 92},
     {"name": "China Law Translate", "url": "https://www.chinalawtranslate.com/en/feed/", "category": "policy",
-     "voice": "institute", "ai_in_title": True},
+     "voice": "institute", "ai_in_title": True, "max_age_days": 92},
     # Governments' own publications (US federal records and GOV.UK are public-domain / Open Government Licence).
     {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"],
      "government": True},
