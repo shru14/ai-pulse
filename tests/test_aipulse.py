@@ -1403,15 +1403,9 @@ def test_malaysia_ministry_releases_and_their_lead_paragraph():
     assert "EU" not in jurisdictions.detect("The National AI Office (NAIO) began talks")  # not the EU AI Office
 
 
-def test_duma_english_news_and_non_ai_agents():
-    from aipulse import feeds, classify
-    page = ('<ul><li class="article-list__item "><a href="/en/news/1/"><time datetime="2026-09-22 13:01:00">x</time>'
-            '<h6 class="t" itemprop="headline">State Duma adopts AI law</h6><p class="l" itemprop="description">It sets rules.</p></a></li>'
-            '<li class="article-list__item "><a href="/en/news/2/"><h6 itemprop="headline">New law on foreign agents</h6></a></li></ul>').encode()
-    first, second = feeds.parse_duma_en(page)
-    assert (first["url"], first["summary"], first["published"].date().isoformat()) ==         ("http://duma.gov.ru/en/news/1/", "It sets rules.", "2026-09-22")
-    assert second["published"] is None and second["title"] == "New law on foreign agents"  # no date listed
-    assert not classify.is_ai_related(second["title"], "") and classify.is_ai_related("OpenAI ships agents", "")
+def test_non_ai_agents():
+    from aipulse import classify
+    assert not classify.is_ai_related("New law on foreign agents", "") and classify.is_ai_related("OpenAI ships agents", "")
 
 
 def test_malaysian_ai_bills_from_parliament(tmp_path):

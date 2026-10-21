@@ -652,29 +652,6 @@ def article_lead(html_bytes: bytes) -> str:
     return ""
 
 
-DUMA = "http://duma.gov.ru"  # its HTTPS port times out from abroad
-_DUMA_LINK = re.compile(r'<a href="(/en/news/\d+/)"')
-_DUMA_TIME = re.compile(r'<time datetime="([\d-]+) ')
-_DUMA_TITLE = re.compile(r'itemprop="headline">(.*?)</h6>', re.S)
-_DUMA_LEAD = re.compile(r'itemprop="description">(.*?)</p>', re.S)
-
-
-def parse_duma_en(html_bytes: bytes) -> list[dict]:
-    """Russia's State Duma: its English news list (headline, lead paragraph and date of each item; items
-    listed without a date get the day they're first seen)."""
-    entries = []
-    for chunk in html_bytes.decode("utf-8", "replace").split('<li class="article-list__item')[1:]:
-        link, title = _DUMA_LINK.search(chunk), _DUMA_TITLE.search(chunk)
-        if not (link and title):
-            continue
-        day, lead = _DUMA_TIME.search(chunk), _DUMA_LEAD.search(chunk)
-        entries.append({"title": clean_text(html.unescape(title.group(1)), 220), "url": DUMA + link.group(1),
-                        "summary": clean_text(html.unescape(lead.group(1))) if lead else "",
-                        "published": datetime.fromisoformat(day.group(1)).replace(tzinfo=timezone.utc) if day else None,
-                        "authors": []})
-    return entries
-
-
 ANTHROPIC = "https://www.anthropic.com"
 # Each post on anthropic.com/news is a link holding its date (<time>), a category, a title (a heading, or the text
 # after the date line) and sometimes a one-line description (<p>). Launches link to their own page
@@ -777,7 +754,7 @@ def page_meta(page_bytes: bytes) -> dict:
     return {"title": clean_text(title, 200), "summary": clean_text(summary), "published": parse_date(when) if when else None}
 
 
-PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "duma_en": parse_duma_en, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
+PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk,
            "github_repos": parse_github_repos, "hf_models": parse_hf_models, "hf_trending": parse_hf_trending,
            "github_releases": parse_github_releases,

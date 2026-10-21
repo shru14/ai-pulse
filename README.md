@@ -130,7 +130,7 @@ Every source's robots.txt and terms were audited on 7 October 2026. The evidence
 | Releases (labs' deprecation pages, every 6 h) | OpenAI, Anthropic, Google (Gemini API), Mistral: shut-down dates for Models being retired |
 | Industry | **Global:** TechCrunch, The Decoder, SiliconANGLE, MarkTechPost, 404 Media, Engadget, MIT News, ScienceDaily, The Conversation, Quanta Magazine, Global Voices · **Asia:** Pandaily, Focus Taiwan, Bernama, VnExpress International, The Elec, BusinessKorea · **Africa:** TechCabal, iAfrikan, TechCentral, ITWeb, IT News Africa, Nairametrics · **MENA:** Wamda · **Latin America:** MercoPress, Buenos Aires Times, LatinAmerica Reports, Contxto · **Spanish and Portuguese (translated offline):** Xataka (Spain), DPL News, FayerWayer, TeleSemana (Latin America), Olhar Digital, Tecnoblog (Brazil) · **More Asia and MENA:** Dawn (Pakistan), Japan Today, CNA (Singapore), Saudi Gazette · **Practitioners:** Simon Willison, Lil'Log, METR, Epoch AI · **Incidents:** AI Incident Database (CC BY-SA 4.0) |
 | Research | arXiv, Hugging Face Daily Papers, Apple Machine Learning Research |
-| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, Russia's State Duma, ISED Canada, CLTC (UC Berkeley), ITU, Partnership on AI, Smart Africa, NTIA, DARPA, NSF, UK AI Security Institute |
+| Policy | EU AI Act Newsletter, CSET, AI Now Institute, Future of Life Institute, EFF, EPIC, Tech Policy Press, Montreal AI Ethics Institute, NIST, Federal Register (US), GOV.UK, Korea's Ministry of Science and ICT, Malaysia's Ministry of Digital, ISED Canada, CLTC (UC Berkeley), Partnership on AI, UK AI Security Institute · **Africa:** CIPESA, Research ICT Africa · **Latin America:** InternetLab (Brazil) · **China:** China Law Translate |
 | Infra | **Global:** Data Center Knowledge, Data Center POST, Greenpeace International, Global Energy Monitor · **Europe:** European Commission (energy) · **UK:** GOV.UK, Techerati, DCNN · **Africa:** Africa Data Centres Association · **Asia-Pacific:** W.Media · **North America:** US Energy Information Administration, Canary Media, POWER Magazine, Union of Concerned Scientists, Southern Environmental Law Center, Food & Water Watch, Energy Innovation |
 | Compute behind notable models (every 6 h) | Epoch AI's dataset of notable AI models (CC BY 4.0) |
 | Code and demo links (every 6 h, each paper once a week) | arXiv's API (the paper's abstract and comments) and Hugging Face's papers API (the code repository and project page it lists), for the papers on New tests for AI and Papers that made the news |
@@ -179,11 +179,11 @@ sign-ups go to a Google Apps Script web app (`apps-script/Code.gs`). The domain 
 ## Credits and licences
 
 European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK and UK AI Security Institute: Open Government Licence v3.0. Federal Register,
-congress.gov, US Energy Information Administration, DARPA and NSF: US public domain. ITU: non-commercial use with credit. Canada: Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
+congress.gov and US Energy Information Administration: US public domain. Montreal AI Ethics Institute and CIPESA: CC BY 4.0. Research ICT Africa: CC BY-SA 4.0, non-commercial use with credit. Canada: Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
 Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. Korean laws: National
 Law Information Center (https://www.law.go.kr), Ministry of Government Legislation. Taiwanese laws:
 Legislative Yuan law system (https://lis.ly.gov.tw). Malaysian bills: Parliament of Malaysia
-(https://www.parlimen.gov.my). Russian parliamentary news: State Duma (http://duma.gov.ru). OECD.AI Policy
+(https://www.parlimen.gov.my). OECD.AI Policy
 Observatory (https://oecd.ai): CC BY 4.0. Japanese laws: e-Gov Law Search (https://laws.e-gov.go.jp),
 Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI Pulse. Vietnamese legal
 documents: National Legal Database (https://vbpl.vn). Australian legislation: based on content from the
