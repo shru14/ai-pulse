@@ -284,6 +284,9 @@ def body(rows: list[dict], today: date | None = None) -> str:
                 f'title="{escape(r["source"])}: {escape(r["title"])}">{escape(r["what"])}<small>{r["when"]}</small></a>')
 
     head = '<tr><th scope="col">Investor ↓ · Lab →</th>' + "".join(f'<th scope="col">{escape(lab)}</th>' for lab in labs)
+    by_lab = "".join(f'<div class="ow-lab"><b>{escape(lab)}</b><ul>'
+                     + "".join(f'<li><span>{escape(i)}</span>{box(cell[i, lab])}</li>' for i in investors if (i, lab) in cell)
+                     + "</ul></div>" for lab in labs)
     grid = "".join(f'<tr><th scope="row">{escape(i)}</th>'
                    + "".join(f"<td>{box(cell[i, lab]) if (i, lab) in cell else ''}</td>" for lab in labs) + "</tr>"
                    for i in investors)
@@ -307,6 +310,7 @@ def body(rows: list[dict], today: date | None = None) -> str:
             '<p class="ow-key"><span><i></i>Money in</span><span><i class="ow-up"></i>"Up to": promised, paid in '
             'stages</span><span>Each box links to its story.</span></p>\n'
             f'<div class="ow-wrap"><table class="ow-grid"><thead>{head}</tr></thead><tbody>{grid}</tbody></table></div>'
+            f'<div class="ow-labs">{by_lab}</div>'
             '</section>\n'
             + circles + table
             + '<section class="jb-lim"><h2>About these deals</h2>\n<table class="mt jb-small jb-limits"><tbody>'

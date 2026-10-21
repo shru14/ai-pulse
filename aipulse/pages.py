@@ -1388,7 +1388,63 @@ a.subscribe-btn{text-decoration:none}
   .cp .rc-w{font-size:11px}
   .cp .rc-t small{font-size:11px}
   .cp .rc .rc-t th{font-size:9px}
+  /* small summary tables (a ring's legend too) and the "About these" notes stay rows (a number per cell), not a cell per line */
+  .cp .ft :is(table.jb-small,table.jb-rt){display:table;width:100%}
+  .cp .ft :is(.jb-small,.jb-rt) thead{display:table-header-group}
+  .cp .ft :is(.jb-small,.jb-rt) tr{display:table-row;padding:0}
+  .cp .ft :is(.jb-small,.jb-rt) td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:5px 10px 5px 0}
+  .cp .ft :is(.jb-small,.jb-rt) td:last-child{padding-right:0}
+  /* every filterable list of deals, fines or uses: a box to scroll in, as Infra's tables (the filters stay above it) */
+  .cp table.xf-t,.cp table.am-ct{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
+  /* Money that comes back, stacked: each line says which column it was */
+  .cp .am-ct td::before{color:var(--muted);font:500 11px var(--body)}
+  .cp .am-ct td:nth-child(1)::before{content:"From: "}.cp .am-ct td:nth-child(2)::before{content:"Into: "}
+  .cp .am-ct td:nth-child(3)::before{content:"What went in: "}.cp .am-ct td:nth-child(4)::before{content:"What comes back: "}
+  /* AI money: the stakes lab by lab, a card each to swipe, each investor's box beside its name (the grid is for
+     wide screens) */
+  .cp .ow-wrap{display:none}
+  .cp .ow-labs{display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:2px 4px 10px 0;align-items:flex-start}
+  .cp .ow-lab{flex:0 0 78%;scroll-snap-align:start;border:2px solid var(--line);box-shadow:3px 3px 0 var(--line);padding:10px 12px;background:var(--bg)}
+  .cp .ow-lab b{display:block;font:400 17px var(--display);margin-bottom:6px}
+  .cp .ow-lab ul{list-style:none;margin:0;padding:0}
+  .cp .ow-lab li{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+  .cp .ow-lab li span{font:600 13px var(--body);padding-top:3px}
+  .cp .ow-lab .ow-deal{min-width:0;max-width:62%;text-align:right;font-size:11.5px;padding:3px 6px}
+  .cp .ow-lab .ow-deal small{font-size:10px}
+  .cp .ow-key{font-size:11.5px}
+  /* Lab timelines: a card per lab to swipe, its months down the card (empty months left out), the grey column last */
+  .cp .lt-wrap{overflow:visible;max-height:none}
+  .cp .ft .lt-t{min-width:0;display:block}
+  .cp .ft .lt-t thead{display:none}
+  .cp .ft .lt-t tbody:not([hidden]){display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:2px 4px 10px 0;align-items:flex-start}
+  .cp .ft .lt-t tbody + tbody:not([hidden]){margin-top:10px}
+  .cp .ft .lt-t tr{display:block;flex:0 0 72%;scroll-snap-align:start;border:2px solid var(--line);box-shadow:3px 3px 0 var(--line);padding:8px 10px;background:var(--bg)}
+  .cp .ft .lt-t th{display:block;padding:0 0 4px}
+  .cp .ft .lt-t td{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;padding:6px 0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent);font-size:12.5px}
+  .cp .ft .lt-t td:empty{display:none}
+  .cp .ft .lt-t td::before{content:attr(data-l);font:600 10px/1.6 var(--mono);text-transform:uppercase;color:var(--muted)}
+  .cp .ft .lt-t td > *{grid-column:2}
+  .cp .ft .lt-t td.lt-fut{padding-left:0;margin:0 -10px -8px;padding:6px 10px 8px}
+  /* Release cards: a card per release, its facts labelled, in the box that scrolls */
+  .cp .rc .rm-wrap{overflow-x:visible;overflow-y:auto}
+  .cp .ft .rc-t{min-width:0;display:block}
+  .cp .ft .rc-t thead{display:none}
+  .cp .ft .rc-t tbody{display:block}
+  .cp .ft .rc-t tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;padding:9px 10px;margin:0 0 8px;border:2px solid var(--line)}
+  .cp .ft .rc-t tr[hidden]{display:none}
+  .cp .ft .rc-t td{display:block;border:0;padding:0;white-space:normal;font-size:12.5px}
+  .cp .ft .rc-t td:nth-child(2){grid-column:1;grid-row:1}
+  .cp .ft .rc-t td:nth-child(1){grid-column:2;grid-row:1;text-align:right;font-size:11.5px}
+  .cp .ft .rc-t td:nth-child(6){grid-column:2;grid-row:2}  /* weights and price side by side */
+  .cp .ft .rc-t td:nth-child(4),.cp .ft .rc-t td:nth-child(5),.cp .ft .rc-t td:nth-child(7){grid-column:1/-1}
+  .cp .ft .rc-t td:nth-child(n+3)::before{display:block;font:600 9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+  .cp .ft .rc-t td:nth-child(3)::before{content:"Weights"}.cp .ft .rc-t td:nth-child(4)::before{content:"Licence"}
+  .cp .ft .rc-t td:nth-child(5)::before{content:"Where you can use it"}
+  .cp .ft .rc-t td:nth-child(6)::before{content:"Launch price (in / out, per 1M tokens)"}
+  .cp .ft .rc-t td:nth-child(7)::before{content:"Safety report"}
 }
+.cp .ow-labs{display:none}
+@media (max-width:640px){.cp .ow-labs{display:flex}}
 """
 
 
