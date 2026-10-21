@@ -62,6 +62,10 @@ _DRAWING = re.compile(r"\b(?:techie|hoodie|cartoon|caricature|girlfriend|boyfrie
                       r"\b(?:the|a|smug) cat\b|\b(?:the|a) dog\b|\b(?:his|her|the) partner\b", re.I)
 
 
+# A caption about us instead of AI ("Letting AI Pulse pick") is an advert, not a joke (owner, 2026-10-21)
+_PROMO = re.compile(r"\bAI ?Pulse\b|\bnewsletter|\bthis email\b|\bdigest\b", re.I)
+
+
 # The owner's own two asks, word for word, then how to answer (2026-10-03)
 ASK = {"day": "Create a funny meme out of this current AI news for today.",
        "week": "Analyse these weekly AI updates and create a meme for the week for our readers."}
@@ -89,6 +93,7 @@ Rules (a meme that breaks one is thrown away):
 - Don't make dark jokes and do not insult anyone. Laugh with the industry's habits (hype, launch days, naming,
   benchmarks, funding rounds, jargon, the reader keeping up), never at a person, company staff or group.
 - Never name or describe a real person, the people in the template included.
+- The joke is about AI news, never about AI Pulse, this email or newsletters: no plugging the app.
 - Captions say who and what the joke is about: the companies, products and people-in-general of the news, or the
   readers ("Developers", "Everyone with a GPU"). Never describe the picture itself ("Boyfriend", "the cat", "Drake").
 - Leave out AI safety, risk, deception, politics, governments, elections, war, crime, lawsuits, layoffs, health,
@@ -177,7 +182,7 @@ def check(m: dict, stories: list[dict], avoid: set[str] = frozenset()) -> dict |
         return None
     source = " ".join(f"{c['title']} {c.get('summary') or ''}" for c in stories)
     for t in texts:
-        if memes._SERIOUS.search(t) or _POLITICS.search(t) or _DRAWING.search(t) or re.search(r"https?://|www\.|@|#", t):
+        if memes._SERIOUS.search(t) or _POLITICS.search(t) or _DRAWING.search(t) or _PROMO.search(t) or re.search(r"https?://|www\.|@|#", t):
             return None
         for num in re.findall(r"\d[\d.,]*", t):  # every number comes from a headline
             if num.rstrip(".,") not in source:
@@ -213,7 +218,7 @@ def stored(conn, kind: str, when: date, cards: list[dict], make: bool, avoid: se
         kept = json.loads(row[0]) or None
         # Checked again against today's rules: one kept from before a rule was added ("Techie in a hoodie") isn't used
         words = kept and [*memes.captions(kept), kept.get("who") or ""] if kept and kept.get("format") in memes.TEMPLATES else []
-        if kept and (not words or any(memes._SERIOUS.search(t) or _POLITICS.search(t) or _DRAWING.search(t) for t in words)):
+        if kept and (not words or any(memes._SERIOUS.search(t) or _POLITICS.search(t) or _DRAWING.search(t) or _PROMO.search(t) for t in words)):
             return None
         if not (kept and kept.get("format") in avoid and make):
             return None if kept and kept.get("format") in avoid else kept

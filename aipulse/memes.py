@@ -155,7 +155,7 @@ def _brain(f, span):
     if n < (5 if span == "today" else 20):
         return None
     return {"format": "brain", "rows": ["Reading the headline", "Reading the abstract",
-                                        f"Reading all {n} AI papers out {span}", "Letting AI Pulse pick the ones that matter"],
+                                        f"Reading all {n} AI papers out {span}", "Asking a chatbot to read them for you"],
             "based_on": []}
 
 
@@ -219,7 +219,7 @@ STANDBY = {
     "nopeyep": {"who": "AI companies", "nope": "Calling it version 2", "yep": "Calling it a new era"},
     "yelling": {"labels": ["Every AI budget", "“I just need one more GPU.”"]},
     "brain": {"rows": ["Reading every AI headline", "Reading the summaries", "Reading only the 10 that mattered",
-                       "Letting AI Pulse pick the ones that matter"]},
+                       "Asking a chatbot to read them for you"]},
     "pigeon": {"labels": ["Every app update", "a chatbot in a sidebar"], "caption": "Is this an AI agent?"},
     "panik": {"rows": [("Panik", "A new model drops overnight"), ("Kalm", "Your code still works"),
                        ("Panik", "Your boss saw the demo")]},
