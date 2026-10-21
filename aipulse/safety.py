@@ -83,6 +83,22 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-10-20', by='METR', kind='eval',
+         title="Review of the \"Misalignment in high-stakes settings\" section in Anthropic's Risk Report (August 2026)",
+         url='https://metr.org/blog/2026-10-20-misalignment-risk-report-august-2026-review/',
+         original="",
+         models=(), risks=('control', 'misalign'),
+         abstract=('METR conducted an external review of the “Misalignment in high-stakes settings” section of '
+                   'Anthropic’s Risk Report: August 2026. Anthropic’s report concludes that, as of July 15, 2026, '
+                   '“the risk of catastrophic harm caused by misalignment of [their] models is low.” Our best guess '
+                   'is that we agree with Anthropic that the risk of catastrophic harm from misalignment is low for '
+                   'the models covered in the report. However, this is primarily due to models’ limited '
+                   'capabilities, rather than safeguards and alignment training. We are not confident that, if risk '
+                   'were higher, the methodology in the report would reliably identify this. The report seems '
+                   'thoughtfully written and generally conveys uncertainty appropriately, but it is far from '
+                   'adequate for confidently ruling out misalignment. A strong argument would need much more '
+                   'extensive empirical work, and would require solving multiple open scientific problems. This is '
+                   'challenging given the pace of frontier development. …')),
     dict(date='2026-10-16', by='NIST (CAISI)', kind='framework',
          title='Key Practices for Incident Readiness and Response in Super Intelligence Training and Evaluation',
          url='https://www.nist.gov/news-events/news/2026/10/key-practices-incident-readiness-and-response-super-intelligence-training',
@@ -1330,6 +1346,7 @@ DOCS: list[dict] = [
 # Documents read and left out, so `python -m aipulse safety` doesn't list them again: research on training methods,
 # essays, usage studies, testimony, organisation news, a product launch, and documents from before 2026.
 LEFT_OUT: set[str] = {
+    'https://www.anthropic.com/research/attack-surface-reduction',  # using Claude to harden software (cyber defence), not a safety document
     'https://www.anthropic.com/news/an-update-on-independent-evaluators',  # news: organisation, no document (Anthropic gives METR employee-like access)
     'https://www.anthropic.com/research/ecdsa-curve-origins',  # cryptography finding, not a safety document
     'https://the-decoder.com/uks-ai-security-institute-finds-standard-benchmarks-systematically-underestimate-what-ai-agents-can-actually-do/',  # news about the AISI test-time compute post
