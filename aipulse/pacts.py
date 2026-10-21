@@ -177,6 +177,24 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=279372":
+        "Chinese companies' GPU orders, not a government action",
+    "https://the-decoder.com/china-protests-the-us-deepseek-ban-while-blocking-chatgpt-claude-and-gemini-at-home/":
+        "same as US (Homeland Security) → DeepSeek, 2026-10-19; China's protest and commentary",
+    "https://techcrunch.com/2026/10/20/anthropic-pitches-ai-safety-bill-that-may-block-a-model-if-50-people-could-be-"
+    "killed/":
+        "A company's bill proposal, no government action",
+    "https://aws.amazon.com/blogs/machine-learning/fine-tuning-gpt-oss-20b-for-multilingual-reasoning-on-amazon-"
+    "sagemaker-hyperpod/":
+        "Not a government action",
+    "https://www.xataka.com/empresas-y-economia/google-suspende-inversion-miles-millones-centros-datos-espana-a-espera-"
+    "decreto-gobierno":
+        "A company pausing its own investment (reportedly) while a draft decree is pending",
+    "https://techcrunch.com/2026/10/20/us-orders-federal-agencies-to-remove-chinas-deepseek-ai-from-their-systems/":
+        "same as US (Homeland Security) → DeepSeek, 2026-10-19",
+    "https://aws.amazon.com/blogs/machine-learning/how-eon-built-multi-cloud-investigation-with-an-mcp-gateway-on-"
+    "amazon-bedrock-agentcore/":
+        "Not a government action",
     "https://www.engadget.com/2290535/homeland-security-bans-deepseek-use-in-federal-civilian-agencies/":
         "Same as US (Homeland Security) → DeepSeek, 2026-10-19",
     "https://olhardigital.com.br/2026/10/20/pro/resumo-do-od-lula-acusa-meta-japao-lanca-sonda-a-marte-novo-"
