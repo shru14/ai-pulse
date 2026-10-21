@@ -488,23 +488,33 @@ def _chip(status: str) -> str:
 
 
 def _cards(rows: list[dict]) -> str:
-    """A kind's cases as docket cards in newspaper columns: where it stands up top (a stamp once it has ended), the
-    case caption (who is suing v. who is sued), what it's about, then its steps on a small timeline, each dot in the
-    colour of where it left the case (a gavel where a court decided something), with its date and source."""
-    def card(c: dict) -> str:
+    """A kind's cases as a docket table, a row per case: where it stands (a stamp once it has ended), the case (who is
+    suing v. who is sued, and what it's about), its court and filing month, and its latest step. A case with more than
+    one step opens to show them all on a line across the row, each dot in the colour of where it left the case (a gavel
+    where a court decided something), with its date and source."""
+    def step(s: dict) -> str:
+        return (f'<li{" class=ct-rule" * (s["status"] in RULINGS)} style="--c:{STATUSES[s["status"]][1]}">'
+                f'<span class="ct-d">{_day(s["date"])}</span>'
+                f'{escape(s["what"])}. <a href="{escape(s["url"])}" rel="noopener">{escape(s["source"])}</a></li>')
+
+    def row(c: dict) -> str:
         label, colour, is_open = STATUSES[c["status"]]
-        steps = "".join(f'<li{" class=ct-rule" * (s["status"] in RULINGS)} style="--c:{STATUSES[s["status"]][1]}">'
-                        f'<span class="ct-d">{_day(s["date"])}</span>'
-                        f'{escape(s["what"])}. <a href="{escape(s["url"])}" rel="noopener">{escape(s["source"])}</a></li>'
-                        for s in c["steps"])
-        meta = escape(c["where"]) + (f' · filed {escape(_month(c["filed"]))}' if c["filed"] else "")
         mark = _chip(c["status"]) if is_open else f'<span class="ct-stamp">{escape(label)}</span>'
-        return (f'<article class="ct-card" style="--c:{colour}"><div class="ct-top">{mark}'
-                f'<span class="ct-meta">{meta}</span></div>'
-                f'<div class="ct-cap"><span class="ct-side">Suing</span><b>{escape(c["by"])}</b>'
-                f'<i>v.</i><span class="ct-side">Sued</span><b>{escape(c["sued"])}</b></div>'
-                f'<p class="ct-about">{escape(c["about"])}</p><ol class="ct-track">{steps}</ol></article>')
-    return f'<div class="ct-cards">{"".join(card(c) for c in rows)}</div>'
+        court = escape(c["where"]) + (f'<span class="ct-d">filed {escape(_month(c["filed"]))}</span>' if c["filed"] else "")
+        n = len(c["steps"])
+        cells = (f'<div class="ct-c ct-mark">{mark}</div>'
+                 f'<div class="ct-c ct-case"><b>{escape(c["by"])}</b> <i>v.</i> <b>{escape(c["sued"])}</b>'
+                 f'<span class="ct-about">{escape(c["about"])}</span></div>'
+                 f'<div class="ct-c ct-court">{court}</div>'
+                 f'<div class="ct-c ct-last"><ol class="ct-track">{step(c["steps"][-1])}</ol></div>'
+                 f'<div class="ct-c ct-n2"><span>{n} step{"s" * (n != 1)}</span></div>')
+        if n == 1:
+            return f'<div class="ct-case-row" style="--c:{colour}">{cells}</div>'
+        return (f'<details class="ct-case-row" style="--c:{colour}"><summary>{cells}</summary>'
+                f'<ol class="ct-line">{"".join(step(s) for s in c["steps"])}</ol></details>')
+    head = ('<div class="ct-dhead"><div>Where it stands</div><div>Case</div><div>Court</div><div>Latest step</div>'
+            '<div>Steps</div></div>')
+    return f'<div class="ct-docket">{head}{"".join(row(c) for c in rows)}</div>'
 
 
 def _board(rows: list[dict], under: str = "") -> str:
