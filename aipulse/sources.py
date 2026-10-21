@@ -445,22 +445,26 @@ SOURCES = [
     {"name": "Future of Life Institute", "url": "https://futureoflife.org/feed/", "category": "policy", "voice": "rights", "ai_only": True},
     {"name": "EFF", "url": "https://www.eff.org/rss/updates.xml", "category": "policy", "voice": "rights", "ai_in_title": True},
     {"name": "EPIC", "url": "https://epic.org/feed/", "category": "policy", "voice": "rights", "paged": True},
-    # Added from the sources review (6 Oct 2026). ITU allows non-commercial use with credit (itu.int terms of use).
+    # Added from the sources review (6 Oct 2026)
     {"name": "CLTC (UC Berkeley)", "url": "https://cltc.berkeley.edu/feed/", "category": "policy", "voice": "institute"},
-    {"name": "ITU", "url": "https://www.itu.int/hub/feed/", "category": "policy", "voice": "intl"},
-    # Added 7 Oct 2026: Partnership on AI and Smart Africa (no terms restrict their feeds)
+    # Added 7 Oct 2026 (no terms restrict its feed)
     {"name": "Partnership on AI", "url": "https://partnershiponai.org/feed/", "category": "policy", "voice": "institute", "ai_only": True},
-    {"name": "Smart Africa", "url": "https://smartafrica.org/feed/", "category": "policy", "voice": "intl", "ai_in_title": True},
+    # Added 21 Oct 2026, for voices beyond the US and UK (ITU, Smart Africa, NTIA, DARPA, NSF and the State Duma were
+    # dropped the same day: none had put a story on the site in two weeks, their feeds are mostly not about AI).
+    # Tech Policy Press is a newsroom, so it has no voice and goes on Policy's News reports page. Each keeps its
+    # last 3 months (max_age_days), so the first run fills them back and later runs add only what is new.
+    {"name": "Tech Policy Press", "url": "https://techpolicy.press/rss/feed.xml", "category": "policy", "max_age_days": 92},
+    {"name": "Montreal AI Ethics Institute", "url": "https://montrealethics.ai/feed/", "category": "policy",
+     "voice": "institute", "ai_only": True, "max_age_days": 92},
+    {"name": "CIPESA", "url": "https://cipesa.org/feed/", "category": "policy", "voice": "rights", "max_age_days": 92},
+    {"name": "Research ICT Africa", "url": "https://researchictafrica.net/feed/", "category": "policy", "voice": "institute",
+     "max_age_days": 92},
+    {"name": "InternetLab", "url": "https://internetlab.org.br/en/feed/", "category": "policy", "voice": "institute",
+     "max_age_days": 92},
+    {"name": "China Law Translate", "url": "https://www.chinalawtranslate.com/en/feed/", "category": "policy",
+     "voice": "institute", "ai_in_title": True, "max_age_days": 92},
     # Governments' own publications (US federal records and GOV.UK are public-domain / Open Government Licence).
     {"name": "NIST", "url": "https://www.nist.gov/news-events/news/rss.xml", "category": "policy", "jurisdictions": ["US"],
-     "government": True},
-    # Added 7 Oct 2026 (US public domain): AI policy at the commerce department's telecoms agency (CISA, added the same day, was dropped: it
-    # refuses even its robots.txt to GitHub's servers)
-    {"name": "NTIA", "url": "https://www.ntia.gov/rss.xml", "category": "policy", "jurisdictions": ["US"],
-     "ai_in_title": True, "government": True},
-    {"name": "DARPA", "url": "https://www.darpa.mil/rss/news.xml", "category": "policy", "jurisdictions": ["US"],
-     "government": True},
-    {"name": "NSF", "url": "https://www.nsf.gov/rss/rss_www_news.xml", "category": "policy", "jurisdictions": ["US"],
      "government": True},
     # No feed: its blog page lists every post (a UK government body, Open Government Licence)
     {"name": "UK AI Security Institute", "url": "https://www.aisi.gov.uk/blog", "format": "page_list",
@@ -481,10 +485,6 @@ SOURCES = [
     # media releases; no robots.txt or terms restrict them. The list is short, so older releases are kept.
     {"name": "Ministry of Digital (Malaysia)", "format": "digital_my", "category": "policy", "jurisdictions": ["MY"],
      "ai_in_title": True, "government": True, "max_age_days": 400, "url": "https://www.digital.gov.my/en-GB/siaran"},
-    # Russia: the State Duma's English news (its bill search is closed to robots, and the Duma API needs
-    # tokens). No terms restrict the news list; only items with AI in the headline are kept.
-    {"name": "State Duma (Russia)", "format": "duma_en", "category": "policy", "jurisdictions": ["RU"],
-     "ai_in_title": True, "government": True, "max_age_days": 400, "url": "http://duma.gov.ru/en/news/"},
     # Canada: Innovation, Science and Economic Development Canada, the department with the Minister of AI. Its news
     # releases from the Government of Canada's news API (no robots.txt rules; canada.ca's terms allow
     # non-commercial reproduction with credit); only those with AI in the headline are kept.
