@@ -939,7 +939,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 @media (max-width:400px){.sm-tab img{width:40px;height:40px}.sm-tab span{font-size:12px}}
 @media (max-width:560px){header.top .menu-btn{padding:0 8px 0 0}header.top .menu-btn span{display:inline;font-size:9px}}
 @media (max-width:359px){header.top .brand h1{display:none}}  /* the smallest phones: the logo alone */
-@media (max-width:640px){header.top .about-link{display:none}}  /* About heads the menu's list, so on narrow screens it leaves the top row and dark mode stays on it */
+@media (max-width:640px){header.top .about-link{height:32px;font-size:12px;padding:0 8px}}  /* About stays on the top row on phones too (it also heads the menu's list) */
 /* Phones: a long section scrolls inside its own box and a row of cards swipes sideways, so a page is a few screens */
 @media (max-width:640px){
   .ts-cards,.items{display:flex;flex-direction:row;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:12px;padding:0 4px 10px 0}
@@ -950,7 +950,56 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   .board-t thead th,.disc-t thead th{position:sticky;top:0;z-index:1;background:var(--bg)}
   .board-t th{font-size:9.5px;letter-spacing:0}
   .board-t th:nth-child(n+3){min-width:0}
+  /* every stream in the masthead at once: three to a row, none cut off */
+  header.top .secnav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin-inline:0;padding:0;-webkit-mask-image:none;mask-image:none}
+  header.top .secnav a{padding:8px 2px 7px;font-size:12.5px;border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+  header.top .secnav a:nth-child(3n+1){border-left:0}
+  /* the jump row: every section of the page, all in view, above the email strip */
+  .jump{flex-wrap:wrap;gap:6px;margin:0 0 -18px;padding:2px 0 0}
+  .jump a{flex:none;font:600 12.5px var(--body);padding:5px 9px;border:2px solid var(--ink);color:var(--ink);background:var(--surface);text-decoration:none;white-space:nowrap}
+  /* the email strip in a third of the screen: what's inside and the four steps each a line to swipe */
+  .sub-strip{grid-template-columns:minmax(0,1fr)}.month-bar{grid-template-columns:minmax(0,1fr)}  /* the rows below swipe inside, never widen the page */
+  .sub-strip .sub-inside{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .sub-strip .sub-inside li{flex:none;white-space:nowrap}
+  .sub-strip .sub-steps{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding-bottom:4px}
+  .sub-strip .sub-hint{font-size:12px}
+  .sub-strip .sub-steps li{flex:0 0 74%;scroll-snap-align:start;padding:8px 10px 8px 38px;background:rgba(255,255,255,.55);border:2px solid #141925}
+  .sub-strip .sub-steps li::before{top:9px;left:9px}
+  .sub-strip .sub-act{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 14px}
+  .sub-strip .sub-tile-go{width:100%;padding:9px 18px;font-size:14px}
+  /* Monthly issues: a shorter bar, the issues side by side to swipe like the week's tiles */
+  /* Today's top 3 side by side to swipe, like the week's tiles; ranks 4 and 5 stay in the table below */
+  .today-cards{display:flex;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;align-items:stretch;gap:12px;padding:12px 4px 8px 0}
+  .today-cards>*{flex:0 0 47%;scroll-snap-align:start}
+  /* each card upright: the rank as a strip on top, then the source, then the headline */
+  .tcard{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr}
+  .tcard .trank{flex-direction:row;justify-content:space-between;border-right:0;border-bottom:3px solid var(--ink);font-size:28px;gap:6px;padding:6px 8px}
+  .tcard .trank .tsrc{font-size:8px;letter-spacing:.02em;align-items:flex-end}
+  .tcard .tb{gap:6px;padding:8px 9px 10px}
+  .tcard .ttop{flex-direction:column;align-items:flex-start;gap:6px}
+  .tcard .ttop .ico{width:26px;height:26px;border-radius:7px}
+  .tcard .ttop .ico svg,.tcard .ttop .ico img{width:16px;height:16px}
+  .tcard .tmeta{font-size:9.5px;letter-spacing:.03em}
+  .tcard h3{font-size:13px}
+  /* smaller type on phones: more of each section in view */
+  .lede strong{font-size:17px}
+  .band-head h2{font-size:20px}
+  .board-t td{font-size:14px}
+  .sub-strip h2{font-size:17px}
+  .sub-strip .sub-inside li{font-size:11px}
+  .sub-strip .sub-steps li{font-size:12px}
+  .sub-strip .sub-steps b{font-size:13px}
+  .sub-strip .sub-act small,.sub-strip .sub-yesterday{font-size:12px}
+  .month-bar h2{font-size:19px}
+  .month-bar p{font-size:13px}
+  .month-bar{padding:16px;gap:12px}
+  .month-bar p{margin-bottom:10px}
+  .month-go{font-size:14px;padding:8px 16px;box-shadow:4px 4px 0 #0072B2}
+  .ms-cards{display:flex;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:12px;padding-bottom:6px}
+  .ms-card{flex:0 0 84%;scroll-snap-align:start}
 }
+.jump{display:none}
+@media (max-width:640px){.jump{display:flex}}
 </style>
 </head><body>
 
@@ -1093,7 +1142,10 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   <!-- Front page: the daily email strip, Today in AI, the week's biggest story, the word and meme of the week, then the topics. -->
   <section class="home" id="front" hidden>
     <div class="mag">
-      <div class="tile sub-tile sub-strip">
+      <!-- phones: every section of the front page one tap away (the page is long there) -->
+      <nav class="jump" aria-label="On this page"><a href="#today">Today</a><a href="#social">Discussing</a>
+        <a href="#week">Past week</a><a href="#month-strip">Monthly issues</a><a href="#topics-strip">Follow the story</a><a href="#sub-strip">Daily email</a></nav>
+      <div class="tile sub-tile sub-strip" id="sub-strip">
         <div class="sub-head"><span class="label">Daily email · free</span><h2>Yesterday in AI, every morning</h2>
           <ul class="sub-inside" aria-label="In every email"><li>The 10 that mattered</li><li>The rest in brief</li>
             <li>Word of the day</li><li>Meme of the day</li><li>Every story in one table</li></ul></div>
@@ -1124,7 +1176,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
             <a class="gl-tile-go hn-go" href="/discussing/" data-go="discussing">Dig deeper →</a></aside>
         </div></section>
       <!-- Past week in AI: the week's biggest story, the word and meme of the week -->
-      <section class="week"><div class="band-head"><h2>Past week in AI</h2><span class="kicker">The biggest story, word and meme of the last 7 days</span></div>
+      <section class="week" id="week"><div class="band-head"><h2>Past week in AI</h2><span class="kicker">The biggest story, word and meme of the last 7 days</span></div>
       <div class="mag-row">
         <article class="mag-cover" id="hero"><p class="tile-note">Loading the past 7 days' stories…</p></article>
         <div class="tile gl-tile">
@@ -2274,6 +2326,12 @@ async function loadTicker(){
 }
 
 // The brand, the stream links and the tiles open their page.
+document.querySelector(".jump").addEventListener("click", e => {
+  const a = e.target.closest("a"); if(!a) return;
+  e.preventDefault();
+  const t = document.querySelector(a.getAttribute("href"));
+  if(t && !t.hidden) scrollTo({top: t.getBoundingClientRect().top + scrollY - document.querySelector("header.top").offsetHeight - 10, behavior: "smooth"});
+});
 document.addEventListener("click", e => {
   const a = e.target.closest("a[data-go]");
   if(!a || e.ctrlKey || e.metaKey || e.shiftKey) return;  // a new tab opens the page by its address
