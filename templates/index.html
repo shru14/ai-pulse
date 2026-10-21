@@ -939,7 +939,6 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 @media (max-width:400px){.sm-tab img{width:40px;height:40px}.sm-tab span{font-size:12px}}
 @media (max-width:560px){header.top .menu-btn{padding:0 8px 0 0}header.top .menu-btn span{display:inline;font-size:9px}}
 @media (max-width:359px){header.top .brand h1{display:none}}  /* the smallest phones: the logo alone */
-@media (max-width:640px){header.top .about-link{display:none}}  /* About heads the menu's list, so on narrow screens it leaves the top row and dark mode stays on it */
 /* Phones: a long section scrolls inside its own box and a row of cards swipes sideways, so a page is a few screens */
 @media (max-width:640px){
   .ts-cards,.items{display:flex;flex-direction:row;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:12px;padding:0 4px 10px 0}
@@ -950,7 +949,122 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   .board-t thead th,.disc-t thead th{position:sticky;top:0;z-index:1;background:var(--bg)}
   .board-t th{font-size:9.5px;letter-spacing:0}
   .board-t th:nth-child(n+3){min-width:0}
+  /* the masthead: small buttons and icons, About on the top row too, the name and every button on one line */
+  header.top{column-gap:4px}
+  header.top .subscribe-btn,header.top .about-link{height:28px}
+  header.top .subscribe-btn svg{width:15px;height:15px}
+  header.top .gl-open,header.top .az-btn,header.top .theme-btn{width:28px}
+  header.top .subscribe-btn.cta,header.top .about-link{padding:0 6px;font-size:11px}
+  header.top .mark{width:24px;height:24px;border-radius:7px}
+  header.top .mark svg{width:16px;height:16px}
+  header.top .brand h1{font-size:14px}
+  header.top .menu-btn{height:40px}
+  header.top .menu-btn svg{width:18px;height:18px}
+  .lede strong{font-size:15px}
+  .tk-item a{font-size:12.5px}
+  .tk-item time{font-size:10px}
+  /* every stream in the masthead at once: three to a row, none cut off */
+  header.top .secnav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin-inline:0;padding:0;-webkit-mask-image:none;mask-image:none}
+  header.top .secnav a{padding:6px 2px 5px;font-size:11.5px;border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+  header.top .secnav a:nth-child(3n+1){border-left:0}
+  /* the jump row: every section of the page, all in view, above the email strip */
+  .jump{flex-wrap:wrap;gap:5px;margin:0 0 -20px;padding:2px 0 0}
+  .jump a{flex:none;font:600 11.5px var(--body);padding:4px 8px;border:1.5px solid var(--ink);color:var(--ink);background:var(--surface);text-decoration:none;white-space:nowrap}
+  .band-head h2{font-size:18px}
+  /* the email strip in a third of the screen: what's inside and the four steps each a line to swipe */
+  .sub-strip,.month-bar{grid-template-columns:minmax(0,1fr)}  /* the rows inside swipe, never widen the page */
+  .sub-strip{padding:12px!important;gap:8px}
+  .sub-strip h2{font-size:16px}
+  .sub-strip .sub-inside{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:8px}
+  .sub-strip .sub-inside li{flex:none;white-space:nowrap;font-size:10.5px;padding:4px 6px}
+  .sub-strip .sub-steps{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;padding-bottom:4px}
+  .sub-strip .sub-steps li{flex:0 0 70%;scroll-snap-align:start;padding:6px 8px 6px 32px;font-size:11px;background:rgba(255,255,255,.55);border:1.5px solid #141925}
+  .sub-strip .sub-steps li::before{top:7px;left:7px;width:18px;height:18px;font-size:10px;line-height:18px}
+  .sub-strip .sub-steps b{font-size:12px}
+  .sub-strip .sub-hint{font-size:11px}
+  .sub-strip .sub-act{flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 12px}
+  .sub-strip .sub-tile-go{width:100%;padding:8px 14px;font-size:13px}
+  .sub-strip .sub-act small,.sub-strip .sub-yesterday{font-size:11px}
+  /* Today's top 3 upright and side by side to swipe; ranks 4 and 5 stay in the table below */
+  .today-cards{display:flex;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;align-items:stretch;gap:10px;padding:12px 4px 8px 0}
+  .today-cards>*{flex:0 0 46%;scroll-snap-align:start}
+  .tcard{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;border-width:2px}
+  .tcard .trank{flex-direction:row;justify-content:space-between;border-right:0;border-bottom:2px solid var(--ink);font-size:22px;gap:6px;padding:4px 8px}
+  .tcard .trank .tsrc{font-size:7.5px;letter-spacing:.02em;align-items:flex-end}
+  .tcard .tb{gap:5px;padding:7px 8px 9px}
+  .tcard .ttop{flex-direction:column;align-items:flex-start;gap:5px}
+  .tcard .ttop .ico{width:22px;height:22px;border-radius:6px}
+  .tcard .ttop .ico svg,.tcard .ttop .ico img{width:14px;height:14px}
+  .tcard .tmeta{font-size:8.5px;letter-spacing:.03em}
+  .tcard h3{font-size:12.5px}
+  .board-t td{font-size:13px}
+  .board-t th{font-size:8.5px}
+  /* the week's tiles and the topics: smaller type */
+  .mag-row>*{flex-basis:72%}
+  .mag-cover{padding:14px;gap:10px}
+  .mag-cover h2{font-size:16px!important}
+  .mag-cover .sart{height:90px}
+  .mag-cover .sart .logo .ico{width:44px;height:44px;border-radius:12px}
+  .mag-cover .sart .logo .ico svg,.mag-cover .sart .logo .ico img{width:26px;height:26px}
+  .week-badge{font-size:12px}
+  .gl-tile-go{font-size:12.5px}
+  .hn-go{font-size:12.5px!important;padding:7px 12px!important;box-shadow:3px 3px 0 #E69F00!important}
+  .disc-t{font-size:13px}
+  .ts-cards>*{flex-basis:72%}
+  .ts-card b{font-size:14px}
+  .ts-last{font-size:12px}
+  /* Monthly issues: a shorter bar, the issues side by side to swipe like the week's tiles */
+  .month-bar{padding:12px;gap:10px}
+  .month-bar h2{font-size:16px}
+  .month-bar p{font-size:12px;margin-bottom:8px}
+  .month-go{font-size:12.5px;padding:6px 12px;box-shadow:3px 3px 0 #0072B2}
+  .ms-cards{display:flex;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:10px;padding-bottom:6px}
+  .ms-card{flex:0 0 80%;scroll-snap-align:start;grid-template-columns:72px minmax(0,1fr);min-height:0;border-width:2px}
+  .ms-body b{font-size:14px}
+  .ms-body span{font-size:11.5px}
+  /* Stream pages: a short hero band, the cartoon small beside the words */
+  .sec-hero{flex-wrap:nowrap;align-items:flex-start;padding:10px 12px;gap:8px;border-width:2px}
+  .sec-hero h2{font-size:19px}
+  .sec-hero p{font-size:12px}
+  .sec-hero .status{font-size:10px}
+  .sec-hero .cart{height:52px;margin:0 0 0 auto}
+  /* company tiles three to a row, the logo above the name; the features two by two */
+  .bc-main{padding:10px}
+  .by-country b{font-size:15px}
+  .by-country p{font-size:12px}
+  .bc-tags,.no-feats .bc-tags{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:8px}
+  .bc-tags a{flex-direction:column;justify-content:center;text-align:center;gap:3px;min-height:0;padding:5px 3px;font-size:10.5px;line-height:1.2;border-width:1.5px;box-shadow:2px 2px 0 var(--line)}
+  .bc-ic{width:22px;height:22px;border-width:1.5px}
+  .by-country .bc-ic svg,.by-country .bc-ic img{width:14px;height:14px}
+  .bc-feats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px}
+  .bc-lab{grid-column:1/-1;font-size:10px}
+  .bc-feats a{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:4px 6px;padding:8px;font-size:12px;box-shadow:2px 2px 0 #FFFFFF}
+  .bc-feats a svg{grid-column:1/-1;width:15px;height:15px}  /* the icon on top, then the name with its arrow beside it */
+  .bc-feats a em{margin:0;padding:0;font-size:13px}
+  /* story cards upright, about half the screen each, two in view, each its own height */
+  .items{align-items:flex-start}
+  .items>*{flex-basis:46%}
+  .item{padding:8px 9px 9px;gap:3px;align-content:start;border-width:2px;border-top-width:6px}
+  .item .side .sart{width:30px;height:30px}
+  .item .side .sart .logo .ico{width:22px;height:22px}
+  .item .side .sart .logo .ico svg,.item .side .sart .logo .ico img{width:13px;height:13px}
+  .item h3{font-size:12.5px}
+  .item p,.item .sum{font-size:11.5px;line-height:1.4}
+  .item .foot{font-size:9px;letter-spacing:.02em}
+  .item .tag{font-size:9.5px}
+  .day h2{font-size:10.5px}
+  .item .readmore{font-size:10.5px}
+  .item .read-en{font-size:11px}
+  .item .gl-row,.item .gl-row *{font-size:11px}
+  .more button{font-size:13px;padding:6px 14px}
+  /* the search keeps 16px type (smaller makes iPhones zoom in on a tap); just less padding */
+  .search{padding:5px 10px}
+  .range{padding:5px 6px}
+  .group{font-size:11.5px;padding:2px 8px}
 }
+.jump{display:none}
+@media (max-width:640px){.jump{display:flex}}
+@media (max-width:380px){header.top{column-gap:3px}header.top .about-link,header.top .subscribe-btn.cta{padding:0 5px}header.top .brand h1{font-size:13px}}  /* small phones: still one row */
 </style>
 </head><body>
 
@@ -1093,7 +1207,10 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   <!-- Front page: the daily email strip, Today in AI, the week's biggest story, the word and meme of the week, then the topics. -->
   <section class="home" id="front" hidden>
     <div class="mag">
-      <div class="tile sub-tile sub-strip">
+      <!-- phones: every section of the front page one tap away (the page is long there) -->
+      <nav class="jump" aria-label="On this page"><a href="#today">Today</a><a href="#social">Discussing</a>
+        <a href="#week">Past week</a><a href="#month-strip">Monthly issues</a><a href="#topics-strip">Follow the story</a><a href="#sub-strip">Daily email</a></nav>
+      <div class="tile sub-tile sub-strip" id="sub-strip">
         <div class="sub-head"><span class="label">Daily email · free</span><h2>Yesterday in AI, every morning</h2>
           <ul class="sub-inside" aria-label="In every email"><li>The 10 that mattered</li><li>The rest in brief</li>
             <li>Word of the day</li><li>Meme of the day</li><li>Every story in one table</li></ul></div>
@@ -1124,7 +1241,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
             <a class="gl-tile-go hn-go" href="/discussing/" data-go="discussing">Dig deeper →</a></aside>
         </div></section>
       <!-- Past week in AI: the week's biggest story, the word and meme of the week -->
-      <section class="week"><div class="band-head"><h2>Past week in AI</h2><span class="kicker">The biggest story, word and meme of the last 7 days</span></div>
+      <section class="week" id="week"><div class="band-head"><h2>Past week in AI</h2><span class="kicker">The biggest story, word and meme of the last 7 days</span></div>
       <div class="mag-row">
         <article class="mag-cover" id="hero"><p class="tile-note">Loading the past 7 days' stories…</p></article>
         <div class="tile gl-tile">
@@ -2274,6 +2391,12 @@ async function loadTicker(){
 }
 
 // The brand, the stream links and the tiles open their page.
+document.querySelector(".jump").addEventListener("click", e => {
+  const a = e.target.closest("a"); if(!a) return;
+  e.preventDefault();
+  const t = document.querySelector(a.getAttribute("href"));
+  if(t && !t.hidden) scrollTo({top: t.getBoundingClientRect().top + scrollY - document.querySelector("header.top").offsetHeight - 10, behavior: "smooth"});
+});
 document.addEventListener("click", e => {
   const a = e.target.closest("a[data-go]");
   if(!a || e.ctrlKey || e.metaKey || e.shiftKey) return;  // a new tab opens the page by its address

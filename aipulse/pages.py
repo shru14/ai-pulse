@@ -1344,13 +1344,192 @@ a.subscribe-btn{text-decoration:none}
   .cp .nt-table td:first-child,.cp .nt-table td:nth-child(3){width:auto}
   .cp .cg-table td:nth-child(5)::before{content:"How sure Epoch is: ";color:var(--muted)}
   .cp .cg-table td:nth-child(6)::before{content:"Weights to download: ";color:var(--muted)}}
+/* Phones, on every feature and page band: small type and a short header band (title and question beside a small
+   cartoon, the description under them), small big-number tiles three to a row, smaller tabs, headings and tables */
+@media (max-width:640px){
+  :is(.cp,.about-page) .fh{grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;margin:12px 0 18px;padding:12px;border-width:2px;box-shadow:3px 3px 0 var(--line)}
+  :is(.cp,.about-page) .fh-t{grid-column:1;grid-row:1;gap:10px;align-items:flex-start}
+  :is(.cp,.about-page) .fh-ic{width:32px;height:32px}
+  :is(.cp,.about-page) .fh-ic svg{width:19px;height:19px}
+  :is(.cp,.about-page) .fh-ic.pic img{width:28px;height:21px}
+  :is(.cp,.about-page) .fh :is(h1,h2){font-size:19px}
+  :is(.cp,.about-page) .fh-q,.cp .fh-sub{font-size:13px;margin-top:4px}
+  :is(.cp,.about-page) .fh-art{grid-column:2;grid-row:1;align-self:start;height:56px;margin:0}
+  :is(.cp,.about-page) .fh .fh-d{grid-column:1/-1;padding:8px 0 0;border-top-width:2px;font-size:12.5px;line-height:1.45}
+  .cp .fh-cite{margin-top:6px}
+  .cp .fh-cite summary{font-size:11px;padding:2px 8px}
+  .cp h2{font-size:12.5px;margin-top:22px;border-top-width:4px;padding-top:8px}
+  .cp .rm-bigs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .cp .rm-bigs:has(>:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}  /* four: two by two */
+  .cp .rm-big{min-width:0;padding:8px;box-shadow:2px 2px 0 var(--line)}
+  .cp .rm-big b,.cp .rc .rm-big b{font-size:22px}
+  .cp .rm-big span,.cp .rc .rm-big span{font-size:11px;margin-top:4px}
+  .cp .gv-big{font-size:12.5px}.cp .gv-big b{font-size:26px}
+  .cp .st-hero b{font-size:24px}
+  .cp .sh-tabs{gap:4px 14px}
+  .cp .sh-tab{font-size:12.5px}.cp .sh-tab b{font-size:10.5px}
+  .cp table.mt{font-size:13px}
+  .cp .mt th{font-size:9.5px}
+  .cp .mt td{padding:7px 10px 7px 0}
+  .cp .mt .meta{font-size:11.5px}
+  .cp .mt .name{font-size:13px!important}
+  .cp p{font-size:13.5px}
+  /* each feature's own section headings, question lines, tables and tags: the same smaller sizes */
+  .cp .jb h2{font-size:16px;margin:28px 0 8px}
+  .cp .jb-q,.cp .rm .jb-q,.cp .rc .jb-q{font-size:14px}
+  .cp .sd h2,.cp .ft.gv .gv-card h2{font-size:17px}
+  .cp .ft .pc-hh h2,.cp .ft.gv h2.gv-h,.cp .mi .sheet > h2{font-size:18px}
+  .cp .rm-t{font-size:13px}
+  .cp .rm-t code{font-size:11.5px}
+  .cp .rm-t td.rm-d small{font-size:10.5px}
+  .cp .ft .rm-t td.rm-lab a{font-size:11px}
+  .cp .rm-t td:nth-child(4)::before,.cp .rm-t td:nth-child(5)::before{font-size:11px}
+  .cp .rc .sh-tab{padding:3px 8px}
+  .cp .rc-w{font-size:11px}
+  .cp .rc-t small{font-size:11px}
+  .cp .rc .rc-t th{font-size:9px}
+  /* small summary tables (a ring's legend too) and the "About these" notes stay rows (a number per cell), not a cell per line */
+  .cp .ft :is(table.jb-small,table.jb-rt){display:table;width:100%}
+  .cp .ft :is(.jb-small,.jb-rt) thead{display:table-header-group}
+  .cp .ft :is(.jb-small,.jb-rt) tr{display:table-row;padding:0}
+  .cp .ft :is(.jb-small,.jb-rt) td{display:table-cell;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:5px 10px 5px 0}
+  .cp .ft :is(.jb-small,.jb-rt) td:last-child{padding-right:0}
+  /* every filterable list of deals, fines or uses: a box to scroll in, as Infra's tables (the filters stay above it) */
+  .cp table.xf-t,.cp table.am-ct,.cp table.fx-t{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}
+  /* Money that comes back, stacked: each line says which column it was */
+  .cp .am-ct td::before{color:var(--muted);font:500 11px var(--body)}
+  .cp .am-ct td:nth-child(1)::before{content:"From: "}.cp .am-ct td:nth-child(2)::before{content:"Into: "}
+  .cp .am-ct td:nth-child(3)::before{content:"What went in: "}.cp .am-ct td:nth-child(4)::before{content:"What comes back: "}
+  /* AI money: the stakes lab by lab, a card each to swipe, each investor's box beside its name (the grid is for
+     wide screens) */
+  .cp .ow-wrap{display:none}
+  .cp .ow-labs{display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:2px 4px 10px 0;align-items:flex-start}
+  .cp .ow-lab{flex:0 0 78%;scroll-snap-align:start;border:2px solid var(--line);box-shadow:3px 3px 0 var(--line);padding:10px 12px;background:var(--bg)}
+  .cp .ow-lab b{display:block;font:400 17px var(--display);margin-bottom:6px}
+  .cp .ow-lab ul{list-style:none;margin:0;padding:0}
+  .cp .ow-lab li{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+  .cp .ow-lab li span{font:600 13px var(--body);padding-top:3px}
+  .cp .ow-lab .ow-deal{min-width:0;max-width:62%;text-align:right;font-size:11.5px;padding:3px 6px}
+  .cp .ow-lab .ow-deal small{font-size:10px}
+  .cp .ow-key{font-size:11.5px}
+  /* Lab timelines: a card per lab to swipe, its months down the card (empty months left out), the grey column last */
+  .cp .lt-wrap{overflow:visible;max-height:none}
+  .cp .ft .lt-t{min-width:0;display:block}
+  .cp .ft .lt-t thead{display:none}
+  .cp .ft .lt-t tbody:not([hidden]){display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:2px 4px 10px 0;align-items:flex-start}
+  .cp .ft .lt-t tbody + tbody:not([hidden]){margin-top:10px}
+  .cp .ft .lt-t tr{display:block;flex:0 0 72%;scroll-snap-align:start;border:2px solid var(--line);box-shadow:3px 3px 0 var(--line);padding:8px 10px;background:var(--bg)}
+  .cp .ft .lt-t th{display:block;padding:0 0 4px}
+  .cp .ft .lt-t td{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;padding:6px 0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent);font-size:12.5px}
+  .cp .ft .lt-t td:empty{display:none}
+  .cp .ft .lt-t td::before{content:attr(data-l);font:600 10px/1.6 var(--mono);text-transform:uppercase;color:var(--muted)}
+  .cp .ft .lt-t td > *{grid-column:2}
+  .cp .ft .lt-t td.lt-fut{padding-left:0;margin:0 -10px -8px;padding:6px 10px 8px}
+  /* Release cards: a card per release, its facts labelled, in the box that scrolls */
+  .cp .rc .rm-wrap{overflow-x:visible;overflow-y:auto}
+  .cp .ft .rc-t{min-width:0;display:block}
+  .cp .ft .rc-t thead{display:none}
+  .cp .ft .rc-t tbody{display:block}
+  .cp .ft .rc-t tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;padding:9px 10px;margin:0 0 8px;border:2px solid var(--line)}
+  .cp .ft .rc-t tr[hidden]{display:none}
+  .cp .ft .rc-t td{display:block;border:0;padding:0;white-space:normal;font-size:12.5px}
+  .cp .ft .rc-t td:nth-child(2){grid-column:1;grid-row:1}
+  .cp .ft .rc-t td:nth-child(1){grid-column:2;grid-row:1;text-align:right;font-size:11.5px}
+  .cp .ft .rc-t td:nth-child(6){grid-column:2;grid-row:2}  /* weights and price side by side */
+  .cp .ft .rc-t td:nth-child(4),.cp .ft .rc-t td:nth-child(5),.cp .ft .rc-t td:nth-child(7){grid-column:1/-1}
+  .cp .ft .rc-t td:nth-child(n+3)::before{display:block;font:600 9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+  .cp .ft .rc-t td:nth-child(3)::before{content:"Weights"}.cp .ft .rc-t td:nth-child(4)::before{content:"Licence"}
+  .cp .ft .rc-t td:nth-child(5)::before{content:"Where you can use it"}
+  .cp .ft .rc-t td:nth-child(6)::before{content:"Launch price (in / out, per 1M tokens)"}
+  .cp .ft .rc-t td:nth-child(7)::before{content:"Safety report"}
+}
+.cp .ow-labs{display:none}
+@media (max-width:640px){.cp .ow-labs{display:flex}}
+/* Phones: a table's row as a small card, its name on top and the rest side by side underneath (not one value a line);
+   the tables re-laid out on their own above keep theirs */
+@media (max-width:640px){
+  .cp .ft table.mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes){display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:4px}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) tbody{display:block}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) tr{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:7px 12px;
+    margin:0 0 8px;padding:9px 10px;border:1.5px solid var(--line);box-shadow:2px 2px 0 var(--line);background:var(--bg)}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) tr[hidden]{display:none}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td{display:block;font-size:12.5px;line-height:1.4;padding:0;border:0;text-align:left;white-space:normal;width:auto}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td:first-child,
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td.wd{grid-column:1/-1}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td:first-child{font-size:14px;font-weight:600}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td:empty{display:none}
+  .cp .ft .mt:not(.rc-t,.lt-t,.jb-small,.jb-rt,.am-ct,.pn-notes) td[data-l]::before{content:attr(data-l);display:block;margin:0 0 1px;
+    font:600 9px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  /* the deal lists: date on the left, the rest flowing beside it */
+  .cp .pc-k{font-size:10px;font-weight:600;letter-spacing:.03em;padding:0 4px;line-height:1.5}  /* status tags lighter than the words they tag */
+  .cp .fx-t .pc-who .pc-k{margin:1px 3px 1px 0;font-size:10.5px;font-weight:600;padding:0 4px}
+  .cp .fx-t td.pc-who::before{display:block;margin-bottom:2px}
+  /* AI pacts and orders: each row's tag first, under the date's line, and every tag on the page one style */
+  .cp .pc-stack .fx-t td.fx-s{order:-1;margin-bottom:2px}
+  .cp .pc-stack .pc-k,.cp .pc-stack .fx-t .pc-who .pc-k{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:0 4px;line-height:1.6}
+  .cp .pc-stack .fx-t .pc-who .pc-k{text-transform:none;font-size:10.5px;font-weight:600;letter-spacing:0;padding:0 4px;margin-right:2px}  /* signers as written (US signed), on one line */
+  .cp .fx-t td[data-l]:not(.pc-d)::before{content:attr(data-l) ": ";color:var(--muted);font:500 10.5px var(--body)}  /* each value says its column */
+  .cp .fx-t tr{grid-template-columns:62px minmax(0,1fr);column-gap:10px;padding:5px 0}  /* one date column: values line up */
+  .cp .fx-t td{font-size:12px;padding:1px 0}
+  .cp table.nt-table{display:block;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;border-bottom:3px solid var(--ink)}  /* each subject's tests in a box */
+  /* New tests' best scores: the name, score and dot on one short line each */
+  .cp .nt-scores li{padding:4px 0;gap:0 8px}
+  .cp .nt-scores a{font-size:12.5px}
+  .cp .nt-pct{font-size:11px}.cp .nt-pct b{font-size:12.5px}
+  .cp .nt-track{height:10px}
+  .cp .nt-track i{width:10px;height:10px;margin:-5px 0 0 -5px}
+  /* Papers that made the news: a newspaper on a phone, the lead across the top, then two ruled columns, small serif */
+  .cp .np-mast{font-size:10px;padding:5px 0}
+  .cp .np-lead{padding:12px 0;text-align:center}
+  .cp .np-lead h3{font-size:18px}
+  .cp .np-lead .np-deck{font-size:12.5px}
+  .cp .np-cols{column-count:2;column-gap:14px;margin-top:10px}
+  .cp .np-cols .np-clip{padding:0 0 9px;margin:0 0 9px}
+  .cp .np-clip h3{font-size:13px;line-height:1.22;margin:2px 0 4px}
+  .cp .np-deck{font-size:11px;line-height:1.4;margin:0 0 4px}
+  .cp .np-kick{font-size:8.5px;letter-spacing:.05em}
+  .cp .np-by{font-size:10px;line-height:1.35}
+}
 """
 
 
+def phone_type(css: str, scale: float = .85, floor: float = 11) -> str:
+    """Every page's type the same size smaller on phones: each `.cp` rule's font size of 14px or more, scaled down
+    (a clamp() by its smallest size), in one ≤640px block. Rules a phone block already sizes keep theirs; search
+    boxes keep 16px (smaller makes iPhones zoom in on a tap)."""
+    rules, tuned, depth, media = [], set(), 0, ""
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    for m in re.finditer(r"([^{}]*)\{|\}", css):
+        if m.group(0) == "}":
+            depth -= 1
+            if depth == 0:
+                media = ""
+            continue
+        head = m.group(1).strip()
+        if head.startswith("@media"):
+            media, depth = head, depth + 1
+            continue
+        body, depth = css[m.end():css.index("}", m.end())], depth + 1
+        for sel in (s.strip() for s in head.split(",")):
+            if "max-width" in media and "font" in body:
+                tuned.add(sel)
+            elif not media:
+                rules.append((sel, body))
+    sizes = {}
+    for sel, body in rules:
+        f = re.search(r"font(?:-size)?\s*:[^;]*?(?:clamp\()?(\d+(?:\.\d+)?)px", body)
+        if not (sel.startswith(".cp ") and f) or sel in tuned or re.search(r"input|select|search|::?(?:before|after)", sel):
+            continue
+        if (px := float(f.group(1))) >= 14:
+            sizes[sel] = f"{max(floor, round(px * scale * 2) / 2):g}px"
+    return "@media (max-width:640px){\n" + "\n".join(f"  {s}{{font-size:{v}}}" for s, v in sizes.items()) + "\n}\n"
+
+
 def write_css(out: Path) -> None:
-    """site.css: the front page's styles (its masthead and footer) and these pages' own."""
+    """site.css: the front page's styles (its masthead and footer) and these pages' own, then these pages' type a size
+    smaller on phones."""
     style = re.search(r"<style>(.*?)</style>", TEMPLATE.read_text(encoding="utf-8"), re.S).group(1)
-    (out / "site.css").write_text(style + STYLE, encoding="utf-8")
+    (out / "site.css").write_text(style + STYLE + phone_type(STYLE), encoding="utf-8")
 
 
 def frame(conn=None, total: int = 0) -> tuple[str, str]:
@@ -1454,7 +1633,13 @@ def cite(path: str, title: str) -> str:
             '</div></details>'
             # Close it too on a click outside the box or on Esc
             '<script>document.addEventListener("click",e=>document.querySelectorAll(".fh-cite[open]").forEach(d=>{if(!d.contains(e.target))d.open=false}));'
-            'document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".fh-cite[open]").forEach(d=>d.open=false)})</script>')
+            'document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".fh-cite[open]").forEach(d=>d.open=false)});'
+            # phones show a table's row as a card: each cell is labelled with its column's heading (data-l), and a long
+            # one runs the card's width
+            'addEventListener("DOMContentLoaded",()=>document.querySelectorAll(".ft table.mt,.ft table.fx-t").forEach(t=>{'
+            'const h=[...t.querySelectorAll("thead th")].map(x=>x.textContent.trim());if(!h.length)return;'
+            't.querySelectorAll("tbody tr").forEach(r=>[...r.children].forEach((c,i)=>{'
+            'if(i&&h[i]&&!c.dataset.l)c.dataset.l=h[i];if(c.textContent.trim().length>38)c.classList.add("wd")}))}))</script>')
 
 
 def band(colour: str, icon: str, art: str, title: str, question: str, intro: str, extra: str = "", sub: str = "") -> str:

@@ -241,9 +241,10 @@ def body(ev: list[dict], today: date) -> str:
     now = today.isoformat()
 
     def row(lab: str) -> str:
-        cells = "".join(f"<td>{_cell([e for e in by[lab] if e['day'][:7] == m and e['day'] <= now], False)}</td>"
-                        for m in months)
-        cells += f'<td class="lt-fut">{_cell([e for e in by[lab] if e["day"] > now], True)}</td>'
+        cells = "".join(f'<td data-l="{_MONTHS[int(m[5:]) - 1]} {m[:4]}">'
+                        f"{_cell([e for e in by[lab] if e['day'][:7] == m and e['day'] <= now], False)}</td>"
+                        for m in months)  # data-l: the month, for phones, where each lab is a card
+        cells += f'<td class="lt-fut" data-l="Next 3 months">{_cell([e for e in by[lab] if e["day"] > now], True)}</td>'
         return (f'<tr><th scope="row"><button type="button" class="lt-name" data-lab="{escape(lab, quote=True)}" '
                 f'aria-pressed="false">{escape(lab)}</button></th>{cells}</tr>')
 

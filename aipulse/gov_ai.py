@@ -19,11 +19,13 @@ import io
 import json
 import math
 import re
+import shutil
 from datetime import date, datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 
 from . import feeds, infra_watch, pages, rss, store
+from .countries import FLAGS
 
 PATH = "government-ai-use/"
 KEY = "gov_ai"  # the meta row holding each list's rows and when it was last read
@@ -576,6 +578,11 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": title, "description": desc,
                 "url": f"{rss.SITE}{path}"}
         (out / path).mkdir(parents=True, exist_ok=True)
+        # every flag the page shows: the tracker copies only its own places' flags, so the Netherlands' was missing
+        (out / "flags").mkdir(exist_ok=True)
+        for fl in set(re.findall(r'flags/([a-z-]+\.svg)', html_body)):
+            if (FLAGS / fl).exists():
+                shutil.copy(FLAGS / fl, out / "flags" / fl)
         (out / path / "index.html").write_text(
             pages.page(f"{title} · AI Pulse", desc, path, html_body, data, pages.frame(conn, len(cards)), back,
                        "Every entry is the government's own, in its own words."),
