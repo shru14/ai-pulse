@@ -148,7 +148,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         if e["added"] > glossary.LAUNCH.isoformat():
             seen += f" Added to the glossary on {_day(e['added'])}."
         body = (pages.band("research", BOOK, "photos/cartoons/pages/glossary.svg", e["term"], f"What does {e['term']} mean?",
-                           meaning, f'<span class="kind">AI glossary · {escape(e["group"])}</span>')
+                           meaning, f'<span class="kind"><i>AI glossary</i><i>{escape(e["group"])}</i></span>')
                 + f'<p class="intro">{seen}</p>\n'
                 + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
                    f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'

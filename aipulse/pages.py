@@ -1286,6 +1286,11 @@ a.subscribe-btn{text-decoration:none}
   .cp .sh-sel{flex-direction:column;align-items:stretch;gap:2px}.cp .sh-sel select{max-width:none;width:100%}}
 @media (max-width:640px){.cp .sh-filters{position:static}.cp .sh-docs{display:flex;flex-direction:column;max-height:72vh;overflow-y:auto;overscroll-behavior-y:contain;padding-right:6px;border-bottom:3px solid var(--ink)}.cp .sh-doc{flex:none}}
 .cp .fh .kind{margin:10px 0 0;color:#000}  /* a glossary word's group, under its question */
+.cp .fh .kind i{font-style:normal}.cp .fh .kind i + i::before{content:" · "}
+/* phones: the two as tags, one below the other */
+@media (max-width:640px){.cp .fh .kind{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:8px}
+  .cp .fh .kind i{font-size:9.5px;padding:1px 6px;border:1.5px solid #000;background:#fff;letter-spacing:.06em}
+  .cp .fh .kind i + i::before{content:none}}
 /* "Cite this": a ready-made citation under the question, opened over the page so the band keeps its size */
 .cp .fh-cite{position:relative;margin-top:10px}
 .cp .fh-cite summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 10px;border:2px solid #000;
