@@ -717,7 +717,7 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     assert '<header class="top home">' in page and '<footer class="site-foot">' in page and 'href="site.css"' in page
     assert '<h1>Mixture of Experts</h1>' in page and '<a href="/glossary/parameters/">parameters</a>' in page
     assert "<h2>Related terms</h2>" in page and page.count('<li><div><a href="/glossary/') == glossary_pages.RELATED
-    assert '<span class="kind">AI glossary · Models</span>' in page and "Added to the glossary" not in page
+    assert '<span class="kind"><i>AI glossary</i><i>Models</i></span>' in page and "Added to the glossary" not in page
     assert "Mentioned in 1 story in the last 7 days." in page and '/all/?' not in page
     # its latest stories, found on the page itself (from data.json, as the site's underlines find them)
     assert '<h2 id="stories">Latest stories with this word</h2>' in page and 'data-match="[&quot;MoE&quot;' in page and 'data-case=1' in page
