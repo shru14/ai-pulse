@@ -496,16 +496,15 @@ SOURCES = [
      "government": True,
      "url": "https://www.gov.uk/api/search.json?q=%22artificial+intelligence%22&order=-public_timestamp&count=50"
             "&fields=title,link,description,public_timestamp"},
+    # The EU: the Commission's digital policy news and the data protection board's (© European Union, reused with
+    # acknowledgement). Their laws and proposals still go to the tracker; everything else naming AI is Policy.
+    {"name": "European Data Protection Board", "url": "https://www.edpb.europa.eu/feed/news_en", "category": "policy",
+     "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    {"name": "European Commission: Digital Strategy", "url": "https://digital-strategy.ec.europa.eu/en/rss.xml",
+     "category": "policy", "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
 ]
 
 # --- Regulation tracker: proposals and adopted laws ---
-_REG = {"category": "regulation"}
-SOURCES += [
-    {**_REG, "name": "European Data Protection Board", "url": "https://www.edpb.europa.eu/feed/news_en",
-     "jurisdictions": ["EU"]},
-    {**_REG, "name": "European Commission: Digital Strategy", "url": "https://digital-strategy.ec.europa.eu/en/rss.xml",
-     "jurisdictions": ["EU"]},
-]
 
 # --- Research: AI ethics, philosophy and law scholars, followed daily ---
 # Their arXiv papers are picked up by the author matching further down, and filed under Research (a paper
