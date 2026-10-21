@@ -1388,6 +1388,17 @@ def test_swiss_motions_go_to_the_tracker_and_postulates_to_policy(tmp_path):
     assert [h["stage"] for h in bills.ch_history(records[0])] == ["introduced", "passed_legislature"]
 
 
+def test_dinum_news_list():
+    from aipulse import feeds
+    listing = ('<h3 class="fr-card__title"><a href="/actualites/pacte-numerique-ia/">Le Pacte &quot;Numérique et IA&quot;</a>'
+               '</h3><div class="fr-card__desc">Signé le 10 septembre 2026, le Pacte…</div>'
+               '<p class="fr-card__detail">Publié le mardi 1er octobre 2026</p>').encode()
+    [e] = feeds.parse_dinum(listing)
+    assert (e["url"], e["title"], e["published"].date().isoformat()) == (
+        "https://www.numerique.gouv.fr/actualites/pacte-numerique-ia/", 'Le Pacte "Numérique et IA"', "2026-10-01")
+    assert e["summary"] == "Signé le 10 septembre 2026, le Pacte"
+
+
 def test_malaysia_ministry_releases_and_their_lead_paragraph():
     from aipulse import feeds, jurisdictions
     listing = (b'<a class="group" href="/en-GB/siaran/Rang-Undang-Undang-AI"><p class="font-semibold">Media Release</p>'

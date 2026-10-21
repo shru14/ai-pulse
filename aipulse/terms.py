@@ -228,6 +228,16 @@ TERMS: dict[str, tuple[str, str, str]] = {
                            "non-commercial purposes'"),
     "digital-strategy.ec.europa.eu": ("official", "https://commission.europa.eu/legal-notice_en",
                                       "European Commission: reuse allowed with acknowledgement"),
+    # Governments beyond the English-speaking ones (checked 21 Oct 2026)
+    "www.bundesregierung.de": ("terms read", "https://www.bundesregierung.de/breg-de/impressum",
+                               "Impressum read in full: provider, liability and image credits; nothing on robots, "
+                               "feeds or personal use"),
+    "www.numerique.gouv.fr": ("licence", "https://www.numerique.gouv.fr/mentions-legales/",
+                              "Contents under Licence Ouverte (etalab-2.0); links allowed without asking"),
+    "aesia.digital.gob.es": ("official", "https://aesia.digital.gob.es/es/aviso-legal",
+                             "Reuse for commercial and non-commercial purposes under Ley 37/2007, citing the source"),
+    "www.gov.br": ("licence", "https://www.gov.br/pt-br/termos-de-uso",
+                   "All content under Creative Commons Attribution-NoDerivatives 3.0"),
     # --- Research ---
     "rss.arxiv.org": ("licence", "https://info.arxiv.org/help/api/tou.html",
                       "arXiv's terms for its feeds and API; metadata is CC0"),

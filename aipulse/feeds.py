@@ -615,6 +615,27 @@ def parse_digital_my(html_bytes: bytes) -> list[dict]:
     return entries
 
 
+DINUM = "https://www.numerique.gouv.fr"
+_DINUM_ITEM = re.compile(r'<h3 class="fr-card__title">\s*<a href="(/actualites/[^"#?]+)">(.*?)</a>.*?'
+                         r'<div class="fr-card__desc">(.*?)</div>.*?Publié le \w+ (\d{1,2})(?:er)? (\w+) (\d{4})', re.S)
+_MOIS = {m: i for i, m in enumerate("janvier février mars avril mai juin juillet août septembre octobre novembre "
+                                     "décembre".split(), 1)}
+
+
+def parse_dinum(html_bytes: bytes) -> list[dict]:
+    """France's interministerial digital directorate (DINUM): its news list (title, link, summary, French date).
+    Its story pages carry no title or date a reader can use, so the list is read instead."""
+    entries, seen = [], set()
+    for path, title, desc, day, month, year in _DINUM_ITEM.findall(html_bytes.decode("utf-8", "replace")):
+        if path in seen or month.lower() not in _MOIS:
+            continue
+        seen.add(path)
+        entries.append({"title": clean_text(html.unescape(title), 200), "url": DINUM + html.unescape(path),
+                        "summary": clean_text(html.unescape(desc).rstrip("…")), "authors": [],
+                        "published": datetime(int(year), _MOIS[month.lower()], int(day), tzinfo=timezone.utc)})
+    return entries
+
+
 # A speech's opening courtesies say nothing about its subject.
 _COURTESY = re.compile(r"^(\d+\.\s*)?(first of all|thank|i would like to (thank|begin)|good (morning|afternoon|evening)|ladies and|"
                        r"salam|assalam|bismillah|yang (amat )?berhormat|distinguished|honourable|dear|it is (a|my) "
@@ -754,7 +775,7 @@ def page_meta(page_bytes: bytes) -> dict:
     return {"title": clean_text(title, 200), "summary": clean_text(summary), "published": parse_date(when) if when else None}
 
 
-PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
+PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "dinum": parse_dinum, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk,
            "github_repos": parse_github_repos, "hf_models": parse_hf_models, "hf_trending": parse_hf_trending,
            "github_releases": parse_github_releases,
