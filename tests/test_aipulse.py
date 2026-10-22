@@ -2386,6 +2386,28 @@ def test_word_of_the_day_is_a_specialist_word(monkeypatch):
     assert f"WORD OF THE DAY: {glossary.word_of_the_day(day, digest.SPECIALIST)['term']}" in text
 
 
+def test_word_of_the_day_from_a_smaller_story_does_not_come_back_within_a_week(monkeypatch):
+    from datetime import date, timedelta
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    monday = date(2026, 10, 19)
+
+    def card(d, i, title, outlets=0):
+        return {"id": f"{d}-{i}", "title": title, "summary": "", "url": f"https://ex.com/{d}/{i}", "source": f"S{i}",
+                "category": "news", "kind": "news", "date": d.isoformat(), "added_at": f"{d}T10:00:00+00:00",
+                "also": [{"source": f"O{i}{k}", "title": title, "url": f"https://o.com/{d}/{i}/{k}"} for k in range(outlets)]}
+
+    def day(d, *small):  # the 5 biggest stories use no specialist word; the words are in smaller ones
+        return [card(d, i, f"Big story {i} about OpenAI", outlets=10 - i) for i in range(6)] + \
+               [card(d, 10 + i, t) for i, t in enumerate(small)]
+    tuesday = monday + timedelta(days=1)
+    # TPU is the commoner word, so without the week before CUDA (the rarer) would come back on Tuesday
+    cards = day(monday, "Nvidia opens up CUDA") + day(tuesday, "Nvidia opens up CUDA", "Google rents out its TPU",
+                                                     "A TPU deal for Anthropic", "Meta weighs a TPU order")
+    assert "WORD OF THE DAY: CUDA" in digest.build(cards, ["news"], monday)[1]
+    assert "WORD OF THE DAY: TPU" in digest.build(cards, ["news"], tuesday)[1]  # not CUDA again
+
+
 def test_email_asks_readers_to_forward_it(monkeypatch):
     from datetime import date
     from aipulse import digest

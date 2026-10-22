@@ -11,6 +11,7 @@ List-Unsubscribe header, which mail apps show as an "Unsubscribe" button). No tr
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import smtplib
@@ -340,6 +341,9 @@ SPECIALIST = {
     "tpu", "asic", "hbm", "cuda", "kv-cache", "speculative-decoding", "bf16-and-fp8", "rack-scale-system",
     "test-time-compute", "swe-bench", "zero-shot-few-shot"}
 _TERMS: dict[str, frozenset[str]] = {}
+# A past day's word for one reader's choices, worked out once for the stories it was worked out from (_GAVE_FOR)
+_GAVE: dict[tuple, str] = {}
+_GAVE_FOR: list[list[dict]] = [[]]
 
 
 def _terms(c: dict) -> frozenset[str]:
@@ -382,6 +386,36 @@ def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: set[str] = fro
     return None, []
 
 
+def _tiers(cards: list[dict], day: date, streams: list[str], prefs: dict | None) -> list[list[dict]]:
+    """Where a day's word is looked for, as in its email: the biggest stories, the top 10, every story."""
+    by_day = _leave_out(by_streams(cards, streams, day), prefs)[0]
+    todays = [c for n in streams for c in by_day.get(n) or []]
+    top = sorted([c for c in todays if c.get("kind") not in SIDE_KINDS and _fits_top(c)], key=_rank, reverse=True)[:TOP]
+    return [_biggest(by_day, streams), top, todays]
+
+
+def _given(cards: list[dict], day: date, streams: list[str], prefs: dict | None) -> set[str]:
+    """The words the week before gave this reader. Each day's is picked again the way its email picked it (every
+    tier, avoiding its own week before), walking forward from two weeks back, so a word that came from the top 10
+    or from any story is remembered too."""
+    if _GAVE_FOR[0] is not cards:
+        _GAVE.clear()
+        _GAVE_FOR[0] = cards
+    gave: dict[date, str] = {}
+    reader = (tuple(streams), json.dumps(prefs or {}, sort_keys=True))  # readers who chose alike share it
+    for back in range(14, 0, -1):
+        d = day - timedelta(days=back)
+        if weekly(d):
+            continue  # Sunday's email gives the week's word, not the day's
+        avoid = {gave.get(d - timedelta(days=k)) for k in range(1, 8)} - {None}
+        key = (*reader, d, frozenset(avoid))
+        if key not in _GAVE:
+            _GAVE[key] = (_pick_word(cards, _tiers(cards, d, streams, prefs), avoid)[0]
+                          or glossary.word_of_the_day(d, SPECIALIST)["id"])
+        gave[d] = _GAVE[key]
+    return {gave[d] for k in range(1, 8) if (d := day - timedelta(days=k)) in gave}
+
+
 def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
           tiers: list[list[dict]] | None = None) -> tuple[list[str], str]:
     """The word of the day: the hardest specialist word in the day's biggest stories in this reader's email, else
@@ -389,11 +423,8 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
     glossary.word_of_the_day among SPECIALIST. With its meaning, the story that used it (a headline that shows it first) and a
     link to it in the site's glossary."""
     streams = streams or list(rss.FEEDS)
-    week = set()
-    for back in range(1, 8):  # the words the week before gave (their biggest stories), so none comes back within a week
-        by_day = _leave_out(by_streams(cards, streams, day - timedelta(days=back)), prefs)[0]
-        week.add(_pick_word(cards, [_biggest(by_day, streams)])[0])
-    wid, stories = _pick_word(cards, tiers or [], week - {None})
+    week = _given(cards, day, streams, prefs)  # so no word comes back within a week
+    wid, stories = _pick_word(cards, tiers or [], week)
     e = next(x for x in glossary.ENTRIES if x["id"] == wid) if wid else glossary.word_of_the_day(day, SPECIALIST)
     if wid:
         used = [c for c in stories if wid in _terms(c)]
