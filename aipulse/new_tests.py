@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-10-16"
+CHECKED_TO = "2026-10-22"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -39,6 +39,14 @@ BENCHY = re.compile(r"bench(?:mark)?(?:s|ing)?\b|leaderboard|\barena\b", re.I)
 #  the best result the abstract reports, the model that got it as the abstract names it ("" when it names none), the top
 #  score as a percentage when the abstract gives one (None otherwise))
 TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
+    "https://arxiv.org/abs/2610.28679": (
+        "VerifierBench", "agents",
+        "Whether models can write the checking code that tells if an AI agent has really finished a task.",
+        "Scores run from 10.6 to 62.1 (normalized balanced accuracy) across 19 models", "", None),
+    "https://arxiv.org/abs/2610.29968": (
+        "CulturalRiddles", "language-models",
+        "Models solving original riddles written by people in 62 cultures and 51 languages.",
+        "Even frontier models reach at most 22% accuracy in some communities", "", None),
     "https://arxiv.org/abs/2610.21397": (
         "Watts If? (DCBench-440)", "language-models",
         "Whether models can reason about what each early choice in planning an AI data centre (power, cooling, site) "
@@ -549,7 +557,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
 }
-BEATS_CHECKED_TO = "2026-10-19"
+BEATS_CHECKED_TO = "2026-10-21"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
