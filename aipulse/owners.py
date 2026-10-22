@@ -211,6 +211,8 @@ LEFT_OUT = {
         "reportedly; no investment named",
     "https://the-decoder.com/some-openai-shareholders-reportedly-question-whether-altman-can-steer-the-company-to-a-public-offering/":
         "no new stake named",
+    "https://www.xataka.com/robotica-e-ia/china-pone-jaque-a-anthropic-competencia-sus-modelos-amenaza-su-valoracion-antes-salir-a-bolsa":
+        "valuation and IPO talk; no investment named",
 }
 
 
