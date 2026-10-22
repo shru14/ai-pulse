@@ -217,6 +217,13 @@ RELEASES = [
      "API businesses over $20M a year and device makers need a commercial licence", "", False, "$1.00 / $2.70",
      "https://www.marktechpost.com/2026/10/16/stepfun-releases-step-5-preview-open-weights-600b-moe-27b-active-1m-context/",
      "https://huggingface.co/stepfun-ai/Step-5-Preview"),
+    ("2026-10-15", "Nvidia", "Nemotron 3.5 Bolt 74B-A9B 24GB", "Open", "", "OpenMDW-1.1", "", "", False, "",
+     "https://the-decoder.com/nvidias-nemotron-3-5-super-vl-is-an-open-model-built-to-run-enterprise-ai-agents-nonstop/",
+     "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB"),
+    ("2026-10-19", "Cloudflare", "Clairic", "Closed", "Preview on Workers AI; weights promised soon", "", "", "", False, "",
+     "https://blog.cloudflare.com/clairic-extraction-model/", ""),
+    ("2026-10-19", "MiniMax", "MiniMax M3.1 Flash", "Closed", "Weights promised later", "", "", "", False, "$0.15 / $0.60",
+     "https://www.minimax.io/blog/minimax-m31f", ""),
 ]
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -333,10 +340,26 @@ LEFT_OUT = {
     "https://api-docs.deepseek.com/news/news261017": "DeepSeek V4.1 Flash 1017: one news outlet within 3 days",
     "https://pandaily.com/skywork-matrix-game-4-open-source-game-engine-real-time-neural-rendering-rtx-5090":
         "Matrix-Game 4.0: one news outlet within 3 days",
+    "https://the-decoder.com/kling-ai-drops-version-4-0-with-stereo-audio-multilingual-lip-sync-and-a-lighter-flash-variant/":
+        "Kling 4.0: its weights, price and home country are not stated in the stories",
+    "https://techcrunch.com/2026/10/19/nvidia-launches-new-open-models-to-run-agents-in-the-enterprise-and-on-pcs/":
+        "same as Nemotron 3.5 Super VL and Nemotron 3.5 Bolt 74B-A9B 24GB",
+    "https://siliconangle.com/2026/10/19/ai-developer-doubleai-debuts-maxwell-code-execution-model/":
+        "Maxwell: one news outlet within 3 days",
+    "https://ollama.com/blog/clef": "same as Clef",
+    "https://aws.amazon.com/blogs/machine-learning/pegasus-1-5-from-twelvelabs-is-now-available-in-amazon-bedrock/":
+        "Pegasus 1.5: no news outlet within 3 days (a hosting blog only)",
+    "https://pandaily.com/ace-robotics-ace-brain-0-6-9b-visual-grounding-spatial-supervision-qwen3-5-gpt-6-astra":
+        "ACE-Brain-0.6: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/18/mistral-timestral-time-series-foundation-model/":
+        "Timestral: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/19/minimax-m3-1-flash-release/": "same as MiniMax M3.1 Flash",
+    "https://siliconangle.com/2026/10/19/minimax-launches-m3-1-flash-model-says-it-cuts-ai-agent-costs-by-70/":
+        "same as MiniMax M3.1 Flash",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-10-17"
+CHECKED_TO = "2026-10-19"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform

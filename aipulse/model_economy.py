@@ -32,7 +32,9 @@ BEFORE = {
                             "https://the-decoder.com/as-agentic-ai-pushes-rivals-to-raise-prices-and-cap-usage-deepseek-ships-a-good-enough-model-for-almost-nothing/"),
 }
 # priced releases checked and left out of Launch prices, with why
-LEFT_OUT = {}
+LEFT_OUT = {
+    "MiniMax M3.1 Flash": "Earlier model's launch price not found",
+}
 FROM = "2026-01-01"  # How long before you must switch counts shutdowns from this day
 SHOWN = 10  # model rows shown before "Show all"
 _PRICE = re.compile(r"^\$([\d.]+) / \$([\d.]+)$")
