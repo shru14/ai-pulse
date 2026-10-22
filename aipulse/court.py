@@ -407,6 +407,7 @@ LEFT_OUT = {
     "https://the-decoder.com/authors-guild-threatens-leading-ai-companies-with-another-copyright-lawsuit/",
     "https://the-decoder.com/ai-copyright-far-from-settled-as-japan-and-israel-stake-out-early-positions/",
     "https://techcrunch.com/2023/05/31/amazon-settles-with-ftc-for-25m-after-flouting-kids-privacy-and-deletion-requests/",
+    "https://techpolicy.press/openai-faces-lawsuits-subpoenas-and-eu-scrutiny-in-a-single-week",  # roundup of filings, no court or plaintiffs named, no new step
 }
 
 # The companies a case's "sued" names, where splitting it on commas and "and" would be wrong. An empty list: no
