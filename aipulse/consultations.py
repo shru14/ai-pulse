@@ -49,9 +49,26 @@ CHECKED_TO = "2026-10-17"
 # (place, the consultation's title as its official page gives it, who is asking, the last day to respond (YYYY-MM-DD),
 #  its official page, the story or list entry it was found through)
 ADDED: list[tuple[str, str, str, str, str, str]] = [
+    ("US", "Division of Program Coordination, Planning, and Strategic Initiatives, Office of the Director Notice of Proposed Reorganization",
+     "Health and Human Services Department, National Institutes of Health", "2026-10-28",
+     "https://www.federalregister.gov/documents/2026/10/14/2026-20891/division-of-program-coordination-planning-and-strategic-initiatives-office-of-the-director-notice-of",
+     "https://www.federalregister.gov/documents/2026/10/14/2026-20891/division-of-program-coordination-planning-and-strategic-initiatives-office-of-the-director-notice-of"),
+    ("UK", "Growing up in the online world: a national consultation", "Department for Science, Innovation and Technology",
+     "2026-05-26", "https://www.gov.uk/government/consultations/growing-up-in-the-online-world-a-national-consultation",
+     "https://www.gov.uk/government/consultations/growing-up-in-the-online-world-a-national-consultation"),
 ]
 # stories and list entries checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://www.federalregister.gov/documents/2026/09/30/2026-20023/request-for-information-rfi-regarding-the-digitization-and-modernization-of-the-national-technical":
+        "AI only in passing (data more accessible to AI)",
+    "https://www.federalregister.gov/documents/2026/06/05/2026-11353/reforming-the-high-cost-program-for-an-all-ip-future-connect-america-fund-a-national-broadband-plan":
+        "AI only in passing (a reason for broadband rules)",
+    "https://www.itweb.co.za/article/sa-firms-urged-to-be-more-proactive-with-ai-training-governance/Olx4zMkaB6nv56km":
+        "no government asking the public (a conference keynote)",
+    "https://www.xataka.com/robotica-e-ia/50-muertos-1-000-millones-dolares-danos-liston-que-anthropic-quiere-fijar-gobierno-pueda-frenar-modelo-ia":
+        "a company proposing, no government asking the public",
+    "https://the-decoder.com/anthropic-consults-law-firms-to-set-fair-negotiation-norms-before-ai-agents-start-cutting-deals/":
+        "a company asking, not a government",
     "https://www.dawn.com/news/2037803/anthropic-proposes-law-regulating-ai-to-us-lawmakers":
         "a company sharing a draft bill with lawmakers, no government asking the public",
     "https://www.federalregister.gov/documents/2026/08/12/2026-16371/request-for-information-rfi-on-modernizing-the-national-vulnerability-database-in-the-age-of":
