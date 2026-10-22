@@ -120,6 +120,8 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://dcnnmagazine.com/projects-and-infrastructure/1-3gw-solar-farm-and-1gw-data-centre-proposed-in-norfolk/", "EPL Norfolk (Evolution Power)", "UK", "King's Lynn, west Norfolk", "1 GW", "", "announced"),
     ("https://w.media/canadian-government-eyes-up-to-us-1-3-billion-for-60-mw-data-center/", "Defence Construction Canada, for the Communications Security Establishment", "Canada", "Ottawa, Ontario", "60 MW", "CA$ 1.5-1.85bn, estimated", "announced"),    ("https://w.media/everwind-plans-us-7-billion-nova-scotia-data-center-campus-with-anthropic-as-tenant/", "EverWind, with Anthropic as tenant", "Canada", "Point Tupper, Richmond County, Nova Scotia", "95 MW first, 420 MW by 2028", "Over CA$ 8bn for the campus", "announced"),
     ("https://w.media/digital-realty-breaks-ground-on-22-mw-ankara-data-center/", "Digital Realty and Rönesans Infrastructure", "Türkiye", "Ankara", "22 MW", "", "building"),
+    ("https://w.media/solecrypt-unveils-40-mw-ai-campus-in-bizerte-tunisia/", "SoleCrypt", "Tunisia", "Bizerte", "40 MW", "", "announced"),
+    ("https://w.media/intercontinental-energy-targets-up-to-300mw-ai-campus-at-wa-renewable-energy-hub/", "InterContinental Energy", "Australia", "Australian Renewable Energy Hub, East Pilbara, Western Australia", "Up to 300 MW", "", "announced"),
 
 ]
 
@@ -199,6 +201,8 @@ LEFT_OUT: set[str] = {
     "http://www.bernama.com/en/news.php?id=2622718",  # market forecast
     "https://www.canarymedia.com/articles/batteries/illinois-storage-procurement-incentives-results",  # grid batteries, not data centres
     "http://www.bernama.com/en/news.php?id=2622651",  # works contract; the data centre's owner not named
+    "https://dcnnmagazine.com/investment-and-business/armada-johnson-controls-plan-500mw-ai-infrastructure-rollout/",  # company-wide 500MW plan; no site named
+    "https://www.channelnewsasia.com/business/besis-quarterly-orders-beat-expectations-ai-data-centre-demand-stays-strong-6481556",  # equipment maker's quarterly orders
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
