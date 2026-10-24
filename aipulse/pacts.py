@@ -177,6 +177,11 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://olhardigital.com.br/2026/10/22/inteligencia-artificial/meta-descumpre-ordens-do-tse-sobre-ia-e-pode-"
+    "ser-multada-no-brasil/":
+        "Prosecutor only asked for a fine, none imposed; mostly about political content on Meta's platforms",
+    "https://techcrunch.com/2026/10/21/while-amazon-blocks-ai-agents-walmart-rolls-out-the-welcome-mat/":
+        "Companies acting on their own, no government action",
     "https://dplnews.com/los-planes-de-la-ministra-lincolao-para-instalar-a-chile-en-el-circuito-global-de-la-ia-"
     "estamos-cerca-de-cerrar-un-acuerdo-con-openai/":
         "Chile's minister says it is close to an OpenAI agreement, not signed yet",
