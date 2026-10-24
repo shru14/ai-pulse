@@ -255,7 +255,7 @@ def _week_span(day: date) -> str:
 
 def _the_week(cards: list[dict], day: date, prefs: dict, dossier: dict | None) -> tuple[list[str], str]:
     """Sunday's opening: a black band "The week in AI", the story of the week (as the site picks it,
-    digest._week_story) as a hero with its picture, then the reader's weekly dossier card."""
+    digest._week_story) as a hero (no picture, as Hot today), then the reader's weekly dossier card."""
     span = _week_span(day)
     text = [f"THE WEEK IN AI, {span}", ""]
     html = _band("The week in AI", span)
@@ -271,10 +271,7 @@ def _the_week(cards: list[dict], day: date, prefs: dict, dossier: dict | None) -
             f'line-height:1.15;color:{INK};text-decoration:none">{escape(story["title"])}</a></div>'
             + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
             + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(story))}</div>'
-              f'{_button("Read the story →", story["url"])}</td></tr>'
-              f'<tr><td align="center" style="background:{FILL[n]};border-top:3px solid {INK};padding:0">'
-              f'<img src="{_art(story, n)}" width="240" alt="" style="display:block;width:240px;max-width:70%;height:auto;'
-              f'border:0;margin:0 auto"></td></tr>')
+              f'{_button("Read the story →", story["url"])}</td></tr>')
             + '</td></tr>')
     dossier_text, dossier_html = _dossier(dossier)
     if dossier_html:
