@@ -2761,9 +2761,9 @@ def test_the_email_introduces_one_new_feature_a_day_each_once():
     start = digest.FEATURES_FROM
     days = [start + timedelta(days=k) for k in range(40)]
     shown = [digest._feature(d) for d in days]
-    # newest first, every one once, none on Sundays (the dossier's day) or before the start
+    # newest first, every one once, the Sunday email's day too, none before the start
     assert [f for f in shown if f] == digest.FEATURES
-    assert all(f is None for d, f in zip(days, shown) if digest.weekly(d))
+    assert all(f for d, f in zip(days, shown) if d < start + timedelta(days=len(digest.FEATURES)))
     assert digest._feature(start - timedelta(days=1)) is None
     # a small strip at the top, above the day's stories, with a link to the page on the site
     day = next(d for d in days if not digest.weekly(d))

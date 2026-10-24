@@ -513,8 +513,8 @@ def _new_stream(day: date, streams: list[str]) -> str:
 
 
 # Pages built lately, introduced one per email, newest first, each once: (name, one plain line, path on the site).
-# Days are counted from FEATURES_FROM (the day the email is about, sent the next morning), skipping the Sunday
-# email's day (it has the dossier), so every reader sees the same feature on the same day and none twice. A new page
+# Days are counted from FEATURES_FROM (the day the email is about, sent the next morning), the Sunday email's day
+# too since 24 Oct (the first one after FEATURES_FROM), so every reader sees the same feature on the same day and none twice. A new page
 # goes at the end, with FEATURES_FROM left as it is.
 FEATURES_FROM = date(2026, 10, 18)  # Monday 19 October's email
 FEATURES = [
@@ -569,11 +569,11 @@ FEATURES = [
 
 
 def _feature(day: date) -> tuple[str, str, str] | None:
-    """The page this day's email introduces: the n-th of FEATURES on the n-th day from FEATURES_FROM that isn't a
-    weekly day; nothing in the Sunday email, before, or once all have been shown."""
-    if day < FEATURES_FROM or weekly(day):
+    """The page this day's email introduces: the n-th of FEATURES on the n-th day from FEATURES_FROM; nothing before,
+    or once all have been shown."""
+    if day < FEATURES_FROM:
         return None
-    n = sum(1 for k in range((day - FEATURES_FROM).days) if not weekly(FEATURES_FROM + timedelta(days=k)))
+    n = (day - FEATURES_FROM).days
     return FEATURES[n] if n < len(FEATURES) else None
 
 
@@ -977,13 +977,13 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     change = subscribers.choices_link(unsubscribe) if unsubscribe else f"{rss.SITE}#subscribe"
     change_words = "Change my streams and choices" if unsubscribe else "Change streams"
     stop = unsubscribe or change
+    if weekly(day):  # every Sunday email: the dossier's button opens the reader's own form at its question box
+        dossier = {**(dossier or {}), "ask": subscribers.ask_link(unsubscribe) if unsubscribe else change}  # (a sample: sign-up)
     if layout == "poster":  # the poster email (poster.py): the day's hot story first, then the rest in its own look
         from . import poster
         return poster.build(cards, by_stream, left, streams, day, prefs, dossier, unsubscribe, change, stop)
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
-        if weekly(day):  # every Sunday email: the dossier's button opens the reader's own form at its question box
-            dossier = {**(dossier or {}), "ask": subscribers.ask_link(unsubscribe) if unsubscribe else change}  # (a sample: sign-up)
         open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left, dossier, (change, change_words))
         table_text, table_html = [], ""
         page, band, top = PAGE, _band(open_text[0], (prefs or {}).get("often") != "weekly"), 16
