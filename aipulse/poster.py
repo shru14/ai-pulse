@@ -161,7 +161,7 @@ _SMALL = {"a", "an", "the", "to", "of", "in", "on", "at", "for", "with", "and", 
 
 def _subject(title: str) -> str:
     """The lead headline's first SUBJECT_WORDS words, as the outlet wrote them, then "…"; never ending on a small word
-    ("to", "the", "will"...). The whole headline is in the preview line (_also)."""
+    ("to", "the", "will"...). The inbox shows nothing after it (see BLANK_PREVIEW)."""
     words = title.split()
     if len(words) <= SUBJECT_WORDS:
         return title
@@ -172,21 +172,9 @@ def _subject(title: str) -> str:
     return " ".join(cut).rstrip(",:;—–-") + "…"
 
 
-def _also(top: list[dict], total: int) -> str:
-    """The preview line after the subject: the lead headline, then the companies in the next stories (our tags) and
-    how many more."""
-    seen = _tags(top[0]) & set(classify.COMPANY_TERMS)
-    names = []
-    for c in top[1:]:
-        name = next((t for t in digest.story_tags(c) if t in classify.COMPANY_TERMS and t not in seen and t not in names), None)
-        if name:
-            names.append(name)
-        if len(names) == 2:
-            break
-    more = total - 1 - len(names)
-    if not names:
-        return f"{top[0]['title']} · and {more} more" if more > 0 else top[0]["title"]
-    return f"{top[0]['title']} · plus " + (" and ".join(names) if more <= 0 else ", ".join(names) + f" and {more} more")
+# The inbox shows only the subject: mail apps fill the line after it from the email's first text, so the email
+# starts with hidden blank characters (zero-width non-joiner + no-break space) long enough to fill that line
+BLANK_PREVIEW = "&zwnj;&nbsp;" * 120
 
 
 def _tile(c: dict, n: str, picture: str, yours: bool) -> str:
@@ -420,11 +408,10 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                 f'</td></tr>')
 
     subject = _subject(top[0]["title"]) if top else f"AI Pulse · {digest.long_day(day)}"
-    preheader = _also(top, len(todays)) if top else ""  # shown after the subject
     page = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             '<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;display=swap" rel="stylesheet">'
             f'<title>{escape(subject)}</title><style>{STYLE}</style></head><body style="margin:0;padding:0;background:#ffffff">'
-            f'<div style="display:none;max-height:0;overflow:hidden;opacity:0">{escape(preheader)}</div>'
+            f'<div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px">{BLANK_PREVIEW}</div>'
             '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff"><tr>'
             '<td align="center" style="padding:10px 6px 20px">'
             f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;'
