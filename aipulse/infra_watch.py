@@ -122,6 +122,10 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/digital-realty-breaks-ground-on-22-mw-ankara-data-center/", "Digital Realty and Rönesans Infrastructure", "Türkiye", "Ankara", "22 MW", "", "building"),
     ("https://w.media/solecrypt-unveils-40-mw-ai-campus-in-bizerte-tunisia/", "SoleCrypt", "Tunisia", "Bizerte", "40 MW", "", "announced"),
     ("https://w.media/intercontinental-energy-targets-up-to-300mw-ai-campus-at-wa-renewable-energy-hub/", "InterContinental Energy", "Australia", "Australian Renewable Energy Hub, East Pilbara, Western Australia", "Up to 300 MW", "", "announced"),
+    ("https://w.media/soluna-and-applied-digital-to-develop-50-mw-ai-data-center-at-a-texas-wind-farm/", "Soluna and Applied Digital", "US", "Briscoe County, Texas", "50 MW", "", "announced"),
+    ("https://w.media/gingerah-seeks-anchor-tenant-for-up-to-1gw-data-centre-in-western-australia/", "Gingerah Energy", "Australia", "About 100 km south of Broome, Western Australia", "Up to 1 GW", "", "announced"),
+    ("https://www.thelec.net/news/articleView.html?idxno=14818", "KT Cloud", "South Korea", "Ansan, Gyeonggi Province", "50 MW", "", "building"),
+    ("https://dplnews.com/iren-construira-centro-de-datos-en-espana/", "Iren", "Spain", "Badajoz", "300 MW", "", "announced"),
 
 ]
 
@@ -203,6 +207,8 @@ LEFT_OUT: set[str] = {
     "http://www.bernama.com/en/news.php?id=2622651",  # works contract; the data centre's owner not named
     "https://dcnnmagazine.com/investment-and-business/armada-johnson-controls-plan-500mw-ai-infrastructure-rollout/",  # company-wide 500MW plan; no site named
     "https://www.channelnewsasia.com/business/besis-quarterly-orders-beat-expectations-ai-data-centre-demand-stays-strong-6481556",  # equipment maker's quarterly orders
+    "https://www.foodandwaterwatch.org/press/2026/10/23/fl-psc-staff-to-regulators-deny-duke-energys-data-center-proposal/",  # staff recommendation; the commission has not decided
+    "https://datacenterpost.com/duos-technologies-group-advances-edge-ai-expansion-with-20-mw-customer-agreement-and-plans-for-additional-sites/?utm_source=rss&utm_medium=rss&utm_campaign=duos-technologies-group-advances-edge-ai-expansion-with-20-mw-customer-agreement-and-plans-for-additional-sites",  # lease of capacity; no site or owner named
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
