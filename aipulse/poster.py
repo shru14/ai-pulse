@@ -385,7 +385,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
 
     # The Firehose: a row per stream, each opening that stream's part of the day's page on the site (every story)
     web = digest.full_page(day)
-    text += ["THE FIREHOSE", f"All {stories} stories of {day:%A}, nothing held back: {web}"]
+    text += ["THE FIREHOSE", f"All {stories} stories of {day:%A}: {web}"]
     rows = []
     for n in streams:
         name, count = rss.FEEDS[n][1], len(by_stream[n])
@@ -400,7 +400,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     html.append(f'<tr><td style="padding:18px 20px 16px;background:{INK};color:#ffffff"><div style="font-family:{HEAD};'
                 f'font-size:22px;line-height:1.2;color:#ffffff">The Firehose</div><div style="font-size:14px;line-height:1.45;'
                 f'margin-top:4px;color:#ffffff">'
-                f'All {stories} stories of {day:%A}. No filter, nothing held back, free.</div></td></tr>'
+                f'All {stories} stories of {day:%A}.</div></td></tr>'
                 f'<tr><td style="padding:6px 20px 22px">{_table("".join(rows))}<div style="margin-top:16px">'
                 f'{_button(f"Open all {stories} stories →", web)}</div></td></tr>')
 
