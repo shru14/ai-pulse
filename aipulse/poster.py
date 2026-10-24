@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 import re
+import urllib.request
 from datetime import date
 from html import escape
 from pathlib import Path
@@ -31,21 +32,26 @@ FEATURE_FILL = {"tool": FILL["releases"], "news": FILL["news"], "research": FILL
 TOP_NEWS = 6  # after the hot story
 LANE_STORIES = 3
 
-# A story's picture: a feature drawing whose tags it has, else its stream's own drawing (see _art)
+# A story's picture: a drawing that shows its subject, only when its tags or headline name that subject (a
+# court case: a gavel; chips: a chip; power: a power plant); else its stream's own drawing, which says what kind of
+# story it is. Drawings that only stand for one of our pages (timelines, checklists, cards) are never used here.
 ART_RULES = [
-    ({"IPO", "Funding", "M&A"}, "who-owns-a-piece-of-whom"),
-    ({"IPO", "Funding", "M&A"}, "ai-buyouts"),
-    ({"Jobs & Labor"}, "jobs-blamed-on-ai"),
-    ({"Elections", "Deepfakes", "Misuse"}, "harm-to-rule"),
-    ({"Safety", "Alignment", "Interpretability", "Existential Risk"}, "ai-safety-hub"),
-    ({"Export Controls", "Chips"}, "chip-export-rules"),
-    ({"Power & grid", "Energy", "Water", "Emissions & climate"}, "who-powers-ai"),
-    ({"Land & local pushback", "Rules & permits"}, "pushback-and-permits"),
-    ({"Builds & deals", "Hardware & compute", "Compute & Data Centers"}, "data-centre-builds"),
-    ({"Benchmarks"}, "new-tests-for-ai"),
-    ({"Open Models"}, "release-cards"),
+    (set(), r"\b(sues?|sued|lawsuits?|court|judge|trial)\b", "ai-in-court"),
+    (set(), r"\b(fined|fines|fining|penalt(?:y|ies)|banned|bans|ban on)\b", "ai-fines-and-bans"),
+    ({"Export Controls"}, r"\bexport", "chip-export-rules"),
+    ({"M&A"}, r"\b(acquires?|acquired|acquisition|buys|buyout|takeover)\b", "ai-buyouts"),
+    ({"IPO", "Funding"}, r"\b(IPO|raises|raised|funding|investment|round|Series [A-H]|valuation|stake)\b", "who-owns-a-piece-of-whom"),
+    (set(), r"\b(retire[sd]?|deprecat\w*|shut(?:s|ting)? down|sunset)\b", "models-being-retired"),
+    (set(), r"\b(prices?|pricing)\b", "model-economy"),
+    ({"Jobs & Labor"}, r"\b(jobs?|layoffs?|laid off|workers?|workforce|hiring|cuts|culls?|staff)\b", "jobs-blamed-on-ai"),
+    ({"Deepfakes", "Misuse", "Elections"}, "", "harm-to-rule"),
+    ({"Safety", "Alignment", "Existential Risk"}, "", "ai-safety-hub"),
+    ({"Benchmarks"}, r"\b(benchmarks?|leaderboards?|scores?|tests?|evals?|evaluations?)\b", "new-tests-for-ai"),
+    ({"Chips"}, "", "compute-behind-notable-models"),
+    ({"Land & local pushback", "Rules & permits"}, r"\b(oppos\w*|protest\w*|pushback|permits?|zoning|moratorium|reject\w*|deny|denied|residents|community)\b", "pushback-and-permits"),
+    ({"Power & grid", "Energy", "Water", "Emissions & climate"}, r"\b(power|energy|grid|electric\w*|nuclear|solar|wind|gas|water|cooling|emissions|[MG]W|megawatts?|gigawatts?)\b", "who-powers-ai"),
+    ({"Builds & deals", "Compute & Data Centers"}, r"\b(data cent(?:er|re)s?|campus|build)", "data-centre-builds"),
 ]
-LAB_TAGS = {"OpenAI", "Anthropic", "Google", "Meta", "DeepSeek", "xAI", "Mistral", "Alibaba"}
 
 # "Pick your lane": who a story matters to, from its stream and tags (a story goes in the first lane that takes it)
 _MONEY_WORDS = re.compile(r"\b(stocks?|shares|markets?|earnings|investors?|valuation|rally|futures|revenue|forecast|IPO)\b", re.I)
@@ -91,20 +97,15 @@ def _picture(name: str) -> str:
     return f"https://raw.githubusercontent.com/{repo}/{ref}/templates/photos/cartoons/png/{name}.png"
 
 
-def _art(c: dict, n: str, used: set[str]) -> str:
-    """The picture for a story: the first drawing not yet used in this email among the feature drawings its tags
-    match, a lab's (timelines, then promises) for lab news, release cards for a release, then its stream's; when all
-    are used, the best fit again."""
-    t = _tags(c)
-    fits = [f"features/{name}" for tags, name in ART_RULES if t & tags]
-    if n == "news" and t & LAB_TAGS:
-        fits += ["features/lab-timelines", "features/promises"]
-    if n == "releases":
-        fits.append("features/release-cards")
-    fits.append(f"streams/{rss.FEEDS[n][0]}")
-    pick = next((f for f in fits if f not in used), fits[0])
-    used.add(pick)
-    return _picture(pick)
+def _art(c: dict, n: str) -> str:
+    """The picture for a story: the first ART_RULES drawing whose tags (all of a rule's tags count) or headline words
+    (where a rule has both, a tag and the words must both be there) it has, else its stream's drawing."""
+    t, title = _tags(c), c.get("title") or ""
+    for tags, words, name in ART_RULES:
+        tagged, said = bool(t & tags), bool(words and re.search(words, title, re.I))
+        if (tagged and said) if tags and words else (tagged or said):
+            return _picture(f"features/{name}")
+    return _picture(f"streams/{rss.FEEDS[n][0]}")
 
 
 def _by(c: dict) -> str:
@@ -192,11 +193,20 @@ def _word_and_meme(cards: list[dict], day: date, streams: list[str], prefs: dict
     meme = memes.of_the_day(cards, day)
     picture = meme and memes.render(meme)
     if picture:
-        digest.INLINE[digest.MEME_CID] = picture
+        # the site's copy (static.py publishes the past week's), so nothing is attached; inside the email if not there yet
+        src = f"{rss.SITE}daily/{day.isoformat()}-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
+        try:
+            with urllib.request.urlopen(urllib.request.Request(src, method="HEAD"), timeout=10) as r:
+                online = r.status == 200
+        except OSError:
+            online = False
+        if not online:
+            digest.INLINE[digest.MEME_CID] = picture
+            src = "cid:" + digest.MEME_CID
         text += memes.text(meme) + [""]
         html += _table(f'<tr><td align="center" style="padding:14px;background:{VERMILION};border:2px solid {INK}">'
                        f'<div style="font-weight:bold;font-size:12px;letter-spacing:.5px;color:#ffffff;margin-bottom:10px">'
-                       f'MEME OF THE DAY</div>{memes.html(meme, "cid:" + digest.MEME_CID, small=True)}</td></tr>', "margin:0 0 26px")
+                       f'MEME OF THE DAY</div>{memes.html(meme, src, small=True)}</td></tr>', "margin:0 0 26px")
     return text, html
 
 
@@ -214,7 +224,6 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     mine = [c for c in main if id(c) in picks][:digest.PICKS]
     top = (mine + [c for c in main if c not in mine])[:1 + TOP_NEWS] or ranked[:1 + TOP_NEWS]
     shown = {id(c) for c in top}
-    used: set[str] = set()
     text, html = [], []
     stories = len(todays)  # stories, not outlets: the stream rows add up to it
     pad = 'style="padding:20px 20px 0"'
@@ -247,13 +256,13 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
             + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(hot))}</div>'
               f'{_button("Read the story →", hot["url"])}</td>'
               f'<td width="34%" valign="bottom" style="width:34%;background:{FILL[n]};border-left:3px solid {INK};padding:0">'
-              f'<img src="{_art(hot, n, used)}" width="220" alt="" style="display:block;width:100%;height:auto;border:0"></td></tr>')
+              f'<img src="{_art(hot, n)}" width="220" alt="" style="display:block;width:100%;height:auto;border:0"></td></tr>')
             + '</td></tr>')
 
     body = []  # the sections in the padded column
     if len(top) > 1:
         text += ["TOP NEWS", *(f"• [{rss.FEEDS[stream_of[id(c)]][1]}] {c['title']} ({_by(c)}) {c['url']}" for c in top[1:]), ""]
-        tiles = [_tile(c, stream_of[id(c)], _art(c, stream_of[id(c)], used), id(c) in picks) for c in top[1:]]
+        tiles = [_tile(c, stream_of[id(c)], _art(c, stream_of[id(c)]), id(c) in picks) for c in top[1:]]
         tiles += [""] * (-len(tiles) % 3)
         # three to a row at every width, as on a computer (a phone shows the same, smaller)
         grid = "".join("<tr>" + "".join(f'<td width="33%" valign="top" style="padding:0 {5 if k % 3 < 2 else 0}px 10px '
