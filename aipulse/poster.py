@@ -3,13 +3,15 @@ day's most-reported), top news, the word and meme of the day, the number of the 
 the rest of the day by reader ("Pick your lane"), the review strip, then The Firehose: a row per stream that opens
 every story of the day on the site. One layout at every width (no phone-only rules), so phones show what a computer
 does. Nothing in it is written by AI: headlines and sentences are the outlets' own, pictures are our own drawings
-(templates/photos/cartoons, as PNG: mail apps don't show SVG), picked by each story's tags.
+(templates/photos/cartoons, as PNG: mail apps don't show SVG), picked by each story's tags and linked from the site
+(see _picture); only the meme travels inside the email.
 
     python -m aipulse digest --to someone@example.com --layout poster [--day 2026-10-23] [--dry-run page.html]
 """
 
 from __future__ import annotations
 
+import os
 import re
 from datetime import date
 from html import escape
@@ -80,10 +82,13 @@ def _tags(c: dict) -> set[str]:
 
 
 def _picture(name: str) -> str:
-    """A drawing's content ID, its PNG put inside the email (digest.INLINE)."""
-    cid = f"art-{name.replace('/', '-')}@aipulse"
-    digest.INLINE[cid] = (ART / f"{name}.png").read_bytes()
-    return "cid:" + cid
+    """A drawing's address: on the site (static.py publishes templates/photos), or, for a sample sent from another
+    branch on GitHub Actions, that branch's copy on GitHub. Linked, not attached, so the inbox lists no attachments."""
+    ref = os.environ.get("GITHUB_REF_NAME", "main")
+    if ref == "main":
+        return f"{rss.SITE}photos/cartoons/png/{name}.png"
+    repo = os.environ.get("GITHUB_REPOSITORY", "shru14/ai-pulse")
+    return f"https://raw.githubusercontent.com/{repo}/{ref}/templates/photos/cartoons/png/{name}.png"
 
 
 def _art(c: dict, n: str, used: set[str]) -> str:
@@ -158,16 +163,15 @@ def _subject(top: list[dict], total: int) -> str:
     return f"{top[0]['title']} · plus " + (" and ".join(names) if more <= 0 else ", ".join(names) + f" and {more} more")
 
 
-def _news_row(c: dict, n: str, picture: str, yours: bool) -> str:
-    """A top-news story as a row: its picture on its stream's colour, then its stream, headline and outlets."""
+def _tile(c: dict, n: str, picture: str, yours: bool) -> str:
+    """A top-news story as a tile: its stream and picture on the stream's colour, then its headline and outlets."""
     kicker = rss.FEEDS[n][1] + (" · Your choice" if yours else "")
-    return (f'<tr><td width="30%" valign="middle" style="width:30%;background:{FILL[n]};border:2px solid {INK};padding:0">'
-            f'<a href="{escape(c["url"])}"><img src="{picture}" width="170" alt="" style="display:block;width:100%;height:auto;'
-            f'border:0"></a></td><td valign="top" style="padding:2px 0 0 14px;border-top:2px solid {INK}">'
-            f'{_label(kicker)}<div style="margin:6px 0 4px"><a href="{escape(c["url"])}" style="color:{INK};'
-            f'text-decoration:none;font-weight:bold;font-size:15px;line-height:1.35">{escape(c["title"])}</a></div>'
-            f'<div style="font-size:12px;color:{GREY}">{escape(_by(c))}</div></td></tr>'
-            f'<tr><td colspan="2" style="height:12px;font-size:0;line-height:0">&nbsp;</td></tr>')
+    return _table(f'<tr><td style="background:{FILL[n]};border-bottom:2px solid {INK};padding:0">{_label(kicker)}'
+                  f'<a href="{escape(c["url"])}"><img src="{picture}" width="190" alt="" style="display:block;width:100%;'
+                  f'height:auto;border:0"></a></td></tr><tr><td style="padding:8px 8px 10px">'
+                  f'<a href="{escape(c["url"])}" style="color:{INK};text-decoration:none;font-weight:bold;font-size:13px;'
+                  f'line-height:1.35">{escape(c["title"])}</a><div style="font-size:11px;color:{GREY};margin-top:5px">'
+                  f'{escape(_by(c))}</div></td></tr>', f"border:2px solid {INK}")
 
 
 def _word_and_meme(cards: list[dict], day: date, streams: list[str], prefs: dict, tiers: list[list[dict]]) -> tuple[list[str], str]:
@@ -249,8 +253,13 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     body = []  # the sections in the padded column
     if len(top) > 1:
         text += ["TOP NEWS", *(f"• [{rss.FEEDS[stream_of[id(c)]][1]}] {c['title']} ({_by(c)}) {c['url']}" for c in top[1:]), ""]
-        body.append(_heading("Top news") + _table("".join(_news_row(c, stream_of[id(c)], _art(c, stream_of[id(c)], used),
-                                                                    id(c) in picks) for c in top[1:]), "margin:0 0 14px"))
+        tiles = [_tile(c, stream_of[id(c)], _art(c, stream_of[id(c)], used), id(c) in picks) for c in top[1:]]
+        tiles += [""] * (-len(tiles) % 3)
+        # three to a row at every width, as on a computer (a phone shows the same, smaller)
+        grid = "".join("<tr>" + "".join(f'<td width="33%" valign="top" style="padding:0 {5 if k % 3 < 2 else 0}px 10px '
+                                        f'{5 if k % 3 else 0}px">{tiles[k]}</td>' for k in range(r, r + 3)) + "</tr>"
+                       for r in range(0, len(tiles), 3))
+        body.append(_heading("Top news") + _table(grid, "margin:0 0 14px"))
     made_for = digest._left_note(prefs, left)
     if made_for:
         text += [made_for, ""]
@@ -330,8 +339,8 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                        for k in range(0, len(boxes), 2))
         text.append("")
         html.append(f'<tr><td style="padding:20px 20px 8px;background:{INK};color:#ffffff">'
-                    f'<div style="font-family:{HEAD};font-size:20px;line-height:1.2">Pick your lane</div>'
-                    f'<div style="font-size:14px;margin:4px 0 14px">The rest of the day, sorted by who it matters to.</div>'
+                    f'<div style="font-family:{HEAD};font-size:20px;line-height:1.2;color:#ffffff">Pick your lane</div>'
+                    f'<div style="font-size:14px;margin:4px 0 14px;color:#ffffff">The rest of the day, sorted by who it matters to.</div>'
                     f'{_table(grid)}</td></tr>')
 
     # How useful is it: 1 to 5, each opens the site's review form with that number picked (all five alike)
@@ -361,7 +370,8 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                     f'<td align="right" style="padding:11px 0;border-bottom:1px solid #cccccc;font-size:14px;white-space:nowrap">'
                     f'<a href="{escape(web)}#{n}" style="color:{INK if count else GREY};text-decoration:none">{words} ▸</a></td></tr>')
     html.append(f'<tr><td style="padding:18px 20px 16px;background:{INK};color:#ffffff"><div style="font-family:{HEAD};'
-                f'font-size:22px;line-height:1.2">The Firehose</div><div style="font-size:14px;line-height:1.45;margin-top:4px">'
+                f'font-size:22px;line-height:1.2;color:#ffffff">The Firehose</div><div style="font-size:14px;line-height:1.45;'
+                f'margin-top:4px;color:#ffffff">'
                 f'All {stories} stories of {day:%A}. No filter, nothing held back, free.</div></td></tr>'
                 f'<tr><td style="padding:6px 20px 22px">{_table("".join(rows))}<div style="margin-top:16px">'
                 f'{_button(f"Open all {stories} stories →", web)}</div></td></tr>')
