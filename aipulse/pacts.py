@@ -182,6 +182,9 @@ LEFT_OUT = {
         "Prosecutor only asked for a fine, none imposed; mostly about political content on Meta's platforms",
     "https://techcrunch.com/2026/10/21/while-amazon-blocks-ai-agents-walmart-rolls-out-the-welcome-mat/":
         "Companies acting on their own, no government action",
+    "https://dplnews.com/los-planes-de-la-ministra-lincolao-para-instalar-a-chile-en-el-circuito-global-de-la-ia-"
+    "estamos-cerca-de-cerrar-un-acuerdo-con-openai/":
+        "Chile's minister says it is close to an OpenAI agreement, not signed yet",
     "https://www.engadget.com/2290535/homeland-security-bans-deepseek-use-in-federal-civilian-agencies/":
         "Same as US (Homeland Security) → DeepSeek, 2026-10-19",
     "https://olhardigital.com.br/2026/10/20/pro/resumo-do-od-lula-acusa-meta-japao-lanca-sonda-a-marte-novo-"

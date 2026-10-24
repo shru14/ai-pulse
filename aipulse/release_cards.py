@@ -231,7 +231,7 @@ RELEASES = [
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-10-20"
+SAFETY_CHECKED = "2026-10-24"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -356,10 +356,44 @@ LEFT_OUT = {
     "https://www.marktechpost.com/2026/10/19/minimax-m3-1-flash-release/": "same as MiniMax M3.1 Flash",
     "https://siliconangle.com/2026/10/19/minimax-launches-m3-1-flash-model-says-it-cuts-ai-agent-costs-by-70/":
         "same as MiniMax M3.1 Flash",
+    "https://techcrunch.com/2026/10/21/recursive-launches-flint-a-laptop-coding-model-it-says-was-largely-built-by-ai/":
+        "Flint: Recursive's home country is not stated in the stories",
+    "https://www.marktechpost.com/2026/10/21/recursive-flint-local-coding-model/": "same as Flint",
+    "https://the-decoder.com/recursive-shows-first-result-of-its-ai-driven-research-process-with-flint/": "same as Flint",
+    "https://www.marktechpost.com/2026/10/22/ibm-granite-speech-5-0-2b-release/":
+        "Granite Speech 5.0: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/22/cohere-rerank-5-context-focus/": "Rerank 5: one news outlet within 3 days",
+    "https://pandaily.com/xiaomi-lens-0-4b-open-source-pixel-mask-grounding-lensbench":
+        "Xiaomi-Lens-0: one news outlet within 3 days",
+    "https://pandaily.com/sensetime-sensenova-roborsi-open-source-embodied-ai-harness-27b-preview":
+        "SenseNova-RoboRSI: one news outlet within 3 days",
+    "https://huggingface.co/blog/nvidia/nemotron-retriever-world-class-agentic-retrieval":
+        "Nemotron 3.5 Embed, Rerank and Parse: no news outlet within 3 days (a hosting blog only)",
+    "https://the-decoder.com/elevenlabs-releases-two-new-speech-to-speech-models-designed-for-real-time-ai-conversations/":
+        "ElevenLabs speech-to-speech models: one news outlet within 3 days",
+    "https://siliconangle.com/2026/10/20/scaled-cognition-targets-customer-service-with-low-cost-voice-model/":
+        "Scaled Cognition voice model: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/19/nace-ai-drex-max-multimodal-decision-model/":
+        "Drex Max: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/20/cloudflare-releases-clairic-a-system-one-extraction-model-on-workers-ai/":
+        "same as Clairic",
+    "https://the-decoder.com/cloudflares-clairic-pulls-data-from-documents-faster-and-cheaper-than-llms/":
+        "same as Clairic",
+    "https://mistral.ai/news/voxtral-3/":
+        "Voxtral 3: weights and licence not stated in its stories (a family of models with per-minute prices)",
+    "https://www.marktechpost.com/2026/10/20/mistral-voxtral-3-speech-models-voice-agent-sdk/": "same as Voxtral 3",
+    "https://the-decoder.com/mistral-ai-launches-voxtral-3-a-full-voice-agent-stack-that-listens-thinks-and-talks-in-real-time/":
+        "same as Voxtral 3",
+    "https://www.marktechpost.com/2026/10/19/inception-mercury-3-diffusion-llm/":
+        "Mercury 3: Inception's home country and weights are not stated in the stories",
+    "https://siliconangle.com/2026/10/20/inception-says-mercury-3-beats-gpt-6-luna-and-claude-haiku-5-5-at-up-to-8x-the-speed/":
+        "same as Mercury 3",
+    "https://the-decoder.com/inceptions-mercury-3-diffusion-model-claims-to-beat-gpt-6-luna-and-claude-haiku-5-5-at-a-fraction-of-the-wait/":
+        "same as Mercury 3",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-10-19"
+CHECKED_TO = "2026-10-21"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform

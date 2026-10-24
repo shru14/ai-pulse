@@ -85,8 +85,10 @@ def main():
     dg.add_argument("--streams", default=",".join(rss.FEEDS), help="comma-separated streams (default: all)")
     dg.add_argument("--day", help="UTC day, YYYY-MM-DD (default: yesterday)")
     dg.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
-    dg.add_argument("--layout", choices=["short", "full"], default="short",
-                    help="short (the daily email): the ten that mattered most, then headlines; full: every story in one table")
+    dg.add_argument("--layout", choices=["short", "full", "poster"], default="poster",
+                    help="poster (the daily email since 25 Oct 2026): hot story, top news, word and meme, lanes, every "
+                         "story by stream; short (the email before): the ten that mattered most, then headlines; full: "
+                         "every story in one table")
     dg.add_argument("--since", default="", help="the newest arrival the last email saw (its --seen); stories dated "
                     "before the day that arrived after it go in too")
     dg.add_argument("--seen", metavar="FILE", help="write the newest arrival this email sees to FILE (the next one's --since)")

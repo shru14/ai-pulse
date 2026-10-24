@@ -201,11 +201,33 @@ CHECKED: dict[str, dict] = {
              link="https://doi.org/10.3389/frai.2026.1800219", subject="science",
              about="Shows that lab-grown human brain tissue can tell Braille letters apart from touch-sensor signals, "
                    "with 61% accuracy for one piece of tissue and 83% for three together."),
+    "https://the-decoder.com/fancy-harnesses-make-coding-agents-more-expensive-but-not-better-study-finds/":
+        dict(paper="What Does a Harness Buy? Tokens, Mostly", link="https://arxiv.org/abs/2610.04433", subject="agents",
+             about="Tests three coding-agent harnesses with the same models on SWE-bench Verified, finding the heaviest "
+                   "and lightest score within five points of each other while cost per task differs by up to 3x."),
+    "https://olhardigital.com.br/2026/10/23/inteligencia-artificial/chatgpt-e-outras-ias-mudam-resultados-de-testes-de-personalidade-conforme-o-idioma/":
+        dict(paper="Cultural bias or universal traits? Exploring personality-like profiles of large language models",
+             link="https://doi.org/10.1098/rsos.252491", subject="benchmarks",
+             about="Tests five chatbots on two personality questionnaires in English, Mandarin and French, finding "
+                   "consistently prosocial profiles that shift with the language asked and the model's country of origin."),
+    "https://techcrunch.com/2026/10/22/microsofts-mustafa-suleyman-says-its-ai-outperforms-doctors-on-hard-cases-as-he-chases-medical-superintelligence/":
+        dict(paper="Sequential diagnosis with language models", link="https://doi.org/10.1126/science.aeh7930",
+             subject="science",
+             about="Shows an AI system that simulates a panel of physicians reached 83.2% accuracy on hard New England "
+                   "Journal of Medicine cases, against 36.1% for generalist physicians, in a controlled benchmark."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://the-decoder.com/three-fired-openai-safety-researchers-say-they-were-never-told-what-they-actually-leaked/",  # a news story on a firing, no paper named
+    "https://techcrunch.com/2026/10/24/forced-to-pick-groks-ai-model-chooses-republicans-openais-picks-democrats/",  # a study by a company (Convovo), no paper
+    "https://huggingface.co/blog/allenai/litpivot",  # a lab blog post (Ai2)
+    "https://pandaily.com/hisilicon-ceic-2026-nearlink-sle-3-0-evolution-blue-paper-light-intelligence",  # an industry blue paper at a conference, not a research paper
+    "https://news.mit.edu/2026/qa-how-ai-came-to-model-messy-human-mind-1023",  # an interview about a history paper that fits none of the subjects
+    "https://theconversation.com/are-you-using-ai-to-study-heres-how-to-do-it-well-294453",  # advice drawing on more than one study, no one paper
+    "https://research.google/blog/empowering-frontline-maternal-care-with-ai-assisted-ultrasound/",  # a company blog post (Google Research)
+    "https://internetlab.org.br/en/news/chatgpt-is-more-reserved-while-gemini-is-more-likely-to-recommend-candidates-a-survey-reveals-a-contrast-between-the-countrys-most-widely-used-platforms/",  # a survey by an institute, not a paper
     "https://the-decoder.com/linkedin-is-the-undisputed-king-of-long-form-ai-slop-according-to-a-study-spanning-five-platforms/",  # a company study (Pangram), no paper
     "https://the-decoder.com/terrorist-groups-are-using-every-major-ai-chatbot-for-attack-planning-and-weapons-development/",  # a report on a think-tank site (CASP), not on a preprint server or in a journal
     "https://blogs.nvidia.com/blog/open-models-icml-2026/",  # a company blog post, more than one paper

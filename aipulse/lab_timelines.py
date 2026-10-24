@@ -92,6 +92,22 @@ LEFT_OUT = {
         "A new model's launch price, not a change",
     "https://www.businesskorea.co.kr/news/articleView.html?idxno=279066":
         "A temporary Google cut: the model, prices and dates aren't stated",
+    "https://olhardigital.com.br/2026/10/21/reviews/openai-amplia-presenca-na-nuvem-e-chega-ao-google-cloud/":
+        "Models added to a cloud platform, not countries or regions",
+    "https://dplnews.com/anthropic-propone-ley-suspender-ia/":
+        "A proposed law, not a model the lab took away",
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=279057":
+        "A data center deal, not an AI model",
+    "https://www.xataka.com/empresas-y-economia/google-suspende-inversion-miles-millones-centros-datos-espana-a-espera-decreto-gobierno":
+        "A data center investment, not an AI model",
+    "http://www.bernama.com/en/news.php?id=2622246":
+        "A company dividend, not an AI model",
+    "https://www.channelnewsasia.com/business/stocks-mixed-day-after-ai-related-selloff-oil-prices-rise-again-6485001":
+        "Stock market news, not an AI model's price",
+    "https://developers.googleblog.com/streaming-comes-to-api-gateway-real-time-and-ai-ready-apis-without-changing-your-spec/":
+        "A cloud API product feature, not an AI model",
+    "https://www.marktechpost.com/2026/10/20/cloudflare-releases-clairic-a-system-one-extraction-model-on-workers-ai/":
+        "A new model release, not a change to an existing one",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
