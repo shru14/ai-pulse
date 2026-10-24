@@ -317,6 +317,11 @@ def build(conn, out: str | Path) -> int:
             html = web_edition(page[2], f"daily/{day.isoformat()}.html", edition_description(page[2], day))
             for name in (day.isoformat(), "latest"):
                 (out / "daily" / f"{name}.html").write_text(html, encoding="utf-8")
+    for d in published[-7:]:  # the past week's memes of the day as pictures, which the poster email links to
+        memegen.prepare(conn, cards, today, day=d)
+        meme = memes.of_the_day(cards, d)
+        if meme and (picture := memes.render(meme)):
+            (out / "daily" / f"{d.isoformat()}-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}").write_bytes(picture)
     for d in reversed(published):  # the day's Gemini meme, if the "memes" step made one (no call here)
         memegen.prepare(conn, cards, today, day=d)
         if (sample := sample_page(cards, d, out)):
