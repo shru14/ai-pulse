@@ -148,8 +148,27 @@ def _number(stories: list[dict]) -> tuple[str, str, dict] | None:
     return None
 
 
-def _subject(top: list[dict], total: int) -> str:
-    """The lead headline as the outlet wrote it, then the companies in the next stories (our tags) and how many more."""
+SUBJECT_WORDS = 6  # the owner's limit for a subject
+_SMALL = {"a", "an", "the", "to", "of", "in", "on", "at", "for", "with", "and", "or", "by", "from", "as", "its", "it",
+          "their", "is", "are", "was", "were", "will", "be", "that", "this", "than", "into", "over", "after", "says"}
+
+
+def _subject(title: str) -> str:
+    """The lead headline's first SUBJECT_WORDS words, as the outlet wrote them, then "…"; never ending on a small word
+    ("to", "the", "will"...). The whole headline is in the preview line (_also)."""
+    words = title.split()
+    if len(words) <= SUBJECT_WORDS:
+        return title
+    cut = words[:SUBJECT_WORDS]
+    # nor on a sign, a number or a lone letter ("raise R $…")
+    while len(cut) > 3 and (cut[-1].lower().strip(",:;'’\"“”") in _SMALL or not re.search(r"[A-Za-z]{2}", cut[-1])):
+        cut.pop()
+    return " ".join(cut).rstrip(",:;—–-") + "…"
+
+
+def _also(top: list[dict], total: int) -> str:
+    """The preview line after the subject: the lead headline, then the companies in the next stories (our tags) and
+    how many more."""
     seen = _tags(top[0]) & set(classify.COMPANY_TERMS)
     names = []
     for c in top[1:]:
@@ -397,8 +416,8 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                 f'Unsubscribe</a><br>AI Pulse is free and non-commercial · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a>'
                 f'</td></tr>')
 
-    subject = _subject(top, len(todays)) if top else f"AI Pulse · {digest.long_day(day)}"
-    preheader = "Also: " + " · ".join(c["title"] for c in top[1:3]) if len(top) > 1 else ""  # shown after the subject
+    subject = _subject(top[0]["title"]) if top else f"AI Pulse · {digest.long_day(day)}"
+    preheader = _also(top, len(todays)) if top else ""  # shown after the subject
     page = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             '<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;display=swap" rel="stylesheet">'
             f'<title>{escape(subject)}</title><style>{STYLE}</style></head><body style="margin:0;padding:0;background:#ffffff">'
