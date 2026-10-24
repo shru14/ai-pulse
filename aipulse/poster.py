@@ -30,7 +30,6 @@ FILL = {"releases": "#009E73", "news": "#56B4E9", "research": "#C85BC3", "regula
 FEATURE_FILL = {"tool": FILL["releases"], "news": FILL["news"], "research": FILL["research"], "reg": FILL["regulation"],
                 "policy": FILL["policy"], "infra": FILL["infra"]}
 TOP_NEWS = 6  # after the hot story
-LANE_STORIES = 3
 
 # A story's picture: a drawing that shows its subject, only when its tags or headline name that subject (a
 # court case: a gavel; chips: a chip; power: a power plant); else its stream's own drawing, which says what kind of
@@ -53,14 +52,23 @@ ART_RULES = [
     ({"Builds & deals", "Compute & Data Centers"}, r"\b(data cent(?:er|re)s?|campus|build)", "data-centre-builds"),
 ]
 
-# "Pick your lane": who a story matters to, from its stream and tags (a story goes in the first lane that takes it)
-_MONEY_WORDS = re.compile(r"\b(stocks?|shares|markets?|earnings|investors?|valuation|rally|futures|revenue|forecast|IPO)\b", re.I)
+# "Pick your lane": who a story matters to, from its stream, tags and headline (a story goes in the first lane that
+# takes it, in this order). Investors: markets, IPOs and $1B+ sums; Founders: startups and their rounds (a raise with
+# an amount), not every Funding or Agents tag, which caught launches and hacks (checked on 17-23 Oct 2026)
+_MARKET = re.compile(r"\b(stocks?|shares|share price|markets?|earnings|investors|valuations?|rall(?:y|ies)|selloff|sell-off|"
+                     r"short sellers?|futures|revenue|profits?|guidance|IPO|listing|bonds?|yield)\b", re.I)
+_BILLIONS = re.compile(r"[$€£]\s?\d[\d.,]*\s?(?:trillion|billion|bn|tn|B)\b|\b\d[\d.,]*\s?(?:trillion|billion)\b", re.I)
+_STARTUP = re.compile(r"\b(start-?ups?|founders|seed round|pre-seed|Series [A-H]|unicorn|spin-?outs?|acquires|acquired|acquisition|buys)\b"
+                      r"|\b(raises?|raised|raising|secures?|lands|closes)\b[^.]{0,30}?(?:[$€£]|\b(?:US|R|HK|S)\$|\b\d[\d.,]*\s?"
+                      r"(?:million|billion|crore|lakh|yuan|won)\b|\bfunding\b|\binvestment\b|\bround\b)", re.I)
+_POLICY_TAGS = {"Law", "Regulation", "Governance", "Export Controls", "Elections", "Deepfakes", "Copyright", "Antitrust", "Privacy",
+                "Misuse", "AI Act"}
 LANES = [
-    ("Founders", "founders", lambda n, t, title: n in ("news", "releases") and bool(t & {"Funding", "M&A", "Agents", "Healthcare"})),
-    ("Builders", "builders", lambda n, t, title: n == "releases" or (n != "research" and bool(t & {"Coding Tools", "Open Models", "Benchmarks", "Multimodal"}))),
-    ("Investors", "investors", lambda n, t, title: bool(t & {"IPO", "Funding", "M&A", "Chips", "Builds & deals"}) or bool(_MONEY_WORDS.search(title))),
-    ("Policy & law", "policy", lambda n, t, title: n in ("policy", "regulation") or bool(t & {"Law", "Regulation", "Governance", "Export Controls", "Elections", "Deepfakes", "Copyright", "Antitrust", "Privacy", "Misuse"})),
-    ("Researchers", "research", lambda n, t, title: n == "research"),
+    ("Researchers", "research", lambda n, t, title: n == "research" or (n == "news" and bool(t & {"Study Report", "Benchmarks"}))),
+    ("Policy & law", "policy", lambda n, t, title: n in ("policy", "regulation") or (n != "releases" and bool(t & _POLICY_TAGS))),
+    ("Investors", "investors", lambda n, t, title: "IPO" in t or bool(_MARKET.search(title) or _BILLIONS.search(title))),
+    ("Founders", "founders", lambda n, t, title: bool(_STARTUP.search(title))),
+    ("Builders", "builders", lambda n, t, title: n == "releases" or bool(t & {"Coding Tools", "Open Models", "Agents", "Multimodal"})),
 ]
 
 # The number of the day: a sum of money in a story's headline or summary, shown with the outlet's own sentence
@@ -73,8 +81,8 @@ _ABBREVIATION = re.compile(r"\b(?:Inc|Co|Corp|Ltd|Mr|Ms|Dr|St|No|vs|[A-Z])\.$") 
 STYLE = (":root{color-scheme:light only;supported-color-schemes:light only}"  # keep our colours in dark mode
          "a:hover{opacity:.75}.p-row:hover td{background:#f2f2f2}"
          # a phone: the same layout as on a computer, only smaller (type, gaps, margins)
-         "@media (max-width:480px){.p-tile,.p-lane{padding:0 3px 8px!important}.p-tt{font-size:11.5px!important}"
-         ".p-ts{font-size:10px!important}.p-mast{font-size:14px!important}.p-lt{font-size:12px!important}.p-hh{font-size:20px!important}"
+         "@media (max-width:480px){.p-tile{padding:0 3px 8px!important}.p-tt{font-size:11.5px!important}"
+         ".p-ts{font-size:10px!important}.p-mast{font-size:14px!important}.p-hh{font-size:20px!important}"
          ".p-hh2{font-size:15px!important}.p-hot{padding:16px 14px!important}.p-pad{padding-left:12px!important;padding-right:12px!important}}")
 
 
@@ -330,6 +338,66 @@ def _week_word_and_meme(cards: list[dict], day: date) -> tuple[list[str], str]:
     return text, html
 
 
+def day_lanes(cards: list[dict], day: date) -> list[tuple[str, str, list[tuple[dict, str]]]]:
+    """The day's lanes, (title, icon, [(story, stream)]): every story of the day in every stream, the most-reported
+    first, each in the first lane that takes it; lanes without a story are left out. The same for every reader."""
+    by_stream = digest.by_streams(cards, list(rss.FEEDS), day)
+    stories = sorted([(c, n) for n in rss.FEEDS for c in by_stream[n] if c.get("kind") not in digest.SIDE_KINDS],
+                     key=lambda cn: digest._rank(cn[0]), reverse=True)
+    taken: set[int] = set()
+    out = []
+    for title, icon, fits in LANES:
+        theirs = [(c, n) for c, n in stories if id(c) not in taken and fits(n, _tags(c), c.get("title") or "")]
+        taken |= {id(c) for c, _ in theirs}
+        if theirs:
+            out.append((title, icon, theirs))
+    return out
+
+
+def lanes_page(day: date) -> str:
+    """The web page with that day's lanes (static.py publishes it next to the day's full email)."""
+    return f"{rss.SITE}daily/{day.isoformat()}-lanes.html"
+
+
+def lanes_html(cards: list[dict], day: date) -> str | None:
+    """The day's lanes page: a jump button per lane, then each lane's stories as a table (headline, outlets, stream);
+    None on a day without one."""
+    lanes = day_lanes(cards, day)
+    if not lanes:
+        return None
+    # the jump buttons: one row, equal widths, at every width (a phone only shrinks the type)
+    jumps = '<div style="display:flex;gap:5px">' + "".join(
+        f'<a class="l-jump" href="#{icon}" style="flex:1 1 0;min-width:0;padding:7px 4px;border:2px solid {INK};color:{INK};'
+        f'text-decoration:none;font-weight:bold;font-size:14px;line-height:1.25;text-align:center"><img src="'
+        f'{_picture("lanes/" + icon)}" width="16" height="16" alt="" style="vertical-align:middle;border:0"> {escape(title)}'
+        f'<div style="font-weight:normal;color:{GREY}">{len(theirs)}</div></a>' for title, icon, theirs in lanes) + '</div>'
+    sections = []
+    for title, icon, theirs in lanes:
+        rows = "".join(f'<tr class="p-row"><td style="padding:9px 10px 9px 0;border-top:1px solid #cccccc;font-size:15px;line-height:1.35">'
+                       f'<a href="{escape(c["url"])}" style="color:{INK};text-decoration:none;font-weight:bold">{escape(c["title"])}</a>'
+                       f'<div style="font-size:12px;color:{GREY};margin-top:3px">{escape(_by(c))}</div></td><td width="96" '
+                       f'align="right" valign="top" style="width:96px;padding:9px 0;border-top:1px solid #cccccc">'
+                       f'{_label(rss.FEEDS[n][1].upper(), FILL[n], INK)}</td></tr>' for c, n in theirs)
+        count = f"{len(theirs)} {'story' if len(theirs) == 1 else 'stories'}"
+        sections.append(f'<div id="{icon}" style="margin:26px 0 0"><h2 style="margin:0;font-family:{HEAD};font-size:22px;'
+                        f'font-weight:900;border-bottom:3px solid {INK};padding-bottom:6px"><img src="{_picture("lanes/" + icon)}" '
+                        f'width="24" height="24" alt="" style="vertical-align:middle;border:0"> {escape(title)} <span style="'
+                        f'font-family:{BODY};font-size:14px;color:{GREY}">{count}</span></h2>{_table(rows)}</div>')
+    title = f"Pick your lane · {digest.long_day(day)}"
+    return ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            '<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;display=swap" rel="stylesheet">'
+            f'<title>{escape(title)}</title><style>a:hover{{opacity:.75}}.p-row:hover td{{background:#f2f2f2}}'
+            '@media (max-width:480px){.l-jump{font-size:10px!important;padding:6px 1px!important;letter-spacing:-.2px}.l-jump img{display:block;'
+            'margin:0 auto 3px}}</style></head>'
+            f'<body style="margin:0;background:#ffffff;font-family:{BODY};color:{INK}"><div style="max-width:680px;margin:0 auto">'
+            f'<div style="background:{INK};color:#ffffff;padding:20px"><a href="{rss.SITE}" style="color:#ffffff;font-size:13px;'
+            f'font-weight:bold;text-decoration:none">AI Pulse</a><h1 style="margin:6px 0 0;font-family:{HEAD};font-size:26px;'
+            f'font-weight:900">Pick your lane</h1><div style="font-size:14px;margin-top:4px">{digest.long_day(day)}: the day\'s '
+            f'stories sorted by who they matter to. Each story sits in one lane.</div></div><div style="padding:16px 16px 30px">'
+            f'{jumps}{"".join(sections)}<div style="margin-top:26px;font-size:14px"><a href="{escape(digest.full_page(day))}" '
+            f'style="color:{INK};font-weight:bold">Every story of {day:%A} →</a></div></div></div></body></html>')
+
+
 def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict], streams: list[str], day: date,
           prefs: dict | None, dossier: dict | None, unsubscribe: str, change: str, stop: str) -> tuple[str, str, str]:
     """(subject, plain text, HTML) of the poster email (see digest.build for the arguments)."""
@@ -435,39 +503,32 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                            f'</div></td></tr>', "margin:0 0 26px"))
     html.append(f'<tr><td {pad}>{"".join(body)}</td></tr>')
 
-    # Pick your lane: the rest of the day by who it matters to (a story in one lane only, none from above)
-    rest = [c for c in main if id(c) not in shown]
-    taken: set[int] = set()
-    lanes = []
-    for title, icon, fits in LANES:
-        theirs_ = [c for c in rest if id(c) not in taken and fits(stream_of[id(c)], _tags(c), c.get("title") or "")][:LANE_STORIES]
-        taken |= {id(c) for c in theirs_}
-        if theirs_:
-            lanes.append((title, icon, theirs_))
+    # Pick your lane: a row per lane, each opening that lane on the day's lanes page (every story of the day, all
+    # streams, so the counts are the page's); under the name, the lane's first story not already shown above
+    lanes = day_lanes(cards, day)
     if lanes:
-        text.append("PICK YOUR LANE")
-        boxes = []
+        web_lanes = lanes_page(day)
+        text += ["PICK YOUR LANE", f"The day sorted by who it matters to: {web_lanes}"]
+        rows = []
         for title, icon, theirs_ in lanes:
-            text += [title.upper(), *(f"  • {c['title']} {c['url']}" for c in theirs_)]
-            rows = "".join(f'<tr><td class="p-lt" style="padding:8px 10px;border-top:1px solid #cccccc;font-size:13px;line-height:1.35">'
-                           f'<a href="{escape(c["url"])}" style="color:{INK};text-decoration:none">{escape(c["title"])}</a></td></tr>'
-                           for c in theirs_)
-            boxes.append(_table(f'<tr><td style="padding:8px 10px;border-bottom:2px solid {INK}"><img src="{_picture("lanes/" + icon)}" '
-                                f'width="18" height="18" alt="" style="vertical-align:middle;border:0"><span style="font-weight:bold;'
-                                f'font-size:15px;vertical-align:middle;margin-left:6px">{escape(title)}</span></td></tr>{rows}',
-                                f"background:#ffffff;color:{INK}"))
-        boxes.append(_table(f'<tr><td style="padding:14px;background:{YELLOW};color:{INK}"><div style="font-weight:bold;font-size:15px">'
-                            f'Want your lane on top?</div><div style="font-size:13px;line-height:1.4;margin:6px 0 8px">Tell us who you '
-                            f'are, and your lane leads your email.</div><a href="{escape(change)}" style="color:{INK};font-weight:bold;'
-                            f'font-size:13px">Choose in 10 seconds →</a></td></tr>'))
-        # two to a row on every screen
-        grid = "".join(f'<div class="p-lane" style="display:inline-block;vertical-align:top;width:50%;box-sizing:border-box;'
-                       f'padding:0 6px 12px;font-size:15px">{box}</div>' for box in boxes)
+            count = f"{len(theirs_)} {'story' if len(theirs_) == 1 else 'stories'}"
+            first = next((c for c, _ in theirs_ if id(c) not in shown), theirs_[0][0])
+            href = escape(f"{web_lanes}#{icon}")
+            text.append(f"  {title}: {count}")
+            rows.append(f'<tr class="p-row"><td width="30" style="width:30px;padding:11px 0;border-bottom:1px solid #cccccc">'
+                        f'<img src="{_picture("lanes/" + icon)}" width="22" height="22" alt="" style="vertical-align:middle;border:0">'
+                        f'</td><td style="padding:11px 8px;border-bottom:1px solid #cccccc"><a href="{href}" style="color:{INK};'
+                        f'text-decoration:none;font-weight:bold;font-size:15px">{escape(title)}</a><div style="font-size:12px;'
+                        f'color:{GREY};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+                        f'{escape(first["title"])}</div></td><td width="92" align="right" style="width:92px;padding:11px 0;'
+                        f'border-bottom:1px solid #cccccc;font-size:14px;white-space:nowrap"><a href="{href}" style="color:{INK};'
+                        f'text-decoration:none">{count} ▸</a></td></tr>')
         text.append("")
-        html.append(f'<tr><td class="p-pad" style="padding:20px 20px 8px;background:{INK};color:#ffffff">'
+        html.append(f'<tr><td class="p-pad" style="padding:18px 20px 16px;background:{INK};color:#ffffff">'
                     f'<div style="font-family:{HEAD};font-weight:900;font-size:20px;line-height:1.2;color:#ffffff">Pick your lane</div>'
-                    f'<div style="font-size:14px;margin:4px 0 14px;color:#ffffff">The rest of the day, sorted by who it matters to.</div>'
-                    f'<div style="margin:0 -6px;font-size:0">{grid}</div></td></tr>')
+                    f'<div style="font-size:14px;margin-top:4px;color:#ffffff">The day sorted by who it matters to.</div></td></tr>'
+                    f'<tr><td class="p-pad" style="padding:6px 20px 22px">{_table("".join(rows))}<div style="margin-top:16px">'
+                    f'{_button("See every lane →", web_lanes)}</div></td></tr>')
 
     # How useful is it: 1 to 5, each opens the site's review form with that number picked (all five alike)
     review = rss.SITE + "review/"
