@@ -320,6 +320,10 @@ LEFT_OUT = {
     "https://techcrunch.com/2026/01/29/apple-buys-israeli-startup-q-ai-as-the-ai-race-heats-up/": "same as Apple buying Q.ai",
     "https://the-decoder.com/openai-cuts-off-cursor-after-spacex-acquisition-citing-musks-history-of-breaking-contracts/":
         "same as SpaceX buying Cursor",
+    "https://dplnews.com/en-el-salvador-la-ia-y-tiktok-desplazan-a-google-en-decisiones-de-compra-de-usuarios/":
+        "shoppers' purchases, not a company being bought",
+    "https://www.xataka.com/servicios/amazon-cierra-puerta-a-agentes-ia-mayor-cadena-supermercados-eeuu-abre-par-par":
+        "AI agents shopping, not a company being bought",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
