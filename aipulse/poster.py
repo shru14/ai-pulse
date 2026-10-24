@@ -70,13 +70,12 @@ _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z\"“])")
 _ABBREVIATION = re.compile(r"\b(?:Inc|Co|Corp|Ltd|Mr|Ms|Dr|St|No|vs|[A-Z])\.$")  # "Pathos AI Inc. today ..." is one sentence
 
 # Hover where mail apps allow it (Gmail on the web, Apple Mail): links dim, rows shade
-STYLE = ("a:hover{opacity:.75}.p-row:hover td{background:#f2f2f2}"
-         # a phone: the same sections, fitted: two top-news tiles a row, the hot story's picture as a strip under it
-         "@media (max-width:480px){.p-tile{width:50%!important}.p-lane{width:100%!important}"
-         ".p-hot,.p-hotart{display:block!important;width:100%!important;box-sizing:border-box}"
-         ".p-hot{padding:16px 14px!important}.p-hotart{border-left:0!important;border-top:3px solid #000!important}"
-         ".p-hotimg{width:45%!important;margin:0 auto!important}.p-hh{font-size:21px!important}"
-         ".p-pad{padding-left:14px!important;padding-right:14px!important}}")
+STYLE = (":root{color-scheme:light only;supported-color-schemes:light only}"  # keep our colours in dark mode
+         "a:hover{opacity:.75}.p-row:hover td{background:#f2f2f2}"
+         # a phone: the same layout as on a computer, only smaller (type, gaps, margins)
+         "@media (max-width:480px){.p-tile,.p-lane{padding:0 3px 8px!important}.p-tt{font-size:11.5px!important}"
+         ".p-ts{font-size:10px!important}.p-lt{font-size:12px!important}.p-hh{font-size:20px!important}"
+         ".p-hot{padding:16px 14px!important}.p-pad{padding-left:12px!important;padding-right:12px!important}}")
 
 
 def _sentences(text: str) -> list[str]:
@@ -182,9 +181,10 @@ def _tile(c: dict, n: str, picture: str, yours: bool) -> str:
     kicker = rss.FEEDS[n][1] + (" · Your choice" if yours else "")
     return _table(f'<tr><td style="background:{FILL[n]};border-bottom:2px solid {INK};padding:0">{_label(kicker)}'
                   f'<a href="{escape(c["url"])}"><img src="{picture}" width="190" alt="" style="display:block;width:100%;'
-                  f'height:auto;border:0"></a></td></tr><tr><td style="padding:8px 8px 10px">'
-                  f'<a href="{escape(c["url"])}" style="color:{INK};text-decoration:none;font-weight:bold;font-size:13px;'
-                  f'line-height:1.35">{escape(c["title"])}</a><div style="font-size:11px;color:{GREY};margin-top:5px">'
+                  f'height:auto;border:0"></a></td></tr><tr><td style="padding:8px 8px 10px;overflow-wrap:break-word;'
+                  f'word-break:break-word"><a class="p-tt" href="{escape(c["url"])}" style="color:{INK};text-decoration:none;'
+                  f'font-weight:bold;font-size:13px;line-height:1.35">{escape(c["title"])}</a>'
+                  f'<div class="p-ts" style="font-size:11px;color:{GREY};margin-top:5px">'
                   f'{escape(_by(c))}</div></td></tr>', f"border:2px solid {INK}")
 
 
@@ -267,16 +267,18 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
             f'line-height:1.15;color:{INK};text-decoration:none">{escape(hot["title"])}</a></div>'
             + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
             + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(hot))}</div>'
-              f'{_button("Read the story →", hot["url"])}</td>'
-              f'<td class="p-hotart" width="34%" valign="bottom" style="width:34%;background:{FILL[n]};border-left:3px solid {INK};padding:0">'
-              f'<img class="p-hotimg" src="{_art(hot, n)}" width="220" alt="" style="display:block;width:100%;height:auto;border:0"></td></tr>')
+              f'{_button("Read the story →", hot["url"])}</td></tr>'
+              # its picture as a strip under the text, on every screen
+              f'<tr><td align="center" style="background:{FILL[n]};border-top:3px solid {INK};padding:0">'
+              f'<img src="{_art(hot, n)}" width="240" alt="" style="display:block;width:240px;max-width:70%;height:auto;'
+              f'border:0;margin:0 auto"></td></tr>')
             + '</td></tr>')
 
     body = []  # the sections in the padded column
     if len(top) > 1:
         text += ["TOP NEWS", *(f"• [{rss.FEEDS[stream_of[id(c)]][1]}] {c['title']} ({_by(c)}) {c['url']}" for c in top[1:]), ""]
         tiles = [_tile(c, stream_of[id(c)], _art(c, stream_of[id(c)]), id(c) in picks) for c in top[1:]]
-        # three to a row on a computer, two on a phone (STYLE): tiles that wrap, not a fixed table
+        # three to a row on every screen (a phone only shrinks the type, see STYLE)
         grid = "".join(f'<div class="p-tile" style="display:inline-block;vertical-align:top;width:33.33%;box-sizing:border-box;'
                        f'padding:0 5px 10px;font-size:15px">{tile}</div>' for tile in tiles)
         body.append(_heading("Top news") + f'<div style="margin:0 -5px 14px;font-size:0">{grid}</div>')
@@ -342,7 +344,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         boxes = []
         for title, icon, theirs_ in lanes:
             text += [title.upper(), *(f"  • {c['title']} {c['url']}" for c in theirs_)]
-            rows = "".join(f'<tr><td style="padding:8px 10px;border-top:1px solid #cccccc;font-size:13px;line-height:1.35">'
+            rows = "".join(f'<tr><td class="p-lt" style="padding:8px 10px;border-top:1px solid #cccccc;font-size:13px;line-height:1.35">'
                            f'<a href="{escape(c["url"])}" style="color:{INK};text-decoration:none">{escape(c["title"])}</a></td></tr>'
                            for c in theirs_)
             boxes.append(_table(f'<tr><td style="padding:8px 10px;border-bottom:2px solid {INK}"><img src="{_picture("lanes/" + icon)}" '
@@ -353,7 +355,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                             f'Want your lane on top?</div><div style="font-size:13px;line-height:1.4;margin:6px 0 8px">Tell us who you '
                             f'are, and your lane leads your email.</div><a href="{escape(change)}" style="color:{INK};font-weight:bold;'
                             f'font-size:13px">Choose in 10 seconds →</a></td></tr>'))
-        # two to a row on a computer, one on a phone (STYLE)
+        # two to a row on every screen
         grid = "".join(f'<div class="p-lane" style="display:inline-block;vertical-align:top;width:50%;box-sizing:border-box;'
                        f'padding:0 6px 12px;font-size:15px">{box}</div>' for box in boxes)
         text.append("")
@@ -409,6 +411,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
 
     subject = _subject(top[0]["title"]) if top else f"AI Pulse · {digest.long_day(day)}"
     page = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            '<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">'
             '<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;display=swap" rel="stylesheet">'
             f'<title>{escape(subject)}</title><style>{STYLE}</style></head><body style="margin:0;padding:0;background:#ffffff">'
             f'<div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px">{BLANK_PREVIEW}</div>'
