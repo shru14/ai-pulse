@@ -256,7 +256,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         html.append(f'<tr><td {pad}>{week_html}{dossier_html}</td></tr>')
 
     if top:
-        # Hot today: the day's most-reported story, with its picture beside it
+        # Hot today: the day's most-reported story (no picture)
         hot, n = top[0], stream_of[id(top[0])]
         summary = digest._short(hot.get("summary") or "", 200, hot.get("source", ""))
         text += ["HOT TODAY", hot["title"], *([summary] if summary else []), _by(hot), hot["url"], ""]
@@ -267,11 +267,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
             f'line-height:1.15;color:{INK};text-decoration:none">{escape(hot["title"])}</a></div>'
             + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
             + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(hot))}</div>'
-              f'{_button("Read the story →", hot["url"])}</td></tr>'
-              # its picture as a strip under the text, on every screen
-              f'<tr><td align="center" style="background:{FILL[n]};border-top:3px solid {INK};padding:0">'
-              f'<img src="{_art(hot, n)}" width="240" alt="" style="display:block;width:240px;max-width:70%;height:auto;'
-              f'border:0;margin:0 auto"></td></tr>')
+              f'{_button("Read the story →", hot["url"])}</td></tr>')
             + '</td></tr>')
 
     body = []  # the sections in the padded column
