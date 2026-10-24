@@ -171,9 +171,11 @@ def _subject(title: str) -> str:
     return " ".join(cut).rstrip(",:;—–-") + "…"
 
 
-# The inbox shows only the subject: mail apps fill the line after it from the email's first text, so the email
-# starts with hidden blank characters (zero-width non-joiner + no-break space) long enough to fill that line
-BLANK_PREVIEW = "&zwnj;&nbsp;" * 120
+# The inbox shows only the subject: mail apps fill the line after it from the email's first text (Gmail from the
+# plain-text copy too), so both copies start with blank characters long enough to fill that line: combining grapheme
+# joiner, zero-width non-joiner and no-break space, which Gmail doesn't trim away
+BLANK = "͏‌ " * 110
+BLANK_PREVIEW = "&#847;&zwnj;&nbsp;" * 110
 
 
 def _tile(c: dict, n: str, picture: str, yours: bool) -> str:
@@ -420,4 +422,4 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
             f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;'
             f'border:3px solid {INK};border-collapse:collapse;font-family:{BODY};font-size:15px;color:{INK}">' + "".join(html)
             + '</table></td></tr></table></body></html>')
-    return subject, "\n".join(text), page
+    return subject, "\n".join([BLANK, *text]), page
