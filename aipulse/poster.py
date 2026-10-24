@@ -75,7 +75,7 @@ STYLE = (":root{color-scheme:light only;supported-color-schemes:light only}"  # 
          # a phone: the same layout as on a computer, only smaller (type, gaps, margins)
          "@media (max-width:480px){.p-tile,.p-lane{padding:0 3px 8px!important}.p-tt{font-size:11.5px!important}"
          ".p-ts{font-size:10px!important}.p-mast{font-size:14px!important}.p-lt{font-size:12px!important}.p-hh{font-size:20px!important}"
-         ".p-hot{padding:16px 14px!important}.p-pad{padding-left:12px!important;padding-right:12px!important}}")
+         ".p-hh2{font-size:15px!important}.p-hot{padding:16px 14px!important}.p-pad{padding-left:12px!important;padding-right:12px!important}}")
 
 
 def _sentences(text: str) -> list[str]:
@@ -253,38 +253,27 @@ def _week_span(day: date) -> str:
     return f"{monday.day} {monday:%b} – {day.day} {day:%b}"
 
 
-def _the_week(cards: list[dict], day: date, prefs: dict, dossier: dict | None) -> tuple[list[str], str]:
-    """Sunday's opening: a black band "The week in AI", the story of the week (as the site picks it,
-    digest._week_story) as a hero (no picture, as Hot today), then the reader's weekly dossier card."""
-    span = _week_span(day)
-    text = [f"THE WEEK IN AI, {span}", ""]
-    html = _band("The week in AI", span)
-    story = digest._week_story(cards, day, prefs)
-    if story:
-        n = next((n for n in rss.FEEDS if rss.FEEDS[n][0] == story["category"]), "news")
-        summary = digest._short(story.get("summary") or "", 200, story.get("source", ""))
-        text += ["STORY OF THE WEEK: " + story["title"], *([summary] if summary else []), _by(story), story["url"], ""]
-        html += (f'<tr><td style="padding:0;border-bottom:3px solid {INK}">' + _table(
-            f'<tr><td class="p-hot" valign="top" style="padding:18px 16px 20px 20px">'
-            f'{_label("STORY OF THE WEEK", YELLOW, INK)} {_label(rss.FEEDS[n][1].upper())}'
-            f'<div style="margin:10px 0 8px"><a class="p-hh" href="{escape(story["url"])}" style="font-family:{HEAD};font-size:24px;'
-            f'line-height:1.15;color:{INK};text-decoration:none">{escape(story["title"])}</a></div>'
-            + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
-            + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(story))}</div>'
-              f'{_button("Read the story →", story["url"])}</td></tr>')
-            + '</td></tr>')
-    dossier_text, dossier_html = _dossier(dossier)
-    if dossier_html:
-        text += [*dossier_text, ""]
-        html += f'<tr><td class="p-pad" style="padding:20px 20px 0">{dossier_html}</td></tr>'
-    # the day itself follows, as in every other email
-    text += [f"{day:%A} {day.day} {day:%B}".upper(), ""]
-    html += _band(f"{day:%A}", f"{day.day} {day:%b}", "margin-top:20px;")
-    return text, html
+def _hero(c: dict, n: str, kicker: str, half: bool = False) -> str:
+    """A lead story (Hot today, Sunday's story of the week) as a cell: its labels, headline, summary, outlets and
+    button, no picture; `half` for Sunday's two side by side (smaller type)."""
+    summary = digest._short(c.get("summary") or "", 160 if half else 200, c.get("source", ""))
+    size, width = (19, ' width="50%"') if half else (24, "")
+    return (f'<td class="p-hot"{width} valign="top" style="padding:18px 16px 20px 20px">'
+            f'{_label(kicker, YELLOW, INK)} {_label(rss.FEEDS[n][1].upper())}'
+            f'<div style="margin:10px 0 8px"><a class="{"p-hh2" if half else "p-hh"}" href="{escape(c["url"])}" '
+            f'style="font-family:{HEAD};font-size:{size}px;line-height:1.15;color:{INK};text-decoration:none">{escape(c["title"])}</a></div>'
+            + (f'<div style="font-size:{14 if half else 15}px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
+            + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(c))}</div>'
+              f'{_button("Read the story →", c["url"])}</td>')
+
+
+def _hero_text(c: dict, kicker: str) -> list[str]:
+    summary = digest._short(c.get("summary") or "", 200, c.get("source", ""))
+    return [kicker, c["title"], *([summary] if summary else []), _by(c), c["url"], ""]
 
 
 def _band(title: str, dates: str, style: str = "") -> str:
-    """A black band across the email: a title and its dates (Sunday's "The week in AI" and the day after it)."""
+    """A black band across the email: a title and its dates (on Sunday, the day after the week's part)."""
     return (f'<tr><td class="p-pad" style="{style}padding:14px 20px;background:{INK};color:#ffffff"><span style="font-family:{HEAD};'
             f'font-size:22px;line-height:1.2;color:#ffffff">{escape(title)}</span><span style="font-size:14px;color:#ffffff;'
             f'margin-left:10px">{escape(dates)}</span></td></tr>')
@@ -363,26 +352,32 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     html.append(f'<tr><td class="p-pad p-mast" style="padding:14px 20px;border-bottom:3px solid {INK};font-family:{HEAD};'
                 f'font-size:18px;line-height:1.25">{escape(_masthead(day))}</td></tr>')
 
-    # Sunday: the story of the week and the reader's dossier first (the week's word and meme where the day's go)
-    if digest.weekly(day):
-        week_text, week_html = _the_week(cards, day, prefs, dossier)
-        text += week_text
-        html.append(week_html)
-
+    # The lead: Hot today, the day's most-reported story (no picture); on Sunday beside the story of the week (as the
+    # site picks it, digest._week_story), the masthead already naming the week
+    week = digest._week_story(cards, day, prefs) if digest.weekly(day) else None
+    leads = []
+    if week:
+        n = next((n for n in rss.FEEDS if rss.FEEDS[n][0] == week["category"]), "news")
+        text += [f"THE WEEK IN AI, {_week_span(day)}", ""] + _hero_text(week, "STORY OF THE WEEK")
+        leads.append((week, n, "STORY OF THE WEEK"))
     if top:
-        # Hot today: the day's most-reported story (no picture)
-        hot, n = top[0], stream_of[id(top[0])]
-        summary = digest._short(hot.get("summary") or "", 200, hot.get("source", ""))
-        text += ["HOT TODAY", hot["title"], *([summary] if summary else []), _by(hot), hot["url"], ""]
-        html.append(f'<tr><td style="padding:0;border-bottom:3px solid {INK}">' + _table(
-            f'<tr><td class="p-hot" valign="top" style="padding:18px 16px 20px 20px">'
-            f'{_label("HOT TODAY" + (" · YOUR CHOICE" if id(hot) in picks else ""), YELLOW, INK)} {_label(rss.FEEDS[n][1].upper())}'
-            f'<div style="margin:10px 0 8px"><a class="p-hh" href="{escape(hot["url"])}" style="font-family:{HEAD};font-size:24px;'
-            f'line-height:1.15;color:{INK};text-decoration:none">{escape(hot["title"])}</a></div>'
-            + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
-            + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(hot))}</div>'
-              f'{_button("Read the story →", hot["url"])}</td></tr>')
-            + '</td></tr>')
+        hot = top[0]
+        kicker = "HOT TODAY" + (" · YOUR CHOICE" if id(hot) in picks else "")
+        text += _hero_text(hot, kicker)
+        leads.append((hot, stream_of[id(hot)], kicker))
+    if leads:
+        cells = f'<td width="3" style="width:3px;padding:0;background:{INK}"></td>'.join(
+            _hero(c, n, kicker, half=len(leads) == 2) for c, n, kicker in leads)
+        html.append(f'<tr><td style="padding:0;border-bottom:3px solid {INK}">' + _table(f'<tr>{cells}</tr>') + '</td></tr>')
+
+    # Sunday: the week's word and meme (in place of the day's) and the reader's dossier, then the day's band; the
+    # day's own sections follow it
+    if digest.weekly(day):
+        word_text, word_html = _week_word_and_meme(cards, day)
+        dossier_text, dossier_html = _dossier(dossier)
+        text += word_text + ([*dossier_text, ""] if dossier_html else []) + [f"{day:%A} {day.day} {day:%B}".upper(), ""]
+        html.append(f'<tr><td {pad}>{word_html}{dossier_html}</td></tr>'
+                    + _band(f"{day:%A}", f"{day.day} {day:%b}", "margin-top:20px;"))
 
     body = []  # the sections in the padded column
     if len(top) > 1:
@@ -397,13 +392,11 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         text += [made_for, ""]
         body.append(f'<div style="font-size:12px;color:{GREY};margin:0 0 18px">{escape(made_for)}</div>')
 
-    # The word and the meme of the day, high up (Sunday's email: the week's)
-    if digest.weekly(day):
-        word_text, word_html = _week_word_and_meme(cards, day)
-    else:
+    # The word and the meme of the day, high up (Sunday's email has the week's, above)
+    if not digest.weekly(day):
         word_text, word_html = _word_and_meme(cards, day, streams, prefs, [digest._biggest(by_stream, streams), top, todays])
-    text += word_text
-    body.append(word_html)
+        text += word_text
+        body.append(word_html)
 
     news = digest._new_stream(day, streams)
     if news:
