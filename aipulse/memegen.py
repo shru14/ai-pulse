@@ -1,5 +1,6 @@
 """Meme captions written by Google's Gemini on its free tier: the one place AI Pulse uses an AI model, by the
-project owner's choice (2026-10-03). Nothing else (summaries, sorting, the tracker) uses it.
+project owner's choice (2026-10-03); since 25 Oct 2026 it also shortens an email subject no rule cuts cleanly (poster._gemini, only
+the headline's own words). Nothing else (summaries, sorting, the tracker) uses it.
 
 Gemini sees only public data, the period's headlines, and picks one of the well-known meme templates (memes.py)
 and writes its captions, which are then written onto the template. It makes no picture. Its answer must pass every check here (a known
@@ -111,9 +112,9 @@ Write 3 different candidate memes, the funniest first. Answer with JSON only:
 FALLBACKS = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"]
 
 
-def _ask(prompt: str, key: str, timeout: int = 120) -> str:
+def _ask(prompt: str, key: str, timeout: int = 120, temperature: float = 1.0) -> str:
     body = json.dumps({"contents": [{"parts": [{"text": prompt}]}],
-                       "generationConfig": {"temperature": 1.0, "responseMimeType": "application/json",
+                       "generationConfig": {"temperature": temperature, "responseMimeType": "application/json",
                                             "thinkingConfig": {"thinkingLevel": "high"}}}).encode()
     models = [MODEL] + [m for m in FALLBACKS if m != MODEL]
     for i, model in enumerate(models):
