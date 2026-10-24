@@ -21,7 +21,7 @@ from pathlib import Path
 from . import classify, digest, pages, rss
 
 ART = Path(__file__).resolve().parent.parent / "templates" / "photos" / "cartoons" / "png"
-HEAD = "'Archivo Black','Arial Black',Arial,sans-serif"  # headings; Gmail has no web fonts: Arial Black there
+HEAD = "'Archivo Black','Arial Black',Arial,sans-serif"  # headings; Gmail has no web fonts: Arial Black there, and phones lack Arial Black, so every heading also says font-weight:900
 BODY = "Arial,Helvetica,sans-serif"
 INK, GREY, YELLOW, BLUE, VERMILION = "#000000", "#4a4a4a", "#F0E442", "#0072B2", "#B85000"
 # The streams' Okabe-Ito fills (the site's --f-*), black text on them
@@ -130,7 +130,7 @@ def _button(words: str, href: str) -> str:
 
 
 def _heading(words: str, color: str = INK) -> str:
-    return (f'<div style="font-family:{HEAD};font-size:20px;line-height:1.2;color:{color};border-bottom:3px solid {color};'
+    return (f'<div style="font-family:{HEAD};font-weight:900;font-size:20px;line-height:1.2;color:{color};border-bottom:3px solid {color};'
             f'padding-bottom:5px;margin-bottom:12px">{escape(words)}</div>')
 
 
@@ -194,7 +194,7 @@ def _word_tile(kicker: str, e: dict, came_up: str) -> str:
     """A glossary word in the site's blue tile: the word on yellow, its meaning, where it came up (HTML)."""
     return _table(f'<tr><td style="padding:16px 18px;background:{BLUE};border:2px solid {INK};color:#ffffff">'
                   f'<div style="font-weight:bold;font-size:12px;letter-spacing:.5px">{kicker}</div>'
-                  f'<div style="font-family:{HEAD};font-size:24px;line-height:1.2;margin:6px 0 8px"><span style="background:{YELLOW};'
+                  f'<div style="font-family:{HEAD};font-weight:900;font-size:24px;line-height:1.2;margin:6px 0 8px"><span style="background:{YELLOW};'
                   f'color:{INK};padding:0 5px">{escape(e["term"])}</span></div>'
                   f'<div style="font-size:15px;line-height:1.5">{escape(e["def"])}</div>{came_up}'
                   f'<div style="font-size:13px;margin-top:8px"><a href="{rss.SITE}glossary/" style="color:#ffffff;'
@@ -267,7 +267,7 @@ def _the_week(cards: list[dict], day: date, prefs: dict, dossier: dict | None) -
         html += (f'<tr><td style="padding:0;border-bottom:3px solid {INK}">' + _table(
             f'<tr><td class="p-hot" valign="top" style="padding:18px 16px 20px 20px">'
             f'{_label("STORY OF THE WEEK", YELLOW, INK)} {_label(rss.FEEDS[n][1].upper())}'
-            f'<div style="margin:10px 0 8px"><a class="p-hh" href="{escape(story["url"])}" style="font-family:{HEAD};font-size:24px;'
+            f'<div style="margin:10px 0 8px"><a class="p-hh" href="{escape(story["url"])}" style="font-family:{HEAD};font-weight:900;font-size:24px;'
             f'line-height:1.15;color:{INK};text-decoration:none">{escape(story["title"])}</a></div>'
             + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
             + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(story))}</div>'
@@ -285,7 +285,7 @@ def _the_week(cards: list[dict], day: date, prefs: dict, dossier: dict | None) -
 
 def _band(title: str, dates: str, style: str = "") -> str:
     """A black band across the email: a title and its dates (Sunday's "The week in AI" and the day after it)."""
-    return (f'<tr><td class="p-pad" style="{style}padding:14px 20px;background:{INK};color:#ffffff"><span style="font-family:{HEAD};'
+    return (f'<tr><td class="p-pad" style="{style}padding:14px 20px;background:{INK};color:#ffffff"><span style="font-family:{HEAD};font-weight:900;'
             f'font-size:22px;line-height:1.2;color:#ffffff">{escape(title)}</span><span style="font-size:14px;color:#ffffff;'
             f'margin-left:10px">{escape(dates)}</span></td></tr>')
 
@@ -309,7 +309,7 @@ def _dossier(dossier: dict | None) -> tuple[list[str], str]:
     html = _table(f'<tr><td width="30%" valign="middle" style="width:30%;background:{YELLOW};border:2px solid {INK};padding:0">'
                   f'<a href="{escape(link)}"><img src="{_picture("pages/ask")}" width="170" alt="" style="display:block;width:100%;'
                   f'height:auto;border:0"></a></td><td valign="top" style="padding:12px 14px 14px;border:2px solid {INK};'
-                  f'border-left:0">{_label(kicker)}<div style="font-family:{HEAD};font-size:18px;line-height:1.2;margin:8px 0 6px">'
+                  f'border-left:0">{_label(kicker)}<div style="font-family:{HEAD};font-weight:900;font-size:18px;line-height:1.2;margin:8px 0 6px">'
                   f'{escape(title)}</div><div style="font-size:14px;line-height:1.45;margin-bottom:12px">{escape(pitch)}</div>'
                   f'{_button(words, link)}</td></tr>', "margin:0 0 6px")
     return text, html
@@ -360,7 +360,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     pad = 'class="p-pad" style="padding:20px 20px 0"'
 
     # The masthead: which day (or, on Sunday, week) this is (the inbox already shows the sender's name and picture)
-    html.append(f'<tr><td class="p-pad p-mast" style="padding:14px 20px;border-bottom:3px solid {INK};font-family:{HEAD};'
+    html.append(f'<tr><td class="p-pad p-mast" style="padding:14px 20px;border-bottom:3px solid {INK};font-family:{HEAD};font-weight:900;'
                 f'font-size:18px;line-height:1.25">{escape(_masthead(day))}</td></tr>')
 
     # Sunday: the story of the week and the reader's dossier first (the week's word and meme where the day's go)
@@ -377,7 +377,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         html.append(f'<tr><td style="padding:0;border-bottom:3px solid {INK}">' + _table(
             f'<tr><td class="p-hot" valign="top" style="padding:18px 16px 20px 20px">'
             f'{_label("HOT TODAY" + (" · YOUR CHOICE" if id(hot) in picks else ""), YELLOW, INK)} {_label(rss.FEEDS[n][1].upper())}'
-            f'<div style="margin:10px 0 8px"><a class="p-hh" href="{escape(hot["url"])}" style="font-family:{HEAD};font-size:24px;'
+            f'<div style="margin:10px 0 8px"><a class="p-hh" href="{escape(hot["url"])}" style="font-family:{HEAD};font-weight:900;font-size:24px;'
             f'line-height:1.15;color:{INK};text-decoration:none">{escape(hot["title"])}</a></div>'
             + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
             + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(hot))}</div>'
@@ -419,7 +419,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         text += [f"NUMBER OF THE DAY: {figure}", said, f"{c['source']}: {c['url']}", ""]
         body.append(_table(f'<tr><td width="34%" valign="middle" style="width:34%;padding:14px 16px;background:{YELLOW};'
                            f'border:2px solid {INK};border-right:0"><div style="font-weight:bold;font-size:12px;letter-spacing:.5px">'
-                           f'NUMBER OF THE DAY</div><div style="font-family:{HEAD};font-size:34px;line-height:1.1">{escape(figure)}</div></td>'
+                           f'NUMBER OF THE DAY</div><div style="font-family:{HEAD};font-weight:900;font-size:34px;line-height:1.1">{escape(figure)}</div></td>'
                            f'<td valign="middle" style="padding:14px 16px;background:{YELLOW};border:2px solid {INK};border-left:0;'
                            f'font-size:14px;line-height:1.45">{escape(said)}<div style="font-size:12px;margin-top:6px">'
                            f'{escape(c["source"])} · <a href="{escape(c["url"])}" style="color:{INK};font-weight:bold">Read it →</a>'
@@ -436,7 +436,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         body.append(_table(f'<tr><td width="30%" valign="middle" style="width:30%;background:{fill};border:2px solid {INK};'
                            f'padding:0"><img src="{picture}" width="170" alt="" style="display:block;width:100%;height:auto;border:0"></td>'
                            f'<td valign="top" style="padding:12px 14px;border:2px solid {INK};border-left:0">{_label("NEW ON AI PULSE")}'
-                           f'<div style="font-family:{HEAD};font-size:18px;line-height:1.2;margin:8px 0 6px">{escape(name)}</div>'
+                           f'<div style="font-family:{HEAD};font-weight:900;font-size:18px;line-height:1.2;margin:8px 0 6px">{escape(name)}</div>'
                            f'<div style="font-size:14px;line-height:1.45">{escape(what)}</div><div style="margin-top:8px">'
                            f'<a href="{escape(rss.SITE + path)}" style="color:{INK};font-weight:bold;font-size:13px">Have a look →</a>'
                            f'</div></td></tr>', "margin:0 0 26px"))
@@ -472,7 +472,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                        f'padding:0 6px 12px;font-size:15px">{box}</div>' for box in boxes)
         text.append("")
         html.append(f'<tr><td class="p-pad" style="padding:20px 20px 8px;background:{INK};color:#ffffff">'
-                    f'<div style="font-family:{HEAD};font-size:20px;line-height:1.2;color:#ffffff">Pick your lane</div>'
+                    f'<div style="font-family:{HEAD};font-weight:900;font-size:20px;line-height:1.2;color:#ffffff">Pick your lane</div>'
                     f'<div style="font-size:14px;margin:4px 0 14px;color:#ffffff">The rest of the day, sorted by who it matters to.</div>'
                     f'<div style="margin:0 -6px;font-size:0">{grid}</div></td></tr>')
 
@@ -502,7 +502,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                     f'text-decoration:none;font-weight:bold;font-size:15px">{escape(name)}</a></td>'
                     f'<td align="right" style="padding:11px 0;border-bottom:1px solid #cccccc;font-size:14px;white-space:nowrap">'
                     f'<a href="{escape(web)}#{n}" style="color:{INK if count else GREY};text-decoration:none">{words} ▸</a></td></tr>')
-    html.append(f'<tr><td class="p-pad" style="padding:18px 20px 16px;background:{INK};color:#ffffff"><div style="font-family:{HEAD};'
+    html.append(f'<tr><td class="p-pad" style="padding:18px 20px 16px;background:{INK};color:#ffffff"><div style="font-family:{HEAD};font-weight:900;'
                 f'font-size:22px;line-height:1.2;color:#ffffff">The Firehose</div><div style="font-size:14px;line-height:1.45;'
                 f'margin-top:4px;color:#ffffff">'
                 f'All {stories} stories of {day:%A}.</div></td></tr>'
