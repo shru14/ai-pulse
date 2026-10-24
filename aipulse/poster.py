@@ -1,4 +1,4 @@
-"""The poster email (on trial): the daily digest in the site's Swiss-poster look. In order: the hot story (the
+"""The poster email (the daily email since 25 Oct 2026): the daily digest in the site's Swiss-poster look. In order: the hot story (the
 day's most-reported), top news, the word and meme of the day, the number of the day, the newest page on the site,
 the rest of the day by reader ("Pick your lane"), the review strip, then The Firehose: a row per stream that opens
 every story of the day on the site. One layout at every width (no phone-only rules), so phones show what a computer
