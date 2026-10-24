@@ -74,7 +74,7 @@ STYLE = (":root{color-scheme:light only;supported-color-schemes:light only}"  # 
          "a:hover{opacity:.75}.p-row:hover td{background:#f2f2f2}"
          # a phone: the same layout as on a computer, only smaller (type, gaps, margins)
          "@media (max-width:480px){.p-tile,.p-lane{padding:0 3px 8px!important}.p-tt{font-size:11.5px!important}"
-         ".p-ts{font-size:10px!important}.p-lt{font-size:12px!important}.p-hh{font-size:20px!important}"
+         ".p-ts{font-size:10px!important}.p-mast{font-size:14px!important}.p-lt{font-size:12px!important}.p-hh{font-size:20px!important}"
          ".p-hot{padding:16px 14px!important}.p-pad{padding-left:12px!important;padding-right:12px!important}}")
 
 
@@ -243,12 +243,10 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     stories = len(todays)  # stories, not outlets: the stream rows add up to it
     pad = 'class="p-pad" style="padding:20px 20px 0"'
 
-    # The masthead: the mark, the name, the day
-    html.append(f'<tr><td class="p-pad" style="padding:12px 20px;border-bottom:3px solid {INK}">' + _table(
-        f'<tr><td valign="middle"><img src="{_picture("mark")}" width="30" height="30" alt="" style="display:inline-block;'
-        f'vertical-align:middle;border:0"><span style="font-family:{HEAD};font-size:20px;vertical-align:middle;'
-        f'margin-left:8px">AI Pulse</span></td><td align="right" valign="middle" style="font-weight:bold;font-size:14px">'
-        f'{day:%a} {day.day} {day:%b}</td></tr>') + '</td></tr>')
+    # The masthead: which day this is (the inbox already shows the sender's name and picture)
+    nth = "th" if 10 < day.day % 100 < 14 else {1: "st", 2: "nd", 3: "rd"}.get(day.day % 10, "th")
+    html.append(f'<tr><td class="p-pad p-mast" style="padding:14px 20px;border-bottom:3px solid {INK};font-family:{HEAD};'
+                f'font-size:18px;line-height:1.25">Daily digest for {day:%A} {day.day}{nth} {day:%B %Y}</td></tr>')
 
     # Sunday: the week's story, word and meme (as in the short email), and the reader's dossier
     if digest.weekly(day):
@@ -416,7 +414,8 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
             '<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">'
             '<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;display=swap" rel="stylesheet">'
             f'<title>{escape(subject)}</title><style>{STYLE}</style></head><body style="margin:0;padding:0;background:#ffffff">'
-            f'<div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px">{BLANK_PREVIEW}</div>'
+            f'<div style="display:none!important;visibility:hidden;mso-hide:all;max-height:0;max-width:0;overflow:hidden;'
+            f'opacity:0;font-size:0;line-height:0;color:#ffffff">{BLANK_PREVIEW}</div>'
             '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff"><tr>'
             '<td align="center" style="padding:10px 6px 20px">'
             f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;'
