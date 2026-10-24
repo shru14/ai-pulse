@@ -322,6 +322,10 @@ def build(conn, out: str | Path) -> int:
         meme = memes.of_the_day(cards, d)
         if meme and (picture := memes.render(meme)):
             (out / "daily" / f"{d.isoformat()}-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}").write_bytes(picture)
+        if digest.weekly(d):  # Sunday's email has the meme of the week instead (as poster._week_word_and_meme makes it)
+            week = memes.of_the_week([c for c in cards if (c.get("date") or "") <= d.isoformat()], d - timedelta(days=d.weekday()))
+            if week and (picture := memes.render(week)):
+                (out / "daily" / f"{d.isoformat()}-week-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}").write_bytes(picture)
     for d in reversed(published):  # the day's Gemini meme, if the "memes" step made one (no call here)
         memegen.prepare(conn, cards, today, day=d)
         if (sample := sample_page(cards, d, out)):
