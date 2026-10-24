@@ -4454,3 +4454,27 @@ def test_top_news_takes_at_most_two_tiles_a_stream_on_a_quiet_day():
     # a story more outlets carried keeps its place over the limit
     stories[3]["also"] = [{"source": "Other"}]
     assert stories[3] in poster._spread(stories, stories[:1], 6, stream_of)
+
+
+def test_email_subjects_are_a_few_of_the_headlines_own_words_never_cut_with_dots(monkeypatch):
+    from aipulse import poster
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setattr(poster, "_SHORTENED", {})
+    monkeypatch.setattr(poster, "GEMINI_ASKS", [3])
+    assert poster._subject("Apple sues OpenAI over alleged trade secret theft") == "Apple sues OpenAI"
+    assert poster._subject("AI drug development startup Pathos AI closes $237M investment") == "Pathos AI closes $237M investment"
+    assert poster._subject("Amid hardware legal battle, OpenAI releases a $230 keyboard for Codex") == \
+        "OpenAI releases a $230 keyboard for Codex"
+    assert poster._subject("SpaceXAI releases Grok 4.5, which Elon describes as an Opus-class model") == "SpaceXAI releases Grok 4.5"
+    # no rule cuts it cleanly: Gemini picks the words, and only the headline's own, in order, pass
+    hard = "U.S. court rules Pentagon's blacklisting of Anthropic was unlawful"
+    assert poster._subject(hard, ask=lambda p: '{"subject": "court rules Pentagon\'s blacklisting of Anthropic unlawful"}') == \
+        "Court rules Pentagon's blacklisting of Anthropic unlawful"
+    assert not poster._kept("Court says Pentagon blacklisting was illegal", hard)  # words it didn't say
+    assert not poster._kept("Pentagon blacklisting of Anthropic…", hard)
+    # nor one that leaves out a name or a currency on the way
+    assert not poster._kept("Claude is Anthropic's answer to Meta", "Claude Duet is Anthropic's answer to Meta Muse and OpenAI Dots")
+    assert not poster._kept("OpenAI runs to raise 163.5 billion", "OpenAI runs to raise R $ 163.5 billion before IPO Anthropic")
+    monkeypatch.setattr(poster, "_SHORTENED", {})
+    short = poster._subject(hard, ask=lambda p: '{"subject": "Judges slam the Pentagon"}')  # refused: the rule's fallback
+    assert "…" not in short and len(short.split()) <= poster.SUBJECT_WORDS and short.startswith("U.S. court rules")

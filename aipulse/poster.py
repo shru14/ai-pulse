@@ -2,7 +2,8 @@
 day's most-reported), top news, the word and meme of the day, the number of the day, the newest page on the site,
 the rest of the day by reader ("Pick your lane"), the review strip, then The Firehose: a row per stream that opens
 every story of the day on the site. One layout at every width (no phone-only rules), so phones show what a computer
-does. Nothing in it is written by AI: headlines and sentences are the outlets' own, pictures are our own drawings
+does. Nothing in it is written by AI: headlines and sentences are the outlets' own (the subject is the lead's own
+words, shortened by rule or, when no rule cuts it cleanly, by Gemini picking which to keep: see _subject), pictures are our own drawings
 (templates/photos/cartoons, as PNG: mail apps don't show SVG), picked by each story's tags and linked from the site
 (see _picture); only the meme travels inside the email.
 
@@ -11,6 +12,7 @@ does. Nothing in it is written by AI: headlines and sentences are the outlets' o
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import urllib.request
@@ -164,22 +166,123 @@ def _number(stories: list[dict]) -> tuple[str, str, dict] | None:
     return None
 
 
-SUBJECT_WORDS = 6  # the owner's limit for a subject
-_SMALL = {"a", "an", "the", "to", "of", "in", "on", "at", "for", "with", "and", "or", "by", "from", "as", "its", "it",
-          "their", "is", "are", "was", "were", "will", "be", "that", "this", "than", "into", "over", "after", "says"}
+SUBJECT_WORDS = 7  # the owner's limit for a subject after "Daily Digest: " (6 or 7 words, never "…")
+# Labels and words a subject can lose without changing what the headline says
+_LABEL = re.compile(r"^(?:exclusive|opinion|analysis|breaking|update|updated|explainer|interview|report|watch|live|podcast)\s*:\s*", re.I)
+_FILLER = {"a", "an", "the", "reportedly", "officially", "now", "just", "finally", "also", "today", "very", "fully",
+           "massively", "potentially", "quietly", "publicly", "formally", "newly", "highly", "largely", "widely",
+           "rapidly", "recently", "significantly", "dramatically", "sharply", "once", "again", "still"}
+# A leading clause that can go ("Amid hardware legal battle, OpenAI releases...")
+_LEAD = {"amid", "as", "after", "while", "despite", "with", "following", "ahead", "before", "in", "when", "facing"}
+# A tail starting with one of these can go: the rest still says what happened ("Apple sues OpenAI | over...")
+_TAIL = {"with", "for", "in", "on", "at", "amid", "after", "as", "while", "despite", "from", "ahead", "before", "using",
+         "via", "following", "over", "across", "against", "during", "until", "since", "because", "without", "through",
+         "–", "—", "-", "|", "but", "and", "which", "that", "who", "into", "under", "between", "than"}
+# A subject never ends on one of these: they leave the line hanging ("…plans to", "…models let you")
+_SMALL = {"a", "an", "the", "to", "of", "in", "on", "at", "for", "with", "and", "or", "but", "by", "from", "as", "its",
+          "it", "their", "his", "her", "our", "your", "you", "is", "are", "was", "were", "will", "be", "been", "has",
+          "have", "had", "that", "this", "than", "into", "over", "after", "says", "said", "can", "could", "would",
+          "should", "may", "might", "must", "not", "about", "amid", "while", "despite", "via", "how", "why", "what",
+          "who", "which", "when", "new", "more", "most", "if", "like", "do", "does", "set", "plans", "wants", "seeks",
+          "aims", "expected", "let", "lets", "make", "makes", "gives", "give", "takes", "take", "built", "led", "made",
+          "called", "generated", "tried", "demanding", "designed", "asks", "urges", "tells", "helps", "allows",
+          "brings", "puts", "adds", "turns", "sees", "vs", "vs.", "&", "up", "out", "off", "being", "getting", "going",
+          "trying"}
+_SHORTENED: dict[str, str] = {}  # headline -> subject, so each headline is shortened (and Gemini asked) once per run
+GEMINI_ASKS = [3]  # at most this many Gemini asks per run, so subjects never use up the memes' free allowance
 
 
-def _subject(title: str) -> str:
-    """The lead headline's first SUBJECT_WORDS words, as the outlet wrote them, then "…"; never ending on a small word
-    ("to", "the", "will"...). The inbox shows nothing after it (see BLANK_PREVIEW)."""
-    words = title.split()
-    if len(words) <= SUBJECT_WORDS:
-        return title
-    cut = words[:SUBJECT_WORDS]
-    # nor on a sign, a number or a lone letter ("raise R $…")
-    while len(cut) > 3 and (cut[-1].lower().strip(",:;'’\"“”") in _SMALL or not re.search(r"[A-Za-z]{2}", cut[-1])):
-        cut.pop()
-    return " ".join(cut).rstrip(",:;—–-") + "…"
+def _bare(w: str) -> str:
+    return w.lower().replace("’", "'").strip(",:;.!?'\"“”‘()[]")
+
+
+def _ends_well(cut: list[str]) -> bool:
+    """Does a shortened headline end cleanly: not on a small word, a sign or a lone letter, no quote or bracket open?"""
+    last, t = cut[-1], " ".join(cut)
+    return (_bare(last) not in _SMALL and bool(re.search(r"[A-Za-z]{2}|\d", last)) and last[-1] not in ",:;"
+            and t.count("(") == t.count(")") and t.count("“") == t.count("”") and t.count('"') % 2 == 0
+            and t.count("‘") <= t.count("’") and not re.search(r"\$\s*$|\bR \$", t))
+
+
+def _cut(title: str) -> str | None:
+    """The headline in at most SUBJECT_WORDS of its own words, by rule: without labels and filler words, its first
+    clause or up to a tail it can lose; None when no cut ends cleanly (any cut would change what it says)."""
+    t = _LABEL.sub("", " ".join(title.split()))
+    t = re.sub(r",? (?:a )?reports? (?:says|said)$|,? (?:sources|people) say$", "", t, flags=re.I)
+    t = re.sub(r"\b([A-Z]{1,3}) \$ ?(?=\d)|\$ (?=\d)", lambda m: (m.group(1) or "") + "$", t)  # "R $ 163.5" -> "R$163.5"
+    # "AI drug development startup Pathos AI closes..." -> "Pathos AI closes..."
+    t = re.sub(r"^(?:[a-z][\w-]* |AI ){0,4}(?:startup|company|firm|maker|giant|unicorn|chipmaker|lab) (?=[A-Z])", "", t)
+    m = re.match(r"(\S+)[^,]{0,60}, (.+)", t)
+    if m and _bare(m.group(1)) in _LEAD:
+        t = m.group(2)
+    t = t.rstrip(" .,:;—–-")
+    # the headline's words as they are, then (only if no cut fits) without its filler words
+    for words in (t.split(), [w for i, w in enumerate(t.split()) if i == 0 or _bare(w) not in _FILLER]):
+        if len(words) <= SUBJECT_WORDS:
+            return " ".join(words)
+        first = re.split(r"\s*(?::|;|\||\s[—–-]\s|,|\.\s)\s*", " ".join(words))[0].split()
+        if 3 <= len(first) <= SUBJECT_WORDS and _ends_well(first):
+            return " ".join(first)
+        for k in range(SUBJECT_WORDS, 2, -1):
+            nxt, cut = words[k], [w.rstrip(",:;") for w in words[:k]]
+            figure = any(re.search(r"\d", w) for w in cut)  # "raises $52M seed | to build..."
+            if (_bare(nxt) in _TAIL or (_bare(nxt) == "to" and figure) or words[k - 1][-1] in ",:;") and _ends_well(cut):
+                return " ".join(cut)
+    return None
+
+
+def _kept(short: str, title: str) -> bool:
+    """Is `short` 3 to SUBJECT_WORDS of the headline's own words, in the headline's order, ending cleanly, without
+    leaving out a name, number or currency before its last word ("Claude [Duet] is...", "raise [R $] 163.5 billion")?"""
+    words, have = title.split(), [w for w in short.split() if _bare(w)]
+    said = [_bare(w) for w in words]
+    if not 3 <= len(have) <= SUBJECT_WORDS or "…" in short or "..." in short or not _ends_well(have):
+        return False
+    i = 0
+    for w in have:
+        start = i
+        while i < len(said) and said[i] != _bare(w):
+            i += 1
+        if i == len(said):
+            return False
+        if any(re.search(r"[A-Z\d$€£¥₹]", words[j]) for j in range(start, i) if j > 0):
+            return False
+        i += 1
+    return True
+
+
+def _gemini(title: str, ask=None) -> str | None:
+    """For a headline no rule cuts cleanly, Gemini (free tier, memegen._ask) picks which of its words to keep; the
+    answer must pass _kept (only the headline's own words, in order), so it can't add or change a fact."""
+    key = os.environ.get("GEMINI_API_KEY")
+    if not (ask or key) or GEMINI_ASKS[0] <= 0:
+        return None
+    GEMINI_ASKS[0] -= 1
+    from . import memegen
+    prompt = (f"Shorten this news headline to {SUBJECT_WORDS - 1} or {SUBJECT_WORDS} words for an email subject. "
+              "Use only words from the headline, in the same order, unchanged; keep who did what, so it reads as a "
+              "complete, plain phrase that says the same thing. No ellipsis, no added words. "
+              f'Answer as JSON: {{"subject": "..."}}\n\nHeadline: {title}')
+    try:
+        answer = json.loads((ask or (lambda p: memegen._ask(p, key, timeout=60, temperature=0.2)))(prompt))["subject"]
+    except Exception:  # no network, no allowance, a bad answer: the fallback in _subject
+        return None
+    answer = " ".join(str(answer).split()).rstrip(" .,:;—–-")
+    return answer if _kept(answer, title) else None
+
+
+def _subject(title: str, ask=None) -> str:
+    """The lead headline in at most SUBJECT_WORDS of its own words, never with "…": cut by rule (_cut), or by Gemini
+    when no rule cuts it cleanly (_gemini); failing both, its first words up to the last that ends cleanly."""
+    if title not in _SHORTENED:
+        short = _cut(title) or _gemini(title, ask)
+        if not short:
+            cut = re.split(r"\s*(?::|;|\||\s[—–-]\s)\s*", title)[0].split()[:SUBJECT_WORDS]
+            while len(cut) > 3 and not _ends_well(cut):
+                cut.pop()
+            short = " ".join(cut).rstrip(" ,:;—–-")
+        _SHORTENED[title] = short[:1].upper() + short[1:]
+    return _SHORTENED[title]
 
 
 # The inbox shows only the subject: mail apps fill the line after it from the email's first text (Gmail from the
@@ -599,7 +702,10 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                 f'Unsubscribe</a><br>AI Pulse is free and non-commercial · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a>'
                 f'</td></tr>')
 
-    subject = _subject(top[0]["title"]) if top else f"AI Pulse · {digest.long_day(day)}"
+    # "Daily Digest: " (Sunday: "Weekly Digest: " and the story of the week), then the lead in a few of its own words
+    lead = week or (top[0] if top else None)
+    subject = (("Weekly Digest: " if digest.weekly(day) else "Daily Digest: ")
+               + (_subject(lead["title"]) if lead else digest.long_day(day)))
     page = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             '<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">'
             '<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;display=swap" rel="stylesheet">'
