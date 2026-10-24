@@ -382,12 +382,12 @@ def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: set[str] = fro
     return None, []
 
 
-def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
-          tiers: list[list[dict]] | None = None) -> tuple[list[str], str]:
+def _word_entry(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
+                tiers: list[list[dict]] | None = None) -> tuple[dict, dict | None]:
     """The word of the day: the hardest specialist word in the day's biggest stories in this reader's email, else
     in their top 10, else anywhere in their email (`tiers`), and not one the week before gave; else
-    glossary.word_of_the_day among SPECIALIST. With its meaning, the story that used it (a headline that shows it first) and a
-    link to it in the site's glossary."""
+    glossary.word_of_the_day among SPECIALIST. Returns its glossary entry and the story that used it (a headline
+    that shows it first)."""
     streams = streams or list(rss.FEEDS)
     week = set()
     for back in range(1, 8):  # the words the week before gave (their biggest stories), so none comes back within a week
@@ -402,6 +402,14 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
         used = [c for c in cards if since <= (c.get("date") or "") <= day.isoformat() and glossary.mentions(e["id"], _text(c))]
     # A headline that shows the word beats one whose summary does; then the latest, then the most reported
     story = max(used, key=lambda c: (glossary.mentions(e["id"], c.get("title") or ""), c["date"], _outlets(c)), default=None)
+    return e, story
+
+
+def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
+          tiers: list[list[dict]] | None = None) -> tuple[list[str], str]:
+    """The word of the day (_word_entry) with its meaning, the story that used it and a link to it in the site's
+    glossary."""
+    e, story = _word_entry(cards, day, streams, prefs, tiers)
     more = f"{rss.SITE}glossary/"  # the glossary page, every word A to Z
     text = ["WORD OF THE DAY: " + e["term"], e["def"], *([f"Where it came up: {story['title']} {story['url']}"] if story else []),
             f"More words in the AI Pulse glossary: {more}"]
@@ -916,8 +924,8 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day (Sunday's short
     email still goes if the week had stories: it says the day had none).
     `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site.
-    `layout`: "short", the daily email (the ten stories that mattered most, then each stream's headlines), or
-    "full" (every story in one tagged table). `web`: the page version of a full email (daily/ on the site),
+    `layout`: "short", the daily email (the ten stories that mattered most, then each stream's headlines),
+    "full" (every story in one tagged table), or "poster" (poster.py: the hot story, top news, lanes, every story). `web`: the page version of a full email (daily/ on the site),
     with a sign-up line in place of a reader's own settings. `prefs`: the reader's choices (subscribers.prefs_of):
     what they left out never appears in their short email, and their own come first; the full email is the same
     for everyone. `dossier`: on Sundays, the reader's weekly dossier (see _dossier), in the short email only.
@@ -925,9 +933,9 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     `since`: the newest arrival the last email saw; stories that arrived after it, dated before `day`, go in too."""
     by_stream = by_streams(cards, streams, day, since)
     left = []
-    if layout == "short":
+    if layout in ("short", "poster"):
         by_stream, left = _leave_out(by_stream, prefs)
-    sunday = layout == "short" and weekly(day)
+    sunday = layout in ("short", "poster") and weekly(day)
     if not any(by_stream.values()) and not (sunday and _week_has(cards, day)):
         return None  # nothing that day; but Sunday's email goes whenever the week had stories, for the week
     subject = (f"AI Pulse · The week in AI, and {long_day(day)}" if layout == "short" and weekly(day) else
@@ -938,6 +946,9 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     change = subscribers.choices_link(unsubscribe) if unsubscribe else f"{rss.SITE}#subscribe"
     change_words = "Change my streams and choices" if unsubscribe else "Change streams"
     stop = unsubscribe or change
+    if layout == "poster":  # the poster email (poster.py): the day's hot story first, then the rest in its own look
+        from . import poster
+        return poster.build(cards, by_stream, left, streams, day, prefs, dossier, unsubscribe, change, stop)
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
         if weekly(day):  # every Sunday email: the dossier's button opens the reader's own form at its question box
@@ -993,7 +1004,7 @@ def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "")
         if f"cid:{cid}" in html:
             kind = _kind(data)
             msg.get_payload()[1].add_related(data, "image", kind, cid=f"<{cid}>",
-                                             filename=f"{'dossier' if cid == DOSSIER_CID else 'meme'}.{'png' if kind == 'png' else 'jpg'}")
+                                             filename=f"{cid.split('@')[0]}.{'png' if kind == 'png' else 'jpg'}")
     return msg
 
 

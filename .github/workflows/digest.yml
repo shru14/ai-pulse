@@ -37,7 +37,7 @@ on:
       layout:
         description: "Sample's layout"
         type: choice
-        options: [short, full]
+        options: [short, full, poster]
         default: short
 
 permissions:
