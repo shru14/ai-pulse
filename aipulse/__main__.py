@@ -172,6 +172,7 @@ def main():
     jn.add_argument("--branch", required=True, help="the branch the cuts are on (jobs/<day>)")
     jn.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     sub.add_parser("board", help="keep today's leaderboard ranks (the start of the day's and each story's best)")
+    sub.add_parser("week-word", help="keep the word of the last finished week, which the next weeks' words skip")
     sub.add_parser("memes", help="ask Gemini (GEMINI_API_KEY, free tier) for last week's meme once and keep it")
     em = sub.add_parser("embed", help="story vectors for the weekly dossier's search (offline model; new or changed stories)")
     em.add_argument("--limit", type=int, help="at most this many stories this run (the first run has them all to do)")
@@ -302,6 +303,12 @@ def main():
         cards, _ = store.cards(conn, days=today.BUZZ_DAYS + 1, limit=10**6)
         day = today.record(conn, cards)
         print(f"Today's board: {len(day['start'])} starting ranks, {len(day['peak'])} stories in the top {today.TOP}")
+    elif a.cmd == "week-word":
+        from . import digest
+        conn = store.connect(a.db)
+        cards, _ = store.cards(conn, days=(date.today() - digest.yesterday()).days + 9, limit=10**6)
+        day, word = digest.record_week_word(conn, cards, date.today())
+        print(f"Word of the week ending {day}: {word}")
     elif a.cmd == "memes":
         from . import memegen
         conn = store.connect(a.db)
@@ -359,6 +366,7 @@ def main():
             streams = list(rss.FEEDS)  # the check covers every stream, whoever chose what
         day = date.fromisoformat(a.day) if a.day else digest.yesterday()
         conn = store.connect(a.db)
+        digest.load_week_words(conn)  # the words of the week shown so far, which Sunday's skips
         # The day, and the four weeks before it (what a usual day looks like; Sunday's word of the week, never
         # the week before's, is worked out from 3 weeks back)
         cards, _ = store.cards(conn, days=(date.today() - day).days + max(quality.HISTORY_DAYS, 28) + 2, limit=10**6)

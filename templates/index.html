@@ -2056,7 +2056,7 @@ async function loadHome(){
   try{
     loadMeme();
     const board = loadBoard();
-    // the past 7 days' stories (the word of the week looks 3 weeks further back)
+    // the past 7 days' stories, and the weeks before them
     const recent = await fetchItems(new URLSearchParams({days: 36, per_page: 100000, page: 1}));
     const [from, to] = lastWeek();
     HOME.lastWeek = recent.items.filter(it => it.date >= from && it.date < to);
@@ -2086,7 +2086,7 @@ function storyLink(it, cls){
 // The word of the week can change each day: the glossary word that came up in the most of the past 7 days' stories
 // (today and the 6 days before, UTC), shown with how many of them used it each day (one bar a day, day and count on hover)
 // and the two biggest stories it came from.
-// It's never the word of the 7 days before: worked out from 4 weeks back, each week skipping the word before it.
+// It's never a word the email showed as the word of the week in the 8 weeks before these 7 days (glossary.json's weekWords).
 function lastWeek(n = 1){
   const d = new Date(); d.setUTCHours(0, 0, 0, 0);
   d.setUTCDate(d.getUTCDate() + 1 - 7 * (n - 1));  // tomorrow (the 7 days end with today), or n - 1 weeks before it
@@ -2103,15 +2103,13 @@ function weekLabel(){
 const mentions = (e, its) => its.filter(it => e.re.test(it.title + " " + (it.summary || "")));
 function pickWord(){
   if(HOME.word || !GL.ready || !HOME.recent) return;
-  let word = null;
-  for(let n = 4; n >= 1; n--){
-    const [from, to] = lastWeek(n), its = HOME.recent.filter(it => it.date >= from && it.date < to);
-    let best = null, most = 0;
-    for(const e of GL.entries){
-      if(e === word && from >= "2026-09-28") continue;  // not the week before's word (from the week of 28 Sep 2026)
-      const k = mentions(e, its).length; if(k > most){ best = e; most = k; }
-    }
-    word = best;
+  const [from, to] = lastWeek(), its = HOME.recent.filter(it => it.date >= from && it.date < to);
+  const after = new Date(from + "T00:00:00Z"); after.setUTCDate(after.getUTCDate() - 7 * 8);
+  const skip = new Set(Object.entries(GL.weekWords).filter(([d]) => d < from && d >= after.toISOString().slice(0, 10)).map(([, w]) => w));
+  let word = null, most = 0;
+  for(const e of GL.entries){
+    if(skip.has(e.id)) continue;
+    const k = mentions(e, its).length; if(k > most){ word = e; most = k; }
   }
   HOME.word = word ? word.id : null;
 }
@@ -2639,13 +2637,13 @@ $("sub-form").addEventListener("submit", async e => {
 // Glossary: plain-English meanings written by hand (aipulse/glossary.py). glossary.json has every entry, the ways
 // stories write it (regular expressions), how many of the past 7 days' stories use it, its level (Everyday or Technical),
 // whether it is new, and the newest story that uses it (its example).
-const GL = {entries: [], byId: {}, groups: [], levels: [], ready: false, group: null, level: null, pending: null};
+const GL = {entries: [], byId: {}, groups: [], levels: [], weekWords: {}, ready: false, group: null, level: null, pending: null};
 const MAX_WORDS = 3;  // underlined words per card, least common first: the ones a reader is least likely to know
 fetch("glossary.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
   const re = (e, flags) => new RegExp("(?<!\\w)(?:" + e.match.join("|") + ")(?![\\w])", flags);
   GL.entries = d.entries.map(e => ({...e, re: re(e, e.case ? "" : "i"), anyCase: re(e, "i")}));
   GL.byId = Object.fromEntries(GL.entries.map(e => [e.id, e]));
-  GL.groups = d.groups; GL.ready = true;
+  GL.groups = d.groups; GL.weekWords = d.weekWords || {}; GL.ready = true;
   render(); renderGlossary();
   if(GL.pending != null){ openGlossary(GL.pending); GL.pending = null; }
 }).catch(() => { $("gl-body").replaceChildren(el("p","gl-none","Couldn't load the glossary. Try reloading the page.")); });

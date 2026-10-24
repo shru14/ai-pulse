@@ -3082,6 +3082,7 @@ def test_sunday_email_brings_the_week_and_skips_the_days_word_and_meme(monkeypat
     from datetime import date
     from aipulse import digest, memes
     monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    monkeypatch.setattr(digest, "_SHOWN", {})  # no words of the week shown before
     card = lambda i, day, cat="news", outlets=0, title=None: {
         "id": f"s{i}", "title": title or f"Story {i}", "summary": f"What happened in story {i}.", "url": f"https://ex.com/{i}",
         "source": f"Outlet {i}", "category": cat, "kind": "news" if cat == "news" else None, "date": day,
@@ -4422,3 +4423,34 @@ def test_a_story_is_never_dated_after_the_day_it_was_found(tmp_path):
 def test_a_place_with_an_accent_gets_a_plain_address():
     from aipulse import countries
     assert countries.slug("Türkiye") == "turkiye" and countries.slug("United Kingdom") == "united-kingdom"
+
+
+def test_the_word_of_the_week_skips_the_words_of_the_8_weeks_before(tmp_path, monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setattr(digest, "_SHOWN", {date(2026, 10, 17): "data-center", date(2026, 8, 22): "ai-agent"})
+    monkeypatch.setattr(digest, "_WEEK_WORD", {})
+    card = lambda i, day, text: {"id": f"w{i}", "title": text, "summary": "", "url": f"https://ex.com/w{i}",
+                                 "source": "Ex", "category": "news", "date": day}
+    cards = ([card(i, "2026-10-20", "A new data center for AI") for i in range(5)]
+             + [card(i, "2026-10-21", "An AI agent books flights") for i in range(5, 8)]
+             + [card(i, "2026-10-22", "Open weights for a new model") for i in range(8, 10)])
+    # data center was the word of the week 17 Oct; AI agent's last week was more than 8 weeks before
+    assert digest._week_word(cards, date(2026, 10, 24)) == "ai-agent"
+    # kept once the week is over (each site run), and then the email shows the kept one
+    conn = store.connect(tmp_path / "t.db")
+    assert digest.record_week_word(conn, cards, date(2026, 10, 25)) == (date(2026, 10, 24), "ai-agent")
+    monkeypatch.setattr(digest, "_SHOWN", {})
+    assert digest.load_week_words(conn)[date(2026, 10, 24)] == "ai-agent"
+    assert digest._week_word([], date(2026, 10, 24)) == "ai-agent"
+
+
+def test_top_news_takes_at_most_two_tiles_a_stream_on_a_quiet_day():
+    from aipulse import poster
+    stories = [{"id": f"s{i}", "title": f"Story {i}", "source": "Ex"} for i in range(12)]
+    stream_of = {id(c): ("releases" if i < 8 else "news" if i < 10 else "infra") for i, c in enumerate(stories)}
+    tiles = poster._spread(stories, stories[:1], 6, stream_of)  # the hot story (a release) isn't a tile
+    assert [stream_of[id(c)] for c in tiles] == ["releases", "releases", "news", "news", "infra", "infra"]
+    # a story more outlets carried keeps its place over the limit
+    stories[3]["also"] = [{"source": "Other"}]
+    assert stories[3] in poster._spread(stories, stories[:1], 6, stream_of)

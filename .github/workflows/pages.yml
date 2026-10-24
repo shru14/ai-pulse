@@ -162,6 +162,12 @@ jobs:
         continue-on-error: true
         run: python -m aipulse --db aipulse.db board
 
+      # The word of the last finished week (Monday to Saturday), kept once, so Sunday's email shows it and the next
+      # weeks' words skip it (aipulse/digest.py, record_week_word)
+      - name: Word of the week
+        continue-on-error: true
+        run: python -m aipulse --db aipulse.db week-word
+
       - name: Fold the write-ahead log into the database file
         if: always()
         run: python -c "import sqlite3; c = sqlite3.connect('aipulse.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.execute('PRAGMA journal_mode=DELETE'); c.close()"
