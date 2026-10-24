@@ -213,6 +213,10 @@ LEFT_OUT = {
         "no new stake named",
     "https://www.xataka.com/robotica-e-ia/china-pone-jaque-a-anthropic-competencia-sus-modelos-amenaza-su-valoracion-antes-salir-a-bolsa":
         "valuation and IPO talk; no investment named",
+    "https://olhardigital.com.br/2026/10/22/pro/openai-negocia-rodada-de-r-162-bilhoes-com-investidores-dos-emirados-arabes/":
+        "talks only, round not closed",
+    "https://techcrunch.com/2026/10/22/deepseek-reportedly-raises-15b-days-after-us-restrictions/":
+        "reportedly; investors only potential, not known if equity",
 }
 
 
