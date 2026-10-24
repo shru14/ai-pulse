@@ -190,38 +190,157 @@ def _tile(c: dict, n: str, picture: str, yours: bool) -> str:
                   f'{escape(_by(c))}</div></td></tr>', f"border:2px solid {INK}")
 
 
+def _word_tile(kicker: str, e: dict, came_up: str) -> str:
+    """A glossary word in the site's blue tile: the word on yellow, its meaning, where it came up (HTML)."""
+    return _table(f'<tr><td style="padding:16px 18px;background:{BLUE};border:2px solid {INK};color:#ffffff">'
+                  f'<div style="font-weight:bold;font-size:12px;letter-spacing:.5px">{kicker}</div>'
+                  f'<div style="font-family:{HEAD};font-size:24px;line-height:1.2;margin:6px 0 8px"><span style="background:{YELLOW};'
+                  f'color:{INK};padding:0 5px">{escape(e["term"])}</span></div>'
+                  f'<div style="font-size:15px;line-height:1.5">{escape(e["def"])}</div>{came_up}'
+                  f'<div style="font-size:13px;margin-top:8px"><a href="{rss.SITE}glossary/" style="color:#ffffff;'
+                  f'font-weight:bold">More words in the glossary →</a></div></td></tr>', "margin:0 0 14px")
+
+
+def _meme_tile(meme: dict, picture: bytes, src: str, cid: str, kicker: str) -> str:
+    """A meme in the vermilion tile: the site's copy at `src` (static.py publishes it), so nothing is attached;
+    inside the email (as `cid`) if the site doesn't have it yet."""
+    from . import memes
+    try:
+        with urllib.request.urlopen(urllib.request.Request(src, method="HEAD"), timeout=10) as r:
+            online = r.status == 200
+    except OSError:
+        online = False
+    if not online:
+        digest.INLINE[cid] = picture
+        src = "cid:" + cid
+    return _table(f'<tr><td align="center" style="padding:14px;background:{VERMILION};border:2px solid {INK}">'
+                  f'<div style="font-weight:bold;font-size:12px;letter-spacing:.5px;color:#ffffff;margin-bottom:10px">'
+                  f'{kicker}</div>{memes.html(meme, src, small=True)}</td></tr>', "margin:0 0 26px")
+
+
 def _word_and_meme(cards: list[dict], day: date, streams: list[str], prefs: dict, tiers: list[list[dict]]) -> tuple[list[str], str]:
     """The word of the day (digest._word_entry) in the site's blue tile, and the meme of the day in a vermilion one."""
     e, story = digest._word_entry(cards, day, streams, prefs, tiers)
-    glossary_page = f"{rss.SITE}glossary/"
     text = ["WORD OF THE DAY: " + e["term"], e["def"], *([f"Where it came up: {story['title']} {story['url']}"] if story else []), ""]
-    html = (_table(f'<tr><td style="padding:16px 18px;background:{BLUE};border:2px solid {INK};color:#ffffff">'
-                   f'<div style="font-weight:bold;font-size:12px;letter-spacing:.5px">WORD OF THE DAY</div>'
-                   f'<div style="font-family:{HEAD};font-size:24px;line-height:1.2;margin:6px 0 8px"><span style="background:{YELLOW};'
-                   f'color:{INK};padding:0 5px">{escape(e["term"])}</span></div>'
-                   f'<div style="font-size:15px;line-height:1.5">{escape(e["def"])}</div>'
-                   + (f'<div style="font-size:13px;line-height:1.45;margin-top:8px">Where it came up: <a href="{escape(story["url"])}" '
-                      f'style="color:#ffffff">{escape(story["title"])}</a></div>' if story else "")
-                   + f'<div style="font-size:13px;margin-top:8px"><a href="{escape(glossary_page)}" style="color:#ffffff;'
-                     f'font-weight:bold">More words in the glossary →</a></div></td></tr>', "margin:0 0 14px"))
+    html = _word_tile("WORD OF THE DAY", e, f'<div style="font-size:13px;line-height:1.45;margin-top:8px">Where it came up: '
+                      f'<a href="{escape(story["url"])}" style="color:#ffffff">{escape(story["title"])}</a></div>' if story else "")
     from . import memes
     meme = memes.of_the_day(cards, day)
     picture = meme and memes.render(meme)
     if picture:
-        # the site's copy (static.py publishes the past week's), so nothing is attached; inside the email if not there yet
         src = f"{rss.SITE}daily/{day.isoformat()}-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
-        try:
-            with urllib.request.urlopen(urllib.request.Request(src, method="HEAD"), timeout=10) as r:
-                online = r.status == 200
-        except OSError:
-            online = False
-        if not online:
-            digest.INLINE[digest.MEME_CID] = picture
-            src = "cid:" + digest.MEME_CID
         text += memes.text(meme) + [""]
-        html += _table(f'<tr><td align="center" style="padding:14px;background:{VERMILION};border:2px solid {INK}">'
-                       f'<div style="font-weight:bold;font-size:12px;letter-spacing:.5px;color:#ffffff;margin-bottom:10px">'
-                       f'MEME OF THE DAY</div>{memes.html(meme, src, small=True)}</td></tr>', "margin:0 0 26px")
+        html += _meme_tile(meme, picture, src, digest.MEME_CID, "MEME OF THE DAY")
+    return text, html
+
+
+def _nth(d: date) -> str:
+    return f"{d.day}{'th' if 10 < d.day % 100 < 14 else {1: 'st', 2: 'nd', 3: 'rd'}.get(d.day % 10, 'th')}"
+
+
+def _masthead(day: date) -> str:
+    """ "Daily digest for Friday 23rd October 2026"; Sunday's (weekly readers get only it): "Weekly digest for 19th–24th
+    October 2026"."""
+    if not digest.weekly(day):
+        return f"Daily digest for {day:%A} {_nth(day)} {day:%B %Y}"
+    monday, _ = digest._span(day)
+    start = _nth(monday) + ("" if monday.month == day.month else f" {monday:%B}")
+    return f"Weekly digest for {start}–{_nth(day)} {day:%B %Y}"
+
+
+def _week_span(day: date) -> str:
+    monday, _ = digest._span(day)
+    return f"{monday.day} {monday:%b} – {day.day} {day:%b}"
+
+
+def _the_week(cards: list[dict], day: date, prefs: dict, dossier: dict | None) -> tuple[list[str], str]:
+    """Sunday's opening: a black band "The week in AI", the story of the week (as the site picks it,
+    digest._week_story) as a hero with its picture, then the reader's weekly dossier card."""
+    span = _week_span(day)
+    text = [f"THE WEEK IN AI, {span}", ""]
+    html = _band("The week in AI", span)
+    story = digest._week_story(cards, day, prefs)
+    if story:
+        n = next((n for n in rss.FEEDS if rss.FEEDS[n][0] == story["category"]), "news")
+        summary = digest._short(story.get("summary") or "", 200, story.get("source", ""))
+        text += ["STORY OF THE WEEK: " + story["title"], *([summary] if summary else []), _by(story), story["url"], ""]
+        html += (f'<tr><td style="padding:0;border-bottom:3px solid {INK}">' + _table(
+            f'<tr><td class="p-hot" valign="top" style="padding:18px 16px 20px 20px">'
+            f'{_label("STORY OF THE WEEK", YELLOW, INK)} {_label(rss.FEEDS[n][1].upper())}'
+            f'<div style="margin:10px 0 8px"><a class="p-hh" href="{escape(story["url"])}" style="font-family:{HEAD};font-size:24px;'
+            f'line-height:1.15;color:{INK};text-decoration:none">{escape(story["title"])}</a></div>'
+            + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
+            + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(story))}</div>'
+              f'{_button("Read the story →", story["url"])}</td></tr>'
+              f'<tr><td align="center" style="background:{FILL[n]};border-top:3px solid {INK};padding:0">'
+              f'<img src="{_art(story, n)}" width="240" alt="" style="display:block;width:240px;max-width:70%;height:auto;'
+              f'border:0;margin:0 auto"></td></tr>')
+            + '</td></tr>')
+    dossier_text, dossier_html = _dossier(dossier)
+    if dossier_html:
+        text += [*dossier_text, ""]
+        html += f'<tr><td class="p-pad" style="padding:20px 20px 0">{dossier_html}</td></tr>'
+    # the day itself follows, as in every other email
+    text += [f"{day:%A} {day.day} {day:%B}".upper(), ""]
+    html += _band(f"{day:%A}", f"{day.day} {day:%b}", "margin-top:20px;")
+    return text, html
+
+
+def _band(title: str, dates: str, style: str = "") -> str:
+    """A black band across the email: a title and its dates (Sunday's "The week in AI" and the day after it)."""
+    return (f'<tr><td class="p-pad" style="{style}padding:14px 20px;background:{INK};color:#ffffff"><span style="font-family:{HEAD};'
+            f'font-size:22px;line-height:1.2;color:#ffffff">{escape(title)}</span><span style="font-size:14px;color:#ffffff;'
+            f'margin-left:10px">{escape(dates)}</span></td></tr>')
+
+
+def _dossier(dossier: dict | None) -> tuple[list[str], str]:
+    """The weekly dossier card, in every subscriber's Sunday email (`dossier` as digest._dossier takes it): the
+    dossier page's drawing on yellow, then a line and the button: "Get my dossier" (the reader's own question box on
+    ask.html) or, once they have one, "Open your weekly dossier"."""
+    if not dossier or not (dossier.get("entries") or dossier.get("ask")):
+        return [], ""
+    ask = dossier.get("ask") or ""
+    pitch = "Ask what you want to follow in AI, and get last week's stories on it, picked just for you."
+    if dossier.get("entries"):  # the button opens the dossier page with the question box (ask.html), or, without it, the dossier
+        link = ask if ask.startswith(rss.SITE + "ask.html#") else dossier["link"]
+        text = [f"YOUR WEEKLY DOSSIER, {dossier['week']}", f"Open your weekly dossier: {link}"]
+        kicker, title, words = f"YOUR WEEKLY DOSSIER · {dossier['week'].upper()}", "This week on what you follow", "Open your weekly dossier →"
+    else:
+        link = ask
+        text = ["YOUR WEEKLY DOSSIER", pitch, f"Get my dossier: {link}"]
+        kicker, title, words = "YOUR WEEKLY DOSSIER", "Follow what you care about", "Get my dossier →"
+    html = _table(f'<tr><td width="30%" valign="middle" style="width:30%;background:{YELLOW};border:2px solid {INK};padding:0">'
+                  f'<a href="{escape(link)}"><img src="{_picture("pages/ask")}" width="170" alt="" style="display:block;width:100%;'
+                  f'height:auto;border:0"></a></td><td valign="top" style="padding:12px 14px 14px;border:2px solid {INK};'
+                  f'border-left:0">{_label(kicker)}<div style="font-family:{HEAD};font-size:18px;line-height:1.2;margin:8px 0 6px">'
+                  f'{escape(title)}</div><div style="font-size:14px;line-height:1.45;margin-bottom:12px">{escape(pitch)}</div>'
+                  f'{_button(words, link)}</td></tr>', "margin:0 0 6px")
+    return text, html
+
+
+def _week_word_and_meme(cards: list[dict], day: date) -> tuple[list[str], str]:
+    """Sunday's word and meme: the word of the week (digest._week_word, with how many of the week's stories used it)
+    in the blue tile, and the meme of the week in the vermilion one."""
+    from . import glossary, memes
+    text, html = [], ""
+    monday, days = digest._span(day)
+    wid = digest._week_word(cards, day)
+    if wid:
+        e = next(x for x in glossary.ENTRIES if x["id"] == wid)
+        used = sorted([c for c in cards if (c.get("date") or "") in days and glossary.mentions(wid, digest._text(c))],
+                      key=lambda c: (1 + len(c.get("also") or []), c.get("date") or ""), reverse=True)
+        text += ["WORD OF THE WEEK: " + e["term"], e["def"], f"It came up in {len(used)} of the week's stories, like:",
+                 *(f"  {c['title']} {c['url']}" for c in used[:2]), ""]
+        html += _word_tile("WORD OF THE WEEK", e, f'<div style="font-size:13px;line-height:1.45;margin-top:8px">It came up in '
+                           f'{len(used)} of the week\'s stories, like: ' + " · ".join(
+                               f'<a href="{escape(c["url"])}" style="color:#ffffff">{escape(c["title"])}</a>' for c in used[:2])
+                           + '</div>')
+    meme = memes.of_the_week([c for c in cards if (c.get("date") or "") <= day.isoformat()], monday)
+    picture = meme and memes.render(meme)
+    if picture:
+        src = f"{rss.SITE}daily/{day.isoformat()}-week-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
+        text += memes.text(meme) + [""]
+        html += _meme_tile(meme, picture, src, digest.MEME_WEEK_CID, "MEME OF THE WEEK")
     return text, html
 
 
@@ -243,17 +362,15 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     stories = len(todays)  # stories, not outlets: the stream rows add up to it
     pad = 'class="p-pad" style="padding:20px 20px 0"'
 
-    # The masthead: which day this is (the inbox already shows the sender's name and picture)
-    nth = "th" if 10 < day.day % 100 < 14 else {1: "st", 2: "nd", 3: "rd"}.get(day.day % 10, "th")
+    # The masthead: which day (or, on Sunday, week) this is (the inbox already shows the sender's name and picture)
     html.append(f'<tr><td class="p-pad p-mast" style="padding:14px 20px;border-bottom:3px solid {INK};font-family:{HEAD};'
-                f'font-size:18px;line-height:1.25">Daily digest for {day:%A} {day.day}{nth} {day:%B %Y}</td></tr>')
+                f'font-size:18px;line-height:1.25">{escape(_masthead(day))}</td></tr>')
 
-    # Sunday: the week's story, word and meme (as in the short email), and the reader's dossier
+    # Sunday: the story of the week and the reader's dossier first (the week's word and meme where the day's go)
     if digest.weekly(day):
-        week_text, week_html = digest._the_week(cards, day, prefs)
-        dossier_text, dossier_html = digest._dossier(dossier)
-        text += [*week_text, *dossier_text, ""]
-        html.append(f'<tr><td {pad}>{week_html}{dossier_html}</td></tr>')
+        week_text, week_html = _the_week(cards, day, prefs, dossier)
+        text += week_text
+        html.append(week_html)
 
     if top:
         # Hot today: the day's most-reported story (no picture)
@@ -283,11 +400,13 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         text += [made_for, ""]
         body.append(f'<div style="font-size:12px;color:{GREY};margin:0 0 18px">{escape(made_for)}</div>')
 
-    # The word and the meme of the day, high up (Sunday's email has the week's, above)
-    if not digest.weekly(day):
+    # The word and the meme of the day, high up (Sunday's email: the week's)
+    if digest.weekly(day):
+        word_text, word_html = _week_word_and_meme(cards, day)
+    else:
         word_text, word_html = _word_and_meme(cards, day, streams, prefs, [digest._biggest(by_stream, streams), top, todays])
-        text += word_text
-        body.append(word_html)
+    text += word_text
+    body.append(word_html)
 
     news = digest._new_stream(day, streams)
     if news:
