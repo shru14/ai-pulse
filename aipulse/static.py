@@ -18,7 +18,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, store
-from . import pages, subscribers
+from . import pages, poster, subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
 _WORD = re.compile(r"[^\W_]+")
@@ -317,6 +317,11 @@ def build(conn, out: str | Path) -> int:
             html = web_edition(page[2], f"daily/{day.isoformat()}.html", edition_description(page[2], day))
             for name in (day.isoformat(), "latest"):
                 (out / "daily" / f"{name}.html").write_text(html, encoding="utf-8")
+            lanes = poster.lanes_html(cards, day)  # the day's lanes, which the poster email's Pick your lane rows open
+            if lanes:
+                (out / "daily" / f"{day.isoformat()}-lanes.html").write_text(web_edition(
+                    lanes, f"daily/{day.isoformat()}-lanes.html", f"AI Pulse, {digest.long_day(day)}: the day's AI stories "
+                    "sorted by who they matter to: researchers, policy and law, investors, founders, builders."), encoding="utf-8")
     for d in published[-7:]:  # the past week's memes of the day as pictures, which the poster email links to
         memegen.prepare(conn, cards, today, day=d)
         meme = memes.of_the_day(cards, d)
