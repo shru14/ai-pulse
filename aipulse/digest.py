@@ -513,8 +513,8 @@ def _new_stream(day: date, streams: list[str]) -> str:
 
 
 # Pages built lately, introduced one per email, newest first, each once: (name, one plain line, path on the site).
-# Days are counted from FEATURES_FROM (the day the email is about, sent the next morning), skipping the Sunday
-# email's day (it has the dossier), so every reader sees the same feature on the same day and none twice. A new page
+# Days are counted from FEATURES_FROM (the day the email is about, sent the next morning), the Sunday email's day
+# too since 24 Oct (the first one after FEATURES_FROM), so every reader sees the same feature on the same day and none twice. A new page
 # goes at the end, with FEATURES_FROM left as it is.
 FEATURES_FROM = date(2026, 10, 18)  # Monday 19 October's email
 FEATURES = [
@@ -569,11 +569,11 @@ FEATURES = [
 
 
 def _feature(day: date) -> tuple[str, str, str] | None:
-    """The page this day's email introduces: the n-th of FEATURES on the n-th day from FEATURES_FROM that isn't a
-    weekly day; nothing in the Sunday email, before, or once all have been shown."""
-    if day < FEATURES_FROM or weekly(day):
+    """The page this day's email introduces: the n-th of FEATURES on the n-th day from FEATURES_FROM; nothing before,
+    or once all have been shown."""
+    if day < FEATURES_FROM:
         return None
-    n = sum(1 for k in range((day - FEATURES_FROM).days) if not weekly(FEATURES_FROM + timedelta(days=k)))
+    n = (day - FEATURES_FROM).days
     return FEATURES[n] if n < len(FEATURES) else None
 
 
@@ -651,7 +651,12 @@ def _dossier(dossier: dict | None) -> tuple[list[str], str]:
 
 WEEKLY = 5  # the day Sunday's email covers (a Saturday): it brings the week's story, word and meme (Monday to
             # Saturday) and the reader's weekly dossier, in place of the word and the meme of the day
-WORD_RULE_FROM = date(2026, 9, 28)  # as the site: from this week on, never the week before's word
+# The word of the week is never one shown in the WORD_WEEKS weeks before. The words shown are kept in the database
+# (meta "week_word:<Saturday>", written by record_week_word once the week is over, on each site run), so the email,
+# the site's sample and the front page all skip the same ones; WEEK_WORDS_SHOWN has those emailed before it was kept.
+WORD_WEEKS = 8
+WEEK_WORDS_SHOWN = {date(2026, 10, 3): "parameters", date(2026, 10, 10): "ai-agent", date(2026, 10, 17): "data-center"}
+_SHOWN: dict[date, str] = dict(WEEK_WORDS_SHOWN)  # with the database's, once load_week_words has read them
 _STREAMS = {v[0] for v in rss.FEEDS.values()}
 
 
@@ -689,26 +694,44 @@ def _week_story(cards: list[dict], day: date, prefs: dict | None = None) -> dict
 _WEEK_WORD: dict = {}
 
 
+def load_week_words(conn) -> dict[date, str]:
+    """The words of the week shown so far, by Saturday (the database's over WEEK_WORDS_SHOWN), for _week_word."""
+    for key, value in conn.execute("SELECT key, value FROM meta WHERE key LIKE 'week_word:%'"):
+        _SHOWN[date.fromisoformat(key.split(":", 1)[1])] = value
+    _WEEK_WORD.clear()
+    return dict(_SHOWN)
+
+
+def record_week_word(conn, cards: list[dict], today: date) -> tuple[date, str | None]:
+    """Keep the word of the last finished week (Monday to Saturday, before today) in the database, once: what
+    Sunday's email shows and the next weeks skip."""
+    load_week_words(conn)
+    day = today - timedelta(days=(today.weekday() - WEEKLY - 1) % 7 + 1)
+    if day not in _SHOWN and (word := _week_word(cards, day)):
+        conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (f"week_word:{day.isoformat()}", word))
+        conn.commit()
+        _SHOWN[day] = word
+    return day, _SHOWN.get(day)
+
+
 def _week_word(cards: list[dict], day: date) -> str | None:
-    """The word of the week, as the site picks it: the glossary word in the most of the week's stories, worked
-    out from 3 weeks back so it's never the word of the week before (the same for every reader)."""
+    """The word of the week (the same for every reader): the one kept for this week if there is one, else the
+    glossary word in the most of the week's stories (Monday to Saturday) that wasn't the word of any of the
+    WORD_WEEKS weeks before."""
+    if day in _SHOWN:
+        return _SHOWN[day]
     if (day, len(cards)) in _WEEK_WORD:
         return _WEEK_WORD[(day, len(cards))]
     monday, _ = _span(day)
-    texts = [(c.get("date") or "", _text(c)) for c in cards]
-    word = None
-    for back in (3, 2, 1, 0):
-        since = monday - timedelta(days=7 * back)
-        until = day if not back else since + timedelta(days=6)
-        week = [t for d, t in texts if since.isoformat() <= d <= until.isoformat()]
-        best, most = None, 0
-        for e in glossary.ENTRIES:
-            if e["id"] == word and since >= WORD_RULE_FROM:
-                continue
-            k = sum(1 for t in week if glossary.mentions(e["id"], t))
-            if k > most:
-                best, most = e["id"], k
-        word = best
+    skip = {w for d, w in _SHOWN.items() if day - timedelta(weeks=WORD_WEEKS) <= d < day}
+    week = [_text(c) for c in cards if monday.isoformat() <= (c.get("date") or "") <= day.isoformat()]
+    word, most = None, 0
+    for e in glossary.ENTRIES:
+        if e["id"] in skip:
+            continue
+        k = sum(1 for t in week if glossary.mentions(e["id"], t))
+        if k > most:
+            word, most = e["id"], k
     _WEEK_WORD[(day, len(cards))] = word
     return word
 
@@ -977,13 +1000,13 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     change = subscribers.choices_link(unsubscribe) if unsubscribe else f"{rss.SITE}#subscribe"
     change_words = "Change my streams and choices" if unsubscribe else "Change streams"
     stop = unsubscribe or change
+    if weekly(day):  # every Sunday email: the dossier's button opens the reader's own form at its question box
+        dossier = {**(dossier or {}), "ask": subscribers.ask_link(unsubscribe) if unsubscribe else change}  # (a sample: sign-up)
     if layout == "poster":  # the poster email (poster.py): the day's hot story first, then the rest in its own look
         from . import poster
         return poster.build(cards, by_stream, left, streams, day, prefs, dossier, unsubscribe, change, stop)
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
-        if weekly(day):  # every Sunday email: the dossier's button opens the reader's own form at its question box
-            dossier = {**(dossier or {}), "ask": subscribers.ask_link(unsubscribe) if unsubscribe else change}  # (a sample: sign-up)
         open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left, dossier, (change, change_words))
         table_text, table_html = [], ""
         page, band, top = PAGE, _band(open_text[0], (prefs or {}).get("often") != "weekly"), 16

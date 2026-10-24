@@ -288,6 +288,7 @@ def build(conn, out: str | Path) -> int:
     out.mkdir(parents=True)
 
     cards, _ = store.cards(conn, limit=10**9, eu_members=EU_MEMBERS)
+    shown = digest.load_week_words(conn)  # the words of the week shown so far (the email's and its sample's)
     text = search_text(conn)
     brands.add_logos(conn, cards, lookups=400)
     icons = {c["logo"]["src"] for c in cards if c.get("logo", {}).get("src")}
@@ -366,7 +367,10 @@ def build(conn, out: str | Path) -> int:
             "jurisdictions": jurisdictions.meta(), "euMembers": sorted(EU_MEMBERS),
             "regions": {k: v[0] for k, v in jurisdictions.REGIONS.items()}, "paperHomes": classify.paper_homes()}
     (out / "data.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
-    (out / "glossary.json").write_text(json.dumps(glossary.payload(cards, today), separators=(",", ":")), encoding="utf-8")
+    # with the recent words of the week, which the front page's word skips as the email's does
+    words = {d.isoformat(): w for d, w in shown.items() if d >= today - timedelta(weeks=digest.WORD_WEEKS + 2)}
+    (out / "glossary.json").write_text(json.dumps({**glossary.payload(cards, today), "weekWords": words},
+                                                  separators=(",", ":")), encoding="utf-8")
     memegen.prepare(conn, cards, today)  # the past 7 days' Gemini meme, if the "memes" step made one (no call here)
     meme = memes.payload(cards, today)
     (out / "meme.json").write_text(json.dumps(meme, separators=(",", ":")), encoding="utf-8")

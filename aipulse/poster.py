@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 import re
 import urllib.request
+from collections import Counter
 from datetime import date
 from html import escape
 from pathlib import Path
@@ -30,6 +31,7 @@ FILL = {"releases": "#009E73", "news": "#56B4E9", "research": "#C85BC3", "regula
 FEATURE_FILL = {"tool": FILL["releases"], "news": FILL["news"], "research": FILL["research"], "reg": FILL["regulation"],
                 "policy": FILL["policy"], "infra": FILL["infra"]}
 TOP_NEWS = 6  # after the hot story
+PER_STREAM = 2  # top news tiles from one stream, unless a story there has more outlets than the rest (see _spread)
 
 # A story's picture: a drawing that shows its subject, only when its tags or headline name that subject (a
 # court case: a gavel; chips: a chip; power: a power plant); else its stream's own drawing, which says what kind of
@@ -83,7 +85,8 @@ STYLE = (":root{color-scheme:light only;supported-color-schemes:light only}"  # 
          # a phone: the same layout as on a computer, only smaller (type, gaps, margins)
          "@media (max-width:480px){.p-tile{padding:0 3px 8px!important}.p-tt{font-size:11.5px!important}"
          ".p-ts{font-size:10px!important}.p-mast{font-size:14px!important}.p-hh{font-size:20px!important}"
-         ".p-hh2{font-size:15px!important}.p-hot{padding:16px 14px!important}.p-pad{padding-left:12px!important;padding-right:12px!important}}")
+         ".p-hh2{font-size:15px!important}.p-hot{padding:16px 14px!important}.p-pad{padding-left:12px!important;padding-right:12px!important}"
+         ".p-numc{padding:12px 8px!important}.p-num{font-size:20px!important}}")
 
 
 def _sentences(text: str) -> list[str]:
@@ -398,6 +401,23 @@ def lanes_html(cards: list[dict], day: date) -> str | None:
             f'style="color:{INK};font-weight:bold">Every story of {day:%A} →</a></div></div></div></body></html>')
 
 
+def _spread(ranked: list[dict], taken: list[dict], n: int, stream_of: dict[int, str]) -> list[dict]:
+    """Up to n more top news stories after `taken` (the hot story first, which isn't a tile), in rank order but at
+    most PER_STREAM tiles from a stream; a story over that still goes first when more outlets carried it than the
+    best one left from another stream (on a quiet day, when most stories have one outlet, the tiles mix the streams
+    instead of filling with the first stream's)."""
+    per = Counter(stream_of[id(c)] for c in taken[1:])
+    left, out = [c for c in ranked if c not in taken], []
+    while left and len(out) < n:
+        c = next((c for c in left if per[stream_of[id(c)]] < PER_STREAM), left[0])
+        if digest._outlets(left[0]) > digest._outlets(c):
+            c = left[0]
+        out.append(c)
+        left.remove(c)
+        per[stream_of[id(c)]] += 1
+    return out
+
+
 def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict], streams: list[str], day: date,
           prefs: dict | None, dossier: dict | None, unsubscribe: str, change: str, stop: str) -> tuple[str, str, str]:
     """(subject, plain text, HTML) of the poster email (see digest.build for the arguments)."""
@@ -410,7 +430,10 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     tuned = bool(prefs.get("more") or prefs.get("words"))
     picks = {id(c) for c in todays if tuned and theirs(c)}
     mine = [c for c in main if id(c) in picks][:digest.PICKS]
-    top = (mine + [c for c in main if c not in mine])[:1 + TOP_NEWS] or ranked[:1 + TOP_NEWS]
+    lead = (mine + [c for c in main if c not in mine])[:1] or ranked[:1]
+    taken = lead + [c for c in mine if c not in lead]
+    top = taken[:1 + TOP_NEWS]
+    top += _spread([c for c in main if c not in mine] or ranked, top, 1 + TOP_NEWS - len(top), stream_of)
     shown = {id(c) for c in top}
     text, html = [], []
     stories = len(todays)  # stories, not outlets: the stream rows add up to it
@@ -478,9 +501,10 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     if number:
         figure, said, c = number
         text += [f"NUMBER OF THE DAY: {figure}", said, f"{c['source']}: {c['url']}", ""]
-        body.append(_table(f'<tr><td width="34%" valign="middle" style="width:34%;padding:14px 16px;background:{YELLOW};'
+        body.append(_table(f'<tr><td class="p-numc" width="34%" valign="middle" style="width:34%;padding:14px 16px;background:{YELLOW};'
                            f'border:2px solid {INK};border-right:0"><div style="font-weight:bold;font-size:12px;letter-spacing:.5px">'
-                           f'NUMBER OF THE DAY</div><div style="font-family:{HEAD};font-weight:900;font-size:34px;line-height:1.1">{escape(figure)}</div></td>'
+                           f'NUMBER OF THE DAY</div><div class="p-num" style="font-family:{HEAD};font-weight:900;font-size:34px;line-height:1.1;'
+                           f'white-space:nowrap">{escape(figure)}</div></td>'
                            f'<td valign="middle" style="padding:14px 16px;background:{YELLOW};border:2px solid {INK};border-left:0;'
                            f'font-size:14px;line-height:1.45">{escape(said)}<div style="font-size:12px;margin-top:6px">'
                            f'{escape(c["source"])} · <a href="{escape(c["url"])}" style="color:{INK};font-weight:bold">Read it →</a>'
