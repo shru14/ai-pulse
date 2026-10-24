@@ -231,28 +231,29 @@ def edition_description(html: str, day: date) -> str:
 
 
 def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | None:
-    """daily/sample.html: what the daily email looks like, with placeholder stories (the front page links to it),
-    and the day's real meme of the day where the email has it (its picture saved beside the page, so search engines
+    """daily/sample.html: what the daily email looks like (the poster email), with placeholder stories (the front
+    page links to it), and its meme where the email has one (its picture saved beside the page, so search engines
     can index it)."""
-    page = digest.build(sample_cards(cards, day), list(rss.FEEDS), day, layout="full", web=True)
+    sample = sample_cards(cards, day)
+    page = digest.build(sample, list(rss.FEEDS), day, layout="poster")
     if not page:
         return None
-    note = ('<div style="max-width:720px;margin:16px auto;padding:12px 16px;border:2px solid #000;background:#F0E442;'
+    note = ('<div style="max-width:640px;margin:16px auto;padding:12px 16px;border:3px solid #000;background:#F0E442;'
             'font:600 15px Arial,sans-serif;color:#000">A sample of the daily email. '
             '<a href="/#subscribe" style="color:#000">Subscribe to get the real one every morning →</a></div>')
     html = re.sub(r"<body[^>]*>", lambda m: m.group(0) + note, page[2], count=1)
-    html = re.sub(r"We read \d+ stor(y|ies) from \d+ sources?", "We read the day's stories from 200+ sources", html)
-    meme = memes.of_the_day(cards, day)
+    # The meme the email shows (the week's on a Sunday), as a picture beside the page, never inside it
+    week = digest.weekly(day)
+    meme = (memes.of_the_week(sample, day - timedelta(days=day.weekday())) if week else memes.of_the_day(sample, day))
     picture = meme and memes.render(meme)
+    digest.INLINE.pop(digest.MEME_WEEK_CID if week else digest.MEME_CID, None)
     if picture and out:
-        name = f"meme-of-the-day.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
+        name = f"meme-of-the-{'week' if week else 'day'}.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
         (out / "daily" / name).write_bytes(picture)
-        block = (f'<div style="margin:0 0 14px"><div style="font-size:11px;font-weight:bold;letter-spacing:2px;'
-                 f'text-transform:uppercase;color:{digest.HEADLINE};margin-bottom:6px">Meme of the day</div>'
-                 f'{memes.html(meme, name, small=True)}</div>')
-        html = html.replace('20px 10px">', '20px 10px">' + block, 1)
-    return web_edition(html, "daily/sample.html", "What the AI Pulse daily email looks like: the day's AI releases, "
-                       "industry news, research, laws, policy and infrastructure in one table, with sample stories.",
+        html = re.sub(r'src="(?:cid:meme-of-the-(?:day|week)@aipulse|' + re.escape(rss.SITE)
+                      + r'daily/[\d-]+-(?:week-)?meme\.(?:png|jpg))"', f'src="{name}"', html)
+    return web_edition(html, "daily/sample.html", "What the AI Pulse daily email looks like: the day's hot story, top "
+                       "news, word and meme of the day, every story by who it matters to, with sample stories.",
                        "Sample daily email · AI Pulse")
 
 
