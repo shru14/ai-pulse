@@ -1000,11 +1000,9 @@ def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "")
         msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
-    for cid, data in INLINE.items():  # the meme, inside the email
+    for cid, data in INLINE.items():  # the pictures, inside the email: inline and unnamed, so not listed as attachments
         if f"cid:{cid}" in html:
-            kind = _kind(data)
-            msg.get_payload()[1].add_related(data, "image", kind, cid=f"<{cid}>",
-                                             filename=f"{cid.split('@')[0]}.{'png' if kind == 'png' else 'jpg'}")
+            msg.get_payload()[1].add_related(data, "image", _kind(data), cid=f"<{cid}>", disposition="inline")
     return msg
 
 
