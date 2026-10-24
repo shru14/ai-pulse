@@ -70,7 +70,13 @@ _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z\"“])")
 _ABBREVIATION = re.compile(r"\b(?:Inc|Co|Corp|Ltd|Mr|Ms|Dr|St|No|vs|[A-Z])\.$")  # "Pathos AI Inc. today ..." is one sentence
 
 # Hover where mail apps allow it (Gmail on the web, Apple Mail): links dim, rows shade
-STYLE = "a:hover{opacity:.75}.p-row:hover td{background:#f2f2f2}"
+STYLE = ("a:hover{opacity:.75}.p-row:hover td{background:#f2f2f2}"
+         # a phone: the same sections, fitted: two top-news tiles a row, the hot story's picture as a strip under it
+         "@media (max-width:480px){.p-tile{width:50%!important}.p-lane{width:100%!important}"
+         ".p-hot,.p-hotart{display:block!important;width:100%!important;box-sizing:border-box}"
+         ".p-hot{padding:16px 14px!important}.p-hotart{border-left:0!important;border-top:3px solid #000!important}"
+         ".p-hotimg{width:45%!important;margin:0 auto!important}.p-hh{font-size:21px!important}"
+         ".p-pad{padding-left:14px!important;padding-right:14px!important}}")
 
 
 def _sentences(text: str) -> list[str]:
@@ -245,10 +251,10 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     shown = {id(c) for c in top}
     text, html = [], []
     stories = len(todays)  # stories, not outlets: the stream rows add up to it
-    pad = 'style="padding:20px 20px 0"'
+    pad = 'class="p-pad" style="padding:20px 20px 0"'
 
     # The masthead: the mark, the name, the day
-    html.append(f'<tr><td style="padding:12px 20px;border-bottom:3px solid {INK}">' + _table(
+    html.append(f'<tr><td class="p-pad" style="padding:12px 20px;border-bottom:3px solid {INK}">' + _table(
         f'<tr><td valign="middle"><img src="{_picture("mark")}" width="30" height="30" alt="" style="display:inline-block;'
         f'vertical-align:middle;border:0"><span style="font-family:{HEAD};font-size:20px;vertical-align:middle;'
         f'margin-left:8px">AI Pulse</span></td><td align="right" valign="middle" style="font-weight:bold;font-size:14px">'
@@ -267,27 +273,25 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         summary = digest._short(hot.get("summary") or "", 200, hot.get("source", ""))
         text += ["HOT TODAY", hot["title"], *([summary] if summary else []), _by(hot), hot["url"], ""]
         html.append(f'<tr><td style="padding:0;border-bottom:3px solid {INK}">' + _table(
-            f'<tr><td valign="top" style="padding:18px 16px 20px 20px">'
+            f'<tr><td class="p-hot" valign="top" style="padding:18px 16px 20px 20px">'
             f'{_label("HOT TODAY" + (" · YOUR CHOICE" if id(hot) in picks else ""), YELLOW, INK)} {_label(rss.FEEDS[n][1].upper())}'
-            f'<div style="margin:10px 0 8px"><a href="{escape(hot["url"])}" style="font-family:{HEAD};font-size:24px;'
+            f'<div style="margin:10px 0 8px"><a class="p-hh" href="{escape(hot["url"])}" style="font-family:{HEAD};font-size:24px;'
             f'line-height:1.15;color:{INK};text-decoration:none">{escape(hot["title"])}</a></div>'
             + (f'<div style="font-size:15px;line-height:1.5;margin-bottom:8px">{escape(summary)}</div>' if summary else "")
             + f'<div style="font-size:12px;color:{GREY};margin-bottom:14px">{escape(_by(hot))}</div>'
               f'{_button("Read the story →", hot["url"])}</td>'
-              f'<td width="34%" valign="bottom" style="width:34%;background:{FILL[n]};border-left:3px solid {INK};padding:0">'
-              f'<img src="{_art(hot, n)}" width="220" alt="" style="display:block;width:100%;height:auto;border:0"></td></tr>')
+              f'<td class="p-hotart" width="34%" valign="bottom" style="width:34%;background:{FILL[n]};border-left:3px solid {INK};padding:0">'
+              f'<img class="p-hotimg" src="{_art(hot, n)}" width="220" alt="" style="display:block;width:100%;height:auto;border:0"></td></tr>')
             + '</td></tr>')
 
     body = []  # the sections in the padded column
     if len(top) > 1:
         text += ["TOP NEWS", *(f"• [{rss.FEEDS[stream_of[id(c)]][1]}] {c['title']} ({_by(c)}) {c['url']}" for c in top[1:]), ""]
         tiles = [_tile(c, stream_of[id(c)], _art(c, stream_of[id(c)]), id(c) in picks) for c in top[1:]]
-        tiles += [""] * (-len(tiles) % 3)
-        # three to a row at every width, as on a computer (a phone shows the same, smaller)
-        grid = "".join("<tr>" + "".join(f'<td width="33%" valign="top" style="padding:0 {5 if k % 3 < 2 else 0}px 10px '
-                                        f'{5 if k % 3 else 0}px">{tiles[k]}</td>' for k in range(r, r + 3)) + "</tr>"
-                       for r in range(0, len(tiles), 3))
-        body.append(_heading("Top news") + _table(grid, "margin:0 0 14px"))
+        # three to a row on a computer, two on a phone (STYLE): tiles that wrap, not a fixed table
+        grid = "".join(f'<div class="p-tile" style="display:inline-block;vertical-align:top;width:33.33%;box-sizing:border-box;'
+                       f'padding:0 5px 10px;font-size:15px">{tile}</div>' for tile in tiles)
+        body.append(_heading("Top news") + f'<div style="margin:0 -5px 14px;font-size:0">{grid}</div>')
     made_for = digest._left_note(prefs, left)
     if made_for:
         text += [made_for, ""]
@@ -361,15 +365,14 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                             f'Want your lane on top?</div><div style="font-size:13px;line-height:1.4;margin:6px 0 8px">Tell us who you '
                             f'are, and your lane leads your email.</div><a href="{escape(change)}" style="color:{INK};font-weight:bold;'
                             f'font-size:13px">Choose in 10 seconds →</a></td></tr>'))
-        boxes += [""] * (len(boxes) % 2)
-        grid = "".join(f'<tr><td width="50%" valign="top" style="padding:0 6px 12px 0">{boxes[k]}</td>'
-                       f'<td width="50%" valign="top" style="padding:0 0 12px 6px">{boxes[k + 1]}</td></tr>'
-                       for k in range(0, len(boxes), 2))
+        # two to a row on a computer, one on a phone (STYLE)
+        grid = "".join(f'<div class="p-lane" style="display:inline-block;vertical-align:top;width:50%;box-sizing:border-box;'
+                       f'padding:0 6px 12px;font-size:15px">{box}</div>' for box in boxes)
         text.append("")
-        html.append(f'<tr><td style="padding:20px 20px 8px;background:{INK};color:#ffffff">'
+        html.append(f'<tr><td class="p-pad" style="padding:20px 20px 8px;background:{INK};color:#ffffff">'
                     f'<div style="font-family:{HEAD};font-size:20px;line-height:1.2;color:#ffffff">Pick your lane</div>'
                     f'<div style="font-size:14px;margin:4px 0 14px;color:#ffffff">The rest of the day, sorted by who it matters to.</div>'
-                    f'{_table(grid)}</td></tr>')
+                    f'<div style="margin:0 -6px;font-size:0">{grid}</div></td></tr>')
 
     # How useful is it: 1 to 5, each opens the site's review form with that number picked (all five alike)
     review = rss.SITE + "review/"
@@ -377,7 +380,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     numbers = "".join(f'<td style="padding:0 6px 0 0"><a href="{escape(review)}#useful-{k}" style="display:block;width:34px;'
                       f'height:34px;line-height:34px;text-align:center;border:2px solid {INK};font-weight:bold;font-size:16px;'
                       f'color:{INK};text-decoration:none">{k}</a></td>' for k in range(1, 6))
-    html.append(f'<tr><td style="padding:20px">' + _table(
+    html.append(f'<tr><td class="p-pad" style="padding:20px">' + _table(
         f'<tr><td style="padding:12px 14px;border:2px solid {INK}"><div style="font-weight:bold;font-size:15px">How useful is '
         f'AI Pulse to you?</div><div style="font-size:12px;color:{GREY};margin:3px 0 10px">Tap a number, then four more quick '
         f'questions. 1 not useful · 5 very useful</div><table role="presentation" cellpadding="0" cellspacing="0"><tr>{numbers}'
@@ -397,11 +400,11 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                     f'text-decoration:none;font-weight:bold;font-size:15px">{escape(name)}</a></td>'
                     f'<td align="right" style="padding:11px 0;border-bottom:1px solid #cccccc;font-size:14px;white-space:nowrap">'
                     f'<a href="{escape(web)}#{n}" style="color:{INK if count else GREY};text-decoration:none">{words} ▸</a></td></tr>')
-    html.append(f'<tr><td style="padding:18px 20px 16px;background:{INK};color:#ffffff"><div style="font-family:{HEAD};'
+    html.append(f'<tr><td class="p-pad" style="padding:18px 20px 16px;background:{INK};color:#ffffff"><div style="font-family:{HEAD};'
                 f'font-size:22px;line-height:1.2;color:#ffffff">The Firehose</div><div style="font-size:14px;line-height:1.45;'
                 f'margin-top:4px;color:#ffffff">'
                 f'All {stories} stories of {day:%A}.</div></td></tr>'
-                f'<tr><td style="padding:6px 20px 22px">{_table("".join(rows))}<div style="margin-top:16px">'
+                f'<tr><td class="p-pad" style="padding:6px 20px 22px">{_table("".join(rows))}<div style="margin-top:16px">'
                 f'{_button(f"Open all {stories} stories →", web)}</div></td></tr>')
 
     # The footer: pass it on, the reader's streams, their links
