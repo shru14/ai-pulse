@@ -4478,3 +4478,58 @@ def test_email_subjects_are_a_few_of_the_headlines_own_words_never_cut_with_dots
     monkeypatch.setattr(poster, "_SHORTENED", {})
     short = poster._subject(hard, ask=lambda p: '{"subject": "Judges slam the Pentagon"}')  # refused: the rule's fallback
     assert "…" not in short and len(short.split()) <= poster.SUBJECT_WORDS and short.startswith("U.S. court rules")
+
+
+def test_daily_listen_picks_one_per_stream_and_says_it_truly():
+    from aipulse import audio, rss
+    day = date(2026, 10, 23)  # a Friday
+    cat = {n: rss.FEEDS[n][0] for n in rss.FEEDS}
+
+    def card(i, n, outlets=0, title=None):
+        return {"id": f"c{i}", "title": title or f"Story {i}", "summary": "First it said this. Then more.", "source": f"S{i}",
+                "url": f"https://ex.com/{i}", "category": cat[n], "kind": "news", "date": day.isoformat(),
+                "added_at": f"{day}T10:00:00+00:00", "tags": [],
+                "also": [{"source": f"O{i}{k}", "title": "x", "url": f"https://o.com/{i}/{k}"} for k in range(outlets)]}
+    every = list(rss.FEEDS)
+    cards = [card(10 * k + j, n, outlets=5 - j) for k, n in enumerate(every) for j in range(3)]
+    six = audio.plan(cards, day, every)["six"]
+    assert sorted(n for n, _ in six) == sorted(every)  # one from each stream, each its biggest
+    assert all(c["title"].endswith("0") or c["id"].endswith("0") for _, c in six)
+    assert audio.line({"six": six}, every, None, 110) == "2 minutes · the day's top 6, one from each stream"
+    # a stream with nothing: the biggest story left from the others takes its place, and the bar doesn't claim each
+    quiet = [c for c in cards if c["category"] != cat["regulation"]]
+    six = audio.plan(quiet, day, every)["six"]
+    assert len(six) == 6 and "regulation" not in {n for n, _ in six}
+    assert audio.line({"six": six}, every, None, 110) == "2 minutes · the day's top 6"
+    # a reader's own: their streams only, their picks first, "your" in the bar and the voice
+    mine = ["releases", "policy"]
+    cards.append(card(99, "policy", title="A humanoid robot rule"))
+    plan = audio.plan(cards, day, mine, {"more": ["Robotics"]})
+    assert {n for n, _ in plan["six"]} <= set(mine) and plan["six"][0][1]["id"] == "c99"
+    assert "your top 6" in audio.line(plan, mine, {"more": ["Robotics"]}, 100)
+    assert "Here are your 6 top stories" in audio.script(day, plan, own=True)
+    # never how many outlets, only who reported it
+    said = audio.script(day, audio.plan(cards, day, every))
+    assert "outlets" not in said and "Reported by S" in said and "First it said this." in said
+    # the clip's address: "everyone", or a code of the settings alone (the same for readers who set the same)
+    assert audio.url(day, every, {}) == f"{rss.SITE}listen/2026-10-23-everyone.mp3"
+    code = audio.setup(mine, {"more": ["Robotics"], "often": ["weekly"], "interests": ["chips"]})
+    assert code == audio.setup(mine, {"more": ["Robotics"]}) and re.fullmatch(r"[0-9a-f]{12}", code)
+
+
+def test_sunday_listen_starts_with_the_week():
+    from aipulse import audio, rss
+    sat = date(2026, 10, 24)
+
+    def card(i, d, outlets, cat="news"):
+        return {"id": f"w{i}", "title": f"Week story {i}", "summary": "", "source": f"S{i}", "url": f"https://ex.com/w{i}",
+                "category": cat, "kind": "news", "date": d.isoformat(), "added_at": f"{d}T10:00:00+00:00", "tags": [],
+                "also": [{"source": f"O{i}{k}", "title": "x", "url": f"https://o.com/{i}/{k}"} for k in range(outlets)]}
+    cards = [card(1, sat - timedelta(days=4), 8), card(2, sat - timedelta(days=3), 4), card(3, sat - timedelta(days=2), 0),
+             card(4, sat, 0, "tool"), card(5, sat, 0, "policy")]
+    plan = audio.plan(cards, sat, list(rss.FEEDS))
+    assert plan["week"]["id"] == "w1" and [c["id"] for _, c in plan["also"]] == ["w2"]  # one outlet in a week: not important
+    said = audio.script(sat, plan)
+    assert said.index("These were the important updates this week") < said.index("The story of the week") \
+        < said.index("Week story 2") < said.index("Now, Saturday the 24th, in short")
+    assert audio.line(plan, list(rss.FEEDS), None, 140) == "2 minutes · the week's important updates, then Saturday in short"

@@ -974,7 +974,7 @@ def full_page(day: date) -> str:
 
 def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "",
           layout: str = "short", web: bool = False, prefs: dict | None = None,
-          dossier: dict | None = None, since: str | None = None) -> tuple[str, str, str] | None:
+          dossier: dict | None = None, since: str | None = None, listen: bool = False) -> tuple[str, str, str] | None:
     """(subject, plain text, HTML) for one day, or None if the chosen streams had nothing that day (Sunday's short
     email still goes if the week had stories: it says the day had none).
     `unsubscribe`: the reader's own one-click link (subscribers.py); without one, the footer points to the site.
@@ -984,7 +984,8 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     what they left out never appears in their short email, and their own come first; the full email is the same
     for everyone. `dossier`: on Sundays, the reader's weekly dossier (see _dossier), in the short email only.
     Sunday's short email (the day is a Saturday, see WEEKLY) opens with the week: its story, word and meme.
-    `since`: the newest arrival the last email saw; stories that arrived after it, dated before `day`, go in too."""
+    `since`: the newest arrival the last email saw; stories that arrived after it, dated before `day`, go in too.
+    `listen`: a reader's email (not a web page): the poster email's bar to their clip on the site (audio.py)."""
     by_stream = by_streams(cards, streams, day, since)
     left = []
     if layout in ("short", "poster"):
@@ -1004,7 +1005,7 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
         dossier = {**(dossier or {}), "ask": subscribers.ask_link(unsubscribe) if unsubscribe else change}  # (a sample: sign-up)
     if layout == "poster":  # the poster email (poster.py): the day's hot story first, then the rest in its own look
         from . import poster
-        return poster.build(cards, by_stream, left, streams, day, prefs, dossier, unsubscribe, change, stop)
+        return poster.build(cards, by_stream, left, streams, day, prefs, dossier, unsubscribe, change, stop, listen)
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
         open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left, dossier, (change, change_words))

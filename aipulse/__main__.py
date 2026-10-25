@@ -179,6 +179,10 @@ def main():
     ds = sub.add_parser("dossiers", help="the week's dossier for every reader's question, kept for the site and the "
                                          "Sunday email (offline model; reads the questions with DIGEST_LIST_KEY)")
     ds.add_argument("--interest", action="append", help="these instead of the readers' (testing)")
+    li = sub.add_parser("listen", help="the day's two-minute clips, each reader setup's (offline voice; reads the readers' "
+                                       "settings with DIGEST_LIST_KEY, never who they are)")
+    li.add_argument("--dir", default="site/listen", help="the site's listen folder, kept between runs")
+    li.add_argument("--day", help="YYYY-MM-DD (default: yesterday)")
     mo = sub.add_parser("monthly", help="the monthly issues' summaries still due (offline open-source model)")
     mo.add_argument("--due", action="store_true", help="only say whether one is due: exit 0 if so, 1 if not")
     mo.add_argument("--limit", type=int, default=4, help="at most this many months this run (newest first)")
@@ -424,7 +428,8 @@ def main():
             weekly_only = sum(1 for r in readers.values() if r[3].get("often") == "weekly")
             readers = digest.due(readers, day)
             emails = [(to, *e, one_click) for to, (chosen, one_click, link, prefs) in readers.items()
-                      if (e := digest.build(cards, chosen, day, link, a.layout, prefs=prefs, dossier=dossier(prefs), since=since))]
+                      if (e := digest.build(cards, chosen, day, link, a.layout, prefs=prefs, dossier=dossier(prefs), since=since,
+                                               listen=True))]
             if a.dry_run:
                 tuned = sum(1 for r in readers.values() if any(v for k, v in r[3].items() if k != "often"))
                 print(f"Checked, no problems: {len(emails)} of {len(readers)} subscribers would get the {day} digest "
@@ -444,7 +449,7 @@ def main():
                 streams, _, link, prefs = mine
                 note = wk.note(conn, key, prefs.get("interests") or [], day) if digest.weekly(day) else None
             print(f"Sample as the subscriber's own email: {'yes' if mine else 'no, not subscribed'}")
-        email = digest.build(cards, streams, day, link, a.layout, prefs=prefs, dossier=note, since=since)
+        email = digest.build(cards, streams, day, link, a.layout, prefs=prefs, dossier=note, since=since, listen=True)
         if a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(digest.preview(email[2]))
             print(f"Checked, no problems: {email[0]} {counts} -> wrote {a.dry_run}")
@@ -664,6 +669,20 @@ def main():
                 print(f"dossiers: skipped, the interests couldn't be read ({type(e).__name__})")
             else:
                 weekly.prepare(store.connect(a.db), wanted, key, datetime.now(timezone.utc).date())
+    elif a.cmd == "listen":
+        from pathlib import Path
+        from . import audio, digest, subscribers
+        day = date.fromisoformat(a.day) if a.day else digest.yesterday()
+        cards, _ = store.cards(store.connect(a.db), days=(date.today() - day).days + 8, limit=10**6)
+        setups, key = {}, os.environ.get("DIGEST_LIST_KEY", "")
+        try:  # each distinct setup once (readers who set the same share a clip)
+            for streams, _, _, prefs in digest.due(subscribers.current(key), day).values() if key else ():
+                setups.setdefault(audio.setup(streams, prefs), (streams, prefs))
+        except Exception as e:  # the list unreachable: the everyone clip still goes
+            print(f"listen: readers' settings couldn't be read ({type(e).__name__}); only the everyone clip")
+        setups.pop("everyone", None)  # always made
+        spoken = audio.make(cards, day, list(setups.values()), Path(a.dir))
+        print(f"listen: {day}, everyone + {len(setups)} reader setups, {spoken} clip(s) spoken this run")
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

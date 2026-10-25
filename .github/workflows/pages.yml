@@ -182,6 +182,48 @@ jobs:
       - name: Build the site
         run: python -m aipulse --db aipulse.db build --out site
 
+      # The daily listen (aipulse/audio.py): yesterday's two-minute clip for everyone and for each reader setup
+      # (streams and choices; never who), read by Piper, an open-source voice (MIT) run on the runner: no API, nothing
+      # billed. The voice (~110 MB, from Piper's own list, trained on public-domain recordings) is cached; the clips are
+      # kept between runs (7 days), so a push or quick run publishes them as they are and a full run speaks only what
+      # changed.
+      - name: Restore the listen clips
+        uses: actions/cache/restore@v4
+        with:
+          path: site/listen
+          key: listen-${{ github.run_id }}
+          restore-keys: listen-
+
+      - name: Restore the voice
+        if: github.event_name != 'push' && env.QUICK != 'true'
+        uses: actions/cache@v4
+        with:
+          path: data/voice
+          key: piper-voice-${{ hashFiles('aipulse/audio.py') }}  # a new voice in audio.py downloads afresh
+
+      - name: Daily listen
+        if: github.event_name != 'push' && env.QUICK != 'true'
+        continue-on-error: true
+        timeout-minutes: 15  # never holds up the site; a clip not made means that email has no bar
+        env:
+          DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the readers' streams and choices (the log shows counts only)
+        run: |
+          pip install --quiet piper-tts lameenc
+          voice="$(python -c 'from aipulse import audio; print(audio.VOICE)')"
+          url="$(python -c 'from aipulse import audio; print(audio.VOICE_URL)')"
+          if [ ! -f "$voice" ]; then
+            mkdir -p data/voice
+            curl -sSfL -o "$voice" "$url.onnx" && curl -sSfL -o "$voice.json" "$url.onnx.json"
+          fi
+          python -m aipulse --db aipulse.db listen --dir site/listen
+
+      - name: Save the listen clips
+        if: always() && github.event_name != 'push' && env.QUICK != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: site/listen
+          key: listen-${{ github.run_id }}
+
       # The daily cloud jobs (the glossary's and Jobs blamed on AI's drafts) can reach GitHub but not the site: a copy of
       # data.json, gzipped, as the only file of the data branch, replaced each full run (one commit, no history kept).
       - name: Keep a copy of data.json on the data branch
