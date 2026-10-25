@@ -390,10 +390,18 @@ LEFT_OUT = {
         "same as Mercury 3",
     "https://the-decoder.com/inceptions-mercury-3-diffusion-model-claims-to-beat-gpt-6-luna-and-claude-haiku-5-5-at-a-fraction-of-the-wait/":
         "same as Mercury 3",
+    "https://www.marktechpost.com/2026/10/22/gradium-phonon-31m-on-device-tts/":
+        "Phonon: one news outlet within 3 days",
+    "https://techcrunch.com/2026/10/22/openai-makes-its-jev-competitor-widely-available-as-decision-model-competition-heats-up/":
+        "OpenAI Decisions API model: one news outlet within 3 days",
+    "https://www.thelec.net/news/articleView.html?idxno=14781": "Kakao image recognition models: one news outlet within 3 days",
+    "https://siliconangle.com/2026/10/22/ai2-releases-olmoearth-v1-3-state-of-the-art-ai-ready-satellite-embeddings-for-the-whole-planet/":
+        "OlmoEarth v1.3: one news outlet within 3 days",
+    "https://huggingface.co/blog/allenai/olmoearth-v1-3": "same as OlmoEarth v1.3",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-10-21"
+CHECKED_TO = "2026-10-22"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
