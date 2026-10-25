@@ -81,7 +81,7 @@ TERMS: dict[str, tuple[str, str, str]] = {
     # Back on 10 Oct 2026 under the owner's rule for labs' and companies' own blogs: robots.txt decides
     "openai.com": ("robots.txt", "", "OpenAI's terms cover 'associated software applications and websites'; robots.txt allows its news feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban automated extraction"),
     "www.anthropic.com": ("robots.txt", "", "Anthropic's consumer terms cover 'associated apps, software, and websites'; robots.txt allows its news pages; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban crawling"),
-    "www.microsoft.com": ("robots.txt", "", "Microsoft's terms of use; robots.txt allows its research feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban scraping"),
+    "www.microsoft.com": ("robots.txt", "", "Microsoft's terms of use; robots.txt allows its research feed (and its publications feed, checked 25 Oct 2026); checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban scraping"),
     "blogs.microsoft.com": ("robots.txt", "", "Microsoft Services Agreement; robots.txt allows its feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because it bans 'impermissible scraping'"),
     "blogs.nvidia.com": ("robots.txt", "", "NVIDIA's terms of use; robots.txt allows its feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban robots and scrapers"),
     "aws.amazon.com": ("robots.txt", "", "AWS site terms; robots.txt allows its machine-learning feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban robots and data mining"),
@@ -101,6 +101,10 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "docs.perplexity.ai": ("robots.txt", "", "Perplexity's terms; robots.txt allows its changelog; checked 10 Oct 2026. Dropped 7 Oct 2026 because they ban scraping"),
     "www.apple.com": ("robots.txt", "", "Apple's website terms; robots.txt allows its newsroom feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they allow personal use only"),
     "machinelearning.apple.com": ("robots.txt", "", "Apple's website terms; robots.txt allows its research feed; checked 10 Oct 2026. Dropped 7 Oct 2026 because they allow personal use only"),
+    # Labs' publications lists, added 25 Oct 2026 (Research)
+    "research.nvidia.com": ("robots.txt", "", "NVIDIA's terms of use; robots.txt allows everything ('Allow: /', with 'Content-Signal: ai-train=yes, search=yes, ai-input=yes'); checked 25 Oct 2026"),
+    "research.ibm.com": ("robots.txt", "", "IBM's terms of use; robots.txt allows everything ('Allow: /'); checked 25 Oct 2026"),
+    "www.amazon.science": ("robots.txt", "", "Amazon's conditions of use; robots.txt allows everything and asks for 'Crawl-delay: 10' (sources.py pause); checked 25 Oct 2026"),
     # --- Industry news ---
     "techcrunch.com": ("feed terms", "https://techcrunch.com/rss-terms-of-use/",
                        "RSS terms: display the feed's content with attribution and a link; may not modify it"),

@@ -147,14 +147,14 @@ def page_list_entries(conn, src: dict, fetcher=feeds.fetch) -> list[dict]:
         for url in [u for u in links if u not in seen][: src.get("max_new", 10)]:
             if store.exists(conn, url):
                 continue
+            time.sleep(src.get("pause", 0.5))  # before each read, so the site's crawl delay follows the list's read too
             try:
-                post = feeds.page_meta(fetcher(url))
+                post = (feeds.paper_meta if src.get("abstract") else feeds.page_meta)(fetcher(url))
             except Exception:  # a listed page that's gone (a stale sitemap entry): skipped, and remembered
                 continue
             if post["title"]:
                 entries.append({**post, "url": url, "authors": [],
                                 "published": post["published"] or datetime.now(timezone.utc)})
-            time.sleep(src.get("pause", 0.5))
     remembered = links + [u for u in seen if u not in links]
     conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (key, json.dumps(remembered[:PAGE_LIST_MEMORY])))
     conn.commit()
@@ -205,6 +205,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             if not e["title"] or not e["url"]:
                 continue
             e["url"] = urljoin(src["url"], e["url"])  # a feed that gives its links as paths (the EIA's)
+            if src.get("link") and not re.search(src["link"], e["url"]):
+                continue  # a feed listing other pages too (NVIDIA Research's lists its researchers' profiles)
             published = e["published"] or datetime.now(timezone.utc)
             if published < src_cutoff:
                 continue

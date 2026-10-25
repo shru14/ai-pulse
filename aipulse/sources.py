@@ -12,6 +12,7 @@ Optional per-source keys:
   companies     True when items are kept only if a big-tech company is matched (see COMPANIES)
   ai_only       True when every item is about AI (skips the AI keyword filter)
   format        "page_list": a lab with no feed; "link" is the pattern of its posts' addresses on the page
+  link          (a feed) the pattern its items' addresses must match: others are skipped
   english_only  skip posts whose headline is in Japanese, Chinese or Korean (a blog posting both languages)
   ai_in_title   True for general feeds where only items with AI in the title count
   max_age_days  look back further than the run default (for feeds that post weekly or monthly)
@@ -19,6 +20,8 @@ Optional per-source keys:
   pause         seconds to wait after fetching (arXiv asks for 3)
   page_lead     the feed has no real description, so each new post's opening paragraph is read from its page
                 (once; robots.txt permitting)
+  abstract      a lab's publications list ("page_list"): each paper's headline and abstract are read from its page's
+                citation title and "Abstract" section (feeds.paper_meta)
   expect_entries True when the source always lists its latest items, so an empty reply is a glitch:
                 it is retried, and counts as a failed fetch if it stays empty
   label         name shown in source health checks when several sources share a name (arXiv)
@@ -693,4 +696,20 @@ SOURCES += [
     # Apple's own papers (back 10 Oct 2026, under the owner's rule for labs' blogs)
     {"name": "Apple Machine Learning Research", "url": "https://machinelearning.apple.com/rss.xml",
      "category": "research", "ai_only": True, "max_age_days": 30, "org": "Apple"},
+    # Labs' own publications lists, added 25 Oct 2026 under the owner's rule for labs' sites (robots.txt allows each):
+    # papers only, all subjects, so the AI keyword filter applies. Meta's and DeepMind's lists need JavaScript and
+    # OpenAI's refuses our reader; Anthropic's research page mixes papers with posts.
+    {"name": "Microsoft Research papers", "url": "https://www.microsoft.com/en-us/research/feed/?post_type=msr-research-item",
+     "category": "research", "max_age_days": 14, "org": "Microsoft"},
+    {"name": "NVIDIA Research papers", "url": "https://research.nvidia.com/rss.xml", "category": "research",
+     "link": r"^https://research\.nvidia\.com/publication/", "max_age_days": 30, "org": "NVIDIA"},
+    {"name": "Google Research papers", "url": "https://research.google/pubs/", "format": "page_list",
+     "link": r"^https://research\.google/pubs/[a-z0-9-]+/$", "abstract": True, "category": "research", "org": "Google"},
+    {"name": "IBM Research papers", "url": "https://research.ibm.com/publications", "format": "page_list",
+     "link": r"^https://research\.ibm\.com/publications/[a-z0-9-]+$", "abstract": True, "category": "research",
+     "org": "IBM"},
+    # robots.txt asks for 10 seconds between requests
+    {"name": "Amazon Science papers", "url": "https://www.amazon.science/publications", "format": "page_list",
+     "link": r"^https://www\.amazon\.science/publications/[a-z0-9-]+$", "abstract": True, "category": "research",
+     "org": "Amazon", "pause": 10},
 ]

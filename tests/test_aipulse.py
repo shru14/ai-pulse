@@ -2157,6 +2157,22 @@ def test_labs_without_a_feed_are_read_from_their_news_page(tmp_path):
                               r"/blog/") == ["https://lab.test/blog/a"]
 
 
+def test_lab_paper_pages_give_the_papers_title_and_abstract():
+    # IBM's preview title adds the venue, Google's preview text is the site's slogan: a paper page's citation title
+    # and "Abstract" section are used instead (sources.py "abstract")
+    page = (b'<meta property="og:title" content="SPARC: Separating Perception for ICML 2026">'
+            b'<meta name="citation_title" content="SPARC: Separating Perception" data-next-head=""/>'
+            b'<meta property="og:description" content="Our teams advance the state of the art.">'
+            b'<meta name="citation_publication_date" content="2026/07/06">'
+            b'<section><h2 id="abstract">Abstract</h2><div><p>Test-time scaling remains <b>brittle</b> for VLMs.</p></div>'
+            b'</section><h2>Related</h2><p>Other papers</p>')
+    meta = feeds.paper_meta(page)
+    assert (meta["title"], meta["summary"]) == ("SPARC: Separating Perception", "Test-time scaling remains brittle for VLMs.")
+    assert meta["published"] is None  # the conference's date, not the day it was posted
+    assert feeds.paper_meta(b'<meta property="og:title" content="A paper"><meta name="description" content="Its abstract.">'
+                            ) == {"title": "A paper", "summary": "Its abstract.", "published": None}
+
+
 def test_release_notes_keep_only_the_labs_own_launches(tmp_path):
     from aipulse import collect as col
     from aipulse.sources import SOURCES
