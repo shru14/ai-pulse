@@ -235,6 +235,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                 summary = brief.clean_summary(e["summary"], title, source)
             if src.get("skip") and re.search(src["skip"], title):
                 continue
+            if src.get("skip_category") and any(re.search(src["skip_category"], c) for c in e.get("categories", [])):
+                continue
             if src.get("english_only") and translate.detect(title):
                 continue  # the same post in Japanese (Sakana AI posts both): the English one is kept
             title, summary, url = in_english(conn, title, summary, e["url"], source, fetcher)
@@ -349,6 +351,8 @@ DROPPED = {"Parliament of Canada": "https://www.parl.ca/",  # 6 Oct 2026, each a
            "BRIDGE": "https://thebridge.jp/",  # 10 Oct 2026: its robots.txt refuses us from GitHub's servers
            "Rest of World": "https://restofworld.org/", "TechNode": "https://technode.com/",
            "CISA": "https://www.cisa.gov/",  # 7 Oct 2026: refuses even its robots.txt to GitHub's servers
+           # 25 Oct 2026: its robots.txt disallows /rss, which Python's robots reader missed (feeds.Robots)
+           "US Energy Information Administration": "https://www.eia.gov/",
            # 7 Oct 2026 terms audit: their terms forbid robots and scrapers, or allow personal use only (the labs' and
            # companies' own blogs dropped then are back since 10 Oct 2026: for them robots.txt decides)
            "South China Morning Post": "https://www.scmp.com/", "MIT Technology Review AI": "https://www.technologyreview.com/",

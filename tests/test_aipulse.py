@@ -1008,8 +1008,8 @@ def test_feed_archive_skips_a_bad_page_and_keeps_the_source_name(tmp_path, monke
 
 
 def test_nothing_is_fetched_against_robots_txt(monkeypatch):
-    import pytest, urllib.robotparser
-    rules = urllib.robotparser.RobotFileParser()
+    import pytest
+    rules = feeds.Robots()
     rules.parse(["User-agent: *", "Disallow: /private/", "", "User-agent: AIPulse", "Disallow: /feeds/"])
     monkeypatch.setattr(feeds, "_robots", {"news.example": rules, "export.arxiv.org": None})
     fetched = []
@@ -1020,6 +1020,19 @@ def test_nothing_is_fetched_against_robots_txt(monkeypatch):
         feeds.fetch("https://news.example/feeds/ai.xml")
     assert fetched == []  # refused before any request
     assert feeds.allowed("https://export.arxiv.org/api/query?x")  # an API its terms allow (API_HOSTS)
+    # read as the standard says: wildcards (The Decoder), the longest rule wins (EIA), groups split only by rules
+    decoder, eia, hn, groups = feeds.Robots(), feeds.Robots(), feeds.Robots(), feeds.Robots()
+    decoder.parse(["User-agent: *", "Disallow: /wp-admin/", "Disallow: */feed/"])
+    assert not decoder.can_fetch("AIPulse", "https://the-decoder.com/feed/")
+    assert decoder.can_fetch("AIPulse", "https://the-decoder.com/news-sitemap.xml")
+    eia.parse(["User-agent: *", "Allow: /", "", "Disallow: /rss"])
+    assert not eia.can_fetch("AIPulse", "https://www.eia.gov/rss/press_rss.xml")
+    assert eia.can_fetch("AIPulse", "https://www.eia.gov/pressroom/")
+    hn.parse(["User-agent: *", "Allow: /*.json$", "Allow: /*.json?*$", "Disallow: /"])
+    assert hn.can_fetch("AIPulse", "https://hacker-news.firebaseio.com/v0/topstories.json")
+    assert not hn.can_fetch("AIPulse", "https://hacker-news.firebaseio.com/v0/")
+    groups.parse(["User-agent: *", "Crawl-delay: 10", "User-agent: BadBot", "Disallow: /"])
+    assert groups.can_fetch("AIPulse", "https://news.example/")  # BadBot's rule isn't ours
     from aipulse.sources import SOURCES
     arxiv = [s for s in SOURCES if "arxiv.org" in s["url"]]
     assert arxiv and all(s.get("pause", 0) >= 3 for s in arxiv)  # arXiv: one request every 3 seconds
@@ -2731,14 +2744,21 @@ def test_infrastructure_stories_have_their_own_stream():
     store.insert(conn, {**base, "title": "OpenAI raises $40B", "url": "https://e.com/5", "category": "infra"})
     reclassify(conn, fetcher=lambda u: b"")
     assert dict(conn.execute("SELECT url, category FROM items").fetchall()) == {"https://e.com/4": "infra", "https://e.com/5": "news"}
-    # a feed that gives its links as paths (the EIA's) is stored with full addresses
+    # a feed that gives its links as paths (as the EIA's did) is stored with full addresses
     from datetime import datetime, timezone
     day = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
     feed = (f"<rss><channel><item><title>Data centers drive US electricity demand</title><link>/pressroom/releases/press592.php</link>"
             f"<pubDate>{day}</pubDate></item></channel></rss>").encode()
-    eia = {"name": "EIA", "url": "https://www.eia.gov/rss/press_rss.xml", "category": "infra", "infra_filter": True}
-    collect(conn, [eia], fetcher=lambda u: feed, log=lambda m: None, official_bills=False)
-    assert store.exists(conn, "https://www.eia.gov/pressroom/releases/press592.php")
+    energy = {"name": "Energy office", "url": "https://energy.example/rss/press_rss.xml", "category": "infra", "infra_filter": True}
+    collect(conn, [energy], fetcher=lambda u: feed, log=lambda m: None, official_bills=False)
+    assert store.exists(conn, "https://energy.example/pressroom/releases/press592.php")
+    # a feed's paid posts, marked by their category (IEEE Spectrum's), are never stories
+    feed = (f"<rss><channel><item><title>AI servers keep cool</title><link>https://mag.example/ad</link><category>Type-sponsored"
+            f"</category><pubDate>{day}</pubDate></item><item><title>AI agents collude</title><link>https://mag.example/news</link>"
+            f"<category>Type-news</category><pubDate>{day}</pubDate></item></channel></rss>").encode()
+    mag = {"name": "Mag", "url": "https://mag.example/rss", "category": "news", "skip_category": r"^Type-sponsored$"}
+    collect(conn, [mag], fetcher=lambda u: feed, log=lambda m: None, official_bills=False)
+    assert store.exists(conn, "https://mag.example/news") and not store.exists(conn, "https://mag.example/ad")
 
 
 def test_infrastructure_reaches_the_email_and_its_readers():

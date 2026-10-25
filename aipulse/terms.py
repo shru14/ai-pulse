@@ -108,7 +108,12 @@ TERMS: dict[str, tuple[str, str, str]] = {
     # --- Industry news ---
     "techcrunch.com": ("feed terms", "https://techcrunch.com/rss-terms-of-use/",
                        "RSS terms: display the feed's content with attribution and a link; may not modify it"),
-    "the-decoder.com": ("terms read", "https://the-decoder.com/tos", "Nothing on feeds, robots or personal use"),
+    "the-decoder.com": ("terms read", "https://the-decoder.com/tos",
+                        "Nothing on feeds, robots or personal use. Its robots.txt disallows '*/feed/', so since 25 Oct "
+                        "2026 its news sitemap and post pages are read instead"),
+    "spectrum.ieee.org": ("robots.txt", "https://www.ieee.org/about/help/site-terms-conditions.html",
+                          "IEEE's site terms, linked from IEEE Spectrum, answer automated readers with an empty bot-check "
+                          "page; robots.txt allows the AI topic feed; checked 25 Oct 2026"),
     "siliconangle.com": ("terms read", "https://siliconangle.com/terms-of-use/",
                          "No republishing 'unless content is specifically made for redistribution'; its RSS feed is"),
     "www.marktechpost.com": ("terms read", "https://www.marktechpost.com/privacy-policy/",
@@ -194,7 +199,6 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "africadca.org": ("no terms", "", "No terms page linked from the site"),
     "www.gov.uk": ("official", "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
                    "Open Government Licence v3.0; GOV.UK offers its content through feeds for other sites"),
-    "www.eia.gov": ("official", "https://www.eia.gov/about/copyrights_reuse.php", "US government work, public domain"),
     "energy.ec.europa.eu": ("official", "https://commission.europa.eu/legal-notice_en",
                             "European Commission: reuse allowed with acknowledgement"),
     # --- Policy ---
