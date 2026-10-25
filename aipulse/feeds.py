@@ -775,6 +775,24 @@ def page_meta(page_bytes: bytes) -> dict:
     return {"title": clean_text(title, 200), "summary": clean_text(summary), "published": parse_date(when) if when else None}
 
 
+_ABSTRACT = re.compile(r"<h[1-4]\b[^>]*>\s*Abstract\s*</h[1-4]>(.*?)(?=<h[1-4]\b|</section>|$)", re.S | re.I)
+
+
+def paper_meta(page_bytes: bytes) -> dict:
+    """A paper's own page on a lab's publications list (sources.py "abstract"): page_meta, with the text under the
+    page's "Abstract" heading as the description, since the link-preview text is the site's slogan on Google's pages
+    and the title again on IBM's, and the citation title as the headline (IBM's preview adds " for ICML 2026"; the
+    paper's own title also matches its arXiv copy, so it isn't stored twice). Their citation dates are the
+    conference's, so the day first seen dates it."""
+    meta = page_meta(page_bytes)
+    page = page_bytes.decode("utf-8", "replace")
+    meta["title"] = clean_text(_meta(page, "citation_title"), 200) or meta["title"]
+    m = _ABSTRACT.search(page)
+    if m and _plain(m.group(1)):
+        meta["summary"] = _plain(m.group(1))
+    return meta
+
+
 PARSERS = {"feed": parse, "anthropic": parse_anthropic, "xai_notes": parse_xai_notes, "perplexity_notes": parse_perplexity_notes, "msit": parse_msit, "digital_my": parse_digital_my, "dinum": parse_dinum, "hf_daily": parse_hf_daily, "arxiv_rss": parse_arxiv_rss,
            "federal_register": parse_federal_register, "govuk": parse_govuk,
            "github_repos": parse_github_repos, "hf_models": parse_hf_models, "hf_trending": parse_hf_trending,
