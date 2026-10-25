@@ -13,7 +13,6 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.robotparser
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -57,9 +56,7 @@ def _retry_after(err: urllib.error.HTTPError) -> float | None:
 # and official services with no robots.txt of their own (the request for one is refused):
 #   api.congress.gov  the Library of Congress's API (https://api.congress.gov; US government works)
 #   cdn.jsdelivr.net  the npm package CDN serving Simple Icons (CC0; https://www.jsdelivr.com/terms)
-#   hacker-news.firebaseio.com  Hacker News' official API: its robots.txt allows "/*.json$", a wildcard rule Python's
-#                     robots parser can't read (it would fall through to "Disallow: /"); only .json files are fetched
-API_HOSTS = {"export.arxiv.org", "www.wikidata.org", "api.congress.gov", "cdn.jsdelivr.net", "hacker-news.firebaseio.com"}
+API_HOSTS = {"export.arxiv.org", "www.wikidata.org", "api.congress.gov", "cdn.jsdelivr.net"}
 # and the reverse: sites whose robots.txt allows their pages but whose terms allow only their API. GitHub's policy
 # (https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies) allows scraping the
 # website only for research or archiving, and says "Scraping does not refer to the collection of information through
@@ -72,12 +69,53 @@ class Disallowed(Exception):
     """The site's robots.txt doesn't allow fetching this URL."""
 
 
-_robots: dict[str, urllib.robotparser.RobotFileParser] = {}
+class Robots:
+    """A robots.txt read as the standard says (RFC 9309, as Google reads it). Python's urllib.robotparser doesn't:
+    it ignores "*" and "$" in paths (The Decoder's "Disallow: */feed/") and applies the first rule that matches,
+    not the longest (EIA's "Allow: /" above "Disallow: /rss"). Here the longest matching rule decides, and Allow
+    wins a tie; the groups naming our robot apply, or else the "*" groups."""
+
+    def __init__(self):
+        self.groups: list[tuple[list[str], list[tuple[bool, str]]]] = []
+
+    def parse(self, lines) -> None:
+        agents: list[str] | None = None
+        after_agent = False
+        for line in lines:
+            key, _, value = line.split("#", 1)[0].partition(":")
+            key, value = key.strip().lower(), value.strip()
+            if not key:
+                continue
+            if key == "user-agent":
+                if not after_agent:  # User-agent lines in a row share one group
+                    agents = []
+                    self.groups.append((agents, []))
+                agents.append(value.lower())
+            elif key in ("allow", "disallow") and agents is not None and value:
+                self.groups[-1][1].append((key == "allow", value))
+            after_agent = key == "user-agent"
+
+    def can_fetch(self, name: str, url: str) -> bool:
+        parts = urlsplit(url)
+        path = (parts.path or "/") + (f"?{parts.query}" if parts.query else "")
+        if path == "/robots.txt":
+            return True
+        mine = [rules for agents, rules in self.groups if name.lower() in agents]
+        mine = mine or [rules for agents, rules in self.groups if "*" in agents]
+        best = None  # (length, allow)
+        for allow, pattern in (r for rules in mine for r in rules):
+            regex = re.escape(pattern.rstrip("$")).replace(r"\*", ".*") + ("$" if pattern.endswith("$") else "")
+            if re.match(regex, path) and (best is None or (len(pattern), allow) > best):
+                best = (len(pattern), allow)
+        return best is None or best[1]
+
+
+_robots: dict[str, Robots] = {}
 _robots_lock = threading.Lock()
 
 
-def _rules(scheme: str, host: str) -> urllib.robotparser.RobotFileParser:
-    rules = urllib.robotparser.RobotFileParser()
+def _rules(scheme: str, host: str) -> Robots:
+    rules = Robots()
     req = urllib.request.Request(f"{scheme}://{host}/robots.txt", headers={"User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(req, timeout=20, context=TLS) as resp:
@@ -257,6 +295,7 @@ def parse(xml_bytes: bytes) -> list[dict]:
             "summary": clean_text(summary),
             "published": parse_date(published),
             "authors": [n for a in it.findall(f"{DC}creator") if (n := clean_text(_text(a), 80))],
+            "categories": [_text(c) for c in it.findall("category")],
         })
     return entries
 

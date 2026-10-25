@@ -34,6 +34,7 @@ Optional per-source keys:
                 Qwen-Image-2.1 on GitHub")
   key_env       the environment variable holding the project's API key for the source; skipped when unset
   skip          a pattern: posts whose headline matches it are never stories (Midjourney's weekly changelogs)
+  skip_category a pattern: posts whose feed category matches it are never stories (IEEE Spectrum's paid posts)
   paged         the feed pages back in time (WordPress: ?paged=2, 3, ...); the history run reads it back to 2023
 
 Policy stories from any source move to the regulation tracker when they report a proposal or an
@@ -314,10 +315,17 @@ SOURCES = [
     # --- Industry news ---
     {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "category": "news",
      "paged": True, "as_provided": True},
-    {"name": "The Decoder", "url": "https://the-decoder.com/feed/", "category": "news", "paged": True},
+    # The Decoder's robots.txt disallows its feeds ("*/feed/") but not its news sitemap, which lists its last two days
+    # of posts; each new post's page is read once
+    {"name": "The Decoder", "url": "https://the-decoder.com/news-sitemap.xml", "format": "page_list", "category": "news",
+     "link": r"^https://the-decoder\.com/[a-z0-9-]+/$", "max_new": 20},
     {"name": "SiliconANGLE AI", "url": "https://siliconangle.com/category/ai/feed/", "category": "news", "paged": True},
     {"name": "MarkTechPost", "url": "https://www.marktechpost.com/feed/", "category": "news", "ai_only": True, "paged": True},
     {"name": "404 Media", "url": "https://www.404media.co/rss/", "category": "news"},
+    # Added 25 Oct 2026: IEEE Spectrum's AI topic, which reports new papers (its terms page is behind a bot check, so
+    # its robots.txt decides)
+    {"name": "IEEE Spectrum AI", "url": "https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss", "category": "news",
+     "skip_category": r"^Type-(?:sponsored|whitepaper|webinar)$"},  # companies' paid posts, not reporting
     # Added 7 Oct 2026: The Conversation (Creative Commons BY-ND), Quanta Magazine (no terms restrict it)
     {"name": "The Conversation (AI)", "url": "https://theconversation.com/global/topics/artificial-intelligence-ai-90/articles.atom",
      "category": "news", "ai_only": True},
@@ -431,8 +439,6 @@ SOURCES = [
                 "press_release", "news_story", "speech", "notice", "decision", "research", "official_statistics",
                 "national_statistics", "policy_paper", "open_consultation", "closed_consultation", "consultation_outcome",
                 "detailed_guide", "guidance"))},
-    {"name": "US Energy Information Administration", "url": "https://www.eia.gov/rss/press_rss.xml", "category": "infra",
-     "infra_filter": True},
     {"name": "European Commission (Energy)", "url": "https://energy.ec.europa.eu/node/2/rss_en", "category": "infra",
      "infra_filter": True},
 
