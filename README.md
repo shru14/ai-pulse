@@ -33,9 +33,9 @@ six streams and links every card to the original.
 - **Dark mode** and **RSS**: one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
 - **Free, no ads, no cookies.**
 
-## 18 features
+## 24 features
 
-Pages that each answer one question, three per stream. Rows checked by hand are drafted daily and only go on the site once checked.
+Pages that each answer one question, four per stream. Rows checked by hand are drafted daily and only go on the site once checked.
 
 | Stream | Feature | Kept up to date |
 |---|---|---|
@@ -58,6 +58,7 @@ Pages that each answer one question, three per stream. Rows checked by hand are 
 | Research | Papers that made the news | Daily, checked by hand |
 | Research | New tests for AI | Daily, checked by hand |
 | Research | Compute behind notable models | Every 6 h, from Epoch AI |
+| Research | Who publishes AI research on Hugging Face | Every 6 h, from our Research cards |
 | Infra | Data-centre builds | Daily, checked by hand |
 | Infra | Who powers AI | Daily, checked by hand |
 | Infra | Pushback & permits | Daily, checked by hand |
