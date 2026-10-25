@@ -21,7 +21,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import classify, digest, pages, rss
+from . import audio, classify, digest, pages, rss
 
 ART = Path(__file__).resolve().parent.parent / "templates" / "photos" / "cartoons" / "png"
 HEAD = "'Archivo Black','Arial Black',Arial,sans-serif"  # headings; Gmail has no web fonts: Arial Black there, and phones lack Arial Black, so every heading also says font-weight:900
@@ -522,8 +522,10 @@ def _spread(ranked: list[dict], taken: list[dict], n: int, stream_of: dict[int, 
 
 
 def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict], streams: list[str], day: date,
-          prefs: dict | None, dossier: dict | None, unsubscribe: str, change: str, stop: str) -> tuple[str, str, str]:
-    """(subject, plain text, HTML) of the poster email (see digest.build for the arguments)."""
+          prefs: dict | None, dossier: dict | None, unsubscribe: str, change: str, stop: str,
+          listen: bool = False) -> tuple[str, str, str]:
+    """(subject, plain text, HTML) of the poster email (see digest.build for the arguments; `listen`: the bar to the
+    reader's clip under the masthead, when the site has it)."""
     todays = [c for n in streams for c in by_stream[n]]
     stream_of = {id(c): n for n in streams for c in by_stream[n]}
     ranked = sorted([c for c in todays if digest._fits_top(c)], key=digest._rank, reverse=True)
@@ -545,6 +547,21 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     # The masthead: which day (or, on Sunday, week) this is (the inbox already shows the sender's name and picture)
     html.append(f'<tr><td class="p-pad p-mast" style="padding:14px 20px;border-bottom:3px solid {INK};font-family:{HEAD};font-weight:900;'
                 f'font-size:18px;line-height:1.25">{escape(_masthead(day))}</td></tr>')
+
+    # Listen to the digest: the reader's two-minute clip on the site (audio.py), only once the site has it
+    clip = audio.url(day, streams, prefs) if listen else ""
+    secs = audio.seconds(clip) if clip else None
+    if secs:
+        said = audio.line(audio.plan(cards, day, streams, prefs), streams, prefs, secs)
+        text += [f"LISTEN TO THE DIGEST ({said}): {clip}", ""]
+        html.append(f'<tr><td style="padding:0;border-bottom:3px solid {INK}"><a href="{escape(clip)}" style="display:block;'
+                    f'background:{INK};color:#ffffff;text-decoration:none;padding:12px 20px">' + _table(
+                        f'<tr><td width="44" valign="middle" style="width:44px"><div style="width:34px;height:34px;line-height:34px;'
+                        f'background:{YELLOW};color:{INK};text-align:center;font-size:15px;border-radius:17px">&#9654;</div></td>'
+                        f'<td valign="middle"><div style="font-family:{HEAD};font-weight:900;font-size:16px;color:#ffffff">Listen to the '
+                        f'digest</div><div style="font-size:13px;color:#dddddd;margin-top:2px">{escape(said)}</div></td>'
+                        f'<td align="right" valign="middle" style="font-size:13px;font-weight:bold;color:{YELLOW};white-space:nowrap">'
+                        f'Play &#9656;</td></tr>') + '</a></td></tr>')
 
     # The lead: Hot today, the day's most-reported story (no picture); on Sunday beside the story of the week (as the
     # site picks it, digest._week_story), the masthead already naming the week
