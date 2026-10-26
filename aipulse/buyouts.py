@@ -324,6 +324,8 @@ LEFT_OUT = {
         "shoppers' purchases, not a company being bought",
     "https://www.xataka.com/servicios/amazon-cierra-puerta-a-agentes-ia-mayor-cadena-supermercados-eeuu-abre-par-par":
         "AI agents shopping, not a company being bought",
+    "https://www.channelnewsasia.com/business/brazils-itau-agrees-buy-ai-startup-neospace-589-million-6492871":
+        "can't read to check",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
