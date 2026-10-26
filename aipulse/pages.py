@@ -104,6 +104,14 @@ STYLE = """
 .cp .sd h2{font:400 22px/1.15 var(--display);letter-spacing:.01em}
 .cp .tp-t .tp-where{white-space:nowrap;font-weight:600}  /* laws adopted, bills, AI bodies: the place, its flag */
 .cp .tp-t .flag{width:24px;height:18px;vertical-align:-3px;margin-right:8px}
+.cp .sr-t .tp-title{width:55%}.cp .mt.sr-t td.tp-date{white-space:normal;width:9em;text-align:left}.cp .sr-t .sr-what,.cp .sr-t .sr-src{color:var(--muted);font-size:14px;margin-top:3px;font-weight:400}  /* sector-specific: what a rule asks, its source */
+.cp .sr-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:22px}  /* sector-specific: a button per sector */
+.cp .sr-tiles a{display:flex;align-items:center;gap:12px;border:2px solid var(--line);box-shadow:4px 4px 0 var(--line);background:var(--bg);padding:12px 14px;color:var(--ink);text-decoration:none}
+.cp .sr-tiles a:hover,.cp .sr-tiles a:focus-visible{background:#F0E442;color:#000}
+.cp .sr-tiles b{display:block;font-size:16px}.cp .sr-tiles small{display:block;font-size:13px;color:var(--muted)}.cp .sr-tiles a:hover small{color:#000}
+.cp .sr-ic{flex:none;display:grid;place-items:center;width:38px;height:38px;border:2px solid var(--line);background:var(--c-reg-soft)}
+.cp .sr-ic svg{width:22px;height:22px;fill:none;stroke:var(--c-reg);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:640px){.cp .sr-tiles{grid-template-columns:1fr 1fr;gap:8px}.cp .sr-tiles a{flex-direction:column;align-items:flex-start;gap:8px;padding:10px}}
 @media (min-width:641px){.cp .tp-grp tr:not(.tp-rep) td{border-top:2px solid var(--line)}.cp .tp-grp .tp-rep .tp-where span{visibility:hidden}}  /* laws adopted, bills, AI bodies: by place */
 .cp .gt-wrap{overflow-x:auto;margin:10px 0 28px}  /* a place's page: each kind of record as a ruled grid */
 .cp table.gt{width:100%;border-collapse:collapse;font-size:14.5px;border:2px solid var(--line)}
@@ -126,6 +134,8 @@ STYLE = """
   .cp .tp-t tr{display:grid;grid-template-columns:1fr auto;column-gap:12px;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:10px 0}
   .cp .mt.tp-t td{border:0;padding:2px 0}.cp .tp-t .tp-title{grid-column:1/-1;order:3}.cp .tp-t .tp-stage{grid-column:1/-1;order:4;color:var(--muted);font-size:14px}
   .cp .tp-t .tp-src{grid-column:1/-1;order:5;color:var(--muted);font-size:14px}
+  .cp .sr-t tr{grid-template-columns:minmax(0,1fr)}.cp .sr-t .tp-title,.cp .sr-t td.tp-date{width:auto}
+  .cp .sr-t .sr-kind{order:4;color:var(--muted);font-size:14px}.cp .tp-grp.sr-t .tp-date,.cp .tp-grp.sr-t .tp-rep .tp-date{grid-column:1;order:5;white-space:normal;color:var(--muted);font-size:14px}
   .cp .tp-grp tr:not(.tp-rep){border-top:2px solid var(--line)}.cp .tp-grp .tp-rep .tp-where{display:none}.cp .tp-grp .tp-rep .tp-src{grid-column:1}.cp .tp-grp .tp-rep .tp-date{order:6;grid-column:2}}
 .cp .sd .what{font-size:14.5px}
 @media (max-width:860px){.cp .sd .cols{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;padding-bottom:8px}
