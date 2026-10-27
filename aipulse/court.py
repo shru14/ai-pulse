@@ -203,6 +203,10 @@ CASES: list[dict] = [
          about="Music downloaded and used to train AI",
          steps=[("https://techcrunch.com/2026/08/29/sony-music-warner-sue-anthropic-alleging-a-brazen-campaign-of-intellectual-property-theft/",
                  "filed", "Sued")]),
+    dict(kind="copyright", by="Elvis Presley's catalogue owners, including Authentic Brands Group", sued="Anthropic",
+         where="US", filed="2026-10", about="274 Elvis songs used to train AI, damages sought of about $41 million",
+         steps=[("https://www.engadget.com/2296535/elvis-presley-estate-suing-ai-company-for-copyright-infringement/",
+                 "filed", "Sued")]),
     # copyright: pictures, films and video
     dict(kind="copyright", by="Artists, including Sarah Andersen", sued="Stability AI, Midjourney and DeviantArt",
          where="US", filed="2023-01", about="Artworks used to train image makers",
