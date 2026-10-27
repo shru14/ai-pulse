@@ -108,6 +108,30 @@ LEFT_OUT = {
         "A cloud API product feature, not an AI model",
     "https://www.marktechpost.com/2026/10/20/cloudflare-releases-clairic-a-system-one-extraction-model-on-workers-ai/":
         "A new model release, not a change to an existing one",
+    "https://openai.com/index/introducing-gpt-6-1-terra":
+        "A new model's launch, not a change to an existing model's price",
+    "https://www.apple.com/newsroom/2026/10/siri-ai-is-available-in-more-languages-starting-today/":
+        "An assistant app's languages, not an AI model",
+    "https://the-decoder.com/openais-partner-content-arrives-in-chatgpt-pre-summarized-while-the-rest-of-the-web-gets-raw-scraps/":
+        "About how ChatGPT shows content, not a model's price or places",
+    "https://www.itweb.co.za/article/unframe-removes-another-barrier-between-ai-capabilities-and-adoption/KBpdg7pmw2VMLEew":
+        "A company product, not an AI model's price or places",
+    "https://the-decoder.com/deepmind-founder-hassabis-shortens-agi-timeline-from-five-to-two-to-three-years/":
+        "An opinion, not a model change",
+    "https://blogs.nvidia.com/blog/cudss-generally-available-engineering-scientific-simulation/":
+        "A software library, not an AI model",
+    "https://theconversation.com/new-ai-shopping-agents-promise-better-bargains-but-who-pays-the-price-294461":
+        "Opinion on shopping agents, not a model price",
+    "https://www.xataka.com/seleccion/hoy-coolmod-este-brutal-combo-rebajado-black-friday-pc-gaming-monitor-esquiva-escalada-precios-ia":
+        "Hardware deals, not an AI model",
+    "https://www.xataka.com/seleccion/intel-i7-nvidia-rtx-precio-top-asi-portatil-gaming-asus-que-mediamarkt-esta-liquidando-hoy-su-outlet":
+        "Hardware deals, not an AI model",
+    "https://www.xataka.com/seleccion/fichamos-este-portatil-gaming-acer-outlet-mediamarkt-tiene-1-tb-ssd-grafica-nvidia-precio-liquidacion":
+        "Hardware deals, not an AI model",
+    "https://www.xataka.com/televisores/ultima-sensacion-viral-ia-eliminar-anuncios-bloatware-smart-tv-he-tontificado-mi-chromecast-maravilloso":
+        "A TV how-to, not an AI model",
+    "https://tecnoblog.net/noticias/usuarios-usam-ia-para-remover-anuncios-e-mudar-interfaces-de-tvs/":
+        "A TV how-to, not an AI model",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
