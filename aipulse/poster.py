@@ -594,10 +594,12 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     if len(top) > 1:
         text += ["TOP NEWS", *(f"• [{rss.FEEDS[stream_of[id(c)]][1]}] {c['title']} ({_by(c)}) {c['url']}" for c in top[1:]), ""]
         tiles = [_tile(c, stream_of[id(c)], _art(c, stream_of[id(c)]), id(c) in picks) for c in top[1:]]
-        # three to a row on every screen (a phone only shrinks the type, see STYLE)
-        grid = "".join(f'<div class="p-tile" style="display:inline-block;vertical-align:top;width:33.33%;box-sizing:border-box;'
-                       f'padding:0 5px 10px;font-size:15px">{tile}</div>' for tile in tiles)
-        body.append(_heading("Top news") + f'<div style="margin:0 -5px 14px;font-size:0">{grid}</div>')
+        # three to a row on every screen (a phone only shrinks the type, see STYLE), as table cells so no mail app can
+        # wrap a row's third tile onto a line of its own; a short last row keeps empty cells so its tiles stay the width
+        tiles += [""] * (-len(tiles) % 3)
+        grid = "".join("<tr>" + "".join(f'<td class="p-tile" width="33.33%" valign="top" style="width:33.33%;padding:0 5px 10px">'
+                                        f'{tile}</td>' for tile in tiles[i:i + 3]) + "</tr>" for i in range(0, len(tiles), 3))
+        body.append(_heading("Top news") + f'<div style="margin:0 -5px 14px">{_table(grid)}</div>')
     made_for = digest._left_note(prefs, left)
     if made_for:
         text += [made_for, ""]
