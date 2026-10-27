@@ -177,6 +177,8 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://openai.com/index/openai-cut-incident-investigation":
+        "Can't read to check; headline is about a company's own incident investigation, no government action",
     "https://olhardigital.com.br/2026/10/22/inteligencia-artificial/meta-descumpre-ordens-do-tse-sobre-ia-e-pode-"
     "ser-multada-no-brasil/":
         "Prosecutor only asked for a fine, none imposed; mostly about political content on Meta's platforms",
