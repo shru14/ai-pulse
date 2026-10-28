@@ -215,11 +215,22 @@ CHECKED: dict[str, dict] = {
              subject="science",
              about="Shows an AI system that simulates a panel of physicians reached 83.2% accuracy on hard New England "
                    "Journal of Medicine cases, against 36.1% for generalist physicians, in a controlled benchmark."),
+    "https://the-decoder.com/researchers-find-six-patterns-that-make-ai-text-so-exhausting-to-read/":
+        dict(paper="Why is AI-generated language so hard to understand?", link="https://arxiv.org/abs/2610.29162",
+             subject="language-models",
+             about="Finds that all nine AI models tested write with more of the features that slow human readers, such as "
+                   "deeply nested clauses and long-distance grammatical links, than people do."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://techcrunch.com/2026/10/26/cohere-says-alibabas-qwen-model-tried-to-send-a-file-to-beijing/",  # a story on a company blog post (Cohere), no paper
+    "https://www.aisi.gov.uk/blog/can-ai-coding-agents-rebuild-biological-ai-tools-from-a-paper",  # a company blog post (AI Security Institute)
+    "https://dplnews.com/empresas-asumen-mas-riesgos-ciberneticos-ia-illumio/",  # a company survey (Illumio), not a paper
+    "https://theconversation.com/data-centers-are-inspiring-bipartisanship-for-now-293069",  # an opinion piece, no paper
+    "https://spectrum.ieee.org/ieee-xplore-digital-library-ai",  # a product launch
+    "https://blog.google/products-and-platforms/products/gemini/college-student-favorite-features/",  # a company blog post (Google), no paper
     "https://the-decoder.com/three-fired-openai-safety-researchers-say-they-were-never-told-what-they-actually-leaked/",  # a news story on a firing, no paper named
     "https://techcrunch.com/2026/10/24/forced-to-pick-groks-ai-model-chooses-republicans-openais-picks-democrats/",  # a study by a company (Convovo), no paper
     "https://huggingface.co/blog/allenai/litpivot",  # a lab blog post (Ai2)
