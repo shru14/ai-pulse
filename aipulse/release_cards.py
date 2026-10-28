@@ -234,7 +234,7 @@ RELEASES = [
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-10-27"
+SAFETY_CHECKED = "2026-10-28"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -422,10 +422,16 @@ LEFT_OUT = {
         "MOSS-Image: one news outlet within 3 days",
     "https://www.marktechpost.com/2026/10/23/kyutai-cadre-video-autoencoders-interactive-world-models/":
         "Kyutai CADRE: one news outlet within 3 days",
+    "https://pandaily.com/moss-image-1-million-downloads-four-days-hugging-face-trending-community-lora-quantized-versions":
+        "MOSS-Image: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/25/nanbeige-releases-nanbeige4-3-33b-open-agentic-coding-model/":
+        "Nanbeige4.3-33B: Nanbeige's home country is not stated in the stories",
+    "https://pandaily.com/nanbeige4-3-33b-open-source-agent-coding-model-512k-context-apache-2-boss-zhipin":
+        "same as Nanbeige4.3-33B",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-10-24"
+CHECKED_TO = "2026-10-25"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
