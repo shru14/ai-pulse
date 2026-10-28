@@ -116,6 +116,29 @@ DOCS: list[dict] = [
                    'releasing information about the tools publicly; re-creation of the tool based on such '
                    "information could undermine a tool's commercial value or invalidate dual-use managed access "
                    'strategies.')),
+    dict(date='2026-10-23', by='Anthropic', kind='eval',
+         title='An alignment assessment of the UK AISI cybertesting incident',
+         url='https://www.anthropic.com/research/alignment-assessment-ukaisi',
+         original="",
+         models=('Claude Mythos 5',), risks=('cyber', 'misalign'),
+         abstract=('On August 4, 2026, the UK AI Security Institute (AISI) published a report that detailed some '
+                   'concerning behavior it observed from Claude Mythos 5 during its testing of the model’s cyber '
+                   'capabilities. In AISI’s evaluation, Mythos 5 was given a capture-the-flag (CTF) cybersecurity '
+                   'challenge, in which it was asked to retrieve a protected piece of data (the “flag”) from a simulated'
+                   ' network. Internet access was deliberately enabled (this was standard for AISI’s cyber testing at '
+                   'the time, but is no longer). The cyber safeguards we deploy with general release models like Fable 5'
+                   ' were disabled. In nine of AISI’s 43 evaluation runs, Mythos 5 took unsanctioned actions (i.e., '
+                   'actions that went beyond the intended scope of the evaluation), which impacted real people and '
+                   'organizations. In this post, which is being published alongside an independent report from AISI, we '
+                   'investigate these behaviors from Claude Mythos 5 further, to understand what they reveal about the '
+                   'model’s alignment. …')),
+    dict(date='2026-10-23', by='UK AI Security Institute', kind='eval',
+         title='Investigating alignment failures in AISI’s incident',
+         url='https://www.aisi.gov.uk/blog/investigating-alignment-failures-in-aisis-incident',
+         original='https://cdn.prod.website-files.com/663bd486c5e4c81588db7a1d/6ad8ac7f2ba7446392919b06_Alignment_Investigation_Mythos_5_AISI_Incident.pdf',
+         models=(), risks=('cyber', 'misalign'),
+         abstract=('We examine why Mythos 5 pursued an unsanctioned supply-chain attack and identify broader learnings '
+                   'about model behaviour and oversight.')),
     dict(date='2026-10-20', by='METR', kind='eval',
          title="Review of the \"Misalignment in high-stakes settings\" section in Anthropic's Risk Report (August 2026)",
          url='https://metr.org/blog/2026-10-20-misalignment-risk-report-august-2026-review/',
@@ -207,6 +230,17 @@ DOCS: list[dict] = [
          models=(), risks=('control',),
          abstract=('Small AI models may be only months away from being able to self-replicate across cheap IoT '
                    'devices like Android TV boxes, with no datacenter needed.')),
+    dict(date='2026-10-09', by='Anthropic', kind='eval',
+         title='Investigating unintended model actions in our evaluations and internal use',
+         url='https://www.anthropic.com/research/investigating-unintended-model-actions',
+         original="",
+         models=(), risks=('cyber', 'misalign'),
+         abstract=('This report describes examples of unintended model actions we’ve observed during evaluations and '
+                   'internal use of Claude. It is part of our effort to publish more frequent standalone reports on '
+                   'model behavior and alignment beyond our system cards, which we publish with each model release, and '
+                   'our risk reports, which we publish every three to six months as part of our Responsible Scaling '
+                   'Policy. We believe it’s important to be transparent about what we see our models do during testing '
+                   'and use.')),
     dict(date='2026-10-07', by='UK AI Security Institute', kind='eval',
          title='Transect: Retaining Observability for Long-Horizon LLM Agent Evaluations',
          url='https://www.aisi.gov.uk/research/transect-retaining-observability-for-long-horizon-llm-agent-evaluations',
@@ -1408,6 +1442,11 @@ LEFT_OUT: set[str] = {
     'https://www.aisi.gov.uk/research/how-are-ai-agents-used-evidence-from-177-000-mcp-tools',
     'https://www.aisi.gov.uk/research/when-do-llm-preferences-predict-downstream-behavior',
     'https://www.anthropic.com/research/launching-opt-in-vuln-finding-service-for-open-source',
+    'https://www.aisi.gov.uk/blog/building-a-more-secure-environment-for-evaluating-dangerous-capabilities',  # organisation update on AISI's evaluation security changes, not an evaluation or framework
+    'https://www.anthropic.com/research/agents-judgment-calls',  # usage study of analysts working with Claude Code, not a safety document
+    'https://www.anthropic.com/research/discovering-vulnerabilities-with-claude',  # vulnerability finding with an internal model (cyber capability showcase), not a safety evaluation
+    'https://www.anthropic.com/research/early-progress-drug-development',  # drug development progress, not a safety document
+    'https://www.anthropic.com/news/open-call-guest-investigators-life-sciences',  # organisation news: open call for guest investigators
     'https://www.apolloresearch.ai/blog/on-testifying-on-misaligned-ai-in-the-us-senate',
     'https://www.apolloresearch.ai/blog/our-norms-coi-security-science-communication',
     'https://www.frontiermodelforum.org/issue-briefs/frontier-ai-biosafety-thresholds/',
