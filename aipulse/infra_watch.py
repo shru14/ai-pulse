@@ -128,6 +128,7 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://dplnews.com/iren-construira-centro-de-datos-en-espana/", "Iren", "Spain", "Badajoz", "300 MW", "", "announced"),
     ("https://w.media/crusoe-and-araico-to-build-280-mw-ai-data-center-near-paraguays-itaipu-dam/", "Crusoe and Araico", "Paraguay", "Beside the Itaipú substation, near the Itaipú Dam", "106 MW first, about 280 MW later", "", "announced"),
     ("https://w.media/quantum-dc-proposes-1-2gw-data-centre-and-energy-hub-in-south-australia/", "Quantum DC", "Australia", "Tungkillo, South Australia", "About 1.2 GW", "", "announced"),
+    ("https://w.media/firebirds-us-5-billion-kazakhstan-ai-factory-gets-green-light-for-45000-nvidia-gpus/", "Firebird, with Kazakhtelecom as construction partner", "Kazakhstan", "Data Center Valley", "Up to 109 MW in phase 1", "US$ 5bn estimated for phase 1", "building"),
 
 ]
 
@@ -155,6 +156,7 @@ POWER: list[tuple[str, ...]] = [
     ("https://www.xataka.com/energia/google-se-asegura-20-anos-energia-nuclear-para-alimentar-sus-centros-datos", "Google", "nuclear", "Google's data centres, for 20 years", "", "signed"),
     ("https://w.media/tata-power-announces-us-1-5-billion-mumbai-grid-expansion-for-data-centers/", "Tata Power", "utility", "A US$ 1.5bn grid expansion for data centres in Mumbai, India", "", "planned"),    ("https://www.xataka.com/empresas-y-economia/amazon-ha-encontrado-solucion-al-colosal-consumo-sus-centros-datos-para-ia-12-reactores-nucleares-smr-antigua-central-carbon", "Amazon, X-energy and AEP", "nuclear", "12 small reactors at the former Breed coal plant site, Sullivan County, Indiana, US; Amazon would help fund it and be the first customer", "About 960 MW", "planned"),
     ("https://w.media/nxera-sembcorp-ink-deal-for-green-energy-supply-to-nxera-data-centers/", "Sembcorp Utilities, for Nxera", "notstated", "Nxera's data centres in Singapore; an MOU to explore renewable and low-carbon supply", "", "planned"),
+    ("https://w.media/johor-plans-to-meet-dc-power-demand-with-5-gw-solar-energy-by-2031/", "Johor state government", "renewable", "Solar for data centres and large industry in Johor, Malaysia, by 2030 or 2031", "About 5 GW more", "planned"),
 
 ]
 
@@ -216,6 +218,9 @@ LEFT_OUT: set[str] = {
     "https://w.media/arc-cloud-and-compal-sign-mou-eyeing-100-mw-of-ai-data-center-capacity/",  # MOU to explore a roadmap; no site named
     "https://w.media/airtrunk-secures-au4-25bn-green-loan-for-sydney-data-centre-campus/",  # loan for SYD3, already under construction; its size not given
     "https://w.media/we-want-to-build-the-foundation-right-inside-mtns-150-mw-data-center-strategy/",  # interview on a company-wide plan; no site or cost
+    "https://w.media/softbank-plans-us50-billion-data-center-investment-in-malaysia-report/",  # a multi-site plan from the prime minister's words, no size; not confirmed by SoftBank
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=279648",  # ultracapacitor factory, parts
+    "https://techcabal.com/2026/10/26/infragora-1-billion-data-centres/",  # can't read to check
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
