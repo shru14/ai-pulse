@@ -225,6 +225,14 @@ CHECKED: dict[str, dict] = {
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://www.fayerwayer.com/ciencia/2026/10/27/amor-real-o-algoritmo-estudio-revela-como-los-humanos-se-enamoran-de-la-ia-hasta-llegar-al-matrimonio/",  # a study (CSIC, UPV) named with no title or link, paper not found
+    "https://tecnoblog.net/noticias/so-3-das-empresas-viram-ganhos-com-ia-mostra-estudo/",  # a company survey report (Gartner), not a paper
+    "https://www.telesemana.com/blog/2026/10/27/crc-y-sutel-acuerdan-cooperacion-tecnica-sobre-inteligencia-artificial-servicios-digitales-y-conectividad/",  # an agreement between regulators, no paper
+    "https://www.engadget.com/2298214/anthropics-political-problem-will-get-worse-before-it-gets-better/",  # an opinion piece, no paper
+    "https://theconversation.com/we-studied-1-584-data-centers-and-found-the-buildings-full-of-machines-are-tied-to-modest-local-job-growth-293872",  # paper found (SSRN) but its abstract can't be read to check: SSRN refuses us
+    "https://spectrum.ieee.org/ai-generated-scientific-papers",  # a feature on the author's own experiment, no one paper reported on
+    "https://www.aboutamazon.com/news/aws/amazon-data-centers-spain?utm_source=rss",  # a company page (Amazon), no paper
+    "https://huggingface.co/blog/allenai/novelty-bench",  # a lab blog post (Ai2)
     "https://techcrunch.com/2026/10/26/cohere-says-alibabas-qwen-model-tried-to-send-a-file-to-beijing/",  # a story on a company blog post (Cohere), no paper
     "https://www.aisi.gov.uk/blog/can-ai-coding-agents-rebuild-biological-ai-tools-from-a-paper",  # a company blog post (AI Security Institute)
     "https://dplnews.com/empresas-asumen-mas-riesgos-ciberneticos-ia-illumio/",  # a company survey (Illumio), not a paper
