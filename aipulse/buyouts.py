@@ -205,6 +205,9 @@ DEALS = [
     ("2026-10-19", "Boomi", "Elementary Data", "Data checks for AI agents and workflows", "Not disclosed", None,
      "bought", "https://www.itweb.co.za/article/boomi-acquires-elementary-data-to-bring-trusted-governed-data-to-the-ai-era/KWEBbvyLd34qmRjO",
      "", ""),
+    ("2026-10-26", "Itaú", "NeoSpace", "AI models that find patterns in large amounts of data", "R$ 2.925 billion", 2.925,
+     "agreed", "https://tecnoblog.net/noticias/itau-compra-startup-de-ia-por-r-29-bilhoes/",
+     "Needs approval from Cade and Brazil's Central Bank", ""),
 ]
 
 # stories checked by hand and left out, with why, so they aren't checked again
@@ -324,6 +327,10 @@ LEFT_OUT = {
         "shoppers' purchases, not a company being bought",
     "https://www.xataka.com/servicios/amazon-cierra-puerta-a-agentes-ia-mayor-cadena-supermercados-eeuu-abre-par-par":
         "AI agents shopping, not a company being bought",
+    "https://www.channelnewsasia.com/business/brazils-itau-agrees-buy-ai-startup-neospace-589-million-6492871":
+        "same as Itaú buying NeoSpace",
+    "https://www.channelnewsasia.com/business/guidewire-buy-uk-insurance-ai-firm-hyperexponential-in-deal-worth-up-21-billion-6496396":
+        "can't read to check",
 }
 
 # the newest day every story was read for the list above; the candidates start after it

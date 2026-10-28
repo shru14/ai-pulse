@@ -224,6 +224,9 @@ RELEASES = [
      "https://blog.cloudflare.com/clairic-extraction-model/", ""),
     ("2026-10-19", "MiniMax", "MiniMax M3.1 Flash", "Closed", "Weights promised later", "", "", "", False, "$0.15 / $0.60",
      "https://www.minimax.io/blog/minimax-m31f", ""),
+    ("2026-10-23", "Moonshot", "Kimi K3.1 Pro", "Closed", "Weights promised by 4 Nov", "", "", "", False,
+     "$2 / $10|highspeed version $4 / $20",
+     "https://the-decoder.com/chinese-ai-model-kimi-k3-1-pro-is-closing-in-on-anthropics-claude-opus-5-5/", ""),
 ]
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -231,7 +234,7 @@ RELEASES = [
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-10-24"
+SAFETY_CHECKED = "2026-10-27"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -338,6 +341,10 @@ LEFT_OUT = {
     "https://www.liquid.ai/blog/lfm2-5-24b-a2b": "LFM2.5-24B-A2B: one news outlet (and Hugging Face's blog) within 3 days",
     "https://www.liquid.ai/blog/d1-ultra": "d1-ultra: one news outlet within 3 days",
     "https://api-docs.deepseek.com/news/news261017": "DeepSeek V4.1 Flash 1017: one news outlet within 3 days",
+    "https://pandaily.com/deepseek-v4-1-flash-1017-official-release-mit-weights-terminal-bench-wish-style-programming":
+        "same as DeepSeek V4.1 Flash 1017: an update to V4.1 Flash, not a new model",
+    "https://siliconangle.com/2026/10/18/deepseek-releases-updated-v4-1-flash-model-it-says-completes-tasks-faster/":
+        "same as DeepSeek V4.1 Flash 1017: an update to V4.1 Flash, not a new model",
     "https://pandaily.com/skywork-matrix-game-4-open-source-game-engine-real-time-neural-rendering-rtx-5090":
         "Matrix-Game 4.0: one news outlet within 3 days",
     "https://the-decoder.com/kling-ai-drops-version-4-0-with-stereo-audio-multilingual-lip-sync-and-a-lighter-flash-variant/":
@@ -390,10 +397,35 @@ LEFT_OUT = {
         "same as Mercury 3",
     "https://the-decoder.com/inceptions-mercury-3-diffusion-model-claims-to-beat-gpt-6-luna-and-claude-haiku-5-5-at-a-fraction-of-the-wait/":
         "same as Mercury 3",
+    "https://the-decoder.com/blocks-new-ai-model-dessa-was-trained-entirely-on-human-speech-to-catch-emotions-text-based-models-miss/":
+        "Dessa: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/23/nvidia-nemotron-3-5-bolt-e4b-4gb/":
+        "Nemotron 3.5 Bolt E4B: one news outlet within 3 days",
+    "https://pandaily.com/iflytek-healthcare-spark-medical-model-v3-7-multimodal-agents-medbench-5-0":
+        "Spark Medical V3.7: one news outlet within 3 days",
+    "https://pandaily.com/amap-lambda-0-open-source-whole-body-humanoid-model-egocentric-human-data-unitree-g1":
+        "Lambda-0: one news outlet within 3 days",
+    "https://siliconangle.com/2026/10/23/moonshot-ai-launches-new-flagship-kim-k3-1-pro-model-with-3t-parameters/":
+        "same as Kimi K3.1 Pro",
+    "https://www.marktechpost.com/2026/10/22/gradium-phonon-31m-on-device-tts/":
+        "Phonon: one news outlet within 3 days",
+    "https://techcrunch.com/2026/10/22/openai-makes-its-jev-competitor-widely-available-as-decision-model-competition-heats-up/":
+        "OpenAI Decisions API model: one news outlet within 3 days",
+    "https://www.thelec.net/news/articleView.html?idxno=14781": "Kakao image recognition models: one news outlet within 3 days",
+    "https://siliconangle.com/2026/10/22/ai2-releases-olmoearth-v1-3-state-of-the-art-ai-ready-satellite-embeddings-for-the-whole-planet/":
+        "OlmoEarth v1.3: one news outlet within 3 days",
+    "https://huggingface.co/blog/allenai/olmoearth-v1-3": "same as OlmoEarth v1.3",
+    "https://www.marktechpost.com/2026/10/23/moonshot-ai-kimi-k3-1-pro-open-weight-model/": "same as Kimi K3.1 Pro",
+    "https://www.fayerwayer.com/internet/2026/10/23/canva-lanza-craft-su-primer-modelo-propio-de-generacion-de-imagenes-con-inteligencia-artificial/":
+        "Canva Craft: Canva's home country and weights are not stated in the stories",
+    "https://pandaily.com/mosi-openmoss-moss-image-5b-text-to-image-layout-control-huggingface-trending":
+        "MOSS-Image: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/23/kyutai-cadre-video-autoencoders-interactive-world-models/":
+        "Kyutai CADRE: one news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-10-21"
+CHECKED_TO = "2026-10-24"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform

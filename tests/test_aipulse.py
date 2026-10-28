@@ -780,6 +780,28 @@ def test_type_pages_are_tables_with_column_filters(tmp_path):
     assert "<th>Stage</th>" not in (tmp_path / "tracker" / "ai-bodies" / "index.html").read_text(encoding="utf-8")
 
 
+def test_sector_rules_page_holds_hand_rows_and_filed_tracker_records(tmp_path):
+    from aipulse import sector_rules as sr
+    assert all(s in sr.NAMES for s in sr.TRACKER.values()) and all(r[0] in sr.NAMES and r[2] in ("Law", "Rule", "Guidance")
+                                                                    for r in sr.HAND)
+    conn = store.connect(tmp_path / "t.db")
+    card = lambda bill, action: {"category": "regulation", "source": "congress.gov", "title": f"{bill} Act ",
+        "date": "2026-03-04", "jurisdictions": ["US"], "action": action, "url": f"https://e.com/{bill}", "bill": bill}
+    cards = [card("US-119-hr-5045", "proposal"), card("US-119-hr-1", "proposal")]  # one filed under healthcare, one not
+    assert [r["title"] for r in sr.rules(cards, "health")] == ["US-119-hr-5045 Act"]
+    assert len(sr.rules(cards, "finance")) == sum(r[0] == "finance" for r in sr.HAND)
+    # a button per sector that holds rules, each saying whether its main rules are checked; a page per sector
+    assert sr.page(conn, cards, tmp_path) == ["tracker/sector-specific/", "tracker/sector-specific/finance/",
+                                              "tracker/sector-specific/comms/", "tracker/sector-specific/health/"]
+    tiles = (tmp_path / "tracker" / "sector-specific" / "index.html").read_text(encoding="utf-8")
+    assert 'href="/tracker/sector-specific/health/"' in tiles and "<small>1 rule</small><small>Tracker records only</small>" in tiles
+    assert f"<small>{len(sr.rules(cards, 'finance'))} rules</small><small>Main rules checked</small>" in tiles
+    page = (tmp_path / "tracker" / "sector-specific" / "health" / "index.html").read_text(encoding="utf-8")
+    assert "<th>Place</th><th data-nof>Rule</th><th>Kind</th><th data-seen>Date</th>" in page and '<div class="sr-src">congress.gov</div>' in page
+    assert 'data-f="United States"' in page and "US-119-hr-1 Act" not in page and '<td class="sr-kind">Bill</td>' in page
+    assert "Showing <b>1</b>" in page and 'data-f="2026"' in page and "not checked yet" in page
+
+
 def test_standards_have_one_page_without_a_date(tmp_path):
     from datetime import date
     from aipulse import countries, standards

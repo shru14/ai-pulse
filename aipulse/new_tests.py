@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-10-22"
+CHECKED_TO = "2026-10-27"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -516,9 +516,20 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "Whether AI agents can build or edit 3D scenes in Blender from text, image, video or written references.",
         "GPT-6-Astra has the highest overall fused score, 79.9, ahead of Opus-5 (73.0) and GPT-5.6-Sol (67.7)",
         "GPT-6-Astra", None),
+    "https://arxiv.org/abs/2610.33565": (
+        "WorldFailBench", "robotics",
+        "Whether world models (AI that simulates what happens next) show the same ways and stages a robot policy fails.",
+        "Substantial gaps in understanding of policy failures across seven world models", "", None),
+    "https://arxiv.org/abs/2610.35138": (
+        "Co-Design Bench", "agents",
+        "Whether coding agents can turn real users' requests, with images, audio, video or documents, into working app "
+        "revisions.",
+        "The strongest of ten model endpoints passes an average of 69.9% of criteria per task but fully satisfies only "
+        "26.4% of tasks", "", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://arxiv.org/abs/2610.34051": "BEHAVIOR-Spatial reports only the authors' own baseline, no best result across models",
     "https://arxiv.org/abs/2610.26081": "mainly a new model (DeOverlay), with a benchmark",
     "https://arxiv.org/abs/2610.13644": "SelectArena compares statistics methods for picking data columns, not AI models",
     "https://arxiv.org/abs/2610.13947": "mainly a new 3D-generation system (Artisan)",
@@ -544,6 +555,8 @@ LEFT_OUT: dict[str, str] = {
     "https://arxiv.org/abs/2605.08518": "a retrospective on a competition, not a new test",
     "https://arxiv.org/abs/2604.19071v1": "mainly a way to grade writing (Tree-of-Writing)",
     "https://arxiv.org/abs/2604.17761": "an interpretability method for analysing failures, not a new test",
+    "https://research.google/pubs/freshbrew-a-benchmark-for-evaluating-ai-agents-on-java-code-migration-2/":
+        "FreshBrew is an October 2025 paper, and its best score differs between the Google page and arXiv",
 }
 # Tests a later paper beat, by the test's address in TESTS: (the later paper's address, the day arXiv announced it, what
 # it reports in its abstract's own numbers and words, and who got it as the abstract names them). A test counts as beaten
@@ -557,7 +570,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
 }
-BEATS_CHECKED_TO = "2026-10-21"
+BEATS_CHECKED_TO = "2026-10-25"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 

@@ -215,11 +215,30 @@ CHECKED: dict[str, dict] = {
              subject="science",
              about="Shows an AI system that simulates a panel of physicians reached 83.2% accuracy on hard New England "
                    "Journal of Medicine cases, against 36.1% for generalist physicians, in a controlled benchmark."),
+    "https://the-decoder.com/researchers-find-six-patterns-that-make-ai-text-so-exhausting-to-read/":
+        dict(paper="Why is AI-generated language so hard to understand?", link="https://arxiv.org/abs/2610.29162",
+             subject="language-models",
+             about="Finds that all nine AI models tested write with more of the features that slow human readers, such as "
+                   "deeply nested clauses and long-distance grammatical links, than people do."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://www.fayerwayer.com/ciencia/2026/10/27/amor-real-o-algoritmo-estudio-revela-como-los-humanos-se-enamoran-de-la-ia-hasta-llegar-al-matrimonio/",  # a study (CSIC, UPV) named with no title or link, paper not found
+    "https://tecnoblog.net/noticias/so-3-das-empresas-viram-ganhos-com-ia-mostra-estudo/",  # a company survey report (Gartner), not a paper
+    "https://www.telesemana.com/blog/2026/10/27/crc-y-sutel-acuerdan-cooperacion-tecnica-sobre-inteligencia-artificial-servicios-digitales-y-conectividad/",  # an agreement between regulators, no paper
+    "https://www.engadget.com/2298214/anthropics-political-problem-will-get-worse-before-it-gets-better/",  # an opinion piece, no paper
+    "https://theconversation.com/we-studied-1-584-data-centers-and-found-the-buildings-full-of-machines-are-tied-to-modest-local-job-growth-293872",  # paper found (SSRN) but its abstract can't be read to check: SSRN refuses us
+    "https://spectrum.ieee.org/ai-generated-scientific-papers",  # a feature on the author's own experiment, no one paper reported on
+    "https://www.aboutamazon.com/news/aws/amazon-data-centers-spain?utm_source=rss",  # a company page (Amazon), no paper
+    "https://huggingface.co/blog/allenai/novelty-bench",  # a lab blog post (Ai2)
+    "https://techcrunch.com/2026/10/26/cohere-says-alibabas-qwen-model-tried-to-send-a-file-to-beijing/",  # a story on a company blog post (Cohere), no paper
+    "https://www.aisi.gov.uk/blog/can-ai-coding-agents-rebuild-biological-ai-tools-from-a-paper",  # a company blog post (AI Security Institute)
+    "https://dplnews.com/empresas-asumen-mas-riesgos-ciberneticos-ia-illumio/",  # a company survey (Illumio), not a paper
+    "https://theconversation.com/data-centers-are-inspiring-bipartisanship-for-now-293069",  # an opinion piece, no paper
+    "https://spectrum.ieee.org/ieee-xplore-digital-library-ai",  # a product launch
+    "https://blog.google/products-and-platforms/products/gemini/college-student-favorite-features/",  # a company blog post (Google), no paper
     "https://the-decoder.com/three-fired-openai-safety-researchers-say-they-were-never-told-what-they-actually-leaked/",  # a news story on a firing, no paper named
     "https://techcrunch.com/2026/10/24/forced-to-pick-groks-ai-model-chooses-republicans-openais-picks-democrats/",  # a study by a company (Convovo), no paper
     "https://huggingface.co/blog/allenai/litpivot",  # a lab blog post (Ai2)
@@ -228,6 +247,8 @@ LEFT_OUT = {
     "https://theconversation.com/are-you-using-ai-to-study-heres-how-to-do-it-well-294453",  # advice drawing on more than one study, no one paper
     "https://research.google/blog/empowering-frontline-maternal-care-with-ai-assisted-ultrasound/",  # a company blog post (Google Research)
     "https://internetlab.org.br/en/news/chatgpt-is-more-reserved-while-gemini-is-more-likely-to-recommend-candidates-a-survey-reveals-a-contrast-between-the-countrys-most-widely-used-platforms/",  # a survey by an institute, not a paper
+    "https://olhardigital.com.br/2026/10/20/colunistas/fala-ai-nova-teoria-pode-ajudar-cientistas-a-entender-como-a-ia-pensa/",  # a column behind a paywall, no paper named, paper not found
+    "https://pandaily.com/sensetime-sensenova-roborsi-open-source-embodied-ai-harness-27b-preview",  # an open-source release (company), no paper named
     "https://the-decoder.com/linkedin-is-the-undisputed-king-of-long-form-ai-slop-according-to-a-study-spanning-five-platforms/",  # a company study (Pangram), no paper
     "https://the-decoder.com/terrorist-groups-are-using-every-major-ai-chatbot-for-attack-planning-and-weapons-development/",  # a report on a think-tank site (CASP), not on a preprint server or in a journal
     "https://blogs.nvidia.com/blog/open-models-icml-2026/",  # a company blog post, more than one paper

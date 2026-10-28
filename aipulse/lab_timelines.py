@@ -40,6 +40,14 @@ PLACES = [
 PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://openai.com/index/chatgpt-ads-expands-26-new-countries":
+        "An ads product in ChatGPT reaching countries, not an AI model",
+    "https://cloud.google.com/blog/products/ai-machine-learning/claude-opus-55-and-claude-sonnet-55-available-in-antigravity/":
+        "Models added to another company's product, not reaching countries or regions",
+    "https://techcrunch.com/2026/10/20/us-orders-federal-agencies-to-remove-chinas-deepseek-ai-from-their-systems/":
+        "A government order to remove it, not the lab taking the model away",
+    "https://aws.amazon.com/blogs/machine-learning/pegasus-1-5-from-twelvelabs-is-now-available-in-amazon-bedrock/":
+        "A model added to a cloud platform, not countries or regions",
     "https://the-decoder.com/deepseek-makes-its-75-percent-discount-permanent-pricing-output-tokens-at-least-34x-below-gpt-5-5/":
         "A promotion made permanent: the old price and the date it took effect aren't stated",
     "https://the-decoder.com/metas-muse-spark-1-1-api-pricing-squeezes-openai-and-anthropic-as-the-ai-price-war-heats-up/":
@@ -108,6 +116,34 @@ LEFT_OUT = {
         "A cloud API product feature, not an AI model",
     "https://www.marktechpost.com/2026/10/20/cloudflare-releases-clairic-a-system-one-extraction-model-on-workers-ai/":
         "A new model release, not a change to an existing one",
+    "https://openai.com/index/introducing-gpt-6-1-terra":
+        "A new model's launch, not a change to an existing model's price",
+    "https://www.apple.com/newsroom/2026/10/siri-ai-is-available-in-more-languages-starting-today/":
+        "An assistant app's languages, not an AI model",
+    "https://the-decoder.com/openais-partner-content-arrives-in-chatgpt-pre-summarized-while-the-rest-of-the-web-gets-raw-scraps/":
+        "About how ChatGPT shows content, not a model's price or places",
+    "https://www.itweb.co.za/article/unframe-removes-another-barrier-between-ai-capabilities-and-adoption/KBpdg7pmw2VMLEew":
+        "A company product, not an AI model's price or places",
+    "https://the-decoder.com/deepmind-founder-hassabis-shortens-agi-timeline-from-five-to-two-to-three-years/":
+        "An opinion, not a model change",
+    "https://blogs.nvidia.com/blog/cudss-generally-available-engineering-scientific-simulation/":
+        "A software library, not an AI model",
+    "https://theconversation.com/new-ai-shopping-agents-promise-better-bargains-but-who-pays-the-price-294461":
+        "Opinion on shopping agents, not a model price",
+    "https://www.xataka.com/seleccion/hoy-coolmod-este-brutal-combo-rebajado-black-friday-pc-gaming-monitor-esquiva-escalada-precios-ia":
+        "Hardware deals, not an AI model",
+    "https://www.xataka.com/seleccion/intel-i7-nvidia-rtx-precio-top-asi-portatil-gaming-asus-que-mediamarkt-esta-liquidando-hoy-su-outlet":
+        "Hardware deals, not an AI model",
+    "https://www.xataka.com/seleccion/fichamos-este-portatil-gaming-acer-outlet-mediamarkt-tiene-1-tb-ssd-grafica-nvidia-precio-liquidacion":
+        "Hardware deals, not an AI model",
+    "https://www.xataka.com/televisores/ultima-sensacion-viral-ia-eliminar-anuncios-bloatware-smart-tv-he-tontificado-mi-chromecast-maravilloso":
+        "A TV how-to, not an AI model",
+    "https://tecnoblog.net/noticias/usuarios-usam-ia-para-remover-anuncios-e-mudar-interfaces-de-tvs/":
+        "A TV how-to, not an AI model",
+    "https://siliconangle.com/2026/10/19/minimax-launches-m3-1-flash-model-says-it-cuts-ai-agent-costs-by-70/":
+        "A new model's launch price, not a change",
+    "https://openai.com/index/openai-models-google-cloud":
+        "Models added to a cloud platform, not countries or regions",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"

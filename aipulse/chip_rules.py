@@ -136,7 +136,11 @@ H200_LICENCE = "https://www.sec.gov/Archives/edgar/data/1045810/0001045810260000
 ENTITY = (47, 35, 140, "2024-12-05", "https://www.federalregister.gov/documents/2024/12/05/2024-28267")
 
 # stories checked by hand and left out, with why, so they aren't checked again
-LEFT_OUT: dict[str, str] = {}
+LEFT_OUT: dict[str, str] = {
+    "https://w.media/firebirds-us-5-billion-kazakhstan-ai-factory-gets-green-light-for-45000-nvidia-gpus/":
+        "grid: Firebird says it secured a US export licence for 45,000 Nvidia Grace Blackwell GPUs for Kazakhstan; "
+        "a company's licence, no agency or day named, no published rule",
+}
 
 # the newest day every story was read for the lists above; the candidates start after it
 CHECKED_TO = "2026-10-19"
