@@ -693,7 +693,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 @media (prefers-reduced-motion: reduce){.tk-track{animation:none}.tk-view{overflow-x:auto}}
 /* Every page's header band (pages.band): one band on a stream's colour, the same size on every page: its icon, name and
    question on the left, what it covers on the right, our own cartoon at the right end (stacked on phones) */
-:is(.cp,.about-page) .fh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px 30px;align-items:center;margin:18px 0 28px;
+:is(.cp,.about-page) .fh{display:grid;grid-template-columns:minmax(min-content,1fr) minmax(0,1fr) auto;gap:14px 30px;align-items:center;margin:18px 0 28px;
   padding:22px 26px;background:var(--f);color:#000;border:3px solid var(--line);box-shadow:6px 6px 0 var(--line)}
 :is(.cp,.about-page) .fh-t{display:flex;align-items:center;gap:16px;min-width:0}
 :is(.cp,.about-page) .fh-ic{flex:none;display:grid;place-items:center;width:56px;height:56px;background:#000;color:var(--f)}
