@@ -555,6 +555,8 @@ LEFT_OUT: dict[str, str] = {
     "https://arxiv.org/abs/2605.08518": "a retrospective on a competition, not a new test",
     "https://arxiv.org/abs/2604.19071v1": "mainly a way to grade writing (Tree-of-Writing)",
     "https://arxiv.org/abs/2604.17761": "an interpretability method for analysing failures, not a new test",
+    "https://research.google/pubs/freshbrew-a-benchmark-for-evaluating-ai-agents-on-java-code-migration-2/":
+        "FreshBrew is an October 2025 paper, and its best score differs between the Google page and arXiv",
 }
 # Tests a later paper beat, by the test's address in TESTS: (the later paper's address, the day arXiv announced it, what
 # it reports in its abstract's own numbers and words, and who got it as the abstract names them). A test counts as beaten
