@@ -217,6 +217,8 @@ LEFT_OUT = {
         "talks only, round not closed",
     "https://techcrunch.com/2026/10/22/deepseek-reportedly-raises-15b-days-after-us-restrictions/":
         "reportedly; investors only potential, not known if equity",
+    "https://www.thelec.net/news/articleView.html?idxno=14884":
+        "round only nearing completion, terms not final, no amounts per company",
 }
 
 
