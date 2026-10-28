@@ -400,6 +400,14 @@ LEFT_OUT = {
         "Lambda-0: one news outlet within 3 days",
     "https://siliconangle.com/2026/10/23/moonshot-ai-launches-new-flagship-kim-k3-1-pro-model-with-3t-parameters/":
         "same as Kimi K3.1 Pro",
+    "https://www.marktechpost.com/2026/10/22/gradium-phonon-31m-on-device-tts/":
+        "Phonon: one news outlet within 3 days",
+    "https://techcrunch.com/2026/10/22/openai-makes-its-jev-competitor-widely-available-as-decision-model-competition-heats-up/":
+        "OpenAI Decisions API model: one news outlet within 3 days",
+    "https://www.thelec.net/news/articleView.html?idxno=14781": "Kakao image recognition models: one news outlet within 3 days",
+    "https://siliconangle.com/2026/10/22/ai2-releases-olmoearth-v1-3-state-of-the-art-ai-ready-satellite-embeddings-for-the-whole-planet/":
+        "OlmoEarth v1.3: one news outlet within 3 days",
+    "https://huggingface.co/blog/allenai/olmoearth-v1-3": "same as OlmoEarth v1.3",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
