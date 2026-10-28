@@ -219,6 +219,14 @@ LEFT_OUT = {
         "reportedly; investors only potential, not known if equity",
     "https://www.thelec.net/news/articleView.html?idxno=14884":
         "round only nearing completion, terms not final, no amounts per company",
+    "https://openai.com/index/openai-to-acquire-orchestra-bio": "can't read to check",
+    "https://metr.org/blog/2026-10-20-misalignment-risk-report-august-2026-review/": "a report review, no investment",
+    "https://olhardigital.com.br/2026/10/20/pro/resumo-do-od-lula-acusa-meta-japao-lanca-sonda-a-marte-novo-financiamento-da-openai-e-mais/":
+        "round not closed; no investor named",
+    "https://olhardigital.com.br/2026/10/19/pro/openai-corre-para-levantar-r-163-5-bilhoes-antes-de-ipo-da-anthropic/":
+        "talks only, round not closed",
+    "https://www.channelnewsasia.com/business/ex-openai-employee-accused-planting-device-appears-have-saudi-backing-us-prosecutors-say-6472471":
+        "court story, no investment in a lab",
 }
 
 
