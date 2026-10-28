@@ -140,6 +140,10 @@ LEFT_OUT = {
         "A TV how-to, not an AI model",
     "https://tecnoblog.net/noticias/usuarios-usam-ia-para-remover-anuncios-e-mudar-interfaces-de-tvs/":
         "A TV how-to, not an AI model",
+    "https://siliconangle.com/2026/10/19/minimax-launches-m3-1-flash-model-says-it-cuts-ai-agent-costs-by-70/":
+        "A new model's launch price, not a change",
+    "https://openai.com/index/openai-models-google-cloud":
+        "Models added to a cloud platform, not countries or regions",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
