@@ -83,6 +83,31 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-10-30', by='OpenAI', kind='card',
+         title='GPT-Rosalind-6 System Card Addendum',
+         url='https://deploymentsafety.openai.com/gpt-rosalind-6',
+         original='https://deploymentsafety.openai.com/gpt-rosalind-6/gpt-rosalind-6.pdf',
+         models=('GPT-Rosalind-6',), risks=('cbrn', 'cyber', 'injection', 'misalign', 'rnd'),
+         abstract=('GPT-Rosalind-6 is a frontier reasoning model for biology, drug discovery, and translational '
+                   'medicine. We offer it as GPT-Rosalind-6 Research to qualified scientists, research institutes, '
+                   'companies and government partners. Rosalind has fewer refusals on dual-use biological queries but is '
+                   'only made available via trusted access. We review applicants’ proposed uses, security controls and '
+                   'governance practices before granting access. We also continue to have other deployment safeguards in '
+                   'place. GPT-Rosalind-6 uses the same weights as GPT-6 Astra, our flagship reasoning model. It is '
+                   'designed to support legitimate biological research, including some dual-use topics, while still '
+                   'refusing requests for biological weaponization and retaining refusals on other safety topics. …')),
+    dict(date='2026-10-29', by='OpenAI', kind='card',
+         title='Addendum to GPT-6 Luna System Card: October 29, 2026 Update',
+         url='https://deploymentsafety.openai.com/gpt-6-luna-october-28-2026-addendum',
+         original='https://deploymentsafety.openai.com/gpt-6-luna-october-28-2026-addendum/gpt-6-luna-october-28-2026-addendum.pdf',
+         models=('GPT-6 Luna (October 29)',), risks=('cbrn', 'cyber', 'harm', 'injection', 'jailbreak', 'misalign', 'rnd'),
+         abstract=('Today, we’re introducing an update to GPT-6 Luna, which we released in ChatGPT on October 7. The '
+                   'updated model provides more concise responses and reduces overly agreeable language. We refer to the '
+                   'updated model as GPT-6 Luna (October 29) throughout the remainder of this system card. Under our '
+                   'Preparedness Framework, we are treating GPT-6 Luna (October 29) as High in cybersecurity and High '
+                   'for Biological and Chemical capability. Based on that assessment, GPT-6 Luna (October 29) uses the '
+                   'same safeguards stack as prior GPT-6 Luna (October 7), described in detail in the GPT-6 Luna '
+                   '(October 7) card.')),
     dict(date='2026-10-26', by='OpenAI', kind='card',
          title='Addendum to GPT-6 Astra System Card: GPT-6.1 Terra',
          url='https://deploymentsafety.openai.com/gpt-6-1-terra',
@@ -1413,6 +1438,7 @@ DOCS: list[dict] = [
 # Documents read and left out, so `python -m aipulse safety` doesn't list them again: research on training methods,
 # essays, usage studies, testimony, organisation news, a product launch, and documents from before 2026.
 LEFT_OUT: set[str] = {
+    'https://openai.com/index/community-safety-report-and-new-protections-for-teens',  # document not readable (openai.com refuses, 403)
     'https://www.aisi.gov.uk/research/the-effectiveness-and-durability-of-pretraining-data-filtering-in-protein-language-models',  # research on training-data filtering in protein models, not an evaluation of LLMs
     'https://www.anthropic.com/research/attack-surface-reduction',  # using Claude to harden software (cyber defence), not a safety document
     'https://www.anthropic.com/news/an-update-on-independent-evaluators',  # news: organisation, no document (Anthropic gives METR employee-like access)
