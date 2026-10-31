@@ -96,7 +96,7 @@ def stream_page(page: str, cat: str) -> str:
 
 # What the daily email's sign-up keeps and why (EU GDPR, Art. 13); kept in step with apps-script/Code.gs.
 PRIVACY_ROWS = [
-    ("Your email address", "To send your email", "Until you unsubscribe (unconfirmed: 7 days)"),
+    ("Your email address", "To send your email", "Until you unsubscribe"),
     ("Your choices: streams, how often, topics, words, questions", "To pick your stories", "Until you unsubscribe"),
     ("Codes in your links", "So only you can change them", "Until you unsubscribe"),
 ]
@@ -114,7 +114,7 @@ def privacy_page() -> str:
             'you came from, your browser, system, country and screen size. No IP address, cookie or ID is kept. '
             'Your settings stay in your own browser. GitHub Pages, '
             'which hosts the site, may log IP addresses for security.</p>'
-            '<h2>The email</h2><p>Only if you sign up and confirm, and you can unsubscribe from any email.</p>'
+            '<h2>The email</h2><p>Only if you sign up, and you can unsubscribe from any email.</p>'
             f'<table class="mt pv"><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
             '<p>Kept in the project’s Google account and sent from its Gmail. Never sold or shared.</p>'
             f'<h2>Your rights</h2><p>Ask to see, correct or delete your data: {mail}. You can also complain to your data '

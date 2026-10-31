@@ -1194,8 +1194,8 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       </details>
       <button class="sub-go" id="subscribe-go" type="submit">Subscribe</button>
       <p class="sub-msg" id="sub-msg" role="status" aria-live="polite"></p>
-      <p class="sub-small">We'll email you a link to confirm. Already subscribed? Enter your email with new streams to
-        change them. One-click unsubscribe in every email.</p>
+      <p class="sub-small">Already subscribed? Change your streams with the link in any email. One-click unsubscribe in
+        every email.</p>
     </form>
   </dialog>
   <dialog class="subscribe" id="sub-action" aria-labelledby="sub-action-title">
@@ -2409,7 +2409,7 @@ window.addEventListener("popstate", routed);
 window.addEventListener("hashchange", routed);
 
 // Daily digest: the form posts the address and streams to the sign-up web app in the project's Google account
-// (apps-script/Code.gs), which emails a confirm link; nothing is sent until the reader clicks it.
+// (apps-script/Code.gs), which puts them on the list at once.
 const SIGNUP_URL = "__SIGNUP_URL__";
 const DIGEST_SENDER = "projectaipulse@gmail.com";
 const subDialog = $("subscribe");
@@ -2616,16 +2616,14 @@ $("sub-form").addEventListener("submit", async e => {
                                       ...prefFields()});
     const r = await (await fetch(SIGNUP_URL, {method: "POST", body})).json();
     if(r.ok){
-      subMessage((r.change ? "Almost done: " : "Almost there: ") + "we've emailed a confirm link to " + email
-        + ". Click it" + (r.change ? " and your streams change." : " and you're subscribed.")
-        + "\n\nNot in your inbox? Look in Spam or Promotions and mark it “Not spam”."
-        + "\n\nAdd " + DIGEST_SENDER + " to your contacts so the daily email lands in your inbox.", "ok");
+      subMessage("You're on the list: " + email + ". " + (chosenOften() === "weekly" ? "Your email comes on Sunday." : "Your email comes tomorrow morning.")
+        + "\n\nAdd " + DIGEST_SENDER + " to your contacts so it lands in your inbox, not in spam.", "ok");
       $("sub-email").value = "";
       try{ localStorage.setItem("aipulse-sub-prompt", "subscribed"); }catch(err){}  // no more pop-ups
     } else {
       subMessage({email: "Please enter a valid email address.", streams: "Pick at least one stream.",
                   full: "AI Pulse daily is full for now. Please try again in a few weeks.",
-                  busy: "We've sent many confirmations today. Please try again tomorrow."}[r.error]
+                  busy: "We've had many sign-ups today. Please try again tomorrow."}[r.error]
                  || "Something went wrong. Please try again.", "error");
     }
   }catch(err){

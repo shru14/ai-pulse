@@ -2115,9 +2115,12 @@ def test_signup_page_and_web_app_agree():
     assert all(f"p.{f}" in script for f in ("email", "streams", "website"))
     assert "LIST_KEY" in script and not re.search(r"LIST_KEY\s*=\s*['\"]", script)  # the key is never in the code
     assert 'type="email"' in page and "mailto:" not in page.split('id="subscribe"')[1].split("</dialog>")[0]
-    # Emails link to the site, which handles the confirm and unsubscribe links; the web app sends only site links.
-    assert "#(confirm|unsubscribe)=" in page and 'SITE + "#confirm="' in script
+    # Emails link to the site, which handles the unsubscribe link (and confirm links sent before one-click sign-up).
+    assert "#(confirm|unsubscribe)=" in page
     assert not re.search(r"getUrl\(\) \+ \"\?action=confirm", script)
+    # One-click: signing up sends the reader no email, and the form can't change an existing reader's streams.
+    signup = script.split("function subscribe(p) {")[1].split("\n}\n")[0]
+    assert "MailApp" not in signup and "if (rec && rec.confirmed) return {ok: true};" in signup
 
 
 def test_anthropic_news_page_and_its_launches():
