@@ -110,6 +110,8 @@ def main():
                     "of the database")
     ct = sub.add_parser("court", help="lawsuit stories not checked yet for AI in court (to check by hand and add to "
                         "court.CASES as a case or a step, or to court.LEFT_OUT)")
+    tp = sub.add_parser("topics", help="stories carrying a topic's tags that its words miss (to check by hand and add to "
+                        "topics.ADDED or topics.LEFT_OUT)")
     pp = sub.add_parser("press", help="stories that may report on a paper, not checked yet for Papers that made the "
                         "news (to check by hand and add to press.CHECKED or press.LEFT_OUT)")
     sh = sub.add_parser("safety", help="stories that may be a new safety document, not checked yet for the AI safety "
@@ -153,14 +155,15 @@ def main():
     bl.add_argument("--data", metavar="FILE", help="add the stories in the site's data.json (or data.json.gz) the "
                     "database doesn't have")
     bl.add_argument("--two-outlets", action="store_true", help="only stories another outlet also reported")
-    for q in (ct, pp, sh, iw, ow, cs, rc, lt, me, pa, nt, fb, cr, bo, gv):
+    for q in (ct, tp, pp, sh, iw, ow, cs, rc, lt, me, pa, nt, fb, cr, bo, gv):
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
                        "instead of the database")
     for name, module in (("court", "court"), ("press", "press"), ("safety", "safety"), ("infra", "infra_watch"),
                          ("owners", "owners"), ("consultations", "consultations"), ("releases", "release_cards"),
                          ("timelines", "lab_timelines"), ("pacts", "pacts"), ("tests", "new_tests"), ("fines", "fines"),
-                         ("chips", "chip_rules"), ("promises", "promises"), ("buyouts", "buyouts"), ("govai", "gov_ai")):
+                         ("chips", "chip_rules"), ("promises", "promises"), ("buyouts", "buyouts"), ("govai", "gov_ai"),
+                         ("topics", "topics")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -545,6 +548,14 @@ def main():
             print(f"  {c['test']}: {c['date']} {c['title']}\n    {c['url']}")
             for x in c["said"]:
                 print(f"      > {x}")
+    elif a.cmd == "topics":
+        from . import topics
+        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
+        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
+        todo = topics.candidates(found, since)
+        print(f"{sum(map(len, topics.ADDED.values()))} added, {len(topics.LEFT_OUT)} left out. To check from {since or 'the start'} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}\n    Topics: {', '.join(c['for'])}\n    {c.get('summary') or c.get('s') or ''}")
     elif a.cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "economy", "pacts", "tests",
                    "fines", "chips", "buyouts"):
         from . import (buyouts, chip_rules, court, fines, infra_watch, lab_timelines, model_economy, new_tests, owners, pacts,
@@ -584,15 +595,15 @@ def main():
             print(f"Safety reports to look for again ({len(due)}): {', '.join(due) or 'none'}")
     elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note", "owners-note", "consultations-note",
                    "releases-note", "timelines-note", "pacts-note", "tests-note", "promises-note", "fines-note",
-                   "chips-note", "buyouts-note", "govai-note"):
+                   "chips-note", "buyouts-note", "govai-note", "topics-note"):
         # A court/, press/, safety/ or infra/<day> branch's drafts, to the project inbox for approval
         from . import (buyouts, chip_rules, consultations, court, digest, fines, gov_ai, infra_watch, lab_timelines, new_tests, owners, pacts, press,
-                       promises, release_cards, safety)
+                       promises, release_cards, safety, topics)
         m = {"court-note": court, "press-note": press, "safety-note": safety, "infra-note": infra_watch,
              "owners-note": owners, "consultations-note": consultations, "releases-note": release_cards,
              "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests,
              "promises-note": promises, "fines-note": fines, "chips-note": chip_rules, "buyouts-note": buyouts,
-             "govai-note": gov_ai}[a.cmd]
+             "govai-note": gov_ai, "topics-note": topics}[a.cmd]
         extra = [open(a.base_money, encoding="utf-8").read()] if getattr(a, "base_money", None) else []
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch, *extra)
         if not note:

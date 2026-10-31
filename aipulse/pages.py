@@ -97,6 +97,7 @@ STYLE = """
 .cp .topics .last .lt{font-size:15px;font-weight:600;line-height:1.35}
 .cp .topics .last .lt:empty{display:none}
 .cp .topics .last .meta{margin:0;font-size:11px}
+.cp .topics .last .upd{font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:#fff;color:#000;border:1.5px solid #000;padding:0 5px;margin-right:6px}
 .cp:has(> .sd) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .sd{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}  /* standards: the three lists side by side */
 .cp .sd .cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
