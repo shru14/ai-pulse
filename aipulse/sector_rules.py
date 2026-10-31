@@ -103,18 +103,18 @@ HAND = [
      "Seven principles and 26 recommendations: a board-approved AI policy, AI inside risk assessment, approvals and "
      "audits, incident reporting, and protection for customers.",
      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=61018"),
-    ("finance", "IN", "Rule", "RBI Digital Lending Directions, 2025", "Since 8 May 2025",
+    ("finance", "IN", "Rule", "RBI Digital Lending Directions, 2025", "Since 8 May 2025; RBI consolidated its directions on 28 Nov 2025: check the current text",
      "Banks and NBFCs lending through apps: money moves straight between borrower and lender, apps are reported to "
      "the RBI, and the lender answers for its lending service providers.",
      "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12848&Mode=0"),
-    ("finance", "IN", "Rule", "RBI IT governance, risk, controls and assurance directions, 2023", "Issued 7 Nov 2023",
+    ("finance", "IN", "Rule", "RBI IT governance, risk, controls and assurance directions, 2023", "Issued 7 Nov 2023; RBI consolidated its directions on 28 Nov 2025: check the current text",
      "A board-level IT strategy committee, and IT risk management, business continuity and audit for every system "
      "the firm runs.",
      "https://website.rbi.org.in/web/rbi/-/notifications/master-direction-on-information-technology-governance-risk-controls-and-assurance-practices"),
-    ("finance", "IN", "Rule", "RBI outsourcing of IT services directions, 2023", "Since 1 Oct 2023",
+    ("finance", "IN", "Rule", "RBI outsourcing directions, 2025 (commercial banks)", "Since 28 Nov 2025, replacing the 2023 IT outsourcing direction; other kinds of firm have their own",
      "Using an outside AI or cloud provider for material IT work needs a board-approved policy and risk-based checks "
      "on the provider, and must not weaken the RBI's supervision.",
-     "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=12486"),
+     "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=13139"),
     ("finance", "IN", "Rule", "SEBI: responsibility for AI tools (Intermediaries Regulations, Regulation 16C)",
      "Approved Dec 2024; notified Feb 2025",
      "Anyone SEBI regulates is solely responsible for the AI tools it uses, built or bought: for data privacy and "
@@ -133,7 +133,7 @@ HAND = [
      "Notice and consent for personal data, security safeguards, and a contract with any processor, such as an AI "
      "supplier.", "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/nov/doc20251117695301.pdf"),
     ("finance", "IN", "Law", "Prevention of Money-Laundering Act, 2002 and RBI KYC Master Direction",
-     "KYC Direction since 25 Feb 2016, updated 14 Aug 2025",
+     "KYC Direction since 25 Feb 2016, updated 14 Aug 2025; RBI consolidated its directions on 28 Nov 2025: check the current text",
      "Customer checks, transaction monitoring and reporting stay with the firm, whatever tool does the first sort.",
      "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=11566"),
     ("finance", "IN", "Rule", "CERT-In cyber security directions", "Issued 28 Apr 2022",
@@ -191,7 +191,7 @@ HAND = [
     ("finance", "US", "Law", "Bank Secrecy Act: suspicious activity reports", "In force",
      "The duty to file reports stays with the firm.",
      "https://www.fincen.gov/resources/statutes-and-regulations/bank-secrecy-act"),
-    ("finance", "US", "Law", "Colorado automated decision-making law (SB 26-189)", "Signed 14 May 2026",
+    ("finance", "US", "Law", "Colorado automated decision-making law (SB 26-189)", "Signed 14 May 2026; from 1 Jan 2027",
      "Consumers are told when AI plays a part in a financial decision, given its role in a refusal, and offered a "
      "review by a person.", "https://leg.colorado.gov/bills/sb26-189"),
     # electronic communications: marketing by email, text or automated call, and cookies, AI-written or not
