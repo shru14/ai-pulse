@@ -160,9 +160,10 @@ HAND = [
     ("finance", "GB", "Law", "Money Laundering Regulations 2017", "Since 26 Jun 2017",
      "The duty to spot and report suspicious activity stays with the firm.",
      "https://www.legislation.gov.uk/uksi/2017/692/contents"),
-    ("finance", "US", "Rule", "Model risk management (SR 11-7)", "Since 4 Apr 2011",
-     "Banks test a model before use, write down its limits and have it reviewed independently.",
-     "https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm"),
+    ("finance", "US", "Guidance", "Model risk management (SR 26-2)", "Since 17 Apr 2026, replacing SR 11-7",
+     "Expectations for banks with over $30 billion in assets. Generative and agentic AI are outside it: a bank's own "
+     "risk management decides those controls.",
+     "https://www.federalreserve.gov/supervisionreg/srletters/sr2602.htm"),
     ("finance", "US", "Guidance", "Interagency guidance on third-party risk", "Since 6 Jun 2023",
      "Banks treat an AI company like any critical supplier: vetted before, watched after.",
      "https://www.federalregister.gov/documents/2023/06/09/2023-12340/interagency-guidance-on-third-party-relationships-risk-management"),
