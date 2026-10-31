@@ -95,6 +95,8 @@ CHECKED: dict[str, str | None] = {
     "https://blogs.nvidia.com/blog/gtc-keynote-spring-2023/": None,  # DGX Cloud on Azure "next quarter"; DGX Cloud itself out 25 Jul 2023 (Oracle)
     "https://blogs.nvidia.com/blog/geforce-now-thursday-feb-23/": None,  # games "soon", tied to the Activision deal
     "https://siliconangle.com/2023/01/04/report-microsoft-will-add-chatgpt-powered-search-feature-bing/": None,  # a report from sources, no company word
+    "https://the-decoder.com/openai-teases-dots-for-europe-but-its-berlin-devday-was-really-about-building-a-platform/":
+        None,  # Dots is already out; a wider rollout in Europe "in a few weeks", no new product named
 }
 
 _V = (r"(launch|release|ship|roll out|unveil|debut|open[- ]source|introduce|bring|add|offer|start|begin"
