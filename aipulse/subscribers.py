@@ -1,6 +1,6 @@
 """Subscribers to the daily email. The site's sign-up form posts to a Google Apps Script web app in the project's
-Google account (apps-script/Code.gs): it keeps the list there, emails each new reader a confirm link (double
-opt-in: nobody gets the digest without clicking it) and handles each reader's unsubscribe link.
+Google account (apps-script/Code.gs): it keeps the list there, subscribes each new reader at once and handles each
+reader's unsubscribe link.
 Nothing about readers is stored in this repository (it's public), and no address is ever printed (the Actions
 logs are public too): only counts.
 

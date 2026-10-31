@@ -5,10 +5,11 @@
  * Emails only ever link to the AI Pulse site (a link to script.google.com looks like phishing to spam filters);
  * the site's page then talks to this web app:
  *
- *   POST action=subscribe   email, streams  the site's form: stores a pending sign-up, emails a confirm link
- *                           more, less,     (SITE#confirm=token); with the reader's choices ("Make it yours":
- *                           words           labels separated by |), which start when they confirm
- *   POST action=confirm     t               the site's "Confirm" button: the reader is subscribed
+ *   POST action=subscribe   email, streams  the site's form: the reader is subscribed at once, no email sent; with
+ *                           more, less,     their choices ("Make it yours": labels separated by |). An address
+ *                           words           already on the list is left as it is
+ *   POST action=confirm     t               the site's "Confirm" button, for confirm links sent before one-click
+ *                                            sign-up (31 Oct 2026); they run out within a week
  *   POST action=choices     t               the site's "Change my choices" (SITE#choices=token, in every email):
  *                                            the reader's streams and choices
  *   POST action=save        t, streams,     saves them at once (the link in the reader's own email is the proof
@@ -41,10 +42,9 @@ const SENDER = "projectaipulse@gmail.com";
 const STREAMS = {releases: "Releases", news: "Industry", research: "Research", regulation: "Regulation tracker",
                  policy: "Policy", infra: "Infra"};
 const MAX_SUBSCRIBERS = 400;        // Gmail sends to about 500 recipients a day
-const MAX_CONFIRMATIONS_A_DAY = 80; // Apps Script may send 100 emails a day from a free account
-const MAX_PER_ADDRESS_A_DAY = 3;    // nobody can flood an inbox with confirm links
-const PENDING_DAYS = 7;             // an unconfirmed sign-up is deleted after a week
-const EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
+const MAX_SIGNUPS_A_DAY = 80;       // a bot can't fill the list in one go
+const PENDING_DAYS = 7;             // an unconfirmed sign-up from before one-click is deleted after a week
+const EMAIL = /^[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,}$/;  // no confirm step now: catches typos like name@site.x
 const CONTACTS = `Add ${SENDER} to your contacts so the daily email lands in your inbox, not in spam.`;
 // A reader's choices: labels the site shows (the form sends them separated by |), and a few words of their own
 const LIMITS = {more: 10, less: 40, words: 5, interests: 3};
@@ -123,64 +123,57 @@ function subscribe(p) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    const props = store();
-    const rec = read(email) || {streams: [], confirmed: false};
-    if (!rec.confirmed && count() >= MAX_SUBSCRIBERS) return {ok: false, error: "full"};
-    const day = today(), sentToday = Number(props.getProperty("sent:" + day) || 0);
-    if (rec.day !== day) { rec.day = day; rec.n = 0; }
-    if (rec.n >= MAX_PER_ADDRESS_A_DAY || sentToday >= MAX_CONFIRMATIONS_A_DAY || MailApp.getRemainingDailyQuota() < 5)
-      return {ok: false, error: "busy"};
-    if (rec.ctoken) props.deleteProperty("t:" + rec.ctoken);
-    rec.ctoken = Utilities.getUuid();
-    rec.pending = streams;
-    // choices start with the confirm link too; a reader changing only streams keeps the choices they have
-    // how often always starts with the confirm link: alone, it keeps the choices they have
-    const prefs = prefsFrom(p, rec.prefs);
-    if (hasChoices(prefs)) rec.pendingPrefs = prefs;
-    else if (rec.prefs || weeklyOnly(prefs)) rec.pendingPrefs = {...(rec.prefs || prefs), often: prefs.often};
-    else delete rec.pendingPrefs;
-    rec.asked = Date.now();
-    rec.n += 1;
-    props.setProperty("t:" + rec.ctoken, email);
-    props.setProperty("s:" + email, JSON.stringify(rec));
-    props.setProperty("sent:" + day, String(sentToday + 1));
-    // A short, friendly, plain note with one ordinary link to the site: no button, nothing that reads like a campaign.
-    const link = SITE + "#confirm=" + rec.ctoken;
-    const change = rec.confirmed;
-    const lines = change ? [
-      "Hi again,",
-      `You asked to change your AI Pulse daily streams to: ${names(streams)}.` +
-        (hasPrefs(prefs) ? ` Your choices: ${summary(prefs)}.` : ""),
-      "Open this link and press Confirm, and the change starts with the next morning's email:",
-      link,
-      "Didn't ask for this? No worries, just ignore this email and nothing changes.",
-      "Cheers,\nTeam AI Pulse",
-    ] : [
-      "Hi there,",
-      "Thanks for signing up for AI Pulse daily!",
-      "AI Pulse is a free, non-commercial briefing on what's happening in AI. Every morning we read company blogs, " +
-        "newsrooms, research archives and government sites, and sort the day's stories into clear streams, each " +
-        "linked to the original reporting.",
-      `You picked: ${names(streams)}.` + (hasPrefs(prefs) ? ` Your choices: ${summary(prefs)}.` : ""),
-      `One last step: open this link and press Confirm, and your first digest arrives ${weeklyOnly(prefs) ? "on Sunday" : "the next morning"}:`,
-      link,
-      "Didn't sign up? No worries, just ignore this email: nothing will be sent, and the request disappears within a week.",
-      `Tip: ${CONTACTS.charAt(0).toLowerCase()}${CONTACTS.slice(1)}`,
-      "Cheers,\nTeam AI Pulse",
-    ];
-    MailApp.sendEmail({
-      to: email, name: "AI Pulse", replyTo: SENDER,
-      subject: change ? "Please confirm your new AI Pulse daily streams" : "Welcome to AI Pulse daily: please confirm",
-      body: lines.join("\n\n"),
-      htmlBody: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.55;color:#1a1a1a">` +
-                lines.map(l => l === link ? `<p><a href="${esc(link)}">${esc(link)}</a></p>`
-                                          : `<p>${esc(l).replace(/\n/g, "<br>")}</p>`).join("") +
-                "</div>"
-    });
-    return {ok: true, change};
+    const props = store(), rec = read(email);
+    // Anyone can type any address here, so a reader's streams change only from the link in their own email; and
+    // the answer is the same as for a new reader, so the form never tells who is on the list.
+    if (rec && rec.confirmed) return {ok: true};
+    if (count() >= MAX_SUBSCRIBERS) return {ok: false, error: "full"};
+    const day = today(), signups = Number(props.getProperty("sent:" + day) || 0);
+    if (signups >= MAX_SIGNUPS_A_DAY) return {ok: false, error: "busy"};
+    props.setProperty("sent:" + day, String(signups + 1));
+    const prefs = prefsFrom(p);
+    enroll(email, rec, streams, hasPrefs(prefs) ? prefs : undefined);
+    notify(`AI Pulse: new subscriber (${count()} subscribers)`, `${email} subscribed to: ${names(streams)}.` +
+           (hasPrefs(prefs) ? ` Choices: ${summary(prefs)}.` : ""));
+    return {ok: true};
   } finally {
     lock.releaseLock();
   }
+}
+
+// Puts an address on the list: its own private token for the unsubscribe and "Change my choices" links in every email.
+function enroll(email, rec, streams, prefs) {
+  const props = store(), had = rec || {};
+  if (had.ctoken) props.deleteProperty("t:" + had.ctoken);  // a confirm link from before is done with
+  const token = Utilities.getUuid(), out = {streams, confirmed: true, token, asked: Date.now()};
+  if (prefs) out.prefs = prefs;
+  props.setProperty("u:" + token, email);
+  props.setProperty("s:" + email, JSON.stringify(out));
+}
+
+// Run once by hand from the editor, for people who signed up when a confirm email was still asked for. Addresses go
+// in the script property ADD_READERS, separated by spaces, commas or new lines, never in this file (the repository
+// is public). No email is sent; each gets the next morning's digest. Readers already on the list are left as they
+// are, a sign-up still waiting keeps the streams and choices it asked for, anyone else gets every stream, daily.
+function addReaders() {
+  const props = store(), raw = props.getProperty("ADD_READERS") || "";
+  const emails = [...new Set(raw.split(/[\s,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean))];
+  const done = {added: 0, alreadyOn: 0, invalid: 0, noRoom: 0};
+  let n = count();
+  for (const email of emails) {
+    const rec = read(email);
+    if (!EMAIL.test(email) || email.length > 254) done.invalid++;
+    else if (rec && rec.confirmed) done.alreadyOn++;
+    else if (n >= MAX_SUBSCRIBERS) done.noRoom++;
+    else {
+      enroll(email, rec, (rec && rec.pending) || Object.keys(STREAMS), rec && rec.pendingPrefs);
+      done.added++; n++;
+    }
+  }
+  props.deleteProperty("ADD_READERS");
+  const line = `Added ${done.added}; already on the list ${done.alreadyOn}; not valid ${done.invalid}; no room ${done.noRoom}. Now ${n} subscribers.`;
+  console.log(line);
+  notify("AI Pulse: readers added by hand", line);
 }
 
 function confirm(t) {

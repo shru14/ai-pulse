@@ -997,7 +997,7 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
                f"AI Pulse daily · {long_day(day)}")
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
     # A reader's own link opens the form with their streams and choices filled in; saving changes them at once.
-    # Without one (a sample, the web page), the sign-up form: the same address with new streams asks to confirm.
+    # Without one (a sample, the web page), the sign-up form.
     change = subscribers.choices_link(unsubscribe) if unsubscribe else f"{rss.SITE}#subscribe"
     change_words = "Change my streams and choices" if unsubscribe else "Change streams"
     stop = unsubscribe or change
