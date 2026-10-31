@@ -4602,3 +4602,55 @@ def test_sunday_listen_starts_with_the_week():
     assert said.index("These were the important updates this week") < said.index("The story of the week") \
         < said.index("Week story 2") < said.index("Now, Saturday the 24th, in short")
     assert audio.line(plan, list(rss.FEEDS), None, 140) == "2 minutes · the week's important updates, then Saturday in short"
+
+
+def test_topics_a_story_joins_by_words_or_approval_and_the_net_only_suggests(monkeypatch):
+    from aipulse import topics
+    card = {"category": "news", "title": "Anthropic expected to get a junk rating", "summary": "", "date": "2026-10-30",
+            "url": "https://x.test/a", "source": "X", "tags": ["IPO", "Anthropic"], "also": [{"url": "https://x.test/b"}]}
+    assert not topics.matches("ai-ipos", card)  # tags alone never join a story to a topic
+    assert topics.part_of(card) == []
+    assert [c["for"] for c in topics.candidates([card])] == [["ai-ipos"]]
+    assert topics.candidates([card], "2026-10-31") == []
+    monkeypatch.setattr(topics, "ADDED", {"ai-ipos": {"https://x.test/b": "Its rating after the IPO"}})  # another outlet's URL
+    assert topics.matches("ai-ipos", card)
+    assert topics.part_of(card) == [["ai-ipos", "OpenAI and Anthropic go public"]]
+    assert topics.candidates([card]) == []
+    monkeypatch.setattr(topics, "ADDED", {})
+    monkeypatch.setattr(topics, "LEFT_OUT", {"https://x.test/a"})
+    assert topics.candidates([card]) == [] and not topics.matches("ai-ipos", card)
+
+
+def test_topics_every_net_and_added_slug_is_sound():
+    from aipulse import topics
+    for t in topics.TOPICS.values():
+        assert all(isinstance(n, set) and n for n in t.get("net", ()))
+    assert set(topics.ADDED) <= set(topics.TOPICS)
+    assert not topics.LEFT_OUT & {u for urls in topics.ADDED.values() for u in urls}
+
+
+def test_topics_rule_fixes():
+    from aipulse import topics
+    def hit(slug, title, category="news"):
+        return topics.matches(slug, {"category": category, "title": title, "summary": ""})
+    assert hit("eu-ai-act", "First harmonised standard supporting the AI Act published in the Official Journal")
+    assert hit("california-ai-laws", "California's new law bans companies from relying on AI to fire workers")
+    assert hit("deepseek-us", "US banning Chinese AI DeepSeek from government agency IT systems")
+    assert not hit("deepseek-us", "Perplexity AI removes Chinese censorship from Deepseek R1")
+    assert hit("openai-microsoft", "Microsoft recorded $10 billion in revenue from OpenAI")
+    assert hit("chatbots-teens", "Character.AI bans under-18s from open-ended chats")
+    assert not hit("chatbots-teens", "Character.AI taps a new CEO")
+    assert not hit("data-centre-power-bills", "A new class of batteries helps data centers play nicely with the grid")
+
+
+def test_topics_note_lists_what_the_branch_adds(monkeypatch):
+    from aipulse import topics
+    base = 'ADDED = {"ai-ipos": {"https://x.test/old": "x"}}\nLEFT_OUT = {"https://x.test/gone"}\n'
+    monkeypatch.setattr(topics, "ADDED", {"ai-ipos": {"https://x.test/old": "x", "https://x.test/new": "Rating after the IPO"}})
+    monkeypatch.setattr(topics, "LEFT_OUT", {"https://x.test/gone", "https://x.test/no"})
+    subject, text, html = topics.note(base, "topics/2026-10-31")
+    assert subject == "AI Pulse, Follow the story: 1 new story to approve"
+    assert "Rating after the IPO" in html and "https://x.test/old" not in html and "1 story" in text
+    monkeypatch.setattr(topics, "ADDED", {"ai-ipos": {"https://x.test/old": "x"}})
+    monkeypatch.setattr(topics, "LEFT_OUT", {"https://x.test/gone"})
+    assert topics.note(base, "topics/2026-10-31") is None

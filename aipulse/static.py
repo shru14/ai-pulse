@@ -342,8 +342,11 @@ def build(conn, out: str | Path) -> int:
     if sample:  # the front page's "See what the email looks like"
         (out / "daily" / "sample.html").write_text(sample, encoding="utf-8")
     daily_index(conn, len(cards), published, out)  # daily/: every edition, by month
+    from . import topics
     for c in cards:
         c["s"] = text.get(c["id"], "")
+        if (part := topics.part_of(c)):  # its "Part of" link to the topic's page
+            c["topics"] = part
         c.pop("cluster", None)
         if c["date"] < (today - timedelta(days=2)).isoformat():  # arrival times only for the ticker's two days
             c.pop("added_at", None)
@@ -422,7 +425,6 @@ def build(conn, out: str | Path) -> int:
     places += kind_pages.build(conn, cards, out)  # each stream's stories split into pages (industry/opinion/, releases/openai/, ...)
     from . import glossary_pages
     places += glossary_pages.build(conn, cards, out, today)  # the glossary as a page per word (glossary/)
-    from . import topics
     places += topics.build(conn, cards, out, today)  # storylines followed over time, a page each (topics/)
     from . import monthly
     places += monthly.build(conn, cards, out, today)  # a booklet for each month that is over (monthly/)
