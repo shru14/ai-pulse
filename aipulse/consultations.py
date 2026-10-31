@@ -24,6 +24,7 @@ PATH = "ai-consultations/"
 KEY = "consultations"  # the meta row holding each list's rows and when it was last read
 PAST = 183  # days: how far back "Closed" goes
 SOON = 14  # days: open consultations closing this soon are marked
+COMING_DAYS = 90  # days: how long a government's word that a consultation is coming stays on the page
 # AI named in a title: "AI" itself only in capitals and not inside a word (so "Thai" or "AIS" never count)
 AI = re.compile(r"(?<![A-Za-z])AI(?![A-Za-z])|(?i:artificial intelligence|machine learning|algorithm|"
                 r"automated decision|deepfake|chatbot|large language model)")
@@ -56,9 +57,47 @@ ADDED: list[tuple[str, str, str, str, str, str]] = [
     ("UK", "Growing up in the online world: a national consultation", "Department for Science, Innovation and Technology",
      "2026-05-26", "https://www.gov.uk/government/consultations/growing-up-in-the-online-world-a-national-consultation",
      "https://www.gov.uk/government/consultations/growing-up-in-the-online-world-a-national-consultation"),
+    ("UK", "Northern Ireland's Draft Artificial Intelligence Strategy", "The Executive Office, Northern Ireland", "2026-11-04",
+     "https://www.executiveoffice-ni.gov.uk/consultations/northern-irelands-draft-artificial-intelligence-strategy",
+     "https://www.executiveoffice-ni.gov.uk/consultations/northern-irelands-draft-artificial-intelligence-strategy"),
+    ("EU", "Commission seeks feedback on challenges and way forward in the area of effect of technology on copyright",
+     "European Commission", "2026-11-10",
+     "https://digital-strategy.ec.europa.eu/en/news/commission-seeks-feedback-challenges-and-way-forward-area-effect-technology-copyright",
+     "https://digital-strategy.ec.europa.eu/en/news/commission-seeks-feedback-challenges-and-way-forward-area-effect-technology-copyright"),
+    ("UK", "Agentic AI call for evidence", "Information Commissioner's Office", "2026-11-20",
+     "https://ico.org.uk/about-the-ico/ico-and-stakeholder-consultations/2026/10/agentic-ai-call-for-evidence/",
+     "https://ico.org.uk/about-the-ico/ico-and-stakeholder-consultations/2026/10/agentic-ai-call-for-evidence/"),
+    ("Australia", "Getting it right: Building AI infrastructure that works for Australia",
+     "Department of the Prime Minister and Cabinet", "2026-10-09",
+     "https://www.pmc.gov.au/resources/getting-it-right-building-ai-infrastructure-works-australia",
+     "https://www.cyberdaily.au/government/14201-australian-government-launches-consultation-period-on-the-future-of-ai-in-the-country"),
+    ("Kenya", "Draft Kenya Artificial Intelligence and Other Emerging Technologies Policy, 2026",
+     "Ministry of Information, Communications and the Digital Economy", "2026-08-11",
+     "https://www.gaa.go.ke/sites/default/files/2026-07/State%20Department%20For%20ICT%20and%20The%20Digital%20Economy%20Public%20Notice%20on%20Call%20For%20Comments%20On%20the%20Draft%20Kenya%20Artificial%20Intelligence%20And%20Other%20Emerging%20Technologies%20.pdf",
+     "https://gaa.go.ke/node/4420"),
+    ("Malaysia", "Artificial Intelligence (AI) Governance Bill", "National AI Office", "2026-07-31",
+     "https://upc.mpc.gov.my",
+     "https://www.bakermckenzie.com/en/insight/publications/2026/07/malaysia-public-consultation-on-the-ai-governance-bill"),
+    ("India", "Draft Regulations for Use of Artificial Intelligence (AI) in Courts, 2026", "AI Committee, Supreme Court of India",
+     "2026-07-15",
+     "https://highcourtofuttarakhand.gov.in/notice/extension-of-time-for-submission-of-views-comments-by-stakeholders-and-the-general-public-on-draft-regulations-for-use-of-artificial-intelligence-ai-in-courts-2026/",
+     "https://cdnbbsr.s3waas.gov.in/s3bc7f621451b4f5df308a8e098112185d/uploads/2026/06/202606181796298596.pdf"),
+]
+# consultations a government has said it will open, not open yet: (place, what it said it will ask about, who is
+# asking, when it said it will open, the report of what it said, the day it said so (YYYY-MM-DD)). When one opens it
+# moves to ADDED; one not said again within COMING_DAYS leaves the page by itself.
+COMING: list[tuple[str, str, str, str, str, str]] = [
+    ("India", "Consultation paper on AI regulation", "Ministry of Electronics and Information Technology",
+     "In the coming weeks", "https://www.medianama.com/2026/10/223-india-ai-regulation-consultation-paper-vaishnaw/",
+     "2026-10-26"),
+    ("South Africa", "Revised national AI policy", "Department of Communications and Digital Technologies",
+     "No date yet. Due at cabinet by March 2027, public comment after",
+     "https://techcentral.co.za/south-africa-national-ai-policy-deadline-cabinet-march-2027/287817/", "2026-10-29"),
 ]
 # stories and list entries checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://www.mlaw.gov.sg/public-consultation-on-artificial-intelligence-and-singapore-s-intellectual-property-regime/":
+        "Singapore's Ministry of Law: its terms forbid reproducing its content, and linking without its permission",
     "https://www.federalregister.gov/documents/2026/09/30/2026-20023/request-for-information-rfi-regarding-the-digitization-and-modernization-of-the-national-technical":
         "AI only in passing (data more accessible to AI)",
     "https://www.federalregister.gov/documents/2026/06/05/2026-11353/reforming-the-high-cost-program-for-an-all-ip-future-connect-america-fund-a-national-broadband-plan":
@@ -292,6 +331,23 @@ def _table(rows: list[dict], when: str, today: date) -> str:
             '<th>Asked by</th><th>Place</th></tr></thead><tbody>' + "".join(trs) + "</tbody></table></div>\n")
 
 
+def _coming(today: date) -> list[tuple]:
+    """COMING's rows said within COMING_DAYS, in COMING's order (soonest expected first)."""
+    since = (today - timedelta(days=COMING_DAYS)).isoformat()
+    return [c for c in COMING if c[5] >= since]
+
+
+def _coming_table(rows: list[tuple]) -> str:
+    trs = [f'<tr data-place="{p}" data-when="soon" data-day="{said}" '
+           f'data-text="{escape(f"{what} {who}".lower(), quote=True)}">'
+           f'<td class="cs-exp">{escape(when)}<small>said {_when(said)}</small></td>'
+           f'<td><a href="{escape(url, quote=True)}" rel="noopener">{escape(what)}</a></td>'
+           f'<td>{escape(who)}</td><td class="rm-lab cs-{_slug(p)}">{_place(p)}</td></tr>'
+           for p, what, who, when, url, said in rows]
+    return ('<div class="rm-wrap"><table class="mt rm-t cs-t"><thead><tr><th>Expected</th><th>Consultation</th>'
+            '<th>Asked by</th><th>Place</th></tr></thead><tbody>' + "".join(trs) + "</tbody></table></div>\n")
+
+
 def _filters(n: int, places: list[tuple[str, int]], counts: dict) -> str:
     def tags(f: str, label: str, items) -> str:
         return (f'<div class="sh-tabs" role="group" aria-label="{label}" data-f="{f}"><button type="button" '
@@ -300,7 +356,7 @@ def _filters(n: int, places: list[tuple[str, int]], counts: dict) -> str:
                           f'<b>{k}</b></button>' for v, t, k in items if k) + "</div>")
     return ('<div class="sh-filters rm-filters">'
             + tags("place", "Place", [(p, p, k) for p, k in places])
-            + tags("when", "When", [("open", "Open now", counts["open"]),
+            + tags("when", "When", [("open", "Open now", counts["open"]), ("soon", "Coming soon", counts["soon"]),
                                     ("closed", "Closed, past 6 months", counts["closed"])])
             + '<input type="search" class="sh-q" placeholder="Search titles and who is asking" '
               'aria-label="Search titles and who is asking">'
@@ -333,21 +389,28 @@ def body(saved: dict, today: date) -> str:
     closed = sorted((r for r in rows if past <= r["closes"] < now), key=lambda r: (r["closes"], r["place"]),
                     reverse=True)
     shown = open_ + closed
-    places = [(p, sum(r["place"] == p for r in shown)) for p in dict.fromkeys([*LISTS, *(a[0] for a in ADDED)])]
-    asking = [p for p, k in places if k]
+    coming = _coming(today)
+    places = [(p, sum(r["place"] == p for r in shown) + sum(c[0] == p for c in coming))
+              for p in dict.fromkeys([*LISTS, *(a[0] for a in ADDED), *(c[0] for c in coming)])]
+    asking = {r["place"] for r in shown}
     bigs = [(len(open_), "consultations on AI open now"),
             (len(closed), "closed in the past 6 months"),
             (len(asking), "places asked in the past 6 months")]
     out = ['<div class="ft jb rm cs">\n'
            + pages.feature_head(PATH, "AI consultations",
                                 "Where can you tell a government what you think about AI and until when?",
-                                "Consultations whose title names AI, from the official lists of the UK, the US, the EU "
-                                "and Canada. Each title links to the page where you can respond while it is open.")
+                                "Consultations on AI, from the official lists of the UK, the US, the EU and Canada, and "
+                                "others checked by hand. Each title links to the page where you can respond while it "
+                                "is open.")
            + '<div class="rm-bigs">' + "".join(f'<div class="rm-big cs-big{i}"><b>{n}</b><span>{escape(s)}</span></div>'
                                              for i, (n, s) in enumerate(bigs)) + "</div>\n"]
-    out.append(_filters(len(shown), places, {"open": len(open_), "closed": len(closed)}))
+    out.append(_filters(len(shown) + len(coming), places,
+                        {"open": len(open_), "soon": len(coming), "closed": len(closed)}))
     if open_:
         out.append('<section class="rm-part"><h2>Open now</h2>\n' + _table(open_, "open", today) + "</section>\n")
+    if coming:
+        out.append('<section class="rm-part"><h2>Coming soon · not open yet</h2>\n' + _coming_table(coming)
+                   + "</section>\n")
     if closed:
         out.append('<section class="rm-part"><h2>Closed · past 6 months</h2>\n' + _table(closed, "closed", today)
                    + "</section>\n")
@@ -360,6 +423,9 @@ def body(saved: dict, today: date) -> str:
         ("Closes", "The last day to respond, as the list gives it. The US counts proposed rules and notices taking "
                    "comments; the EU counts every stage of Have Your Say where feedback is open."),
         ("Marked rows", f"Open consultations closing in the next {SOON} days."),
+        ("Coming soon", "A government has said it will ask the public, and nothing is open yet. Expected is what it "
+                        "said and when, and the title links to a news report of that, since no official page exists "
+                        f"yet. A row leaves after {COMING_DAYS} days unless the government says it again."),
         ("Place", "A place's name links to its official list where we read one."),
     ]
     if any(r.get("outcome") for r in shown):
@@ -378,14 +444,15 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     saved = load(conn)
     if not any(v.get("rows") for v in saved.values()) and not ADDED:
         return []
-    what = ("Where can you tell a government what you think about AI and until when? Consultations whose title names "
-            "AI, from the official lists of the UK, the US, the EU and Canada.")
+    what = ("Where can you tell a government what you think about AI and until when? Consultations on AI, from the "
+            "official lists of the UK, the US, the EU and Canada, and others checked by hand.")
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI consultations",
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
         pages.page("AI consultations · AI Pulse", what, PATH, body(saved, today), data,
                    pages.frame(conn, len(cards)), ("/policy/", "Back to Policy"),
-                   "Titles, dates and who is asking are each government's own, linking to its page."),
+                   "Open and closed consultations' titles, dates and who is asking are each government's own, linking "
+                   "to its page."),
         encoding="utf-8")
     return [PATH]

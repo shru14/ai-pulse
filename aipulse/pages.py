@@ -943,6 +943,9 @@ a.subscribe-btn{text-decoration:none}
 /* AI consultations: Models being retired's table, without its phone labels; an outcome's link under the title */
 @media (max-width:640px){.cp .cs-t td:nth-child(4)::before{content:none}}
 .cp .ft .cs-t a.cs-out{font-size:13px;color:var(--muted)}
+.cp .ft .cs-t td.rm-lab span{display:inline-block;border:1.5px solid var(--line);padding:1px 7px;font:600 12.5px var(--body);white-space:nowrap}
+.cp .cs-t td.cs-exp{font-weight:700}
+.cp .cs-t td.cs-exp small{display:block;font:500 12px var(--mono);color:var(--muted)}
 /* Release cards: Models being retired's table, a coloured weights tag per row (Okabe-Ito, dark text) */
 .cp .rc-t td{vertical-align:top}
 .cp .rc-t small{display:block;margin-top:2px;font:500 12.5px/1.35 var(--body);color:var(--muted)}
