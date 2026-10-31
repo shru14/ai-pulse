@@ -24,6 +24,8 @@ ROBOT_NAME = "AIPulse"  # the name robots.txt rules are matched against
 ATOM = "{http://www.w3.org/2005/Atom}"
 DC = "{http://purl.org/dc/elements/1.1/}"
 CONTENT = "{http://purl.org/rss/1.0/modules/content/}"
+RDF = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}"
+RSS1 = "{http://purl.org/rss/1.0/}"
 GZIP_MAGIC = bytes([0x1F, 0x8B])
 
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -284,11 +286,24 @@ def parse(xml_bytes: bytes) -> list[dict]:
             })
         return entries
 
+    if root.tag == f"{RDF}RDF":  # RSS 1.0 (the BIS's): items sit beside the channel, every tag in its namespace
+        for it in root.findall(f"{RSS1}item"):
+            entries.append({
+                "title": clean_text(_text(it.find(f"{RSS1}title")), 200),
+                "url": _text(it.find(f"{RSS1}link")) or it.get(f"{RDF}about", ""),
+                "summary": clean_text(_text(it.find(f"{RSS1}description"))),
+                "published": parse_date(_text(it.find(f"{DC}date"))),
+                "authors": [n for a in it.findall(f"{DC}creator") if (n := clean_text(_text(a), 80))],
+            })
+        return entries
+
     channel = root.find("channel")
     items = channel.findall("item") if channel is not None else root.findall(".//item")
     for it in items:
         summary = _text(it.find("description")) or _text(it.find(f"{CONTENT}encoded"))
-        published = _text(it.find("pubDate")) or _text(it.find(f"{DC}date"))
+        # some feeds (ESMA's) have no date field and put a <time datetime="..."> in the description instead
+        published = (_text(it.find("pubDate")) or _text(it.find(f"{DC}date"))
+                     or next(iter(re.findall(r'datetime="([^"]+)"', summary or "")), ""))
         entries.append({
             "title": clean_text(_text(it.find("title")), 200),
             "url": _text(it.find("link")) or _text(it.find("guid")),

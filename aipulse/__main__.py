@@ -8,6 +8,7 @@ import threading
 import time
 import traceback
 from datetime import date, datetime, timedelta, timezone
+from importlib import import_module
 
 from . import cluster, rss, store
 
@@ -76,6 +77,12 @@ def main():
 
     b = sub.add_parser("build", help="write a static copy of the site (for GitHub Pages)")
     b.add_argument("--out", default="site", help="output folder, replaced (default: site)")
+    b.add_argument("--compass-open", action="store_true", help="leave Pulse Compass's pages readable: a local preview "
+                   "only, never for publishing (aipulse/access.py)")
+    cu = sub.add_parser("compass-user", help="set who can log in to Pulse Compass: asks for the password, saves it to the "
+                        "site's secret and rebuilds the site")
+    cu.add_argument("action", choices=("add", "remove", "list"), help="add also changes an existing user's password")
+    cu.add_argument("name", nargs="?", help="the username")
 
     dg = sub.add_parser("digest", help="email one day's digest (the four 6-hour updates) to an address")
     who = dg.add_mutually_exclusive_group(required=True)
@@ -138,6 +145,15 @@ def main():
                         "hand and add to chip_rules.TOOLS, BUYERS, CHINA or LEFT_OUT)")
     bo = sub.add_parser("buyouts", help="stories of a company being bought, merged or hired away whole, not checked "
                         "yet for AI buyouts (to check by hand and add to buyouts.DEALS or buyouts.LEFT_OUT)")
+    us = sub.add_parser("uses", help="finance stories naming AI, not checked yet for AI in finance (to check by hand "
+                        "and add to finance_uses.USES or finance_uses.LEFT_OUT)")
+    rd = sub.add_parser("ready-check", help="read every Ready-made tools page once and print what moved since the last "
+                        "reading (nothing is edited: the ready routine drafts any change for approval)")
+    rd.add_argument("--seen", required=True, help="the last reading, kept outside the repo")
+    rd.add_argument("--accept", action="store_true", help="the changes are handled: keep the new reading")
+    rd.add_argument("--page", help="print the text of one page instead")
+    mk = sub.add_parser("mistakes", help="stories of AI going wrong at a firm, not checked yet for Pulse Compass's "
+                        "Mistakes to avoid (to check by hand and add to mistakes.MISTAKES or mistakes.LEFT_OUT)")
     gv = sub.add_parser("govai", help="stories of a government publishing a list of the AI it uses, not checked yet "
                         "for What governments use AI for, and the hand-kept lists read again (to check by hand and "
                         "update gov_ai.OTHERS, RECHECK or LEFT_OUT)")
@@ -155,7 +171,7 @@ def main():
     bl.add_argument("--data", metavar="FILE", help="add the stories in the site's data.json (or data.json.gz) the "
                     "database doesn't have")
     bl.add_argument("--two-outlets", action="store_true", help="only stories another outlet also reported")
-    for q in (ct, tp, pp, sh, iw, ow, cs, rc, lt, me, pa, nt, fb, cr, bo, gv):
+    for q in (ct, tp, pp, sh, iw, ow, cs, rc, lt, me, pa, nt, fb, cr, bo, gv, us, mk):
         q.add_argument("--days", type=int, default=0, help="stories from the last DAYS days only (default 0: all)")
         q.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) "
                        "instead of the database")
@@ -163,7 +179,7 @@ def main():
                          ("owners", "owners"), ("consultations", "consultations"), ("releases", "release_cards"),
                          ("timelines", "lab_timelines"), ("pacts", "pacts"), ("tests", "new_tests"), ("fines", "fines"),
                          ("chips", "chip_rules"), ("promises", "promises"), ("buyouts", "buyouts"), ("govai", "gov_ai"),
-                         ("topics", "topics")):
+                         ("prices", "planner"), ("uses", "finance_uses"), ("mistakes", "mistakes"), ("topics", "topics")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -325,7 +341,10 @@ def main():
         print("Meme of the week:", "by Gemini" if any(k[0] == "7days" for k in memes.GENERATED) else "rule-based")
     elif a.cmd == "build":
         from .static import build
-        print(f"Wrote {build(store.connect(a.db), a.out)} cards to {a.out}/")
+        print(f"Wrote {build(store.connect(a.db), a.out, a.compass_open)} cards to {a.out}/")
+    elif a.cmd == "compass-user":
+        from . import access
+        access.manage(a.action, a.name)
     elif a.cmd == "status":
         from .collect import status_report
         print(status_report(store.connect(a.db)))
@@ -556,19 +575,104 @@ def main():
         print(f"{sum(map(len, topics.ADDED.values()))} added, {len(topics.LEFT_OUT)} left out. To check from {since or 'the start'} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}\n    Topics: {', '.join(c['for'])}\n    {c.get('summary') or c.get('s') or ''}")
+    elif a.cmd == "ready-check":
+        from . import ready_tools
+        if a.page:
+            print(ready_tools.read_page(a.page))
+        elif a.accept:
+            ready_tools.accept(a.seen)
+        else:
+            ready_tools.check(a.seen)
     elif a.cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "economy", "pacts", "tests",
-                   "fines", "chips", "buyouts"):
+                   "fines", "chips", "buyouts", "uses", "mistakes"):
         from . import (buyouts, chip_rules, court, fines, infra_watch, lab_timelines, model_economy, new_tests, owners, pacts,
                        press, release_cards, safety)
+        # Pulse Compass's lists: only in the private repo's checkout (aipulse/__init__.py)
+        finance_uses = import_module(".finance_uses", __package__) if a.cmd == "uses" else None
+        mistakes = import_module(".mistakes", __package__) if a.cmd == "mistakes" else None
         m = {"court": court, "press": press, "safety": safety, "infra": infra_watch, "owners": owners,
              "releases": release_cards, "timelines": lab_timelines, "economy": model_economy, "pacts": pacts,
-             "tests": new_tests, "fines": fines, "chips": chip_rules, "buyouts": buyouts}[a.cmd]
+             "tests": new_tests, "fines": fines, "chips": chip_rules, "buyouts": buyouts, "uses": finance_uses,
+             "mistakes": mistakes}[a.cmd]
+        # the site's own data.json for the daily job, which has no database (its last 3 months)
+        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
+        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else jobs.SINCE
+        todo = jobs.candidates(found, since)
+        print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+    elif a.cmd == "consultations":
+        # the daily job's to-check list: our stories of governments asking the public about AI, and the official lists'
+        # consultations that name AI only in their summary (read live)
+        from . import consultations as cs
+        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
+        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
+        todo = cs.candidates(found, since)
+        print(f"{len(cs.ADDED)} added by hand, {len(cs.LEFT_OUT)} left out. Stories to check after "
+              f"{max(since, cs.CHECKED_TO)} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+        try:
+            more = cs.summary_only()
+            print(f"Official list entries naming AI only in their summary ({len(more)}):")
+            for r in more:
+                print(f"  {r['place']}, closes {r['closes']}, {r['who']}: {r['title']}\n    {r['url']}\n    "
+                      f"Summary: {r['summary'][:600]}")
+        except Exception as e:
+            print(f"Official lists not read ({e})")
+    elif a.cmd == "govai":
+        # the daily job's to-check list for What governments use AI for: stories of a government's list of its own AI,
+        # and each hand-kept list's page read again (live)
+        from . import gov_ai
+        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
+        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
+        todo = gov_ai.candidates(found, since)
+        print(f"{len(gov_ai.OTHERS)} lists kept by hand, {len(gov_ai.RECHECK)} to recheck, {len(gov_ai.LEFT_OUT)} left "
+              f"out. Stories to check after {max(since, gov_ai.CHECKED_TO)} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+        print("Hand-kept lists read again:")
+        for place, shown, now in gov_ai.recheck():
+            print(f"  {place}: shown '{shown}'; {now}")
+    elif a.cmd == "tests-beaten":
+        from . import new_tests
+        found = new_tests.beat_candidates(a.since or new_tests.BEATS_CHECKED_TO)
+        print(f"{len(new_tests.BEATEN)} beaten. Later papers naming a test, after "
+              f"{a.since or new_tests.BEATS_CHECKED_TO} ({len(found)}):")
+        for c in found:
+            print(f"  {c['test']}: {c['date']} {c['title']}\n    {c['url']}")
+            for x in c["said"]:
+                print(f"      > {x}")
+    elif a.cmd == "topics":
+        from . import topics
+        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
+        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
+        todo = topics.candidates(found, since)
+        print(f"{sum(map(len, topics.ADDED.values()))} added, {len(topics.LEFT_OUT)} left out. To check from {since or 'the start'} ({len(todo)}):")
+        for c in todo:
+            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}\n    Topics: {', '.join(c['for'])}\n    {c.get('summary') or c.get('s') or ''}")
+    elif a.cmd == "ready-check":
+        from . import ready_tools
+        if a.page:
+            print(ready_tools.read_page(a.page))
+        elif a.accept:
+            ready_tools.accept(a.seen)
+        else:
+            ready_tools.check(a.seen)
+    elif a.cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "economy", "pacts", "tests",
+                   "fines", "chips", "buyouts", "uses", "mistakes"):
+        from . import (buyouts, chip_rules, court, finance_uses, fines, infra_watch, lab_timelines, mistakes, model_economy,
+                       new_tests, owners, pacts, press, release_cards, safety)
+        m = {"court": court, "press": press, "safety": safety, "infra": infra_watch, "owners": owners,
+             "releases": release_cards, "timelines": lab_timelines, "economy": model_economy, "pacts": pacts,
+             "tests": new_tests, "fines": fines, "chips": chip_rules, "buyouts": buyouts, "uses": finance_uses,
+             "mistakes": mistakes}[a.cmd]
         # the site's own data.json for the daily job, which has no database (its last 3 months)
         found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
         start = getattr(m, "SINCE", "")
         since = max(start, (date.today() - timedelta(days=a.days)).isoformat()) if a.days else start
         todo = m.candidates(found, since)
-        since = since if m not in (infra_watch, owners, release_cards, lab_timelines, pacts, new_tests, fines, chip_rules, buyouts) else f"after {max(since, m.CHECKED_TO)}"
+        since = since if m not in (infra_watch, owners, release_cards, lab_timelines, pacts, new_tests, fines, chip_rules, buyouts, finance_uses, mistakes) else f"after {max(since, m.CHECKED_TO)}"
         done = (f"{len(court.CASES)} cases" if m is court else f"{len(press.CHECKED)} checked" if m is press
                 else f"{len(safety.DOCS)} documents" if m is safety else f"{len(owners.DEALS)} deals" if m is owners
                 else f"{len(release_cards.RELEASES)} releases" if m is release_cards
@@ -579,6 +683,8 @@ def main():
                 else f"{len(fines.BANS) + len(fines.FINES)} rows" if m is fines
                 else f"{len(chip_rules.TOOLS) + len(chip_rules.BUYERS) + len(chip_rules.CHINA)} rows" if m is chip_rules
                 else f"{len(buyouts.DEALS)} deals" if m is buyouts
+                else f"{len(finance_uses.USES)} uses" if m is finance_uses
+                else f"{len(mistakes.MISTAKES)} cases" if m is mistakes
                 else f"{len(infra_watch.BUILDS) + len(infra_watch.POWER) + len(infra_watch.DECISIONS)} rows")
         print(f"{done}, {len(m.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
@@ -595,15 +701,20 @@ def main():
             print(f"Safety reports to look for again ({len(due)}): {', '.join(due) or 'none'}")
     elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note", "owners-note", "consultations-note",
                    "releases-note", "timelines-note", "pacts-note", "tests-note", "promises-note", "fines-note",
-                   "chips-note", "buyouts-note", "govai-note", "topics-note"):
+                   "chips-note", "buyouts-note", "govai-note", "prices-note", "uses-note", "mistakes-note", "topics-note"):
         # A court/, press/, safety/ or infra/<day> branch's drafts, to the project inbox for approval
-        from . import (buyouts, chip_rules, consultations, court, digest, fines, gov_ai, infra_watch, lab_timelines, new_tests, owners, pacts, press,
-                       promises, release_cards, safety, topics)
+        from . import (buyouts, chip_rules, consultations, court, digest, fines, gov_ai, infra_watch, lab_timelines,
+                       new_tests, owners, pacts, press, promises, release_cards, safety, topics)
+        # Pulse Compass's lists: only in the private repo's checkout (aipulse/__init__.py)
+        planner = import_module(".planner", __package__) if a.cmd == "prices-note" else None
+        finance_uses = import_module(".finance_uses", __package__) if a.cmd == "uses-note" else None
+        mistakes = import_module(".mistakes", __package__) if a.cmd == "mistakes-note" else None
         m = {"court-note": court, "press-note": press, "safety-note": safety, "infra-note": infra_watch,
              "owners-note": owners, "consultations-note": consultations, "releases-note": release_cards,
              "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests,
              "promises-note": promises, "fines-note": fines, "chips-note": chip_rules, "buyouts-note": buyouts,
-             "govai-note": gov_ai, "topics-note": topics}[a.cmd]
+             "govai-note": gov_ai, "prices-note": planner, "uses-note": finance_uses,
+             "mistakes-note": mistakes, "topics-note": topics}[a.cmd]
         extra = [open(a.base_money, encoding="utf-8").read()] if getattr(a, "base_money", None) else []
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch, *extra)
         if not note:

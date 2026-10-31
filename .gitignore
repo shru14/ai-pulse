@@ -14,6 +14,9 @@ data/brands.json
 data/brands-wikidata.json
 data/brand-icons/
 
+# Pulse Compass: the paid product, in its own private repo
+compass/
+
 __pycache__/
 .pytest_cache/
 .claude/

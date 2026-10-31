@@ -238,6 +238,35 @@ RELEASES = [
      "https://the-decoder.com/nvidias-open-nemotron-3-5-transcribe-combines-transcription-translation-and-speaker-recognition/",
      "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B"),
 ]
+# what each release is for, from its story: "General" reads and writes text (images or audio too, for some);
+# the rest do one job. The adoption planner lists a model only for the jobs its kind can do
+KINDS = ("General", "Extraction", "Classification", "Code", "Maths proofs", "Cyber", "Voice", "Image", "Video",
+         "Robots and world models")
+KIND = {
+    "Qwen3.6-35B-A3B": "General", "Kimi K2.6": "General", "GPT-5.5": "General", "DeepSeek V4 Preview": "General",
+    "Nemotron 3 Nano Omni": "General", "GPT-5.5 Instant": "General", "Gemini 3.5 Flash": "General",
+    "Gemini Omni Flash": "Video", "Claude Opus 4.8": "General", "Cosmos 3": "Robots and world models",
+    "MiniMax M3": "General", "Nemotron 3 Ultra": "General", "Gemini 3.5 Live Translate": "Voice",
+    "DiffusionGemma": "General", "GLM-5.2": "General", "Nano Banana 2 Lite": "Image", "Leanstral 1.5": "Maths proofs",
+    "GPT-Live": "Voice", "Grok 4.5": "General", "Muse Spark 1.1": "General", "Bonsai 27B": "General",
+    "GPT-6.1 Terra": "General", "Gemini 4 Carbon": "General", "Genie 4": "Robots and world models",
+    "Nemotron 3.5 Transcribe": "Voice",
+    "Inkling": "General", "Kimi K3": "General", "Kimi K3.1 Pro": "General", "Antares": "Cyber", "Laguna S 2.1": "Code", "Claude Opus 5": "General",
+    "MAI-Cyber-1-Flash": "Cyber", "Gemini Robotics 2": "Robots and world models", "MiniMax H3": "Video",
+    "Dialog-RSN-1": "Voice", "Inkling Small": "General", "Qwen3.8-Max": "General", "Muse Glimmer": "General",
+    "GPT-5.6-Cyber": "Cyber", "Nemotron 3.5 Lightning": "General", "Grok 4.6": "General",
+    "Gemini 3.7 Flash": "General", "Palmyra X6": "General", "GLM-5.3": "General", "Qwen3.8-Flash-Next": "General",
+    "GLM-5.3-Flash": "General", "Granite 4.2": "General", "Gemini 3.5 Transcribe": "Voice",
+    "Claude Fable 5.1": "General", "Gemini 3.8 Flash": "General", "Muse Spark 1.3": "General",
+    "GPT-6 Astra": "General", "DeepSeek V4.1 Flash": "General", "Gemini 3.8 Live": "Voice",
+    "Qwen3.8-Omni-Flash": "General", "Grok 4.7": "General", "Claude Opus 5.5": "General",
+    "GPT-6 Sol and Luna": "General", "FLUX 3 Action": "Robots and world models", "Claude Sonnet 5.5": "General",
+    "GPT-6.1 Sol": "General", "Gemini 4 Argon": "General", "Clef": "Classification", "MAI-Transcribe-2": "Voice",
+    "Kolibri": "General", "Beam": "General", "Mistral Large 4": "General", "Claude Haiku 5.5": "General",
+    "Muse Wonder": "General", "Grok Voice 3.0": "Voice", "Muse Spark Open": "General",
+    "Nemotron 3.5 Super VL": "General", "Step 5 Preview": "General", "Nemotron 3.5 Bolt 74B-A9B 24GB": "General",
+    "Clairic": "Extraction", "MiniMax M3.1 Flash": "General",
+}
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
 # here, or with no day, had none on the lab's own pages when last checked; text on safety with no results doesn't count.

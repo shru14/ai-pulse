@@ -236,6 +236,29 @@ TERMS: dict[str, tuple[str, str, str]] = {
                            "non-commercial purposes'"),
     "digital-strategy.ec.europa.eu": ("official", "https://commission.europa.eu/legal-notice_en",
                                       "European Commission: reuse allowed with acknowledgement"),
+    # Financial regulators (checked 25 Oct 2026)
+    "www.esma.europa.eu": ("official", "https://www.esma.europa.eu/legal-notice",
+                           "'Reproduction of all information on this site (ESMA Library) is authorised except as "
+                           "otherwise stated', with the source acknowledged; no clause on robots"),
+    "www.eba.europa.eu": ("official", "https://www.eba.europa.eu/legal-notice",
+                          "'Reproduction of all EBA material on this site is authorised, provided the source is "
+                          "acknowledged'; no clause on robots"),
+    "www.eiopa.europa.eu": ("official", "https://www.eiopa.europa.eu/legal-notice_en",
+                            "'Reproduction of information and documents from the Authority's website is authorised "
+                            "without prior permission', credited 'Source: EIOPA'; a summary or translation needs a "
+                            "disclaimer (we show its own title and summary, unchanged); no clause on robots"),
+    "www.consumerfinance.gov": ("official", "https://www.consumerfinance.gov/privacy/website-privacy-policy/",
+                                "'Information created by the CFPB is in the public domain and you may reproduce, "
+                                "publish, or otherwise use it'"),
+    # Central banks (checked 25 Oct 2026)
+    "www.ecb.europa.eu": ("official", "https://www.ecb.europa.eu/services/disclaimer/html/index.en.html",
+                          "'Users of this website may make free use of the information obtained directly from it', "
+                          "provided it appears accurately and 'the ECB must be cited as the source'; no clause on "
+                          "robots"),
+    "www.bis.org": ("official", "https://www.bis.org/terms_conditions.htm",
+                    "Users may 'reproduce a limited extract of BIS Material' (not more than 400 words) 'free of "
+                    "charge, provided the BIS is cited as the source'; we keep a title and short summary; no clause "
+                    "on robots"),
     # Governments beyond the English-speaking ones (checked 21 Oct 2026)
     "www.bundesregierung.de": ("terms read", "https://www.bundesregierung.de/breg-de/impressum",
                                "Impressum read in full: provider, liability and image credits; nothing on robots, "

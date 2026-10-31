@@ -511,6 +511,25 @@ SOURCES = [
      "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
     {"name": "European Commission: Digital Strategy", "url": "https://digital-strategy.ec.europa.eu/en/rss.xml",
      "category": "policy", "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    # Financial regulators (added 25 Oct 2026, for the adoption planner's rule book): the EU's three supervisory
+    # authorities and the US consumer finance bureau, the ones whose terms allow reuse (FCA, Bank of England, MAS and
+    # HKMA limit use; SEC and RBI refuse our reader). Only their posts naming AI are kept.
+    {"name": "ESMA", "url": "https://www.esma.europa.eu/rss.xml", "category": "policy", "jurisdictions": ["EU"],
+     "ai_in_title": True, "government": True, "max_age_days": 92},
+    {"name": "EBA", "url": "https://www.eba.europa.eu/news-press/news/rss.xml", "category": "policy",
+     "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    {"name": "EIOPA", "url": "https://www.eiopa.europa.eu/node/4816/rss_en", "category": "policy",
+     "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    {"name": "Consumer Financial Protection Bureau", "url": "https://www.consumerfinance.gov/about-us/newsroom/feed/",
+     "category": "policy", "jurisdictions": ["US"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    # Central banks (added 25 Oct 2026, for the adoption planner): the ECB's press releases, speeches and blog, and the
+    # Bank for International Settlements' media releases, the two whose terms allow reuse with the source cited (the
+    # IMF bans automated download; the FSB allows only non-commercial reproduction). Only posts naming AI are kept.
+    # The BIS speaks for no one country, so it has no jurisdiction and stays out of the rule book.
+    {"name": "European Central Bank", "url": "https://www.ecb.europa.eu/rss/press.html", "category": "policy",
+     "jurisdictions": ["EU"], "ai_in_title": True, "government": True, "max_age_days": 92},
+    {"name": "Bank for International Settlements", "url": "https://www.bis.org/doclist/all_pressrels.rss",
+     "category": "policy", "ai_in_title": True, "max_age_days": 92},
     # Beyond the English-speaking governments (added 21 Oct 2026); their titles are translated offline (translate.py)
     # before the AI test. Germany: the federal government's press office, every ministry's news in one feed.
     {"name": "Bundesregierung (Germany)", "url": "https://www.bundesregierung.de/service/rss/breg-de/1151244/feed.xml",

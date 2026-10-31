@@ -44,6 +44,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pulse Compass, the paid product, from its private repo, with a read-only key. It reaches the site only after
+      # the build has encrypted it (aipulse/access.py). If this fails, the free site still publishes, without it.
+      - name: Fetch Pulse Compass
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: shru14/ai-pulse-compass
+          ssh-key: ${{ secrets.COMPASS_DEPLOY_KEY }}
+          persist-credentials: false
+          path: compass
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -69,7 +80,7 @@ jobs:
       # English versions of non-English official records (aipulse/translate.py): an open-source model
       # (OPUS-MT, CC BY 4.0) run on the runner with two small libraries. No API; the model is cached.
       - name: Install the offline translator
-        run: pip install --quiet ctranslate2 sentencepiece certifi pillow  # pillow: writes the meme's captions onto its template
+        run: pip install --quiet ctranslate2 sentencepiece certifi pillow cryptography  # pillow: writes the meme's captions onto its template; cryptography: seals Pulse Compass's pages
 
       - name: Restore the translation model
         if: github.event_name != 'push'
@@ -180,6 +191,8 @@ jobs:
           key: aipulse-db-v4-${{ github.run_id }}
 
       - name: Build the site
+        env:
+          COMPASS_USERS: ${{ secrets.COMPASS_USERS }}  # who can log in to Pulse Compass: `python -m aipulse compass-user`
         run: python -m aipulse --db aipulse.db build --out site
 
       # The daily listen (aipulse/audio.py): yesterday's two-minute clip for everyone and for each reader setup

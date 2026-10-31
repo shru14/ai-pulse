@@ -6,11 +6,23 @@ from pathlib import Path
 
 os.environ["AIPULSE_OFFLINE"] = "1"  # brand logos: cached data only, no network
 
-from aipulse import classify, feeds, store
+from aipulse import COMPASS, classify, feeds, store
 from aipulse import jurisdictions
 from aipulse.collect import apply_regulation, collect, reclassify
 
 FIX = Path(__file__).parent / "fixtures"
+
+
+def test_parse_rss_1():
+    """RSS 1.0, as the BIS writes it: items beside the channel, every tag in the RSS 1.0 namespace."""
+    xml = (b'<?xml version="1.0"?><rdf:RDF xmlns="http://purl.org/rss/1.0/" '
+           b'xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">'
+           b'<channel rdf:about="https://www.bis.org/x.rss"><title>Media releases</title></channel>'
+           b'<item rdf:about="https://www.bis.org/media-releases/ai"><title>BIS report on AI in finance</title>'
+           b'<description>Central banks and AI.</description><dc:date>2026-10-16T00:00:00Z</dc:date></item></rdf:RDF>')
+    [e] = feeds.parse(xml)
+    assert e["title"] == "BIS report on AI in finance" and e["url"] == "https://www.bis.org/media-releases/ai"
+    assert e["summary"] == "Central banks and AI." and e["published"].isoformat() == "2026-10-16T00:00:00+00:00"
 
 
 def test_parse_rss_and_atom():
@@ -623,7 +635,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
     assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "about", "discussing", "saved", "review", "social.json", "today", "today.json", "topics", "monthly",
-        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "chip-export-rules", "ai-buyouts", "lab-timelines", "model-economy", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
+        "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "chip-export-rules", "ai-buyouts", "lab-timelines", "model-economy", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"sectors", "planner"} if COMPASS else set()) | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
     assert {f for f in re.findall(r'url\("fonts/([^"]+)"\)', page)} <= {p.name for p in (tmp_path / "site" / "fonts").iterdir()}
@@ -664,7 +676,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     for old, new in kind_pages.MOVED.items():  # an old address sends readers to the new one
         assert f'url=/{new}"' in (tmp_path / "site" / old / "index.html").read_text(encoding="utf-8")
         assert f"/{old}<" not in sitemap
-    assert sitemap.count("<url>") == 1 + 7 + 10 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, ai-buyouts/, lab-timelines/, model-economy/
+    assert sitemap.count("<url>") == 1 + 7 + 10 + (3 if COMPASS else 0) + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, ai-buyouts/, sectors/ with its finance uses/ and rules/, lab-timelines/, model-economy/ (the adoption planner's pages are Pro: none in the sitemap)
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
     assert "<title>AI policy news: governments, courts and politics · AI Pulse</title>" in policy
@@ -4306,6 +4318,10 @@ def test_buyouts_candidates_and_the_approval_note():
     assert bo.note(open(bo.__file__, encoding="utf-8").read(), "buyouts/2026-10-21") is None
 
 
+
+
+
+
 def test_release_safety_reports(monkeypatch):
     from datetime import date
     from aipulse import release_cards as rc
@@ -4318,6 +4334,11 @@ def test_release_safety_reports(monkeypatch):
     assert rc.safety("2026-10-15", "Step 5 Preview")["checked"] == "2026-11-14"  # looked for until 30 days after launch
     assert "Step 5 Preview" in rc.safety_due(date(2026, 10, 20)) and "Grok 4.5" not in rc.safety_due(date(2026, 10, 20))
     assert "Safety report on day one" in rc.body(rc.rows())
+
+
+def test_every_release_has_a_kind():
+    from aipulse import release_cards as rc
+    assert {r[2] for r in rc.RELEASES} == set(rc.KIND) and set(rc.KIND.values()) <= set(rc.KINDS)
 
 
 def test_lab_timelines_pulled(monkeypatch):
@@ -4602,6 +4623,53 @@ def test_sunday_listen_starts_with_the_week():
     assert said.index("These were the important updates this week") < said.index("The story of the week") \
         < said.index("Week story 2") < said.index("Now, Saturday the 24th, in short")
     assert audio.line(plan, list(rss.FEEDS), None, 140) == "2 minutes · the week's important updates, then Saturday in short"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def test_feed_date_from_time_tag_when_no_date_field():
+    from aipulse import feeds
+    xml = (b'<rss><channel><item><title>ESMA news</title><link>https://www.esma.europa.eu/a</link>'
+           b'<description>&lt;time datetime="2026-10-22T16:51:53+02:00"&gt;22 October 2026&lt;/time&gt;</description>'
+           b'</item></channel></rss>')
+    (e,) = feeds.parse(xml)
+    assert e["published"] and e["published"].isoformat().startswith("2026-10-22")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def test_topics_a_story_joins_by_words_or_approval_and_the_net_only_suggests(monkeypatch):

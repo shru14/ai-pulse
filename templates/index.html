@@ -57,7 +57,7 @@
   --display:"Archivo Black", "Arial Black", sans-serif;
   /* Section colours: Okabe-Ito's colour-blind-safe set (research tuned so every pair stays apart under protan-, deutan-
      and tritanopia). --f-* fill tiles (dark text on them); --c-* are the text shades of the same hues. */
-  --f-tool:#009E73; --f-news:#56B4E9; --f-research:#C85BC3; --f-reg:#F85C48; --f-policy:#E69F00; --f-infra:#8BEC8B; --f-all:#F0E442;
+  --f-tool:#009E73; --f-news:#56B4E9; --f-research:#C85BC3; --f-reg:#F85C48; --f-policy:#E69F00; --f-infra:#8BEC8B; --f-all:#F0E442; --f-sectors:#BFD9EF;
   /* Front page, pastel: the same hues half-mixed with white. Pastels sit too close for colour alone to tell them apart
      under colour blindness, so each tile also carries its name and its icon in the full-strength colour above. */
   --p-tool:#80CEB9; --p-news:#AADAF4; --p-research:#E4ADE1; --p-reg:#FCAEA4; --p-policy:#F2CF80; --p-infra:#C5F6C5;
@@ -120,6 +120,19 @@ header.top{gap:10px}
 .saved-btn[hidden]{display:none}
 .saved-btn b{font:600 12px var(--mono)}
 .secnav .saved-nav{display:none;align-items:center;gap:3px}
+/* Pulse Pro, the paid service, right beside the name */
+header.top .brand:has(+ .pro-btn){margin-right:0}
+.pro-btn{flex:none;margin-right:auto;height:32px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:2px solid #000;background:#F0E442;color:#000;font:600 14px var(--body);text-decoration:none;box-shadow:3px 3px 0 var(--ink)}
+.pro-btn b{font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.pro-btn svg{width:16px;height:16px;fill:none;stroke:#000;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.pro-btn:hover,.pro-btn:focus-visible{translate:-1px -1px;box-shadow:4px 4px 0 var(--ink)}
+@media (max-width:560px){.pro-btn{height:30px;padding:0 7px;font-size:12.5px;gap:4px;box-shadow:2px 2px 0 var(--ink)}.pro-btn svg{display:none}}
+@media (max-width:400px){.pro-btn{font-size:0;gap:0}.pro-btn b{font-size:12px}}  /* the smallest phones: just "PRO" */
+/* Sectors: AI by industry, not a news stream, so it stands apart: a divider, then a solid dark-blue tab */
+.k-sectors{--cat-c:#0072B2;--cat-soft:#E3EEF8;--cat-f:#0072B2}
+header.top .secnav a.sector-nav{flex:0 0 auto;margin-left:14px;background:#0072B2;color:#fff;border-top-color:#0072B2;position:relative}
+header.top .secnav a.sector-nav::before{content:"";position:absolute;left:-8px;top:6px;bottom:6px;border-left:1px solid var(--ink)}
+header.top .secnav a.sector-nav:hover{background:#005a8c;color:#fff}
 .saved-nav svg{width:14px;height:14px}
 .foot .src{margin-left:auto}
 .save{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin:-6px -6px -6px 0;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
@@ -968,6 +981,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   /* every stream in the masthead at once: three to a row, none cut off */
   header.top .secnav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin-inline:0;padding:0;-webkit-mask-image:none;mask-image:none}
   header.top .secnav a{padding:6px 2px 5px;font-size:11.5px;border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+  header.top .secnav a.sector-nav{grid-column:1/-1;margin:0}header.top .secnav a.sector-nav::before{content:none}
   header.top .secnav a:nth-child(3n+1){border-left:0}
   /* the jump row: every section of the page, all in view, above the email strip */
   .jump{flex-wrap:wrap;gap:5px;margin:0 0 -20px;padding:2px 0 0}
@@ -1080,6 +1094,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>
       <h1>AI Pulse</h1>
     </a>
+    <a class="pro-btn" href="/planner/"><svg viewBox="0 0 22 22" aria-hidden="true"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/></svg>Pulse <b>Pro</b></a>
     <div class="mast-line" id="mast-line"><p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
       <div class="status home-status" id="home-status">Loading feed…</div></div>
     <!-- Each stream is its own page (/releases/, /industry/…); the brand goes back to the front page. All stories
@@ -1091,6 +1106,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       <a href="/regulation/" data-go="regulation" class="k-regulation">Regulation tracker</a>
       <a href="/policy/" data-go="policy" class="k-policy">Policy</a>
       <a href="/infra/" data-go="infra" class="k-infra">Infra</a>
+      <a href="/sectors/" class="k-sectors sector-nav">Sectors</a>
       <a href="/saved/" data-go="saved" class="k-all saved-nav" title="Saved stories" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg><b></b></a>
     </nav>
     <a class="about-link" href="/about/" data-go="about">About</a>
@@ -1127,6 +1143,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       <a href="/regulation/" data-go="regulation" class="sm-tab k-regulation"><b>Regulation tracker</b><span></span><img src="photos/cartoons/streams/regulation.svg" alt=""></a>
       <a href="/policy/" data-go="policy" class="sm-tab k-policy"><b>Policy</b><span></span><img src="photos/cartoons/streams/policy.svg" alt=""></a>
       <a href="/infra/" data-go="infra" class="sm-tab k-infra"><b>Infra</b><span></span><img src="photos/cartoons/streams/infra.svg" alt=""></a>
+      <a href="/sectors/" class="sm-tab k-sectors"><b>Sectors</b><span></span><img src="photos/cartoons/streams/sectors.svg" alt=""></a>
       <a href="/today/" data-go="today" class="sm-link sm-more">Today in AI</a>
       <a href="/discussing/" data-go="discussing" class="sm-link">People are discussing</a>
       <a href="/monthly/" class="sm-link">Monthly issues</a>
