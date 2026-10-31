@@ -147,7 +147,7 @@ HAND = [
      "https://www.handbook.fca.org.uk/handbook/PRIN/2A/"),
     ("finance", "GB", "Rule", "Senior Managers and Certification Regime", "Since 2016 for banks, 2019 for all FCA firms",
      "A named senior manager answers for each AI tool.", "https://www.fca.org.uk/firms/senior-managers-certification-regime"),
-    ("finance", "GB", "Rule", "Operational resilience (FCA SYSC 15A)", "Since 31 Mar 2025",
+    ("finance", "GB", "Rule", "Operational resilience (FCA SYSC 15A)", "Since 31 Mar 2022; firms within tolerances by 31 Mar 2025",
      "An AI tool inside an important service is mapped and tested for what happens if its supplier stops.",
      "https://www.handbook.fca.org.uk/handbook/SYSC/15A/"),
     ("finance", "GB", "Rule", "FCA algorithmic trading (MAR 7A)", "Since 3 Jan 2018",
