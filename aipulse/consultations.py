@@ -120,6 +120,8 @@ LEFT_OUT: dict[str, str] = {
         "on the US list",
     "https://www.federalregister.gov/documents/2026/04/29/2026-08281/ai-enabled-optimization-of-early-phase-clinical-trials-pilot-program-request-for-information":
         "on the US list",
+    "https://www.itweb.co.za/article/its-in-the-shadows-unsanctioned-ai-tools-are-a-pervasive-risk-to-the-business/Pero3MZ3VjpqQb6m":
+        "no government asking the public (a vendor piece on shadow AI)",
 }
 # a headline that may report a consultation: the words governments use for asking the public
 _ASKS = re.compile(r"\b(consult(s|ed|ing|ation|ations)?|public comments?|call for (evidence|views|input|comments?)|"
