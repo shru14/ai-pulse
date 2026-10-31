@@ -227,6 +227,16 @@ RELEASES = [
     ("2026-10-23", "Moonshot", "Kimi K3.1 Pro", "Closed", "Weights promised by 4 Nov", "", "", "", False,
      "$2 / $10|highspeed version $4 / $20",
      "https://the-decoder.com/chinese-ai-model-kimi-k3-1-pro-is-closing-in-on-anthropics-claude-opus-5-5/", ""),
+    ("2026-10-26", "OpenAI", "GPT-6.1 Terra", "Closed", "", "", "", "", False, "$1 / $5",
+     "https://the-decoder.com/gpt-6-1-terra-halves-openais-api-prices-and-still-gains-ground-on-its-larger-models/", ""),
+    ("2026-10-27", "Google", "Genie 4", "Closed", "Research preview for trusted testers", "", "", "", False, "",
+     "https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/", ""),
+    ("2026-10-28", "Google", "Gemini 4 Carbon", "Closed", "Cyber defenders first", "", "", "", False,
+     "$2 / $10|introductory, then $4 / $20",
+     "https://deepmind.google/blog/gemini-4-carbon-our-next-frontier-model/", ""),
+    ("2026-10-28", "Nvidia", "Nemotron 3.5 Transcribe", "Open", "", "OpenMDW-1.1", "", "", False, "",
+     "https://the-decoder.com/nvidias-open-nemotron-3-5-transcribe-combines-transcription-translation-and-speaker-recognition/",
+     "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B"),
 ]
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -234,7 +244,7 @@ RELEASES = [
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-10-28"
+SAFETY_CHECKED = "2026-10-31"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -263,6 +273,10 @@ SAFETY = {
     "Beam": ("2026-10-16", "https://reflection.ai/beam-safety-report", "With the weights"),
     "Grok 4.7": ("2026-09-21", "https://x.ai/news/grok-4-7", "In the launch post"),
     "Mistral Large 4": ("2026-10-06", "https://mistral.ai/news/mistral-large-4/", "In the launch post"),
+    "GPT-6.1 Terra": ("2026-10-26", "https://deploymentsafety.openai.com/gpt-6-1-terra",
+                      "An addendum to the GPT-6 Astra card"),
+    "Gemini 4 Carbon": ("2026-10-28", "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/",
+                        "In the launch post"),
     "Gemini Robotics 2": ("2026-07-29", "https://storage.googleapis.com/deepmind-media/gemini-robotics/Gemini-Robotics-2-Safety.pdf", ""),
     "Gemini 3.8 Live": ("", "https://deepmind.google/models/model-cards/gemini-3-8-audio/",
                         "Model card gives no test results for it"),
@@ -428,10 +442,46 @@ LEFT_OUT = {
         "Nanbeige4.3-33B: Nanbeige's home country is not stated in the stories",
     "https://pandaily.com/nanbeige4-3-33b-open-source-agent-coding-model-512k-context-apache-2-boss-zhipin":
         "same as Nanbeige4.3-33B",
+    "https://openai.com/index/introducing-gpt-6-1-terra":
+        "same as GPT-6.1 Terra",
+    "https://blog.google/products-and-platforms/products/gemini/gemini-4-argon-in-action/":
+        "same as Gemini 4 Argon",
+    "https://the-decoder.com/google-deepmind-releases-gemini-4-carbon-just-two-weeks-after-argon-with-gains-across-the-board/":
+        "same as Gemini 4 Carbon",
+    "https://huggingface.co/blog/nvidia/nemotron-transcribe-granary":
+        "same as Nemotron 3.5 Transcribe",
+    "https://www.liquid.ai/blog/lfm3":
+        "LFM3: one news outlet within 3 days",
+    "https://github.com/MiniMax-AI/mcode-stack":
+        "MiniMax mcode-stack: a tool, not a model",
+    "https://pandaily.com/ant-group-ling-3-1-flash-1019-ling-3-1-flash-base-open-source-personal-agent-aa-index-44":
+        "Ling-3.1-flash-1019: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/27/mirendil-fern-10m-token-context-model/":
+        "Fern 0.1: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/26/vllm-semantic-router-d3-ultra-27b-multimodal-decision-model/":
+        "d3-ultra: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/26/baidu-unlimited-ocr-2-open-source-long-document-ocr/":
+        "Unlimited OCR 2: Baidu's home country and licence text are not in the pages read",
+    "https://huggingface.co/baidu/Unlimited-OCR-2":
+        "same as Unlimited OCR 2",
+    "https://pandaily.com/rock-matrix-edgerock-4b-open-source-bounded-state-model-qwen3-5-4b-72mib-kv-cache":
+        "EdgeRock-4B: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/26/nace-ai-releases-drex-for-search-for-ai-agents/":
+        "Drex: one news outlet within 3 days",
+    "https://pandaily.com/iflytek-sparkaudio-1-0-speech-foundation-model-99-languages-robot-super-brain-platform-3-0":
+        "SparkAudio 1.0: one news outlet within 3 days",
+    "https://pandaily.com/primotion-paimon-0-embodied-foundation-model-300ms-action-chunk-fpga-control-chip-roadmap":
+        "Paimon-0: one news outlet within 3 days",
+    "https://pandaily.com/somark-open-sources-oxr-1-0-1-3b-document-parsing-model-omnidocbench-olmocr-docparsingbench":
+        "OXR-1.0: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/28/flashmap-flow-map-speculative-decoding/":
+        "FlashMap: a speed-up add-on for LLM decoding, not a new model",
+    "https://cloud.google.com/blog/products/ai-machine-learning/gemini-robotics-embodied-reasoning-2-is-now-available-on-google-cloud/":
+        "Gemini Robotics Embodied Reasoning 2: no news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-10-25"
+CHECKED_TO = "2026-10-28"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
