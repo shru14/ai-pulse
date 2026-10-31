@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-10-27"
+CHECKED_TO = "2026-10-30"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -526,6 +526,21 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "revisions.",
         "The strongest of ten model endpoints passes an average of 69.9% of criteria per task but fully satisfies only "
         "26.4% of tasks", "", None),
+    "https://arxiv.org/abs/2610.38103": (
+        "The Prestige", "vision",
+        "Whether video models can follow magic tricks, where misdirection hides what happened, and explain the "
+        "unexpected outcome.",
+        "A substantial gap between even the strongest model and human performance", "", None),
+    "https://research.google/pubs/guide-a-benchmark-for-user-context-understanding-and-assistance-in-gui-workflow-videos/": (
+        "GUIDE", "agents",
+        "Whether models watching screen recordings of someone using software can tell what they are doing, what they "
+        "want and when to help.",
+        "All eight models struggled, reaching only 44.6% and 55.0% accuracy on behavior state and help prediction", "",
+        None),
+    "https://arxiv.org/abs/2610.38425": (
+        "IntReal", "vision",
+        "Whether models can write text with matching images woven through it, as real web pages and articles do.",
+        "No top score: it shows distinct strengths and weaknesses across four families of models", "", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
@@ -557,6 +572,18 @@ LEFT_OUT: dict[str, str] = {
     "https://arxiv.org/abs/2604.17761": "an interpretability method for analysing failures, not a new test",
     "https://research.google/pubs/freshbrew-a-benchmark-for-evaluating-ai-agents-on-java-code-migration-2/":
         "FreshBrew is an October 2025 paper, and its best score differs between the Google page and arXiv",
+    "https://research.google/pubs/sembench-a-benchmark-for-semantic-query-processing-engines-2/":
+        "SemBench scores database query engines, not AI models",
+    "https://research.google/pubs/jaxbench-benchmarking-autonomous-tpu-kernel-optimization/":
+        "JAXBench mainly compares kernel-optimization methods, and its abstract gives no single best result",
+    "https://www.microsoft.com/en-us/research/publication/verusage-bench-a-benchmark-suite-for-rust-system-verification/":
+        "VeruSAGE-Bench's abstract names no best model or score, and the paper may predate the sample",
+    "https://research.google/pubs/beyond-the-emulator-bridging-the-sim-to-real-gap-in-mobile-agent-benchmarking/":
+        "BYTE is a framework for measuring phone battery and heat, with no best result",
+    "https://research.google/pubs/inference-perf-a-benchmarking-tool-for-genai-inference/":
+        "Inference Perf is a tool that measures serving speed, not a test of AI models",
+    "https://research.google/pubs/libevobench-probing-temporal-knowledge-startification-in-code-generation-models/":
+        "LibEvoBench is a June 2026 arXiv paper, before the sample starts",
 }
 # Tests a later paper beat, by the test's address in TESTS: (the later paper's address, the day arXiv announced it, what
 # it reports in its abstract's own numbers and words, and who got it as the abstract names them). A test counts as beaten
@@ -570,7 +597,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
 }
-BEATS_CHECKED_TO = "2026-10-25"
+BEATS_CHECKED_TO = "2026-10-29"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
