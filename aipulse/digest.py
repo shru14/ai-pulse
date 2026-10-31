@@ -565,6 +565,9 @@ FEATURES = [
      "subject that is rising, and the researchers we follow who published most.", "who-publishes-ai-research/"),
     ("The model economy", "What new AI models cost against the ones before them, and how many days' warning each "
      "lab gives before a model shuts down.", "model-economy/"),
+    # shown a second time, the owner's choice (31 Oct): the October issue is out by then
+    ("Monthly issue", "Each month of 2026 as a short booklet: the stories that mattered and the rules that moved.",
+     "monthly/"),
 ]
 
 
