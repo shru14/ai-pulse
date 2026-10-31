@@ -144,6 +144,34 @@ LEFT_OUT = {
         "A new model's launch price, not a change",
     "https://openai.com/index/openai-models-google-cloud":
         "Models added to a cloud platform, not countries or regions",
+    "https://the-decoder.com/openai-raises-just-11-billion-of-its-30-billion-target-as-big-investors-lose-their-ai-appetite/":
+        "Funding news, not a model price, place or withdrawal",
+    "https://www.channelnewsasia.com/business/us-airlines-deploy-ai-pricing-tools-startups-help-travelers-cash-in-fare-drops-6506646":
+        "Airline fares, not an AI model's price",
+    "https://www.itweb.co.za/article/itweb-tv-ai-boom-sends-pc-prices-soaring-across-africa/mQwkoM6Y5lE73r9A":
+        "PC hardware prices, not an AI model's price",
+    "https://techcabal.com/2026/10/30/enzi-oji-udezue-cheaper-ai-africa/":
+        "Opinion, not a price change",
+    "https://w.media/australian-dc-pipeline-reaches-26-8gw-as-development-shifts-beyond-sydney/":
+        "Data centres, not an AI model",
+    "https://www.marktechpost.com/2026/10/29/baseten-joey-1-2b-decision-model/":
+        "A new model's launch price, not a change",
+    "https://www.marktechpost.com/2026/10/29/assemblyai-tts-1-text-to-speech-api-voice-agents/":
+        "A new model's launch price, not a change",
+    "https://siliconangle.com/2026/10/29/solink-raises-more-than-100m-to-pull-business-data-from-security-cameras-with-ai/":
+        "Funding news, not a model being pulled",
+    "https://siliconangle.com/2026/10/28/virtana-lets-its-ai-agents-pull-in-agents-from-other-vendors-to-work-it-incidents/":
+        "A product feature, not a model being pulled",
+    "https://blogs.nvidia.com/blog/local-ai-rtx-spark-laptops-updates-models-agents-games/":
+        "Models added to a laptop product, not countries or regions",
+    "https://dplnews.com/lark-llega-mexico/":
+        "An app reaching a country, not an AI model",
+    "https://cloud.google.com/blog/products/ai-machine-learning/gemini-robotics-embodied-reasoning-2-is-now-available-on-google-cloud/":
+        "A model added to a cloud platform, not countries or regions",
+    "https://www.apple.com/newsroom/2026/10/apple-creator-studio-adds-powerful-new-ai-features-and-even-more-creative-tools/":
+        "An app's features, not an AI model",
+    "https://pandaily.com/qwen-jiang-guanjun-cncc-personal-agent-framework-model-memory-ecosystem-8000-atomic-capabilities":
+        "A talk about an agent framework, not a price, place or withdrawal",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
