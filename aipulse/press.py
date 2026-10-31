@@ -220,11 +220,23 @@ CHECKED: dict[str, dict] = {
              subject="language-models",
              about="Finds that all nine AI models tested write with more of the features that slow human readers, such as "
                    "deeply nested clauses and long-distance grammatical links, than people do."),
+    "https://pandaily.com/tsinghua-zhipu-harnesspro-recursive-harness-self-improvement-pareto-cost-26-percent-terminal-bench-2":
+        dict(paper="HarnessPro: Recursive Harness Self-Improvement with Pareto Optimization for Performance-Cost Trade-offs",
+             link="https://arxiv.org/abs/2610.26770", subject="agents",
+             about="Tests a method that lets AI coding agents improve their own harness without answer keys, finding an "
+                   "average 2.0-point gain in tasks solved and a 26.1% cut in cost per task against an earlier method."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://www.xataka.com/energia/estudio-explica-que-espana-1-gw-centros-datos-no-se-solucionara-instalando-simplemente-1-gw-renovables",  # a consultancy report (EY), not a paper
+    "https://the-decoder.com/experts-adopt-ai-agents-random-opinions-and-think-theyre-their-own-anthropic-study-finds/",  # a lab paper (Anthropic) posted only on its own site, on no preprint server or journal
+    "https://olhardigital.com.br/2026/10/30/inteligencia-artificial/um-quarto-dos-data-centers-do-mundo-esta-em-areas-com-escassez-de-agua/",  # paper found (Environmental Science & Technology) but its abstract can't be read to check: ACS refuses us
+    "https://www.gov.uk/government/publications/artificial-intelligence-sector-study-2025",  # a government sector report, not a paper
+    "https://www.xataka.com/empresas-y-economia/ia-no-va-a-meterse-debajo-casas-para-instalar-tuberias-eeuu-francia-oficios-manuales-estan-al-alza",  # a feature on several news reports and surveys, no one paper
+    "https://digital-strategy.ec.europa.eu/en/library/first-harmonised-standard-supporting-ai-act-published-official-journal",  # a European Commission notice on a standard, no paper
+    "https://internetlab.org.br/en/opinion/note-regarding-the-reference-to-the-papo-de-ia-study-in-metas-statement/",  # a note from an institute about a company statement, not a paper
     "https://www.fayerwayer.com/ciencia/2026/10/27/amor-real-o-algoritmo-estudio-revela-como-los-humanos-se-enamoran-de-la-ia-hasta-llegar-al-matrimonio/",  # a study (CSIC, UPV) named with no title or link, paper not found
     "https://tecnoblog.net/noticias/so-3-das-empresas-viram-ganhos-com-ia-mostra-estudo/",  # a company survey report (Gartner), not a paper
     "https://www.telesemana.com/blog/2026/10/27/crc-y-sutel-acuerdan-cooperacion-tecnica-sobre-inteligencia-artificial-servicios-digitales-y-conectividad/",  # an agreement between regulators, no paper
