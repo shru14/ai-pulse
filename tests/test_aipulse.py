@@ -3957,6 +3957,14 @@ def test_ai_consultations_daily_job_finds_unchecked_ones_and_shows_rows_checked_
     subject, text, html = consultations.note(base, "consultations/2026-10-20")
     assert subject == "AI Pulse, AI consultations: 1 new consultation to approve"
     assert "mandatory guardrails" in html and "30 Nov 2026" in html and "left out: 1 story" in text
+    monkeypatch.setattr(consultations, "COMING", [
+        ("India", "Paper on AI rules", "The ministry", "In the coming weeks", "https://news.example/in", "2026-10-26"),
+        ("Atlantis", "An AI strategy", "The palace", "Next year", "https://news.example/at", "2026-06-01")])
+    coming = consultations.body({}, date(2026, 10, 31))
+    assert "<h2>Coming soon · not open yet</h2>" in coming and "Paper on AI rules" in coming and "said 26 Oct 2026" in coming
+    assert "An AI strategy" not in coming  # said over 90 days ago: gone until said again
+    assert 'data-v="soon" aria-pressed="false">Coming soon <b>1</b>' in coming
+    assert "<b>1</b><span>places asked" in coming  # Australia's row: a promise isn't a place asking
 
 
 def test_lab_timelines_grid_by_month_collapses_one_release_labs_and_drafts_changes(tmp_path, monkeypatch):
