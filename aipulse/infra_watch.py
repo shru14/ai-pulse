@@ -129,6 +129,9 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/crusoe-and-araico-to-build-280-mw-ai-data-center-near-paraguays-itaipu-dam/", "Crusoe and Araico", "Paraguay", "Beside the Itaipú substation, near the Itaipú Dam", "106 MW first, about 280 MW later", "", "announced"),
     ("https://w.media/quantum-dc-proposes-1-2gw-data-centre-and-energy-hub-in-south-australia/", "Quantum DC", "Australia", "Tungkillo, South Australia", "About 1.2 GW", "", "announced"),
     ("https://w.media/firebirds-us-5-billion-kazakhstan-ai-factory-gets-green-light-for-45000-nvidia-gpus/", "Firebird, with Kazakhtelecom as construction partner", "Kazakhstan", "Data Center Valley", "Up to 109 MW in phase 1", "US$ 5bn estimated for phase 1", "building"),
+    ("https://w.media/vyoma-ai-breaks-ground-on-52-mw-ai-ready-dc-in-chennai/", "Vyoma.AI (L&T)", "India", "Chennai", "52 MW", "", "building"),
+    ("https://dcnnmagazine.com/projects-and-infrastructure/colt-dcs-rmz-begin-construction-of-64mw-mumbai-data-centre/", "Colt DCS and RMZ", "India", "Navi Mumbai", "64 MW", "", "building"),
+    ("https://w.media/kddi-to-invest-220-million-in-new-london-data-center/", "KDDI (Telehouse Europe)", "UK", "East London, next to the Docklands campus", "65 MVA of power", "£220m", "announced"),
 
 ]
 
@@ -221,6 +224,16 @@ LEFT_OUT: set[str] = {
     "https://w.media/softbank-plans-us50-billion-data-center-investment-in-malaysia-report/",  # a multi-site plan from the prime minister's words, no size; not confirmed by SoftBank
     "https://www.businesskorea.co.kr/news/articleView.html?idxno=279648",  # ultracapacitor factory, parts
     "https://techcabal.com/2026/10/26/infragora-1-billion-data-centres/",  # can't read to check
+    "https://www.xataka.com/energia/estudio-explica-que-espana-1-gw-centros-datos-no-se-solucionara-instalando-simplemente-1-gw-renovables",  # study and explainer, opinion
+    "https://w.media/powerbank-partner-signs-first-lease-for-us-7-16-million-modular-data-center-in-ontario/",  # lease of capacity; still needs power, permits and zoning
+    "https://www.channelnewsasia.com/business/alliant-targets-1-gw-new-data-center-contracts-in-six-months-power-demand-surges-6507986",  # can't read to check
+    "https://w.media/nebius-and-aib-sign-12-year-agreement-for-50-mw-ai-data-center-capacity/",  # lease of capacity; state not named
+    "https://w.media/australian-dc-pipeline-reaches-26-8gw-as-development-shifts-beyond-sydney/",  # market forecast
+    "https://www.foodandwaterwatch.org/press/2026/10/29/residents-urge-allegheny-county-to-deny-springdale-data-center/",  # residents' call; no decision
+    "https://w.media/anant-raj-inks-haryana-data-center-mou-as-quarterly-revenue-hits-us-69-46-million/",  # state-wide MoU and company plan; no single site or cost
+    "https://w.media/preussenelektra-and-nvidia-assess-former-nuclear-plant-sites-for-ai-data-centers/",  # joint assessment; no site, size or investment
+    "https://www.thelec.net/news/articleView.html?idxno=15059",  # cable order, parts
+    "https://w.media/no-data-center-moratorium-for-malaysia-but-states-with-insufficient-water-cant-host-data-centers-minister/",  # minister's statement of policy; unclear what was decided
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
