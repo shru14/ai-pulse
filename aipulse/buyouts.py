@@ -208,6 +208,10 @@ DEALS = [
     ("2026-10-26", "Itaú", "NeoSpace", "AI models that find patterns in large amounts of data", "R$ 2.925 billion", 2.925,
      "agreed", "https://tecnoblog.net/noticias/itau-compra-startup-de-ia-por-r-29-bilhoes/",
      "Needs approval from Cade and Brazil's Central Bank", ""),
+    ("2026-10-29", "Deepgram", "Daily", "Voice and video call infrastructure; maker of the Pipecat voice-AI framework",
+     "Not disclosed", None, "agreed",
+     "https://techcrunch.com/2026/10/29/deepgram-acquires-pipecat-maker-daily-to-bolster-its-voice-ai-infrastructure/",
+     "", ""),
 ]
 
 # stories checked by hand and left out, with why, so they aren't checked again
@@ -331,6 +335,13 @@ LEFT_OUT = {
         "same as Itaú buying NeoSpace",
     "https://www.channelnewsasia.com/business/guidewire-buy-uk-insurance-ai-firm-hyperexponential-in-deal-worth-up-21-billion-6496396":
         "can't read to check",
+    "https://techcrunch.com/2026/10/29/openai-backed-thrive-holdings-acquires-adt/": "ADT doesn't make AI",
+    "https://techcrunch.com/2026/10/28/anthropic-just-launched-tools-to-show-companies-what-their-ai-spending-is-buying/":
+        "no company being bought",
+    "https://dcnnmagazine.com/investment-and-business/dtgen-acquires-realpower-to-expand-critical-power-services/":
+        "Realpower doesn't make AI",
+    "https://w.media/dayones-johor-us100-million-land-purchase-gets-sellers-shareholders-nod/":
+        "a land purchase, not a company",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
