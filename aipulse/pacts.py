@@ -177,6 +177,16 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://www.xataka.com/empresas-y-economia/google-queria-levantar-centro-datos-finlandia-empezo-talando-330-"
+    "hectareas-acabo-investigacion-penal":
+        "A data-centre site's environmental works stop and police probe, not an AI product or deal",
+    "https://www.channelnewsasia.com/east-asia/nvidia-jensen-huang-megaspeed-international-6505791":
+        "Can't read to check",
+    "https://techcrunch.com/2026/10/29/u-s-investigated-chinese-spy-plot-aimed-at-nvidia-ceo/":
+        "Anonymous-source report on a Megaspeed executive, no government action on Nvidia",
+    "https://www.channelnewsasia.com/business/anthropic-tells-california-governor-courts-should-be-able-block-risky-"
+    "ai-models-6500671":
+        "Can't read to check; headline is a company's proposal, no government action",
     "https://openai.com/index/openai-cut-incident-investigation":
         "Can't read to check; headline is about a company's own incident investigation, no government action",
     "https://olhardigital.com.br/2026/10/22/inteligencia-artificial/meta-descumpre-ordens-do-tse-sobre-ia-e-pode-"
