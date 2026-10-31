@@ -244,9 +244,152 @@ LOOK = {
 }
 # Stories the words miss, checked by hand and approved: slug: {url: why it belongs, in our own words}
 ADDED: dict[str, dict[str, str]] = {
+    "ai-ipos": {
+        "https://techcrunch.com/2026/10/30/anthropic-expected-to-receive-high-junk-rating-from-credit-agencies-following-ipo-report-says/": "Report on the credit rating Anthropic is expected to get after its IPO",
+        "https://olhardigital.com.br/2026/10/15/pro/anthropic-investidores-reduzem-expectativa-de-avaliacao-para-ipo-de-r-8-1-trilhoes/": "Investors lower their valuation hopes for Anthropic's planned November IPO",
+    },
+    "deepseek-us": {
+        "https://techcrunch.com/2026/10/22/deepseek-reportedly-raises-15b-days-after-us-restrictions/": "DeepSeek's reported $15B raise came days after the US ordered federal agencies to remove its technology",
+    },
+    "openai-device": {
+        "https://olhardigital.com.br/2026/10/14/pro/openai-acusa-ex-funcionario-de-enviar-arquivos-secretos-a-apple/": "OpenAI accuses a former employee of sending trade secrets to Apple over new AI devices",
+        "https://olhardigital.com.br/2026/10/13/pro/justica-obriga-openai-a-entregar-documentos-de-contratacao-em-processo-da-apple/": "Court orders OpenAI to hand over hiring documents in the Apple trade-secrets dispute over hardware products",
+    },
+    "data-centre-power-bills": {
+        "https://www.canarymedia.com/articles/data-centers/virginia-new-energy-plan-ai-boom": "Virginia's new energy plan on utility bills and electricity demand from the AI boom",
+    },
 }
 # Stories a topic's net caught that don't belong, checked by hand
-LEFT_OUT: set[str] = set()
+LEFT_OUT: set[str] = {
+    # opinion piece, reports nothing new in a case
+    "https://www.eff.org/deeplinks/2026/10/rewriting-copyright-law-generative-ai-would-hurt-everyone",
+    # company advocacy post, not a development in this storyline
+    "https://openai.com/index/fair-use-benefits-everyone",
+    # energy MOU for data centres, not about who pays or grid limits
+    "https://w.media/dayone-sembcorp-collaborate-on-energy-solutions-for-dayones-asian-data-centers/",
+    # Chinese labs targeting OpenAI's model, only shares tags with the topic
+    "https://the-decoder.com/openais-astra-becomes-the-main-target-for-chinese-ai-labs-after-anthropic-tightens-its-defenses/",
+    # shadow AI risk piece, shares only tags
+    "https://www.itweb.co.za/article/its-in-the-shadows-unsanctioned-ai-tools-are-a-pervasive-risk-to-the-business/Pero3MZ3VjpqQb6m",
+    # wrongful-death lawsuit against OpenAI, not about restructuring or the Musk case
+    "https://olhardigital.com.br/2026/10/28/inteligencia-artificial/chatgpt-teria-orientado-mulher-a-abandonar-remedio-antes-de-morte-diz-processo/",
+    # product launch, not a development in the IPO storyline
+    "https://techcrunch.com/2026/10/28/anthropic-just-launched-tools-to-show-companies-what-their-ai-spending-is-buying/",
+    # grid access incentive in the UK, can't tell from the summary that it fits
+    "https://www.channelnewsasia.com/business/uks-healey-offers-grid-access-incentives-critical-data-centres-6500146",
+    # security incident, summary doesn't mention Mythos or the Pentagon
+    "https://the-decoder.com/ai-agents-hacked-anthropic-maker-of-arguably-the-most-capable-ai-models-for-cyberdefense/",
+    # national renewable mandate, not about who pays or grid limits
+    "https://w.media/malaysia-affirms-30-per-cent-minimum-renewable-energy-mandate-for-data-centers/",
+    # wrongful-death lawsuit against OpenAI, not about restructuring or the Musk case
+    "https://techcrunch.com/2026/10/27/parents-sue-openai-alleging-gpt-4o-coached-their-daughter-off-seizure-medication/",
+    # analysis piece, reports nothing new about the IPO or state laws
+    "https://www.engadget.com/2298214/anthropics-political-problem-will-get-worse-before-it-gets-better/",
+    # Oracle product news, not about Stargate
+    "https://openai.com/index/oracle-apps-in-chatgpt",
+    # energy supply deal, not about who pays or grid limits
+    "https://w.media/nxera-sembcorp-ink-deal-for-green-energy-supply-to-nxera-data-centers/",
+    # consumer GPU supply story, not about US chip rules
+    "https://www.xataka.com/componentes/rtx-5090-se-fabricaron-para-jugar-china-han-encontrado-negocio-mejor-desmontarlas-para-ia",
+    # Meta engineering post, not about its superintelligence push
+    "https://engineering.fb.com/2026/10/26/open-source/ocp-summit-2026-meta-networking-talks/",
+    # Denmark deepfake plan, not about Grok
+    "https://www.xataka.com/privacidad/dinamarca-tiene-plan-deepfakes-blindar-voz-rostro-sus-ciudadanos-ia",
+    # election study of chatbots, not about the Musk case
+    "https://techcrunch.com/2026/10/24/forced-to-pick-groks-ai-model-chooses-republicans-openais-picks-democrats/",
+    # interview, summary doesn't mention Mythos
+    "https://www.xataka.com/seguridad/van-a-empeorar-mucho-jason-clinton-subdirector-ciberseguridad-anthropic-advierte-que-esta-venir",
+    # OpenAI security post, not about Stargate
+    "https://openai.com/index/securing-our-frontier-model-training-environment",
+    # podcast roundup, nothing on chatbots and teens
+    "https://www.404media.co/podcast-reverse-engineer-anything-is-the-next-wave-of-ai-slop/",
+    # safety blog, only shares tags with the topic
+    "https://www.aisi.gov.uk/blog/investigating-alignment-failures-in-aisis-incident",
+    # AWS product post, not about state AI laws
+    "https://aws.amazon.com/blogs/machine-learning/deploy-ai-in-a-hipaa-eligible-environment-with-amazon-quick/",
+    # Chile talks with OpenAI, not about Stargate sites
+    "https://dplnews.com/los-planes-de-la-ministra-lincolao-para-instalar-a-chile-en-el-circuito-global-de-la-ia-estamos-cerca-de-cerrar-un-acuerdo-con-openai/",
+    # Chinese chip software news, not about US chip rules
+    "https://pandaily.com/baai-flagos-2-2-cross-chip-operator-libraries-1454-operators-ascend-kernelgen",
+    # state chatbot bill, not California's laws or federal preemption
+    "https://epic.org/new-jersey-advances-strong-chatbot-regulations-based-on-epics-people-first-model/",
+    # compute struggles, can't tell from the summary it is an IPO development
+    "https://techcrunch.com/2026/10/20/anthropics-cloud-partnerships-are-getting-messy/",
+    # Chinese chip launch, not about US chip rules
+    "https://pandaily.com/stars-micro-system-c82-4g-pcie-6-0-switch-800g-ai-nic-multi-mode-raid",
+    # criminal case against a former engineer, not restructuring or the Musk case
+    "https://olhardigital.com.br/2026/10/19/pro/grampo-na-openai-juiz-ve-risco-de-fuga-e-nega-liberdade-a-ex-engenheiro-da-empresa/",
+    # city mayor's remarks, not a development in preemption
+    "https://techcrunch.com/2026/10/19/mamdani-says-feds-have-abdicated-on-ai-urges-new-yorkers-to-push-back/",
+    # China's own export controls, not US chip rules
+    "https://www.xataka.com/robotica-e-ia/china-quiere-que-su-ia-conquiste-mundo-no-que-toda-su-tecnologia-salga-pais-controles-para-40-tecnologias-clave",
+    # Texas data centre permits, not about state AI laws
+    "https://www.404media.co/it-aint-right-texas-said-it-would-halt-data-center-permits-the-state-is-pushing-ahead-anyway/",
+    # cyber programme access, summary doesn't mention Mythos
+    "https://www.thelec.net/news/articleView.html?idxno=14680",
+    # weekly roundup, can't tell from the summary
+    "https://techpolicy.press/openai-faces-lawsuits-subpoenas-and-eu-scrutiny-in-a-single-week",
+    # weekly roundup, can't tell from the summary
+    "https://techpolicy.press/another-week-of-lawsuits-piling-up-at-openai",
+    # Character.AI staff and asset sale, summary says nothing about teens
+    "https://techcrunch.com/2026/10/18/disney-agrees-to-hire-the-majority-of-character-ais-workforce/",
+    # draft federal bill, can't tell from the summary it fits a preemption or California story
+    "https://www.dawn.com/news/2037803/anthropic-proposes-law-regulating-ai-to-us-lawmakers",
+    # state lawsuits over young users, not restructuring or the Musk case
+    "https://olhardigital.com.br/2026/10/14/pro/8-estados-dos-eua-processam-openai-e-acusam-chatgpt-de-colocar-jovens-em-risco/",
+    # alignment proposal, only shares tags with the topic
+    "https://metr.org/blog/2026-10-14-alignment-assessment-proposal/",
+    # state lawsuits over children, not restructuring or the Musk case
+    "https://www.engadget.com/2287111/iowa-nebraska-and-six-other-states-are-suing-openai-for-endangering-children/",
+    # opinion on Character.ai bankruptcy, nothing on teens
+    "https://www.404media.co/character-ai-bankruptcy-is-first-ai-bubble-domino-to-fall/",
+    # security model launch, not about the Pentagon dispute
+    "https://the-decoder.com/ai-guardrails-designed-to-stop-hackers-are-now-blocking-defenders-and-orion-1-aims-to-fill-the-gap/",
+    # Japan asks for cyber help, summary doesn't mention Mythos
+    "https://japantoday.com/category/tech/japan-seeks-anthropic%27s-help-to-bolster-cybersecurity",
+    # bankruptcy economics, summary says nothing about teens
+    "https://www.404media.co/character-ais-bankruptcy-documents-show-the-economics-of-ai-dont-work/",
+    # summary doesn't say it concerns OpenAI's device
+    "https://techcrunch.com/2026/10/13/judge-orders-openai-to-turn-over-hiring-records-in-apple-trade-secrets-case/",
+    # Meta engineering post, not about its superintelligence push
+    "https://engineering.fb.com/2026/10/13/ml-applications/generative-ads-model-gem-scaling-frontier-ads-ai/",
+    # consumer GPU supply story, not about US chip rules
+    "https://www.xataka.com/componentes/nvidia-deja-fabricar-rtx-5090-tarjeta-potente-para-jugadores-filtracion-su-chip-ira-destinado-a-ia",
+    # Character.AI staff and asset sale, summary says nothing about teens
+    "https://olhardigital.com.br/2026/10/13/inteligencia-artificial/character-ai-pede-falencia-e-negocia-venda-de-ativos-a-disney/",
+    # bank regulators on AI risk, not about state laws
+    "https://techcentral.co.za/banking-regulators-ai-scrutiny-financial-stability/287226/",
+    # Character.AI bankruptcy notice, says nothing about teens
+    "https://blog.character.ai/an-update-on-character-ai/",
+    # Meta engineering post, not about its superintelligence push
+    "https://engineering.fb.com/2026/10/12/open-source/ocp-summit-2026-powering-ai-with-open-innovations-in-scale-up-scale-out-and-scale-across-networks/",
+    # Chinese chip or Huawei news, not about US chip rules
+    "https://pandaily.com/huawei-xingji-positioning-tunnel-lane-level-sub-meter-parking-garage-mate-90-watch-gt-runner-2",
+    # speech on AI regulation, nothing new in these laws
+    "https://www.engadget.com/2283487/microsoft-president-ai-less-regulated-than-a-carton-of-milk/",
+    # tool launch, summary doesn't mention Mythos
+    "https://www.engadget.com/2282005/anthropic-offers-open-source-software-free-ai-security-checks/",
+    # programme launch, summary doesn't mention Mythos
+    "https://www.anthropic.com/news/anthropic-cyber-mission",
+    # Oracle product news, not about Stargate
+    "https://openai.com/index/oracle",
+    # trend explainer on community opposition, nothing new
+    "https://datacenterpost.com/early-community-engagement-becomes-critical-as-data-center-opposition-grows/?utm_source=rss&utm_medium=rss&utm_campaign=early-community-engagement-becomes-critical-as-data-center-opposition-grows",
+    # usage policy change, not about the Pentagon dispute
+    "https://the-decoder.com/being-mean-to-claude-can-now-get-your-account-suspended-under-anthropics-new-tos/",
+    # vendor product news, not about state laws
+    "http://www.bernama.com/en/news.php?id=2616954",
+    # explainer on AI in courts, not about these cases
+    "https://www.itweb.co.za/article/ai-takes-the-bench-before-the-rulebook-is-ready/rW1xLv5nDG37Rk6m",
+    # market outlook, nothing new in this storyline
+    "https://www.datacenterknowledge.com/data-center-site-selection/emea-data-center-expansion-faces-a-delivery-test",
+    # Chinese chip or Huawei news, not about US chip rules
+    "https://pandaily.com/richard-yu-huawei-381-tau-chips-mass-produced-phones-ai-networking-smart-cars",
+    # opinion on regulation, nothing new in these laws
+    "https://www.engadget.com/2276577/former-openai-employee-says-ai-should-be-regulated-like-nuclear-power-plants/",
+    # SDK release notes, not about the IPO
+    "https://github.com/openai/openai-agents-python/releases/tag/v0.23.0",
+}
 UPDATED_DAYS = 3  # a topic with a new story this recently shows "Updated" on its card
 SMALL = 25  # a topic with this many events or fewer shows each as a card; a bigger one only its milestones
 LOGOS = 3   # brand logos on a topic's picture: the ones its stories name most,
