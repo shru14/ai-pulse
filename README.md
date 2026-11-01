@@ -111,12 +111,12 @@ Pages that each answer one question, four per stream. Rows checked by hand are d
 
 **[Pulse Compass](https://projectaipulse.com/planner/)** (the Pulse Pro button) is the paid service: a plan for bringing AI into one part of a firm. Its product page and one sample report are open; everything else needs a login. Its code is in a private repo and joins the build through a read-only key. The site is static, so the paid pages are encrypted when it is built and open in the browser only with a username and password set by the owner (`aipulse/access.py`). With no users set, they aren't published.
 
-## Sectors
+## AI by sector
 
-Sectors, one of Pulse Compass's resources behind the login: AI one industry at a time. Finance is ready; healthcare, legal, retail, manufacturing and the public sector are being built.
+AI by sector, one of Pulse Compass's resources behind the login: AI one industry at a time. Finance is ready; healthcare, legal, retail, manufacturing and the public sector are being built.
 
 - **What finance firms use AI for:** banks, insurers, payment companies, investment and audit firms, one row per use since 1 June 2025, in a table that filters like Excel: firm, area, what it uses AI for and where it stands as its story says (introduced, in use, worked, changed course, went wrong, unproven). "Worked" only when a measured result is reported. Each row checked by hand against its story; new ones drafted daily for approval.
-- **Rules for AI in finance:** the main rules a finance firm meets in the EU, the UK and the US (AI Act, DORA, GDPR, ESMA, Consumer Duty, SM&CR, GLBA, SR 26-2, Regulation B, FINRA, Colorado and others), each checked by hand from its official text with what it means for AI and the risk if it is missed; then the laws and bills written for AI in finance on our tracker, every 6 h.
+- **Rules for AI in finance, in the Rule book (a resource of its own):** the main rules a finance firm meets in the EU, the UK and the US (AI Act, DORA, GDPR, ESMA, Consumer Duty, SM&CR, GLBA, SR 26-2, Regulation B, FINRA, Colorado and others), each checked by hand from its official text with what it means for AI and the risk if it is missed; then the laws and bills written for AI in finance on our tracker, every 6 h.
 
 ## How we keep it legal
 
