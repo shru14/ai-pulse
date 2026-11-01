@@ -3162,7 +3162,7 @@ def test_sunday_email_brings_the_week_and_skips_the_days_word_and_meme(monkeypat
         "added_at": f"{day}T10:00:00+00:00", "tags": [],
         "also": [{"title": f"Story {i}", "source": f"Other {k}", "url": f"https://o{k}.com/{i}", "date": day} for k in range(outlets)]}
     cards = ([card(1, "2026-09-29", "news", 6, "Big chip deal for a new data center")]  # the week's most reported
-             + [card(i, "2026-10-0" + str(1 + i % 3), "news", 0, f"Data center story {i}") for i in range(2, 9)]
+             + [card(i, "2026-10-0" + str(1 + i % 3), "news", 0, f"Hyperscaler story {i}") for i in range(2, 9)]
              + [card(9, "2026-10-04", "news", 9, "Sunday's story is next week's email")]  # not Monday to Saturday
              + [card(i, "2026-10-03", "tool" if i % 2 else "news") for i in range(10, 22)])
     subject, text, html = digest.build(cards, ["releases", "news"], date(2026, 10, 3))
@@ -3171,7 +3171,7 @@ def test_sunday_email_brings_the_week_and_skips_the_days_word_and_meme(monkeypat
     # the week's count and the day's, a line each
     assert "This week, 28 Sep – 3 Oct: 20 stories.\nSaturday: " in text  # Monday to Saturday, not Sunday's
     assert "STORY OF THE WEEK: Big chip deal for a new data center" in text and "Sunday's story" not in text
-    assert "WORD OF THE WEEK: Data center" in text and "It came up in 8 of the week's stories" in text
+    assert "WORD OF THE WEEK: Hyperscaler" in text and "It came up in 7 of the week's stories" in text
     assert "Word of the day" not in html and "Meme of the day" not in html and "WORD OF THE DAY" not in text
     assert "The 10 that mattered most on Saturday." in text
     # a reader whose streams had nothing on Saturday (Research: arXiv doesn't publish at weekends) still gets the
@@ -4518,21 +4518,31 @@ def test_a_place_with_an_accent_gets_a_plain_address():
 def test_the_word_of_the_week_skips_the_words_of_the_8_weeks_before(tmp_path, monkeypatch):
     from datetime import date
     from aipulse import digest
-    monkeypatch.setattr(digest, "_SHOWN", {date(2026, 10, 17): "data-center", date(2026, 8, 22): "ai-agent"})
+    monkeypatch.setattr(digest, "_SHOWN", {date(2026, 10, 17): "jepa", date(2026, 8, 22): "vla"})
     monkeypatch.setattr(digest, "_WEEK_WORD", {})
     card = lambda i, day, text: {"id": f"w{i}", "title": text, "summary": "", "url": f"https://ex.com/w{i}",
                                  "source": "Ex", "category": "news", "date": day}
-    cards = ([card(i, "2026-10-20", "A new data center for AI") for i in range(5)]
-             + [card(i, "2026-10-21", "An AI agent books flights") for i in range(5, 8)]
-             + [card(i, "2026-10-22", "Open weights for a new model") for i in range(8, 10)])
-    # data center was the word of the week 17 Oct; AI agent's last week was more than 8 weeks before
-    assert digest._week_word(cards, date(2026, 10, 24)) == "ai-agent"
+    cards = ([card(i, "2026-10-20", "An LLM on every phone") for i in range(6)]  # the commonest, but no hard word
+             + [card(i, "2026-10-21", "KL divergence explained") for i in [6]]  # the hardest, but in one story only
+             + [card(i, "2026-10-21", "JEPA for video") for i in range(7, 12)]
+             + [card(i, "2026-10-22", "A new VLA for robots") for i in range(12, 14)]
+             + [card(i, "2026-10-22", "A hyperscaler buys chips") for i in range(14, 18)])
+    # JEPA was the word of the week 17 Oct; VLA's last week was more than 8 weeks before, and it's harder than hyperscaler
+    assert digest._week_word(cards, date(2026, 10, 24)) == "vla"
     # kept once the week is over (each site run), and then the email shows the kept one
     conn = store.connect(tmp_path / "t.db")
-    assert digest.record_week_word(conn, cards, date(2026, 10, 25)) == (date(2026, 10, 24), "ai-agent")
+    assert digest.record_week_word(conn, cards, date(2026, 10, 25)) == (date(2026, 10, 24), "vla")
     monkeypatch.setattr(digest, "_SHOWN", {})
-    assert digest.load_week_words(conn)[date(2026, 10, 24)] == "ai-agent"
-    assert digest._week_word([], date(2026, 10, 24)) == "ai-agent"
+    assert digest.load_week_words(conn)[date(2026, 10, 24)] == "vla"
+    assert digest._week_word([], date(2026, 10, 24)) == "vla"
+
+
+def test_the_words_of_the_week_are_glossary_words_and_the_front_page_gets_them():
+    from aipulse import glossary
+    ids = {e["id"] for e in glossary.ENTRIES}
+    hard = glossary.payload([])["hard"]
+    assert set(hard) <= ids and len(set(hard)) == len(hard)
+    assert not {"llm", "gpt", "data-center", "ai-agent", "gpu"} & set(hard)
 
 
 def test_top_news_takes_at_most_two_tiles_a_stream_on_a_quiet_day():

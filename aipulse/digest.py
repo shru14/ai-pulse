@@ -719,8 +719,8 @@ def record_week_word(conn, cards: list[dict], today: date) -> tuple[date, str | 
 
 def _week_word(cards: list[dict], day: date) -> str | None:
     """The word of the week (the same for every reader): the one kept for this week if there is one, else the
-    glossary word in the most of the week's stories (Monday to Saturday) that wasn't the word of any of the
-    WORD_WEEKS weeks before."""
+    hardest word (glossary.HARD) in enough of the week's stories (Monday to Saturday) that wasn't the word of any of
+    the WORD_WEEKS weeks before."""
     if day in _SHOWN:
         return _SHOWN[day]
     if (day, len(cards)) in _WEEK_WORD:
@@ -728,13 +728,8 @@ def _week_word(cards: list[dict], day: date) -> str | None:
     monday, _ = _span(day)
     skip = {w for d, w in _SHOWN.items() if day - timedelta(weeks=WORD_WEEKS) <= d < day}
     week = [_text(c) for c in cards if monday.isoformat() <= (c.get("date") or "") <= day.isoformat()]
-    word, most = None, 0
-    for e in glossary.ENTRIES:
-        if e["id"] in skip:
-            continue
-        k = sum(1 for t in week if glossary.mentions(e["id"], t))
-        if k > most:
-            word, most = e["id"], k
+    word = next((i for i in map(glossary._key, glossary.HARD) if i not in skip and sum(
+        1 for t in week if glossary.mentions(i, t)) >= glossary.WEEK_WORD_STORIES), None)
     _WEEK_WORD[(day, len(cards))] = word
     return word
 

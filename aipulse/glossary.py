@@ -400,7 +400,17 @@ TECHNICAL = {"VLM", "VLA", "World model", "Diffusion model", "Transformer", "Att
              "SWE-bench", "Zero-shot / few-shot", "JEPA", "Latent", "World action model", "On-policy learning",
              "Self-supervised learning", "In-context learning", "Training-free method", "Frozen model"}
 
-ENTRIES = [{"id": _key(t), "term": t, "group": g, "def": d, "match": m, "case": cs, "search": SEARCH.get(t, t),
+# The words that can be the word of the week, hardest for a general reader first (chosen by hand): the first one in at
+# least WEEK_WORD_STORIES of the week's stories. Words most readers already know (LLM, GPU, data center) are left out.
+HARD = ["KL divergence", "On-policy distillation", "On-policy learning", "Speculative decoding", "BF16 and FP8", "JEPA",
+        "World action model", "VLA", "Supervised fine-tuning", "Reward model", "Recursive self-improvement", "LoRA",
+        "Quantization", "Mixture of Experts", "Test-time compute", "Training-free method", "In-context learning",
+        "Self-supervised learning", "Zero-shot / few-shot", "Rack-scale system", "HBM", "ASIC", "FLOPs", "TPU", "NPU", "CUDA",
+        "Frozen model", "Dense model", "Scaling laws", "Long-horizon task", "Interpretability", "Distillation", "Embedding",
+        "Diffusion model", "World model", "Vector database", "Context window", "Prompt injection", "Acquihire", "Hyperscaler"]
+WEEK_WORD_STORIES = 2
+
+ENTRIES =[{"id": _key(t), "term": t, "group": g, "def": d, "match": m, "case": cs, "search": SEARCH.get(t, t),
             "added": ADDED.get(t, LAUNCH).isoformat(), "level": "Technical" if t in TECHNICAL else "Everyday"}
            for t, g, d, m, cs in _ENTRIES]
 
@@ -445,6 +455,7 @@ def payload(cards: list[dict], today: date | None = None, days: int = 7) -> dict
             seen.update(terms_in(f"{c.get('title') or ''} {c.get('summary') or ''}"))
     new_since = (today - timedelta(days=NEW_DAYS)).isoformat()
     return {"groups": GROUPS, "days": days, "levels": ["Everyday", "Technical"],
+            "hard": [_key(t) for t in HARD], "weekWordStories": WEEK_WORD_STORIES,
             "entries": [{**e, "recent": seen.get(e["id"], 0),
                          "new": LAUNCH.isoformat() < e["added"] and e["added"] >= new_since} for e in ENTRIES]}
 
