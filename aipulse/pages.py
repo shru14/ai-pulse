@@ -527,7 +527,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh .ins-pdf{display:block;margin-top:10px;background:transparent;color:#000;border:2px solid #000}
 .cp .ins-pdf:hover,.cp .ins-pdf:focus-visible{background:var(--mark);color:#000}
 /* funding pace: a column a month, the biggest round its darker top */
-.cp .ins-pace{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;align-items:end;height:200px;max-width:900px;border-bottom:1px solid var(--line)}
+.cp .ins-pace{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;align-items:end;height:200px;border-bottom:1px solid var(--line)}
 .cp .ins-pace li{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:0;border:0}
 .cp .ins-pace .col{display:flex;flex-direction:column;justify-content:flex-start;background:var(--ctx);min-height:2px}
 .cp .ins-pace .col i{display:block;background:color-mix(in srgb,var(--focus) 55%,var(--ctx))}
@@ -543,7 +543,6 @@ a.subscribe-btn{text-decoration:none}
 /* IPO watch: the year's IPO talk, then the month's headlines */
 .cp .ins-ipo{display:flex;align-items:center;gap:12px;margin:0 0 10px}
 .cp .ins-ipo .ins-spark{width:220px;height:30px;border-bottom:1px solid var(--line)}
-.cp .ins-ipot{max-width:900px}
 .cp .ins-ipot td a{font-weight:600}
 .cp .ins-ipot td.when{font:600 12px var(--mono);color:var(--muted)}
 /* the key findings as a departures board: fixed dark in both themes, split-flap numbers, each exhibit's colour */
@@ -584,10 +583,10 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-key .sw.dk-compute,.cp .ins-bars .tr i.dk-compute{background:#E69F00}
 .cp .ins-key .sw.dk-acquisition,.cp .ins-bars .tr i.dk-acquisition{background:#CC79A7}
 /* bars: grey, one in the focus colour */
-.cp .ins-bars{list-style:none;margin:0;padding:0;max-width:820px}
+.cp .ins-bars{list-style:none;margin:0;padding:0}
 .cp .ins-bars li{display:grid;grid-template-columns:minmax(90px,170px) minmax(0,1fr) 54px 64px;align-items:center;gap:12px;padding:4px 0;border:0}
 .cp .ins-bars .nm{font-weight:600;font-size:14.5px;overflow-wrap:anywhere}
-.cp .ins-bars .tr{position:relative;height:18px}
+.cp .ins-bars .tr{position:relative;height:10px}
 .cp .ins-bars .tr i{display:block;height:100%;background:var(--c,var(--ctx));min-width:3px}
 .cp .ins-bars li.on .tr i{background:var(--focus)}
 .cp .ins-bars .v{font:600 17px/1 var(--body);text-align:right}
@@ -597,7 +596,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 34px}
 .cp .ins-two h3,.cp .ins-h{margin:0 0 8px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 /* how this month compares: usual (hollow) and now (filled) on one scale */
-.cp .ins-db{list-style:none;margin:0;padding:0;max-width:900px}
+.cp .ins-db{list-style:none;margin:0;padding:0}
 .cp .ins-db li,.cp .ins-axis{display:grid;grid-template-columns:minmax(90px,130px) minmax(0,1fr) 64px minmax(80px,150px);gap:14px;align-items:center}
 .cp .ins-db li{min-height:42px;padding:0;border:0;border-top:1px solid var(--rule)}
 .cp .ins-db li:last-child{border-bottom:1px solid var(--rule)}
@@ -613,12 +612,12 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-db .ch{font:600 12.5px var(--mono);color:var(--muted)}
 .cp .ins-db .ch small{display:block;font-size:11.5px}
 .cp .ins-db li.on .ch{color:var(--ink)}
-.cp .ins-axis{max-width:900px;height:22px}
+.cp .ins-axis{height:22px}
 .cp .ins-axis .tk{position:relative;align-self:stretch}
 .cp .ins-axis .tk span{position:absolute;top:4px;transform:translateX(-50%);font:600 11px var(--mono);color:var(--muted)}
 .cp .ins-axis .tk span:first-child{transform:none}
 /* the busiest days: columns, a normal-weekday line, numbered tags, and a table of what drove them */
-.cp .ins-plot{position:relative;max-width:900px;margin:40px 0 26px}
+.cp .ins-plot{position:relative;margin:40px 0 26px}
 .cp .ins-days{list-style:none;margin:0;padding:0;height:170px;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:3px;align-items:end;border-bottom:2px solid var(--line)}
 .cp .ins-days li{position:relative;height:100%;display:flex;align-items:flex-end;padding:0;border:0}
 .cp .ins-days i{display:block;width:100%;background:var(--ctx);min-height:2px}
@@ -631,7 +630,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .mk{display:inline-grid;place-items:center;width:20px;height:20px;background:var(--mark);color:#000;border:2px solid #000;font:600 11px var(--mono)}
 .cp .ins-plot .ref{position:absolute;left:0;right:0;border-top:2px dashed var(--muted);pointer-events:none}
 .cp .ins-plot .ref em{position:absolute;left:0;top:-19px;font:600 11px var(--mono);font-style:normal;color:var(--muted);background:var(--bg);padding-right:6px}
-.cp .ins-drv{max-width:900px;margin-top:18px}
+.cp .ins-drv{margin-top:18px}
 .cp .ins-drv .dt{white-space:nowrap;font-weight:600}
 .cp .ins-drv .dt .mk{margin-right:8px;vertical-align:1px}
 .cp .ins-drv ol{list-style:none;margin:0;padding:0}
@@ -642,7 +641,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-drv .n,.cp .ins-deals .n{font:600 17px var(--body)}
 .cp .ins-drv .n small{display:block;font:600 11.5px var(--mono);color:var(--muted)}
 /* money moves: three figures, rounds by theme, valuations (a table), deals by size */
-.cp .ins-score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-width:900px;margin:0 0 24px;border-top:2px solid var(--line);border-bottom:2px solid var(--line)}
+.cp .ins-score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0 0 24px;border-top:2px solid var(--line);border-bottom:2px solid var(--line)}
 .cp .ins-score div{padding:10px 14px 12px 0}
 .cp .ins-score div + div{border-left:1px solid var(--rule);padding-left:14px}
 .cp .ins-score b{display:block;font:400 clamp(26px,3vw,34px)/1.05 var(--body)}
@@ -654,7 +653,6 @@ a.subscribe-btn{text-decoration:none}
 .cp .ins-val .ch{font:600 12px var(--mono);color:var(--muted);white-space:nowrap}
 .cp .ins-val .n{font:600 17px var(--body)}
 .cp .ins-money + .ins-h{margin-top:26px}
-.cp .ins-deals{max-width:900px}
 .cp .ins-deals li{grid-template-columns:minmax(150px,250px) minmax(0,1fr) 72px}
 .cp .ins-deals .nm a{color:var(--ink);text-decoration:none}
 .cp .ins-deals .nm a:hover{text-decoration:underline}
@@ -663,23 +661,34 @@ a.subscribe-btn{text-decoration:none}
 .cp .dk-acquisition{background:#CC79A7}
 .cp .dk-compute{background:#E69F00}
 .cp .rep{display:inline-block;margin-left:6px;font:600 10px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid currentColor;padding:0 4px;vertical-align:1px}
-/* US vs China: split bars and China's share over the year */
+/* US vs China: a thin split with its numbers above, and China's share over the year against its usual */
 .cp .ins-spark{display:flex;align-items:flex-end;gap:2px;height:34px;border-bottom:2px solid var(--line)}
 .cp .ins-spark i{flex:1;background:var(--ctx);min-height:2px}
 .cp .ins-spark i.now{background:var(--c)}
-.cp .ins-riv li{grid-template-columns:minmax(90px,150px) minmax(0,1fr) 110px minmax(0,150px)}
-.cp .ins-riv .split{display:flex;height:22px;gap:2px}
-.cp .ins-riv .split i{display:flex;align-items:center;font:600 11.5px var(--mono);font-style:normal;color:#141925;padding:0 6px;white-space:nowrap;overflow:hidden;min-width:0;box-sizing:border-box}
+.cp .ins-riv{list-style:none;margin:0;padding:0}
+.cp .ins-riv li{padding:0;border:0}
+.cp .ins-riv li + li{margin-top:22px}
+.cp .ins-riv .lb{display:flex;justify-content:space-between;gap:12px;margin:0 0 6px;font:600 13px var(--mono);color:var(--muted)}
+.cp .ins-riv .lb b{font:400 26px/1.1 var(--body);color:var(--ink)}
+.cp .ins-riv .split{display:flex;height:10px;gap:2px}
+.cp .ins-riv .split i{display:block;min-width:3px}
 .cp .ins-riv .split .us{background:#56B4E9}
-.cp .ins-riv .split .cn{background:#E69F00;justify-content:flex-end}
-.cp .ins-riv .ins-spark{height:22px}
-.cp .ins-riv .ins-spark i.now{--c:#E69F00}
-.cp .ins-riv .ch{text-align:left}
-.cp .ins-opens{font-size:14px;margin:12px 0 0}
+.cp .ins-riv .split .cn{background:#E69F00}
+.cp .ins-riv .trend{position:relative;margin:20px 76px 22px 0}
+.cp .ins-riv .ins-spark{height:64px;gap:0;justify-content:space-between;border-bottom:1px solid var(--line)}
+.cp .ins-riv .ins-spark i{flex:0 0 7px;position:relative;font-style:normal}
+.cp .ins-riv .ins-spark b{position:absolute;right:0;bottom:100%;margin-bottom:2px;font:600 12px var(--mono);color:var(--ink)}
+.cp .ins-riv .ref{position:absolute;left:0;right:0;border-top:1px dashed var(--muted);pointer-events:none}
+.cp .ins-riv .ref em{position:absolute;left:100%;top:-8px;margin-left:6px;font:600 11px var(--mono);font-style:normal;color:var(--muted);white-space:nowrap}
+.cp .ins-riv .tk{position:absolute;left:0;right:0;top:100%;display:flex;justify-content:space-between;margin-top:4px;font:600 11px var(--mono);color:var(--muted)}
+.cp .ins-riv + .ins-h{margin-top:22px}
+.cp .ins-opens{margin:0}
+.cp .ins-opens td{padding:6px 10px 6px 0;font-size:14px}
+.cp .ins-opens td:first-child{width:70px;font-weight:600}
+.cp table.ins-opens td:last-child{text-align:left}
 /* legal and risk: a shaded table */
-.cp .ins-risk{max-width:620px}
 .cp .ins-risk td,.cp .ins-risk th{padding:6px 10px 6px 0}
-.cp .ins-risk th:not(:first-child),.cp .ins-risk td.hx{text-align:center;width:90px}
+.cp .ins-risk th:not(:first-child),.cp .ins-risk td.hx{text-align:center;width:25%}
 .cp .ins-risk td:first-child{font-weight:600}
 .cp .ins-risk td.hx{font:600 17px var(--body);background:color-mix(in srgb,#F85C48 var(--a),transparent)}
 .cp .ins-risk td.z{color:var(--muted);background:none;font:400 14px var(--body)}
@@ -756,13 +765,9 @@ a.subscribe-btn{text-decoration:none}
   .cp .ins-bars:not(.ins-fund) li.on{padding-bottom:28px}
   .cp .ins-bars .call,.cp .ins-bars .call.in{top:100%;left:0!important;transform:none;margin:4px 0 0;font-size:10.5px}
   .cp .ins-fund li{grid-template-columns:minmax(70px,92px) minmax(0,1fr) 20px 50px}
-  .cp .ins-riv li{grid-template-columns:auto minmax(0,1fr) 64px;gap:4px 8px;padding:6px 0}
-  .cp .ins-riv .nm{grid-column:1;grid-row:1}
-  .cp .ins-riv .ch{grid-column:2 / -1;grid-row:1;text-align:right;font-size:11px;white-space:normal}
-  .cp .ins-riv .split{grid-column:1 / 3;grid-row:2}
-  .cp .ins-riv .split .cn span{display:none}
-  .cp .ins-riv .ins-spark{grid-column:3;grid-row:2}
-  .cp .ins-opens{font-size:13px}
+  .cp .ins-riv li{gap:18px}
+  .cp .ins-riv .ins-spark i{flex-basis:6px}
+  .cp .ins-opens td{font-size:13px}
   /* funding pace: amounts stand upright above their columns, as a month's column is too narrow for one lying flat */
   .cp .ins-pace{height:150px;margin-top:44px;gap:3px}
   .cp .ins-pace .col{flex-shrink:0}

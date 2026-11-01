@@ -491,25 +491,37 @@ def _money(f: dict, month: str) -> str:
             '<p class="ins-note">Amounts as the headlines give them, in US dollars.</p>')
 
 
-def _rivals(rows: list[tuple], opens: Counter) -> str:
-    labs = " · ".join(f"{escape(lab)} {n}" for lab, n in opens.most_common())
-    line = (f'<p class="ins-opens"><b>Open-weight models on Hugging Face this month:</b> {labs}</p>' if opens else "")
+def _rivals(rows: list[tuple], opens: Counter, month: str) -> str:
+    groups: dict[str, list[str]] = {"US": [], "China": [], "Others": []}
+    for lab, n in opens.most_common():
+        where = {"United States": "US", "China": "China"}.get(home(lab), "Others")
+        groups[where].append(f"{escape(lab)} {n}")
+    labs = "".join(f'<tr><td>{where}</td><td>{" · ".join(names)}</td></tr>' for where, names in groups.items() if names)
+    line = (f'<h3 class="ins-h">Open-weight models uploaded to Hugging Face this month</h3>'
+            f'<table class="mt ins-opens"><tbody>{labs}</tbody></table>' if opens else "")
     if not rows:
         return line
     out = []
     for what, us, cn, trend in rows:
         share = cn / (us + cn)
-        usual = [v for _, v in trend[:-1]]
-        cols = "".join(f'<i class="{"now" if k == len(trend) - 1 else ""}" style="height:{max(v * 100, 3):.0f}%" '
-                       f'title="{monthly.name(m)}: China {v:.0%}"></i>' for k, (m, v) in enumerate(trend))
-        out.append(f'<li><span class="nm">{what}</span><span class="split" title="US {us}, China {cn}">'
-                   f'<i class="us" style="width:{(1 - share) * 100:.1f}%">US {us}</i><i class="cn" style="width:{share * 100:.1f}%"><span>China&nbsp;</span>{cn}</i></span>'
-                   f'<span class="ins-spark" style="--c:#E69F00">{cols}</span>'
-                   f'<span class="ch">China {share:.0%}{f" · usually {sum(usual) / len(usual):.0%}" if usual else ""}</span></li>')
-    return ('<ol class="ins-bars ins-riv">' + "".join(out) + f"</ol>{line}"
+        before = [v for _, v in trend[:-1]]
+        top = max(v for _, v in trend)
+        cols = "".join(f'<i class="{"now" if k == len(trend) - 1 else ""}" style="height:{max(v / top * 100, 3):.0f}%" '
+                       f'title="{monthly.name(m)}: China {v:.0%}">{f"<b>{v:.0%}</b>" if k == len(trend) - 1 else ""}</i>'
+                       for k, (m, v) in enumerate(trend))
+        usual = sum(before) / len(before) if before else None
+        ref = f'<span class="ref" style="bottom:{usual / top * 100:.1f}%"><em>usual {usual:.0%}</em></span>' if before else ""
+        out.append(f'<li class="ins-two"><div><h3 class="ins-h">{what} this month</h3>'
+                   f'<p class="lb"><span>US <b>{us}</b> · {1 - share:.0%}</span><span>China <b>{cn}</b> · {share:.0%}</span></p>'
+                   f'<span class="split" title="US {us}, China {cn}"><i class="us" style="width:{(1 - share) * 100:.1f}%"></i>'
+                   f'<i class="cn" style="width:{share * 100:.1f}%"></i></span></div>'
+                   f'<div><h3 class="ins-h">China\'s share of the two, by month</h3><div class="trend">'
+                   f'<span class="ins-spark" style="--c:#E69F00">{cols}</span>{ref}'
+                   f'<span class="tk"><span>{_since(trend[0][0], month)}</span><span>{_since(trend[-1][0], month)}</span></span></div></div></li>')
+    return ('<ol class="ins-riv">' + "".join(out) + f"</ol>{line}"
             '<p class="ins-note">Counting only the two, and only with 10 or more between them. A paper counts for the '
-            'country of each lab or scholar it names; open-weight models are the labs\' uploads to Hugging Face. Small '
-            'columns: China\'s share, month by month over the past year.</p>')
+            'country of each lab or scholar it names. Usual: China\'s average share in the months before this one. '
+            'Others: labs based elsewhere, or whose home we don\'t list.</p>')
 
 
 def _exposure(rows: list[tuple]) -> str:
@@ -648,7 +660,7 @@ def body(month: str, x: dict) -> str:
                     + ("." if usual is None else ", about its usual." if abs(now - usual) < .04
                        else f", {'up' if now > usual else 'down'} from a usual {usual:.0%}."))
         say = " ".join(line(*w) for w in x["rivals"])
-        sections.append(("rivals", "US vs China", say, _rivals(x["rivals"], x["opens"])))
+        sections.append(("rivals", "US vs China", say, _rivals(x["rivals"], x["opens"], month)))
     # legal and risk
     if x["exposure"]:
         co, a, b, c = x["exposure"][0]

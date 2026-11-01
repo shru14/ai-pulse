@@ -3744,6 +3744,15 @@ def test_harm_to_rule():
     assert [r["before"] for r in found["companions"]["rules"]] == [2, 6]
 
 
+def test_insights_rivals_numbers_sit_outside_the_bar_and_labs_group_by_home():
+    from collections import Counter
+    from aipulse import insights
+    html = insights._rivals([("Papers", 90, 10, [("2026-09", .4), ("2026-10", .1)])], Counter({"Baidu": 1, "KRAFTON": 2}), "2026-10")
+    assert "China <b>10</b> · 10%" in html and '<i class="cn" style="width:10.0%"></i>' in html  # a narrow share can't clip its label
+    assert "usual 40%" in html and "<b>10%</b>" in html
+    assert "<td>China</td><td>Baidu 1</td>" in html and "<td>Others</td><td>KRAFTON 2</td>" in html and "<td>US</td>" not in html
+
+
 def test_insights_counts_against_the_month_before():
     from aipulse import insights
     assert insights.change(13, 10) == "+30%" and insights.change(9, 10) == "−10%" and insights.change(10, 10) == "same"
