@@ -1984,6 +1984,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ap-back{font-weight:400;color:var(--ink)}
 .cp .fh .ap-chips .ap-start{margin:0;padding:6px 14px;font-size:15px}
 .cp .fh .ap-chips .ap-btn2{margin:0;padding:6px 14px;font-size:15px}
+.cp .fh:has(.ap-btn2) .fh-d{text-align:justify;hyphens:auto}
 .cp .ap-cards.ap-cards4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .cp .ap-why{margin-top:22px;border:2px solid var(--line);padding:14px 18px}.cp .ap .ap-why h2{margin:0 0 10px;font:900 20px var(--body);border:0;padding:0}
 .cp .ap-why ul{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;list-style:none;margin:0;padding:0}
