@@ -517,6 +517,7 @@ def _new_stream(day: date, streams: list[str]) -> str:
 # too since 24 Oct (the first one after FEATURES_FROM), so every reader sees the same feature on the same day and none twice. A new page
 # goes at the end, with FEATURES_FROM left as it is.
 FEATURES_FROM = date(2026, 10, 18)  # Monday 19 October's email
+ISSUES_FROM = date(2026, 11, 30)  # 1 December's email: the first to link the month's new issue
 FEATURES = [
     ("AI safety hub", "The safety tests, red-teaming findings, system cards and safety frameworks published in 2026, "
      "in one place, searchable by type and risk.", "ai-safety-hub/"),
@@ -573,10 +574,16 @@ FEATURES = [
 
 def _feature(day: date) -> tuple[str, str, str] | None:
     """The page this day's email introduces: the n-th of FEATURES on the n-th day from FEATURES_FROM; nothing before,
-    or once all have been shown."""
+    or once all have been shown. The email that arrives on a month's 1st (about the month's last day) always links
+    the month's new issue, and the queue waits a day for it, so nothing is skipped."""
     if day < FEATURES_FROM:
         return None
-    n = (day - FEATURES_FROM).days
+    if day >= ISSUES_FROM and (day + timedelta(days=1)).day == 1:
+        return (f"Monthly issue: {day:%B %Y}", "The month just ended as a short booklet: the stories that mattered and "
+                "the rules that moved.", f"monthly/{day:%Y-%m}/")
+    # one day fewer for each month's last day since ISSUES_FROM (none before it)
+    waited = max(0, (day.year - ISSUES_FROM.year) * 12 + day.month - ISSUES_FROM.month)
+    n = (day - FEATURES_FROM).days - waited
     return FEATURES[n] if n < len(FEATURES) else None
 
 
