@@ -128,11 +128,6 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 .pro-btn:hover,.pro-btn:focus-visible{translate:-1px -1px;box-shadow:4px 4px 0 var(--ink)}
 @media (max-width:560px){.pro-btn{height:30px;padding:0 7px;font-size:12.5px;gap:4px;box-shadow:2px 2px 0 var(--ink)}.pro-btn svg{display:none}}
 @media (max-width:400px){.pro-btn{font-size:0;gap:0}.pro-btn b{font-size:12px}}  /* the smallest phones: just "PRO" */
-/* Sectors: AI by industry, not a news stream, so it stands apart: a divider, then a solid dark-blue tab */
-.k-sectors{--cat-c:#0072B2;--cat-soft:#E3EEF8;--cat-f:#0072B2}
-header.top .secnav a.sector-nav{flex:0 0 auto;margin-left:14px;background:#0072B2;color:#fff;border-top-color:#0072B2;position:relative}
-header.top .secnav a.sector-nav::before{content:"";position:absolute;left:-8px;top:6px;bottom:6px;border-left:1px solid var(--ink)}
-header.top .secnav a.sector-nav:hover{background:#005a8c;color:#fff}
 .saved-nav svg{width:14px;height:14px}
 .foot .src{margin-left:auto}
 .save{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin:-6px -6px -6px 0;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
@@ -981,7 +976,6 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   /* every stream in the masthead at once: three to a row, none cut off */
   header.top .secnav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin-inline:0;padding:0;-webkit-mask-image:none;mask-image:none}
   header.top .secnav a{padding:6px 2px 5px;font-size:11.5px;border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
-  header.top .secnav a.sector-nav{grid-column:1/-1;margin:0}header.top .secnav a.sector-nav::before{content:none}
   header.top .secnav a:nth-child(3n+1){border-left:0}
   /* the jump row: every section of the page, all in view, above the email strip */
   .jump{flex-wrap:wrap;gap:5px;margin:0 0 -20px;padding:2px 0 0}
@@ -1106,7 +1100,6 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       <a href="/regulation/" data-go="regulation" class="k-regulation">Regulation tracker</a>
       <a href="/policy/" data-go="policy" class="k-policy">Policy</a>
       <a href="/infra/" data-go="infra" class="k-infra">Infra</a>
-      <a href="/sectors/" class="k-sectors sector-nav">Sectors</a>
       <a href="/saved/" data-go="saved" class="k-all saved-nav" title="Saved stories" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg><b></b></a>
     </nav>
     <a class="about-link" href="/about/" data-go="about">About</a>
@@ -1143,7 +1136,6 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       <a href="/regulation/" data-go="regulation" class="sm-tab k-regulation"><b>Regulation tracker</b><span></span><img src="photos/cartoons/streams/regulation.svg" alt=""></a>
       <a href="/policy/" data-go="policy" class="sm-tab k-policy"><b>Policy</b><span></span><img src="photos/cartoons/streams/policy.svg" alt=""></a>
       <a href="/infra/" data-go="infra" class="sm-tab k-infra"><b>Infra</b><span></span><img src="photos/cartoons/streams/infra.svg" alt=""></a>
-      <a href="/sectors/" class="sm-tab k-sectors"><b>Sectors</b><span></span><img src="photos/cartoons/streams/sectors.svg" alt=""></a>
       <a href="/today/" data-go="today" class="sm-link sm-more">Today in AI</a>
       <a href="/discussing/" data-go="discussing" class="sm-link">People are discussing</a>
       <a href="/monthly/" class="sm-link">Monthly issues</a>

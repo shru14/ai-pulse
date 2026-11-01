@@ -113,7 +113,7 @@ Pages that each answer one question, four per stream. Rows checked by hand are d
 
 ## Sectors
 
-**[Sectors](https://projectaipulse.com/sectors/)**, its own tab after the six streams: AI one industry at a time. Finance is ready; healthcare, legal, retail, manufacturing and the public sector are being built.
+Sectors, one of Pulse Compass's resources behind the login: AI one industry at a time. Finance is ready; healthcare, legal, retail, manufacturing and the public sector are being built.
 
 - **What finance firms use AI for:** banks, insurers, payment companies, investment and audit firms, one row per use since 1 June 2025, in a table that filters like Excel: firm, area, what it uses AI for and where it stands as its story says (introduced, in use, worked, changed course, went wrong, unproven). "Worked" only when a measured result is reported. Each row checked by hand against its story; new ones drafted daily for approval.
 - **Rules for AI in finance:** the main rules a finance firm meets in the EU, the UK and the US (AI Act, DORA, GDPR, ESMA, Consumer Duty, SM&CR, GLBA, SR 26-2, Regulation B, FINRA, Colorado and others), each checked by hand from its official text with what it means for AI and the risk if it is missed; then the laws and bills written for AI in finance on our tracker, every 6 h.

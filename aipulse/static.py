@@ -463,7 +463,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     places += model_economy.build(conn, cards, out, today)  # launch prices against the model before, and shutdown warning (Releases' feature)
     if COMPASS:  # the paid product and what's built from it, from the private repo (aipulse/__init__.py)
         from . import sectors
-        places += sectors.build(conn, cards, out, today)  # AI by industry: finance's uses and rules, the header's Sectors tab
+        places += sectors.build(conn, cards, out, today)  # AI by industry: finance's uses and rules (Pro: no sitemap)
         from . import planner
         from . import adoption, planner_example, planner_flow
         places += planner.build(conn, cards, out)  # models that fit a finance firm's limits
