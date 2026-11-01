@@ -470,9 +470,10 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
         places += planner_flow.build(conn, cards, out)  # the planner's first steps: explore AI products, a few questions
         places += planner_example.build(conn, cards, out)  # the planner's last step: the reader's report, from their answers
         places += adoption.build(conn, cards, out)  # the planner's product page, playbook, mistakes and rule book (Pro: no sitemap)
-        from . import coding_tools, compare, patterns, ready_tools, workflows, workshop
+        from . import coding_tools, compare, patterns, proof, ready_tools, workflows, workshop
         places += ready_tools.build(conn, cards, out)  # products a firm can buy instead of building, by job (Pro: no sitemap)
         places += patterns.build(conn, cards, out)  # how each kind of AI product is built (Pro: no sitemap)
+        places += proof.build(conn, cards, out)  # how far to trust a firm's own trial, read in its browser (Pro: no sitemap)
         places += coding_tools.build(conn, cards, out)  # find, cost and try an AI coding tool (Pro: no sitemap)
         places += workshop.build(conn, cards, out)  # a helper for people running hands-on AI sessions (Pro: no sitemap)
         places += workflows.build(conn, cards, out)  # how each job splits into AI, plain code and a person (Pro: no sitemap)
