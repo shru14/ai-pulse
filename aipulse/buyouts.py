@@ -342,6 +342,8 @@ LEFT_OUT = {
         "Realpower doesn't make AI",
     "https://w.media/dayones-johor-us100-million-land-purchase-gets-sellers-shareholders-nod/":
         "a land purchase, not a company",
+    "https://the-decoder.com/openais-upcoming-chat-and-work-merger-in-chatgpt-signals-the-end-of-all-you-can-prompt-pricing/":
+        "no company being bought",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
