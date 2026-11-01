@@ -227,6 +227,8 @@ LEFT_OUT = {
         "talks only, round not closed",
     "https://www.channelnewsasia.com/business/ex-openai-employee-accused-planting-device-appears-have-saudi-backing-us-prosecutors-say-6472471":
         "court story, no investment in a lab",
+    "https://the-decoder.com/openais-upcoming-chat-and-work-merger-in-chatgpt-signals-the-end-of-all-you-can-prompt-pricing/":
+        "ChatGPT pricing and usage limits, no investment in a lab",
 }
 
 

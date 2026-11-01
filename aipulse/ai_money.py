@@ -65,6 +65,8 @@ ROUNDS = [
      "https://techcrunch.com/2026/09/17/crusoe-raises-3-9b-to-build-massive-data-centers-and-small-modular-ai-factories/"),
     ("2026-09-28", "Instinct", "$1B", 1, "Series C at a $10B valuation",
      "https://techcrunch.com/2026/09/28/viral-ai-agent-instinct-raises-1b-series-c-at-a-10b-valuation/"),
+    ("2026-10-21", "Flapping Airplanes", "$1B", 1, "Series A; valued at $6B, Bloomberg reported",
+     "https://siliconangle.com/2026/10/21/year-old-ai-research-lab-flapping-airplanes-raises-1b-at-a-reported-6b-valuation/"),
 ]
 
 # Compute deals of $1B or more, signed: (day, buyer, seller, amount as the story gives it, billions for the dot,
@@ -139,7 +141,35 @@ SHARES_BACK = [
 ]
 
 # stories checked by hand for ROUNDS and COMPUTE and left out, with why, so they aren't checked again
-SKIPPED: dict[str, str] = {}
+SKIPPED: dict[str, str] = {
+    "https://www.channelnewsasia.com/business/kuaishous-kling-ai-unit-completes-near-3-billion-funding-round-6507461":
+        "can't read to check",
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=280033": "market value of a public company",
+    "https://techcrunch.com/2026/10/29/wabi-the-ai-agent-that-builds-mini-apps-now-valued-at-1-25b-after-latest-round/":
+        "valuation only; the round is far under $1B",
+    "https://www.channelnewsasia.com/business/serval-triples-valuation-3-billion-businesses-adopt-ai-workflow-automation-6503416":
+        "valuation only, no $1B round",
+    "https://olhardigital.com.br/2026/10/27/pro/bancos-e-blackstone-vao-financiar-r-340-bilhoes-em-chips-de-ia-para-a-anthropic/":
+        "banks' financing of chips (debt), not a round or a signed purchase",
+    "https://techcrunch.com/2026/10/27/disruptive-raises-10b-fund-to-make-big-bets-on-at-least-10-companies/":
+        "venture fund raising money",
+    "https://w.media/airtrunk-secures-au4-25bn-green-loan-for-sydney-data-centre-campus/": "loan",
+    "https://techcrunch.com/2026/10/26/spacex-locks-in-40b-gpu-financing-deal-with-apollo/":
+        "lease financing, not closed (expected by year-end)",
+    "https://w.media/firebirds-us-5-billion-kazakhstan-ai-factory-gets-green-light-for-45000-nvidia-gpus/":
+        "an export licence and the company's own build, no signed purchase",
+    "https://techcabal.com/2026/10/26/infragora-1-billion-data-centres/": "can't read to check",
+    "https://w.media/softbank-plans-us50-billion-data-center-investment-in-malaysia-report/":
+        "plans, from a report; a company's own build",
+    "https://olhardigital.com.br/2026/10/22/pro/openai-negocia-rodada-de-r-162-bilhoes-com-investidores-dos-emirados-arabes/":
+        "talks only, round not closed",
+    "https://techcrunch.com/2026/10/22/deepseek-reportedly-raises-15b-days-after-us-restrictions/":
+        "reportedly; investors not named as closed",
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=279372":
+        "anonymous-source report of an order, not a signed deal; buyers not all named",
+    "https://siliconangle.com/2026/10/20/ai-infrastructure-management-software-startup-asi-hits-3b-valuation-after-raising-325m-in-funding/":
+        "round far under $1B",
+}
 # the newest day every story was read for the lists above; the daily candidates start after it
 CHECKED_TO = "2026-10-20"
 _MONEY = re.compile(r"\b(rais\w*|round|funding|financing|series [a-h]|seed|valu\w*|compute|cloud|data cent(?:er|re)s?|GPUs?|"
