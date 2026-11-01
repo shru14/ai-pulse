@@ -503,7 +503,7 @@ def _rivals(rows: list[tuple], opens: Counter) -> str:
         cols = "".join(f'<i class="{"now" if k == len(trend) - 1 else ""}" style="height:{max(v * 100, 3):.0f}%" '
                        f'title="{monthly.name(m)}: China {v:.0%}"></i>' for k, (m, v) in enumerate(trend))
         out.append(f'<li><span class="nm">{what}</span><span class="split" title="US {us}, China {cn}">'
-                   f'<i class="us" style="width:{(1 - share) * 100:.1f}%">US {us}</i><i class="cn" style="width:{share * 100:.1f}%">China {cn}</i></span>'
+                   f'<i class="us" style="width:{(1 - share) * 100:.1f}%">US {us}</i><i class="cn" style="width:{share * 100:.1f}%"><span>China&nbsp;</span>{cn}</i></span>'
                    f'<span class="ins-spark" style="--c:#E69F00">{cols}</span>'
                    f'<span class="ch">China {share:.0%}{f" · usually {sum(usual) / len(usual):.0%}" if usual else ""}</span></li>')
     return ('<ol class="ins-bars ins-riv">' + "".join(out) + f"</ol>{line}"

@@ -711,28 +711,83 @@ a.subscribe-btn{text-decoration:none}
   .cp .kf .fl,.cp .kf .fd{animation:none!important}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (max-width:700px){
-  .cp .kf thead,.cp .kf .gt span{display:none}
-  .cp .kf .st{font-size:9px;letter-spacing:.04em;white-space:normal;width:44px}
-  .cp .kf td{font-size:13px}
-  .cp .kf .no{width:50px}
+  .cp .mi .ex{margin-top:32px}
+  .cp .mi .ex h2{font-size:17px;margin:8px 0 8px}
+  .cp .ex-k{gap:8px;font-size:11px}
+  .cp .ins-say{font-size:14px;margin:0 0 12px}
+  .cp .ins-note,.cp .ins-key{font-size:12px}
+  .cp .ins-top .fh .ins-pdf{margin-left:0}
+  .cp .mi .issue-nav{font-size:14px}
+  /* key findings: the row's number is its link, on the left, and the finding has the width */
+  .cp .kf thead,.cp .kf .gt span,.cp .kf .no{display:none}
+  .cp .kf,.cp .kf tbody{display:block}
+  .cp .kf tr{display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:8px;border-top:1px solid #2A303C;padding:8px 0}
+  .cp .kf tr:first-child{border-top:0}
+  .cp .kf td{display:block;border:0;padding:0;font-size:12.5px;line-height:1.4}
+  .cp .kf .gt{grid-column:1;grid-row:1 / span 2;text-align:left}
+  .cp .kf .fd{grid-column:2;grid-row:1}
+  .cp .kf .st{grid-column:2;grid-row:2;font-size:9.5px;margin-top:3px}
+  .cp .kf .st:empty{display:none}
   .cp .ins-kf{padding:12px 10px 6px}
-  .cp .ins-two,.cp .ins-score{grid-template-columns:1fr}
-  .cp .ins-score div + div{border-left:0;border-top:1px solid var(--rule);padding-left:0}
-  .cp .ins-db li,.cp .ins-axis{grid-template-columns:76px minmax(0,1fr) 48px;gap:8px}
-  .cp .ins-db .ch{grid-column:2 / -1;padding-bottom:6px}
-  .cp .ins-db .call{display:none}
-  .cp .ins-bars li{grid-template-columns:minmax(76px,110px) minmax(0,1fr) 44px 50px;gap:7px}
-  .cp .ins-fund li{grid-template-columns:minmax(70px,100px) minmax(0,1fr) 26px 52px}
-  .cp .ins-deals li{grid-template-columns:minmax(0,1fr) 64px;row-gap:4px}
-  .cp .ins-deals .tr{grid-column:1 / -1;grid-row:2}
-  .cp .ins-riv li{grid-template-columns:minmax(70px,90px) minmax(0,1fr) 70px;row-gap:2px}
-  .cp .ins-riv .ch{grid-column:2 / -1;font-size:12px}
+  .cp .ins-two{grid-template-columns:1fr}
+  .cp .ins-score div{padding:8px 8px 9px 0}
+  .cp .ins-score div + div{padding-left:8px}
+  .cp .ins-score b{font-size:20px}
+  .cp .ins-score span{display:block;font-size:11.5px;line-height:1.3;margin-top:2px}
+  /* how this month compares: name, change and share on a line, then the scale at full width; the yellow tag below it */
+  .cp .ins-db li{grid-template-columns:auto minmax(0,1fr) auto;gap:2px 8px;padding:7px 0 9px;align-items:baseline}
+  .cp .ins-db .nm{grid-column:1;grid-row:1;font-size:14px}
+  .cp .ins-db .ch{grid-column:2;grid-row:1;text-align:right;font-size:11.5px}
+  .cp .ins-db .ch small{display:inline;font-size:10px;margin-left:6px}
+  .cp .ins-db .v{grid-column:3;grid-row:1;font-size:15px}
+  .cp .ins-db .trk{grid-column:1 / -1;grid-row:2;height:24px;margin:0 9px}
+  .cp .ins-db .trk::before{border-top:1px solid var(--rule)}
+  .cp .ins-db li.on{padding-bottom:32px}
+  .cp .ins-db .call{top:100%;left:0!important;transform:none;margin:3px 0 0;font-size:10.5px}
+  .cp .ins-axis{grid-template-columns:minmax(0,1fr);gap:0}
+  .cp .ins-axis > span:first-child{display:none}
+  .cp .ins-axis .tk{margin:0 9px}
+  .cp .ins-axis .tk span{font-size:10px}
+  /* bars: the yellow tag goes under its bar, so it never covers the count */
+  .cp .ins-bars li{grid-template-columns:minmax(76px,104px) minmax(0,1fr) 36px 46px;gap:7px;padding:3px 0}
+  .cp .ins-bars .nm{font-size:13px}
+  .cp .ins-bars .v{font-size:14px}
+  .cp .ins-bars .ch{font-size:11px}
+  .cp .ins-bars:not(.ins-fund) li.on{padding-bottom:28px}
+  .cp .ins-bars .call,.cp .ins-bars .call.in{top:100%;left:0!important;transform:none;margin:4px 0 0;font-size:10.5px}
+  .cp .ins-fund li{grid-template-columns:minmax(70px,92px) minmax(0,1fr) 20px 50px}
+  .cp .ins-riv li{grid-template-columns:auto minmax(0,1fr) 64px;gap:4px 8px;padding:6px 0}
+  .cp .ins-riv .nm{grid-column:1;grid-row:1}
+  .cp .ins-riv .ch{grid-column:2 / -1;grid-row:1;text-align:right;font-size:11px;white-space:normal}
+  .cp .ins-riv .split{grid-column:1 / 3;grid-row:2}
+  .cp .ins-riv .split .cn span{display:none}
+  .cp .ins-riv .ins-spark{grid-column:3;grid-row:2}
+  .cp .ins-opens{font-size:13px}
+  /* funding pace: amounts stand upright above their columns, as a month's column is too narrow for one lying flat */
+  .cp .ins-pace{height:150px;margin-top:44px;gap:3px}
+  .cp .ins-pace .col{flex-shrink:0}
+  .cp .ins-pace .amt{writing-mode:vertical-rl;transform:rotate(180deg);align-self:center;font-size:9.5px;margin-bottom:3px}
+  .cp .ins-pace .mo{font-size:10px}
   .cp .ins-days{height:120px}
-  .cp .ins-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .cp .call.in{display:none}
+  .cp .ins-plot{margin:34px 0 24px}
+  .cp .ins-tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+  .cp .ins-tiles li{padding:7px 8px}
+  .cp .ins-tiles .nm{font-size:12px}
+  .cp .ins-tiles b{font-size:20px}
+  .cp .ins-tiles .ch{font-size:11px}
+  .cp .ins-move li{padding:5px 0}
+  .cp .ins-move .nm{font-size:13.5px}
+  .cp .ins-move .v{font-size:15px}
+  .cp table.mt.ins-val,.cp table.mt.ins-deals,.cp table.mt.ins-ipot,.cp table.mt.ins-risk{font-size:13.5px}
+  .cp .ins-val td,.cp .ins-deals td{padding:6px 8px 6px 0}
+  .cp .ins-val .ch{font-size:11px}
+  .cp .mt.ins-val .n,.cp .mt.ins-deals .n,.cp .mt.ins-drv .n,.cp .ins-risk td.hx{font-size:15px}
+  .cp .ins-deals .dk{font-size:9px;letter-spacing:.03em;padding:0 4px;border-width:1px}
+  .cp .ins-deals .rep{font-size:9px;margin-left:4px}
   .cp .ins-drv thead{display:none}
   .cp .ins-drv tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;border-top:1px solid var(--rule);padding:10px 0}
   .cp .ins-drv td{display:block;border:0;padding:0}
+  .cp .ins-drv li{font-size:13.5px}
   .cp .ins-drv td:nth-child(2){grid-column:1 / -1;grid-row:2}
   .cp .ins-drv td.n{grid-column:2;grid-row:1}}
 /* Phones: long lists scroll inside their own box and rows of cards swipe sideways (the front page's rule, for these pages) */
