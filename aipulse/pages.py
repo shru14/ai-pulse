@@ -1996,7 +1996,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ap-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:18px 0 0;width:100%;max-width:none}
 .cp .ap-nav a,.cp .ap-res-nav a{display:flex;align-items:center;justify-content:center;text-align:center;color:#000;text-decoration:none;border:2px solid transparent}
 .cp .ap-nav a{padding:11px 8px;font:400 16px/1.3 var(--body);background:color-mix(in srgb,var(--c) 38%,#fff)}
-.cp .ap-res-nav{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin:12px 0 18px;width:100%;max-width:none;font:400 14px/1.3 var(--body)}
+.cp .ap-res-nav{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px;margin:12px 0 18px;width:100%;max-width:none;font:400 14px/1.3 var(--body)}
 .cp .ap-res-nav span{grid-column:1/-1;color:var(--muted)}
 .cp .ap-res-nav a{padding:7px 6px;background:color-mix(in srgb,var(--c) 22%,#fff)}
 .cp .ap-nav a:hover,.cp .ap-res-nav a:hover{background:color-mix(in srgb,var(--c) 55%,#fff)}
