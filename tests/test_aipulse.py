@@ -2848,6 +2848,26 @@ def test_the_email_introduces_one_new_feature_a_day_each_once():
     assert html.index("New on AI Pulse:") < html.index("A paper on AI agents") < html.index("Every story of the day in one table")
 
 
+def test_the_email_on_a_month_s_first_links_the_new_issue_and_the_queue_waits_a_day(monkeypatch):
+    from aipulse import digest
+    # the emails of 1 Dec, 1 Jan and 1 Mar, each about the month's last day; 1 Nov's already went out as usual
+    for day, month, name in [(date(2026, 11, 30), "2026-11", "November 2026"), (date(2026, 12, 31), "2026-12", "December 2026"),
+                             (date(2027, 2, 28), "2027-02", "February 2027")]:
+        title, _, path = digest._feature(day)
+        assert title == f"Monthly issue: {name}" and path == f"monthly/{month}/"
+    assert digest._feature(date(2026, 10, 31)) == digest.FEATURES[13]
+    assert digest._feature(date(2026, 11, 1)) == digest.FEATURES[14]
+    # a queue that still runs: the page due on the 1st's email comes the next day, and none is skipped
+    queue = [(str(k), "", f"p{k}/") for k in range(120)]
+    monkeypatch.setattr(digest, "FEATURES", queue)
+    days = [digest.FEATURES_FROM + timedelta(days=k) for k in range(110)]
+    shown = [digest._feature(d) for d in days]
+    regular = [f for f in shown if not f[0].startswith("Monthly")]
+    assert regular == queue[:len(regular)]
+    assert sum(f[0].startswith("Monthly") for f in shown) == 3  # 30 Nov, 31 Dec, 31 Jan
+    assert digest._feature(date(2026, 12, 1)) == queue[(date(2026, 11, 30) - digest.FEATURES_FROM).days]
+
+
 def test_a_new_stream_s_history_resumes_where_it_stopped(tmp_path):
     from aipulse import backfill
     conn = store.connect(tmp_path / "t.db")
