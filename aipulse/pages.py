@@ -1978,6 +1978,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ap-flow div{display:flex;flex-wrap:wrap;align-items:center;gap:14px}.cp .ap-flow .ap-btn{padding:6px 14px;font-size:14px}
 .cp .ap-back{font-weight:400;color:var(--ink)}
 .cp .fh .ap-chips .ap-start{margin:0;padding:6px 14px;font-size:15px}
+.cp .fh .ap-chips .ap-btn2{margin:0;padding:6px 14px;font-size:15px}
 .cp .ap-cards.ap-cards4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .cp .ap-why{margin-top:22px;border:2px solid var(--line);padding:14px 18px}.cp .ap .ap-why h2{margin:0 0 10px;font:900 20px var(--body);border:0;padding:0}
 .cp .ap-why ul{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;list-style:none;margin:0;padding:0}
@@ -2010,6 +2011,10 @@ a.subscribe-btn{text-decoration:none}
 .cp .ap-resources a{display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;border:2px solid var(--line);border-left:6px solid var(--c);padding:8px 10px;color:var(--ink);text-decoration:none}
 .cp .ap-resources a svg{grid-row:1/3}.cp .ap-resources small{color:var(--muted)}
 .cp .ap .ap-resources h3{grid-column:1;align-self:center;margin:0;font:800 19px/1.2 var(--body);text-transform:none;letter-spacing:0;color:var(--ink);border:0;padding:0}
+/* a heading, then up to four tiles on one row; on the product band the chip and both buttons share one row */
+@media (min-width:1001px){.cp .ap-resources>div{grid-template-columns:auto repeat(4,minmax(0,1fr))}
+  .cp .fh .ap-chips:has(.ap-btn2){flex-wrap:nowrap;align-items:stretch}
+  .cp .fh .ap-chips:has(.ap-btn2)>*{display:flex;align-items:center;white-space:nowrap}}
 .cp .fl-areas{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:16px 0 14px}
 .cp .fl-areas button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:2px solid var(--line);background:var(--bg);color:var(--ink);padding:10px 12px;font:inherit;cursor:pointer}
 .cp .fl-areas button b{font-size:15px;line-height:1.2}.cp .fl-areas button small{font-size:12.5px;line-height:1.3;color:var(--muted)}
