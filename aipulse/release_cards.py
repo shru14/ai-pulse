@@ -196,9 +196,9 @@ RELEASES = [
     ("2026-10-05", "Reflection AI", "Beam", "Open", "Weights from 16 Oct", "Apache-2.0", "", "",
      False, "", "https://the-decoder.com/reflections-beam-becomes-the-most-capable-open-weight-model-built-outside-china/",
      "https://huggingface.co/reflection/Beam-1.0-501B-A23B"),
-    ("2026-10-06", "Mistral", "Mistral Large 4", "Closed", "Weights promised after safety testing",
-     "", "", "", False, "",
-     "https://techcrunch.com/2026/10/06/mistrals-new-1t-model-aims-to-leapfrog-closed-and-open-rivals/", ""),
+    ("2026-10-06", "Mistral", "Mistral Large 4", "Open", "Weights from 29 Oct", "Mistral Ecosystem Open-Weight License",
+     "Businesses that sell access to the model (Model as a Service) need a separate commercial licence", "", False, "",
+     "https://mistral.ai/news/mistral-large-4-oss/", "https://huggingface.co/mistralai/Mistral-Large-4-1T-A52B"),
     ("2026-10-07", "Anthropic", "Claude Haiku 5.5", "Closed", "", "", "", "", False,
      "$0.10 / $0.50|prompts up to 100K tokens",
      "https://www.marktechpost.com/2026/10/07/anthropic-releases-claude-haiku-5-5-a-small-model-with-1m-context-priced-at-0-10-per-million-input-tokens/", ""),
@@ -273,7 +273,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-10-31"
+SAFETY_CHECKED = "2026-11-01"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -507,10 +507,30 @@ LEFT_OUT = {
         "FlashMap: a speed-up add-on for LLM decoding, not a new model",
     "https://cloud.google.com/blog/products/ai-machine-learning/gemini-robotics-embodied-reasoning-2-is-now-available-on-google-cloud/":
         "Gemini Robotics Embodied Reasoning 2: no news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/29/baseten-joey-1-2b-decision-model/":
+        "joey-1: one news outlet within 3 days",
+    "https://elevenlabs.io/blog/sound-effects-v3":
+        "SFX v3: no news outlet within 3 days",
+    "https://huggingface.co/blog/anydecisionmodel":
+        "AnySpeechRecognizer and AnyDecisionModel: no news outlet within 3 days",
+    "https://huggingface.co/blog/ibm-granite/granite-switch-4-1-1":
+        "Granite Switch 4.1.1: an update on a hosting blog, no news outlet within 3 days",
+    "https://pandaily.com/diffuspace-clover-35b-a3b-preview-open-source-diffusion-language-model-swe-bench-73-6":
+        "Clover-35B-A3B: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/29/block-dessa-full-duplex-speech-model/":
+        "Dessa: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/10/29/assemblyai-tts-1-text-to-speech-api-voice-agents/":
+        "AssemblyAI-TTS-1: one news outlet within 3 days",
+    "https://pandaily.com/first-fengyun-satellite-extreme-weather-ai-models-typhoon-cloud-image-interpretation-severe-convection-nowcasting":
+        "Fengyun satellite AI models: one news outlet within 3 days",
+    "https://pandaily.com/apex-intelligence-apex-35b-v1-0-qwen3-6-35b-a3b-apex-research-automated-ai-research-cfd-bench":
+        "Apex-35B-V1.0: one news outlet within 3 days",
+    "https://aws.amazon.com/blogs/machine-learning/accelerate-agentic-ai-with-nvidia-nemotron-models-on-amazon-eks-and-sagemaker-hyperpod-eks/":
+        "Nemotron on AWS: a partner blog, not a new model",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-10-28"
+CHECKED_TO = "2026-10-29"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
