@@ -24,7 +24,6 @@ FIXES: dict[str, dict | None] = {
     "https://w.media/michigans-the-barn-oracle-data-center-campus-finalizes-us-16-billion-funding/": {"company": "The Barn"},
     "https://nairametrics.com/2026/10/01/anthropic-targets-november-ipo-at-1-8-trillion-to-2-trillion-valuation/": {"company": "Anthropic"},
     "https://techcrunch.com/2026/10/09/the-maker-of-non-text-ai-model-jev-valued-at-7-5b-just-weeks-after-launch/": {"company": "TypeSafe"},
-    "https://dcnnmagazine.com/infrastructure/networks/corning-meta-agree-6bn-data-centre-supply-deal/": {"company": "Corning", "partner": "Meta"},
     "https://w.media/equinix-and-cpp-investments-to-acquire-atnorth-for-us-4-billion/": {"company": "Equinix and CPP Investments", "partner": "atNorth"},
     "https://w.media/cpp-investments-and-equinix-complete-us-4-billion-acquisition-of-atnorth/": {"company": "Equinix and CPP Investments", "partner": "atNorth"},
     "https://w.media/aip-led-consortium-completes-us-40-billion-acquisition-of-aligned-data-centers/": {"company": "AIP-led consortium", "partner": "Aligned Data Centers"},
@@ -37,7 +36,17 @@ FIXES: dict[str, dict | None] = {
     "https://www.businesskorea.co.kr/news/articleView.html?idxno=279822": {"partner": "Brookfield"},
     "https://w.media/trentar-signs-mou-for-us-3-3-billion-500-mw-data-center-in-maharashtra/": {"partner": ""},
     "https://techcrunch.com/2026/08/06/exclusive-mirendil-inks-100m-google-cloud-deal-to-scale-self-improving-ai/": {"partner": "Google Cloud"},
-    # not a round, deal or valuation of the company named: a tally, a share sale, a land purchase, another company's price
+    "https://techcrunch.com/2026/07/14/openai-researcher-miles-wang-in-talks-to-launch-ai-drug-discovery-startup-valued-at-2b/": {"company": "Miles Wang's startup"},
+    "https://w.media/digital-realty-to-acquire-blackstones-stake-in-northern-virginia-dcs-in-us-7-8-billion-deal/": {"partner": "Blackstone's Virginia data center stake"},
+    "https://the-decoder.com/softbank-plans-ipo-for-new-ai-and-robotics-company-valued-at-up-to-100-billion/": {"company": "SoftBank's new AI and robotics company"},
+    "https://the-decoder.com/deepseek-reportedly-seeks-outside-funding-for-the-first-time-at-10-billion-valuation/": {"company": "DeepSeek"},
+    "https://techcrunch.com/2026/08/26/nvidia-closes-in-on-hugging-face-acquisition/": {"title": "Nvidia snaps up Hugging Face for $12.9 billion"},
+    # not a round, deal or valuation of the company named: a tally, a share sale, a land purchase, another company's price, a supply contract, a sale of data centers, a round already counted
+    "https://dcnnmagazine.com/infrastructure/networks/corning-meta-agree-6bn-data-centre-supply-deal/": None,
+    "https://w.media/prysmian-signs-us-6-2-billion-with-molex-to-supply-optical-cables-inside-data-centers/": None,
+    "https://dcnnmagazine.com/infrastructure/power-cooling/ls-electric-wins-115m-data-centre-contract/": None,
+    "https://w.media/airtrunk-nears-deal-to-sell-its-johor-data-centers-for-us1-billion-report/": None,
+    "https://the-decoder.com/deepseek-needs-more-cash-just-weeks-after-closing-its-first-7-billion-round/": None,
     "https://techcrunch.com/2026/06/01/alphabet-plans-to-raise-80-billion-to-pay-for-ai-buildout/": None,
     "https://www.thelec.net/news/articleView.html?idxno=14968": None,
     "https://techcrunch.com/2026/06/03/alphabets-record-breaking-85b-raise-for-googles-ai-business-is-a-helluva-good-signal/": None,
@@ -66,7 +75,7 @@ NOT = re.compile(r"\b(scrap\w*|scrubbed|cancel\w*|abandon\w*|halts?|walks away|c
                  r"venture fund|loans?|debt|convertible notes?|could exceed|loses|lost|fine[sd]?|penalt\w*|lawsuit|sues|settle\w*|scam\w*|stolen|salary|pay package|revenue|"
                  r"sales|spend(?:s|ing)?|budget|grant|blocks?|blocked|rejects?|probe\w*|shares (?:surge|jump|fall|slide|drop)\w*)\b"
                  r"|^(?:why|how|what|inside|opinion)\b|\b(?:biggest|largest|record)\b.*\bIPO\b|\bIPO (?:raises|prices)", re.I)
-REPORTED = re.compile(r"\b(reported(?:ly)?|report says|reports?:|in talks|talks to|sources?|said to|nears?|closing in|plans? to|"
+REPORTED = re.compile(r"\b(reported(?:ly)?|report says|reports?:|in talks|talks to|sources?|said to|nears?|closing in|plans? to|targets?|"
                       r"seeks?|eyes|could|may|weighs|considers?|explores?)\b", re.I)
 _VERB = re.compile(r"\b(raises?|raised|raising|lands|secures|collects|bags|nabs|snags|closes|hits|reaches|doubles|triples|"
                    r"valued|nears|becomes|is now|acquires?|buys|to buy|will buy|signs|inks|inking|agrees|strikes|wins|gets|"
@@ -154,7 +163,7 @@ def read(c: dict) -> dict | None:
     """What a headline says about money, or None: {kind, company, amount, valuation, partner, reported}."""
     if c["url"] in FIXES and FIXES[c["url"]] is None:
         return None
-    t = c.get("title") or ""
+    t = (FIXES.get(c["url"]) or {}).get("title") or c.get("title") or ""  # a lead headline that leaves the amount out
     found = amounts(t)
     if not found or NOT.search(t):
         return None
@@ -185,7 +194,7 @@ def read(c: dict) -> dict | None:
         return None
     if (out["kind"] == "round" and out["amount"] > 1e11) or out["valuation"] > 1e13:  # a misread, not a round
         return None
-    out.update(FIXES.get(c["url"]) or {})
+    out.update({k: v for k, v in (FIXES.get(c["url"]) or {}).items() if k != "title"})
     return out if out.get("company") else None
 
 
