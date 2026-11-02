@@ -227,6 +227,8 @@ LEFT_OUT = {
         "talks only, round not closed",
     "https://www.channelnewsasia.com/business/ex-openai-employee-accused-planting-device-appears-have-saudi-backing-us-prosecutors-say-6472471":
         "court story, no investment in a lab",
+    "https://siliconangle.com/2026/11/02/marble-cognition-raises-3-75m-for-its-ai-agent-workers-that-watch-and-learn-how-people-work/":
+        "no company named as a stakeholder (a Mistral executive is one of the angels); not clearly a lab",
 }
 
 

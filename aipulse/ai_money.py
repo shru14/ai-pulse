@@ -139,7 +139,9 @@ SHARES_BACK = [
 ]
 
 # stories checked by hand for ROUNDS and COMPUTE and left out, with why, so they aren't checked again
-SKIPPED: dict[str, str] = {}
+SKIPPED: dict[str, str] = {
+    "https://w.media/singapores-sttgdc-seeks-us-2-4-billion-data-center-loan/": "loan, still in talks with banks",
+}
 # the newest day every story was read for the lists above; the daily candidates start after it
 CHECKED_TO = "2026-10-20"
 _MONEY = re.compile(r"\b(rais\w*|round|funding|financing|series [a-h]|seed|valu\w*|compute|cloud|data cent(?:er|re)s?|GPUs?|"
