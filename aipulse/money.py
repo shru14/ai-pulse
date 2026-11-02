@@ -48,6 +48,9 @@ FIXES: dict[str, dict | None] = {
     "https://siliconangle.com/2026/08/05/google-targets-ai-startup-mechanizes-technology-talent-proposed-1-5b-deal/": {"title": "Google reportedly to buy Mechanize for $1.5B"},
     "https://techcrunch.com/2026/05/27/in-more-good-news-for-amazon-snowflake-signs-6b-deal-with-aws-for-ai-cpu-chips/": {"title": "Snowflake signs $6B compute deal with AWS"},
     # not a round, deal or valuation of the company named: a tally, a share sale, a land purchase, another company's price, a supply contract, a sale of data centers, a round already counted, a plan
+    "https://the-decoder.com/openai-revenue-keeps-surging-as-company-seeks-30-billion-in-fresh-capital/": None,
+    "https://the-decoder.com/openai-lowers-valuation-target-raises-up-to-30-billion/": None,
+    "https://siliconangle.com/2026/10/22/report-openai-closing-on-30b-bridge-funding-round-to-tide-it-over-before-ipo/": None,
     "https://techcrunch.com/2026/10/22/openai-working-on-new-30b-raise-at-1-25t-valuation-ahead-of-ipo/": None,
     "https://siliconangle.com/2026/03/19/jeff-bezos-planning-raise-100-billion-speed-manufacturing-automation/": None,
     "https://techcrunch.com/2026/03/19/jeff-bezos-reportedly-wants-100-billion-to-buy-and-transform-old-manufacturing-firms-with-ai/": None,
