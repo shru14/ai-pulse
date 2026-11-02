@@ -192,6 +192,8 @@ sign-ups go to a Google Apps Script web app (`apps-script/Code.gs`). The domain 
 
 ## Credits and licences
 
+AI Pulse's own code, writing and hand-checked tables: © 2026 Shruti Kakade, all rights reserved. They are public so anyone can read and check them; reusing them needs written permission (see [LICENSE](LICENSE)). The material below stays under its owners' terms.
+
 European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. ESMA, EBA and EIOPA: reproduction authorised with the source acknowledged (Source: ESMA, EBA, EIOPA). Consumer Financial Protection Bureau: US public domain. European Central Bank: free use with the ECB cited as the source. Bank for International Settlements: limited extracts reproduced with the BIS cited as the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK and UK AI Security Institute: Open Government Licence v3.0. Federal Register,
 congress.gov: US public domain. Montreal AI Ethics Institute and CIPESA: CC BY 4.0. Research ICT Africa: CC BY-SA 4.0, non-commercial use with credit. DINUM (numerique.gouv.fr): Licence Ouverte 2.0. MCTI (gov.br): CC BY-ND 3.0. AESIA: reuse under Spain's Ley 37/2007, source: Agencia Española de Supervisión de Inteligencia Artificial. Canada: Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
 Swiss parliamentary records: The Federal Assembly — The Swiss Parliament, open data. Korean laws: National
