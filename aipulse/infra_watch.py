@@ -132,6 +132,8 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/vyoma-ai-breaks-ground-on-52-mw-ai-ready-dc-in-chennai/", "Vyoma.AI (L&T)", "India", "Chennai", "52 MW", "", "building"),
     ("https://dcnnmagazine.com/projects-and-infrastructure/colt-dcs-rmz-begin-construction-of-64mw-mumbai-data-centre/", "Colt DCS and RMZ", "India", "Navi Mumbai", "64 MW", "", "building"),
     ("https://w.media/kddi-to-invest-220-million-in-new-london-data-center/", "KDDI (Telehouse Europe)", "UK", "East London, next to the Docklands campus", "65 MVA of power", "£220m", "announced"),
+    ("https://w.media/terravolt-plans-240-mw-behind-the-meter-data-center-campus-in-idaho/", "TerraVolt Holdings", "US", "Near Declo, Cassia County, Idaho", "240 MW of on-site power at first", "", "announced"),
+    ("https://w.media/sm-data-centers-lg-sinar-mas-kira-open-21mw-ai-ready-data-center-in-jakarta/", "SM+ Data Centers, LG Sinar Mas and KIRA", "Indonesia", "Central business district, Jakarta", "21 MW", "", "open"),
 
 ]
 
@@ -234,6 +236,8 @@ LEFT_OUT: set[str] = {
     "https://w.media/preussenelektra-and-nvidia-assess-former-nuclear-plant-sites-for-ai-data-centers/",  # joint assessment; no site, size or investment
     "https://www.thelec.net/news/articleView.html?idxno=15059",  # cable order, parts
     "https://w.media/no-data-center-moratorium-for-malaysia-but-states-with-insufficient-water-cant-host-data-centers-minister/",  # minister's statement of policy; unclear what was decided
+    "http://www.bernama.com/en/news.php?id=2629129",  # can't read to check
+    "https://w.media/singapores-sttgdc-seeks-us-2-4-billion-data-center-loan/",  # loan sought; no new build confirmed
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
