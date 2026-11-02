@@ -2245,7 +2245,6 @@ a.subscribe-btn{text-decoration:none}
 .cp .ex-doc .dc a{font-weight:400!important}
 .cp .ex-doc .dc-t{font-size:14.5px;margin:6px 0 10px}.cp .ex-doc .dc-t th{font:500 12.5px var(--body);color:var(--muted);border-bottom:1px solid var(--ink);vertical-align:bottom}
 .cp .ex-doc .dc-t td{vertical-align:top;font-weight:400}.cp .ex-doc .dc-t td small{display:block;color:var(--muted);font-size:12.5px}
-.cp .ex-doc .dc-t3 td:first-child{width:22%}.cp .ex-doc .dc-t3 td:last-child{width:34%;color:var(--muted)}
 .cp .ex-doc .dc-pick td{background:color-mix(in srgb,#0072B2 7%,var(--bg))}
 .cp .ex-doc .dc-tag{font:500 11.5px var(--body);background:none;color:#0072B2;border:1px solid #0072B2;padding:0 6px;margin-left:6px}
 .cp .ex-doc .dc-step{grid-template-columns:230px minmax(0,1fr);gap:20px;padding:16px 0}
@@ -2391,7 +2390,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ex-doc .dc-plan td:nth-child(3){width:14%;color:var(--muted)}.cp .ex-doc .dc-plan td:last-child{width:19%;font-weight:600;color:#007a52}
 .cp .ex-doc .dc-rules tr.dc-grp th{padding:12px 10px 4px;border-bottom:1px solid var(--line);font:600 13px Inter,Arial,sans-serif;color:var(--navy);background:none}
 .cp .ex-doc .dc-prisk td:first-child{width:24%}.cp .ex-doc .dc-prisk .dc-do{font-weight:600;color:var(--navy)}.cp .ex-doc .dc-prisk td:last-child{width:14%;color:var(--muted)}
-.cp .ex-doc .dc-cost th:not(:first-child),.cp .ex-doc .dc-cost td:not(:first-child){text-align:right}.cp .ex-doc .dc-cost td{font-variant-numeric:tabular-nums}
+.cp .ex-doc .dc-cost .dc-num{text-align:right}.cp .ex-doc .dc-cost td{font-variant-numeric:tabular-nums}
 .cp .ex-doc .dc-clash{padding:8px 12px;border-left:4px solid #D55E00;background:color-mix(in srgb,#D55E00 8%,#fff)}
 .cp .ex-doc .dc tr[hidden],.cp .ex-doc .dc [data-tracker][hidden],.cp .ex-doc .dc table[hidden],.cp .ex-doc small.kp[hidden]{display:none!important}
 @media (max-width:640px){.cp .ex-doc .dc-plan td{display:block;width:auto!important;border:0;padding:4px 0}.cp .ex-doc .dc-plan tr{display:block;padding:10px 0;border-bottom:1px solid var(--line)}.cp .ex-doc .dc-plan thead{display:none}}
