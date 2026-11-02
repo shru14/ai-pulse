@@ -14,7 +14,7 @@ def site(tmp_path, monkeypatch):
     monkeypatch.setattr(access, "_shell", lambda conn, cards, path, page, table, files: json.dumps(
         {"page": page, "table": table, "files": files}))
     out = tmp_path / "site"
-    for rel, text in (("planner/index.html", "the product page"), ("planner/sample-report/index.html", "the sample"),
+    for rel, text in (("planner/index.html", "the product page"), ("planner/sample-report/index.html", "the sample"), ("planner/source-check/index.html", "the tool"),
                       ("planner/plan/index.html", SECRET), ("planner/example/sheet.csv", SECRET)):
         (out / rel).parent.mkdir(parents=True, exist_ok=True)
         (out / rel).write_text(text, encoding="utf-8")
@@ -37,6 +37,7 @@ def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
     # what's open stays open
     assert (out / "planner/index.html").read_text(encoding="utf-8") == "the product page"
     assert (out / "planner/sample-report/index.html").read_text(encoding="utf-8") == "the sample"
+    assert (out / "planner/source-check/index.html").read_text(encoding="utf-8") == "the tool"
     assert (out / "about/index.html").read_text(encoding="utf-8") == "free"
 
 
