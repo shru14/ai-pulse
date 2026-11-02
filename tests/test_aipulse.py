@@ -4768,6 +4768,8 @@ def test_money_headlines_read_right():
     read = lambda t: money.read({"url": "x", "title": t})
     assert read("Anthropic’s Computing Infrastructure Commitments Could Exceed $542 Billion") is None  # a tally
     assert read("DayOne secures US$3.7 billion loan for Malaysia expansion") is None  # debt, not a round
+    assert read("Meta to raise up to $95 billion in equity to fund costly AI") is None  # a share sale, not a round
+    assert read("AirTrunk raises US$2.3 billion in green financing for its campus") is None
     assert read("AirTrunk secures AU$4.25bn funding for Sydney campus") is None  # not US dollars
     d = read("Naver Signs $9 Billion AI Infrastructure Deal With Brookfield")
     assert (d["company"], d["partner"]) == ("Naver", "Brookfield")

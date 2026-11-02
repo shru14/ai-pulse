@@ -47,6 +47,9 @@ FIXES: dict[str, dict | None] = {
     "https://siliconangle.com/2026/09/16/cohere-and-aleph-alpha-agree-to-merge-in-reported-20b-deal/": {"title": "Cohere to buy Aleph Alpha in reported $20B deal"},
     "https://siliconangle.com/2026/08/05/google-targets-ai-startup-mechanizes-technology-talent-proposed-1-5b-deal/": {"title": "Google reportedly to buy Mechanize for $1.5B"},
     "https://techcrunch.com/2026/05/27/in-more-good-news-for-amazon-snowflake-signs-6b-deal-with-aws-for-ai-cpu-chips/": {"title": "Snowflake signs $6B compute deal with AWS"},
+    "https://techcrunch.com/2026/02/27/openai-raises-110b-in-one-of-the-largest-private-funding-rounds-in-history/": {"valuation": 730e9},
+    "https://techcrunch.com/2026/05/28/anthropic-raises-65-billion-nears-1t-valuation-ahead-of-ipo/": {"reported": False},
+    "https://dcnnmagazine.com/business/investment/meta-commits-50bn-to-5gw-louisiana-data-centre-campus/": {"partner": ""},
     # not a round, deal or valuation of the company named: a tally, a share sale, a land purchase, another company's price, a supply contract, a sale of data centers, a round already counted, a plan
     "https://the-decoder.com/openai-revenue-keeps-surging-as-company-seeks-30-billion-in-fresh-capital/": None,
     "https://the-decoder.com/openai-lowers-valuation-target-raises-up-to-30-billion/": None,
@@ -84,7 +87,7 @@ ACQUIRE = re.compile(r"\b(acquires?|acquired|acquiring|acquisition of|buys|buyin
 COMPUTE = re.compile(r"\b(cloud|compute|computing|data cent(?:er|re)s?|GPUs?|gigawatts?|GW|chips? deal|capacity|infrastructure deal)\b", re.I)
 _DEAL = re.compile(r"\b(deal|deals|contract|agreement|partnership|signs|inks|inking|commit\w*|order)\b", re.I)
 NOT = re.compile(r"\b(scrap\w*|scrubbed|cancel\w*|abandon\w*|halts?|walks away|called off|buyback|fund (?:for|to|focus)|new fund|"
-                 r"venture fund|loans?|debt|convertible notes?|could exceed|loses|lost|fine[sd]?|penalt\w*|lawsuit|sues|settle\w*|scam\w*|stolen|salary|pay package|revenue|"
+                 r"venture fund|loans?|debt|green financing|in equity|stock sales?|share sales?|convertible notes?|could exceed|loses|lost|fine[sd]?|penalt\w*|lawsuit|sues|settle\w*|scam\w*|stolen|salary|pay package|revenue|"
                  r"sales|spend(?:s|ing)?|budget|grant|blocks?|blocked|rejects?|probe\w*|shares (?:surge|jump|fall|slide|drop)\w*)\b"
                  r"|^(?:why|how|what|inside|opinion)\b|\b(?:biggest|largest|record)\b.*\bIPO\b|\bIPO (?:raises|prices)", re.I)
 REPORTED = re.compile(r"\b(reported(?:ly)?|report says|reports?:|in talks|talks to|sources?|said to|nears?|closing in|plans? to|planning|working on|targets?|"
