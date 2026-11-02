@@ -40,6 +40,10 @@ PLACES = [
 PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://research.google/pubs/stakes-adaptive-verification-and-origin-traced-rollback-in-autonomous-agent-workflows/":
+        "A research paper about agent rollback, not a model being pulled",
+    "https://www.channelnewsasia.com/business/exclusive-australian-outback-data-centre-pulls-timeline-after-regulator-stalls-6511551":
+        "A data centre project's timeline, not an AI model",
     "https://openai.com/index/chatgpt-ads-expands-26-new-countries":
         "An ads product in ChatGPT reaching countries, not an AI model",
     "https://cloud.google.com/blog/products/ai-machine-learning/claude-opus-55-and-claude-sonnet-55-available-in-antigravity/":
