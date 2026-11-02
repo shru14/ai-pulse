@@ -232,6 +232,8 @@ _ENTRIES = [
      "made mainly by SK Hynix, Samsung and Micron.", [r"HBM\d?e?"], True),
     ("CUDA", "Chips & compute", "Nvidia's software for programming its GPUs; a big reason developers stay with Nvidia.",
      [r"CUDA"], True),
+    ("JAX", "Chips & compute", "An open-source Python library for fast number-crunching that runs on GPUs and TPUs "
+     "and works out gradients automatically; widely used to build and train AI models.", [r"JAX"], True),
     ("Data center", "Chips & compute", "A building full of servers. AI data centers hold tens of thousands of chips "
      "and can use as much power as a small city.", [r"data cent(?:er|re)s?", r"datacent(?:er|re)s?"], False),
     ("KV cache", "Chips & compute", "Memory a model keeps of the conversation so far so it doesn't recompute it for "
@@ -313,6 +315,8 @@ _ENTRIES = [
      "of following hand-written rules. Today's AI is mostly machine learning.", [r"ML", r"[Mm]achine [Ll]earning"], True),
     ("SWE-bench", "Research", "A benchmark of real bug reports from open-source projects; the standard test of how "
      "well AI can do a software engineer's (SWE's) work.", [r"SWE-?bench\w*", r"SWE"], True),
+    ("OSWorld", "Research", "A benchmark that tests AI agents on hundreds of real computer tasks, such as editing "
+     "files and using desktop and web apps; the standard test for computer-use agents.", [r"OS-?World\w*"], False),
     ("JEPA", "Research", "Joint-embedding predictive architecture: Yann LeCun's approach to world models, predicting "
      "the meaning of what comes next rather than every pixel.", [r"V?-?JEPA\w*"], True),
     ("CSET and METR", "Research", "Research groups often cited on AI: CSET (Georgetown's Center for Security and "
@@ -386,7 +390,8 @@ ADDED = {**dict.fromkeys(["Supervised fine-tuning", "Reward model", "On-policy d
                           "Self-improving agent", "Full-duplex voice model", "Speech-to-speech model",
                           "Model Hardware Standard", "SynthID", "Training-free method", "Millennium Prize problems",
                           "OpenClaw"], date(2026, 10, 10)),
-         **dict.fromkeys(["Frozen model"], date(2026, 10, 15))}
+         **dict.fromkeys(["Frozen model"], date(2026, 10, 15)),
+         **dict.fromkeys(["JAX", "OSWorld"], date(2026, 11, 2))}
 NEW_DAYS = 30
 
 # Technical: the words specialists use (how models are built, trained and run); every other entry is Everyday.
@@ -398,7 +403,7 @@ TECHNICAL = {"VLM", "VLA", "World model", "Diffusion model", "Transformer", "Att
              "Sandbox", "Evals", "Interpretability", "Recursive self-improvement", "TPU", "NPU", "ASIC", "HBM", "CUDA",
              "KV cache", "Speculative decoding", "BF16 and FP8", "Rack-scale system", "FLOPs", "Test-time compute",
              "SWE-bench", "Zero-shot / few-shot", "JEPA", "Latent", "World action model", "On-policy learning",
-             "Self-supervised learning", "In-context learning", "Training-free method", "Frozen model"}
+             "Self-supervised learning", "In-context learning", "Training-free method", "Frozen model", "JAX", "OSWorld"}
 
 # The words that can be the word of the week, hardest for a general reader first (chosen by hand): the first one in at
 # least WEEK_WORD_STORIES of the week's stories. Words most readers already know (LLM, GPU, data center) are left out.
