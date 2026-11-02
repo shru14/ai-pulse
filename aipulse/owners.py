@@ -235,6 +235,8 @@ LEFT_OUT = {
         "founders' voting control before IPO, no investment",
     "https://the-decoder.com/openais-upcoming-chat-and-work-merger-in-chatgpt-signals-the-end-of-all-you-can-prompt-pricing/":
         "ChatGPT pricing and usage limits, no investment in a lab",
+    "https://siliconangle.com/2026/11/02/marble-cognition-raises-3-75m-for-its-ai-agent-workers-that-watch-and-learn-how-people-work/":
+        "no company named as a stakeholder (a Mistral executive is one of the angels); not clearly a lab",
 }
 
 

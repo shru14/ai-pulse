@@ -169,6 +169,7 @@ SKIPPED: dict[str, str] = {
         "anonymous-source report of an order, not a signed deal; buyers not all named",
     "https://siliconangle.com/2026/10/20/ai-infrastructure-management-software-startup-asi-hits-3b-valuation-after-raising-325m-in-funding/":
         "round far under $1B",
+    "https://w.media/singapores-sttgdc-seeks-us-2-4-billion-data-center-loan/": "loan, still in talks with banks",
 }
 # the newest day every story was read for the lists above; the daily candidates start after it
 CHECKED_TO = "2026-10-20"
