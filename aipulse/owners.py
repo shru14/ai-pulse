@@ -227,6 +227,12 @@ LEFT_OUT = {
         "talks only, round not closed",
     "https://www.channelnewsasia.com/business/ex-openai-employee-accused-planting-device-appears-have-saudi-backing-us-prosecutors-say-6472471":
         "court story, no investment in a lab",
+    "https://the-decoder.com/openai-raises-just-11-billion-of-its-30-billion-target-as-big-investors-lose-their-ai-appetite/":
+        "round not closed; no investor named",
+    "https://techcrunch.com/2026/10/29/openai-backed-thrive-holdings-acquires-adt/":
+        "Thrive Holdings buying ADT, not an AI lab",
+    "https://www.xataka.com/robotica-e-ia/anthropic-ha-disenado-peculiar-sistema-poder-para-evitar-que-sus-accionistas-controlen-despues-su-salida-a-bolsa":
+        "founders' voting control before IPO, no investment",
 }
 
 
