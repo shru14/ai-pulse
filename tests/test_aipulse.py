@@ -4777,6 +4777,13 @@ def test_money_headlines_read_right():
     assert read("Anthropic targets November IPO at $2 trillion valuation")["company"] == "Anthropic"
 
 
+def test_money_same_amount_different_companies_stay_apart():
+    from aipulse import money
+    card = lambda t, d: {"url": t, "title": t, "summary": "", "date": d, "source": "x", "category": "news"}
+    rows = money.month([card("Partly raises $50M at a $500M valuation", "2026-06-23"), card("Patronus AI lands $50M for tests", "2026-06-25")])
+    assert {(r["company"], r["valuation"]) for r in rows} == {("Partly", 5e8), ("Patronus", 0.0)}
+
+
 def test_monthly_summary_corrections():
     from aipulse import monthly
     fixed = monthly.corrected("2026-10", "OpenAI reported finding a recording device in its offices and disabled its own safety systems.")

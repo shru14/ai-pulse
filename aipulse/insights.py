@@ -151,6 +151,7 @@ def funds(month: str, ledger: dict[str, list[dict]]) -> dict:
     deals = sorted((r for r in mine if r["kind"] in ("acquisition", "compute")), key=lambda r: -r["amount"])[:DEALS]
     year = [r for m, rs in ledger.items() if m[:4] == month[:4] and m <= month for r in rs if r["kind"] == "compute"]
     return {"rounds": len(rounds), "raised": sum(r["amount"] for r in rounds),
+            "unconfirmed": sum(r["amount"] for r in rounds if r["reported"]),
             "biggest": max(rounds, key=lambda r: r["amount"], default=None), "themes": themes[:FUND_THEMES],
             "ladder": ladder, "deals": deals, "compute_year": (len(year), sum(r["amount"] for r in year))}
 
@@ -453,7 +454,7 @@ def _money(f: dict, month: str) -> str:
     rep = '<span class="rep" title="The headline says reportedly, in talks or the like">reported</span>'
     b = f["biggest"]
     score = ('<div class="ins-score">'
-             f'<div><b>{f["rounds"]}</b><span>funding rounds</span></div><div><b>{money.usd(f["raised"])}</b><span>disclosed</span></div>'
+             f'<div><b>{f["rounds"]}</b><span>funding rounds</span></div><div><b>{money.usd(f["raised"])}</b><span>named in headlines</span></div>'
              + (f'<div><b>{money.usd(b["amount"])}</b><span>biggest round · <a href="{escape(b["url"])}" rel="noopener">'
                 f'{escape(b["company"])}</a></span></div>' if b else "") + "</div>")
     top = max((t[1] for t in f["themes"]), default=1)
@@ -462,7 +463,7 @@ def _money(f: dict, month: str) -> str:
         f'<span class="nm">{escape(THEME_NAMES.get(t, t))}</span><span class="tr"><i style="width:{n / top * 100:.0f}%"></i></span>'
         f'<b class="v">{n}</b><span class="ch">{money.usd(v)}</span></li>' for k, (t, n, v, u) in enumerate(f["themes"]))
     left = (f'<div><h3>Where the money went</h3><ol class="ins-bars ins-fund">{themes}</ol>'
-            '<p class="ins-note">How to read: bar = funding rounds in each theme; on the right, the money they disclosed.</p></div>'
+            '<p class="ins-note">How to read: bar = funding rounds in each theme; on the right, the money named in their headlines.</p></div>'
             if themes else "")
     right = ""
     if f["ladder"]:
@@ -616,7 +617,8 @@ def body(month: str, x: dict) -> str:
     if f["rounds"] or f["deals"]:
         say = []
         if f["rounds"]:
-            say.append(f"{f['rounds']} funding rounds disclosed {money.usd(f['raised'])}"
+            say.append(f"{f['rounds']} funding rounds, {money.usd(f['raised'])} named in headlines"
+                       + (f" ({money.usd(f['unconfirmed'])} of it reported or still in talks)" if f["unconfirmed"] else "")
                        + (f"; {THEME_NAMES.get(f['themes'][0][0], f['themes'][0][0])} drew the most ({f['themes'][0][1]})."
                           if f["themes"] else "."))
             rich = max(f["themes"], key=lambda t: t[2], default=None)
@@ -637,7 +639,7 @@ def body(month: str, x: dict) -> str:
         say = (f"{monthly.name(month).split()[0]}'s {money.usd(v)} in funding was {cmp} a typical month ({money.usd(usual)}). "
                f"The biggest round, {co} at {money.usd(b)}, was {b / v:.0%} of it.")
         sections.append(("pace", "Funding pace", say, _pace(pc)
-                         + '<p class="ins-note">How to read: one column a month, its height the money disclosed in funding '
+                         + '<p class="ins-note">How to read: one column a month, its height the money headlines named in funding '
                            'rounds; the darker top is that month\'s single biggest round. A typical month is the median of '
                            'the months before.</p>'))
     # IPO watch
