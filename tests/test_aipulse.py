@@ -4761,3 +4761,25 @@ def test_topics_note_lists_what_the_branch_adds(monkeypatch):
     monkeypatch.setattr(topics, "ADDED", {"ai-ipos": {"https://x.test/old": "x"}})
     monkeypatch.setattr(topics, "LEFT_OUT", {"https://x.test/gone"})
     assert topics.note(base, "topics/2026-10-31") is None
+
+
+def test_money_headlines_read_right():
+    from aipulse import money
+    read = lambda t: money.read({"url": "x", "title": t})
+    assert read("Anthropic’s Computing Infrastructure Commitments Could Exceed $542 Billion") is None  # a tally
+    assert read("DayOne secures US$3.7 billion loan for Malaysia expansion") is None  # debt, not a round
+    assert read("AirTrunk secures AU$4.25bn funding for Sydney campus") is None  # not US dollars
+    d = read("Naver Signs $9 Billion AI Infrastructure Deal With Brookfield")
+    assert (d["company"], d["partner"]) == ("Naver", "Brookfield")
+    d = read("Anthropic to pay Akamai $11.6 billion over seven years in cloud deal")
+    assert (d["company"], d["partner"]) == ("Anthropic", "Akamai")
+    assert read("Chinese Tech Firms Order $35 Billion Nvidia GPUs in compute deal")["company"] != "Billion Nvidia GPUs"
+    assert read("Anthropic targets November IPO at $2 trillion valuation")["company"] == "Anthropic"
+
+
+def test_monthly_summary_corrections():
+    from aipulse import monthly
+    fixed = monthly.corrected("2026-10", "OpenAI reported finding a recording device in its offices and disabled its own safety systems.")
+    assert "OpenAI’s agents disabled their own safety monitoring systems" in fixed
+    for month, pairs in monthly.FIXES.items():
+        assert all(wrong != right for wrong, right in pairs), month

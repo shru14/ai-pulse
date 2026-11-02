@@ -60,11 +60,36 @@ CREATE TABLE IF NOT EXISTS monthly (
 );
 """
 
+# Hand corrections to stored summaries, by month: the fact check reads names and numbers, not meaning, so a sentence can
+# pass it and still change who did what. Each pair is (the words stored, what the headlines say).
+FIXES: dict[str, list[tuple[str, str]]] = {
+    "2026-02": [("while Anthropic and Google saw employee support for its Pentagon stance",
+                 "while employees at Google and OpenAI supported Anthropic’s Pentagon stand in an open letter")],
+    "2026-03": [("faced a wrongful death lawsuit over Gemini’s alleged role in a digital suicide",
+                 "faced a wrongful death suit after Gemini allegedly convinced a man to die and become digital")],
+    "2026-06": [("the US government later disabled Claude Fable 5 and Mythos 5 globally",
+                 "the US government later forced Anthropic to disable Claude Fable 5 and Mythos 5 for all customers worldwide")],
+    "2026-07": [("Hugging Face reported an AI-powered hack on its infrastructure, which it used to defend against.",
+                 "Hugging Face said an AI agent hacked its infrastructure, and it used AI to fight back.")],
+    "2026-08": [("and the company also sold a $399 open-source duck robot", "and Hugging Face is selling a $399 open-source duck robot"),
+                ("Meta and OpenAI announced new AI products, including a smart speaker and a teen-focused version of ChatGPT.",
+                 "OpenAI launched a version of ChatGPT for teens, and its smart speaker will reportedly sell for $300 to $400.")],
+    "2026-09": [("claiming it matches GPT-6 Astra", "saying it nearly matches GPT-6 Astra"),
+                ("Anthropic’s CEO and researcher expressed concerns about self-improving AI, and OpenAI acknowledged a prior incident involving AI deception.",
+                 "Anthropic’s CEO called for AI speed limits, an Anthropic researcher quit warning against self-improving AI, and OpenAI "
+                 "admitted its disclosure practices need work after its autonomous agents hacked a German wiki.")],
+    "2026-10": [("Anthropic launched Claude Duet and faced scrutiny after an AI model submitted",
+                 "Anthropic launched Claude Duet, and an Anthropic model submitted"),
+                ("OpenAI reported finding a recording device in its offices and disabled its own safety systems.",
+                 "OpenAI said it found a recording device hidden in its offices, and OpenAI’s agents disabled their own safety monitoring systems.")],
+}
+
 PROMPT = ("Below are the most reported AI news headlines of {month}, each with its date, its section and how many "
           "outlets carried it. Write what happened in AI that month in 4 or 5 plain sentences (about 110 words) for a "
           "general reader. Lead with the biggest stories and name the companies, models, laws and places involved. Use "
           "only facts stated in the headlines: no numbers, names or claims that are not in them, and keep their "
-          "\"will\", \"plans to\", \"reportedly\" (a deal that will happen has not happened yet). Group related "
+          "\"will\", \"plans to\", \"reportedly\" (a deal that will happen has not happened yet). Keep who did what "
+          "exactly as each headline says it. Group related "
           "stories. No hype words, opinions, lists or headings.\n\n{lines}")
 
 
@@ -434,6 +459,13 @@ def marked(summary: str, cards: list[dict]) -> str:
     return "".join(out) + escape(summary[last:])
 
 
+def corrected(month: str, summary: str) -> str:
+    """The stored summary with its hand corrections (FIXES)."""
+    for wrong, right in FIXES.get(month, []):
+        summary = summary.replace(wrong, right)
+    return summary
+
+
 def first_sentence(text: str) -> str:
     """A glossary meaning's first sentence ("e.g." and "i.e." don't end one)."""
     return re.split(r"(?<!e\.g)(?<!i\.e)\.\s+(?=[A-Z])", text, maxsplit=1)[0].rstrip(".") + "."
@@ -468,7 +500,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     page's strip). Returns the pages' paths."""
     connect(conn)
     parts = pages.frame(conn, len(cards))
-    summaries = {r[0]: r[1] for r in conn.execute("SELECT month, summary FROM monthly")}
+    summaries = {r[0]: corrected(r[0], r[1]) for r in conn.execute("SELECT month, summary FROM monthly")}
     by_month: dict[str, list[dict]] = {}
     for c in cards:
         by_month.setdefault((c.get("date") or "")[:7], []).append(c)

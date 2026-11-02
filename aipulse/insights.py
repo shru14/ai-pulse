@@ -145,7 +145,8 @@ def funds(month: str, ledger: dict[str, list[dict]]) -> dict:
         for r in ledger[m]:
             if r["valuation"]:
                 earlier[r["company"].lower()] = (r["valuation"], m)
-    vals = sorted((r for r in mine if r["valuation"]), key=lambda r: -r["valuation"])[:LADDER]
+    vals = {r["company"].lower(): r for r in sorted((r for r in mine if r["valuation"]), key=lambda r: r["valuation"])}
+    vals = sorted(vals.values(), key=lambda r: -r["valuation"])[:LADDER]  # each company once, at its highest
     ladder = [dict(r, before=earlier.get(r["company"].lower())) for r in vals]
     deals = sorted((r for r in mine if r["kind"] in ("acquisition", "compute")), key=lambda r: -r["amount"])[:DEALS]
     year = [r for m, rs in ledger.items() if m[:4] == month[:4] and m <= month for r in rs if r["kind"] == "compute"]
