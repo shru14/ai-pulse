@@ -430,7 +430,6 @@ def builds_body(rows: list[dict]) -> str:
 def power_body(rows: list[dict]) -> str:
     """Every power deal, newest first, after counts by what the power comes from and by status."""
     first = _day(min((r["date"] for r in rows), default=CHECKED_TO))
-    kinds = [r["cells"][1] for r in rows]
     status = [r["cells"][4] for r in rows]
     intro = (f"{len(rows)} deals and plans to power data centres, reported since {first}. Each row gives who "
              "is supplying the power, what it comes from, and what it will run.")

@@ -304,24 +304,6 @@ def _alone(it: dict) -> bool:
     return it["category"] == "research" or bool(it.get("bill"))
 
 
-def collapse(items: list[dict]) -> list[dict]:
-    """One entry per event: the lead story, with the others under "also" (title, source, url, date).
-    Papers and bills are never grouped. Order follows the input."""
-    rest = [it for it in items if not _alone(it)]
-    lead_of = {}
-    for g in group(rest):
-        lead = {**g[0], "also": [{k: it.get(k, "") for k in ("title", "source", "url", "date")} for it in g[1:]]}
-        for it in g:
-            lead_of[id(it)] = lead
-    out, seen = [], set()
-    for it in items:
-        lead = it if _alone(it) else lead_of[id(it)]
-        if id(lead) not in seen:
-            seen.add(id(lead))
-            out.append(lead)
-    return out
-
-
 REGROUP_DAYS = 14  # after each collection, stories from this many recent days are regrouped
 
 

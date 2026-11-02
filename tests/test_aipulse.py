@@ -288,7 +288,8 @@ def test_duplicate_stories_group_into_one_card():
     # Before the same-outlet and headline-name rules: precision 91%, recall 73%, 7 of 15 events on one card.
     assert s["precision"] >= 0.95 and s["recall"] >= 0.75 and s["events_on_one_card"] >= 7, s
     items = __import__("json").loads(cluster.FIXTURE.read_text(encoding="utf-8"))
-    cards = cluster.collapse(items)
+    cards = [{**g[0], "also": g[1:]} for g in cluster.group([it for it in items if not cluster._alone(it)])]
+    cards += [{**it, "also": []} for it in items if cluster._alone(it)]
     assert all(o.get("source") != c.get("source") for c in cards for o in c["also"] if c.get("source"))  # never itself
     # One blog's two posts about a product, and two outlets' different stories about OpenAI, stay apart.
     card_of = {o["title"]: c["title"] for c in cards for o in [c, *c["also"]]}
@@ -2137,7 +2138,6 @@ def test_signup_page_and_web_app_agree():
 
 def test_anthropic_news_page_and_its_launches():
     from aipulse import collect as col
-    from aipulse.sources import SOURCES
     page = b'''<a href="/claude-sonnet-5-5" class="x"><h2 class="t">Introducing Claude Sonnet 5.5</h2><div><div>
       <span>Announcements</span><time class="d">Sep 28, 2026</time></div><p class="[&>:last-child]:mb-0">A clear upgrade
       over Sonnet 5.</p></div></a>
@@ -2225,7 +2225,6 @@ def test_lab_paper_pages_give_the_papers_title_and_abstract():
 
 def test_release_notes_keep_only_the_labs_own_launches(tmp_path):
     from aipulse import collect as col
-    from aipulse.sources import SOURCES
     xai = (b'<h2 id="september">September</h2><h3 id="grok-47"><a href="#grok-47">Grok 4.7</a></h3><p>Grok 4.7, the '
            b'frontier model, is now available on the xAI API.</p><h3 id="safety-field">safety_identifier request field</h3>'
            b'<p>You can now send safety_identifier.</p><h3 id="old-retire">grok-imagine retirement on November 2</h3><p>Retired.</p>')
