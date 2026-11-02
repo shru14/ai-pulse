@@ -500,6 +500,18 @@ def test_command_line_entry_point_starts(tmp_path):
     assert not set(code.co_varnames + code.co_cellvars) & set(vars(cli)), "a module-level name is re-imported in main()"
 
 
+def test_daily_candidate_commands_run(tmp_path, monkeypatch, capsys):
+    """The daily routines' to-check lists; the Compass two are tested in its own repo's checkout."""
+    from aipulse import __main__ as cli
+    data = tmp_path / "data.json"
+    data.write_text('{"cards": []}', encoding="utf-8")
+    for cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "economy", "pacts", "tests", "fines",
+                "chips", "buyouts"):
+        monkeypatch.setattr("sys.argv", ["aipulse", cmd, "--data", str(data)])
+        cli.main()
+        assert capsys.readouterr().out, cmd
+
+
 def test_us_tracker_stories_record_their_state():
     item = {"title": "Kotek signs order to regulate AI use in Oregon government", "summary": "", "category": "policy"}
     apply_regulation(item)
