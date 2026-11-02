@@ -583,24 +583,6 @@ def main():
             ready_tools.accept(a.seen)
         else:
             ready_tools.check(a.seen)
-    elif a.cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "economy", "pacts", "tests",
-                   "fines", "chips", "buyouts", "uses", "mistakes"):
-        from . import (buyouts, chip_rules, court, fines, infra_watch, lab_timelines, model_economy, new_tests, owners, pacts,
-                       press, release_cards, safety)
-        # Pulse Compass's lists: only in the private repo's checkout (aipulse/__init__.py)
-        finance_uses = import_module(".finance_uses", __package__) if a.cmd == "uses" else None
-        mistakes = import_module(".mistakes", __package__) if a.cmd == "mistakes" else None
-        m = {"court": court, "press": press, "safety": safety, "infra": infra_watch, "owners": owners,
-             "releases": release_cards, "timelines": lab_timelines, "economy": model_economy, "pacts": pacts,
-             "tests": new_tests, "fines": fines, "chips": chip_rules, "buyouts": buyouts, "uses": finance_uses,
-             "mistakes": mistakes}[a.cmd]
-        # the site's own data.json for the daily job, which has no database (its last 3 months)
-        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
-        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else jobs.SINCE
-        todo = jobs.candidates(found, since)
-        print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
-        for c in todo:
-            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
     elif a.cmd == "consultations":
         # the daily job's to-check list: our stories of governments asking the public about AI, and the official lists'
         # consultations that name AI only in their summary (read live)
@@ -661,8 +643,11 @@ def main():
             ready_tools.check(a.seen)
     elif a.cmd in ("court", "press", "safety", "infra", "owners", "releases", "timelines", "economy", "pacts", "tests",
                    "fines", "chips", "buyouts", "uses", "mistakes"):
-        from . import (buyouts, chip_rules, court, finance_uses, fines, infra_watch, lab_timelines, mistakes, model_economy,
-                       new_tests, owners, pacts, press, release_cards, safety)
+        from . import (buyouts, chip_rules, court, fines, infra_watch, lab_timelines, model_economy, new_tests, owners, pacts,
+                       press, release_cards, safety)
+        # Pulse Compass's lists: only in the private repo's checkout (aipulse/__init__.py)
+        finance_uses = import_module(".finance_uses", __package__) if a.cmd == "uses" else None
+        mistakes = import_module(".mistakes", __package__) if a.cmd == "mistakes" else None
         m = {"court": court, "press": press, "safety": safety, "infra": infra_watch, "owners": owners,
              "releases": release_cards, "timelines": lab_timelines, "economy": model_economy, "pacts": pacts,
              "tests": new_tests, "fines": fines, "chips": chip_rules, "buyouts": buyouts, "uses": finance_uses,
