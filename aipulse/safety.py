@@ -17,7 +17,6 @@ may be a new document. Linked from Policy's strip on the front page.
 """
 from __future__ import annotations
 
-import json
 import re
 from datetime import date
 from html import escape

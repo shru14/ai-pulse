@@ -1,7 +1,6 @@
 """The Pulse Compass login (aipulse/access.py): nothing paid is readable in what gets published."""
 import base64
 import json
-import os
 
 import pytest
 

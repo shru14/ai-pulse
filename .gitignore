@@ -5,8 +5,6 @@ aipulse.db.bak-*
 
 # Logs and local-only files
 *.log
-server.err
-tunnel-url.txt
 site/
 
 # Brand logo caches (downloaded; see aipulse/brands.py)

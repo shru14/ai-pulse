@@ -2641,15 +2641,6 @@ def feature_head(path: str, title: str, question: str, intro: str, sub: str = ""
                 sub)
 
 
-def share_tags(title: str, path: str, description: str) -> str:
-    """The head lines search results and link previews read, for a page built by hand (privacy)."""
-    url, description = f"{rss.SITE}{path}", escape(snippet(description))
-    return (f'<meta name="description" content="{description}"><link rel="canonical" href="{url}">'
-            f'<meta property="og:title" content="{escape(title)}"><meta property="og:description" content="{description}">'
-            f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og.png">'
-            f'<meta name="twitter:card" content="summary_large_image">{counter()}')
-
-
 def page(title: str, description: str, path: str, body: str, data: dict, parts: tuple[str, str],
          back: tuple[str, str], note: str = "") -> str:
     """A whole page: `back` is (address, words) for the link above the heading, `note` a line under the content."""
