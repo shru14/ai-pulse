@@ -261,6 +261,8 @@ ADDED: dict[str, dict[str, str]] = {
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # data-centre pollution lawsuit under the Clean Air Act, not about Grok images
+    "https://techcrunch.com/2026/10/31/judge-allows-naacp-lawsuit-over-xai-data-center-pollution-to-move-forward/",
     # opinion piece, reports nothing new in a case
     "https://www.eff.org/deeplinks/2026/10/rewriting-copyright-law-generative-ai-would-hurt-everyone",
     # company advocacy post, not a development in this storyline
