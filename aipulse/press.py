@@ -427,6 +427,8 @@ LEFT_OUT = {
     "https://www.sciencedaily.com/releases/2026/04/260417224505.htm",  # paper found (Technical Communication Quarterly) but its abstract can't be read to check: the publisher refuses us
     "https://www.marktechpost.com/2026/04/19/meet-openmythos-an-open-source-pytorch-reconstruction-of-claude-mythos-where-770m-parameters-match-a-1-3b-transformer/",  # the outlet refuses automated reads; a code project, no paper found
     "https://the-decoder.com/the-myth-of-claude-mythos-crumbles-as-small-open-models-hunt-the-same-cybersecurity-bugs-anthropic-showcased/",  # two company blog posts (AISLE, Vidoc), not a paper
+    "https://the-decoder.com/chinese-ai-models-are-politically-complex-not-just-government-mouthpieces-study-finds/",  # a Vals AI blog post, not a paper
+    "https://japantoday.com/category/features/opinions/spewing-us-election-falsehoods-ai-chatbots-face-scrutiny",  # the outlet refuses automated reads: can't read to check
 }
 
 # a headline (or the start of its summary) that may report on a paper
