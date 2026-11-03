@@ -134,6 +134,7 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/kddi-to-invest-220-million-in-new-london-data-center/", "KDDI (Telehouse Europe)", "UK", "East London, next to the Docklands campus", "65 MVA of power", "£220m", "announced"),
     ("https://w.media/terravolt-plans-240-mw-behind-the-meter-data-center-campus-in-idaho/", "TerraVolt Holdings", "US", "Near Declo, Cassia County, Idaho", "240 MW of on-site power at first", "", "announced"),
     ("https://w.media/sm-data-centers-lg-sinar-mas-kira-open-21mw-ai-ready-data-center-in-jakarta/", "SM+ Data Centers, LG Sinar Mas and KIRA", "Indonesia", "Central business district, Jakarta", "21 MW", "", "open"),
+    ("https://www.thelec.net/news/articleView.html?idxno=15176", "Samsung SDS", "South Korea", "Gongdan-dong, Gumi, North Gyeongsang Province", "60 MW first, up to 120 MW", "427.3 billion won for the building and certain facilities", "building"),
 
 ]
 
@@ -162,6 +163,7 @@ POWER: list[tuple[str, ...]] = [
     ("https://w.media/tata-power-announces-us-1-5-billion-mumbai-grid-expansion-for-data-centers/", "Tata Power", "utility", "A US$ 1.5bn grid expansion for data centres in Mumbai, India", "", "planned"),    ("https://www.xataka.com/empresas-y-economia/amazon-ha-encontrado-solucion-al-colosal-consumo-sus-centros-datos-para-ia-12-reactores-nucleares-smr-antigua-central-carbon", "Amazon, X-energy and AEP", "nuclear", "12 small reactors at the former Breed coal plant site, Sullivan County, Indiana, US; Amazon would help fund it and be the first customer", "About 960 MW", "planned"),
     ("https://w.media/nxera-sembcorp-ink-deal-for-green-energy-supply-to-nxera-data-centers/", "Sembcorp Utilities, for Nxera", "notstated", "Nxera's data centres in Singapore; an MOU to explore renewable and low-carbon supply", "", "planned"),
     ("https://w.media/johor-plans-to-meet-dc-power-demand-with-5-gw-solar-energy-by-2031/", "Johor state government", "renewable", "Solar for data centres and large industry in Johor, Malaysia, by 2030 or 2031", "About 5 GW more", "planned"),
+    ("https://w.media/malaysian-firm-lands-2-solar-plus-bess-deals-totalling-189mw-for-data-centers/", "Northern Solar Holdings, for two Malaysian data-centre developers it doesn't name", "renewable", "Solar and batteries for two data centres in Malaysia; letters of award accepted, definitive agreements not yet signed", "100 MW and 89 MW", "planned"),
 
 ]
 
@@ -238,6 +240,11 @@ LEFT_OUT: set[str] = {
     "https://w.media/no-data-center-moratorium-for-malaysia-but-states-with-insufficient-water-cant-host-data-centers-minister/",  # minister's statement of policy; unclear what was decided
     "http://www.bernama.com/en/news.php?id=2629129",  # can't read to check
     "https://w.media/singapores-sttgdc-seeks-us-2-4-billion-data-center-loan/",  # loan sought; no new build confirmed
+    "https://www.canarymedia.com/articles/batteries/batteries-not-gas-plants-for-data-centers",  # opinion
+    "https://w.media/vietnams-province-considers-us-700-million-ai-data-center-project/",  # proposal under review by the province; not decided or confirmed
+    "https://www.channelnewsasia.com/business/putin-orders-private-data-centres-set-aside-10-capacity-support-it-infrastructure-6513756",  # can't read to check
+    "https://w.media/south-korea-sets-aside-us-15-8-billion-for-ai-data-centers-and-chips-in-record-2027-budget/",  # proposed national budget, not specific data centres
+    "https://www.techerati.com/news-hub/microsoft-exits-nscales-2bn-essex-ai-data-centre-project-amid-power-concerns/",  # can't read to check
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
