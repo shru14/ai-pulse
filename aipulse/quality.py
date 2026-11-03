@@ -6,7 +6,7 @@ What's checked, for every story in the chosen streams (the ones the email shows)
     no standards story in Releases; AI-incidents only in Industry; every Industry story has a label;
   - on topic: a story from a general feed that doesn't name AI is left out of the email (not held; logged);
   - no duplicates: the same link or headline never twice, and no story listed under itself;
-  - clean text: a real headline (not empty or "No title"), no leftover HTML, no garbled characters, and
+  - clean text: a real headline (not empty, "No title" or without a letter; a short name like "LifeVal" is fine), no leftover HTML, no garbled characters, and
     every link a plain http(s) address;
   - an unusual day: a stream far above its usual size where one source alone brought more than a usual day's
     worth (a source misbehaving, or re-dating old stories); a stream even further above it whatever the sources
@@ -63,7 +63,7 @@ def _story_problems(c: dict, stream: str) -> list[str]:
     title, summary, url, source = c.get("title") or "", c.get("summary") or "", c.get("url") or "", c.get("source") or ""
     category = c.get("category")
     out = []
-    if len(title.strip()) < 8 or PLACEHOLDER.match(title):
+    if not re.search(r"[^\W\d_]", title) or PLACEHOLDER.match(title):
         out.append("no real headline")
     for name, text in (("headline", title), ("summary", summary)):
         if HTML_LEFTOVER.search(text):
