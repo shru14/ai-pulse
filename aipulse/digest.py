@@ -844,10 +844,10 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     elif tuned:  # a lighter day: every story is in, the reader's own first
         top = sorted(top, key=lambda c: id(c) not in picks)
     title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
-             else f"Here are the {len(top)} that mattered most.")
+             else "Here are the stories that mattered the most.")
     if sunday:  # after the week, the day: said plainly which
         title = (f"{'The one story' if len(top) == 1 else f'All {len(top)} stories'} of {day:%A}." if light
-                 else f"The {len(top)} that mattered most on {day:%A}.")
+                 else f"The stories that mattered the most on {day:%A}.")
     made_for = _left_note(prefs, left or [])
     news = _new_stream(day, streams)
     # In order: the count, the word and the meme of the day, the stories, the rest in brief,

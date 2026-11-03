@@ -2339,8 +2339,8 @@ def test_daily_email_shows_the_ten_that_mattered_then_headlines(monkeypatch):
     cards = ([card(0, "tool", 4)] + [card(i, "news", 2 if i == 1 else 0) for i in range(1, 16)]
              + [card(20, "news", 0, "tutorial"), card(21, "policy")])
     subject, text, html = digest.build(cards, ["releases", "news", "policy"], date(2026, 9, 28))  # short by default
-    assert subject == "AI Pulse daily · Monday, 28 September 2026" and "Here are the 10 that mattered most." in text
-    top = text.split("Here are the 10 that mattered most.")[1].split("THE REST OF THE DAY")[0]
+    assert subject == "AI Pulse daily · Monday, 28 September 2026" and "Here are the stories that mattered the most." in text
+    top = text.split("Here are the stories that mattered the most.")[1].split("THE REST OF THE DAY")[0]
     assert top.index("Story 0") < top.index("Story 1") and "Outlet 0 +4 outlets" in top  # most reported first
     assert top.count("• [") == 10 and "Story 20" not in top  # ten, never a tutorial
     assert "1. " not in top  # not numbered
@@ -2648,8 +2648,8 @@ def test_each_reader_gets_their_own_top_10(monkeypatch):
     # no choices: exactly today's email
     assert digest.build(cards, ["news"], day, prefs={"more": [], "less": [], "words": []}) == everyone
     _, text, html = digest.build(cards, ["news"], day, prefs={"more": ["Robotics"], "less": [], "words": ["Kerala"]})
-    assert "Here are the 10 that mattered most." in text and "of your top 10" not in text  # picks are marked, not announced
-    top = text.split("Here are the 10 that mattered most.")[1].split("THE REST OF THE DAY")[0]
+    assert "Here are the stories that mattered the most." in text and "of your top 10" not in text  # picks are marked, not announced
+    top = text.split("Here are the stories that mattered the most.")[1].split("THE REST OF THE DAY")[0]
     yours = [l for l in top.splitlines() if "[Your choice]" in l]
     assert len(yours) == digest.PICKS and "Big story 0" in top and "Big story 4" in top  # 5 of theirs, then the biggest
     assert "Kerala launches" in top  # their own words, in the headline
@@ -2657,8 +2657,8 @@ def test_each_reader_gets_their_own_top_10(monkeypatch):
     # 12 stories in their streams (one more than the top 10 holds): still a top 10, their own first
     twelve = big[2:10] + [kerala[0], robots[0], *guides[:2]]
     _, text, _ = digest.build(twelve, ["news"], day, prefs={"more": ["Robotics"], "less": [], "words": ["Kerala"]})
-    assert "Here are the 10 that mattered most." in text and "lighter day" not in text
-    top = text.split("Here are the 10 that mattered most.")[1].split("THE REST OF THE DAY")[0]
+    assert "Here are the stories that mattered the most." in text and "lighter day" not in text
+    top = text.split("Here are the stories that mattered the most.")[1].split("THE REST OF THE DAY")[0]
     firsts = [l for l in top.splitlines() if l.startswith("• ")]
     assert len(firsts) == 10 and all("[Your choice]" in l for l in firsts[:2]) and "[Your choice]" not in firsts[2]
     # left out: never in their email, counted, and still in the full email
@@ -3208,7 +3208,7 @@ def test_sunday_email_brings_the_week_and_skips_the_days_word_and_meme(monkeypat
     assert "STORY OF THE WEEK: Big chip deal for a new data center" in text and "Sunday's story" not in text
     assert "WORD OF THE WEEK: Hyperscaler" in text and "It came up in 7 of the week's stories" in text
     assert "Word of the day" not in html and "Meme of the day" not in html and "WORD OF THE DAY" not in text
-    assert "The 10 that mattered most on Saturday." in text
+    assert "The stories that mattered the most on Saturday." in text
     # a reader whose streams had nothing on Saturday (Research: arXiv doesn't publish at weekends) still gets the
     # week, and one line for the day instead of a top 10
     got = digest.build(cards, ["research"], date(2026, 10, 3))
