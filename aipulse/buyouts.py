@@ -344,6 +344,12 @@ LEFT_OUT = {
         "a land purchase, not a company",
     "https://the-decoder.com/openais-upcoming-chat-and-work-merger-in-chatgpt-signals-the-end-of-all-you-can-prompt-pricing/":
         "no company being bought",
+    "https://www.itweb.co.za/article/netapp-completes-acquisition-of-peakaio-to-accelerate-zettabyte-scale-ai-deployments/DZQ587V8gRLqzXy2":
+        "PEAK:AIO makes storage software, not AI",
+    "https://dplnews.com/megaoperacion-ia-marvell-acuerda-compra-de-lumentum-por-115000-mdd/":
+        "Lumentum makes optical parts, not AI",
+    "https://techcrunch.com/2026/11/02/omen-ai-adds-liquid-know-how-in-16-million-aquatic-labs-acquisition/":
+        "Aquatic Labs makes water sensors, not AI",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
