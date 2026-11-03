@@ -37,7 +37,7 @@ def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
     # what's open stays open
     assert (out / "planner/index.html").read_text(encoding="utf-8") == "the product page"
     assert (out / "planner/sample-report/index.html").read_text(encoding="utf-8") == "the sample"
-    assert (out / "planner/source-check/index.html").read_text(encoding="utf-8") == "the tool"
+    assert "the tool" not in everything(out)  # Source check is behind the login too
     assert (out / "about/index.html").read_text(encoding="utf-8") == "free"
 
 
@@ -51,7 +51,7 @@ def test_sealed_pages_open_only_with_the_right_password(tmp_path, monkeypatch):
     aead = pytest.importorskip("cryptography.hazmat.primitives.ciphers.aead")
     out = site(tmp_path, monkeypatch)
     monkeypatch.setenv("COMPASS_USERS", json.dumps({"client one": access.new_user("client one", "long enough password")}))
-    assert access.seal(out, None, []) == 2
+    assert access.seal(out, None, []) == 3  # the plan, the sheet and Source check
     published = everything(out)
     assert SECRET not in published and "client one" not in published and "long enough password" not in published
     assert not (out / "planner/example/sheet.csv").exists()

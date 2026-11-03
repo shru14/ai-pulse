@@ -20,8 +20,9 @@ import subprocess
 from pathlib import Path
 
 ROOT = "planner"
-OPEN = {"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf",
-        "planner/source-check/index.html"}  # what anyone can read: the product page, one sample report, Source check
+# what anyone can read: the product page and one sample report. Source check went behind the login on 3 Nov 2026: on real AI
+# notes it flagged 206 of 306 correct sentences, so it stays there until it is fixed and measured again
+OPEN = {"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf"}
 ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
