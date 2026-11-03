@@ -1443,6 +1443,7 @@ LEFT_OUT: set[str] = {
     'https://www.anthropic.com/news/an-update-on-independent-evaluators',  # news: organisation, no document (Anthropic gives METR employee-like access)
     'https://www.anthropic.com/research/ecdsa-curve-origins',  # cryptography finding, not a safety document
     'https://www.anthropic.com/research/formal-verification',  # using Claude for software verification, not a safety document
+    'https://www.anthropic.com/research/provable-inference',  # cryptographic proofs that a model produced a response (FlashProve), not an evaluation or safety framework
     'https://openai.com/index/securing-our-frontier-model-training-environment',  # document not readable (openai.com refuses, 403)
     'https://the-decoder.com/uks-ai-security-institute-finds-standard-benchmarks-systematically-underestimate-what-ai-agents-can-actually-do/',  # news about the AISI test-time compute post
     'https://the-decoder.com/germanys-national-security-council-greenights-an-ai-safety-institute-modeled-after-the-uks-aisi/',  # news: organisation, no document
