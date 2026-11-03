@@ -230,6 +230,8 @@ CHECKED: dict[str, dict] = {
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://www.telesemana.com/blog/2026/11/02/etsi-tta-y-ttc-firman-una-carta-de-intencion-para-explorar-una-alianza-global-de-estandares-de-ia/",  # a news story on a standards letter of intent, no paper
+    "https://openai.com/index/lifeval",  # a company page; can't read to check (openai.com refuses us)
     "https://www.xataka.com/energia/estudio-explica-que-espana-1-gw-centros-datos-no-se-solucionara-instalando-simplemente-1-gw-renovables",  # a consultancy report (EY), not a paper
     "https://the-decoder.com/experts-adopt-ai-agents-random-opinions-and-think-theyre-their-own-anthropic-study-finds/",  # a lab paper (Anthropic) posted only on its own site, on no preprint server or journal
     "https://olhardigital.com.br/2026/10/30/inteligencia-artificial/um-quarto-dos-data-centers-do-mundo-esta-em-areas-com-escassez-de-agua/",  # paper found (Environmental Science & Technology) but its abstract can't be read to check: ACS refuses us
