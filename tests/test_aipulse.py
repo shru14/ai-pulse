@@ -1920,6 +1920,10 @@ def test_digest_is_checked_before_it_is_sent(monkeypatch):
               "no label in Industry"):
         assert p in found, p
     assert "No stories at all" in "".join(quality.problems(digest.by_streams([], streams, day), [], day))
+    # A short real headline (OpenAI's "LifeVal" held 2 Nov's email) is fine; one with no letter isn't.
+    short = [card(i, "news", title=t) for i, t in enumerate(("LifeVal", "GPT-5", "o3", "2026", "--"))]
+    held = quality.problems(digest.by_streams(short, streams, day), short, day)
+    assert [p for p in held if "no real headline" in p] == [p for p in held if '"2026"' in p or '"--"' in p] and len(held) == 2
     # A general outlet's story that doesn't name AI is left out of the email, not a reason to hold it.
     off = card(9, "news", source="404 Media", title="Alibaba Cloud opens data centres in Europe", summary="")
     assert off not in digest.by_streams([*good, off], streams, day)["news"] and digest.left_out([*good, off], streams, day) == [off]
