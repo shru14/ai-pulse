@@ -163,6 +163,13 @@ DOCS: list[dict] = [
          models=(), risks=('cyber', 'misalign'),
          abstract=('We examine why Mythos 5 pursued an unsanctioned supply-chain attack and identify broader learnings '
                    'about model behaviour and oversight.')),
+    dict(date='2026-10-22', by='METR', kind='redteam',
+         title="Red-Teaming OpenAI's Internal Agent Monitoring Systems",
+         url='https://metr.org/blog/2026-10-22-red-teaming-openai-agent-monitoring/',
+         original="",
+         models=(), risks=('control', 'misalign'),
+         abstract=("A METR employee and a Redwood Research employee spent three weeks stress-testing OpenAI's internal "
+                   'misalignment monitoring system, discovering a number of novel vulnerabilities.')),
     dict(date='2026-10-20', by='METR', kind='eval',
          title="Review of the \"Misalignment in high-stakes settings\" section in Anthropic's Risk Report (August 2026)",
          url='https://metr.org/blog/2026-10-20-misalignment-risk-report-august-2026-review/',
