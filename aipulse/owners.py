@@ -62,6 +62,10 @@ DEALS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techcrunch.com/2026/10/22/openai-working-on-new-30b-raise-at-1-25t-valuation-ahead-of-ipo/":
+        "Round not closed; terms still being negotiated",
+    "https://the-decoder.com/openai-acquires-orchestra-bio-to-build-ai-agents-that-speed-up-drug-development/":
+        "OpenAI buying a pharma-coordination startup, not an AI lab",
     "https://techcrunch.com/2026/01/06/xai-says-it-raised-20b-in-series-e-funding/":
         "Nvidia among the investors, but xAI didn't say whether it was equity or debt",
     "https://siliconangle.com/2026/04/24/ai-startups-cohere-aleph-alpha-merge-600m-new-funding/":
