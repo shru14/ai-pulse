@@ -2556,8 +2556,10 @@ THEME_BUTTON = """<script>
 LOCAL_TIME = ('<script>document.querySelectorAll("time[datetime]").forEach(t => t.textContent = new Date(t.dateTime)'
               '.toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}));'
               # the nameplate's date line: today's date, as on the front page
-              'const npd=document.getElementById("np-date");if(npd)npd.textContent=new Date().toLocaleDateString("en-GB",'
-              '{weekday:"long",day:"numeric",month:"long",year:"numeric"})</script>')
+              # in its own block: a sealed page writes the page into the login box's window, so this script runs
+              # twice there and a top-level const would be declared twice
+              '{const npd=document.getElementById("np-date");if(npd)npd.textContent=new Date().toLocaleDateString("en-GB",'
+              '{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</script>')
 
 
 # Anonymous visit counts (GoatCounter, chosen 12 Oct 2026; terms.PLATFORM): no cookie, no stored IP address or
