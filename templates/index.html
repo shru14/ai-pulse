@@ -695,8 +695,9 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   :is(.cp,.about-page) .fh-ic.pic img{width:36px;height:27px}
   :is(.cp,.about-page) .fh .fh-d{padding:12px 0 0;border-left:0;border-top:3px solid #000;font-size:15px}
   :is(.cp,.about-page) .fh-art{height:110px;justify-self:end;margin:0 0 -8px}}
-/* Today in AI, People are discussing: a heading band like the streams' */
-.band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;border-bottom:4px solid var(--ink);padding-bottom:6px;margin-bottom:16px}
+/* Front page section headings: the heading between two thin rules, like the nameplate; the kicker set like the date line */
+.band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:7px 0 6px;margin-bottom:16px}
+.band-head .kicker{font:600 11.5px var(--mono);letter-spacing:.05em}
 .band-head h2{font:400 26px/1.1 var(--head);margin:0}
 /* Today: three picture cards, the Hacker News highlight as the fourth column, all one height */
 .today-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(250px,1fr);gap:20px;align-items:stretch}
@@ -882,10 +883,13 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 @keyframes sm-in{from{transform:translateX(-24px);opacity:0}}
 @media (prefers-reduced-motion:reduce){.side-menu[open]{animation:none}}
 .side-menu::backdrop{background:rgba(10,12,18,.5)}
-.sm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 18px 14px;margin-bottom:14px;border-bottom:3px solid var(--ink)}
-.sm-brand{display:flex;align-items:center;gap:8px;font:400 18px/1 var(--display);letter-spacing:-.02em}  /* the masthead's logo and name, smaller */
+/* Menu head: the nameplate in small, name centred between two thin rules, tagline set like the date line; × above the rules */
+.sm-head{position:relative;padding:40px 18px 6px;margin-bottom:8px}
+.sm-head > div{flex:1}
+.sm-head form{position:absolute;top:8px;right:14px}
+.sm-brand{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);font:400 22px/1 var(--display);letter-spacing:-.02em}
 .sm-brand .mark{width:26px;height:26px;border-radius:7px}.sm-brand .mark svg{width:18px;height:18px}
-.sm-head .sm-tag{display:block;font-size:13px;line-height:1.35;color:var(--muted);margin-top:8px}
+.sm-head .sm-tag{display:block;text-align:center;font:600 11px/1.4 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:7px}
 .side-menu .sub-close{position:static;flex:none}
 .side-menu nav{display:flex;flex-direction:column;margin:0 18px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
 .side-menu nav a.sm-tab{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 12px;padding:12px 10px 12px 12px;
