@@ -1033,8 +1033,8 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 .jump{display:none}
 @media (max-width:640px){.jump{display:flex}}
 @media (max-width:380px){header.top{column-gap:3px}header.top .about-link,header.top .subscribe-btn.cta{padding:0 5px}header.top .brand h1{font-size:13px}}  /* small phones: still one row */
-/* Front page only (html.front-page, set by showPage): a newspaper nameplate. The name centred between two rules, then
-   one date line: today's date, the tagline, when we last updated. Stream and feature pages keep the compact masthead. */
+/* Every page of this app (html.front-page, set by showPage): a newspaper nameplate. The name centred between two rules,
+   then one date line: today's date, the tagline, when we last updated. */
 .np-date{display:none}
 .front-page header.top .brand{order:3;flex-basis:100%;justify-content:center;margin:4px 0 0;padding:8px 0;gap:12px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
 .front-page header.top .brand h1{font-size:clamp(28px,3.2vw,38px);letter-spacing:-.03em}
@@ -1475,9 +1475,9 @@ function heroArt(cat){
 function showPage(){
   const home = state.cat === "home", about = state.cat === "about", disc = state.cat === "discussing", tday = state.cat === "today",
         saved = state.cat === "saved";
-  // the newspaper nameplate and today's date in the reader's own time zone, on the front page only
-  document.documentElement.classList.toggle("front-page", home);
-  if(home) $("np-date").textContent = new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  // the newspaper nameplate and today's date in the reader's own time zone, on every page (front, streams, about…)
+  document.documentElement.classList.add("front-page");
+  $("np-date").textContent = new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   $("front").hidden = !home; $("section").hidden = home || about || disc || tday || saved;
   $("about-page").hidden = !about; $("discussing-page").hidden = !disc; $("today-page").hidden = !tday; $("saved-page").hidden = !saved;
   $("subscribe-open").hidden = $("glossary-open").hidden = home; $("az-open").hidden = !home;
