@@ -212,6 +212,15 @@ DEALS = [
      "Not disclosed", None, "agreed",
      "https://techcrunch.com/2026/10/29/deepgram-acquires-pipecat-maker-daily-to-bolster-its-voice-ai-infrastructure/",
      "", ""),
+    ("2026-10-21", "OpenAI", "Orchestra Bio", "Helps drug-makers coordinate drug development; folded into OpenAI's Rosalind",
+     "Not disclosed", None, "bought",
+     "https://the-decoder.com/openai-acquires-orchestra-bio-to-build-ai-agents-that-speed-up-drug-development/", "", ""),
+    ("2026-11-03", "Docusign", "Suplari", "AI procurement intelligence", "Not disclosed", None, "agreed",
+     "https://dplnews.com/docusign-adquiere-suplari-para-acelerar-la-gestion-de-contratos-basada-en-ia-para-el-area-de-compras/",
+     "", ""),
+    ("2026-11-03", "Salesforce", "Cresta", "AI customer service automation", "$2.7B, reported", 2.7, "agreed",
+     "https://siliconangle.com/2026/11/03/salesforce-to-buy-customer-service-automation-startup-cresta-for-reported-2-7b/",
+     "Salesforce expects to close in its 2028 fiscal year, which starts next February", ""),
 ]
 
 # stories checked by hand and left out, with why, so they aren't checked again
@@ -344,6 +353,7 @@ LEFT_OUT = {
         "a land purchase, not a company",
     "https://the-decoder.com/openais-upcoming-chat-and-work-merger-in-chatgpt-signals-the-end-of-all-you-can-prompt-pricing/":
         "no company being bought",
+    "https://openai.com/index/openai-to-acquire-pierre": "can't read to check",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
