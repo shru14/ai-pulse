@@ -23,7 +23,8 @@ ROOT = "planner"
 # what anyone can read: the product pages and one sample report. Source check went behind the login on 3 Nov 2026: on real AI
 # notes it flagged 206 of 306 correct sentences, so it stays there until it is fixed and measured again
 # 4 Nov 2026: each Pulse Pro product has its own open page (Compass is planner/ itself)
-PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store")
+PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store", "pulse-pro")  # pulse-pro: the family page
+FAMILY = "planner/pulse-pro/"  # What Pulse Pro is: the five products, what each is for and what it costs
 OPEN = ({"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf"}
         | {f"planner/{p}/index.html" for p in PRODUCTS}
         | {"planner/smartfeed/files/index.html"})  # SmartFeed's list of files: names and counts, no rows
@@ -179,14 +180,27 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
          "text-decoration:none;border:1px solid var(--ink);border-radius:999px}"
          ".compass-get .cg-mail:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}"
          ".compass-get .cg-note{margin:10px 0 0;font-size:13px}"
+         ".compass-get td small{display:block;font-size:12.5px;color:var(--muted)}"
          "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
 
 MAIL = "projectaipulse@gmail.com"
-# what a login costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once it is paid
-PRICES = (("Pulse Compass evidence report", "$499 a report"), ("Pulse Risk Monitor", "$199 a month"),
-          ("Pulse Watch", "$149 a month"), ("Pulse SmartFeed", "$249 a month"))
+# what each Pulse Pro product costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once
+# it is paid. (name, how it is billed, price, yearly price). The report is bought once; the three services run on, so
+# they are monthly, or yearly at ten months' price; the Store is free and needs no login
+PRICES = (("Pulse Compass evidence report", "Bought once", "$499 a report", ""),
+          ("Pulse Risk Monitor", "Subscription", "$199 a month", "$1,990 a year"),
+          ("Pulse Watch", "Subscription", "$149 a month", "$1,490 a year"),
+          ("Pulse SmartFeed", "Subscription", "$249 a month", "$2,490 a year"),
+          ("Pulse Store", "Free", "No login needed", ""))
+# the Store's paid add-ons (owner, 4 Nov 2026): browsing stays free; the bundle check is bought once, the other two run
+# on. Same columns as PRICES; the login box and What Pulse Pro is list them under Pulse Store
+STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "$149 a pack", ""),
+                ("Pulse Store Plus", "Subscription", "$49 a month", "$490 a year"),
+                ("Pulse Store for Firms", "Subscription", "$299 a month", "$2,990 a year"))
+PAID = [p for p in PRICES + STORE_ADDONS if p[1] != "Free"]
 REQUEST = ("Hello AI Pulse,\n\nI would like a Pulse Pro login.\n\n"
-           "Name:\nFirm:\nRole:\nProduct (" + " / ".join(n for n, _ in PRICES) + "):\n"
+           "Name:\nFirm:\nRole:\nProduct (" + " / ".join(p[0] for p in PAID) + "):\n"
+           "For a subscription, monthly or yearly:\n"
            "How I would like to pay (for example bank transfer or a card payment link):\n\n"
            "Please send the invoice. I understand the username and password follow once it is paid.\n\nThanks,\n")
 
@@ -195,15 +209,15 @@ def _get_login() -> str:
     """Under the form: what a login costs and a ready-written email asking for one."""
     from html import escape
     from urllib.parse import quote
-    rows = "".join(f"<tr><td>{escape(n)}</td><td>{escape(p)}</td></tr>" for n, p in PRICES)
+    rows = "".join(f"<tr><td>{escape(n)}<small>{escape(k)}</small></td><td>{escape(p)}"
+                   + (f"<small>or {escape(y)}</small>" if y else "") + "</td></tr>" for n, k, p, y in PRICES + STORE_ADDONS)
     href = f"mailto:{MAIL}?subject={quote('Pulse Pro login request')}&amp;body={quote(REQUEST)}"
     return ('<div class="compass-get"><h2>No login yet?</h2>'
             '<p>Logins are paid. Choose a product, then send the email below: it is already written, with spaces '
             'for your details and how you would like to pay.</p>'
             f'<table><thead><tr><th>Product</th><th>Price (USD)</th></tr></thead><tbody>{rows}</tbody></table>'
             f'<a class="cg-mail" href="{href}">Email us for a login</a>'
-            f'<p class="cg-note">Or write to <a href="mailto:{MAIL}">{MAIL}</a>. The reply brings an invoice; '
-            'your username and password follow once it is paid. Please don\'t put card numbers in the email.</p></div>')
+            '<p class="cg-note">The reply brings an invoice; your username and password follow once it is paid. Please don\'t put card numbers in the email.</p></div>')
 
 
 def _contents() -> str:
@@ -232,8 +246,7 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
               '<label>Password<input name="password" type="password" autocomplete="current-password" required></label>'
               '<button type="submit">Log in</button><p id="compass-msg" role="status"></p>'
               f'{_get_login()}'
-              '<p class="compass-more"><a href="/planner/">What Pulse Pro is</a> · '
-              '<a href="/planner/sample-report/">See a sample report</a></p></form>'
+              f'<p class="compass-more"><a href="/{FAMILY}">What Pulse Pro is</a></p></form>'
               '<noscript><p>Logging in needs JavaScript switched on.</p></noscript>'
               f'<script type="application/json" id="compass-table">{json.dumps(table)}</script>'
               f'<script type="application/json" id="compass-files">{json.dumps(files)}</script>'
