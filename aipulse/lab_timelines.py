@@ -40,6 +40,12 @@ PLACES = [
 PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://olhardigital.com.br/2026/11/03/inteligencia-artificial/chatgpt-ja-alcanca-20-do-volume-de-buscas-do-google-diz-openai/":
+        "A usage statistic for an app, not a model price or place change",
+    "https://cohere.com/blog/open-source-model-vault":
+        "Open models added to a hosting product, not countries or regions",
+    "https://techcrunch.com/2026/11/03/google-will-let-schools-disable-its-ai-tools-but-not-without-sacrificing-search/":
+        "A school admin setting for products, not a model being pulled",
     "https://research.google/pubs/stakes-adaptive-verification-and-origin-traced-rollback-in-autonomous-agent-workflows/":
         "A research paper about agent rollback, not a model being pulled",
     "https://www.channelnewsasia.com/business/exclusive-australian-outback-data-centre-pulls-timeline-after-regulator-stalls-6511551":
