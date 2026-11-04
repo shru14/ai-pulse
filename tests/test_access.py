@@ -110,3 +110,13 @@ def test_the_secret_holds_no_password(tmp_path, monkeypatch):
     assert list(told[0]) == ["someone"] and "a very long password" not in json.dumps(told[0])
     access.manage("remove", "someone")
     assert told[-1] == {}
+
+
+def test_login_box_prices_all_five_products_and_one_way_to_write():
+    # 4 Nov 2026, owner: five products, the report bought once and the rest by subscription; the button is the only
+    # way to write, and the box links to What Pulse Pro is, not to the sample report
+    box = access._get_login()
+    assert len(access.PRICES) == 5 and box.count("<tr>") == 6
+    assert "$499 a report" in box and "Bought once" in box and "No login needed" in box
+    assert "Or write to" not in box and "Pulse Store" not in access.REQUEST
+    assert access.FAMILY + "index.html" in access.OPEN
