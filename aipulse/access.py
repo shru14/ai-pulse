@@ -25,7 +25,8 @@ ROOT = "planner"
 # 4 Nov 2026: each Pulse Pro product has its own open page (Compass is planner/ itself)
 PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store")
 OPEN = ({"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf"}
-        | {f"planner/{p}/index.html" for p in PRODUCTS})
+        | {f"planner/{p}/index.html" for p in PRODUCTS}
+        | {"planner/smartfeed/files/index.html"})  # SmartFeed's list of files: names and counts, no rows
 # each Pulse Pro product's read-only sample (4 Nov 2026, the owner): everything under this folder is open too
 OPEN_DIR = "planner/samples/"
 # 4 Nov 2026, owner: the login blocked anyone from trying the product, so the first three steps (Explore, Questions, Plan
@@ -33,10 +34,12 @@ OPEN_DIR = "planner/samples/"
 # the report's login box lists what the report holds
 STEPS = ("planner/explore/", "planner/questions/", "planner/plan/")
 REPORT = "planner/example/"
+# 4 Nov 2026, owner: the Pulse Store has no price, so the shop behind its product page is open to everyone, with everything under it
+STORE = "planner/store/"
 
 
 def is_open(rel: str) -> bool:
-    return rel in OPEN or rel.startswith((OPEN_DIR, *STEPS))
+    return rel in OPEN or rel.startswith((OPEN_DIR, STORE, *STEPS))
 ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
