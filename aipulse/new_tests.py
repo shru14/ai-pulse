@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-10-30"
+CHECKED_TO = "2026-11-03"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -541,6 +541,17 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "IntReal", "vision",
         "Whether models can write text with matching images woven through it, as real web pages and articles do.",
         "No top score: it shows distinct strengths and weaknesses across four families of models", "", None),
+    "https://www.microsoft.com/en-us/research/publication/evalawarebench-a-benchmark-for-measuring-evaluation-awareness-in-frontier-language-models/": (
+        "EvalAwareBench", "safety",
+        "Whether top models can tell that they are being tested rather than used for real.",
+        "No top score: the model that wrote the real-use examples accounts for 11.25% of the variation in results and "
+        "can reorder model rankings", "", None),
+    "https://www.microsoft.com/en-us/research/publication/csbench-a-comprehensive-benchmark-for-evaluating-project-level-system-construction-in-computer-science/": (
+        "CSBench", "agents",
+        "Whether coding agents can build whole computer-science systems (operating systems, compilers, databases) from "
+        "a written spec.",
+        "Even top models see success fall from over 90% on algorithmic tasks to below 35% on system-level ones",
+        "GPT-5.2", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
@@ -597,7 +608,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
 }
-BEATS_CHECKED_TO = "2026-10-29"
+BEATS_CHECKED_TO = "2026-11-03"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
