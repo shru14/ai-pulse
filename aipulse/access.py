@@ -28,12 +28,15 @@ OPEN = ({"planner/index.html", "planner/sample-report/index.html", "planner/samp
         | {f"planner/{p}/index.html" for p in PRODUCTS})
 # each Pulse Pro product's read-only sample (4 Nov 2026, the owner): everything under this folder is open too
 OPEN_DIR = "planner/samples/"
+# 4 Nov 2026, owner: the login blocked anyone from trying the product, so the first three steps (Explore, Questions, Plan
+# your report) are open, with everything under them. The report itself (step 4), its PDF and the Resources stay sealed;
+# the report's login box lists what the report holds
+STEPS = ("planner/explore/", "planner/questions/", "planner/plan/")
+REPORT = "planner/example/"
 
 
 def is_open(rel: str) -> bool:
-    return rel in OPEN or rel.startswith(OPEN_DIR)
-
-
+    return rel in OPEN or rel.startswith((OPEN_DIR, *STEPS))
 ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
@@ -157,14 +160,35 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
          ".compass-more{margin:18px 0 0;padding-top:16px;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent);"
          "font-size:13.5px;"
          "line-height:1.6;text-align:center;color:var(--muted)}"
+         ".cl-toc{margin:0 0 24px;padding:14px 16px;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);"
+         "border-left:3px solid #56B4E9;border-radius:6px;font:400 14px/1.55 var(--body)}"
+         ".cl-toc-h{margin:0 0 6px;font-weight:600}.cl-toc ol{margin:0;padding-left:22px}.cl-toc li{margin:0;padding:1px 0;border:0}.cl-toc li::before,.cl-toc li::after{content:none}"
+         ".cl-toc small{color:var(--muted);font-size:12.5px}"
          "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
+
+
+def _contents() -> str:
+    """The report's sections, as its contents page names them: all a visitor sees of the report without a login."""
+    from .planner_example import APPENDIX, DOC
+    models = {"models", "method"}  # only when the report compares models
+
+    def item(key, name):
+        return f"<li>{name}{' <small>(when models are compared)</small>' if key in models else ''}</li>"
+    return ('<div class="cl-toc"><p class="cl-toc-h">In your report</p><ol>'
+            + "".join(item(k, n) for k, n in DOC if k not in APPENDIX)
+            + '<li>Appendix<ol type="A">' + "".join(item(k, n) for k, n in DOC if k in APPENDIX) + "</ol></li></ol></div>")
 
 
 def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: list[str]) -> str:
     """The published page: the login box, with the real page beside it as unreadable bytes."""
     from . import adoption, pages, rss
+    head, lead, extra = "Log in to Pulse Pro", "Use the username and password you were given.", ""
+    if path == REPORT:
+        head, lead, extra = ("Log in to see your report",
+                             "Your answers are saved in this browser. Log in to read the report and download it as a PDF.",
+                             _contents())
     body = (STYLE + '<form class="compass-login" id="compass-form" hidden autocomplete="on">'
-              '<h1>Log in to Pulse Pro</h1><p class="cl-lead">Use the username and password you were given.</p>'
+              f'<h1>{head}</h1><p class="cl-lead">{lead}</p>{extra}'
               '<label>Username<input name="name_" autocomplete="username" autocapitalize="none" required></label>'
               '<label>Password<input name="password" type="password" autocomplete="current-password" required></label>'
               '<button type="submit">Log in</button><p id="compass-msg" role="status"></p>'
