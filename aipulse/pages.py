@@ -2523,9 +2523,10 @@ def frame(conn=None, total: int = 0) -> tuple[str, str]:
     header = re.sub(r"\s*<!-- Each stream.*?</nav>", "", header, flags=re.S)
     header = re.sub(r'<button class="(subscribe-btn[^"]*)" id="(\w+)-open" type="button" aria-haspopup="dialog"',
                     r'<a class="\1" href="/#\2"', header).replace("</button>", "</a>")
-    when = (f'<div>Last update <time datetime="{escape(last)}">{escape(last[:16].replace("T", " "))} UTC</time></div>'
-            if last else "")
-    header = header.replace("Loading feed…", (f"<div><b>{total}</b> stories in total</div>" if total else "") + when)
+    # one line, as on the front page: when it last updated and how often (pages.yml)
+    when = (f'<div>Updated <time datetime="{escape(last)}">{escape(last[:16].replace("T", " "))} UTC</time>'
+            ' · every 6 hours</div>' if last else "")
+    header = header.replace("Loading feed…", when)
     footer = re.search(r'<footer class="site-foot">.*?</footer>', t, re.S).group(0)
     return header, footer
 
@@ -2553,7 +2554,10 @@ THEME_BUTTON = """<script>
 
 # the masthead's time in the reader's own time zone, as on the front page
 LOCAL_TIME = ('<script>document.querySelectorAll("time[datetime]").forEach(t => t.textContent = new Date(t.dateTime)'
-              '.toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))</script>')
+              '.toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}));'
+              # the nameplate's date line: today's date, as on the front page
+              'const npd=document.getElementById("np-date");if(npd)npd.textContent=new Date().toLocaleDateString("en-GB",'
+              '{weekday:"long",day:"numeric",month:"long",year:"numeric"})</script>')
 
 
 # Anonymous visit counts (GoatCounter, chosen 12 Oct 2026; terms.PLATFORM): no cookie, no stored IP address or
@@ -2650,7 +2654,8 @@ def page(title: str, description: str, path: str, body: str, data: dict, parts: 
     url = f"{rss.SITE}{path}"
     header, footer = parts
     description = snippet(description)
-    return (f'<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n{THEME}\n'
+    # class front-page: the front page's newspaper nameplate and date line (index.html's .front-page styles)
+    return (f'<!doctype html>\n<html lang="en" class="front-page">\n<head>\n<meta charset="utf-8">\n{THEME}\n'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">\n<base href="/">\n'
             f'<title>{escape(title)}</title>\n<meta name="description" content="{escape(description)}">\n'
             f'<link rel="canonical" href="{url}">\n<link rel="icon" href="/favicon.ico">\n'

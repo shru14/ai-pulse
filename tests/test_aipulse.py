@@ -680,7 +680,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     tracker_pages += [tmp_path / "site" / p / "index.html" for p in ("data-centre-builds", "who-powers-ai", "pushback-and-permits")]
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
-    assert "<h1>AI tutorials</h1>" in tutorials and '"kind": "tutorial"' in tutorials and "Updated" not in tutorials
+    assert "<h1>AI tutorials</h1>" in tutorials and '"kind": "tutorial"' in tutorials and "Updated" not in tutorials.split('<main')[1]  # the masthead's own update line aside
     # the front page's stream strips link to exactly the pages built
     from aipulse import kind_pages
     front = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
@@ -842,7 +842,7 @@ def test_standards_have_one_page_without_a_date(tmp_path):
     assert "<h1>AI standards</h1>" in page and "<h2>International: ISO/IEC</h2>" in page and "<h2>National</h2>" in page
     assert "ISO/IEC 42001:2023" in page and "Published Dec 2023" in page and "Organisations can be certified" in page
     assert "Australia" in page and "OECD's words" not in page and "A story on a standard" not in page  # official only
-    assert "Updated" not in page and 'href="/standards/"' in (countries.build(conn, cards, tmp_path, date(2026, 10, 6)) and
+    assert "Updated" not in page.split('<main')[1] and 'href="/standards/"' in (countries.build(conn, cards, tmp_path, date(2026, 10, 6)) and
                                                                (tmp_path / "tracker" / "index.html").read_text(encoding="utf-8"))
     assert "<url><loc>https://projectaipulse.com/standards/</loc></url>" in sitemap([], date(2026, 10, 6), ["standards/"])
 
