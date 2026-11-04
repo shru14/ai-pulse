@@ -128,34 +128,48 @@ if(f)f.onsubmit=async function(e){
 </script>"""
 HIDE = ("<script>try{if(localStorage.getItem('compass-login'))document.documentElement.style.visibility='hidden'}"
         "catch(e){}</script>")
-STYLE = ("<style>.compass-login{max-width:380px;margin:26px 0 30px}.compass-login label{display:block;margin:0 0 14px;"
-         "font:400 14px/1.4 var(--body)}.compass-login input{display:block;width:100%;box-sizing:border-box;margin-top:4px;"
-         "padding:10px;font:400 16px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--ink)}"
-         ".compass-login button{padding:10px 22px;font:600 15px var(--body);color:#000;background:#F0E442;"
-         "border:1px solid #000;cursor:pointer}.compass-login button[disabled]{opacity:.6}"
-         "#compass-msg{min-height:22px;margin:10px 0 0;font-size:14px}.compass-more{font-size:14px}</style>")
+STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32px 30px 26px;box-sizing:border-box;"
+         "border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-top:4px solid #F0E442;border-radius:10px;"
+         "background:var(--bg)}"
+         ".compass-login h1{display:block;width:auto;max-width:none;margin:0 0 6px;font:800 26px/1.2 var(--body);"
+         "text-align:center}"
+         ".compass-login .cl-lead{margin:0 0 24px;font:400 15px/1.45 var(--body);color:var(--muted);text-align:center}"
+         ".compass-login label{display:block;margin:0 0 16px;font:600 14px/1.4 var(--body)}"
+         ".compass-login input{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:11px 12px;"
+         "font:400 16px var(--body);color:var(--ink);background:var(--bg);border:1px solid color-mix(in srgb,var(--ink) 35%,transparent);"
+         "border-radius:6px}"
+         ".compass-login input:focus{outline:2px solid #56B4E9;outline-offset:1px;border-color:#56B4E9}"
+         ".compass-login button{display:block;width:100%;margin-top:6px;padding:12px;font:600 15px var(--body);color:#000;"
+         "background:#F0E442;border:1px solid #F0E442;border-radius:999px;cursor:pointer}"
+         ".compass-login button:hover{filter:brightness(.95)}.compass-login button[disabled]{opacity:.6}"
+         "#compass-msg{min-height:20px;margin:12px 0 0;font-size:14px;text-align:center}"
+         ".compass-more{margin:18px 0 0;padding-top:16px;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent);"
+         "font-size:13.5px;"
+         "line-height:1.6;text-align:center;color:var(--muted)}"
+         "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
 
 
 def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: list[str]) -> str:
     """The published page: the login box, with the real page beside it as unreadable bytes."""
     from . import adoption, pages, rss
-    body = (STYLE + adoption.band(adoption.TITLE, "Log in to Pulse Compass.",
-                                  "Pulse Compass is a paid service. Log in with the username and password you were given.")
-            + '<form class="compass-login" id="compass-form" hidden autocomplete="on">'
+    body = (STYLE + '<form class="compass-login" id="compass-form" hidden autocomplete="on">'
+              '<h1>Log in to Pulse Pro</h1><p class="cl-lead">Use the username and password you were given.</p>'
               '<label>Username<input name="name_" autocomplete="username" autocapitalize="none" required></label>'
               '<label>Password<input name="password" type="password" autocomplete="current-password" required></label>'
-              '<button type="submit">Log in</button><p id="compass-msg" role="status"></p></form>'
+              '<button type="submit">Log in</button><p id="compass-msg" role="status"></p>'
+              '<p class="compass-more"><a href="/planner/">What Pulse Pro is</a> · '
+              '<a href="/planner/sample-report/">See a sample report</a><br>No login yet? Write to '
+              '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></p></form>'
               '<noscript><p>Logging in needs JavaScript switched on.</p></noscript>'
-              '<p class="compass-more"><a href="/planner/">What Pulse Compass is</a> · '
-              '<a href="/planner/sample-report/">See a sample report</a> · No login yet? Write to '
-              '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></p>'
               f'<script type="application/json" id="compass-table">{json.dumps(table)}</script>'
               f'<script type="application/json" id="compass-files">{json.dumps(files)}</script>'
               f'<script type="text/plain" id="compass-page">{page}</script>' + SCRIPT)
-    html = pages.page("Log in · Pulse Compass", "Log in to Pulse Compass.", path,
+    html = pages.page("Log in · Pulse Pro", "Log in to Pulse Pro.", path,
                       f'<div class="ft jb ap">{body}</div>',
                       {"@context": "https://schema.org", "@type": "WebPage", "name": "Pulse Compass", "url": f"{rss.SITE}{path}"},
                       pages.frame(conn, len(cards)), ("/planner/", "About Pulse Compass"))
+    # the Pulse Pro top bar, as on the product page, in place of the news masthead; its Pro pill is the way back
+    html = adoption.product_header(html).replace('<a class="back" href="/planner/">← About Pulse Compass</a>\n', "", 1)
     return html.replace('<meta charset="utf-8">', f'<meta charset="utf-8">\n<meta name="robots" content="noindex">\n{HIDE}', 1)
 
 
