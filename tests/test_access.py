@@ -15,7 +15,10 @@ def site(tmp_path, monkeypatch):
         {"page": page, "table": table, "files": files}))
     out = tmp_path / "site"
     for rel, text in (("planner/index.html", "the product page"), ("planner/sample-report/index.html", "the sample"), ("planner/smartfeed/index.html", "the feed page"), ("planner/source-check/index.html", "the tool"),
-                      ("planner/plan/index.html", SECRET), ("planner/example/sheet.csv", SECRET)):
+                      ("planner/example/index.html", SECRET), ("planner/example/sheet.csv", SECRET),
+                      ("planner/explore/index.html", "step one"), ("planner/questions/index.html", "step two"),
+                      ("planner/plan/index.html", "step three"), ("planner/plan/rules/index.html", "its rules"),
+                      ("planner/rules/index.html", "the rule book")):
         (out / rel).parent.mkdir(parents=True, exist_ok=True)
         (out / rel).write_text(text, encoding="utf-8")
     (out / "about").mkdir()
@@ -33,12 +36,15 @@ def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
     access.seal(out, None, [])
     assert SECRET not in everything(out)
     assert not (out / "planner/example/sheet.csv").exists() and not (out / "planner/example/sheet.csv.sealed").exists()
-    assert json.loads((out / "planner/plan/index.html").read_text(encoding="utf-8"))["page"] == ""
+    assert json.loads((out / "planner/example/index.html").read_text(encoding="utf-8"))["page"] == ""
     # what's open stays open
     assert (out / "planner/index.html").read_text(encoding="utf-8") == "the product page"
     assert (out / "planner/sample-report/index.html").read_text(encoding="utf-8") == "the sample"
     assert (out / "planner/smartfeed/index.html").read_text(encoding="utf-8") == "the feed page"  # each product's page
     assert "the tool" not in everything(out)  # Source check is behind the login too
+    assert "the rule book" not in everything(out)  # and so are the Resources
+    for rel, text in (("explore", "step one"), ("questions", "step two"), ("plan", "step three"), ("plan/rules", "its rules")):
+        assert (out / f"planner/{rel}/index.html").read_text(encoding="utf-8") == text  # the first three steps are open
     assert (out / "about/index.html").read_text(encoding="utf-8") == "free"
 
 
@@ -52,11 +58,11 @@ def test_sealed_pages_open_only_with_the_right_password(tmp_path, monkeypatch):
     aead = pytest.importorskip("cryptography.hazmat.primitives.ciphers.aead")
     out = site(tmp_path, monkeypatch)
     monkeypatch.setenv("COMPASS_USERS", json.dumps({"client one": access.new_user("client one", "long enough password")}))
-    assert access.seal(out, None, []) == 3  # the plan, the sheet and Source check
+    assert access.seal(out, None, []) == 4  # the report, its sheet, Source check and the Rule book
     published = everything(out)
     assert SECRET not in published and "client one" not in published and "long enough password" not in published
     assert not (out / "planner/example/sheet.csv").exists()
-    sealed = json.loads((out / "planner/plan/index.html").read_text(encoding="utf-8"))
+    sealed = json.loads((out / "planner/example/index.html").read_text(encoding="utf-8"))
     assert sealed["files"] == ["planner/example/sheet.csv"]
     entry = sealed["table"][access.user_id("Client One ")]  # as the browser looks it up: any case, spaces trimmed
     salt, iv, wrapped = (base64.b64decode(entry[k]) for k in ("salt", "iv", "key"))
@@ -77,10 +83,10 @@ def test_each_build_has_its_own_key_so_a_removed_user_is_shut_out(tmp_path, monk
     people = {"a": access.new_user("a", "first long password"), "b": access.new_user("b", "second long password")}
     out = site(tmp_path, monkeypatch)
     access.seal(out, None, [], people)
-    first = json.loads((out / "planner/plan/index.html").read_text(encoding="utf-8"))
+    first = json.loads((out / "planner/example/index.html").read_text(encoding="utf-8"))
     out2 = site(tmp_path / "again", monkeypatch)
     access.seal(out2, None, [], {"b": people["b"]})
-    second = json.loads((out2 / "planner/plan/index.html").read_text(encoding="utf-8"))
+    second = json.loads((out2 / "planner/example/index.html").read_text(encoding="utf-8"))
     assert access.user_id("a") in first["table"] and access.user_id("a") not in second["table"]
     assert first["table"][access.user_id("b")]["key"] != second["table"][access.user_id("b")]["key"]
 
