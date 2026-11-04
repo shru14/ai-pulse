@@ -245,10 +245,12 @@ LOOK = {
 # Stories the words miss, checked by hand and approved: slug: {url: why it belongs, in our own words}
 ADDED: dict[str, dict[str, str]] = {
     "ai-ipos": {
+        "https://www.channelnewsasia.com/business/anthropic-discloses-month-long-training-pause-ai-security-breaches-in-ipo-filing-6493811": "Anthropic's IPO filing discloses a month-long training pause and AI security breaches",
         "https://techcrunch.com/2026/10/30/anthropic-expected-to-receive-high-junk-rating-from-credit-agencies-following-ipo-report-says/": "Report on the credit rating Anthropic is expected to get after its IPO",
         "https://olhardigital.com.br/2026/10/15/pro/anthropic-investidores-reduzem-expectativa-de-avaliacao-para-ipo-de-r-8-1-trilhoes/": "Investors lower their valuation hopes for Anthropic's planned November IPO",
     },
     "deepseek-us": {
+        "https://dplnews.com/estados-unidos-ordena-retirar-deepseek/": "US bans federal civil agencies from buying DeepSeek products and orders existing ones removed",
         "https://techcrunch.com/2026/10/22/deepseek-reportedly-raises-15b-days-after-us-restrictions/": "DeepSeek's reported $15B raise came days after the US ordered federal agencies to remove its technology",
     },
     "openai-device": {
@@ -261,6 +263,22 @@ ADDED: dict[str, dict[str, str]] = {
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # general data-centre politics piece, no specific state AI law or preemption development
+    "https://www.telesemana.com/blog/2026/11/04/las-propuestas-regulatorias-para-los-centros-de-datos-tambien-ganaron-en-las-elecciones-de-medio-termino-de-estados-unidos/",
+    # Google backlash over schools, only shares tags with the topics
+    "https://techcrunch.com/2026/11/04/google-faces-backlash-for-plan-that-would-turn-off-search-for-schools-that-restrict-ai/",
+    # UK land sale for a grid node, not about who pays for power
+    "https://w.media/teesworks-sells-land-to-national-grid-for-ai-and-data-center-development/",
+    # general explainer on power limits, nothing new in a specific case
+    "https://www.datacenterknowledge.com/energy-power-supply/ai-s-expansion-hits-the-limits-of-local-power",
+    # Huawei memory sourcing, not about US rules or Nvidia in China
+    "https://the-decoder.com/huawei-tells-customers-to-find-their-own-ai-chip-memory-effectively-outsourcing-procurement-to-the-black-market/",
+    # Chinese GPU cluster performance, not about US rules or DeepSeek's dealings with Washington
+    "https://pandaily.com/moore-threads-wuxi-huishan-mtt-s5000-cluster-2112-gpus-92-9-percent-utilization-deepseek-v4-flash",
+    # Tencent research agent, not about chip rules
+    "https://pandaily.com/tencent-hunyuan-hyra-2-0-research-agent-builds-scientific-tools-hyinv-hyff-hyqec-open-results",
+    # scraping suit against a browser, can't tell from the summary it is about AI training
+    "https://techcrunch.com/2026/11/02/new-york-times-and-other-outlets-sue-web-browser-brave-over-alleged-content-scraping/",
     # data-centre pollution lawsuit under the Clean Air Act, not about Grok images
     "https://techcrunch.com/2026/10/31/judge-allows-naacp-lawsuit-over-xai-data-center-pollution-to-move-forward/",
     # opinion piece, reports nothing new in a case
