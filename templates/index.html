@@ -122,11 +122,11 @@ header.top{gap:10px}
 .secnav .saved-nav{display:none;align-items:center;gap:3px}
 /* Pulse Pro, the paid service, right beside the name */
 header.top .brand:has(+ .pro-btn){margin-right:0}
-.pro-btn{flex:none;margin-right:auto;height:32px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:2px solid #000;background:#F0E442;color:#000;font:600 14px var(--body);text-decoration:none;box-shadow:3px 3px 0 var(--ink)}
+.pro-btn{flex:none;box-sizing:border-box;margin-right:auto;height:36px;display:inline-flex;align-items:center;gap:7px;padding:0 16px;border:1px solid #F0E442;border-radius:999px;background:#F0E442;color:#000;font:600 14.5px/1 var(--body);text-decoration:none;transition:background .15s,border-color .15s}  /* the same yellow pill as the Pulse Pro page's top bar */
 .pro-btn b{font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 .pro-btn svg{width:16px;height:16px;fill:none;stroke:#000;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.pro-btn:hover,.pro-btn:focus-visible{translate:-1px -1px;box-shadow:4px 4px 0 var(--ink)}
-@media (max-width:560px){.pro-btn{height:30px;padding:0 7px;font-size:12.5px;gap:4px;box-shadow:2px 2px 0 var(--ink)}.pro-btn svg{display:none}}
+.pro-btn:hover,.pro-btn:focus-visible{background:#e3d634;border-color:#e3d634}
+@media (max-width:560px){.pro-btn{height:32px;padding:0 11px;font-size:13px;gap:4px}.pro-btn svg{display:none}}
 @media (max-width:400px){.pro-btn{font-size:0;gap:0}.pro-btn b{font-size:12px}}  /* the smallest phones: just "PRO" */
 .saved-nav svg{width:14px;height:14px}
 .foot .src{margin-left:auto}
