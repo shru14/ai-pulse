@@ -26,6 +26,14 @@ ROOT = "planner"
 PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store")
 OPEN = ({"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf"}
         | {f"planner/{p}/index.html" for p in PRODUCTS})
+# each Pulse Pro product's read-only sample (4 Nov 2026, the owner): everything under this folder is open too
+OPEN_DIR = "planner/samples/"
+
+
+def is_open(rel: str) -> bool:
+    return rel in OPEN or rel.startswith(OPEN_DIR)
+
+
 ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
@@ -197,7 +205,7 @@ def seal(out: Path, conn, cards: list[dict], people: dict | None = None) -> int:
             iv = os.urandom(12)
             table[user_id(name)] = {"salt": u["salt"], "iv": _b64(iv),
                                     "key": _b64(AESGCM(base64.b64decode(u["kek"])).encrypt(iv, key, None))}
-    paid = [p for p in sorted(root.rglob("*")) if p.is_file() and p.relative_to(out).as_posix() not in OPEN]
+    paid = [p for p in sorted(root.rglob("*")) if p.is_file() and not is_open(p.relative_to(out).as_posix())]
     files = [p.relative_to(out).as_posix() for p in paid if p.name != "index.html"]
     for p in paid:
         rel = p.relative_to(out).as_posix()
