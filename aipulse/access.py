@@ -81,12 +81,22 @@ async function enter(key){
   window.compassKey=key;window.compassFiles=F;window.compassForget=forget;
   document.open();document.write(html.replace(/<\/body>(?![\s\S]*<\/body>)/i,AFTER+'</body>'));document.close()}
 var AFTER='<sc'+'ript>('+function(){
-  var n=document.querySelector('.ap-res-nav'),a=document.createElement('a');
-  a.href='/planner/';a.textContent='Log out';a.id='compass-out';a.style.cssText='font:400 14px/1.3 var(--body);color:inherit';
-  a.onclick=function(){window.compassForget()};
-  var w=document.createElement('p');w.style.cssText='margin:8px 0;text-align:right';w.className='compass-out';w.appendChild(a);
-  if(n)n.parentNode.insertBefore(w,n.nextSibling);else{w.style.cssText='position:fixed;right:12px;bottom:8px;margin:0';document.body.appendChild(w)}
-  var st=document.createElement('style');st.textContent='@media print{.compass-out{display:none}}';document.head.appendChild(st);
+  var b=document.querySelector('.cp > .back'),w=document.createElement('div'),me=document.createElement('span'),
+      a=document.createElement('a'),who=(function(){try{return JSON.parse(localStorage.getItem('compass-login')).name}catch(e){}})();
+  w.className='compass-bar';me.className='compass-acct';
+  me.appendChild(document.createTextNode(who?'Signed in as '+who:'Signed in'));
+  a.href='/planner/';a.textContent='Log out';a.onclick=function(){window.compassForget()};me.appendChild(a);
+  if(b){b.parentNode.insertBefore(w,b);w.appendChild(b)}else{w.style.justifyContent='flex-end';document.body.insertBefore(w,document.body.firstChild)}
+  w.appendChild(me);
+  var st=document.createElement('style');
+  st.textContent='.compass-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-top:24px}'
+    +'.cp:has(> .ft) > .compass-bar{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}'
+    +'.compass-bar > .back{margin:0!important}'
+    +'.compass-acct{display:flex;align-items:center;gap:10px;font:400 14px/1.3 var(--body);color:var(--muted)}'
+    +'.compass-acct a{color:var(--ink);text-decoration:none;border:1px solid var(--line);padding:5px 12px}'
+    +'.compass-acct a:hover{border-color:var(--ink)}'
+    +'@media print{.compass-acct{display:none}}';
+  document.head.appendChild(st);
   document.addEventListener('click',async function(e){
     var l=e.target.closest&&e.target.closest('a[href]');if(!l)return;
     var path=l.pathname.replace(/^\//,'');if(window.compassFiles.indexOf(path)<0)return;
@@ -111,7 +121,7 @@ if(f)f.onsubmit=async function(e){
     var raw=await S.importKey('raw',enc.encode(name+'\n'+pw),'PBKDF2',false,['deriveBits']),
         kek=await S.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:bytes(e0.salt),iterations:T._rounds},raw,256),
         key=await opened(id,kek);
-    try{localStorage.setItem(KEY,JSON.stringify({id:id,kek:b64(kek)}))}catch(x){}
+    try{localStorage.setItem(KEY,JSON.stringify({id:id,kek:b64(kek),name:name}))}catch(x){}
     await enter(key)
   }catch(x){msg.textContent='That username or password is not right.';b.disabled=false}
 }})();
