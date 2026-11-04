@@ -135,6 +135,8 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/terravolt-plans-240-mw-behind-the-meter-data-center-campus-in-idaho/", "TerraVolt Holdings", "US", "Near Declo, Cassia County, Idaho", "240 MW of on-site power at first", "", "announced"),
     ("https://w.media/sm-data-centers-lg-sinar-mas-kira-open-21mw-ai-ready-data-center-in-jakarta/", "SM+ Data Centers, LG Sinar Mas and KIRA", "Indonesia", "Central business district, Jakarta", "21 MW", "", "open"),
     ("https://www.thelec.net/news/articleView.html?idxno=15176", "Samsung SDS", "South Korea", "Gongdan-dong, Gumi, North Gyeongsang Province", "60 MW first, up to 120 MW", "427.3 billion won for the building and certain facilities", "building"),
+    ("https://w.media/drax-group-and-brookfield-plan-20-billion-data-center-development-in-north-yorkshire/", "Drax Group, Brookfield and Radiant", "UK", "Drax Power Station, North Yorkshire", "100 MW first, options for 500 MW more", "Over £20bn possible, £2.5bn for the first phase", "announced"),
+    ("https://w.media/ntt-data-opens-12mw-new-jakarta-2-annex-data-center/", "NTT Data", "Indonesia", "Jakarta", "12 MW", "", "open"),
 
 ]
 
@@ -245,6 +247,14 @@ LEFT_OUT: set[str] = {
     "https://www.channelnewsasia.com/business/putin-orders-private-data-centres-set-aside-10-capacity-support-it-infrastructure-6513756",  # can't read to check
     "https://w.media/south-korea-sets-aside-us-15-8-billion-for-ai-data-centers-and-chips-in-record-2027-budget/",  # proposed national budget, not specific data centres
     "https://www.techerati.com/news-hub/microsoft-exits-nscales-2bn-essex-ai-data-centre-project-amid-power-concerns/",  # can't read to check
+    "https://w.media/malaysias-perak-state-explores-proposed-100mw-ai-data-center/",  # only an NDA and letter of consent signed; exploring, no cost
+    "https://w.media/pdg-secures-usd-1-3-billion-green-loan-for-johor-data-center-expansion/",  # loan for a campus already running
+    "http://www.bernama.com/en/news.php?id=2629822",  # minister's statement of policy; no decision on a project
+    "https://japantoday.com/category/tech/nvidia-orders-data-center-clients-to-reduce-china-exposure-ft",  # company order to clients, not a data centre or a decision
+    "https://tecnoblog.net/noticias/r-31-milhoes-anatel-fica-sem-dinheiro-para-pagar-o-proprio-data-center/",  # an agency's own budget, not a new build
+    "https://www.foodandwaterwatch.org/press/2026/11/03/fl-psc-rejects-dukes-data-center-plan-shielding-ratepayers-from-costs/",  # advocacy release only; what was rejected is unclear
+    "https://w.media/etihad-go-telecom-commits-us-69-8-million-to-ai-data-center-expansion/",  # contract and lease; no site or size named
+    "https://www.techerati.com/news-hub/northc-breaks-ground-on-45mw-geneva-data-centre/",  # can't read to check
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
