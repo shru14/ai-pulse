@@ -192,7 +192,12 @@ PRICES = (("Pulse Compass evidence report", "Bought once", "$499 a report", ""),
           ("Pulse Watch", "Subscription", "$149 a month", "$1,490 a year"),
           ("Pulse SmartFeed", "Subscription", "$249 a month", "$2,490 a year"),
           ("Pulse Store", "Free", "No login needed", ""))
-PAID = [p for p in PRICES if p[1] != "Free"]
+# the Store's paid add-ons (owner, 4 Nov 2026): browsing stays free; the bundle check is bought once, the other two run
+# on. Same columns as PRICES; the login box and What Pulse Pro is list them under Pulse Store
+STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "$149 a pack", ""),
+                ("Pulse Store Plus", "Subscription", "$49 a month", "$490 a year"),
+                ("Pulse Store for Firms", "Subscription", "$299 a month", "$2,990 a year"))
+PAID = [p for p in PRICES + STORE_ADDONS if p[1] != "Free"]
 REQUEST = ("Hello AI Pulse,\n\nI would like a Pulse Pro login.\n\n"
            "Name:\nFirm:\nRole:\nProduct (" + " / ".join(p[0] for p in PAID) + "):\n"
            "For a subscription, monthly or yearly:\n"
@@ -205,7 +210,7 @@ def _get_login() -> str:
     from html import escape
     from urllib.parse import quote
     rows = "".join(f"<tr><td>{escape(n)}<small>{escape(k)}</small></td><td>{escape(p)}"
-                   + (f"<small>or {escape(y)}</small>" if y else "") + "</td></tr>" for n, k, p, y in PRICES)
+                   + (f"<small>or {escape(y)}</small>" if y else "") + "</td></tr>" for n, k, p, y in PRICES + STORE_ADDONS)
     href = f"mailto:{MAIL}?subject={quote('Pulse Pro login request')}&amp;body={quote(REQUEST)}"
     return ('<div class="compass-get"><h2>No login yet?</h2>'
             '<p>Logins are paid. Choose a product, then send the email below: it is already written, with spaces '
