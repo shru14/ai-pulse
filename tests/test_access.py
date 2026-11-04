@@ -18,7 +18,7 @@ def site(tmp_path, monkeypatch):
                       ("planner/example/index.html", SECRET), ("planner/example/sheet.csv", SECRET),
                       ("planner/explore/index.html", "step one"), ("planner/questions/index.html", "step two"),
                       ("planner/plan/index.html", "step three"), ("planner/plan/rules/index.html", "its rules"),
-                      ("planner/rules/index.html", "the rule book")):
+                      ("planner/rules/index.html", "the rule book"), ("planner/store/index.html", "the shop")):
         (out / rel).parent.mkdir(parents=True, exist_ok=True)
         (out / rel).write_text(text, encoding="utf-8")
     (out / "about").mkdir()
@@ -45,6 +45,7 @@ def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
     assert "the rule book" not in everything(out)  # and so are the Resources
     for rel, text in (("explore", "step one"), ("questions", "step two"), ("plan", "step three"), ("plan/rules", "its rules")):
         assert (out / f"planner/{rel}/index.html").read_text(encoding="utf-8") == text  # the first three steps are open
+    assert (out / "planner/store/index.html").read_text(encoding="utf-8") == "the shop"  # the Pulse Store has no price: open
     assert (out / "about/index.html").read_text(encoding="utf-8") == "free"
 
 

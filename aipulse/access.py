@@ -34,10 +34,12 @@ OPEN_DIR = "planner/samples/"
 # the report's login box lists what the report holds
 STEPS = ("planner/explore/", "planner/questions/", "planner/plan/")
 REPORT = "planner/example/"
+# 4 Nov 2026, owner: the Pulse Store has no price, so the shop behind its product page is open to everyone, with everything under it
+STORE = "planner/store/"
 
 
 def is_open(rel: str) -> bool:
-    return rel in OPEN or rel.startswith((OPEN_DIR, *STEPS))
+    return rel in OPEN or rel.startswith((OPEN_DIR, STORE, *STEPS))
 ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
