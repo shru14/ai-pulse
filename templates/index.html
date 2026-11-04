@@ -1033,6 +1033,25 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 .jump{display:none}
 @media (max-width:640px){.jump{display:flex}}
 @media (max-width:380px){header.top{column-gap:3px}header.top .about-link,header.top .subscribe-btn.cta{padding:0 5px}header.top .brand h1{font-size:13px}}  /* small phones: still one row */
+/* Front page only (html.front-page, set by showPage): a newspaper nameplate. The name centred between two rules, then
+   one date line: today's date, the tagline, when we last updated. Stream and feature pages keep the compact masthead. */
+.np-date{display:none}
+.front-page header.top .brand{order:3;flex-basis:100%;justify-content:center;margin:4px 0 0;padding:8px 0;gap:12px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.front-page header.top .brand h1{font-size:clamp(28px,3.2vw,38px);letter-spacing:-.03em}
+.front-page header.top .brand .mark{width:36px;height:36px}
+.front-page header.top .pro-btn{margin-right:auto}
+.front-page .mast-line{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px 24px;padding:7px 0;font:600 11.5px var(--mono);letter-spacing:.05em;text-transform:uppercase}
+.front-page .np-date{display:block;justify-self:start}
+.front-page .mast-line .lede{justify-self:center;text-align:center;max-width:none}
+.front-page .mast-line .lede strong{font:600 18px/1.25 var(--body);letter-spacing:0;text-transform:none}
+.front-page .mast-line .home-status{justify-self:end;font:inherit;text-transform:none;letter-spacing:0}
+@media (max-width:560px){
+  .front-page header.top .brand h1{font-size:28px}
+  .front-page header.top .brand .mark{width:30px;height:30px}
+  .front-page .mast-line{grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:2px}
+  .front-page .np-date,.front-page .mast-line .home-status{justify-self:center}
+  .front-page .mast-line .lede strong{font-size:16px}
+}
 </style>
 </head><body>
 
@@ -1047,7 +1066,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       <h1>AI Pulse</h1>
     </a>
     <a class="pro-btn" href="/planner/"><svg viewBox="0 0 22 22" aria-hidden="true"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/></svg>Pulse <b>Pro</b></a>
-    <div class="mast-line" id="mast-line"><p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
+    <div class="mast-line" id="mast-line"><span class="np-date" id="np-date"></span><p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
       <div class="status home-status" id="home-status">Loading feed…</div></div>
     <!-- Each stream is its own page (/releases/, /industry/…); the brand goes back to the front page. All stories
          (/all/) has no link here: it's where a tag or a search lands, every stream at once. -->
@@ -1456,6 +1475,9 @@ function heroArt(cat){
 function showPage(){
   const home = state.cat === "home", about = state.cat === "about", disc = state.cat === "discussing", tday = state.cat === "today",
         saved = state.cat === "saved";
+  // the newspaper nameplate and today's date in the reader's own time zone, on the front page only
+  document.documentElement.classList.toggle("front-page", home);
+  if(home) $("np-date").textContent = new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   $("front").hidden = !home; $("section").hidden = home || about || disc || tday || saved;
   $("about-page").hidden = !about; $("discussing-page").hidden = !disc; $("today-page").hidden = !tday; $("saved-page").hidden = !saved;
   $("subscribe-open").hidden = $("glossary-open").hidden = home; $("az-open").hidden = !home;
