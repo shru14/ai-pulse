@@ -25,7 +25,8 @@ ROOT = "planner"
 # 4 Nov 2026: each Pulse Pro product has its own open page (Compass is planner/ itself)
 PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store")
 OPEN = ({"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf"}
-        | {f"planner/{p}/index.html" for p in PRODUCTS})
+        | {f"planner/{p}/index.html" for p in PRODUCTS}
+        | {"planner/smartfeed/files/index.html"})  # SmartFeed's list of files: names and counts, no rows
 # each Pulse Pro product's read-only sample (4 Nov 2026, the owner): everything under this folder is open too
 OPEN_DIR = "planner/samples/"
 # 4 Nov 2026, owner: the login blocked anyone from trying the product, so the first three steps (Explore, Questions, Plan
