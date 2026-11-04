@@ -164,7 +164,43 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
          "border-left:3px solid #56B4E9;border-radius:6px;font:400 14px/1.55 var(--body)}"
          ".cl-toc-h{margin:0 0 6px;font-weight:600}.cl-toc ol{margin:0;padding-left:22px}.cl-toc li{margin:0;padding:1px 0;border:0}.cl-toc li::before,.cl-toc li::after{content:none}"
          ".cl-toc small{color:var(--muted);font-size:12.5px}"
+         ".compass-get{margin:22px 0 0;padding-top:18px;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}"
+         ".compass-get h2{margin:0 0 6px;font:700 17px/1.3 var(--body);text-align:center}"
+         ".compass-get p{margin:0 0 12px;font:400 14px/1.5 var(--body);color:var(--muted)}"
+         ".compass-get table{width:100%;border-collapse:collapse;margin:0 0 14px;font:400 14px/1.4 var(--body)}"
+         ".compass-get th,.compass-get td{padding:7px 0;text-align:left;vertical-align:top;"
+         "border-bottom:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}"
+         ".compass-get th{font-weight:600;font-size:12.5px;color:var(--muted)}"
+         ".compass-get td+td,.compass-get th+th{text-align:right;white-space:nowrap;padding-left:12px}"
+         ".compass-get .cg-mail{display:block;padding:11px;text-align:center;font:600 15px var(--body);color:var(--ink);"
+         "text-decoration:none;border:1px solid var(--ink);border-radius:999px}"
+         ".compass-get .cg-mail:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}"
+         ".compass-get .cg-note{margin:10px 0 0;font-size:13px}"
          "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
+
+MAIL = "projectaipulse@gmail.com"
+# what a login costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once it is paid
+PRICES = (("Pulse Compass evidence report", "$499 a report"), ("Pulse Risk Monitor", "$199 a month"),
+          ("Pulse Watch", "$149 a month"), ("Pulse SmartFeed", "$249 a month"))
+REQUEST = ("Hello AI Pulse,\n\nI would like a Pulse Pro login.\n\n"
+           "Name:\nFirm:\nRole:\nProduct (" + " / ".join(n for n, _ in PRICES) + "):\n"
+           "How I would like to pay (for example bank transfer or a card payment link):\n\n"
+           "Please send the invoice. I understand the username and password follow once it is paid.\n\nThanks,\n")
+
+
+def _get_login() -> str:
+    """Under the form: what a login costs and a ready-written email asking for one."""
+    from html import escape
+    from urllib.parse import quote
+    rows = "".join(f"<tr><td>{escape(n)}</td><td>{escape(p)}</td></tr>" for n, p in PRICES)
+    href = f"mailto:{MAIL}?subject={quote('Pulse Pro login request')}&amp;body={quote(REQUEST)}"
+    return ('<div class="compass-get"><h2>No login yet?</h2>'
+            '<p>Logins are paid. Choose a product, then send the email below: it is already written, with spaces '
+            'for your details and how you would like to pay.</p>'
+            f'<table><thead><tr><th>Product</th><th>Price (USD)</th></tr></thead><tbody>{rows}</tbody></table>'
+            f'<a class="cg-mail" href="{href}">Email us for a login</a>'
+            f'<p class="cg-note">Or write to <a href="mailto:{MAIL}">{MAIL}</a>. The reply brings an invoice; '
+            'your username and password follow once it is paid. Please don\'t put card numbers in the email.</p></div>')
 
 
 def _contents() -> str:
@@ -192,9 +228,9 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
               '<label>Username<input name="name_" autocomplete="username" autocapitalize="none" required></label>'
               '<label>Password<input name="password" type="password" autocomplete="current-password" required></label>'
               '<button type="submit">Log in</button><p id="compass-msg" role="status"></p>'
+              f'{_get_login()}'
               '<p class="compass-more"><a href="/planner/">What Pulse Pro is</a> · '
-              '<a href="/planner/sample-report/">See a sample report</a><br>No login yet? Write to '
-              '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a></p></form>'
+              '<a href="/planner/sample-report/">See a sample report</a></p></form>'
               '<noscript><p>Logging in needs JavaScript switched on.</p></noscript>'
               f'<script type="application/json" id="compass-table">{json.dumps(table)}</script>'
               f'<script type="application/json" id="compass-files">{json.dumps(files)}</script>'
