@@ -884,13 +884,13 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 @keyframes sm-in{from{transform:translateX(-24px);opacity:0}}
 @media (prefers-reduced-motion:reduce){.side-menu[open]{animation:none}}
 .side-menu::backdrop{background:rgba(10,12,18,.5)}
-/* Menu head: the nameplate in small, name centred between two thin rules, tagline set like the date line; × above the rules */
+/* Menu head: the nameplate in small, name centred between two thin rules, tagline in the same small type as the menu descriptions; × above the rules */
 .sm-head{position:relative;padding:40px 18px 6px;margin-bottom:8px}
 .sm-head > div{flex:1}
 .sm-head form{position:absolute;top:8px;right:14px}
 .sm-brand{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);font:400 22px/1 var(--display);letter-spacing:-.02em}
 .sm-brand .mark{width:26px;height:26px;border-radius:7px}.sm-brand .mark svg{width:18px;height:18px}
-.sm-head .sm-tag{display:block;text-align:center;font:600 11px/1.4 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:7px}
+.sm-head .sm-tag{display:block;text-align:center;font:400 12.5px/1.35 var(--body);color:var(--muted);margin-top:7px}
 .side-menu .sub-close{position:static;flex:none}
 .side-menu nav{display:flex;flex-direction:column;margin:0 18px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
 .side-menu nav a.sm-tab{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 12px;padding:12px 10px 12px 12px;
