@@ -78,6 +78,8 @@ CHECKED: dict[str, str | None] = {
     "https://the-decoder.com/openai-reportedly-plans-to-unveil-ph-d-level-super-agents-at-the-end-of-january/": None,  # a rumour
     "https://siliconangle.com/2025/10/14/nvidia-start-shipping-ai-optimized-dgx-spark-desktop-computer/": None,  # shipped 15 Oct 2025
     "https://techcrunch.com/2025/05/02/google-will-soon-start-letting-kids-under-13-use-its-gemini-chatbot/": None,  # rolled out May 2025
+    "https://www.engadget.com/2306095/nvidia-dlss-5-update-rtx-remix-enhance-older-games/":
+        None,  # no Nvidia word, the reporter's account; the Remix addition dated 23 Oct, already past
     "https://techcrunch.com/2025/11/25/character-ai-will-offer-interactive-stories-to-kids-instead-of-open-ended-chat/": None,  # launch day's
     "https://siliconangle.com/2024/12/16/salesforce-launch-agentforce-2-0-change-digital-labor-enterprise/": None,  # announced Dec 2024, available Feb 2025
     "https://the-decoder.com/amazon-to-launch-ai-enhanced-alexa-subscription-in-october/": None,  # unveiled Feb 2025, out from late Mar
