@@ -108,7 +108,7 @@ Pages that each answer one question, four per stream. Rows checked by hand are d
 
 ## Pulse Compass
 
-**[Pulse Compass](https://projectaipulse.com/planner/)** (the Pulse Pro button) is a plan for bringing AI into one part of a firm. For now every page is open and free, with no login (the login in `aipulse/access.py` is switched off). Its code is in a private repo and joins the build through a read-only key.
+**[Pulse Compass](https://projectaipulse.com/planner/)** (the Pulse Pro button) is a plan for bringing AI into one part of a firm. Its code is in a private repo and joins the build through a read-only key.
 
 ## AI by sector
 
