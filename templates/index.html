@@ -807,20 +807,28 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .meme-tile #meme img{max-height:170px;object-fit:contain;width:100%}
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
-/* About: two sections side by side (stacked on phones): the picture, then the intro and a ticked point each. The
-   ticks are white on the palette's blue (#0072B2, Okabe-Ito: colour-blind safe), so they show in light and dark mode. */
-.about-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center;margin-top:12px}
-.about-art{width:100%;height:auto;display:block}
-.about-intro{margin:0;font:400 22px/1.35 var(--head)}
-.about-ticks{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:12px}
-.about-ticks li{position:relative;padding-left:34px;font-size:15.5px;line-height:1.45;color:var(--muted)}
-.about-ticks li::before{content:"";position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;
-  background:#0072B2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/15px no-repeat}
-@media (max-width:760px){.about-split{grid-template-columns:1fr;gap:24px}}
-@media (max-width:640px){.about-intro{font-size:20px!important;line-height:1.2!important}}  /* About's heading in 3-4 lines on phones */
+/* About: a dark band with one pulse line, three taglines, then Pulse Pro (stacked on phones) */
+.ab-hero{position:relative;overflow:hidden;background:#0F1115;color:#F2F2F2;padding:52px 48px 64px;
+  background-image:linear-gradient(#1B2029 1px,transparent 1px),linear-gradient(90deg,#1B2029 1px,transparent 1px);background-size:40px 40px}
+.ab-hero .ab-k{position:relative;margin:0 0 16px;font:500 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#7E8796}
+.ab-hero h2{position:relative;margin:0;max-width:16ch;font:400 clamp(30px,4.4vw,52px)/1.08 var(--display)}
+.ab-hero svg{position:absolute;left:0;top:58%;width:100%;height:160px;fill:none;stroke-linejoin:round}
+.ab-lines{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin:26px 0 0}
+.ab-lines div{border-top:4px solid var(--c);padding-top:14px}
+.ab-lines b{display:block;font:400 22px/1.2 var(--display)}
+.ab-lines span{display:block;margin-top:8px;color:var(--muted);font-size:15px;line-height:1.45}
+.ab-pro{display:grid;grid-template-columns:1fr 1fr;gap:16px 48px;margin-top:40px;padding:32px;background:#0B1F33;color:#fff}
+.ab-pro h3{margin:0;font:400 30px/1.1 var(--display)}
+.ab-pro p{margin:6px 0 0;font:600 16px/1.4 var(--body);color:#B8C7D9}
+.ab-prods div{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #2E4A66;padding:9px 0;font-weight:600}
+.ab-prods span{font-weight:400;color:#B8C7D9;text-align:right}
+.ab-btn{display:inline-flex;align-items:center;height:40px;margin-top:26px;padding:0 20px;border:0;border-radius:999px;
+  background:var(--ink);color:var(--bg);font:600 15px var(--body);text-decoration:none;cursor:pointer}
+.about-page .ab-pro a.ab-btn{background:#fff;color:#0B1F33}
+.ab-btn:hover{opacity:.88}
+@media (max-width:760px){.ab-hero{padding:36px 22px 120px}.ab-lines{grid-template-columns:1fr;gap:22px}.ab-lines b{font-size:19px}
+  .ab-pro{grid-template-columns:1fr;padding:24px 20px}}
 .about-page a{color:var(--accent)}
-.about-pro{margin:22px 0 12px;font:600 15.5px/1.45 var(--body)}
-.about-detail a.about-pro-btn{color:var(--bg);text-decoration:none}
 .about-by{margin:22px 0 0;font:600 15.5px/1.45 var(--body)}
 .mag-row>.tile{display:flex;flex-direction:column}
 .mag-row .gl-tile-links,.mag-row .meme-go{margin-top:auto}  /* the three buttons at the tiles' feet */
@@ -1270,23 +1278,20 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 
   <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
-    <!-- two sections: the picture, then what AI Pulse is, a ticked point each (stacked on phones) -->
-    <div class="about-split">
-      <div class="about-pic"><img class="about-art" src="about.png" alt="From the same 200+ public sources: AI Pulse, the daily briefing for everyone (Releases, Industry, Research, Regulation, Policy, Infra), and Pulse Pro, tools for firms (Compass, Risk Monitor, Watch, SmartFeed, Store)" width="1200" height="630"></div>
-      <div class="about-detail">
-        <p class="about-intro">Stay informed on worldwide developments across artificial intelligence technology, regulation and infrastructure.</p>
-        <ul class="about-ticks">
-          <li>From 200+ public sources: AI labs, newsrooms, research, parliaments and regulators</li>
-          <li>Only sites that allow automated reading are used</li>
-          <li>Each publisher’s own headline and summary, linked to the original</li>
-          <li>No AI writes the stories</li>
-          <li>New stories from the labs every 30 minutes, everything else every 6 hours</li>
-        </ul>
-        <p class="about-pro">Pulse Pro: tools for firms, built on the same sources.</p>
-        <a class="gl-page about-pro-btn" href="/planner/pulse-pro/">See Pulse Pro</a>
-        <p class="about-by">Created by <a href="https://shru14.github.io/" target="_blank" rel="noopener">Shruti Kakade</a></p>
-      </div>
+    <!-- a dark band with one pulse line, four taglines, then AI Pulse and Pulse Pro side by side -->
+    <div class="ab-hero"><p class="ab-k">About AI Pulse</p>
+      <h2>The world's AI news, in one pulse.</h2>
+      <svg viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#0072B2" stroke-width="9"/><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#5FB3EA" stroke-width="3"/></svg></div>
+    <div class="ab-lines">
+      <div style="--c:var(--f-tool)"><b>200+ sources. One briefing.</b><span>AI labs, newsrooms, research, parliaments and regulators: only sites that allow automated reading.</span></div>
+      <div style="--c:var(--f-news)"><b>Their words, not ours.</b><span>Each publisher’s own headline and summary, linked to the original. No AI writes the stories.</span></div>
+      <div style="--c:var(--f-reg)"><b>Never far behind.</b><span>Labs every 30 minutes, everything else every 6 hours.</span></div>
     </div>
+    <div class="ab-pro"><div><h3>Pulse Pro</h3><p>Tools for firms, built on the same sources</p>
+        <a class="ab-btn" href="/planner/pulse-pro/">See Pulse Pro</a></div>
+      <div class="ab-prods"><div>Compass<span>evidence report</span></div><div>Risk Monitor<span>rules that apply</span></div><div>Watch<span>AI supplier watch</span></div><div>SmartFeed<span>data feed</span></div><div>Store<span>packs and add-ons</span></div></div>
+    </div>
+    <p class="about-by">Created by <a href="https://shru14.github.io/" target="_blank" rel="noopener">Shruti Kakade</a></p>
   </section>
 
   <!-- Today in AI, in full: every story of the last two days, by how many outlets carry it (the front page shows ten) -->
