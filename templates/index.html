@@ -1072,7 +1072,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   .front-page header.top .brand .mark{width:30px;height:30px}
   .front-page .mast-line{grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:2px;font-size:10.5px}  /* the date and update time stay small on a phone */
   .front-page .np-date,.front-page .mast-line .home-status{justify-self:center}
-  .front-page .mast-line .lede{line-height:1.25}  /* the tagline's two lines sit together */
+  .front-page .mast-line .lede{line-height:1.25;justify-self:stretch;padding:5px 0;border-top:1px solid color-mix(in srgb,var(--ink) 20%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ink) 20%,transparent)}  /* the tagline's two lines sit together; thin rules part it from the date and update time */
   .front-page .mast-line .lede strong{font-size:17px}
 }
 @media (max-width:359px){.front-page header.top .brand h1{display:block}}  /* the nameplate has its own row: the name stays */
