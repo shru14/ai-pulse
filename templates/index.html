@@ -807,16 +807,19 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .meme-tile #meme img{max-height:170px;object-fit:contain;width:100%}
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
-/* About: a dark band with one pulse line, three taglines, then Pulse Pro (stacked on phones) */
-.ab-hero{position:relative;overflow:hidden;background:#0F1115;color:#F2F2F2;padding:52px 48px 64px;
+/* About: one dark band (headline, pulse line, three readouts), then Pulse Pro (stacked on phones) */
+.ab-hero{position:relative;overflow:hidden;background:#0F1115;color:#F2F2F2;padding:52px 48px 28px;
   background-image:linear-gradient(#1B2029 1px,transparent 1px),linear-gradient(90deg,#1B2029 1px,transparent 1px);background-size:40px 40px}
 .ab-hero .ab-k{position:relative;margin:0 0 16px;font:500 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#7E8796}
-.ab-hero h2{position:relative;margin:0;max-width:16ch;font:400 clamp(30px,4.4vw,52px)/1.08 var(--display)}
-.ab-hero svg{position:absolute;left:0;top:58%;width:100%;height:160px;fill:none;stroke-linejoin:round}
-.ab-lines{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin:26px 0 0}
-.ab-lines div{border-top:4px solid var(--c);padding-top:14px}
-.ab-lines b{display:block;font:400 22px/1.2 var(--display)}
-.ab-lines span{display:block;margin-top:8px;color:var(--muted);font-size:15px;line-height:1.45}
+.ab-hero h2{position:relative;margin:0;max-width:18ch;font:400 clamp(30px,4.4vw,52px)/1.08 var(--display)}
+.ab-hero .ab-sub{position:relative;margin:18px 0 0;max-width:46ch;font:600 19px/1.45 var(--body);color:#B4B9C4}
+.ab-hero svg{display:block;width:calc(100% + 96px);height:140px;margin:22px -48px 0;fill:none;stroke-linejoin:round}
+.ab-read{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #2E3542;margin:6px 0 0}
+.ab-read>div{padding:22px 24px 4px 0}
+.ab-read>div+div{padding-left:24px;border-left:1px solid #2E3542}
+.ab-rk{display:block;font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#7E8796}
+.ab-read b{display:block;margin:8px 0 6px;font:400 40px/1 var(--display);color:#F2F2F2}
+.ab-read span:last-child{display:block;color:#B4B9C4;font-size:15px;line-height:1.45}
 .ab-pro{display:grid;grid-template-columns:1fr 1fr;gap:16px 48px;margin-top:40px;padding:32px;background:#0B1F33;color:#fff}
 .ab-pro h3{margin:0;font:400 30px/1.1 var(--display)}
 .ab-pro p{margin:6px 0 0;font:600 16px/1.4 var(--body);color:#B8C7D9}
@@ -826,7 +829,8 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   background:var(--ink);color:var(--bg);font:600 15px var(--body);text-decoration:none;cursor:pointer}
 .about-page .ab-pro a.ab-btn{background:#fff;color:#0B1F33}
 .ab-btn:hover{opacity:.88}
-@media (max-width:760px){.ab-hero{padding:36px 22px 120px}.ab-lines{grid-template-columns:1fr;gap:22px}.ab-lines b{font-size:19px}
+@media (max-width:760px){.ab-hero{padding:36px 22px 24px}.ab-hero svg{width:calc(100% + 44px);margin:18px -22px 0;height:110px}
+  .ab-read{grid-template-columns:1fr}.ab-read>div,.ab-read>div+div{padding:18px 0;border-left:0;border-top:1px solid #2E3542}.ab-read>div:first-child{border-top:0}
   .ab-pro{grid-template-columns:1fr;padding:24px 20px}}
 .about-page a{color:var(--accent)}
 .about-by{margin:22px 0 0;font:600 15.5px/1.45 var(--body)}
@@ -1278,15 +1282,16 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 
   <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
-    <!-- a dark band with one pulse line, four taglines, then AI Pulse and Pulse Pro side by side -->
+    <!-- one dark band: headline, line, the pulse, then three readouts like an instrument panel (no colour codes) -->
     <div class="ab-hero"><p class="ab-k">About AI Pulse</p>
-      <h2>The world's AI news, in one pulse.</h2>
-      <svg viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#0072B2" stroke-width="9"/><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#5FB3EA" stroke-width="3"/></svg></div>
-    <div class="ab-lines">
-      <div style="--c:var(--f-tool)"><b>200+ sources. One briefing.</b><span>AI labs, newsrooms, research, parliaments and regulators: only sites that allow automated reading.</span></div>
-      <div style="--c:var(--f-news)"><b>Their words, not ours.</b><span>Each publisher’s own headline and summary, linked to the original. No AI writes the stories.</span></div>
-      <div style="--c:var(--f-reg)"><b>Never far behind.</b><span>Labs every 30 minutes, everything else every 6 hours.</span></div>
-    </div>
+      <h2>Filter the noise. Hear the pulse.</h2>
+      <p class="ab-sub">The global AI landscape changes every hour. We capture the signal so you can skip the clutter.</p>
+      <svg viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#0072B2" stroke-width="9"/><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#5FB3EA" stroke-width="3"/></svg>
+      <div class="ab-read">
+        <div><span class="ab-rk">Sources</span><b>200+</b><span>AI labs, newsrooms, research, parliaments and regulators.</span></div>
+        <div><span class="ab-rk">Lab radar</span><b>30 min</b><span>New posts from AI labs, checked every 30 minutes. Everything else every 6 hours.</span></div>
+        <div><span class="ab-rk">Their words, not ours</span><b>Original</b><span>Each publisher’s own headline and summary, linked to the source. No AI writes the stories.</span></div>
+      </div></div>
     <div class="ab-pro"><div><h3>Pulse Pro</h3><p>Tools for firms, built on the same sources</p>
         <a class="ab-btn" href="/planner/pulse-pro/">See Pulse Pro</a></div>
       <div class="ab-prods"><div>Compass<span>evidence report</span></div><div>Risk Monitor<span>rules that apply</span></div><div>Watch<span>AI supplier watch</span></div><div>SmartFeed<span>data feed</span></div><div>Store<span>packs and add-ons</span></div></div>
