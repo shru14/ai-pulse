@@ -82,6 +82,20 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-04', by='OpenAI', kind='card',
+         title='ChatGPT Images 2.6 System Card',
+         url='https://deploymentsafety.openai.com/chatgpt-images-2-6',
+         original='https://deploymentsafety.openai.com/chatgpt-images-2-6/chatgpt-images-2-6.pdf',
+         models=('ChatGPT Images 2.6',), risks=('cbrn', 'cyber', 'harm'),
+         abstract=('ChatGPT Images 2.6 introduces new ways to create and refine visual content. The updated Sunburst '
+                   'and Flare models improve editing consistency, detail preservation, and responses to sketches and '
+                   'image annotations. Flare is optimized for faster generation, while configurable reasoning effort '
+                   'gives users in Chat via the model picker or developers in the API more control over generation '
+                   'and editing speed. This release also adds GIF generation and photo markup in both ChatGPT and the '
+                   'API, plus SVG output support in the API. The core safety stack we are using with ChatGPT Images '
+                   '2.6 is based on the same safety foundations of ChatGPT Images 2.5, with additional safeguards for '
+                   'GIF creation. This system card describes our safety evaluations, mitigations, and limitations, '
+                   'including risks introduced by the new GIF feature.')),
     dict(date='2026-10-30', by='OpenAI', kind='card',
          title='GPT-Rosalind-6 System Card Addendum',
          url='https://deploymentsafety.openai.com/gpt-rosalind-6',
