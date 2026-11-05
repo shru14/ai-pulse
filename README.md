@@ -1,6 +1,6 @@
 # AI Pulse
 
-A free, non-commercial, worldwide briefing on AI. It reads 200+ public sources, keeps only AI stories, sorts them into
+A worldwide briefing on AI. It reads 200+ public sources, keeps only AI stories, sorts them into
 six streams and links every card to the original.
 
 **Live site:** https://projectaipulse.com/ · **Version 2** (3 October 2026)
@@ -32,7 +32,6 @@ six streams and links every card to the original.
 - **[Glossary](https://projectaipulse.com/glossary/):** AI words in plain English, each with its newest story.
 - **Saved stories:** a bookmark on each story, kept in your browser only.
 - **Dark mode** and **RSS**: one feed per stream, or [all at once](https://projectaipulse.com/feeds/all.opml).
-- **Free, no ads, no cookies.**
 
 ## 24 features
 
