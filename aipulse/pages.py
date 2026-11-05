@@ -2433,6 +2433,9 @@ a.subscribe-btn{text-decoration:none}
 .cp .pl-f small{font:500 12.5px var(--body);color:var(--muted)}
 .cp .pl-cs{display:flex;flex-wrap:wrap;gap:4px 12px;font:700 15px var(--body)}
 .cp .pl-cs input{accent-color:var(--ink)}
+.cp fieldset.pl-f{display:block}
+.cp fieldset.pl-f legend{float:left;width:100%;margin:0 0 4px}
+.cp fieldset.pl-f .pl-cs{clear:both}
 .cp .pl-use{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .cp .pl-use button,.cp .pl .pl-all{font:600 15px var(--body);color:var(--ink);background:var(--bg);border:2px solid var(--line);padding:6px 12px;cursor:pointer}
 .cp .pl-use button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
