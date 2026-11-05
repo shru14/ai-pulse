@@ -85,7 +85,7 @@ STREAM_PAGES = {
 def stream_page(page: str, cat: str) -> str:
     """The front page as `cat`'s own page: its title, description and address, and its heading already written."""
     path, name, title, desc = STREAM_PAGES[cat]
-    title, desc, url = escape(f"{title} · AI Pulse"), escape(f"{desc} Updated every 6 hours, free, no ads."), f"{rss.SITE}{path}/"
+    title, desc, url = escape(f"{title} · AI Pulse"), escape(f"{desc} Updated every 6 hours."), f"{rss.SITE}{path}/"
     page = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", page, count=1)
     page = re.sub(r'(<meta (?:name="description"|property="og:description") content=")[^"]*', rf"\g<1>{desc}", page)
     page = re.sub(r'(<meta property="og:title" content=")[^"]*', rf"\g<1>{title}", page, count=1)
