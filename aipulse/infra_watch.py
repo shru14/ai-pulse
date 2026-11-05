@@ -255,6 +255,13 @@ LEFT_OUT: set[str] = {
     "https://www.foodandwaterwatch.org/press/2026/11/03/fl-psc-rejects-dukes-data-center-plan-shielding-ratepayers-from-costs/",  # advocacy release only; what was rejected is unclear
     "https://w.media/etihad-go-telecom-commits-us-69-8-million-to-ai-data-center-expansion/",  # contract and lease; no site or size named
     "https://www.techerati.com/news-hub/northc-breaks-ground-on-45mw-geneva-data-centre/",  # can't read to check
+    "https://w.media/pure-dc-secures-us-780-million-growth-facility-for-development-in-europe-and-the-middle-east/",  # fundraising; no single project named
+    "https://www.thelec.net/news/articleView.html?idxno=15289",  # hyperscalers' company-wide funding, no single project
+    "https://japantoday.com/category/tech/google-unveils-15-bn-data-centre-investment-in-malaysia",  # Google's two-year US$ 15bn plan across Selangor and Negeri Sembilan; no size, not a single project
+    "https://datacenterpost.com/what-are-solar-satellite-interferences/?utm_source=rss&utm_medium=rss&utm_campaign=what-are-solar-satellite-interferences",  # explainer
+    "https://www.xataka.com/empresas-y-economia/bandas-organizadas-roban-camiones-cargados-componentes-para-centros-datos-suman-100-millones-dolares",  # truck thefts, not a build, power deal or decision
+    "https://www.404media.co/american-voters-overwhelmingly-reject-ai-data-centers/",  # poll
+    "https://www.channelnewsasia.com/business/data-center-spending-more-double-21-trillion-2028-bofa-says-6487191",  # market forecast
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
