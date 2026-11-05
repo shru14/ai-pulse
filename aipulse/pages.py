@@ -2285,12 +2285,16 @@ a.subscribe-btn{text-decoration:none}
 .cp .ex-doc .dc-basis th{width:40%;font:400 14.5px Arial,sans-serif;color:var(--muted);border-bottom:1px solid var(--line);text-align:left}
 /* mistakes to avoid: a panel per playbook step, as the rule book's places, with a plain table of its cases; the kind
    tags are pale vermillion (a firm's mistake) and grey (a risk to plan for), a finance firm's pale blue */
-.cp .mx-filters{margin:18px 0 6px}.cp .mx-filters .sh-tabs{gap:8px;margin:0 0 8px}
-.cp .mkp .sh-tab{padding:5px 12px;border:1.5px solid var(--line);color:var(--ink);font-weight:400}
-.cp .mkp .sh-tab[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.cp .mkp .sh-tab b{font-weight:400;color:var(--muted)}.cp .mkp .sh-tab[aria-pressed=true] b{color:var(--bg)}
+.cp .mx-filters{margin:18px 0 6px}.cp .mx-filters .sh-tabs{gap:8px;margin:0}
+.cp .mx-sec{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:14px;color:var(--muted)}
+.cp .mx-sec select{min-width:240px;font:15px var(--body);padding:6px 10px;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);border-radius:8px;background:var(--bg);color:var(--ink)}
+.cp .mkp .sh-tab{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);border-radius:999px;color:var(--ink);font:500 14px var(--body)}
+.cp .mkp .sh-tab:hover{border-color:var(--ink)}.cp .mkp .sh-tab[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cp .mkp .sh-tab b{margin:0;font:500 13px var(--body);color:var(--muted)}.cp .mkp .sh-tab[aria-pressed=true] b{color:var(--bg)}
+.cp .mx-filters .sh-count{margin:10px 0 0;font:400 13.5px var(--body)}
+@media (max-width:640px){.cp .mx-filters .sh-tabs{flex-wrap:wrap;overflow:visible}.cp .mkp .sh-tab{padding:5px 12px;font-size:13.5px}.cp .mx-sec select{min-width:0;flex:1}}
 .cp .mx-jump a .ap-num{margin-right:2px}.cp .mx-jump a>span:last-child{color:var(--muted)}.cp .mx-jump a[hidden],.cp .mx-step[hidden]{display:none}
-.cp .mx-step .rb-ph .rb-n{margin-left:auto;color:var(--muted)}
+.cp .mx-step .rb-ph .rb-n{margin-left:auto;display:inline-flex;align-items:center;padding:5px 14px;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);border-radius:999px;color:var(--ink);font:500 14px var(--body);text-decoration:none;white-space:nowrap}.cp .mx-step .rb-ph .rb-n:hover{border-color:var(--ink)}
 .cp .mx-t th:first-child{width:30%}.cp .mx-t th:last-child{width:28%}
 .cp .mx-k-firm{--kc:color-mix(in srgb,#D55E00 26%,#fff)}.cp .mx-k-risk{--kc:#E4E4E4}.cp .mx-k-fin{--kc:#C9E2F3}
 /* the rule book: a jump row of places, then one plain table per place, regular weight, no capitals */
