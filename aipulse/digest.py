@@ -1021,16 +1021,16 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
         table_text, table_html = _ledger(by_stream, streams, day)
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
     # a reader's email asks them to pass it on; the friend signs up on the site
-    forward = f"Know someone who'd like this? Forward this email; they can sign up free at {rss.SITE}#subscribe"
+    forward = f"Know someone who'd like this? Forward this email; they can sign up at {rss.SITE}#subscribe"
     settings = (["Get AI Pulse daily in your inbox: " + change] if web else
                 [forward, f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
                  f"{change_words}: {change}", f"Unsubscribe: {stop}"])
     review_text, review_html = _review_box() if layout == "short" and not web else ([], "")
     text = [*open_text, *table_text, *(["", *review_text] if review_text else []), "", *settings,
-            f"AI Pulse is free and non-commercial: {rss.SITE}"]
+            f"AI Pulse, your briefing on what's happening in AI worldwide: {rss.SITE}"]
     settings_html = (f'<a href="{escape(change)}" style="color:{GREY}">Get AI Pulse daily in your inbox</a><br>' if web else
                      f'<span style="color:{INK}">Know someone who&#39;d like this? Forward this email; they can '
-                     f'<a href="{rss.SITE}#subscribe" style="color:{LINK}">sign up free</a>.</span><br>'
+                     f'<a href="{rss.SITE}#subscribe" style="color:{LINK}">sign up</a>.</span><br>'
                      f'You chose: {escape(chose)}.<br>RSS: '
                      + " · ".join(f'<a href="{escape(url)}" style="color:{GREY}">{escape(name)}</a>' for name, url in feeds)
                      + f'<br><a href="{escape(change)}" style="color:{GREY}">{change_words}</a> · '
@@ -1045,7 +1045,7 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
             + open_html + table_html + review_html
             + f'<p style="margin-top:28px;padding-top:12px;border-top:1px solid #e3e5e8;color:{GREY};font-size:13px;'
               f'line-height:1.6">' + settings_html
-            + f'AI Pulse is free and non-commercial · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'
+            + f'AI Pulse, your briefing on what&#39;s happening in AI worldwide · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'
               '</td></tr></table></td></tr></table></body></html>')
     return subject, "\n".join(text), html
 
