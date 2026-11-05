@@ -816,17 +816,16 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .ab-notes li{position:relative;padding:14px 0 14px 38px;border-top:1px solid #2E3542;background:#0F1115;color:#D0D4DB;font-size:15px;line-height:1.45;animation:ab-in .6s ease-out both}
 .ab-notes li:last-child{border-bottom:1px solid #2E3542}
 .ab-notes li:nth-child(2){animation-delay:.5s}.ab-notes li:nth-child(3){animation-delay:1s}
-.ab-notes svg{position:absolute;left:0;top:17px;width:22px;height:22px;fill:none;stroke:#F2F2F2;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.ab-notes svg .q{fill:#F2F2F2;stroke:none}
-.ab-notes b{display:block;margin-bottom:2px;font:400 20px/1.25 var(--display);color:#F2F2F2}
+.ab-notes svg{position:absolute;left:0;top:15px;width:22px;height:22px;fill:none;stroke:#F2F2F2;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ab-notes b{display:block;margin-bottom:2px;font:600 17px/1.3 var(--body);color:#F2F2F2}
 @keyframes ab-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.ab-notes li{animation:none}}
-.ab-hero h2{position:relative;margin:0;max-width:18ch;font:400 clamp(30px,4.4vw,52px)/1.08 var(--display)}
-.ab-hero .ab-sub{position:relative;margin:18px 0 0;max-width:46ch;font:600 19px/1.45 var(--body);color:#D0D4DB}
+.ab-hero h2{position:relative;margin:0;max-width:20ch;font:800 clamp(26px,2.8vw,36px)/1.15 var(--body);letter-spacing:-.01em}
+.ab-hero .ab-sub{position:relative;margin:14px 0 0;max-width:46ch;font:400 17px/1.5 var(--body);color:#D0D4DB}
 .about-page .ab-hero .ab-cta{margin-top:24px;background:#fff;color:#0F1115}
 .ab-hero>svg{position:absolute;left:0;top:calc(50% - 70px);width:100%;height:140px;z-index:0;fill:none;stroke-linejoin:round;opacity:.45}  /* the pulse runs behind the headline */
 .ab-pro{display:grid;grid-template-columns:1fr 1fr;gap:16px 48px;margin-top:40px;padding:32px;background:#0B1F33;color:#fff}
-.ab-pro h3{margin:0;font:400 30px/1.1 var(--display)}
+.ab-pro h3{margin:0;font:800 26px/1.15 var(--body)}
 .ab-pro p{margin:6px 0 0;font:600 16px/1.4 var(--body);color:#B8C7D9}
 .ab-prods div{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #2E4A66;padding:9px 0;font-weight:600}
 .ab-prods span{font-weight:400;color:#B8C7D9;text-align:right}
@@ -1288,10 +1287,10 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   <section class="about-page" id="about-page" hidden>
     <!-- one dark band: headline on the left, three notes on the right (they come in one by one), the pulse below -->
     <div class="ab-hero"><div class="ab-top"><div><p class="ab-k">About AI Pulse</p>
-      <h2>Filter the noise. Hear the pulse.</h2>
+      <h2>Filter the noise.<br>Hear the pulse.</h2>
       <p class="ab-sub">The global AI landscape evolves every minute. We capture the raw signal so you can skip the clutter.</p>
-      <button class="ab-btn ab-cta" type="button" data-open="subscribe">Subscribe to Briefing</button></div>
-      <ol class="ab-notes"><li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><b>200+ sources</b>AI labs, newsrooms, parliaments and research databases.</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12L18.4 5.6"/></svg><b>30-minute radar</b>Automated sweeps of top AI research labs.</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path class="q" d="M9.5 6C6.5 7 4.5 9.5 4.5 13v5h5v-5H7c0-2.2 1-3.6 3-4.5zM19.5 6c-3 1-5 3.5-5 7v5h5v-5H17c0-2.2 1-3.6 3-4.5z"/></svg><b>Their words, not ours</b>Zero AI summary noise: direct links to original publishers.</li></ol></div>
+      <a class="ab-btn ab-cta" href="/">Explore the feed</a></div>
+      <ol class="ab-notes"><li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><b>All of AI, sorted</b>Model launches to new laws, in six clear streams.</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V13M10 20V8M16 20V4M2 20h20"/></svg><b>What matters, ranked</b>The stories most outlets are carrying, first.</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg><b>Trackers you won't find elsewhere</b>AI laws, court cases, fines and buyouts, followed over time.</li></ol></div>
       <svg viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,80 556,80 576,10 602,150 622,50 636,80 1200,80" stroke="#0072B2" stroke-width="9"/><polyline points="0,80 556,80 576,10 602,150 622,50 636,80 1200,80" stroke="#5FB3EA" stroke-width="3"/></svg></div>
     <div class="ab-pro"><div><h3>Pulse Pro</h3><p>Tools for firms, built on the same sources</p>
         <a class="ab-btn" href="/planner/pulse-pro/">See Pulse Pro</a></div>
