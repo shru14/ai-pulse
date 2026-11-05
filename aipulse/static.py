@@ -281,6 +281,9 @@ def daily_index(conn, total: int, days: list[date], out: Path) -> None:
         pages.frame(conn, total), ("/", "Back to AI Pulse")), encoding="utf-8")
 
 
+SEAL = False  # the Pulse Pro login: off since 5 Nov 2026
+
+
 def build(conn, out: str | Path, compass_open: bool = False) -> int:
     """Write the static site into `out` (replaced). Returns how many cards it holds."""
     out = Path(out)
@@ -486,7 +489,9 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
-    if COMPASS and not compass_open:  # last of all: nothing paid leaves the build readable (aipulse/access.py)
+    # 5 Nov 2026, owner: no login for now, every Pulse Pro page is open and free to everyone. The login (aipulse/access.py)
+    # stays in the code: set SEAL back to True to bring it back
+    if SEAL and COMPASS and not compass_open:  # last of all: nothing paid leaves the build readable (aipulse/access.py)
         from . import access
         access.seal(out, conn, cards)
     return len(cards)
