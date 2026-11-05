@@ -476,7 +476,9 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
         from . import coding_tools, compare, patterns, ready_tools, source_check, workflows, workshop
         places += ready_tools.build(conn, cards, out)  # products a firm can buy instead of building, by job (Pro: no sitemap)
         places += patterns.build(conn, cards, out)  # how each kind of AI product is built (Pro: no sitemap)
-        places += source_check.build(conn, cards, out)  # which parts of an AI's output to check against its source (behind the login, no sitemap)
+        # Source check: hidden while the login is off (owner, 5 Nov 2026), until it stops flagging correct sentences
+        if SEAL:
+            places += source_check.build(conn, cards, out)  # which parts of an AI's output to check against its source (no sitemap)
         places += coding_tools.build(conn, cards, out)  # find, cost and try an AI coding tool (Pro: no sitemap)
         places += workshop.build(conn, cards, out)  # a helper for people running hands-on AI sessions (Pro: no sitemap)
         places += workflows.build(conn, cards, out)  # how each job splits into AI, plain code and a person (Pro: no sitemap)
