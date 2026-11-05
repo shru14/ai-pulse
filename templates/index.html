@@ -807,10 +807,18 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .meme-tile #meme img{max-height:170px;object-fit:contain;width:100%}
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
-/* About: one dark band (headline, pulse line), then Pulse Pro (stacked on phones) */
+/* About: one dark band (headline, three notes on the right, pulse line), then Pulse Pro (stacked on phones) */
 .ab-hero{position:relative;overflow:hidden;background:#0F1115;color:#F2F2F2;padding:52px 48px 8px;
   background-image:linear-gradient(#1B2029 1px,transparent 1px),linear-gradient(90deg,#1B2029 1px,transparent 1px);background-size:40px 40px}
 .ab-hero .ab-k{position:relative;margin:0 0 16px;font:500 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#7E8796}
+.ab-top{position:relative;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px 56px;align-items:end}
+.ab-notes{list-style:none;margin:0;padding:0}
+.ab-notes li{padding:14px 0;border-top:1px solid #2E3542;color:#B4B9C4;font-size:15px;line-height:1.45;animation:ab-in .6s ease-out both}
+.ab-notes li:last-child{border-bottom:1px solid #2E3542}
+.ab-notes li:nth-child(2){animation-delay:.5s}.ab-notes li:nth-child(3){animation-delay:1s}
+.ab-notes b{display:block;margin-bottom:2px;font:400 20px/1.25 var(--display);color:#F2F2F2}
+@keyframes ab-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.ab-notes li{animation:none}}
 .ab-hero h2{position:relative;margin:0;max-width:18ch;font:400 clamp(30px,4.4vw,52px)/1.08 var(--display)}
 .ab-hero .ab-sub{position:relative;margin:18px 0 0;max-width:46ch;font:600 19px/1.45 var(--body);color:#B4B9C4}
 .ab-hero svg{display:block;width:calc(100% + 96px);height:140px;margin:22px -48px 0;fill:none;stroke-linejoin:round}
@@ -823,7 +831,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   background:var(--ink);color:var(--bg);font:600 15px var(--body);text-decoration:none;cursor:pointer}
 .about-page .ab-pro a.ab-btn{background:#fff;color:#0B1F33}
 .ab-btn:hover{opacity:.88}
-@media (max-width:760px){.ab-hero{padding:36px 22px 4px}.ab-hero svg{width:calc(100% + 44px);margin:18px -22px 0;height:110px}
+@media (max-width:760px){.ab-hero{padding:36px 22px 4px}.ab-top{grid-template-columns:1fr}.ab-hero svg{width:calc(100% + 44px);margin:18px -22px 0;height:110px}
     .ab-pro{grid-template-columns:1fr;padding:24px 20px}}
 .about-page a{color:var(--accent)}
 .about-by{margin:22px 0 0;font:600 15.5px/1.45 var(--body)}
@@ -1275,10 +1283,11 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 
   <!-- About: what AI Pulse is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
-    <!-- one dark band: headline, line and the pulse -->
-    <div class="ab-hero"><p class="ab-k">About AI Pulse</p>
+    <!-- one dark band: headline on the left, three notes on the right (they come in one by one), the pulse below -->
+    <div class="ab-hero"><div class="ab-top"><div><p class="ab-k">About AI Pulse</p>
       <h2>Filter the noise. Hear the pulse.</h2>
-      <p class="ab-sub">The global AI landscape evolves every minute. We capture the raw signal so you can skip the clutter.</p>
+      <p class="ab-sub">The global AI landscape evolves every minute. We capture the raw signal so you can skip the clutter.</p></div>
+      <ol class="ab-notes"><li><b>200+ sources</b>Every major lab. Every crucial policy update.</li><li><b>30-minute radar</b>Straight from the leading labs.</li><li><b>Their words, not ours</b>Original headlines, original context.</li></ol></div>
       <svg viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#0072B2" stroke-width="9"/><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#5FB3EA" stroke-width="3"/></svg></div>
     <div class="ab-pro"><div><h3>Pulse Pro</h3><p>Tools for firms, built on the same sources</p>
         <a class="ab-btn" href="/planner/pulse-pro/">See Pulse Pro</a></div>
