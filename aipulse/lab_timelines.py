@@ -40,6 +40,12 @@ PLACES = [
 PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://www.thelec.net/news/articleView.html?idxno=15296":
+        "A chip comparison, not an AI model price or place change",
+    "https://elevenlabs.io/blog/ai-voice-agent-pricing-guide":
+        "A pricing guide for a product, not a change to a model's API price",
+    "https://openai.com/index/daybreak-red-aws-govcloud":
+        "Availability on a cloud platform, not countries or regions",
     "https://research.google/pubs/stakes-adaptive-verification-and-origin-traced-rollback-in-autonomous-agent-workflows/":
         "A research paper about agent rollback, not a model being pulled",
     "https://www.channelnewsasia.com/business/exclusive-australian-outback-data-centre-pulls-timeline-after-regulator-stalls-6511551":
