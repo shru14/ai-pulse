@@ -485,6 +485,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     places += publishers.build(conn, cards, out, today)  # company papers by company, the rising subject, top researchers (Research's feature)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
+    shutil.copy(TEMPLATE.parent / "about.png", out / "about.png")  # About's picture: free AI Pulse and Pulse Pro
     (out / ".nojekyll").write_text("")
     if COMPASS and not compass_open:  # last of all: nothing paid leaves the build readable (aipulse/access.py)
         from . import access

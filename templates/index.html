@@ -819,6 +819,8 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 @media (max-width:760px){.about-split{grid-template-columns:1fr;gap:24px}}
 @media (max-width:640px){.about-intro{font-size:20px!important;line-height:1.2!important}}  /* About's heading in 3-4 lines on phones */
 .about-page a{color:var(--accent)}
+.about-pro{margin:22px 0 12px;font:600 15.5px/1.45 var(--body)}
+.about-detail a.about-pro-btn{color:var(--bg);text-decoration:none}
 .about-by{margin:22px 0 0;font:600 15.5px/1.45 var(--body)}
 .mag-row>.tile{display:flex;flex-direction:column}
 .mag-row .gl-tile-links,.mag-row .meme-go{margin-top:auto}  /* the three buttons at the tiles' feet */
@@ -1270,17 +1272,19 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   <section class="about-page" id="about-page" hidden>
     <!-- two sections: the picture, then what AI Pulse is, a ticked point each (stacked on phones) -->
     <div class="about-split">
-      <div class="about-pic"><img class="about-art" src="og.png" alt="AI Pulse: Releases, Industry, Research, Regulation, Policy, Infra" width="1200" height="630"></div>
+      <div class="about-pic"><img class="about-art" src="about.png" alt="From 200+ public sources: AI Pulse, the free briefing for everyone (Releases, Industry, Research, Regulation, Policy, Infra), and Pulse Pro, tools for firms (Compass, Risk Monitor, Watch, SmartFeed, Store)" width="1200" height="630"></div>
       <div class="about-detail">
         <p class="about-intro">Stay informed on worldwide developments across artificial intelligence technology, regulation and infrastructure.</p>
         <ul class="about-ticks">
-          <li>Free and non-commercial: no ads, no cookies</li>
+          <li>The briefing is free: no ads, no cookies</li>
           <li>From 200+ public sources: AI labs, newsrooms, research, parliaments and regulators</li>
           <li>Only sites that allow automated reading are used</li>
           <li>Each publisher’s own headline and summary, linked to the original</li>
           <li>No AI writes the stories</li>
           <li>New stories from the labs every 30 minutes, everything else every 6 hours</li>
         </ul>
+        <p class="about-pro">Pulse Pro: tools for firms, built on the same sources.</p>
+        <a class="gl-page about-pro-btn" href="/planner/pulse-pro/">See Pulse Pro</a>
         <p class="about-by">Created by <a href="https://shru14.github.io/" target="_blank" rel="noopener">Shruti Kakade</a></p>
       </div>
     </div>
