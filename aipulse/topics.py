@@ -391,6 +391,12 @@ LEFT_OUT: set[str] = {
     "https://www.engadget.com/2276577/former-openai-employee-says-ai-should-be-regulated-like-nuclear-power-plants/",
     # SDK release notes, not about the IPO
     "https://github.com/openai/openai-agents-python/releases/tag/v0.23.0",
+    # voluntary commitments for future sites after the midterms, summary doesn't mention Stargate
+    "https://the-decoder.com/after-midterm-rout-openai-tries-to-win-over-communities-it-needs-for-ai-expansion/",
+    # community compact and policy blueprint, summary doesn't mention Stargate
+    "https://openai.com/index/setting-new-standard-responsible-ai-infrastructure",
+    # UK government note on an EU regulation, can't tell from the summary it is about the AI Act
+    "https://www.gov.uk/government/publications/em-on-eu-regulation-20241689-on-artificial-intelligence",
 }
 UPDATED_DAYS = 3  # a topic with a new story this recently shows "Updated" on its card
 SMALL = 25  # a topic with this many events or fewer shows each as a card; a bigger one only its milestones
