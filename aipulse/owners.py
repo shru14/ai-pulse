@@ -62,6 +62,8 @@ DEALS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://the-decoder.com/openai-lowers-valuation-target-raises-up-to-30-billion/":
+        "Round not closed ('closing in on'); no per-investor amount",
     "https://techcrunch.com/2026/10/22/openai-working-on-new-30b-raise-at-1-25t-valuation-ahead-of-ipo/":
         "Round not closed; terms still being negotiated",
     "https://the-decoder.com/openai-acquires-orchestra-bio-to-build-ai-agents-that-speed-up-drug-development/":

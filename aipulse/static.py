@@ -281,6 +281,9 @@ def daily_index(conn, total: int, days: list[date], out: Path) -> None:
         pages.frame(conn, total), ("/", "Back to AI Pulse")), encoding="utf-8")
 
 
+SEAL = False  # the Pulse Pro login: off since 5 Nov 2026
+
+
 def build(conn, out: str | Path, compass_open: bool = False) -> int:
     """Write the static site into `out` (replaced). Returns how many cards it holds."""
     out = Path(out)
@@ -473,7 +476,9 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
         from . import coding_tools, compare, patterns, ready_tools, source_check, workflows, workshop
         places += ready_tools.build(conn, cards, out)  # products a firm can buy instead of building, by job (Pro: no sitemap)
         places += patterns.build(conn, cards, out)  # how each kind of AI product is built (Pro: no sitemap)
-        places += source_check.build(conn, cards, out)  # which parts of an AI's output to check against its source (behind the login, no sitemap)
+        # Source check: hidden while the login is off (owner, 5 Nov 2026), until it stops flagging correct sentences
+        if SEAL:
+            places += source_check.build(conn, cards, out)  # which parts of an AI's output to check against its source (no sitemap)
         places += coding_tools.build(conn, cards, out)  # find, cost and try an AI coding tool (Pro: no sitemap)
         places += workshop.build(conn, cards, out)  # a helper for people running hands-on AI sessions (Pro: no sitemap)
         places += workflows.build(conn, cards, out)  # how each job splits into AI, plain code and a person (Pro: no sitemap)
@@ -486,7 +491,9 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
-    if COMPASS and not compass_open:  # last of all: nothing paid leaves the build readable (aipulse/access.py)
+    # 5 Nov 2026, owner: no login for now, every Pulse Pro page is open and free to everyone. The login (aipulse/access.py)
+    # stays in the code: set SEAL back to True to bring it back
+    if SEAL and COMPASS and not compass_open:  # last of all: nothing paid leaves the build readable (aipulse/access.py)
         from . import access
         access.seal(out, conn, cards)
     return len(cards)
