@@ -808,20 +808,23 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
 /* About: one dark band (headline, three notes on the right, pulse line), then Pulse Pro (stacked on phones) */
-.ab-hero{position:relative;overflow:hidden;background:#0F1115;color:#F2F2F2;padding:52px 48px 8px;
+.ab-hero{position:relative;overflow:hidden;background:#0F1115;color:#F2F2F2;padding:52px 48px;
   background-image:linear-gradient(#1B2029 1px,transparent 1px),linear-gradient(90deg,#1B2029 1px,transparent 1px);background-size:40px 40px}
 .ab-hero .ab-k{position:relative;margin:0 0 16px;font:500 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#7E8796}
-.ab-top{position:relative;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px 56px;align-items:end}
+.ab-top{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px 56px;align-items:center}
 .ab-notes{list-style:none;margin:0;padding:0}
-.ab-notes li{padding:14px 0;border-top:1px solid #2E3542;color:#B4B9C4;font-size:15px;line-height:1.45;animation:ab-in .6s ease-out both}
+.ab-notes li{position:relative;padding:14px 0 14px 38px;border-top:1px solid #2E3542;background:#0F1115;color:#D0D4DB;font-size:15px;line-height:1.45;animation:ab-in .6s ease-out both}
 .ab-notes li:last-child{border-bottom:1px solid #2E3542}
 .ab-notes li:nth-child(2){animation-delay:.5s}.ab-notes li:nth-child(3){animation-delay:1s}
+.ab-notes svg{position:absolute;left:0;top:17px;width:22px;height:22px;fill:none;stroke:#F2F2F2;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ab-notes svg .q{fill:#F2F2F2;stroke:none}
 .ab-notes b{display:block;margin-bottom:2px;font:400 20px/1.25 var(--display);color:#F2F2F2}
 @keyframes ab-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.ab-notes li{animation:none}}
 .ab-hero h2{position:relative;margin:0;max-width:18ch;font:400 clamp(30px,4.4vw,52px)/1.08 var(--display)}
-.ab-hero .ab-sub{position:relative;margin:18px 0 0;max-width:46ch;font:600 19px/1.45 var(--body);color:#B4B9C4}
-.ab-hero svg{display:block;width:calc(100% + 96px);height:140px;margin:22px -48px 0;fill:none;stroke-linejoin:round}
+.ab-hero .ab-sub{position:relative;margin:18px 0 0;max-width:46ch;font:600 19px/1.45 var(--body);color:#D0D4DB}
+.about-page .ab-hero .ab-cta{margin-top:24px;background:#fff;color:#0F1115}
+.ab-hero>svg{position:absolute;left:0;top:calc(50% - 70px);width:100%;height:140px;z-index:0;fill:none;stroke-linejoin:round;opacity:.45}  /* the pulse runs behind the headline */
 .ab-pro{display:grid;grid-template-columns:1fr 1fr;gap:16px 48px;margin-top:40px;padding:32px;background:#0B1F33;color:#fff}
 .ab-pro h3{margin:0;font:400 30px/1.1 var(--display)}
 .ab-pro p{margin:6px 0 0;font:600 16px/1.4 var(--body);color:#B8C7D9}
@@ -831,7 +834,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
   background:var(--ink);color:var(--bg);font:600 15px var(--body);text-decoration:none;cursor:pointer}
 .about-page .ab-pro a.ab-btn{background:#fff;color:#0B1F33}
 .ab-btn:hover{opacity:.88}
-@media (max-width:760px){.ab-hero{padding:36px 22px 4px}.ab-top{grid-template-columns:1fr}.ab-hero svg{width:calc(100% + 44px);margin:18px -22px 0;height:110px}
+@media (max-width:760px){.ab-hero{padding:36px 22px}.ab-top{grid-template-columns:1fr}.ab-hero>svg{top:60px;height:110px;opacity:.3}
     .ab-pro{grid-template-columns:1fr;padding:24px 20px}}
 .about-page a{color:var(--accent)}
 .about-by{margin:22px 0 0;font:600 15.5px/1.45 var(--body)}
@@ -1063,7 +1066,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 .front-page .mast-line{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px 24px;padding:7px 0;font:600 11.5px var(--mono);letter-spacing:.05em;text-transform:uppercase}
 .front-page .np-date{display:block;justify-self:start}
 .front-page .mast-line .lede{justify-self:center;text-align:center;max-width:none}
-.front-page .mast-line .lede strong{font:600 18px/1.25 var(--body);letter-spacing:0;text-transform:none}
+.front-page .mast-line .lede strong{font:600 20px/1.25 var(--body);letter-spacing:0;text-transform:none}
 .front-page .mast-line .home-status{justify-self:end;font:inherit}
 @media (max-width:560px){
   .front-page header.top .brand h1{font-size:28px}
@@ -1071,7 +1074,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   .front-page .mast-line{grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:2px;font-size:9.5px;letter-spacing:.03em}  /* the date and update time stay small on a phone */
   .front-page .np-date,.front-page .mast-line .home-status{justify-self:center}
   .front-page .mast-line .lede{line-height:1.25}  /* the tagline's two lines sit together */
-  .front-page .mast-line .lede strong{font-size:16px}
+  .front-page .mast-line .lede strong{font-size:17px}
 }
 @media (max-width:359px){.front-page header.top .brand h1{display:block}}  /* the nameplate has its own row: the name stays */
 </style>
@@ -1286,9 +1289,10 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
     <!-- one dark band: headline on the left, three notes on the right (they come in one by one), the pulse below -->
     <div class="ab-hero"><div class="ab-top"><div><p class="ab-k">About AI Pulse</p>
       <h2>Filter the noise. Hear the pulse.</h2>
-      <p class="ab-sub">The global AI landscape evolves every minute. We capture the raw signal so you can skip the clutter.</p></div>
-      <ol class="ab-notes"><li><b>200+ sources</b>AI labs, newsrooms, parliaments and research databases.</li><li><b>30-minute radar</b>Automated sweeps of top AI research labs.</li><li><b>Their words, not ours</b>Zero AI summary noise: direct links to original publishers.</li></ol></div>
-      <svg viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#0072B2" stroke-width="9"/><polyline points="0,80 760,80 800,10 850,150 890,50 915,80 1200,80" stroke="#5FB3EA" stroke-width="3"/></svg></div>
+      <p class="ab-sub">The global AI landscape evolves every minute. We capture the raw signal so you can skip the clutter.</p>
+      <button class="ab-btn ab-cta" type="button" data-open="subscribe">Subscribe to Briefing</button></div>
+      <ol class="ab-notes"><li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><b>200+ sources</b>AI labs, newsrooms, parliaments and research databases.</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12L18.4 5.6"/></svg><b>30-minute radar</b>Automated sweeps of top AI research labs.</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path class="q" d="M9.5 6C6.5 7 4.5 9.5 4.5 13v5h5v-5H7c0-2.2 1-3.6 3-4.5zM19.5 6c-3 1-5 3.5-5 7v5h5v-5H17c0-2.2 1-3.6 3-4.5z"/></svg><b>Their words, not ours</b>Zero AI summary noise: direct links to original publishers.</li></ol></div>
+      <svg viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,80 556,80 576,10 602,150 622,50 636,80 1200,80" stroke="#0072B2" stroke-width="9"/><polyline points="0,80 556,80 576,10 602,150 622,50 636,80 1200,80" stroke="#5FB3EA" stroke-width="3"/></svg></div>
     <div class="ab-pro"><div><h3>Pulse Pro</h3><p>Tools for firms, built on the same sources</p>
         <a class="ab-btn" href="/planner/pulse-pro/">See Pulse Pro</a></div>
       <div class="ab-prods"><div>Compass<span>evidence report</span></div><div>Risk Monitor<span>rules that apply</span></div><div>Watch<span>AI supplier watch</span></div><div>SmartFeed<span>data feed</span></div><div>Store<span>packs and add-ons</span></div></div>
