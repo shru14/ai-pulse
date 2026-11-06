@@ -40,6 +40,16 @@ PLACES = [
 PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/":
+        "A new model's launch price, not a change",
+    "https://pandaily.com/deepseek-harness-1-54-million-daily-active-users-official-plugin-marketplace":
+        "A usage statistic for a product, not a model price or place change",
+    "https://www.xataka.com/empresas-y-economia/qualcomm-busca-fuera-movil-que-le-quita-crisis-memoria-coches-ia-antenas-para-spacex":
+        "A chip company's business, not an AI model price or place change",
+    "https://siliconangle.com/2026/11/05/ai-architecture-gaps-keep-agents-demo-mode-oracleaiworld/":
+        "An event story about agents, not a model price or place change",
+    "https://techcrunch.com/2026/11/04/apple-is-reportedly-cutting-budgets-for-its-internal-ai-usage/":
+        "A company's internal AI budget, not a model price change",
     "https://www.thelec.net/news/articleView.html?idxno=15296":
         "A chip comparison, not an AI model price or place change",
     "https://elevenlabs.io/blog/ai-voice-agent-pricing-guide":
