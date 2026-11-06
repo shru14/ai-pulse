@@ -204,17 +204,17 @@ MAIL = "projectaipulse@gmail.com"
 # what each Pulse Pro product costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once
 # it is paid. (name, how it is billed, price, yearly price). The report is bought once; the three services run on,
 # monthly. No yearly price anywhere (owner, 6 Nov 2026), so that column stays empty; the Store is free and needs no login.
-# Amounts stay "$xx" until the owner sets them (6 Nov 2026): no real figure on the site, in mail or in decks
-PRICES = (("Pulse Compass evidence report", "Bought once", "$xx a report", ""),
-          ("Pulse Risk Monitor", "Subscription", "$xx a month", ""),
-          ("Pulse Watch", "Subscription", "$xx a month", ""),
-          ("Pulse SmartFeed", "Subscription", "$xx a month", ""),
+# No amount shown until the owner sets them (6 Nov 2026); readers email to ask (owner, 6 Nov: "$xx" looked weird)
+PRICES = (("Pulse Compass evidence report", "Bought once", "Email for price", ""),
+          ("Pulse Risk Monitor", "Subscription", "Email for price", ""),
+          ("Pulse Watch", "Subscription", "Email for price", ""),
+          ("Pulse SmartFeed", "Subscription", "Email for price", ""),
           ("Pulse Store", "Free", "No login needed", ""))
 # the Store's paid add-ons (owner, 4 Nov 2026): browsing stays free; the bundle check is bought once, the other two run
 # on. Same columns as PRICES; the login box and What Pulse Pro is list them under Pulse Store
-STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "$xx a pack", ""),
-                ("Pulse Store Plus", "Subscription", "$xx a month", ""),
-                ("Pulse Store for Firms", "Subscription", "$xx a month", ""))
+STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "Email for price", ""),
+                ("Pulse Store Plus", "Subscription", "Email for price", ""),
+                ("Pulse Store for Firms", "Subscription", "Email for price", ""))
 PAID = [p for p in PRICES + STORE_ADDONS if p[1] != "Free"]
 REQUEST = ("Hello AI Pulse,\n\nI would like a Pulse Pro login.\n\n"
            "Name:\nFirm:\nRole:\nProduct (" + " / ".join(p[0] for p in PAID) + "):\n"
@@ -232,7 +232,7 @@ def _get_login() -> str:
     return ('<div class="compass-get"><h2>No login yet?</h2>'
             '<p>Logins are paid. Choose a product, then send the email below: it is already written, with spaces '
             'for your details and how you would like to pay.</p>'
-            f'<table><thead><tr><th>Product</th><th>Price (USD)</th></tr></thead><tbody>{rows}</tbody></table>'
+            f'<table><thead><tr><th>Product</th><th>Price</th></tr></thead><tbody>{rows}</tbody></table>'
             f'<a class="cg-mail" href="{href}">Email us for a login</a>'
             '<p class="cg-note">The reply brings an invoice; your username and password follow once it is paid. Please don\'t put card numbers in the email.</p></div>')
 

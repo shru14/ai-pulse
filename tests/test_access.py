@@ -114,15 +114,15 @@ def test_the_secret_holds_no_password(tmp_path, monkeypatch):
 
 def test_login_box_asks_only_the_password_and_gives_one_email():
     # 6 Nov 2026, owner: one username for every client (filled in by the page), the visitor types only the password;
-    # under it the prices ($xx until set) and a ready-written email to buy a login
+    # under it the prices (email to ask until set) and a ready-written email to buy a login
     box = access._get_login()
     assert len(access.PRICES) == 5 and box.count("<tr>") == 6 + len(access.STORE_ADDONS)
-    assert "$xx a report" in box and "Bought once" in box and "No login needed" in box
+    assert "Email for price" in box and "Bought once" in box and "No login needed" in box
     assert "Or write to" not in box and "Pulse Store /" not in access.REQUEST and "Pulse Store)" not in access.REQUEST
     # the Store's paid add-ons (4 Nov 2026): priced in the box and named in the email; browsing the Store stays free
-    assert "$xx a pack" in box and "$xx a month" in box
-    # 6 Nov 2026, owner: amounts stay "$xx" until set; no real figure anywhere
-    assert all(p[2].startswith("$xx") for p in access.PAID)
+    assert "$xx" not in box and "Price (USD)" not in box
+    # 6 Nov 2026, owner: no amount until set; readers email to ask
+    assert all(p[2] == "Email for price" for p in access.PAID)
     assert all(n in access.REQUEST for n, *_ in access.STORE_ADDONS)
     # 6 Nov 2026, owner: no yearly price anywhere
     assert "a year" not in box and "yearly" not in access.REQUEST.lower()
