@@ -117,10 +117,12 @@ def test_login_box_prices_all_five_products_and_one_way_to_write():
     # way to write, and the box links to What Pulse Pro is, not to the sample report
     box = access._get_login()
     assert len(access.PRICES) == 5 and box.count("<tr>") == 6 + len(access.STORE_ADDONS)
-    assert "$499 a report" in box and "Bought once" in box and "No login needed" in box
+    assert "$xx a report" in box and "Bought once" in box and "No login needed" in box
     assert "Or write to" not in box and "Pulse Store /" not in access.REQUEST and "Pulse Store)" not in access.REQUEST
     # the Store's paid add-ons (4 Nov 2026): priced in the box and named in the email; browsing the Store stays free
-    assert "$149 a pack" in box and "$49 a month" in box and "$299 a month" in box
+    assert "$xx a pack" in box and "$xx a month" in box
+    # 6 Nov 2026, owner: amounts stay "$xx" until set; no real figure anywhere
+    assert all(p[2].startswith("$xx") for p in access.PAID)
     assert all(n in access.REQUEST for n, *_ in access.STORE_ADDONS)
     # 6 Nov 2026, owner: no yearly price anywhere
     assert "a year" not in box and "yearly" not in access.REQUEST.lower()

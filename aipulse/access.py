@@ -186,17 +186,18 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
 MAIL = "projectaipulse@gmail.com"
 # what each Pulse Pro product costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once
 # it is paid. (name, how it is billed, price, yearly price). The report is bought once; the three services run on,
-# monthly. No yearly price anywhere (owner, 6 Nov 2026), so that column stays empty; the Store is free and needs no login
-PRICES = (("Pulse Compass evidence report", "Bought once", "$499 a report", ""),
-          ("Pulse Risk Monitor", "Subscription", "$199 a month", ""),
-          ("Pulse Watch", "Subscription", "$149 a month", ""),
-          ("Pulse SmartFeed", "Subscription", "$249 a month", ""),
+# monthly. No yearly price anywhere (owner, 6 Nov 2026), so that column stays empty; the Store is free and needs no login.
+# Amounts stay "$xx" until the owner sets them (6 Nov 2026): no real figure on the site, in mail or in decks
+PRICES = (("Pulse Compass evidence report", "Bought once", "$xx a report", ""),
+          ("Pulse Risk Monitor", "Subscription", "$xx a month", ""),
+          ("Pulse Watch", "Subscription", "$xx a month", ""),
+          ("Pulse SmartFeed", "Subscription", "$xx a month", ""),
           ("Pulse Store", "Free", "No login needed", ""))
 # the Store's paid add-ons (owner, 4 Nov 2026): browsing stays free; the bundle check is bought once, the other two run
 # on. Same columns as PRICES; the login box and What Pulse Pro is list them under Pulse Store
-STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "$149 a pack", ""),
-                ("Pulse Store Plus", "Subscription", "$49 a month", ""),
-                ("Pulse Store for Firms", "Subscription", "$299 a month", ""))
+STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "$xx a pack", ""),
+                ("Pulse Store Plus", "Subscription", "$xx a month", ""),
+                ("Pulse Store for Firms", "Subscription", "$xx a month", ""))
 PAID = [p for p in PRICES + STORE_ADDONS if p[1] != "Free"]
 REQUEST = ("Hello AI Pulse,\n\nI would like a Pulse Pro login.\n\n"
            "Name:\nFirm:\nRole:\nProduct (" + " / ".join(p[0] for p in PAID) + "):\n"
