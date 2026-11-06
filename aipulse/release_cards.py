@@ -273,7 +273,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-02"
+SAFETY_CHECKED = "2026-11-05"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -536,6 +536,16 @@ LEFT_OUT = {
     "https://www.marktechpost.com/2026/11/03/soniox-stt-v6-agent-text-input-echo-cancellation/":
         "Soniox STT v6: one news outlet within 3 days",
     "https://www.sarvam.ai/blogs/sarvam-prism/": "Sarvam Prism: no news outlet within 3 days (lab post only)",
+    "https://huggingface.co/moonshotai/Kimi-K3.1-Pro":
+        "Kimi K3.1 Pro's weights: no news outlet within 3 days; its row is unchanged",
+    "https://www.marktechpost.com/2026/11/02/deep-principle-hydrogen-1-0-open-weight-scientific-model/":
+        "Hydrogen-1.0: one news outlet within 3 days",
+    "https://pandaily.com/meituan-longcat-2-5-official-release-1-6t-native-multimodal-long-horizon-agentic-coding-w4a4":
+        "LongCat-2.5: one news outlet within 3 days",
+    "https://pandaily.com/tencent-cloud-wand-vega-multimodal-application-model-real-time-intelligence-ai-voice-agent-apec":
+        "WAND-Vega: one news outlet within 3 days",
+    "https://www.thelec.net/news/articleView.html?idxno=15128": "same as Gemini 4 Carbon",
+    "https://elevenlabs.io/blog/sfx-v3-for-developers": "same as SFX v3",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
