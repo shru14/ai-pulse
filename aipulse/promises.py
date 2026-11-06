@@ -97,6 +97,8 @@ CHECKED: dict[str, str | None] = {
     "https://siliconangle.com/2023/01/04/report-microsoft-will-add-chatgpt-powered-search-feature-bing/": None,  # a report from sources, no company word
     "https://the-decoder.com/openai-teases-dots-for-europe-but-its-berlin-devday-was-really-about-building-a-platform/":
         None,  # Dots is already out; a wider rollout in Europe "in a few weeks", no new product named
+    "https://techcrunch.com/2026/11/02/google-takes-dreambeans-to-india-in-bid-to-bring-ai-generated-personal-stories-to-the-masses/":
+        None,  # launch day's
 }
 
 _V = (r"(launch|release|ship|roll out|unveil|debut|open[- ]source|introduce|bring|add|offer|start|begin"
