@@ -112,13 +112,21 @@ def _when(span: str) -> str:
     return "this morning" if span == "today" else "earlier this week"
 
 
+def _v(f, options):
+    """One of several wordings, by the meme's turn (the date), so a format that comes back doesn't repeat its joke."""
+    return options[f.get("turn", 0) % len(options)]
+
+
 def _distracted(f, span):
-    """The distracted look back: developers turning to the newest launch while the last one glares."""
+    """The distracted look back: the newest launch turns heads while the last one glares."""
     if not f["named"]:
         return None
     (maker, product, c), *rest = f["named"]
-    old = f"{_of(rest[0][0])} {rest[0][1]}, launched {_when(span)}" if rest else "the model they switched to last week"
-    return {"format": "distracted", "labels": [f"{_of(maker)} {product}", "Developers", old],
+    old = f"{_of(rest[0][0])} {rest[0][1]}, launched {_when(span)}" if rest else _v(f, [
+        "the model they switched to last week", "the model they called the best ever last month",
+        "the setup they finished yesterday", "last week's favourite"])
+    return {"format": "distracted",
+            "labels": [f"{_of(maker)} {product}", _v(f, ["Developers", "AI researchers", "Everyone with a GPU", "Tech teams"]), old],
             "based_on": [c["title"]] + ([rest[0][2]["title"]] if rest else [])}
 
 
@@ -128,7 +136,9 @@ def _buttons(f, span):
         return None
     (m1, p1, c1), (m2, p2, c2) = f["named"][:2]
     return {"format": "buttons", "labels": [f"Try {_of(m1)} {p1}", f"Try {_of(m2)} {p2}"],
-            "caption": "Developers with one free afternoon", "based_on": [c1["title"], c2["title"]]}
+            "caption": _v(f, ["Developers with one free afternoon", "Every team with one GPU",
+                              "Anyone with one API budget", "Developers before the stand-up"]),
+            "based_on": [c1["title"], c2["title"]]}
 
 
 def _nope_yep(f, span):
@@ -137,7 +147,9 @@ def _nope_yep(f, span):
         return None
     _, amount, who, c = f["money"]
     return {"format": "nopeyep", "who": "AI investors " + span,
-            "nope": "Putting money in a nice, sensible savings account", "yep": f"Handing {who} {amount}", "based_on": [c["title"]]}
+            "nope": _v(f, ["Putting money in a nice, sensible savings account", "Waiting to see a profit first",
+                           "Asking what the product does", "Reading the business plan"]),
+            "yep": f"Handing {who} {amount}", "based_on": [c["title"]]}
 
 
 def _fine(f, span):
@@ -146,25 +158,33 @@ def _fine(f, span):
     if n < (4 if span == "today" else 15):
         return None
     return {"format": "fine", "caption": f"{n} new AI models and tools {span}",
-            "under": "Me, still trying out last week's", "based_on": []}
+            "under": _v(f, ["Me, still trying out last week's", "My prompts, written for the old ones",
+                            "Developers, halfway through a migration", "My carefully tuned set-up"]), "based_on": []}
 
 
 def _brain(f, span):
-    """The expanding brain: the day's pile of papers, and who actually reads them."""
+    """The expanding brain: the day's pile of papers, and what becomes of them."""
     n = f["papers"]
     if n < (5 if span == "today" else 20):
         return None
-    return {"format": "brain", "rows": ["Reading the paper", "Reading the abstract", "Reading the title",
-                                        f"Citing all {n} AI papers out {span} anyway"],
-            "based_on": []}
+    return {"format": "brain", "rows": _v(f, [
+        ["Reading the paper", "Reading the abstract", "Reading the title", f"Citing all {n} AI papers out {span} anyway"],
+        ["One good AI paper", "Ten good AI papers", f"{n} AI papers out {span}", "Every one of them state of the art"],
+        ["Running the code", "Trusting the chart", "Trusting the title", f"Saving all {n} AI papers out {span} for later"],
+        ["A new method", "A new benchmark", "A new benchmark for the method", f"{n} AI papers out {span}, all beating it"]]),
+        "based_on": []}
 
 
 def _yelling(f, span):
-    """Yelling at the robot at the dinner table: the power grid and the data centres."""
+    """Yelling at the cat at the dinner table: the power grid and the data centres."""
     if not f["power"]:
         return None
-    return {"format": "yelling", "labels": ["Every power grid in 2026", "“I just need one more data centre.”"],
-            "based_on": [f["power"][0]["title"]]}
+    return {"format": "yelling", "labels": _v(f, [
+        ["Every power grid in 2026", "“I just need one more data centre.”"],
+        ["Every power company", "“Just one more gigawatt, I promise.”"],
+        ["Every town near a data centre", "“I'll be quiet, it's only a few fans.”"],
+        ["Every electricity bill", "“Training runs aren't cheap, you know.”"]]),
+        "based_on": [f["power"][0]["title"]]}
 
 
 # "Is this a ...?": what gets called the word of the day, when it shouldn't be
@@ -188,17 +208,22 @@ def _pigeon(f, span):
         return None
     term = f["word"][0]
     article = "an" if term[0].lower() in "aeiou" or term in ("MCP", "RAG", "LLM") else "a"
-    return {"format": "pigeon", "labels": [f"Every launch {span}", MISNAMED[term]], "caption": f"Is this {article} {term}?",
+    who = _v(f, ["Every launch", "Every press release", "Every demo", "Every keynote"])
+    return {"format": "pigeon", "labels": [f"{who} {span}", MISNAMED[term]], "caption": f"Is this {article} {term}?",
             "based_on": []}
 
 
 def _panik(f, span):
-    """Panik / kalm / panik: a launch, the email, the boss."""
+    """Panik / kalm / panik: a launch, then what it means for you."""
     if not f["named"]:
         return None
     maker, product, c = f["named"][-1]
-    return {"format": "panik", "rows": [("Panik", f"{maker} launches {product}"), ("Kalm", "Your code still works"),
-                                        ("Panik", "Your boss saw the demo")], "based_on": [c["title"]]}
+    kalm, panik = _v(f, [("Your code still works", "Your boss saw the demo"),
+                         ("It's only a preview", "Your team wants to switch tonight"),
+                         ("Your prompts still work", "They were written for the old model"),
+                         ("You don't have to switch", "Your rival already did")])
+    return {"format": "panik", "rows": [("Panik", f"{maker} launches {product}"), ("Kalm", kalm), ("Panik", panik)],
+            "based_on": [c["title"]]}
 
 
 FORMATS = [_distracted, _buttons, _nope_yep, _fine, _brain, _yelling, _pigeon, _panik]
@@ -212,27 +237,66 @@ ROTATION = ["distracted", "buttons", "fine", "nopeyep", "yelling", "brain", "pig
 
 # A day's template when its stories can't fill it (and Gemini wrote nothing): a joke about the AI industry's habits
 # (launches, naming, benchmarks, GPUs), with no names or numbers, so there's nothing in it to get wrong. Never about
-# reading or keeping up with the news: that's a plug for us (owner, 2026-11-06)
+# reading or keeping up with the news: that's a plug for us (owner, 2026-11-06). Several of each, taken in turn, so a
+# template that comes back brings a new joke (owner: "do variations, otherwise the memes get boring", 2026-11-06)
 STANDBY = {
-    "distracted": {"labels": ["Whatever just launched", "Developers", "The model they set up last week"]},
-    "buttons": {"labels": ["Wait for the benchmarks", "Ship it on launch day"], "caption": "Every team after a new model drops"},
-    "fine": {"caption": "A new AI model every morning", "under": "My prompts, written for last week's"},
-    "nopeyep": {"who": "AI companies", "nope": "Calling it version 2", "yep": "Calling it a new era"},
-    "yelling": {"labels": ["Every AI budget", "“I just need one more GPU.”"]},
-    "brain": {"rows": ["Calling it an update", "Calling it a new model", "Calling it a breakthrough",
-                       "Calling it a new era"]},
-    "pigeon": {"labels": ["Every app update", "a chatbot in a sidebar"], "caption": "Is this an AI agent?"},
-    "panik": {"rows": [("Panik", "A new model drops overnight"), ("Kalm", "Your code still works"),
-                       ("Panik", "Your boss saw the demo")]},
+    "distracted": [{"labels": ["Whatever just launched", "Developers", "The model they set up last week"]},
+                   {"labels": ["A brand-new benchmark", "AI labs", "The benchmark they topped last month"]},
+                   {"labels": ["The next funding round", "AI start-ups", "The product from the last one"]},
+                   {"labels": ["A bigger context window", "Model makers", "Getting the answer right"]}],
+    "buttons": [{"labels": ["Wait for the benchmarks", "Ship it on launch day"], "caption": "Every team after a new model drops"},
+                {"labels": ["Call it open source", "Share the training data"], "caption": "Every AI lab with new weights"},
+                {"labels": ["Make it bigger", "Make it cheaper"], "caption": "Every AI lab at planning time"},
+                {"labels": ["Fix the bug yourself", "Ask the AI to fix it"], "caption": "Developers at 5pm on a Friday"}],
+    "fine": [{"caption": "A new AI model every morning", "under": "My prompts, written for last week's"},
+             {"caption": "The GPU waiting list", "under": "AI start-ups, launching next month for sure"},
+             {"caption": "Every benchmark beaten by lunchtime", "under": "The people who made the benchmark"},
+             {"caption": "The AI power bill", "under": "Every data centre, adding one more rack"}],
+    "nopeyep": [{"who": "AI companies", "nope": "Calling it version 2", "yep": "Calling it a new era"},
+                {"who": "AI labs", "nope": "One clear model name", "yep": "Pro Max Ultra Preview Turbo"},
+                {"who": "AI start-ups", "nope": "Making money", "yep": "Raising money"},
+                {"who": "Developers", "nope": "Writing the tests", "yep": "Asking the AI if it works"}],
+    "yelling": [{"labels": ["Every AI budget", "“I just need one more GPU.”"]},
+                {"labels": ["Developers asking for a short answer", "“Great question! Let's dive in.”"]},
+                {"labels": ["Every benchmark maker", "“I've seen this test before.”"]},
+                {"labels": ["Every power grid", "“I just need one more data centre.”"]}],
+    "brain": [{"rows": ["Calling it an update", "Calling it a new model", "Calling it a breakthrough", "Calling it a new era"]},
+              {"rows": ["Asking the chatbot", "Asking it to think step by step", "Asking it to check its work",
+                        "Asking it to ask another chatbot"]},
+              {"rows": ["A chatbot", "A chatbot with tools", "A chatbot with a browser", "An AI agent with a launch video"]},
+              {"rows": ["Training a model", "Training a bigger model", "Training a model to train models",
+                        "Calling the result AGI"]}],
+    "pigeon": [{"labels": ["Every app update", "a chatbot in a sidebar"], "caption": "Is this an AI agent?"},
+               {"labels": ["Every launch video", "a chatbot that can do maths"], "caption": "Is this AGI?"},
+               {"labels": ["Every press release", "a model with a download button"], "caption": "Is this open source?"},
+               {"labels": ["Every laptop advert", "your laptop getting warm"], "caption": "Is this on-device AI?"}],
+    "panik": [{"rows": [("Panik", "A new model drops overnight"), ("Kalm", "Your code still works"),
+                        ("Panik", "Your boss saw the demo")]},
+              {"rows": [("Panik", "The GPU order is late"), ("Kalm", "The cloud has GPUs"), ("Panik", "The cloud bill arrived")]},
+              {"rows": [("Panik", "The model gave a wrong answer"), ("Kalm", "It said sorry"),
+                        ("Panik", "It gave the same answer again")]},
+              {"rows": [("Panik", "A rival tops the benchmark"), ("Kalm", "Benchmarks don't mean much"),
+                        ("Panik", "Your investors saw the benchmark")]}],
 }
+
+
+def _turn(when: date, days: int = 8) -> int:
+    """Which wording: the next each time a template comes back (every 8 days; the Sunday meme every 28)."""
+    return when.toordinal() // days
+
+
+def _made(want: str, f: dict, span: str, have: bool) -> dict | None:
+    """The template's rule-based meme from the stories, else its standby wording of this turn (none without stories)."""
+    made = next((m for g in FORMATS if (m := g(f, span)) and m["format"] == want), None)
+    return made or ({"format": want, **_v(f, STANDBY[want]), "based_on": []} if have else None)
 
 
 def template_of(day: date) -> str:
     return ROTATION[day.toordinal() % len(ROTATION)]
 
 
-# The site's tile is small: the meme of the week takes only the wide templates (the tall ones stay in the email),
-# the next each Monday (the Sunday email's), or each day (the site's, of_the_7_days)
+# The Sunday email's meme of the week takes only the wide templates, the next each Monday (the site's tile takes all
+# of ROTATION, a new one each day: of_the_7_days)
 WEEK_ROTATION = ["distracted", "fine", "yelling", "pigeon"]
 
 
@@ -242,8 +306,9 @@ def template_of_week(monday: date) -> str:
 
 
 def template_of_7_days(today: date) -> str:
-    """The site's meme of the week's template: the next in WEEK_ROTATION each day."""
-    return WEEK_ROTATION[today.toordinal() % len(WEEK_ROTATION)]
+    """The site's meme of the week's template: the next in ROTATION each day, so no format comes back within a week
+    (owner, 2026-11-06); set so 6 Nov 2026 keeps its meme (yelling). Tall ones shrink to the tile; a click opens them."""
+    return ROTATION[(today.toordinal() + 6) % len(ROTATION)]
 
 
 def last_7_days(cards: list[dict], today: date) -> list[dict]:
@@ -256,9 +321,8 @@ def of_the_day(cards: list[dict], day: date) -> dict | None:
     stories can't fill it)."""
     made, want = GENERATED.get(("day", day)), template_of(day)
     if not (made and made.get("format") == want):
-        f = facts([c for c in cards if c.get("date") == day.isoformat()])
-        made = next((m for g in FORMATS if (m := g(f, "today")) and m["format"] == want), None) or (
-            {"format": want, **STANDBY[want], "based_on": []} if day.isoformat() in {c.get("date") for c in cards} else None)
+        f = {**facts([c for c in cards if c.get("date") == day.isoformat()]), "turn": _turn(day)}
+        made = _made(want, f, "today", day.isoformat() in {c.get("date") for c in cards})
     return made and {**made, "title": "Meme of the day"}
 
 
@@ -267,9 +331,7 @@ def of_the_week(cards: list[dict], monday: date) -> dict | None:
     week = [c for c in cards if monday.isoformat() <= (c.get("date") or "") < (monday + timedelta(days=7)).isoformat()]
     made, want = GENERATED.get(("week", monday)), template_of_week(monday)
     if not (made and made.get("format") == want):
-        f = facts(week)
-        made = next((m for g in FORMATS if (m := g(f, "this week")) and m["format"] == want), None) or (
-            {"format": want, **STANDBY[want], "based_on": []} if week else None)
+        made = _made(want, {**facts(week), "turn": _turn(monday, 28)}, "this week", bool(week))
     return made and {**made, "title": "Meme of the week"}
 
 
@@ -278,9 +340,7 @@ def of_the_7_days(cards: list[dict], today: date) -> dict | None:
     week = last_7_days(cards, today)
     made, want = GENERATED.get(("7days", today)), template_of_7_days(today)
     if not (made and made.get("format") == want):
-        f = facts(week)
-        made = next((m for g in FORMATS if (m := g(f, "this week")) and m["format"] == want), None) or (
-            {"format": want, **STANDBY[want], "based_on": []} if week else None)
+        made = _made(want, {**facts(week), "turn": _turn(today + timedelta(days=6))}, "this week", bool(week))
     return made and {**made, "title": "Meme of the week"}
 
 
