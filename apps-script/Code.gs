@@ -59,8 +59,6 @@ const names = streams => streams.map(s => STREAMS[s]).join(", ");
 
 function doGet(e) {
   const p = e.parameter || {};
-  if (p.action === "list") return json(list(p.key));  // old: key in the address; remove once the daily send uses POST
-  if (p.action === "interests") return json(interests(p.key));  // old, as above
   if (p.action === "confirm" || p.action === "unsubscribe") return button(p.action, p.t);  // links sent before the site handled them
   return page({title: "AI Pulse daily", text: "Sign up for the daily digest on the AI Pulse site."});
 }
