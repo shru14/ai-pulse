@@ -232,6 +232,8 @@ CHECKED: dict[str, dict] = {
 LEFT_OUT = {
     "https://the-decoder.com/gpt-6-astra-sees-the-matrix-and-reprograms-other-ai-models-directly-through-their-weights/",  # a story on a research blog post with no paper named or linked; paper not found
     "https://en.mercopress.com/2026/11/03/new-research-raises-questions-about-the-accuracy-of-ai-detection-tools?utm_source=feed&utm_medium=rss&utm_content=main&utm_campaign=rss",  # a roundup of three studies, none named or linked; more than one paper
+    "https://the-decoder.com/rapid-llm-development-is-outrunning-the-research-meant-to-explain-it-study-finds/",  # a Stanford study linked only to its project page, which we can't read to check; no preprint or journal page found
+    "https://simonwillison.net/2026/Nov/3/qwen-can-interpret-model-weights/",  # a blog post and demo on a paper that is itself only a blog post on the authors' own site, on no preprint server or journal
     "https://www.telesemana.com/blog/2026/11/02/etsi-tta-y-ttc-firman-una-carta-de-intencion-para-explorar-una-alianza-global-de-estandares-de-ia/",  # a news story on a standards letter of intent, no paper
     "https://openai.com/index/lifeval",  # a company page; can't read to check (openai.com refuses us)
     "https://www.xataka.com/energia/estudio-explica-que-espana-1-gw-centros-datos-no-se-solucionara-instalando-simplemente-1-gw-renovables",  # a consultancy report (EY), not a paper
