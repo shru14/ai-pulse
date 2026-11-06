@@ -231,8 +231,8 @@ def template_of(day: date) -> str:
     return ROTATION[day.toordinal() % len(ROTATION)]
 
 
-# The site's tile is small: the meme of the week takes only the wide templates (the tall ones stay in the email),
-# the next each Monday (the Sunday email's), or each day (the site's, of_the_7_days)
+# The Sunday email's meme of the week takes only the wide templates, the next each Monday (the site's tile takes all
+# of ROTATION, a new one each day: of_the_7_days)
 WEEK_ROTATION = ["distracted", "fine", "yelling", "pigeon"]
 
 
@@ -242,8 +242,9 @@ def template_of_week(monday: date) -> str:
 
 
 def template_of_7_days(today: date) -> str:
-    """The site's meme of the week's template: the next in WEEK_ROTATION each day."""
-    return WEEK_ROTATION[today.toordinal() % len(WEEK_ROTATION)]
+    """The site's meme of the week's template: the next in ROTATION each day, so no format comes back within a week
+    (owner, 2026-11-06); set so 6 Nov 2026 keeps its meme (yelling). Tall ones shrink to the tile; a click opens them."""
+    return ROTATION[(today.toordinal() + 6) % len(ROTATION)]
 
 
 def last_7_days(cards: list[dict], today: date) -> list[dict]:
