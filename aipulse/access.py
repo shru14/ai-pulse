@@ -188,6 +188,10 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
          ".compass-get .cg-mail:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}"
          ".compass-get .cg-note{margin:10px 0 0;font-size:13px}"
          ".compass-get td small{display:block;font-size:12.5px;color:var(--muted)}"
+         # 6 Nov 2026, owner: What Pulse Pro is as a pill button, not a link
+         ".compass-more .cg-more{display:inline-block;padding:9px 20px;font:600 14px var(--body);color:var(--ink);"
+         "text-decoration:none;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);border-radius:999px}"
+         ".compass-more .cg-more:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}"
          "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
 
 MAIL = "projectaipulse@gmail.com"
@@ -247,7 +251,7 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
               '<label>Password<input name="password" type="password" autocomplete="current-password" required></label>'
               '<button type="submit">Log in</button><p id="compass-msg" role="status"></p>'
               f'{_get_login()}'
-              f'<p class="compass-more"><a href="/{FAMILY}">What Pulse Pro is</a></p></form>'
+              f'<p class="compass-more"><a class="cg-more" href="/{FAMILY}">What Pulse Pro is</a></p></form>'
               '<noscript><p>Logging in needs JavaScript switched on.</p></noscript>'
               f'<script type="application/json" id="compass-table">{json.dumps(table)}</script>'
               f'<script type="application/json" id="compass-files">{json.dumps(files)}</script>'
