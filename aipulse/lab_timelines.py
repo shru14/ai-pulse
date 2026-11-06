@@ -196,6 +196,10 @@ LEFT_OUT = {
         "An app's features, not an AI model",
     "https://pandaily.com/qwen-jiang-guanjun-cncc-personal-agent-framework-model-memory-ecosystem-8000-atomic-capabilities":
         "A talk on an agent framework, not a model change",
+    "https://pandaily.com/moore-threads-wuxi-huishan-mtt-s5000-cluster-2112-gpus-92-9-percent-utilization-deepseek-v4-flash":
+        "A GPU cluster going commercial, not a model price or place change",
+    "https://the-decoder.com/goldman-sachs-pulls-ai-coding-tools-from-traders-and-bankers/":
+        "A bank removing tools from its staff, not a lab taking a model away",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
