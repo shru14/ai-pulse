@@ -87,14 +87,28 @@ def readers(data: dict) -> dict[str, tuple[list[str], str, str, dict[str, list[s
     return out
 
 
+def _ask(url: str, action: str, key: str) -> dict:
+    """The web app's answer to a keyed request. The key goes in a POST body, never in the address, so it stays out
+    of Google's request logs. Until the web app with doPost's list/interests is deployed, the old GET (key in the
+    address) answers instead; drop that fallback once the new Code.gs is live."""
+    body = urllib.parse.urlencode({"action": action, "key": key}).encode()
+    try:  # Google answers a POST with a redirect; urllib follows it as a GET to the ready answer
+        with urllib.request.urlopen(urllib.request.Request(url, data=body), timeout=60) as r:
+            data = json.loads(r.read().decode("utf-8"))
+        if data.get("ok"):
+            return data
+    except (ValueError, OSError):
+        pass  # the old web app answers this POST with a page, not JSON
+    with urllib.request.urlopen(f"{url}?{body.decode()}", timeout=60) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+
 def current(key: str, url: str = "") -> dict[str, tuple[list[str], str, str, dict[str, list[str]]]]:
     """The confirmed readers, each with their streams, own unsubscribe addresses and choices (see readers)."""
     url = url or SIGNUP_URL
     if not (url and key):
         raise RuntimeError("the sign-up web app's address and DIGEST_LIST_KEY must be set")
-    query = urllib.parse.urlencode({"action": "list", "key": key})
-    with urllib.request.urlopen(f"{url}?{query}", timeout=60) as r:  # follows Google's redirect to the answer
-        return readers(json.loads(r.read().decode("utf-8")))
+    return readers(_ask(url, "list", key))
 
 
 def interests(key: str, url: str = "") -> list[str]:
@@ -103,9 +117,7 @@ def interests(key: str, url: str = "") -> list[str]:
     url = url or SIGNUP_URL
     if not (url and key):
         raise RuntimeError("the sign-up web app's address and DIGEST_LIST_KEY must be set")
-    query = urllib.parse.urlencode({"action": "interests", "key": key})
-    with urllib.request.urlopen(f"{url}?{query}", timeout=60) as r:
-        data = json.loads(r.read().decode("utf-8"))
+    data = _ask(url, "interests", key)
     if not data.get("ok"):
         raise RuntimeError("the sign-up web app refused the interests (check DIGEST_LIST_KEY)")
     return [str(i) for i in data.get("interests") or [] if isinstance(i, str)]

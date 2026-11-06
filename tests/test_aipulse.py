@@ -2111,9 +2111,9 @@ def test_subscribers_come_from_the_signup_web_app(monkeypatch):
     except RuntimeError:
         pass
     seen = []
-    monkeypatch.setattr(sb.urllib.request, "urlopen", lambda url, timeout: (seen.append(url), io.BytesIO(_json.dumps(data).encode()))[1])
+    monkeypatch.setattr(sb.urllib.request, "urlopen", lambda req, timeout: (seen.append((req.full_url, req.data)), io.BytesIO(_json.dumps(data).encode()))[1])
     assert sb.current("k" * 32, "https://script.google.com/macros/s/X/exec") == got
-    assert seen == ["https://script.google.com/macros/s/X/exec?action=list&key=" + "k" * 32]
+    assert seen == [("https://script.google.com/macros/s/X/exec", b"action=list&key=" + b"k" * 32)]  # key in the body, never the address
     monkeypatch.setattr(sb, "SIGNUP_URL", "https://script.google.com/macros/s/X/exec")
     assert sb.fill('const SIGNUP_URL = "__SIGNUP_URL__";') == 'const SIGNUP_URL = "https://script.google.com/macros/s/X/exec";'
     # Each reader's email has their own one-click unsubscribe, in the footer and as the mail apps' button.
