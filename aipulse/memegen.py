@@ -81,9 +81,7 @@ _DRAWING = re.compile(r"\b(?:techie|hoodie|cartoon|caricature|girlfriend|boyfrie
 
 # A caption about us instead of AI ("Letting AI Pulse pick") is an advert, not a joke (owner, 2026-10-21); so is one
 # about reading the news or a bot that reads it for you ("Asking a chatbot to read them for you", owner, 2026-11-06)
-_PROMO = re.compile(r"\bAI ?Pulse\b|\bnewsletter|\bthis email\b|\bdigest\b|\bnews\b|\bheadlines?\b|\bbriefing|"
-                    r"\bsummar(?:y|ies|ise|ize)\b|\breading list\b|\btop 10\b|\bthe 10\b|\bkeep(?:ing)? up\b|"
-                    r"\bread\w* (?:it|them|everything|all of it|the \w+) for (?:you|me)\b", re.I)
+_PROMO = memes.PROMO  # kept in memes.py, which also checks every finished meme with it
 
 
 # The owner's own two asks, word for word, then how to answer (2026-10-03)
