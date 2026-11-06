@@ -42,10 +42,10 @@ def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
     assert (out / "planner/sample-report/index.html").read_text(encoding="utf-8") == "the sample"
     assert (out / "planner/smartfeed/index.html").read_text(encoding="utf-8") == "the feed page"  # each product's page
     assert "the tool" not in everything(out)  # Source check is behind the login too
-    assert "the rule book" not in everything(out)  # and so are the Resources
-    # 6 Nov 2026, owner: only the product pages and samples are open; the steps and the shop are behind the password
-    for text in ("step one", "step two", "step three", "its rules", "the shop"):
-        assert text not in everything(out)
+    # 6 Nov 2026, owner: the dashboards stay open (the steps, the Resources, the shop); only what we sell is sealed
+    for rel, text in (("explore", "step one"), ("questions", "step two"), ("plan", "step three"), ("plan/rules", "its rules"),
+                      ("rules", "the rule book"), ("store", "the shop")):
+        assert (out / f"planner/{rel}/index.html").read_text(encoding="utf-8") == text
     assert (out / "about/index.html").read_text(encoding="utf-8") == "free"
 
 
@@ -59,7 +59,7 @@ def test_sealed_pages_open_only_with_the_right_password(tmp_path, monkeypatch):
     aead = pytest.importorskip("cryptography.hazmat.primitives.ciphers.aead")
     out = site(tmp_path, monkeypatch)
     monkeypatch.setenv("COMPASS_USERS", json.dumps({"client one": access.new_user("client one", "long enough password")}))
-    assert access.seal(out, None, []) == 9  # the report, its sheet, Source check, the Rule book, the steps and the shop
+    assert access.seal(out, None, []) == 3  # the report, its sheet and Source check
     published = everything(out)
     assert SECRET not in published and "client one" not in published and "long enough password" not in published
     assert not (out / "planner/example/sheet.csv").exists()

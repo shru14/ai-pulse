@@ -38,14 +38,20 @@ REPORT = "planner/example/"
 STORE = "planner/store/"
 
 
-# 6 Nov 2026, owner: the login is back, and only the product pages and their samples are open. The steps (Explore,
-# Questions, Plan), the Store's shop and SmartFeed's file list are behind the password like the rest, so nothing shows
-# how the products work inside. STEPS and STORE are kept so they can be opened again.
-OPEN_STEPS = False
+# 6 Nov 2026, owner: everyone can see the demos and use the dashboards; only the finished outputs we sell need the
+# password: the report and its PDF (step 4), the full worked risk table, and every download on the dashboards (a script
+# on each Pro page, adoption.GATE, sends a download to the login box). Source check is not built (static.SOURCE_CHECK).
+# The login page is sealed so that it shows the box. OPEN, STEPS and STORE are kept for the record of what was open when
+# SmartFeed's data is the product itself: its query page, files and Python client (planner/api/) are sealed; the list of
+# files (names and what a row is) and its sample stay open
+SOLD = (REPORT, "planner/api/", "planner/login/", "planner/source-check/")
+SOLD_PAGES = {"planner/matrix/index.html"}
 
 
 def is_open(rel: str) -> bool:
-    return rel in OPEN or rel.startswith(OPEN_DIR) or (OPEN_STEPS and rel.startswith((STORE, *STEPS)))
+    return not (rel.startswith(SOLD) or rel in SOLD_PAGES)
+
+
 ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
