@@ -82,6 +82,78 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-05', by='OpenAI', kind='card',
+         title='GPT-6 Cyber System Card',
+         url='https://deploymentsafety.openai.com/gpt-6-cyber',
+         original='https://deploymentsafety.openai.com/gpt-6-cyber/gpt-6-cyber.pdf',
+         models=('GPT-6 Cyber',), risks=('cbrn', 'cyber', 'misalign', 'rnd'),
+         abstract=('GPT-6 Cyber is a cyber-specialized variant of GPT-6 Astra designed for authorized security work, '
+                   'including tasks such as vulnerability discovery, exploit development, and web pentesting. The model '
+                   'has specialized post-training that aims to improve cybersecurity capabilities and reduce cyber '
+                   'refusals. The goal is to expand the security work the model can perform while keeping it within the '
+                   'user’s authorized scope and preserving refusals outside cybersecurity. In our evaluations, GPT-6 '
+                   'Cyber shows substantially stronger cybersecurity capabilities and improved alignment compared with '
+                   'GPT-5.6 Cyber. Under our Preparedness Framework, we give GPT-6 Cyber the same capability designations'
+                   ' as GPT-6 Astra: Critical in Cybersecurity, High in the Biological and Chemical domain, and below '
+                   'High in AI Self-Improvement. Access to GPT-6 Cyber is restricted through Daybreak Red, with identity'
+                   ' verification, use restrictions, and organizational security requirements including single sign-on, '
+                   'multi-factor authentication, and API IP allowlisting. API customers using Zero Data Retention '
+                   'generally require Private Safety Processing for automated safety review. …')),
+    dict(date='2026-11-05', by='Frontier Model Forum', kind='framework',
+         title='Jailbreak Rating Framework for Frontier Cyber Threats',
+         url='https://www.frontiermodelforum.org/specifications/jailbreak-rating-framework-for-frontier-cyber-threats/',
+         original='https://www.frontiermodelforum.org/uploads/2026/11/PDF-FMF-Version-1.0-Cyber-Jailbreak-Framework.pdf',
+         models=(), risks=('cyber', 'jailbreak'),
+         abstract=('Recent months have seen rapid improvements in AI models’ cyber capabilities alongside incidents '
+                   'involving their use in malicious cyber activity. The same capabilities that help defenders identify '
+                   'vulnerabilities and secure systems can also be used to assist attackers. As advanced cyber '
+                   'capabilities continue to evolve, understanding whether and how safeguards can be bypassed, and what '
+                   'failures could enable, is critical for managing cyber risks effectively. One way safeguards can be '
+                   'bypassed is through jailbreaks, which use prompts and other techniques to elicit assistance that a '
+                   'model’s safeguards are otherwise designed to prevent. Successful jailbreaks, however, vary widely in'
+                   ' the risk they pose. Some jailbreaks produce responses of limited practical use whereas others may '
+                   'give malicious actors access to dangerous cyber capabilities. Assessing a jailbreak’s relative '
+                   'significance requires understanding what a jailbreak enables, how that compares with capabilities '
+                   'already widely available, and how broadly and easily it can be used. At present, there is no shared '
+                   'approach to making these assessments, which makes it harder to compare findings and identify the '
+                   'kinds of jailbreaks that demand more attention. …')),
+    dict(date='2026-11-05', by='METR', kind='eval',
+         title='Review of the "Risks from automated R&D" section in Anthropic\'s Risk Report (August 2026)',
+         url='https://metr.org/blog/2026-11-05-rd-section-anthropic-risk-report-august-2026-review/',
+         original='',
+         models=(), risks=('rnd',),
+         abstract=('We agree with Anthropic that catastrophic risks from July 15th models were low, but we think it is '
+                   'plausible that they had crossed their early warning threshold at the time. METR reviewed the “Risks '
+                   'from automated R&D” section of Anthropic’s public August 2026 Risk Report. We conducted this review '
+                   'as part of a high-access assessment of AI R&D acceleration, in which Anthropic shared a private '
+                   'version of the Risk Report along with extensive other non-public data. Alongside this review, we are'
+                   ' publishing a holistic assessment of AI R&D acceleration at Anthropic. This was conducted by the '
+                   'same METR employees as this Risk Report Review. Overall, we agree with Anthropic that by July 15th, '
+                   'internally deployed models posed low risk of directly automating R&D in key domains or causing acute'
+                   ' catastrophic risks from acceleration of capabilities progress. However, the report’s claim that '
+                   'they had not crossed their early warning thresholds relies on contestable judgment calls that aren’t'
+                   ' communicated clearly in the public report. While both METR’s researchers on this project and '
+                   'Anthropic’s relevant staff lean toward it not having been crossed, we think it is plausible that it '
+                   'had been, and we believe the public report overall understates the level of acceleration that was '
+                   'occurring. …')),
+    dict(date='2026-11-05', by='METR', kind='eval',
+         title='Independent Assessment of AI R&D Acceleration at Anthropic in October 2026',
+         url='https://metr.org/blog/2026-11-05-anthropic-ai-rd-acceleration-assessment/',
+         original='',
+         models=(), risks=('rnd',),
+         abstract=('From August 12 to October 29, 2026, METR staff performed a high-access evaluation at Anthropic to '
+                   'assess the degree to which AI is accelerating AI R&D. If AI systems started to significantly '
+                   'accelerate further AI development, this could lead to a sudden emergence of extreme and risky '
+                   'capabilities. Anthropic offered unprecedented access to internal data on their AI R&D process, '
+                   'including a variety of metrics on pretraining, reinforcement learning (RL), training compute in each'
+                   ' domain, benchmark scores for internal models, AI speedup analyses, forecasts of a future model’s '
+                   'metrics, and interviews with relevant staff. In our first section, we share our subjective '
+                   'conclusions about risk. We now believe that: As of October 2026, Anthropic is likely improving the '
+                   'capabilities of their models on well-specified tasks at around twice the rate they did between March'
+                   ' 2024 and October 2025. This estimate is given with high uncertainty; we would not be surprised if '
+                   'the true acceleration was closer to 1.3x or 3x the historical rate. A majority of this acceleration '
+                   'today is likely attributable to Anthropic’s extensive use of AI to do R&D, though there is '
+                   'significant uncertainty and other causes likely played a large role in acceleration in late 2025. …')),
     dict(date='2026-10-30', by='OpenAI', kind='card',
          title='GPT-Rosalind-6 System Card Addendum',
          url='https://deploymentsafety.openai.com/gpt-rosalind-6',
@@ -1488,6 +1560,7 @@ LEFT_OUT: set[str] = {
     'https://www.frontiermodelforum.org/technical-reports/third-party-assessments/',
     'https://www.nist.gov/blogs/caissi-research-blog/accelerating-ai-innovation-through-measurement-science',
     'https://www.nist.gov/blogs/caissi-research-blog/cheating-ai-agent-evaluations',
+    'https://www.thelec.net/news/articleView.html?idxno=15338',  # news: Korean Financial Security Institute cloud security assessments, not an AI safety document
 }
 
 # a story that may be a safety document: from a publisher the hub reads, or a headline naming one
