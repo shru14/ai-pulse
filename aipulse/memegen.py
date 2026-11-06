@@ -63,8 +63,11 @@ _DRAWING = re.compile(r"\b(?:techie|hoodie|cartoon|caricature|girlfriend|boyfrie
                       r"\b(?:the|a|smug) cat\b|\b(?:the|a) dog\b|\b(?:his|her|the) partner\b", re.I)
 
 
-# A caption about us instead of AI ("Letting AI Pulse pick") is an advert, not a joke (owner, 2026-10-21)
-_PROMO = re.compile(r"\bAI ?Pulse\b|\bnewsletter|\bthis email\b|\bdigest\b", re.I)
+# A caption about us instead of AI ("Letting AI Pulse pick") is an advert, not a joke (owner, 2026-10-21); so is one
+# about reading the news or a bot that reads it for you ("Asking a chatbot to read them for you", owner, 2026-11-06)
+_PROMO = re.compile(r"\bAI ?Pulse\b|\bnewsletter|\bthis email\b|\bdigest\b|\bnews\b|\bheadlines?\b|\bbriefing|"
+                    r"\bsummar(?:y|ies|ise|ize)\b|\breading list\b|\btop 10\b|\bthe 10\b|\bkeep(?:ing)? up\b|"
+                    r"\bread\w* (?:it|them|everything|all of it|the \w+) for (?:you|me)\b", re.I)
 
 
 # The owner's own two asks, word for word, then how to answer (2026-10-03)
@@ -81,7 +84,7 @@ def _prompt(stories: list[dict], span: str, avoid: set[str] = frozenset()) -> st
 The {"news for today" if span == "day" else "weekly AI updates"} (real headlines, numbered):
 {lines}
 
-Our readers are engineers, researchers and curious people worldwide who read AI Pulse, a free AI news briefing.
+Our readers are engineers, researchers and curious people worldwide.
 The meme is one of the well-known internet meme templates below, with your captions written onto it. Your part is
 the idea and the words: pick the template that fits the joke best and write its captions so the meme is instantly
 funny. Think like the best meme pages: one sharp, specific observation; the punchline last; the kind of joke people
@@ -92,9 +95,10 @@ The templates:
 
 Rules (a meme that breaks one is thrown away):
 - Don't make dark jokes and do not insult anyone. Laugh with the industry's habits (hype, launch days, naming,
-  benchmarks, funding rounds, jargon, the reader keeping up), never at a person, company staff or group.
+  benchmarks, funding rounds, jargon), never at a person, company staff or group.
 - Never name or describe a real person, the people in the template included.
-- The joke is about AI news, never about AI Pulse, this email or newsletters: no plugging the app.
+- The joke is about one of the stories above, never about reading, following or keeping up with AI news, news
+  briefings, summaries, headlines or a bot, robot or chatbot that reads the news for you.
 - Captions say who and what the joke is about: the companies, products and people-in-general of the news, or the
   readers ("Developers", "Everyone with a GPU"). Never describe the picture itself ("Boyfriend", "the cat", "Drake").
 - Leave out AI safety, risk, deception, politics, governments, elections, war, crime, lawsuits, layoffs, health,

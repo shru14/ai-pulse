@@ -150,12 +150,12 @@ def _fine(f, span):
 
 
 def _brain(f, span):
-    """The expanding brain: how to keep up with the papers."""
+    """The expanding brain: the day's pile of papers, and who actually reads them."""
     n = f["papers"]
     if n < (5 if span == "today" else 20):
         return None
-    return {"format": "brain", "rows": ["Reading the headline", "Reading the abstract",
-                                        f"Reading all {n} AI papers out {span}", "Asking a chatbot to read them for you"],
+    return {"format": "brain", "rows": ["Reading the paper", "Reading the abstract", "Reading the title",
+                                        f"Citing all {n} AI papers out {span} anyway"],
             "based_on": []}
 
 
@@ -210,16 +210,17 @@ GENERATED: dict = {}  # ("day" | "week", date) -> a meme Gemini wrote (memegen.p
 ROTATION = ["distracted", "buttons", "fine", "nopeyep", "yelling", "brain", "pigeon", "panik"]
 
 
-# A day's template when its stories can't fill it (and Gemini wrote nothing): a joke about keeping up with AI news,
-# with no names or numbers, so there's nothing in it to get wrong
+# A day's template when its stories can't fill it (and Gemini wrote nothing): a joke about the AI industry's habits
+# (launches, naming, benchmarks, GPUs), with no names or numbers, so there's nothing in it to get wrong. Never about
+# reading or keeping up with the news: that's a plug for us (owner, 2026-11-06)
 STANDBY = {
     "distracted": {"labels": ["Whatever just launched", "Developers", "The model they set up last week"]},
-    "buttons": {"labels": ["Read every AI story today", "Get some actual work done"], "caption": "Anyone in AI before 9am"},
-    "fine": {"caption": "Your AI reading list", "under": "Me, opening one more tab"},
+    "buttons": {"labels": ["Wait for the benchmarks", "Ship it on launch day"], "caption": "Every team after a new model drops"},
+    "fine": {"caption": "A new AI model every morning", "under": "My prompts, written for last week's"},
     "nopeyep": {"who": "AI companies", "nope": "Calling it version 2", "yep": "Calling it a new era"},
     "yelling": {"labels": ["Every AI budget", "“I just need one more GPU.”"]},
-    "brain": {"rows": ["Reading every AI headline", "Reading the summaries", "Reading only the 10 that mattered",
-                       "Asking a chatbot to read them for you"]},
+    "brain": {"rows": ["Calling it an update", "Calling it a new model", "Calling it a breakthrough",
+                       "Calling it a new era"]},
     "pigeon": {"labels": ["Every app update", "a chatbot in a sidebar"], "caption": "Is this an AI agent?"},
     "panik": {"rows": [("Panik", "A new model drops overnight"), ("Kalm", "Your code still works"),
                        ("Panik", "Your boss saw the demo")]},
