@@ -1,0 +1,12 @@
+# Keeps the pinned workflow actions current: about once a month Dependabot opens one pull request that moves every
+# action to its newest commit (the version note updates with it). Nothing merges on its own: the owner says yes.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+    open-pull-requests-limit: 1
