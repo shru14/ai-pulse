@@ -318,9 +318,24 @@ def _turn(when: date, days: int = 16) -> int:
     return when.toordinal() // days
 
 
+# Never promotional (owner, 2026-10-21 and 2026-11-06): a caption about us, the email, or reading/keeping up with the
+# news ("Asking a chatbot to read them for you") is an advert, not a joke. Every finished meme is checked with it,
+# whoever wrote it (Gemini, a rule, a standby), and a meme that plugs is replaced.
+PROMO = re.compile(r"\bAI ?Pulse\b|\bnewsletter|\bthis email\b|\bdigest\b|\bnews\b|\bheadlines?\b|\bbriefing|"
+                   r"\bsummar(?:y|ies|ise|ize)\b|\breading list\b|\btop 10\b|\bthe 10\b|\bkeep(?:ing)? up\b|"
+                   r"\bsubscri\w*|\bsign up\b|\bour (?:site|app|readers)\b|"
+                   r"\bread\w* (?:it|them|everything|all of it|the \w+) for (?:you|me)\b", re.I)
+
+
+def plugs(meme: dict) -> bool:
+    """True if any of the meme's words promote us."""
+    words = [*(captions(meme) if meme.get("format") in TEMPLATES else []), meme.get("who") or ""]
+    return any(PROMO.search(t) for t in words)
+
+
 def _made(want: str, f: dict, span: str, have: bool) -> dict | None:
     """The template's rule-based meme from the stories, else its standby wording of this turn (none without stories)."""
-    made = next((m for g in FORMATS if (m := g(f, span)) and m["format"] == want), None)
+    made = next((m for g in FORMATS if (m := g(f, span)) and m["format"] == want and not plugs(m)), None)
     return made or ({"format": want, **_v(f, STANDBY[want]), "based_on": []} if have else None)
 
 
@@ -353,7 +368,7 @@ def of_the_day(cards: list[dict], day: date) -> dict | None:
     """The day's meme, from that day's stories (the same for every reader), on the day's template (none if the
     stories can't fill it)."""
     made, want = GENERATED.get(("day", day)), template_of(day)
-    if not (made and made.get("format") == want):
+    if not (made and made.get("format") == want and not plugs(made)):
         f = {**facts([c for c in cards if c.get("date") == day.isoformat()]), "turn": _turn(day)}
         made = _made(want, f, "today", day.isoformat() in {c.get("date") for c in cards})
     return made and {**made, "title": "Meme of the day"}
@@ -363,7 +378,7 @@ def of_the_week(cards: list[dict], monday: date) -> dict | None:
     """The meme of the week from Monday to Sunday's stories."""
     week = [c for c in cards if monday.isoformat() <= (c.get("date") or "") < (monday + timedelta(days=7)).isoformat()]
     made, want = GENERATED.get(("week", monday)), template_of_week(monday)
-    if not (made and made.get("format") == want):
+    if not (made and made.get("format") == want and not plugs(made)):
         made = _made(want, {**facts(week), "turn": _turn(monday, 28)}, "this week", bool(week))
     return made and {**made, "title": "Meme of the week"}
 
@@ -372,7 +387,7 @@ def of_the_7_days(cards: list[dict], today: date) -> dict | None:
     """The site's meme of the week, from the past 7 days' stories (today and the 6 days before): a new one each day."""
     week = last_7_days(cards, today)
     made, want = GENERATED.get(("7days", today)), template_of_7_days(today)
-    if not (made and made.get("format") == want):
+    if not (made and made.get("format") == want and not plugs(made)):
         made = _made(want, {**facts(week), "turn": _turn(today + timedelta(days=6))}, "this week", bool(week))
     return made and {**made, "title": "Meme of the week"}
 

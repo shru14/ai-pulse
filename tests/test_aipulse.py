@@ -4808,3 +4808,23 @@ def test_monthly_summary_corrections():
     assert "OpenAI’s agents disabled their own safety monitoring systems" in fixed
     for month, pairs in monthly.FIXES.items():
         assert all(wrong != right for wrong, right in pairs), month
+
+def test_no_meme_is_promotional():
+    """Memes joke about AI, never plug us (owner, 2026-10-21 and 2026-11-06): every standby wording passes, and a
+    meme that plugs, whoever wrote it, is replaced."""
+    from datetime import date
+    from aipulse import memes
+    for f, wordings in memes.STANDBY.items():
+        for w in wordings:
+            assert not memes.plugs({"format": f, **w}), (f, w)
+    for t in ["Letting AI Pulse pick", "Asking a chatbot to read them for you", "Reading only the 10 that mattered",
+              "Subscribe for more", "Keeping up with AI"]:
+        assert memes.PROMO.search(t), t
+    day = date(2026, 11, 8)
+    want = memes.template_of(day)
+    memes.GENERATED[("day", day)] = {"format": want, **memes.STANDBY[want][0], "labels": ["Read AI Pulse"] * 4, "based_on": []}
+    card = {"title": "x", "summary": "", "url": "u", "source": "E", "category": "news", "kind": "news",
+            "date": day.isoformat(), "also": [], "tags": []}
+    m = memes.of_the_day([card], day)
+    memes.GENERATED.clear()
+    assert m["format"] == want and not memes.plugs(m)
