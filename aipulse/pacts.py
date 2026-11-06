@@ -179,6 +179,17 @@ ORDERS = [
 LEFT_OUT = {
     "https://techpolicy.press/the-sec-should-block-anthropics-ipo-to-protect-the-public":
         "Opinion piece urging the SEC to act, no government action",
+    "https://dplnews.com/estados-unidos-ordena-retirar-deepseek/":
+        "same as US (Homeland Security) → DeepSeek, 2026-10-19",
+    "https://www.thelec.net/news/articleView.html?idxno=14771":
+        "same as US (Homeland Security) → DeepSeek, 2026-10-19",
+    "https://japantoday.com/category/tech/nvidia-orders-data-center-clients-to-reduce-china-exposure-ft":
+        "A company ordering its own clients (reportedly), not a government action",
+    "https://techpolicy.press/dont-let-misaligned-and-rogue-agents-obscure-corporate-accountability-in-openai-"
+    "hugging-face-probes":
+        "Opinion piece; names probes of OpenAI but gives no start dates, can't check",
+    "https://www.engadget.com/2305432/google-says-that-students-in-schools-that-ban-ai-wont-have-access-to-search/":
+        "A company's own policy for student accounts, not a government action",
     "https://www.xataka.com/empresas-y-economia/google-queria-levantar-centro-datos-finlandia-empezo-talando-330-"
     "hectareas-acabo-investigacion-penal":
         "A data-centre site's environmental works stop and police probe, not an AI product or deal",
