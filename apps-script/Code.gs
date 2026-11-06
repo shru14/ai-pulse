@@ -23,7 +23,9 @@
  *                                            with it moved to the Trash
  *   POST action=review      channels, uses, the site's review form (review/, from the daily email): answers only
  *                           useful,         from the lists in REVIEW (|-separated) and a note, emailed to the
- *                           section,        project inbox; nothing about the reader is sent or kept
+ *                           section, opens, project inbox; nothing about the reader is sent or kept
+ *                           length, pro,
+ *                           proPick,
  *                           improve, other
  *   POST action=list        key             the confirmed readers, for the daily send (key = LIST_KEY; in the
  *                                            body, never the address, so it stays out of Google's logs)
@@ -273,11 +275,16 @@ const REVIEW = {
          "Investing or business decisions", "Building with AI"],
   useful: ["1", "2", "3", "4", "5"],
   section: ["Industry", "Releases", "Policy", "Regulation", "Research", "Infra"],
+  opens: ["Every day", "Most days", "Now and then", "I don't get it"],
+  length: ["Too long", "About right", "Too short"],
+  pro: ["Yes", "Not yet", "First I've heard of it"],
+  proPick: ["Compass", "Risk Monitor", "Watch", "SmartFeed", "Pulse Store", "None yet"],
   improve: ["Easier to find things", "Clearer charts and numbers", "Shorter emails", "More sources", "Better on phones",
             "Nothing, it's good"],
 };
 const REVIEW_NAMES = {channels: "Reads AI Pulse via", uses: "Uses it for", useful: "How useful (1-5)", section: "Uses most",
-                      improve: "Improve first"};
+                      opens: "Opens the daily email", length: "Daily email is", pro: "Looked at Pulse Pro",
+                      proPick: "Pro product of interest", improve: "Improve first"};
 const REVIEWS_A_DAY = 15;
 const OTHER_MAX = 1000;  // characters in "Anything else?"
 
