@@ -313,7 +313,8 @@ def daily_index(conn, total: int, days: list[date], out: Path) -> None:
         pages.frame(conn, total), ("/", "Back to AI Pulse")), encoding="utf-8")
 
 
-SEAL = False  # the Pulse Pro login: off since 5 Nov 2026
+SEAL = True  # the Pulse Pro login: off 5 Nov 2026, back on 6 Nov 2026 (owner: one password, product pages + samples open)
+SOURCE_CHECK = False  # Source check stays hidden until it stops flagging correct sentences (owner, 5 Nov 2026)
 
 
 def build(conn, out: str | Path, compass_open: bool = False) -> int:
@@ -508,8 +509,8 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
         from . import coding_tools, compare, patterns, ready_tools, source_check, workflows, workshop
         places += ready_tools.build(conn, cards, out)  # products a firm can buy instead of building, by job (Pro: no sitemap)
         places += patterns.build(conn, cards, out)  # how each kind of AI product is built (Pro: no sitemap)
-        # Source check: hidden while the login is off (owner, 5 Nov 2026), until it stops flagging correct sentences
-        if SEAL:
+        # Source check: hidden (owner, 5 Nov 2026) until it stops flagging correct sentences
+        if SOURCE_CHECK:
             places += source_check.build(conn, cards, out)  # which parts of an AI's output to check against its source (no sitemap)
         places += coding_tools.build(conn, cards, out)  # find, cost and try an AI coding tool (Pro: no sitemap)
         places += workshop.build(conn, cards, out)  # a helper for people running hands-on AI sessions (Pro: no sitemap)
@@ -523,8 +524,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
     shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
     (out / ".nojekyll").write_text("")
-    # 5 Nov 2026, owner: no login for now, every Pulse Pro page is open and free to everyone. The login (aipulse/access.py)
-    # stays in the code: set SEAL back to True to bring it back
+    # 6 Nov 2026, owner: the login is back on: one username (access.CLIENT), the visitor types only the password
     if SEAL and COMPASS and not compass_open:  # last of all: nothing paid leaves the build readable (aipulse/access.py)
         from . import access
         access.seal(out, conn, cards)

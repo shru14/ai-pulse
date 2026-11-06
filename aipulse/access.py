@@ -26,8 +26,7 @@ ROOT = "planner"
 PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store", "pulse-pro")  # pulse-pro: the family page
 FAMILY = "planner/pulse-pro/"  # What Pulse Pro is: the five products, what each is for and what it costs
 OPEN = ({"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf"}
-        | {f"planner/{p}/index.html" for p in PRODUCTS}
-        | {"planner/smartfeed/files/index.html"})  # SmartFeed's list of files: names and counts, no rows
+        | {f"planner/{p}/index.html" for p in PRODUCTS})
 # each Pulse Pro product's read-only sample (4 Nov 2026, the owner): everything under this folder is open too
 OPEN_DIR = "planner/samples/"
 # 4 Nov 2026, owner: the login blocked anyone from trying the product, so the first three steps (Explore, Questions, Plan
@@ -39,12 +38,26 @@ REPORT = "planner/example/"
 STORE = "planner/store/"
 
 
+# 6 Nov 2026, owner: everyone can see the demos and use the dashboards; only the finished outputs we sell need the
+# password: the report and its PDF (step 4), the full worked risk table, and every download on the dashboards (a script
+# on each Pro page, adoption.GATE, sends a download to the login box). Source check is not built (static.SOURCE_CHECK).
+# The login page is sealed so that it shows the box. OPEN, STEPS and STORE are kept for the record of what was open when
+# SmartFeed's data is the product itself: its query page, files and Python client (planner/api/) are sealed; the list of
+# files (names and what a row is) and its sample stay open
+SOLD = (REPORT, "planner/api/", "planner/login/", "planner/source-check/")
+SOLD_PAGES = {"planner/matrix/index.html"}
+
+
 def is_open(rel: str) -> bool:
-    return rel in OPEN or rel.startswith((OPEN_DIR, STORE, *STEPS))
+    return not (rel.startswith(SOLD) or rel in SOLD_PAGES)
+
+
 ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
 REPO = "shru14/ai-pulse"
+# 6 Nov 2026, owner: one username for every client, filled in by the page; a visitor types only the password
+CLIENT = "pulse-client"
 
 
 def _b64(raw: bytes) -> str:
@@ -85,8 +98,8 @@ var KEY='compass-login',S=crypto.subtle,T=JSON.parse(document.getElementById('co
     root=document.documentElement,enc=new TextEncoder();
 function bytes(s){return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0)})}
 function b64(a){return btoa(String.fromCharCode.apply(null,new Uint8Array(a)))}
-function saved(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
-function forget(){try{localStorage.removeItem(KEY)}catch(e){}}
+function saved(){try{return JSON.parse(sessionStorage.getItem(KEY))}catch(e){return null}}
+function forget(){try{sessionStorage.removeItem(KEY)}catch(e){}}
 function box(key,s){var a=bytes(s);return S.decrypt({name:'AES-GCM',iv:a.slice(0,12)},key,a.slice(12))}
 function aes(raw,use){return S.importKey('raw',raw,'AES-GCM',false,[use])}
 function show(){root.style.visibility='';if(f)f.hidden=false}
@@ -97,12 +110,12 @@ async function enter(key){
   var html=new TextDecoder().decode(await box(key,P));
   if(document.readyState!=='complete')await new Promise(function(r){addEventListener('load',r)});  // over a page still loading, the write would add to it
   window.compassKey=key;window.compassFiles=F;window.compassForget=forget;
-  document.open();document.write(html.replace(/<\/body>(?![\s\S]*<\/body>)/i,AFTER+'</body>'));document.close()}
+  document.open();document.write(html.replace(/<\/body>(?![\s\S]*<\/body>)/i,AFTER+'<\/body>'));document.close()}  // written <\/ so no page edit takes this for the page's own end
 var AFTER='<sc'+'ript>('+function(){
   var b=document.querySelector('.cp > .back'),w=document.createElement('div'),me=document.createElement('span'),
-      a=document.createElement('a'),who=(function(){try{return JSON.parse(localStorage.getItem('compass-login')).name}catch(e){}})();
+      a=document.createElement('a'),who=(function(){try{return JSON.parse(sessionStorage.getItem('compass-login')).name}catch(e){}})();
   w.className='compass-bar';me.className='compass-acct';
-  me.appendChild(document.createTextNode(who?'Signed in as '+who:'Signed in'));
+  me.appendChild(document.createTextNode('Signed in'));
   a.href='/planner/';a.textContent='Log out';a.onclick=function(){window.compassForget()};me.appendChild(a);
   if(b){b.parentNode.insertBefore(w,b);w.appendChild(b)}else{w.style.justifyContent='flex-end';document.body.insertBefore(w,document.body.firstChild)}
   w.appendChild(me);
@@ -139,12 +152,12 @@ if(f)f.onsubmit=async function(e){
     var raw=await S.importKey('raw',enc.encode(name+'\n'+pw),'PBKDF2',false,['deriveBits']),
         kek=await S.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:bytes(e0.salt),iterations:T._rounds},raw,256),
         key=await opened(id,kek);
-    try{localStorage.setItem(KEY,JSON.stringify({id:id,kek:b64(kek),name:name}))}catch(x){}
+    try{sessionStorage.setItem(KEY,JSON.stringify({id:id,kek:b64(kek),name:name}))}catch(x){}
     await enter(key)
-  }catch(x){msg.textContent='That username or password is not right.';b.disabled=false}
+  }catch(x){msg.textContent='That password is not right.';b.disabled=false}
 }})();
 </script>"""
-HIDE = ("<script>try{if(localStorage.getItem('compass-login'))document.documentElement.style.visibility='hidden'}"
+HIDE = ("<script>try{if(sessionStorage.getItem('compass-login'))document.documentElement.style.visibility='hidden'}"
         "catch(e){}</script>")
 STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32px 30px 26px;box-sizing:border-box;"
          "border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-top:4px solid #F0E442;border-radius:10px;"
@@ -181,6 +194,10 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
          ".compass-get .cg-mail:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}"
          ".compass-get .cg-note{margin:10px 0 0;font-size:13px}"
          ".compass-get td small{display:block;font-size:12.5px;color:var(--muted)}"
+         # 6 Nov 2026, owner: What Pulse Pro is as a pill button, not a link
+         ".compass-more .cg-more{display:inline-block;padding:9px 20px;font:600 14px var(--body);color:var(--ink);"
+         "text-decoration:none;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);border-radius:999px}"
+         ".compass-more .cg-more:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}"
          "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
 
 MAIL = "projectaipulse@gmail.com"
@@ -235,18 +252,18 @@ def _contents() -> str:
 def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: list[str]) -> str:
     """The published page: the login box, with the real page beside it as unreadable bytes."""
     from . import adoption, pages, rss
-    head, lead, extra = "Log in to Pulse Pro", "Use the username and password you were given.", ""
+    head, lead, extra = "Log in to Pulse Pro", "Enter the password you were given.", ""
     if path == REPORT:
         head, lead, extra = ("Log in to see your report",
-                             "Your answers are saved in this browser. Log in to read the report and download it as a PDF.",
+                             "Your answers are kept for this visit. Enter the password to read the report and download it as a PDF.",
                              _contents())
     body = (STYLE + '<form class="compass-login" id="compass-form" hidden autocomplete="on">'
               f'<h1>{head}</h1><p class="cl-lead">{lead}</p>{extra}'
-              '<label>Username<input name="name_" autocomplete="username" autocapitalize="none" required></label>'
+              f'<input type="hidden" name="name_" autocomplete="username" value="{CLIENT}">'
               '<label>Password<input name="password" type="password" autocomplete="current-password" required></label>'
               '<button type="submit">Log in</button><p id="compass-msg" role="status"></p>'
               f'{_get_login()}'
-              f'<p class="compass-more"><a href="/{FAMILY}">What Pulse Pro is</a></p></form>'
+              f'<p class="compass-more"><a class="cg-more" href="/{FAMILY}">What Pulse Pro is</a></p></form>'
               '<noscript><p>Logging in needs JavaScript switched on.</p></noscript>'
               f'<script type="application/json" id="compass-table">{json.dumps(table)}</script>'
               f'<script type="application/json" id="compass-files">{json.dumps(files)}</script>'

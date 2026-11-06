@@ -42,10 +42,10 @@ def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
     assert (out / "planner/sample-report/index.html").read_text(encoding="utf-8") == "the sample"
     assert (out / "planner/smartfeed/index.html").read_text(encoding="utf-8") == "the feed page"  # each product's page
     assert "the tool" not in everything(out)  # Source check is behind the login too
-    assert "the rule book" not in everything(out)  # and so are the Resources
-    for rel, text in (("explore", "step one"), ("questions", "step two"), ("plan", "step three"), ("plan/rules", "its rules")):
-        assert (out / f"planner/{rel}/index.html").read_text(encoding="utf-8") == text  # the first three steps are open
-    assert (out / "planner/store/index.html").read_text(encoding="utf-8") == "the shop"  # the Pulse Store has no price: open
+    # 6 Nov 2026, owner: the dashboards stay open (the steps, the Resources, the shop); only what we sell is sealed
+    for rel, text in (("explore", "step one"), ("questions", "step two"), ("plan", "step three"), ("plan/rules", "its rules"),
+                      ("rules", "the rule book"), ("store", "the shop")):
+        assert (out / f"planner/{rel}/index.html").read_text(encoding="utf-8") == text
     assert (out / "about/index.html").read_text(encoding="utf-8") == "free"
 
 
@@ -59,7 +59,7 @@ def test_sealed_pages_open_only_with_the_right_password(tmp_path, monkeypatch):
     aead = pytest.importorskip("cryptography.hazmat.primitives.ciphers.aead")
     out = site(tmp_path, monkeypatch)
     monkeypatch.setenv("COMPASS_USERS", json.dumps({"client one": access.new_user("client one", "long enough password")}))
-    assert access.seal(out, None, []) == 4  # the report, its sheet, Source check and the Rule book
+    assert access.seal(out, None, []) == 3  # the report, its sheet and Source check
     published = everything(out)
     assert SECRET not in published and "client one" not in published and "long enough password" not in published
     assert not (out / "planner/example/sheet.csv").exists()
@@ -112,9 +112,9 @@ def test_the_secret_holds_no_password(tmp_path, monkeypatch):
     assert told[-1] == {}
 
 
-def test_login_box_prices_all_five_products_and_one_way_to_write():
-    # 4 Nov 2026, owner: five products, the report bought once and the rest by subscription; the button is the only
-    # way to write, and the box links to What Pulse Pro is, not to the sample report
+def test_login_box_asks_only_the_password_and_gives_one_email():
+    # 6 Nov 2026, owner: one username for every client (filled in by the page), the visitor types only the password;
+    # under it the prices ($xx until set) and a ready-written email to buy a login
     box = access._get_login()
     assert len(access.PRICES) == 5 and box.count("<tr>") == 6 + len(access.STORE_ADDONS)
     assert "$xx a report" in box and "Bought once" in box and "No login needed" in box
@@ -126,4 +126,8 @@ def test_login_box_prices_all_five_products_and_one_way_to_write():
     assert all(n in access.REQUEST for n, *_ in access.STORE_ADDONS)
     # 6 Nov 2026, owner: no yearly price anywhere
     assert "a year" not in box and "yearly" not in access.REQUEST.lower()
+    assert access.CLIENT == "pulse-client"
+    assert "sessionStorage" in access.SCRIPT and "localStorage" not in access.SCRIPT + access.HIDE  # the login lasts the visit
+    # the Pro top bar adds its script before the first </body> it meets: one inside the login script broke the box
+    assert "</body>" not in access.SCRIPT
     assert access.FAMILY + "index.html" in access.OPEN
