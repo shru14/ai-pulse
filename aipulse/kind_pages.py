@@ -16,7 +16,7 @@ from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import brands, classify, countries, digest, jurisdictions, pages, rss, sources
+from . import brands, classify, countries, digest, jurisdictions, pages, rss, seo, sources
 from .server import TEMPLATE
 
 # kind (classify.news_kind): (address under industry/, heading, what's on the page)
@@ -193,7 +193,7 @@ STORIES_JS = r"""<script>
     document.getElementById("stories-count").textContent = list.length + " " + (list.length === 1 ? ul.dataset.noun : ul.dataset.nouns);
     if(!list.length) return note("None in the last 3 months.");
     buildTiles(); pick("");
-  }).catch(() => note("Couldn't load the stories. Try reloading the page."));
+  }).catch(() => ul.dataset.ssr || note("Couldn't load the stories. Try reloading the page."));  // the build's headlines stay
   more.addEventListener("click", show);
 })();
 </script>"""
@@ -275,6 +275,21 @@ def stream_pages(cards: list[dict] = ()) -> list[tuple[str, str, str, str, str, 
     return [(cat, p, label, h, w, {"category": cat, **rule}) for cat, p, label, h, w, rule in out]
 
 
+def picks(rule: dict, c: dict) -> bool:
+    """Whether the page with `rule` lists card `c`: STORIES_JS's `has`, for the headlines written into the HTML."""
+    if c["category"] != rule["category"]:
+        return False
+    if rule.get("kind"):
+        return c.get("kind") == rule["kind"]
+    if "ids" in rule:
+        return c["id"] in rule["ids"]
+    if rule.get("title"):
+        return bool(re.search(rule["title"], c["title"], re.I))
+    if rule.get("notSources"):
+        return c["source"] not in rule["notSources"]
+    return c["source"] in rule.get("sources", ()) or any(t in (c.get("tags") or ()) for t in rule.get("tags", ()))
+
+
 def paths() -> list[str]:
     return [p for _, p, *_ in stream_pages()]
 
@@ -350,6 +365,7 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
     of = {s: company(s) for s in sorted({c["source"] for c in cards if c.get("kind") == "blog"})}
     firms = safe({"of": of, "logo": logos(set(of.values()))})
     every = stream_pages(cards)
+    since = (date.today() - timedelta(days=92)).isoformat()  # data.json's last 3 months, which the page's list reads
     paths = []
     for cat, p, label, heading, what, rule in every:
         home, name = STREAMS[cat]
@@ -363,6 +379,7 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
                  f'<script type="application/json" id="firms">{safe(who)}</script>\n' if who else
                  f'<script type="application/json" id="topics">{safe(tile_names(cat, p))}</script>\n')
         noun, nouns = ("paper", "papers") if cat == "research" else ("story", "stories")
+        mine = seo.newest([c for c in cards if c["date"] >= since and picks(rule, c)], 20)  # in the HTML (seo.py)
         where = "the paper" if cat == "research" else "the outlet's own page"
         body = (f'<div class="kd">' + pages.band(cat, _icon(p, label), f"photos/cartoons/streams/{cat}.svg", heading,
                                                  ASK.get(p) or ASK[p.split("/")[0]].format(label, label.lower()), escape(what))
@@ -370,8 +387,10 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
                 f'each linking to {escape(where)}.</p>\n'
                 + '<div class="places companies" id="cats"></div>\n' + tiles
                 + f'<script type="application/json" id="rule">{safe(rule)}</script>\n'
-                f'<ul id="kind-stories" data-noun="{noun}" data-nouns="{nouns}"><li class="meta">Loading the {nouns}…</li></ul>\n'
-                f'<button type="button" class="more-stories" id="more-stories" hidden>Show more {nouns}</button>\n'
+                + (f'<ul id="kind-stories" data-noun="{noun}" data-nouns="{nouns}" data-ssr="1">{seo.items(mine)}</ul>\n'
+                   if mine else
+                   f'<ul id="kind-stories" data-noun="{noun}" data-nouns="{nouns}"><li class="meta">Loading the {nouns}…</li></ul>\n')
+                + f'<button type="button" class="more-stories" id="more-stories" hidden>Show more {nouns}</button>\n'
                 f'{STORIES_JS}</div>')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": heading, "description": what,
                 "url": f"{rss.SITE}{p}"}

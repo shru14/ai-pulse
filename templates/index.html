@@ -269,6 +269,7 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:24px;min-width:0}
 .tile .label{font:600 13px var(--mono);letter-spacing:.02em}
 .tile-note{margin:0;color:var(--muted)}
+.ssr-list{list-style:none;margin:0;padding:0}.ssr-list li{margin:0 0 10px}.ssr-list .meta{color:var(--muted);font-size:13px}
 .kicker{font:500 11.5px/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .mchip{display:inline-block;align-self:flex-start;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:2px;background:var(--cat-f);color:#141925}
 .mag-cover{display:flex;flex-direction:column;border-radius:4px;overflow:hidden;background:#141925;color:#FFFFFF;min-width:0}
@@ -1561,7 +1562,12 @@ function render(){
   renderPlaceBar(REGION_TABS.has(state.cat));
   const list = state.items;  // already filtered, grouped and sorted by the server
 
-  const feed = $("feed"); feed.replaceChildren();
+  const feed = $("feed");
+  if(feed.dataset.ssr){  // the build's headlines (for search engines) stay until the stories have loaded
+    if(!list.length && !state.error) return;
+    delete feed.dataset.ssr;
+  }
+  feed.replaceChildren();
   const byDay = new Map();
   list.forEach(it => { if(!byDay.has(it.date)) byDay.set(it.date, []); byDay.get(it.date).push(it); });
   for(const [day, its] of byDay){
@@ -2178,13 +2184,14 @@ function kicker(it){
 function renderHome(){
   const hero = $("hero");
   if(!HOME.by){
+    if(hero.dataset.ssr && !HOME.error) return;  // the build's story of the week stays until the stories have loaded
     hero.className = "mag-cover";
     hero.replaceChildren(el("p","tile-note", HOME.error ? "Couldn't load the past 7 days' stories. Try reloading the page." : "Loading the past 7 days' stories…"));
     return;
   }
   // the story of the week: the past 7 days' (today and the 6 days before, UTC), as the word and the meme of the week
   const top = (HOME.lastWeek || []).filter(it => CATS.includes(it.category)).sort(byWeight)[0];
-  hero.replaceChildren();
+  delete hero.dataset.ssr; hero.replaceChildren();
   if(top){
     // The cover: the story of the week over its drawn art, with who else reported it and its tags.
     hero.className = "mag-cover k-" + top.category;

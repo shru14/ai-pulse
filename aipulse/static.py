@@ -18,7 +18,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, store
-from . import COMPASS, pages, poster, subscribers
+from . import COMPASS, pages, poster, seo, subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
 _WORD = re.compile(r"[^\W_]+")
@@ -82,9 +82,14 @@ STREAM_PAGES = {
 }
 
 
-def stream_page(page: str, cat: str) -> str:
-    """The front page as `cat`'s own page: its title, description and address, and its heading already written."""
+def stream_page(page: str, cat: str, cards: list[dict] = ()) -> str:
+    """The front page as `cat`'s own page: its title, description and address, its heading already written, and
+    its newest headlines in the HTML for search engines (seo.py), which the page's script replaces once loaded."""
     path, name, title, desc = STREAM_PAGES[cat]
+    mine = seo.newest([c for c in cards if cat == "all" or c["category"] == cat], 40)
+    if mine:
+        page = page.replace('<main id="feed"></main>', f'<main id="feed" data-ssr="1">{seo.feed(mine)}</main>', 1)
+    page = page.replace('<section class="section" id="section" hidden>', '<section class="section" id="section">', 1)
     title, desc, url = escape(f"{title} · AI Pulse"), escape(f"{desc} Updated every 6 hours."), f"{rss.SITE}{path}/"
     page = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", page, count=1)
     page = re.sub(r'(<meta (?:name="description"|property="og:description") content=")[^"]*', rf"\g<1>{desc}", page)
@@ -123,14 +128,41 @@ def privacy_page() -> str:
     return pages.page("Privacy · AI Pulse", what, "privacy.html", body, data, pages.frame(), ("/", "Back to AI Pulse"))
 
 
+FRONT_CATS = ("tool", "news", "research", "regulation", "policy", "infra")
+
+
+def front_page(page: str, cards: list[dict], today: date) -> str:
+    """The front page, shown, with the past 7 days' story of the week (the most outlets, then the newest, as the
+    page picks it) already on its cover for search engines; the page's script redraws the cover once loaded."""
+    page = page.replace('<section class="home" id="front" hidden>', '<section class="home" id="front">', 1)
+    since, until = (today - timedelta(days=6)).isoformat(), (today + timedelta(days=1)).isoformat()
+    week = [c for c in cards if c["category"] in FRONT_CATS and since <= c["date"] < until]
+    # Today in AI: the most reported of the last 2 days, as its grid ranks them, until the page draws its own
+    two = (today - timedelta(days=1)).isoformat()
+    most = sorted((c for c in week if c["date"] >= two), key=lambda c: (len(c.get("also") or []), c["date"]), reverse=True)[:10]
+    if most:
+        page = page.replace('<div class="today-cards" id="today-grid"><p class="tile-note">Loading today\'s stories…</p></div>',
+                            f'<div class="today-cards" id="today-grid"><ul class="ssr-list">{seo.items(most)}</ul></div>', 1)
+    if not week:
+        return page
+    top = max(week, key=lambda c: (len(c.get("also") or []), c["date"]))
+    name = escape(STREAM_PAGES[top["category"]][1])
+    cover = (f'<article class="mag-cover k-{escape(top["category"])}" id="hero" data-ssr="1"><div class="copy">'
+             f'<h2>{seo.link(top)}</h2><span class="mchip">{name}</span>'
+             f'<span class="kicker">{seo.day(top["date"])} · {escape(top.get("source") or "")}</span></div></article>')
+    return page.replace('<article class="mag-cover" id="hero"><p class="tile-note">Loading the past 7 days\' stories…</p></article>',
+                        cover, 1)
+
+
 def about_page(page: str) -> str:
     """The site's page opened at About (the template holds its text): its own title, description and address."""
     return page_at(page, "about", "About · AI Pulse", "What AI Pulse is, where its stories come from and how it is made.")
 
 
 def page_at(page: str, path: str, title: str, desc: str) -> str:
-    """The site's page with its own title, description and address (/about/, /discussing/)."""
-    url = f"{rss.SITE}/{path}/"
+    """The site's page with its own title, description and address (/about/, /discussing/), its own part shown."""
+    url = f"{rss.SITE}{path}/"  # rss.SITE ends with "/" (it gave ".com//about/" until 6 Nov 2026)
+    page = page.replace(f'id="{path}-page" hidden>', f'id="{path}-page">', 1)
     page = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", page, count=1)
     page = re.sub(r'(<meta (?:name="description"|property="og:description") content=")[^"]*', rf"\g<1>{desc}", page)
     page = re.sub(r'(<meta property="og:title" content=")[^"]*', rf"\g<1>{title}", page, count=1)
@@ -392,7 +424,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
     page = subscribers.fill(page).replace("</head>", pages.counter() + "</head>", 1)
-    (out / "index.html").write_text(page, encoding="utf-8")
+    (out / "index.html").write_text(front_page(page, recent, today), encoding="utf-8")
     (out / "about").mkdir()
     (out / "about" / "index.html").write_text(about_page(page), encoding="utf-8")  # the same page, opened at About
     (out / "discussing").mkdir()
@@ -406,7 +438,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
         "Today's AI stories, ranked by how many outlets carry them."), encoding="utf-8")
     for cat, (path, *_) in STREAM_PAGES.items():  # /policy/ and the rest: the same page, opened at that stream
         (out / path).mkdir()
-        (out / path / "index.html").write_text(stream_page(page, cat), encoding="utf-8")
+        (out / path / "index.html").write_text(stream_page(page, cat, recent), encoding="utf-8")
     # readers' weekly dossiers: the page, and each interest's section the full run kept (weekly.prepare)
     from . import weekly
     (out / "dossier.html").write_text((TEMPLATE.parent / "dossier.html").read_text(encoding="utf-8"), encoding="utf-8")

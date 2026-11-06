@@ -21,7 +21,7 @@ from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import countries, pages, rss
+from . import countries, pages, rss, seo
 
 QUIET_DAYS = 90  # a topic with no new event for this long is Concluded (kept, never deleted)
 # Topics are ranked by how much they're in the news: over the last TREND_DAYS, each event counts once per outlet that
@@ -603,7 +603,7 @@ TIMELINE_JS = r"""<script>
     });
     flush();
     const now = el("li", "now"); now.append(el("span", "", "Now")); ol.append(now);
-  }).catch(() => tl.replaceChildren(el("p", "meta", "Couldn't load the timeline. Try reloading the page.")));
+  }).catch(() => tl.querySelector(".ssr-list") || tl.replaceChildren(el("p", "meta", "Couldn't load the timeline. Try reloading the page.")));
 })();
 </script>"""
 
@@ -643,7 +643,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 '<h2>How it unfolded</h2>\n'
                 + ('<p class="legend"><span class="lg official">Official record</span>'
                    '<span class="lg news">In the news</span></p>\n' if any(e["official"] for e in ev) else "")
-                + f'<div class="chapters" id="timeline" data-src="/{p}events.json"><p class="meta">Loading…</p></div>\n'
+                + f'<div class="chapters" id="timeline" data-src="/{p}events.json">'
+                + (f'<ul class="ssr-list">{seo.items(seo.newest(ev, 40))}</ul>' if ev else '<p class="meta">Loading…</p>')
+                + '</div>\n'  # its newest events in the HTML for search engines (seo.py); the timeline replaces them
                 + (f'<p class="related">Related: {related}</p>\n' if related else "")
                 + f'</div>\n{TIMELINE_JS}')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": t["name"],
