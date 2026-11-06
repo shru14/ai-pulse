@@ -25,8 +25,9 @@
  *                           useful,         from the lists in REVIEW (|-separated) and a note, emailed to the
  *                           section,        project inbox; nothing about the reader is sent or kept
  *                           improve, other
- *   GET  action=list        key             the confirmed readers, for the daily send (key = LIST_KEY)
- *   GET  action=interests   key             every interest readers follow, once each and without who follows it,
+ *   POST action=list        key             the confirmed readers, for the daily send (key = LIST_KEY; in the
+ *                                            body, never the address, so it stays out of Google's logs)
+ *   POST action=interests   key             every interest readers follow, once each and without who follows it,
  *                                            for the site's weekly dossiers (key = LIST_KEY)
  * With format=json the site gets {ok, title, text}; without it (an old link opened here) a small page.
  * The project inbox gets a short note when someone subscribes, changes streams or unsubscribes.
@@ -58,8 +59,8 @@ const names = streams => streams.map(s => STREAMS[s]).join(", ");
 
 function doGet(e) {
   const p = e.parameter || {};
-  if (p.action === "list") return json(list(p.key));
-  if (p.action === "interests") return json(interests(p.key));
+  if (p.action === "list") return json(list(p.key));  // old: key in the address; remove once the daily send uses POST
+  if (p.action === "interests") return json(interests(p.key));  // old, as above
   if (p.action === "confirm" || p.action === "unsubscribe") return button(p.action, p.t);  // links sent before the site handled them
   return page({title: "AI Pulse daily", text: "Sign up for the daily digest on the AI Pulse site."});
 }
@@ -67,6 +68,8 @@ function doGet(e) {
 function doPost(e) {
   const p = e.parameter || {};
   if (p["List-Unsubscribe"] === "One-Click") return (unsubscribe(p.t), json({ok: true}));
+  if (p.action === "list") return json(list(p.key));
+  if (p.action === "interests") return json(interests(p.key));
   const result = p.action === "subscribe" ? subscribe(p)
     : p.action === "confirm" ? confirm(p.t)
     : p.action === "unsubscribe" ? unsubscribe(p.t)
