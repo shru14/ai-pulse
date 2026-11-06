@@ -3,7 +3,7 @@ story (industry/<kind>/: opinion and analysis, company blogs, studies, AI-incide
 Releases by company (releases/<company>/), Policy by who is speaking (policy/<who>/), Research by subject
 (research/<subject>/) and Infra by its subjects (infra/<subject>/). The stories are the outlets' own headlines, so
 each page loads them in the reader's browser from data.json (the last 3 months), as the glossary's word pages do;
-the page itself holds only our own words and the rule that picks its stories. No date of its own. Company blogs
+the page itself holds the newest too, for search engines (seo.py), and the rule that picks its stories. No date of its own. Company blogs
 are grouped by company, a tile each with its logo, like the tracker's places with their flags; the other pages by
 topic (Research's by company and scholar, Infra's by place). Each tile previews its newest story.
 """

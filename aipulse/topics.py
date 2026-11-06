@@ -10,7 +10,7 @@ the words don't match is a candidate (`python -m aipulse topics`): the daily job
 topics/<day> branch, and it joins a topic only when the owner merges that.
 
 The stories are the outlets' own headlines, so a topic's page loads them in the reader's browser from its events.json,
-as the industry pages do; the page itself holds only our own words.
+as the industry pages do; the page itself holds the newest too, for search engines (seo.py).
 """
 from __future__ import annotations
 

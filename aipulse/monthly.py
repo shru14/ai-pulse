@@ -14,7 +14,7 @@ is checked: every name and number it writes must be in them, else it tries again
 
 It's optional: without the library (`pip install llama-cpp-python`) or the model, issues have no summary and
 everything else works as before. The stories load in the reader's browser from each issue's issue.json, so the
-page itself holds only our own words, as on the topics' pages.
+page itself holds the top headlines too, for search engines (seo.py).
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from datetime import date, datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 
-from . import countries, feeds, glossary, pages, rss, standards, topics
+from . import countries, feeds, glossary, pages, rss, seo, standards, topics
 
 FIRST = "2026-01"  # the first issue (the owner's choice, 11 Oct 2026: 2026 on, no earlier years)
 REPO = "unsloth/Qwen3-4B-Instruct-2507-GGUF"
@@ -431,7 +431,7 @@ ISSUE_JS = r"""<script>
         return row([String(i + 1), a, link(t), day(t.date), el("b", "n", String(t.n))]);
       }));
     } else document.getElementById("storylines").remove(), document.querySelector('a[href$="#storylines"]')?.parentElement.remove();
-  }).catch(() => root.querySelectorAll("tbody, #top-rows, #rule-groups, #stream-rows").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
+  }).catch(() => root.querySelectorAll("tbody, #top-rows:not([data-ssr]), #rule-groups, #stream-rows").forEach(t => t.replaceChildren(el("p", "meta", "Couldn't load the stories. Try reloading the page."))));
 })();
 </script>""".replace("__BADGES__", json.dumps(BADGES))
 
@@ -544,8 +544,9 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 + (f'<section class="sheet" id="brief"><h2>The month in brief</h2><p class="brief">{marked(summary, mine)}</p></section>\n'
                    if summary else "")
                 + '<section class="sheet" id="top"><h2>What mattered most</h2><p class="key" id="top-key"></p>'
-                  '<ol class="tiles" id="top-rows"><li class="meta">Loading…</li></ol>'
-                  '<p class="meta">How to read: ranked by how many outlets carried each story; '
+                  + (f'<ol class="tiles" id="top-rows" data-ssr="1">{seo.items(data["top"])}</ol>' if data["top"] else
+                     '<ol class="tiles" id="top-rows"><li class="meta">Loading…</li></ol>')  # headlines in the HTML (seo.py)
+                  + '<p class="meta">How to read: ranked by how many outlets carried each story; '
                   'each tile is in the colour of its stream.</p></section>\n'
                 + ('<section class="sheet" id="rules"><h2>Rules that moved</h2><div class="groups" id="rule-groups">'
                    '<p class="meta">Loading…</p></div></section>\n' if data["rules"] else "")

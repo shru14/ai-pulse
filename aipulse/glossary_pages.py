@@ -12,13 +12,13 @@ from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import glossary, pages, rss
+from . import glossary, pages, rss, seo
 
 BOOK = "M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5M4 19.5A2.5 2.5 0 0 1 6.5 17H19M9 7h6M9 10.5h4"  # the header band's icon
 
 # A word's latest stories, found in the reader's browser in data.json (about the last 3 months) as the site's
-# underlines find them, newest first, 10 at a time: publishers' headlines stay out of the page itself, as on the
-# tracker's country pages.
+# underlines find them, newest first, 10 at a time: the newest are also written into the page (seo.py)
+# for search engines (owner, 6 Nov 2026).
 STORIES_JS = r"""<script>
 (() => {
   const ul = document.getElementById("word-stories"), more = document.getElementById("more-stories");
@@ -43,7 +43,7 @@ STORIES_JS = r"""<script>
     document.getElementById("stories-count").textContent = list.length + (list.length === 1 ? " story" : " stories");
     if(!list.length) return note("No stories used this word in the last 3 months.");
     ul.replaceChildren(); show();
-  }).catch(() => note("Couldn't load the stories. Try reloading the page."));
+  }).catch(() => ul.dataset.ssr || note("Couldn't load the stories. Try reloading the page."));  // the build's headlines stay
   more.addEventListener("click", show);
 })();
 </script>"""
@@ -126,10 +126,16 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     # each recent story's glossary words: the past 7 days' counts (the cloud) and which words share stories
     week, since = (today - timedelta(days=7)).isoformat(), (today - timedelta(days=TOGETHER_DAYS)).isoformat()
     recent, together = Counter(), {e["id"]: Counter() for e in glossary.ENTRIES}
+    three = (today - timedelta(days=92)).isoformat()  # data.json's last 3 months, which the word's list reads
+    latest: dict[str, list[dict]] = {}  # each word's stories, for the headlines in its page's HTML (seo.py)
     for c in cards:
-        if (c.get("date") or "") < since:
+        if (c.get("date") or "") < min(since, three):
             continue
         ids = glossary.terms_in(f"{c.get('title') or ''} {c.get('summary') or ''}")
+        for i in ids if c.get("url") and c.get("title") else ():
+            latest.setdefault(i, []).append(c)
+        if c["date"] < since:
+            continue
         if c["date"] >= week:
             recent.update(ids)
         for i in ids:
@@ -160,8 +166,10 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 f'<h2 id="stories">Latest stories with this word</h2>\n'
                 f'<p class="intro"><span id="stories-count">The stories</span> in the last 3 months where the glossary '
                 f'marks {escape(e["term"])}, from every stream, newest first.</p>\n'
-                f'<ul id="word-stories" data-match="{escape(json.dumps(e["match"]))}"{" data-case=1" if e["case"] else ""}>'
-                f'<li class="meta">Loading the stories…</li></ul>\n'
+                f'<ul id="word-stories" data-match="{escape(json.dumps(e["match"]))}"{" data-case=1" if e["case"] else ""}'
+                f'{" data-ssr=1" if latest.get(e["id"]) else ""}>'
+                + (seo.items(seo.newest(latest[e["id"]], 10)) if latest.get(e["id"]) else
+                   '<li class="meta">Loading the stories…</li>') + '</ul>\n'
                 f'<button type="button" class="more-stories" id="more-stories" hidden>Show more stories</button>\n'
                 f'{STORIES_JS}')
         data = {"@context": "https://schema.org", "@type": "DefinedTerm", "name": e["term"], "description": e["def"],
