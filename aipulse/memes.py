@@ -230,9 +230,10 @@ FORMATS = [_distracted, _buttons, _nope_yep, _fine, _brain, _yelling, _pigeon, _
 GENERATED: dict = {}  # ("day" | "week", date) -> a meme Gemini wrote (memegen.prepare); used instead of the rules
 
 
-# The day's template, by the date, in this order: each comes back only every 8 days, never within 5, the same for
+# The day's template, by the date, in this order: each comes back only every 16 days, the same for
 # a dry run and the morning's send (wide and tall ones alternate)
-ROTATION = ["distracted", "buttons", "fine", "nopeyep", "yelling", "brain", "pigeon", "panik"]
+ROTATION = ["distracted", "buttons", "gru", "fine", "exit", "nopeyep", "handshake", "always",
+            "uno", "brain", "pooh", "pigeon", "bikefall", "doge", "yelling", "panik"]  # 16 since 2026-11-06 (owner: more variety)
 
 
 # A day's template when its stories can't fill it (and Gemini wrote nothing): a joke about the AI industry's habits
@@ -277,11 +278,43 @@ STANDBY = {
                         ("Panik", "It gave the same answer again")]},
               {"rows": [("Panik", "A rival tops the benchmark"), ("Kalm", "Benchmarks don't mean much"),
                         ("Panik", "Your investors saw the benchmark")]}],
+    "gru": [{"labels": ["Train a bigger model", "Top every benchmark", "Charge more for it", "Nobody can afford it"]},
+            {"labels": ["Launch an AI agent", "Let it book meetings", "Let it send emails", "It emailed everyone"]},
+            {"labels": ["Build a chatbot", "Give it a name", "Give it a personality", "It argues with customers"]},
+            {"labels": ["Raise a big round", "Buy lots of GPUs", "Build a data centre", "Wait for the power line"]}],
+    "exit": [{"labels": ["Fixing the last model", "Launching a new one", "AI labs"]},
+             {"labels": ["Writing the code", "Asking the chatbot", "Developers"]},
+             {"labels": ["Making a profit", "Raising another round", "AI start-ups"]},
+             {"labels": ["A clear model name", "Adding “Pro Max” to it", "AI marketing teams"]}],
+    "handshake": [{"labels": ["Hyping the launch", "AI labs", "Investors"]},
+                  {"labels": ["Wanting more GPUs", "AI start-ups", "Chip makers"]},
+                  {"labels": ["Blaming the prompt", "Developers", "The model"]},
+                  {"labels": ["Calling it a breakthrough", "AI labs", "Their marketing teams"]}],
+    "uno": [{"labels": ["Give the model a clear name", "AI labs"]},
+            {"labels": ["Share the training data", "AI labs"]},
+            {"labels": ["Write the docs", "Developers"]},
+            {"labels": ["Say “I don't know”", "Chatbots"]}],
+    "always": [{"labels": ["Wait, it's all autocomplete?", "Always has been"]},
+               {"labels": ["Wait, the agent is just a loop?", "Always has been"]},
+               {"labels": ["Wait, it's all about the GPUs?", "Always has been"]},
+               {"labels": ["Wait, it's all about the data?", "Always has been"]}],
+    "pooh": [{"labels": ["A chatbot with tools", "An agentic AI platform"]},
+             {"labels": ["A big spreadsheet", "A data-driven AI insights engine"]},
+             {"labels": ["An if statement", "A reasoning layer"]},
+             {"labels": ["A warehouse with GPUs", "An AI factory"]}],
+    "doge": [{"labels": ["AI labs back then", "AI labs now", "Published the full paper", "Publishes a launch video"]},
+             {"labels": ["Chatbots back then", "Chatbots now", "Short answers", "Five paragraphs and a table"]},
+             {"labels": ["Benchmarks back then", "Benchmarks now", "Hard for every model", "Beaten in a week"]},
+             {"labels": ["Developers back then", "Developers now", "Wrote the code", "Ask the AI to write it"]}],
+    "bikefall": [{"labels": ["AI start-up", "Building on another firm's model", "“Why did they change the model?”"]},
+                 {"labels": ["Developer", "Ships the AI-written code", "“Who wrote this bug?”"]},
+                 {"labels": ["AI lab", "Launches without testing", "“Why is everyone posting screenshots?”"]},
+                 {"labels": ["Chatbot", "Makes up a source", "“Why doesn't anyone trust me?”"]}],
 }
 
 
-def _turn(when: date, days: int = 8) -> int:
-    """Which wording: the next each time a template comes back (every 8 days; the Sunday meme every 28)."""
+def _turn(when: date, days: int = 16) -> int:
+    """Which wording: the next each time a template comes back (every 16 days; the Sunday meme every 28)."""
     return when.toordinal() // days
 
 
@@ -292,7 +325,7 @@ def _made(want: str, f: dict, span: str, have: bool) -> dict | None:
 
 
 def template_of(day: date) -> str:
-    return ROTATION[day.toordinal() % len(ROTATION)]
+    return ROTATION[(day.toordinal() + 2) % len(ROTATION)]
 
 
 # The Sunday email's meme of the week takes only the wide templates, the next each Monday (the site's tile takes all
@@ -308,7 +341,7 @@ def template_of_week(monday: date) -> str:
 def template_of_7_days(today: date) -> str:
     """The site's meme of the week's template: the next in ROTATION each day, so no format comes back within a week
     (owner, 2026-11-06); set so 6 Nov 2026 keeps its meme (yelling). Tall ones shrink to the tile; a click opens them."""
-    return ROTATION[(today.toordinal() + 6) % len(ROTATION)]
+    return ROTATION[(today.toordinal() + 8) % len(ROTATION)]
 
 
 def last_7_days(cards: list[dict], today: date) -> list[dict]:
@@ -384,14 +417,30 @@ TEMPLATES = {
     "panik": ("panik.png", "Panik Kalm Panik", [(.02, .0, .45, .33, "panel", 0), (.02, .34, .45, .33, "panel", 0),
                                                 (.02, .67, .45, .33, "panel", 0)]),
 }
-TALL = {"buttons", "nopeyep", "brain", "panik"}  # taller than wide
+TEMPLATES.update({  # added 2026-11-06 (owner: more variety); captions are just "labels", box by box
+    "gru": ("gru.jpg", "Gru's Plan", [(.28, .07, .21, .40, "panel", 0), (.77, .07, .22, .40, "panel", 0),
+                                      (.28, .57, .21, .40, "panel", 0), (.77, .57, .22, .40, "panel", 0)]),
+    "exit": ("exit.jpg", "Left Exit 12 Off Ramp",
+             [(.24, .08, .24, .24, "photo", 0), (.50, .08, .24, .24, "photo", 0), (.25, .62, .45, .16, "photo", 0)]),
+    "handshake": ("handshake.jpg", "Epic Handshake",
+                  [(.30, .02, .40, .16, "photo", 0), (.02, .60, .36, .20, "photo", 0), (.62, .60, .36, .20, "photo", 0)]),
+    "uno": ("uno.jpg", "UNO Draw 25 Cards", [(.15, .34, .24, .18, "panel", 0), (.50, .72, .48, .20, "photo", 0)]),
+    "always": ("always.jpg", "Always Has Been", [(.0, .03, .55, .22, "photo", 0), (.55, .03, .45, .22, "photo", 0)]),
+    "pooh": ("pooh.jpg", "Tuxedo Winnie the Pooh", [(.45, .04, .53, .42, "panel", 0), (.45, .54, .53, .42, "panel", 0)]),
+    "doge": ("doge.jpg", "Buff Doge vs. Cheems", [(.02, .02, .50, .14, "panel", 0), (.55, .02, .43, .14, "panel", 0),
+                                                  (.02, .82, .50, .16, "panel", 0), (.55, .82, .43, .16, "panel", 0)]),
+    "bikefall": ("bikefall.jpg", "Bike Fall",
+                 [(.06, .06, .44, .14, "photo", 0), (.03, .40, .42, .14, "photo", 0), (.04, .72, .52, .14, "photo", 0)]),
+})
+PLAIN = ("gru", "exit", "handshake", "uno", "always", "pooh", "doge", "bikefall")  # captions = labels only
+TALL = {"buttons", "nopeyep", "brain", "panik", "bikefall"}  # taller than wide
 FONTS = {"photo": DIR / "fonts" / "Anton-Regular.ttf", "panel": DIR / "fonts" / "ArchivoBlack-Regular.ttf"}
 
 
 def captions(meme: dict) -> list[str]:
     """The meme's captions in the order of its template's boxes."""
     f = meme["format"]
-    if f in ("distracted", "yelling"):
+    if f in ("distracted", "yelling", *PLAIN):
         return list(meme["labels"])
     if f in ("buttons", "pigeon"):
         return [*meme["labels"], meme["caption"]]
@@ -513,4 +562,14 @@ def text(meme: dict) -> list[str]:
         out += [f"{meme['labels'][0]}, pointing at {meme['labels'][1]}:", meme["caption"]]
     elif f == "panik":
         out += [f"  {k.upper()}: {t}" for k, t in meme["rows"]]
+    elif f in PLAIN:
+        l = meme["labels"]
+        out += {"gru": lambda: ["The plan:"] + [f"  {i}. {t}" for i, t in enumerate(l, 1)],
+                "exit": lambda: [f"{l[2]}, swerving from “{l[0]}” to “{l[1]}”."],
+                "handshake": lambda: [f"{l[1]} and {l[2]} shaking hands on: {l[0]}."],
+                "uno": lambda: [f"“{l[0]}” or draw 25. {l[1]}: draws 25."],
+                "always": lambda: [f"“{l[0]}”", f"“{l[1]}.”"],
+                "pooh": lambda: [f"Plain: {l[0]}", f"Fancy: {l[1]}"],
+                "doge": lambda: [f"{l[0]}: {l[2]}", f"{l[1]}: {l[3]}"],
+                "bikefall": lambda: [f"{l[0]}: {l[1]}. Then: {l[2]}"]}[f]()
     return out

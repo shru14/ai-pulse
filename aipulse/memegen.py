@@ -50,6 +50,22 @@ TEMPLATES = {
                {"labels": "2 captions: [who points, what they point at]", "caption": "the question: Is this ...?"}),
     "panik": ("Panik Kalm Panik: three rows of a meme face panicking, calm, panicking again.",
               {"rows": "3 pairs [[\"Panik\", line], [\"Kalm\", line], [\"Panik\", line]]"}),
+    "gru": ("Gru's Plan: a cartoon villain presents a four-step plan on a flip chart; reading step 4, he sees it backfires.",
+            {"labels": "4 captions: [step 1, step 2, step 3, the step that backfires]"}),
+    "exit": ("Left Exit 12 Off Ramp: a car swerves off the motorway onto the exit at the last second.",
+             {"labels": "3 captions: [straight on (the sensible option), the exit (the tempting one), who is driving]"}),
+    "handshake": ("Epic Handshake: two muscular arms from two sides clasp hands in agreement.",
+                  {"labels": "3 captions: [what they agree on, one side, the other side]"}),
+    "uno": ("UNO Draw 25 Cards: a card says \"do this or draw 25\"; a man holds a huge hand, having drawn rather than do it.",
+            {"labels": "2 captions: [what they'd rather not do (written on the card), who drew 25 instead]"}),
+    "always": ("Always Has Been: an astronaut looking at Earth realises something; another behind him says \"Always has been\".",
+               {"labels": "2 captions: [the realisation, starting \"Wait, it's all ...?\", then exactly \"Always has been\"]"}),
+    "pooh": ("Tuxedo Winnie the Pooh: the bear plain, then in a tuxedo: the same thing named plainly, then fancily.",
+             {"labels": "2 captions: [the plain name, the fancy name]"}),
+    "doge": ("Buff Doge vs. Cheems: a strong, muscular version (back then) beside a small, weak version (now).",
+             {"labels": "4 captions: [who back then, who now, what the strong one did, what the weak one does]"}),
+    "bikefall": ("Bike Fall: a cyclist jams a stick in his own front wheel, falls, and blames someone else.",
+                 {"labels": "3 captions: [the cyclist, what they do to themselves, what they say on the ground, in quotes]"}),
 }
 
 # Never in a caption, whatever the headline: politics and politicians (on top of memes' harm and crime words)
@@ -155,8 +171,8 @@ def check(m: dict, stories: list[dict], avoid: set[str] = frozenset()) -> dict |
     try:
         if f == "nopeyep":
             out.update(who=_clean(m["who"]), nope=_clean(m["nope"]), yep=_clean(m["yep"]))
-        elif f in ("distracted", "yelling"):
-            n = 3 if f == "distracted" else 2
+        elif f in ("distracted", "yelling", *memes.PLAIN):
+            n = len(memes.TEMPLATES[f][2])  # one caption per box
             out["labels"] = [_clean(x) for x in m["labels"]][:n]
             if len(out["labels"]) != n:
                 return None
