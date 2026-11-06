@@ -696,6 +696,21 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert policy.count('content="What governments, courts and politicians do about AI, worldwide. Updated every 6 hours') == 2
     assert 'rel="canonical" href="https://projectaipulse.com/policy/"' in policy and 'og:url" content="https://projectaipulse.com/policy/"' in policy
     assert '<h2 id="sec-title">Policy</h2>' in policy and '<base href="/">' in policy and 'data-static="1"' in policy
+    # what Google reads without running the page's script (6 Nov 2026): each page's own part shown, its newest
+    # headlines as links in the HTML, and canonical addresses with one slash
+    from aipulse.static import stream_page
+    fresh = {"title": "Lab ships a model & more", "url": "https://example.com/a?b=1&c=2", "source": "Example",
+             "date": "2026-11-05", "category": "news"}
+    news = stream_page(page, "news", [fresh, {**fresh, "category": "tool", "url": "https://example.com/other"}])
+    assert '<section class="section" id="section">' in news and '<main id="feed" data-ssr="1">' in news
+    assert 'href="https://example.com/a?b=1&amp;c=2" rel="noopener">Lab ships a model &amp; more</a>' in news
+    assert "example.com/other" not in news and "Thu, 5 Nov 2026" in news
+    assert '<section class="home" id="front">' in front and '<section class="section" id="section" hidden>' in front
+    for p in ("about", "discussing", "today"):
+        own = (tmp_path / "site" / p / "index.html").read_text(encoding="utf-8")
+        assert f'rel="canonical" href="https://projectaipulse.com/{p}/"' in own and f'id="{p}-page">' in own
+    for f in (tmp_path / "site").glob("**/*.html"):
+        assert "projectaipulse.com//" not in f.read_text(encoding="utf-8"), f
     assert "<loc>https://projectaipulse.com/infra/</loc>" in sitemap
     from aipulse.static import STREAM_PAGES
     for cat, (path, _, title, _) in STREAM_PAGES.items():  # the page sets the same titles

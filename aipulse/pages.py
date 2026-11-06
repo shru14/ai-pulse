@@ -173,6 +173,7 @@ STYLE = """
 .cp .lg.official::before{background:var(--ink)}
 .cp .lg.news::before{background:#56B4E9}
 .cp .chapters{margin-top:10px}
+.cp .ssr-list{list-style:none;margin:0;padding:0}.cp .ssr-list li{margin:0 0 12px}
 .cp .chapter{display:grid;grid-template-columns:150px minmax(0,1fr);gap:0 10px}
 .cp .chapter .yr{position:relative;border-top:2px solid var(--line)}
 .cp .chapter .yr span{position:sticky;top:calc(var(--bar-h,64px) + 14px);display:block;padding-top:10px;font:400 clamp(34px,4vw,50px)/1 var(--display);color:transparent;-webkit-text-stroke:2px var(--ink)}
