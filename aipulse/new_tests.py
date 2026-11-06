@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-11-03"
+CHECKED_TO = "2026-11-05"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -552,6 +552,17 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "a written spec.",
         "Even top models see success fall from over 90% on algorithmic tasks to below 35% on system-level ones",
         "GPT-5.2", None),
+    "https://research.google/pubs/tfrbench-a-reasoning-benchmark-for-evaluating-forecasting-systems/": (
+        "TFRBench", "language-models",
+        "Whether models can forecast time series (energy, sales, web traffic, transport, finance) and explain their "
+        "reasoning in words.",
+        "No top score: off-the-shelf models consistently struggle with both reasoning and numerical forecasting",
+        "", None),
+    "https://www.microsoft.com/en-us/research/publication/synthetic-web-benchmarking-language-agents-under-adversarial-search-ranking/": (
+        "Synthetic Web Benchmark", "agents",
+        "Whether web-search agents still find the true answer when a single convincing false article is planted in "
+        "their search results.",
+        "No top score: across six frontier models, accuracy collapses despite access to truthful evidence", "", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
@@ -608,7 +619,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
 }
-BEATS_CHECKED_TO = "2026-11-03"
+BEATS_CHECKED_TO = "2026-11-05"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
