@@ -261,6 +261,16 @@ ADDED: dict[str, dict[str, str]] = {
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # revenue and loss figures, can't tell from the summary it is an IPO filing or other development
+    "https://the-decoder.com/anthropic-grows-revenue-twelvefold-but-posts-23-billion-loss/",
+    # utility programme for future compute campuses, summary doesn't mention Stargate
+    "https://openai.com/index/grid-protectors-program",
+    # research model that runs CUDA, not about US chip rules
+    "https://www.marktechpost.com/2026/11/01/qwengpu-simt-gpu-compiled-into-qwen3-5-2b-weights-runs-cuda/",
+    # Nvidia stake in Naver, not about the AI Basic Act
+    "https://www.thelec.net/news/articleView.html?idxno=15117",
+    # possible rebrand of data centers, summary doesn't mention Stargate
+    "https://techcrunch.com/2026/11/01/openai-might-rebrand-its-data-centers-as-ai-compute-campuses/",
     # data-centre pollution lawsuit under the Clean Air Act, not about Grok images
     "https://techcrunch.com/2026/10/31/judge-allows-naacp-lawsuit-over-xai-data-center-pollution-to-move-forward/",
     # opinion piece, reports nothing new in a case
