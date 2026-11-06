@@ -43,9 +43,9 @@ def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
     assert (out / "planner/smartfeed/index.html").read_text(encoding="utf-8") == "the feed page"  # each product's page
     assert "the tool" not in everything(out)  # Source check is behind the login too
     assert "the rule book" not in everything(out)  # and so are the Resources
-    for rel, text in (("explore", "step one"), ("questions", "step two"), ("plan", "step three"), ("plan/rules", "its rules")):
-        assert (out / f"planner/{rel}/index.html").read_text(encoding="utf-8") == text  # the first three steps are open
-    assert (out / "planner/store/index.html").read_text(encoding="utf-8") == "the shop"  # the Pulse Store has no price: open
+    # 6 Nov 2026, owner: only the product pages and samples are open; the steps and the shop are behind the password
+    for text in ("step one", "step two", "step three", "its rules", "the shop"):
+        assert text not in everything(out)
     assert (out / "about/index.html").read_text(encoding="utf-8") == "free"
 
 
@@ -59,7 +59,7 @@ def test_sealed_pages_open_only_with_the_right_password(tmp_path, monkeypatch):
     aead = pytest.importorskip("cryptography.hazmat.primitives.ciphers.aead")
     out = site(tmp_path, monkeypatch)
     monkeypatch.setenv("COMPASS_USERS", json.dumps({"client one": access.new_user("client one", "long enough password")}))
-    assert access.seal(out, None, []) == 4  # the report, its sheet, Source check and the Rule book
+    assert access.seal(out, None, []) == 9  # the report, its sheet, Source check, the Rule book, the steps and the shop
     published = everything(out)
     assert SECRET not in published and "client one" not in published and "long enough password" not in published
     assert not (out / "planner/example/sheet.csv").exists()
@@ -112,14 +112,13 @@ def test_the_secret_holds_no_password(tmp_path, monkeypatch):
     assert told[-1] == {}
 
 
-def test_login_box_prices_all_five_products_and_one_way_to_write():
-    # 4 Nov 2026, owner: five products, the report bought once and the rest by subscription; the button is the only
-    # way to write, and the box links to What Pulse Pro is, not to the sample report
+def test_login_box_asks_only_the_password_and_gives_one_email():
+    # 6 Nov 2026, owner: one username for every client (filled in by the page), the visitor types only the password;
+    # buying and other questions go to one email address, with no price list
     box = access._get_login()
-    assert len(access.PRICES) == 5 and box.count("<tr>") == 6 + len(access.STORE_ADDONS)
-    assert "$499 a report" in box and "Bought once" in box and "No login needed" in box
-    assert "Or write to" not in box and "Pulse Store /" not in access.REQUEST and "Pulse Store)" not in access.REQUEST
-    # the Store's paid add-ons (4 Nov 2026): priced in the box and named in the email; browsing the Store stays free
-    assert "$149 a pack" in box and "$49 a month" in box and "$299 a month" in box
-    assert all(n in access.REQUEST for n, *_ in access.STORE_ADDONS)
+    assert f"mailto:{access.MAIL}" in box and "<table" not in box and "$" not in box
+    assert access.CLIENT == "pulse-client"
+    assert "sessionStorage" in access.SCRIPT and "localStorage" not in access.SCRIPT + access.HIDE  # the login lasts the visit
+    # the Pro top bar adds its script before the first </body> it meets: one inside the login script broke the box
+    assert "</body>" not in access.SCRIPT
     assert access.FAMILY + "index.html" in access.OPEN
