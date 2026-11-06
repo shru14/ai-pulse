@@ -177,6 +177,8 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techpolicy.press/the-sec-should-block-anthropics-ipo-to-protect-the-public":
+        "Opinion piece urging the SEC to act, no government action",
     "https://www.xataka.com/empresas-y-economia/google-queria-levantar-centro-datos-finlandia-empezo-talando-330-"
     "hectareas-acabo-investigacion-penal":
         "A data-centre site's environmental works stop and police probe, not an AI product or deal",
