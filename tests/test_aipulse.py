@@ -2930,6 +2930,7 @@ def test_memes_are_made_from_our_data_and_never_touch_serious_stories():
                {"format": "brain", "rows": ["A", "B", "C", "D"]}, {"format": "yelling", "labels": ["A", "B"]},
                {"format": "pigeon", "labels": ["A", "B"], "caption": "C"},
                {"format": "panik", "rows": [("Panik", "A"), ("Kalm", "B"), ("Panik", "C")]}]
+    samples += [{"format": f, "labels": ["A"] * len(memes.TEMPLATES[f][2])} for f in memes.PLAIN]
     assert {m["format"] for m in samples} == set(memes.TEMPLATES)
     for m in samples:
         assert (memes.render(m) or b"")[:3] == b"\xff\xd8\xff", m["format"]  # a JPEG
@@ -2998,9 +2999,9 @@ def test_each_days_meme_template_comes_back_only_after_5_days():
     used = [memes.template_of(d) for d in days]
     for i, t in enumerate(used):
         assert t not in used[max(0, i - 4):i], days[i]  # never within 5 days in a row
-    assert set(used[:8]) == set(memes.TEMPLATES)  # all eight in turn
+    assert set(used[:16]) == set(memes.TEMPLATES)  # all sixteen in turn
     # a day whose stories can't fill its template still gets one (a standby joke, no names or numbers), on that template
-    for d in days[:8]:
+    for d in days[:16]:
         card = {"title": "Something happened", "summary": "", "url": "https://e.com/1", "source": "E", "category": "news",
                 "kind": "news", "date": d.isoformat(), "also": [], "tags": []}
         m = memes.of_the_day([card], d)
