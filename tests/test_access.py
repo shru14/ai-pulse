@@ -122,4 +122,6 @@ def test_login_box_prices_all_five_products_and_one_way_to_write():
     # the Store's paid add-ons (4 Nov 2026): priced in the box and named in the email; browsing the Store stays free
     assert "$149 a pack" in box and "$49 a month" in box and "$299 a month" in box
     assert all(n in access.REQUEST for n, *_ in access.STORE_ADDONS)
+    # 6 Nov 2026, owner: no yearly price anywhere
+    assert "a year" not in box and "yearly" not in access.REQUEST.lower()
     assert access.FAMILY + "index.html" in access.OPEN
