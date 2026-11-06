@@ -5,8 +5,8 @@ stream's share of the month's stories against the 11 months before (a share, as 
 What made the busiest days: the days that stood out against a normal day that month, each with the stories most outlets
 carried. Then the companies and the places the stories named most (against the month before), and the themes that
 rose or faded against the three months before. Companies, places and themes are the tags each story already carries
-(classify.py). The busiest days' headlines load in the reader's browser from insights.json, so the page itself holds
-only our own words. Rebuilt with the site.
+(classify.py). The busiest days' headlines load in the reader's browser from insights.json, and the page itself holds
+its headlines too, for search engines (seo.py). Rebuilt with the site.
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from html import escape
 from pathlib import Path
 from statistics import median
 
-from . import classify, jurisdictions, money, monthly, pages, rss
+from . import classify, jurisdictions, money, monthly, pages, rss, seo
 
 TOP = 10    # companies and places shown
 FUND_THEMES = 6  # Money moves: themes shown,
@@ -360,12 +360,12 @@ def _days(daily: list[tuple[date, int]], peaks: list[dict], src: str) -> str:
            if normal else "")
     rows = "".join(
         f'<tr data-day="{p["day"]}"><td class="dt"><b class="mk">{k + 1}</b>{_day(date.fromisoformat(p["day"]))}</td>'
-        '<td><ol><li class="meta">Loading…</li></ol></td>'
+        f'<td><ol>{seo.items(p["stories"]) or "<li class=meta>Loading…</li>"}</ol></td>'
         f'<td class="n">{p["x"]:g}×<small>{p["n"]} stories</small></td></tr>' for k, p in enumerate(peaks))
     return (f'<div class="ins-plot"><ol class="ins-days" style="--n:{len(daily)}">{cols}</ol>{ref}</div>'
             '<p class="ins-note">How to read: one column a day, its height the stories that day (weekends lighter). '
             'The numbered columns stood out against a normal day; the table says what drove them.</p>'
-            + (f'<table class="mt ins-drv" id="peaks" data-src="{src}"><thead><tr><th>Day</th><th>What drove it</th>'
+            + (f'<table class="mt ins-drv" id="peaks" data-src="{src}" data-ssr="1"><thead><tr><th>Day</th><th>What drove it</th>'
                f'<th>vs a normal day</th></tr></thead><tbody>{rows}</tbody></table>{PEAKS_JS}' if peaks else ""))
 
 
@@ -379,7 +379,7 @@ PEAKS_JS = r"""<script>
       const li = el("li"), a = el("a", null, e.title); a.href = e.url; a.rel = "noopener";
       li.append(a, el("div", "meta", NAMES[e.stream] + " · " + e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : "")));
       return li; }));
-  })).catch(() => box.querySelectorAll("ol").forEach(o => o.replaceChildren(el("li", "meta", "Couldn't load the stories. Try reloading the page."))));
+  })).catch(() => box.dataset.ssr || box.querySelectorAll("ol").forEach(o => o.replaceChildren(el("li", "meta", "Couldn't load the stories. Try reloading the page."))));
 })();
 </script>"""
 
@@ -404,7 +404,10 @@ def _ipos(x: dict, src: str) -> str:
                    f'title="{monthly.name(m)}: {n}"></i>' for k, (m, n) in enumerate(x["trend"]))
     return (f'<div class="ins-ipo"><span class="ins-spark" style="--c:var(--focus)">{cols}</span>'
             f'<span class="meta">IPO headlines a month, past {len(x["trend"])} months</span></div>'
-            f'<table class="mt ins-ipot" id="ipo-rows" data-src="{src}"><tbody><tr><td class="meta">Loading…</td></tr></tbody></table>'
+            f'<table class="mt ins-ipot" id="ipo-rows" data-src="{src}"{" data-ssr=1" if x["stories"] else ""}><tbody>'
+            + ("".join(f'<tr><td>{seo.link(e)}<div class="meta">{escape(e["source"])}</div></td>'
+                       f'<td class="when">{seo.day(e["date"])}</td></tr>' for e in x["stories"])
+               or '<tr><td class="meta">Loading…</td></tr>') + '</tbody></table>'
             + IPO_JS)
 
 
@@ -418,7 +421,7 @@ IPO_JS = r"""<script>
       const tr = el("tr"), a = el("a", null, e.title), td = el("td"); a.href = e.url; a.rel = "noopener";
       td.append(a, el("div", "meta", e.source + (e.outlets > 1 ? " · " + e.outlets + " outlets" : "")));
       tr.append(td, el("td", "when", day(e.date))); return tr; }));
-  }).catch(() => box.tBodies[0].replaceChildren(el("tr", "meta", "Couldn't load the headlines. Try reloading the page.")));
+  }).catch(() => box.dataset.ssr || box.tBodies[0].replaceChildren(el("tr", "meta", "Couldn't load the headlines. Try reloading the page.")));
 })();
 </script>"""
 

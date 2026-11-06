@@ -3649,7 +3649,8 @@ def test_monthly_issue_pages(tmp_path):
     assert paths == ["monthly/", "monthly/2026-08/", "monthly/2026-09/"]  # October isn't over
     page = (tmp_path / "monthly" / "2026-08" / "index.html").read_text(encoding="utf-8")
     assert "<h1>August 2026</h1>" in page and "No. 8" in page and "August in brief." in page
-    assert "Big launch" not in page  # the outlets' headlines load in the browser, from issue.json
+    # the top headlines are in the HTML for search engines (seo.py, owner 6 Nov 2026), the full view from issue.json
+    assert 'rel="noopener">Big launch of a reasoning model</a>' in page and "September story" not in page
     assert 'href="/monthly/2026-09/">September 2026 →' in page
     assert '<a href="/monthly/2026-08/#streams">' in page  # the contents: this page's sections (its <base> is "/")
     issue = json.loads((tmp_path / "monthly" / "2026-08" / "issue.json").read_text(encoding="utf-8"))

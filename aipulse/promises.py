@@ -6,7 +6,7 @@ CHECKED, each checked by hand with its launch, and `python -m aipulse promises` 
 isn't checked yet. A promise past its date (or 18 months old) with no launch found is kept out of the list and the
 numbers, in a section of its own that says we found no launch: we can't tell a broken promise from a launch reported
 in words we don't match, or by an outlet we don't read. Headlines are the outlets' own, so the promises load in the
-reader's browser from promises.json, as the topics' timelines do; the page itself holds only our own words. Linked
+reader's browser from promises.json, as the topics' timelines do; the page itself holds them too, for search engines (seo.py). Linked
 from Industry's strip on the front page.
 """
 from __future__ import annotations
@@ -18,7 +18,7 @@ from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import classify, cluster, pages, rss
+from . import classify, cluster, pages, rss, seo
 from .static import TEMPLATE
 
 PATH = "promises/"
@@ -436,7 +436,7 @@ PROMISES_JS = r"""<script>
       });
       bar.append(b);
     });
-  }).catch(() => box.replaceChildren(el("p", "meta", "Couldn't load the promises. Try reloading the page.")));
+  }).catch(() => box.querySelector(".ssr-list") || box.replaceChildren(el("p", "meta", "Couldn't load the promises. Try reloading the page.")));
 })();
 </script>"""
 
@@ -454,6 +454,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     (out / PATH / "promises.json").write_text(json.dumps(found, separators=(",", ":"), ensure_ascii=False),
                                               encoding="utf-8")
     logos = {k: v for k, v in _logos().items() if k in {p["company"] for p in found}}
+    kept = [p for p in found if p.get("status") != "not-found"]
     marks = json.dumps(logos).replace("</", "<\\/")  # safe inside the page's <script>
     what = ("When an AI company says it will release something, how long until it ships? Promises made since 2023, "
             "each checked by hand against the day a headline says it was out, drawn from the promise to that day.")
@@ -465,7 +466,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             '<h2>The promises</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
             f'<div class="pr-wrap" id="promises" data-src="/{PATH}promises.json" data-today="{today.isoformat()}">'
-            '<p class="meta">Loading…</p></div>\n'
+            + (f'<ul class="ssr-list">{seo.items(kept)}</ul>' if kept else '<p class="meta">Loading…</p>')
+            + '</div>\n'  # the promises' headlines in the HTML for search engines (seo.py), until the list draws
             '<section id="missed" hidden><h2>No launch found: <span class="n"></span></h2>\n'
             '<p class="intro">These promises are past their date, or 18 months old, and we found no launch '
             'headline for them. That is a limit of our data, not a finding about the company: the launch may have been '
