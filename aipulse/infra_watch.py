@@ -262,6 +262,11 @@ LEFT_OUT: set[str] = {
     "https://www.xataka.com/empresas-y-economia/bandas-organizadas-roban-camiones-cargados-componentes-para-centros-datos-suman-100-millones-dolares",  # truck thefts, not a build, power deal or decision
     "https://www.404media.co/american-voters-overwhelmingly-reject-ai-data-centers/",  # poll
     "https://www.channelnewsasia.com/business/data-center-spending-more-double-21-trillion-2028-bofa-says-6487191",  # market forecast
+    "https://dcnnmagazine.com/projects-and-infrastructure/downing-expands-into-data-centres-with-500mw-pipeline/",  # company-wide 500 MW pipeline; no single project
+    "https://w.media/thai-ai-data-center-secures-us-590-million-loan-to-fund-construction/",  # loan; no size, and the loan is not the project's cost
+    "https://w.media/sunway-construction-clinches-us-657-million-data-center-jobs-in-selangor-and-johor/",  # builder's contracts; clients not named, no size
+    "https://www.channelnewsasia.com/business/google-plans-17-billion-wyoming-data-center-amid-rising-threats-curbs-6529006",  # can't read to check
+    "https://www.foodandwaterwatch.org/press/2026/11/05/160-groups-to-congress-no-permitting-reform-no-ai-data-centers-on-public-lands/",  # groups' letter to Congress; no decision
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
