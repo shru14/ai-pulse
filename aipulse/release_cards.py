@@ -546,6 +546,8 @@ LEFT_OUT = {
         "WAND-Vega: one news outlet within 3 days",
     "https://www.thelec.net/news/articleView.html?idxno=15128": "same as Gemini 4 Carbon",
     "https://elevenlabs.io/blog/sfx-v3-for-developers": "same as SFX v3",
+    "https://www.marktechpost.com/2026/11/01/nace-ai-open-sources-drex-max-v1-local-inference/":
+        "Drex Max v1: one news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
