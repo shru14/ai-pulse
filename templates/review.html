@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Review AI Pulse</title>
 <!-- The readers' review form, opened from the daily email's "How useful is AI Pulse to you?" strip
-     (review/#useful-<1..5>: the number they tapped, picked already). Six short questions, the first five buttons;
+     (review/#useful-<1..5>: the number they tapped, picked already). Ten short questions in four parts (the site, the daily email, Pulse Pro, anything else), nine of them buttons, all optional (Send wakes up once one is answered);
      "Send" posts them to the sign-up web app (action=review), which emails them to the project inbox. Nothing
      about the reader is sent: no address, no token. -->
 <style>
@@ -16,52 +16,79 @@
   .band .brand{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px}
   .band h1{font-size:22px;line-height:1.3;margin:0}
   .band .span{font-size:13px;color:#c9d3ef;margin-top:4px}
-  .inner{padding:18px 20px 16px;display:grid;gap:20px}
-  @media (max-width:520px){.paper{margin:0;border-radius:0}.inner{padding:16px 14px 12px}}
-  fieldset{border:0;margin:0;padding:0 0 0 12px;border-left:4px solid var(--c,#14213d);min-width:0}
-  legend{font-size:15px;font-weight:bold;padding:0;margin-bottom:8px}
-  .hint{font-weight:normal;color:#5f6368;font-size:13px}
+  .inner{padding:4px 20px 18px;display:grid;gap:0}
+  @media (max-width:520px){.paper{margin:0;border-radius:0}.inner{padding:4px 14px 14px}}
+  fieldset{border:0;border-bottom:1px solid #e3e7ee;margin:0;padding:16px 0;min-width:0}
+  legend{float:left;width:100%;font-size:15px;font-weight:bold;padding:0;margin-bottom:10px}
+  legend+*{clear:left}
+  .hint{font-weight:normal;color:#5f6368;font-size:13px;margin-left:4px}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{position:relative}
   .chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
-  .chip span{display:inline-block;padding:7px 13px;border:1px solid #c9ced6;border-radius:999px;background:#fff;font-size:14px}
+  .chip span{display:inline-block;padding:9px 14px;border:1px solid #c9ced6;border-radius:999px;background:#fff;font-size:14px;cursor:pointer}
+  .chip:hover span{border-color:#14213d}
   .chip input:checked+span{background:#14213d;color:#fff;border-color:#14213d}
+  .chip input[type=checkbox]:checked+span::before{content:"✓ "}
   .chip input:focus-visible+span{outline:2px solid #1c3faa;outline-offset:2px}
-  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
   .scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:300px}
-  .scale .chip span{display:block;text-align:center;padding:7px 0}
+  .scale .chip span{display:block;text-align:center;padding:9px 0}
   .ends{display:flex;justify-content:space-between;font-size:12px;color:#5f6368;max-width:300px;margin-top:4px}
   textarea{width:100%;box-sizing:border-box;min-height:64px;resize:vertical;border:1px solid #c9ced6;border-radius:6px;
     font:15px/1.4 Arial,Helvetica,sans-serif;padding:9px 10px;color:#1a1a1a}
   textarea:focus{outline:2px solid #1c3faa;outline-offset:1px}
   .hp{position:absolute;left:-9999px}
-  .go{display:block;width:100%;border:0;border-radius:8px;background:#14213d;color:#fff;font:bold 16px Arial,sans-serif;padding:13px;cursor:pointer}
-  .go:disabled{opacity:.6;cursor:default}
+  .send{padding-top:18px;display:grid;gap:8px}
+  .go{display:block;width:100%;border:0;border-radius:999px;background:#14213d;color:#fff;font:bold 16px Arial,sans-serif;padding:13px;cursor:pointer}
+  .go:disabled{opacity:.45;cursor:default}
+  .count{margin:0;font-size:13px;color:#5f6368;text-align:center}
   #status{margin:0;font-size:14px;line-height:1.5}
   #status.ok{color:#2b5d0a} #status.err{color:#b3261e}
-  .back{font-size:13px;margin:0}
-  .back a{color:#1c3faa}
+  .back{margin:6px 0 0;text-align:center}
+  .back a{display:inline-block;padding:8px 18px;border:1px solid #c9ced6;border-radius:999px;color:#14213d;font-size:14px;text-decoration:none}
+  .back a:hover{border-color:#14213d}
+  .thanks{padding:22px 0 6px;text-align:center}
+  .part{margin:26px 0 2px;padding:14px 16px;background:#14213d;border-radius:10px}
+  .part:first-child{margin-top:16px}
+  .part h2{font-size:18px;line-height:1.3;color:#fff;margin:0 0 3px}
+  .part .about{margin:0;font-size:14px;line-height:1.45;color:#c9d3ef}
+  fieldset:has(+.part){border-bottom:0}
+  .thanks h2{font-size:19px;margin:0 0 6px}
+  .thanks p{margin:0;color:#3c4043;font-size:15px;line-height:1.5}
 </style>
 </head>
 <body>
 <div class="paper">
   <div class="band"><div class="brand">AI Pulse</div><h1>How are we doing?</h1>
-    <div class="span">Six quick questions, about a minute. Nothing about you is sent with your answers.</div></div>
+    <div class="span">Ten quick questions in four short parts, about two minutes. Nothing about you is sent with your answers.</div></div>
   <form class="inner" id="f" novalidate>
-    <fieldset style="--c:#F0E442"><legend>1. How do you read AI Pulse? <span class="hint">Pick any</span></legend>
+    <div class="part"><h2>Reading AI Pulse</h2><p class="about">The site: AI news from 200+ sources in six streams, updated every day.</p></div>
+    <fieldset><legend>How do you read AI Pulse? <span class="hint">Pick any</span></legend>
       <div class="chips" id="q-channels"></div></fieldset>
-    <fieldset style="--c:#E69F00"><legend>2. What do you use it for? <span class="hint">Pick any</span></legend>
+    <fieldset><legend>What do you use it for? <span class="hint">Pick any</span></legend>
       <div class="chips" id="q-uses"></div></fieldset>
-    <fieldset style="--c:#56B4E9"><legend>3. How useful is it to you?</legend>
+    <fieldset><legend>How useful is it to you? <span class="hint">Pick one</span></legend>
       <div class="scale chips" id="q-useful"></div><div class="ends"><span>Not useful</span><span>Very useful</span></div></fieldset>
-    <fieldset style="--c:#009E73"><legend>4. Which section do you use most?</legend>
+    <fieldset><legend>Which section do you use most? <span class="hint">Pick one</span></legend>
       <div class="chips" id="q-section"></div></fieldset>
-    <fieldset style="--c:#F85C48"><legend>5. What should we improve first?</legend>
+    <div class="part"><h2>Daily newsletter</h2><p class="about">One email each morning with the day's biggest AI news, and a weekly round-up on Sundays.</p></div>
+    <fieldset><legend>How often do you open the daily email? <span class="hint">Pick one</span></legend>
+      <div class="chips" id="q-opens"></div></fieldset>
+    <fieldset><legend>The daily email is&hellip; <span class="hint">Pick one</span></legend>
+      <div class="chips" id="q-length"></div></fieldset>
+    <div class="part"><h2>Pulse Pro</h2><p class="about">Paid tools for firms, built on the same evidence: Compass, Risk Monitor, Watch, SmartFeed and the Pulse Store.</p></div>
+    <fieldset><legend>Have you looked at Pulse Pro? <span class="hint">Pick one</span></legend>
+      <div class="chips" id="q-pro"></div></fieldset>
+    <fieldset><legend>Which Pro product interests you most? <span class="hint">Pick one</span></legend>
+      <div class="chips" id="q-proPick"></div></fieldset>
+    <div class="part"><h2>Anything else</h2><p class="about">What to fix first, and anything in your own words.</p></div>
+    <fieldset><legend>What should we improve first? <span class="hint">Pick one</span></legend>
       <div class="chips" id="q-improve"></div></fieldset>
-    <fieldset style="--c:#8BEC8B"><legend><label for="other">6. Anything else? <span class="hint">Optional</span></label></legend>
-      <textarea id="other" maxlength="1000"></textarea></fieldset>
+    <fieldset style="border-bottom:0"><legend><label for="other">Anything else? <span class="hint">Optional</span></label></legend>
+      <textarea id="other" maxlength="1000" placeholder="An idea, a bug, a section you miss…"></textarea></fieldset>
     <input class="hp" type="text" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <button class="go" type="submit" id="send">Send</button>
+    <div class="send"><button class="go" type="submit" id="send" disabled>Send</button>
+      <p class="count" id="count">Answer any question to send. All are optional.</p></div>
+    <div class="thanks" id="thanks" hidden><h2>Thank you!</h2><p>Your answers are with the AI Pulse team. We read every one.</p></div>
     <p id="status" role="status"></p>
     <p class="back"><a href="../">Back to AI Pulse</a></p>
   </form>
@@ -74,19 +101,20 @@ const Q = {
   uses: {multi: true, opts: ["Keeping up with AI", "My job", "Research or study", "Teaching", "Writing or reporting",
                              "Policy or legal work", "Investing or business decisions", "Building with AI"]},
   useful: {opts: ["1", "2", "3", "4", "5"]},
-  section: {opts: [["Industry", "#56B4E9"], ["Releases", "#009E73"], ["Policy", "#E69F00"], ["Regulation", "#F85C48"],
-                   ["Research", "#C85BC3"], ["Infra", "#8BEC8B"]]},
+  section: {opts: ["Industry", "Releases", "Policy", "Regulation", "Research", "Infra"]},
+  opens: {opts: ["Every day", "Most days", "Now and then", "I don't get it"]},
+  length: {opts: ["Too long", "About right", "Too short"]},
+  pro: {opts: ["Yes", "Not yet", "First I've heard of it"]},
+  proPick: {opts: ["Compass", "Risk Monitor", "Watch", "SmartFeed", "Pulse Store", "None yet"]},
   improve: {opts: ["Easier to find things", "Clearer charts and numbers", "Shorter emails", "More sources",
                    "Better on phones", "Nothing, it's good"]},
 };
 for (const [k, q] of Object.entries(Q)) {
   const box = document.getElementById("q-" + k);
-  q.opts.forEach((o, i) => {
-    const [label, colour] = Array.isArray(o) ? o : [o];
+  q.opts.forEach(label => {
     const l = document.createElement("label"), inp = document.createElement("input"), s = document.createElement("span");
     l.className = "chip";
     inp.type = q.multi ? "checkbox" : "radio"; inp.name = k; inp.id = `${k}-${label.replace(/\W+/g, "-")}`; inp.value = label;
-    if (colour) { const d = document.createElement("i"); d.className = "dot"; d.style.background = colour; s.append(d); }
     s.append(label); l.append(inp, s); box.append(l);
   });
 }
@@ -96,6 +124,14 @@ if (tapped) document.getElementById("useful-" + tapped[1]).checked = true;
 
 const form = document.getElementById("f"), send = document.getElementById("send"), status = document.getElementById("status");
 const say = (t, c) => { status.textContent = t; status.className = c || ""; };
+const other = document.getElementById("other"), count = document.getElementById("count");
+// Send wakes up once anything is answered, and says how many of the six are done
+function tally() {
+  const n = Object.keys(Q).filter(k => form.querySelector(`input[name="${k}"]:checked`)).length + (other.value.trim() ? 1 : 0);
+  send.disabled = !n;
+  count.textContent = n ? `${n} of ${Object.keys(Q).length + 1} answered` : "Answer any question to send. All are optional.";
+}
+form.addEventListener("change", tally); other.addEventListener("input", tally); tally();
 form.addEventListener("submit", e => {
   e.preventDefault();
   const fields = {action: "review", format: "json", website: document.getElementById("website").value};
@@ -104,7 +140,7 @@ form.addEventListener("submit", e => {
   if (!Object.keys(Q).some(k => fields[k]) && !fields.other) return say("Answer at least one question first.", "err");
   send.disabled = true; say("Sending…");
   fetch(SIGNUP_URL, {method: "POST", body: new URLSearchParams(fields)}).then(r => r.json()).then(r => {
-    if (r.ok) { form.querySelectorAll("fieldset,.go").forEach(x => x.hidden = true); say("Thank you! Your answers are with the AI Pulse team.", "ok"); }
+    if (r.ok) { form.querySelectorAll("fieldset,.send").forEach(x => x.hidden = true); say(""); document.getElementById("thanks").hidden = false; scrollTo(0, 0); }
     else { send.disabled = false; say(r.error === "busy" ? "Lots of answers today: please try again tomorrow." : "That didn't go through. Please try again.", "err"); }
   }).catch(() => { send.disabled = false; say("That didn't go through. Check your connection and try again.", "err"); });
 });
