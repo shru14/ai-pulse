@@ -4834,7 +4834,7 @@ def test_no_meme_is_promotional():
         for w in wordings:
             assert not memes.plugs({"format": f, **w}), (f, w)
     for t in ["Letting AI Pulse pick", "Asking a chatbot to read them for you", "Reading only the 10 that mattered",
-              "Subscribe for more", "Keeping up with AI"]:
+              "Subscribe for more", "Keeping up with AI", "A data-driven AI insights engine", "A big spreadsheet"]:
         assert memes.PROMO.search(t), t
     day = date(2026, 11, 8)
     want = memes.template_of(day)
@@ -4844,3 +4844,13 @@ def test_no_meme_is_promotional():
     m = memes.of_the_day([card], day)
     memes.GENERATED.clear()
     assert m["format"] == want and not memes.plugs(m)
+
+
+def test_every_meme_template_can_be_made_from_the_days_stories():
+    """Each of the 16 templates has a rule built from the day's stories, so the meme is about that day's news
+    (owner, 2026-11-09), and the launch names it uses are real names, not "AI Model"."""
+    from aipulse import memes
+    made = {g.__name__.strip("_").replace("_", "") for g in memes.FORMATS}
+    assert set(memes.ROTATION) <= made, set(memes.ROTATION) - made
+    assert memes.launch_of({"title": "Kakao launches AI Model for banks"}) is None
+    assert memes.launch_of({"title": "Baidu releases ERNIE 5.5 Flash: a faster model"}) == ("Baidu", "ERNIE 5.5 Flash")
