@@ -177,6 +177,12 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techcrunch.com/2026/11/08/nvidia-says-its-investigating-ceo-jensen-huangs-relationship-with-possible-chinese-spy/":
+        "Nvidia's board probing its own CEO; no government action",
+    "https://www.channelnewsasia.com/world/nvidia-shares-jensen-huang-probe-affair-6535186":
+        "Nvidia's own probe of its CEO; can't read to check, no government action in headline",
+    "https://www.channelnewsasia.com/east-asia/jensen-huang-affair-alice-huang-nvidia-timeline-6535611":
+        "Nvidia's own probe of its CEO; can't read to check, no government action in headline",
     "https://techpolicy.press/the-sec-should-block-anthropics-ipo-to-protect-the-public":
         "Opinion piece urging the SEC to act, no government action",
     "https://dplnews.com/estados-unidos-ordena-retirar-deepseek/":
