@@ -56,6 +56,12 @@ _LAUNCH = re.compile(r"^(?P<maker>[A-Z][\w.&'-]*(?:\s+[A-Z][\w.&'-]*){0,2})\s+"
                      r"(?=\s*[:,–—]|\s+-\s|\s+(?:a|an|for|with|that|to|in|and|on)\b|$)")
 
 
+# words that alone don't name a product
+_GENERIC = {"ai", "new", "model", "models", "open", "source", "open-source", "technology", "tool", "tools", "platform",
+            "agent", "agents", "agentic", "app", "feature", "features", "update", "version", "system", "suite", "llm",
+            "framework", "assistant", "chatbot", "data", "service", "solution", "solutions", "beta", "preview", "the", "its"}
+
+
 def launch_of(c: dict) -> tuple[str, str] | None:
     """(maker, product) when the headline names both."""
     m = _LAUNCH.match(c.get("title") or "")
@@ -64,6 +70,8 @@ def launch_of(c: dict) -> tuple[str, str] | None:
     maker, product = m.group("maker"), m.group("product")
     first = product.split()[0]
     if len(product) > 30 or not (first[0].isupper() or re.search(r"[\d-]", first)):
+        return None
+    if all(w.lower().strip(".") in _GENERIC for w in re.split(r"[\s-]+", product)):  # "AI Model", "Open-Source Technology"
         return None
     return maker, product
 
@@ -226,7 +234,111 @@ def _panik(f, span):
             "based_on": [c["title"]]}
 
 
-FORMATS = [_distracted, _buttons, _nope_yep, _fine, _brain, _yelling, _pigeon, _panik]
+# The eight templates added on 2026-11-06, each from the day's stories too, so the meme is about that day's news
+# (owner, 2026-11-09: a standby line read as a plug for us)
+
+def _gru(f, span):
+    """Gru's plan: the day's biggest round and where the money goes, else the day's launch."""
+    if not f["money"]:
+        if not f["named"]:
+            return None
+        maker, product, c = f["named"][0]
+        return {"format": "gru", "labels": [f"Launch {product}", "Post the launch video", _v(f, [
+            "Wait for developers to try it", "Wait for the benchmarks", "Wait for the reviews", "Wait for sign-ups"]),
+            _v(f, ["They want the next one", "A rival launched this morning", "They're asking for the old one",
+                   "They're asking about the price"])], "based_on": [c["title"]]}
+    _, amount, who, c = f["money"]
+    return {"format": "gru", "labels": [f"{who} raises {amount}", "Buy lots of GPUs", _v(f, [
+        "Build a data centre", "Hire every researcher", "Train a bigger model", "Launch an AI agent"]),
+        _v(f, ["Wait for the power line", "Raise again next year", "The GPUs are back-ordered", "Ask for more money"])],
+        "based_on": [c["title"]]}
+
+
+def _exit(f, span):
+    """Left exit: swerving from last week's set-up to the day's launch."""
+    if not f["named"]:
+        return None
+    maker, product, c = f["named"][0]
+    return {"format": "exit", "labels": [_v(f, ["The model you set up last week", "Finishing the migration",
+                                                "The prompts you just tuned", "Last month's favourite"]),
+                                         f"{_of(maker)} {product}", _v(f, ["Developers", "Tech teams", "AI researchers",
+                                                                          "Everyone with a GPU"])],
+            "based_on": [c["title"]]}
+
+
+def _handshake(f, span):
+    """Epic handshake: the founders and the investors agreeing on the day's round, else a launch's maker and developers."""
+    if not f["money"]:
+        if not f["named"]:
+            return None
+        maker, product, c = f["named"][-1]
+        return {"format": "handshake", "labels": [_v(f, [f"Trying {product} on day one", f"{product} looks great in the demo",
+                                                         f"{product} needs more GPUs", f"Waiting for {product} 2"]),
+                                                  maker, "Developers"], "based_on": [c["title"]]}
+    _, amount, who, c = f["money"]
+    return {"format": "handshake", "labels": [_v(f, [f"{amount} is a fair price", "AI is the future",
+                                                     "Profit can wait", "More GPUs"]), who, "Investors"],
+            "based_on": [c["title"]]}
+
+
+def _uno(f, span):
+    """UNO draw 25: wait a week before switching to the day's launch, or draw 25."""
+    if not f["named"]:
+        return None
+    maker, product, c = f["named"][-1]
+    return {"format": "uno", "labels": [_v(f, [f"Wait a week before trying {product}", f"Read the docs for {product} first",
+                                               f"Test {product} before switching", f"Keep the old model as well as {product}"]),
+                                        _v(f, ["Developers", "Tech teams", "Every AI start-up", "Everyone with an API key"])],
+            "based_on": [c["title"]]}
+
+
+def _always(f, span):
+    """Always has been: the day's pile of papers, every one state of the art."""
+    n = f["papers"]
+    if n < (5 if span == "today" else 20):
+        return None
+    return {"format": "always", "labels": [_v(f, [f"Wait, all {n} AI papers {span} are state of the art?",
+                                                  f"Wait, all {n} AI papers {span} beat the benchmark?",
+                                                  f"Wait, all {n} AI papers {span} need more GPUs?",
+                                                  f"Wait, all {n} AI papers {span} add a new benchmark?"]),
+                                           "Always has been"], "based_on": []}
+
+
+def _pooh(f, span):
+    """Tuxedo Pooh: the day's launch, named plainly and then the launch-post way."""
+    if not f["named"]:
+        return None
+    maker, product, c = f["named"][0]
+    return {"format": "pooh", "labels": [f"{_of(maker)} {product}", _v(f, [
+        f"Introducing {product}", f"Meet {product}", f"Say hello to {product}", f"{product}: the next chapter"])],
+            "based_on": [c["title"]]}
+
+
+def _doge(f, span):
+    """Buff doge and cheems: the old pace of launches, and the day's."""
+    n = len(f["launches"])
+    if n < (3 if span == "today" else 10):
+        return None
+    who, then = _v(f, [("AI labs", "One launch a month"), ("Developers", "Tried one new model a year"),
+                       ("Launch days", "One big launch"), ("Model makers", "One model a year")])
+    return {"format": "doge", "labels": [f"{who} back then", f"{who} now", then, f"{n} new AI models and tools {span}"],
+            "based_on": []}
+
+
+def _bikefall(f, span):
+    """Bike fall: switching to the day's launch on launch day."""
+    if not f["named"]:
+        return None
+    maker, product, c = f["named"][-1]
+    return {"format": "bikefall", "labels": [_v(f, ["Developer", "Tech team", "AI start-up", "Weekend coder"]),
+                                             f"Switches to {product} on launch day", _v(f, [
+                                                 "“Why did my prompts break?”", "“Why is the bill so big?”",
+                                                 "“Who changed the API?”", "“Where did my old model go?”"])],
+            "based_on": [c["title"]]}
+
+
+FORMATS = [_distracted, _buttons, _nope_yep, _fine, _brain, _yelling, _pigeon, _panik,
+           _gru, _exit, _handshake, _uno, _always, _pooh, _doge, _bikefall]
 GENERATED: dict = {}  # ("day" | "week", date) -> a meme Gemini wrote (memegen.prepare); used instead of the rules
 
 
@@ -299,7 +411,7 @@ STANDBY = {
                {"labels": ["Wait, it's all about the GPUs?", "Always has been"]},
                {"labels": ["Wait, it's all about the data?", "Always has been"]}],
     "pooh": [{"labels": ["A chatbot with tools", "An agentic AI platform"]},
-             {"labels": ["A big spreadsheet", "A data-driven AI insights engine"]},
+             {"labels": ["A bigger model", "A frontier intelligence system"]},
              {"labels": ["An if statement", "A reasoning layer"]},
              {"labels": ["A warehouse with GPUs", "An AI factory"]}],
     "doge": [{"labels": ["AI labs back then", "AI labs now", "Published the full paper", "Publishes a launch video"]},
@@ -323,7 +435,8 @@ def _turn(when: date, days: int = 16) -> int:
 # whoever wrote it (Gemini, a rule, a standby), and a meme that plugs is replaced.
 PROMO = re.compile(r"\bAI ?Pulse\b|\bnewsletter|\bthis email\b|\bdigest\b|\bnews\b|\bheadlines?\b|\bbriefing|"
                    r"\bsummar(?:y|ies|ise|ize)\b|\breading list\b|\btop 10\b|\bthe 10\b|\bkeep(?:ing)? up\b|"
-                   r"\bsubscri\w*|\bsign up\b|\bour (?:site|app|readers)\b|"
+                   r"\bsubscri\w*|\bsign up\b|\bour (?:site|app|readers)\b|\binsights?\b|\bspreadsheets?\b|"
+                   r"\bdata-driven\b|\bdashboards?\b|\btrack(?:er|ing)\b|"
                    r"\bread\w* (?:it|them|everything|all of it|the \w+) for (?:you|me)\b", re.I)
 
 
