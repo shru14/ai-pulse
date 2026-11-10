@@ -248,7 +248,7 @@ def web_edition(html: str, path: str, description: str, title: str | None = None
     title = re.search(r"<title>(.*?)</title>", html).group(1)
     head = (f'<meta name="description" content="{escape(description)}"><link rel="canonical" href="{url}">'
             f'<meta property="og:title" content="{title}"><meta property="og:description" content="{escape(description)}">'
-            f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og.png">'
+            f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og-pulse.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
             f'<meta name="twitter:card" content="summary_large_image">{pages.counter()}')
     html = html.replace("</title>", "</title>" + head, 1).replace("<html>", '<html lang="en">', 1)
     return re.sub(r'<div style="(font-size:22px;font-weight:bold;line-height:1.3;margin:0 0 8px)">(.*?)</div>',
@@ -522,7 +522,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     from . import publishers
     places += publishers.build(conn, cards, out, today)  # company papers by company, the rising subject, top researchers (Research's feature)
     (out / "sitemap.xml").write_text(sitemap(published, today, [f"{p}/" for p, *_ in STREAM_PAGES.values()] + ["daily/", "about/", "discussing/", "today/"] + ["daily/sample.html"] * bool(sample) + places), encoding="utf-8")
-    shutil.copy(TEMPLATE.parent / "og.png", out / "og.png")  # the link preview image (our own drawing)
+    shutil.copy(TEMPLATE.parent / "og.png", out / "og-pulse.png")  # the link preview image (our own drawing); a new name on 10 Nov so apps drop the old yellow one
     (out / ".nojekyll").write_text("")
     # 6 Nov 2026, owner: the login is back on: one username (access.CLIENT), the visitor types only the password
     if SEAL and COMPASS and not compass_open:  # last of all: nothing paid leaves the build readable (aipulse/access.py)
