@@ -247,6 +247,12 @@ LEFT_OUT = {
         "ChatGPT pricing and usage limits, no investment in a lab",
     "https://siliconangle.com/2026/11/02/marble-cognition-raises-3-75m-for-its-ai-agent-workers-that-watch-and-learn-how-people-work/":
         "no company named as a stakeholder (a Mistral executive is one of the angels); not clearly a lab",
+    "https://the-decoder.com/anthropic-pushes-ahead-with-pre-thanksgiving-ipo-despite-tech-selloff-accepts-lower-valuation/":
+        "IPO plans reported; no investment",
+    "https://the-decoder.com/openai-lands-an-11-billion-funding-round-but-has-to-court-dentists-for-more-capital/":
+        "first tranche only, round not closed; no amounts per investor, equity or debt not stated",
+    "https://techcrunch.com/2026/11/06/openai-reportedly-raises-an-additional-11-billion-at-a-1-25-trillion-valuation/":
+        "reportedly; round not closed, no investor named",
 }
 
 
