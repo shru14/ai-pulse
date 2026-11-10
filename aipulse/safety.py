@@ -82,6 +82,22 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-06', by='Anthropic', kind='eval',
+         title='Project EVE: Claude plays MMORPGs',
+         url='https://www.anthropic.com/research/project-eve-claude-plays-mmorpgs',
+         original="",
+         models=('Claude Opus 4.6', 'Claude Opus 4.7', 'Claude Opus 4.8', 'Claude Fable 5'), risks=('misalign',),
+         abstract=('AI models may one day participate in real companies and markets, and several of our projects explored what '
+                   'that might look like. Claude has run a shop in our office, haggled on behalf of colleagues, and written '
+                   'code to fly a drone. In this project, we turned to a different setting: massively multiplayer online '
+                   'role-playing games (MMORPGs). MMORPGs are virtual worlds that in many ways reflect the complexity of the '
+                   'real world. They feature campaigns that coordinate many players, the acquisition and management of scarce '
+                   'resources, orienting and navigating through space, and trading in intricate in-game economies, all in a '
+                   'low-stakes environment. Doing all of this over weeks and months sits right at the edge of what frontier '
+                   'language models can currently do. We partnered with Fenris Creations to have Claude play two games in the '
+                   'EVE Universe: EVE Online, which has run continuously for more than two decades, and EVE Frontier, which is '
+                   'newer and still in development. Both are science-fiction games in which players fly spaceships around the '
+                   'vast galaxy, exploring, trading and fighting. …')),
     dict(date='2026-11-05', by='OpenAI', kind='card',
          title='GPT-6 Cyber System Card',
          url='https://deploymentsafety.openai.com/gpt-6-cyber',
@@ -1530,6 +1546,7 @@ DOCS: list[dict] = [
 # Documents read and left out, so `python -m aipulse safety` doesn't list them again: research on training methods,
 # essays, usage studies, testimony, organisation news, a product launch, and documents from before 2026.
 LEFT_OUT: set[str] = {
+    'https://www.aisi.gov.uk/research/alignment-investigation-of-mythos-5s-behaviour-in-uk-aisis-july-2026-security-incident',  # the same report as the AISI blog post already in DOCS (same PDF)
     'https://openai.com/index/community-safety-report-and-new-protections-for-teens',  # document not readable (openai.com refuses, 403)
     'https://www.aisi.gov.uk/research/the-effectiveness-and-durability-of-pretraining-data-filtering-in-protein-language-models',  # research on training-data filtering in protein models, not an evaluation of LLMs
     'https://www.anthropic.com/research/attack-surface-reduction',  # using Claude to harden software (cyber defence), not a safety document
