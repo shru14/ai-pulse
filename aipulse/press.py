@@ -230,6 +230,10 @@ CHECKED: dict[str, dict] = {
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://theconversation.com/most-uni-students-now-use-ai-but-that-doesnt-mean-they-like-it-295170",  # the authors' own survey project (AIinHE) and a company survey report, no one paper
+    "https://the-decoder.com/ai-auditors-catch-most-agent-misbehavior-but-flood-reviewers-with-false-alarms-new-study-finds/",  # a story on a Substack blog post, on no preprint server or journal
+    "https://techcrunch.com/2026/11/06/hundreds-of-artex-ai-hacking-tools-found-publicly-exposed-to-the-web/",  # a news story on a security company's blog post (Censys), no paper
+    "https://incidentdatabase.ai/cite/1809",  # an incident report, no paper
     "https://the-decoder.com/gpt-6-astra-sees-the-matrix-and-reprograms-other-ai-models-directly-through-their-weights/",  # a story on a research blog post with no paper named or linked; paper not found
     "https://en.mercopress.com/2026/11/03/new-research-raises-questions-about-the-accuracy-of-ai-detection-tools?utm_source=feed&utm_medium=rss&utm_content=main&utm_campaign=rss",  # a roundup of three studies, none named or linked; more than one paper
     "https://the-decoder.com/rapid-llm-development-is-outrunning-the-research-meant-to-explain-it-study-finds/",  # a Stanford study linked only to its project page, which we can't read to check; no preprint or journal page found
