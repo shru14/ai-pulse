@@ -482,18 +482,71 @@ def part_of(card: dict) -> list[list[str]]:
     return [[slug, t["name"]] for slug, t in TOPICS.items() if matches(slug, card)]
 
 
-def candidates(cards: list[dict], since: str = "") -> list[dict]:
-    """Stories from `since` that carry a topic's net of tags, but that its words don't match and no list holds yet:
-    one per event, newest first, each with the topics to check it for (`for`). A tracked bill joins only where listed."""
+def _open(c: dict, since: str, held: set[str]) -> bool:
+    """A story still to check: from `since`, in a stream topics follow, not a tracked bill, on no list yet."""
+    return c["date"] >= since and c.get("category") in STREAMS and not c.get("bill") and not _urls(c) & held
+
+
+# The model's net catches what words and tags both miss. Each story to check is compared, with the local story model
+# (embed.py: runs on this machine, nothing billed), with each topic's newest NEAR_REF stories and NEAR_OTHER other
+# stories that are in no topic. When VOTES of its NEIGHBOURS closest are one topic's, and the closest is at least NEAR
+# alike, it's a candidate for that topic, with that closest story as the reason. Set on the stories of 27 Oct-10 Nov
+# 2026: about seven in ten such finds belonged; a looser vote let in conference notices and grid-supplier adverts.
+NEIGHBOURS, VOTES, NEAR = 10, 7, 0.77
+NEAR_REF, NEAR_OTHER = 40, 1500
+NEAR_DAYS = 7  # with no `since`, the model checks only this many days back (it reads about ten stories a second)
+
+
+def near(cards: list[dict], since: str = "", encode=None) -> dict[str, dict[str, str]]:
+    """{story URL: {topic slug: headline of the topic's story it reads most like}} for stories from `since` that a
+    topic's words don't match; {} when the model isn't available. `encode` (texts -> unit vectors) is for tests."""
+    if encode is None:
+        from . import embed
+        if not embed.available():
+            return {}
+        encode = embed.encode
+    from . import embed
+    import numpy as np
+    since = since or (date.today() - timedelta(days=NEAR_DAYS)).isoformat()
     held = LEFT_OUT | {u for urls in ADDED.values() for u in urls}
+    newest = sorted(cards, key=lambda c: c["date"], reverse=True)
+    todo = [c for c in newest if _open(c, since, held)]
+    if not todo:
+        return {}
+    ref = [(slug, c) for slug in TOPICS for c in [c for c in newest if matches(slug, c)][:NEAR_REF]]
+    ref += [(None, c) for c in [c for c in newest if c["date"] < since and c.get("category") in STREAMS
+                                and not part_of(c)][:NEAR_OTHER]]
+    vecs = np.asarray(encode([embed.story_text(c["title"], c.get("summary") or "") for _, c in ref + [(None, c) for c in todo]]))
+    alike = vecs[len(ref):] @ vecs[:len(ref)].T
+    out = {}
+    for c, row in zip(todo, alike):
+        top = np.argsort(-row)[:NEIGHBOURS]
+        for slug in {ref[j][0] for j in top} - {None}:
+            if matches(slug, c):
+                continue
+            mine = [j for j in top if ref[j][0] == slug]
+            if len(mine) >= VOTES and row[mine[0]] >= NEAR:
+                out.setdefault(c["url"], {})[slug] = ref[mine[0]][1]["title"]
+    return out
+
+
+def candidates(cards: list[dict], since: str = "", alike: dict[str, dict[str, str]] | None = None) -> list[dict]:
+    """Stories from `since` that carry a topic's net of tags, or that the model finds read like its stories (`alike`,
+    from near()), but that its words don't match and no list holds yet: one per event, newest first, each with the
+    topics to check it for (`for`) and, for the model's finds, the story each reads like (`like`). A tracked bill joins
+    only where listed."""
+    held = LEFT_OUT | {u for urls in ADDED.values() for u in urls}
+    alike = alike or {}
     out = []
     for c in sorted(cards, key=lambda c: c["date"], reverse=True):
-        if c["date"] < since or c.get("category") not in STREAMS or c.get("bill") or _urls(c) & held:
+        if not _open(c, since, held):
             continue
         tags = set(c.get("tags") or [])
-        found = [slug for slug, t in TOPICS.items() if any(n <= tags for n in t.get("net", ())) and not matches(slug, c)]
+        like = alike.get(c["url"], {})
+        found = [slug for slug, t in TOPICS.items()
+                 if (any(n <= tags for n in t.get("net", ())) or slug in like) and not matches(slug, c)]
         if found:
-            out.append({**c, "for": found})
+            out.append({**c, "for": found, "like": {s: like[s] for s in found if s in like}})
     return out
 
 

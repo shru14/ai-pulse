@@ -571,10 +571,13 @@ def main():
         from . import topics
         found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
         since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
-        todo = topics.candidates(found, since)
+        alike = topics.near(found, since)  # the local story model's finds; {} without the model
+        todo = topics.candidates(found, since, alike)
         print(f"{sum(map(len, topics.ADDED.values()))} added, {len(topics.LEFT_OUT)} left out. To check from {since or 'the start'} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}\n    Topics: {', '.join(c['for'])}\n    {c.get('summary') or c.get('s') or ''}")
+            for slug, title in c["like"].items():
+                print(f"    Reads like {slug}'s: {title}")
     elif a.cmd == "ready-check":
         from . import ready_tools
         if a.page:
@@ -629,10 +632,13 @@ def main():
         from . import topics
         found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
         since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
-        todo = topics.candidates(found, since)
+        alike = topics.near(found, since)  # the local story model's finds; {} without the model
+        todo = topics.candidates(found, since, alike)
         print(f"{sum(map(len, topics.ADDED.values()))} added, {len(topics.LEFT_OUT)} left out. To check from {since or 'the start'} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}\n    Topics: {', '.join(c['for'])}\n    {c.get('summary') or c.get('s') or ''}")
+            for slug, title in c["like"].items():
+                print(f"    Reads like {slug}'s: {title}")
     elif a.cmd == "ready-check":
         from . import ready_tools
         if a.page:
