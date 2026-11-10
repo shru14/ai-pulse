@@ -17,11 +17,12 @@ PATH = "release-cards/"
 SINCE = "2026-07-01"
 # each lab's home country, as the stories give it
 COUNTRY = {
-    "Alibaba": "China", "Aleph Alpha": "Germany", "Anthropic": "US", "Black Forest Labs": "Germany", "Cisco": "US",
+    "Alibaba": "China", "Aleph Alpha": "Germany", "Anthropic": "US", "Baidu": "China", "Black Forest Labs": "Germany",
+    "Cisco": "US",
     "Cloudflare": "US", "DeepSeek": "China", "Google": "US", "IBM": "US", "Meta": "US", "Microsoft": "US",
     "MiniMax": "China", "Mistral": "France", "Moonshot": "China", "Nvidia": "US", "OpenAI": "US", "PolyAI": "UK",
-    "Poolside": "France", "PrismML": "US", "Reflection AI": "US", "StepFun": "China", "Thinking Machines": "US",
-    "Writer": "US", "xAI": "US", "Z.ai": "China",
+    "Poolside": "France", "PrismML": "US", "Reflection AI": "US", "Ricursive Intelligence": "US", "StepFun": "China", "Tencent": "China",
+    "Thinking Machines": "US", "Writer": "US", "xAI": "US", "Z.ai": "China",
 }
 # Open: weights can be downloaded and used commercially (a licence may still ask big companies for a deal);
 # Weights only: weights can be downloaded but the licence bars commercial use; Closed: no weights to download
@@ -237,6 +238,22 @@ RELEASES = [
     ("2026-10-28", "Nvidia", "Nemotron 3.5 Transcribe", "Open", "", "OpenMDW-1.1", "", "", False, "",
      "https://the-decoder.com/nvidias-open-nemotron-3-5-transcribe-combines-transcription-translation-and-speaker-recognition/",
      "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B"),
+    ("2026-11-04", "Tencent", "Hy4", "Closed", "Weights promised later", "", "", "", False, "",
+     "https://siliconangle.com/2026/11/04/tencent-releases-hy4-powerful-frontier-llm-introducing-visual-understanding-and-computer-use/", ""),
+    ("2026-11-04", "Ricursive Intelligence", "Ripple-65B Preview", "Open", "", "Apache-2.0", "", "", False, "",
+     "https://the-decoder.com/ripple-65b-preview-delivers-strong-agentic-coding-results-as-a-fully-apache-2-0-open-us-model/",
+     "https://huggingface.co/ricursiveAI/Ripple-65B-Preview"),
+    ("2026-11-05", "Baidu", "ERNIE 5.5 Flash Base", "Open", "", "ERNIE 5.5 Flash Base Model License Agreement v1.0",
+     "Businesses over $50M a year need Baidu's written authorization", "Not licensed in the EU, UK or South Korea", True, "",
+     "https://the-decoder.com/baidu-releases-ernie-5-5-flash-base-with-280-billion-parameters-as-an-open-source-foundation-model/",
+     "https://huggingface.co/baidu/ERNIE-5.5-Flash-Base"),
+    ("2026-11-05", "Google", "Gemini Omni 1.2 Flash", "Closed", "Paid Gemini API tier", "", "", "", False,
+     "$1.50 / $12|video output; about $0.07 a second at 720p",
+     "https://the-decoder.com/googles-gemini-omni-1-2-flash-stretches-ai-video-clips-to-15-seconds-and-cuts-pricing-by-30-percent/", ""),
+    ("2026-11-05", "OpenAI", "GPT-6 Cyber", "Closed", "Daybreak Red tier only", "", "", "", False, "",
+     "https://the-decoder.com/openais-gpt-6-cyber-can-both-break-into-systems-and-propose-how-to-fix-them/", ""),
+    ("2026-11-05", "Thinking Machines", "Inkling 2 Small", "Closed", "Weights promised next week", "", "", "", False, "",
+     "https://the-decoder.com/thinking-machines-inkling-2-small-claims-top-spot-among-western-open-weight-models/", ""),
 ]
 # what each release is for, from its story: "General" reads and writes text (images or audio too, for some);
 # the rest do one job. The adoption planner lists a model only for the jobs its kind can do
@@ -265,7 +282,9 @@ KIND = {
     "Kolibri": "General", "Beam": "General", "Mistral Large 4": "General", "Claude Haiku 5.5": "General",
     "Muse Wonder": "General", "Grok Voice 3.0": "Voice", "Muse Spark Open": "General",
     "Nemotron 3.5 Super VL": "General", "Step 5 Preview": "General", "Nemotron 3.5 Bolt 74B-A9B 24GB": "General",
-    "Clairic": "Extraction", "MiniMax M3.1 Flash": "General",
+    "Clairic": "Extraction", "MiniMax M3.1 Flash": "General", "Hy4": "General", "Ripple-65B Preview": "General",
+    "ERNIE 5.5 Flash Base": "General", "Gemini Omni 1.2 Flash": "Video", "GPT-6 Cyber": "Cyber",
+    "Inkling 2 Small": "General",
 }
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -273,7 +292,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-05"
+SAFETY_CHECKED = "2026-11-10"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -307,6 +326,8 @@ SAFETY = {
     "Gemini 4 Carbon": ("2026-10-28", "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/",
                         "In the launch post"),
     "Gemini Robotics 2": ("2026-07-29", "https://storage.googleapis.com/deepmind-media/gemini-robotics/Gemini-Robotics-2-Safety.pdf", ""),
+    "GPT-6 Cyber": ("2026-11-05", "https://deploymentsafety.openai.com/gpt-6-cyber", ""),
+    "Inkling 2 Small": ("2026-11-05", "https://thinkingmachines.ai/model-card/inkling-2-small/", "In its model card"),
     "Gemini 3.8 Live": ("", "https://deepmind.google/models/model-cards/gemini-3-8-audio/",
                         "Model card gives no test results for it"),
     "Gemini 3.5 Transcribe": ("", "https://deepmind.google/models/model-cards/gemini-3-5-audio/",
@@ -548,10 +569,42 @@ LEFT_OUT = {
     "https://elevenlabs.io/blog/sfx-v3-for-developers": "same as SFX v3",
     "https://www.marktechpost.com/2026/11/01/nace-ai-open-sources-drex-max-v1-local-inference/":
         "Drex Max v1: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/11/07/nous-research-arete-27b-qwen3-8-27b-propaganda-fine-tune/":
+        "Arete-27B: one news outlet within 3 days",
+    "https://huggingface.co/NousResearch/Arete-27B":
+        "same as Arete-27B",
+    "https://pandaily.com/opencsg-agentic-27b-tool-workflows-single-gpu-commercial-license":
+        "Agentic-27B: one news outlet within 3 days",
+    "https://pandaily.com/china-merchants-lionrock-ai-lab-lion-er-35b-a3b-embodied-reasoning-model-open-source":
+        "Lion-ER-35B-A3B: one news outlet within 3 days",
+    "https://openai.com/index/introducing-images-2-6":
+        "Images 2.6: one news outlet within 3 days",
+    "https://the-decoder.com/chatgpt-can-now-turn-text-prompts-and-photos-into-animated-gifs-with-openais-images-2-6-model/":
+        "same as Images 2.6",
+    "https://www.marktechpost.com/2026/11/04/webai-twil-8b-reasoning-model/":
+        "TwIL-8B: one news outlet within 3 days",
+    "https://cognition.ai/blog/swe-2-flash":
+        "SWE-2 Flash: no news outlet within 3 days (lab post only)",
+    "https://huggingface.co/blog/Dharma-AI/dharma-field-extractor":
+        "Dharma Field Extractor: no news outlet within 3 days (a hosting blog only)",
+    "https://www.thelec.net/news/articleView.html?idxno=15364":
+        "Kakao text and image decision model: one news outlet within 3 days",
+    "https://pandaily.com/sensetime-sensenova-6-8-flash-official-release-long-term-memory-animated-ppt-blender-figma":
+        "SenseNova 6.8 Flash: one news outlet within 3 days",
+    "https://huggingface.co/blog/nvidia/cosmos-interactive-world-simulation":
+        "Cosmos 3 interactive world simulation models: no news outlet within 3 days (a hosting blog only)",
+    "https://huggingface.co/blog/phonon-tts":
+        "same as Phonon",
+    "https://mistral.ai/news/build-with-studio/":
+        "same as Mistral Large 4",
+    "https://pandaily.com/huawei-ascend-day-zero-kimi-k3-1-pro-vllm-ascend-sglang-atlas-900-a3-950-superpod":
+        "same as Kimi K3.1 Pro",
+    "https://cohere.com/blog/embed-rerank-5-openrouter":
+        "Cohere Embed 5 and Rerank 5 on OpenRouter: hosting news, no news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-03"
+CHECKED_TO = "2026-11-07"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
