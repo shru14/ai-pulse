@@ -177,6 +177,8 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://the-decoder.com/eight-countries-and-top-ai-labs-agree-to-shutdown-mechanisms-in-new-paris-declaration/":
+        "A new declaration (Paris Call), not a pledge on the page; no government deal or action against a company",
     "https://techcrunch.com/2026/11/08/nvidia-says-its-investigating-ceo-jensen-huangs-relationship-with-possible-chinese-spy/":
         "Nvidia's board probing its own CEO; no government action",
     "https://www.channelnewsasia.com/world/nvidia-shares-jensen-huang-probe-affair-6535186":
