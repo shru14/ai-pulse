@@ -263,6 +263,28 @@ ADDED: dict[str, dict[str, str]] = {
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # Huang's personal relationship and Nvidia's internal probe, not about chip rules or China's response
+    "https://techcentral.co.za/nvidia-jensen-huang-problem-rattles-investors/288157/",
+    # Huang scandal and the auto industry, not about chip rules
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=280843",
+    # Nvidia investigating its CEO's relationship, not about chip rules or China's response
+    "https://techcrunch.com/2026/11/08/nvidia-says-its-investigating-ceo-jensen-huangs-relationship-with-possible-chinese-spy/",
+    # Karpathy's side project built with Claude, not about Mythos
+    "https://the-decoder.com/andrej-karpathy-built-a-curated-video-platform-in-a-weekend-using-claude-and-20-years-of-hacker-news/",
+    # Lithuanian laser factory, not about US chip rules
+    "https://www.xataka.com/componentes/lituania-tiene-2-9-millones-habitantes-compite-china-fabricando-laseres-para-chips-ia-serie",
+    # funding round, can't tell from the summary it is about the restructuring or the Musk case
+    "https://the-decoder.com/openai-lands-an-11-billion-funding-round-but-has-to-court-dentists-for-more-capital/",
+    # data-centre expansion plans, summary doesn't mention Stargate
+    "https://www.channelnewsasia.com/business/openai-press-ahead-data-center-expansion-despite-midterm-sweep-cfo-tells-cnbc-6532086",
+    # market selloff over regulation fears, no specific California law or preemption step
+    "https://www.techerati.com/news-hub/global-tech-stocks-fall-amid-concerns-over-ai-spending/",
+    # market selloff over regulation fears, no specific California law or preemption step
+    "https://www.dawn.com/news/2042565/asia-stocks-tumble-after-ai-rout-rocks-us-markets",
+    # market selloff over regulation fears, no specific California law or preemption step
+    "https://japantoday.com/category/business/tech-firms-suffer-bloodbath-as-us-midterms-fuel-ai-fears",
+    # midterm regulatory-risk analysis, no specific California law or preemption step
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=280544",
     # revenue and loss figures, can't tell from the summary it is an IPO filing or other development
     "https://the-decoder.com/anthropic-grows-revenue-twelvefold-but-posts-23-billion-loss/",
     # utility programme for future compute campuses, summary doesn't mention Stargate
