@@ -364,6 +364,10 @@ LEFT_OUT = {
         "Lumentum makes optical parts, not AI",
     "https://techcrunch.com/2026/11/02/omen-ai-adds-liquid-know-how-in-16-million-aquatic-labs-acquisition/":
         "Aquatic Labs makes water sensors, not AI",
+    "https://techcrunch.com/2026/11/05/palo-alto-networks-in-talks-to-buy-ai-agent-security-startup-clutch-for-500m/":
+        "Talks only; reported by a source, neither company confirmed",
+    "https://techcrunch.com/2026/11/05/dropbox-acquires-tigris-data-for-350m-to-bolster-its-ai-iinfrastructure/":
+        "Tigris Data makes cloud storage, not AI",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
