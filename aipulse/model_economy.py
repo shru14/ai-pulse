@@ -34,6 +34,24 @@ BEFORE = {
 # priced releases checked and left out of Launch prices, with why
 LEFT_OUT = {
     "MiniMax M3.1 Flash": "Earlier model's launch price not found",
+    "Gemini Omni 1.2 Flash": "Earlier model's launch price not found",
+    "Gemini 4 Carbon": "Earlier model's launch price not found",
+    "GPT-6.1 Terra": "Earlier model's launch price not found",
+    "Step 5 Preview": "Earlier model's launch price not found",
+    "Muse Wonder": "Earlier model's launch price not found",
+    "Claude Haiku 5.5": "Earlier model's launch price not found",
+    "Gemini 4 Argon": "Earlier model's launch price not found",
+    "Claude Sonnet 5.5": "Earlier model's launch price not found",
+    "Qwen3.8-Omni-Flash": "Earlier model's launch price not found",
+    "GPT-6 Astra": "Earlier model's launch price not found",
+    "Claude Fable 5.1": "Earlier model's launch price not found",
+    "GLM-5.3-Flash": "Earlier model's launch price not found",
+    "Palmyra X6": "Earlier model's launch price not found",
+    "Qwen3.8-Max": "Earlier model's launch price not found",
+    "Kimi K3": "Earlier model's launch price not found",
+    "Kimi K3.1 Pro": "Earlier model (Kimi K3) is a Release cards row; pairing not yet checked",
+    "Muse Spark 1.1": "Earlier model's launch price not found",
+    "Grok 4.5": "Earlier model's launch price not found",
 }
 FROM = "2026-01-01"  # How long before you must switch counts shutdowns from this day
 SHOWN = 10  # model rows shown before "Show all"
