@@ -137,6 +137,8 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://www.thelec.net/news/articleView.html?idxno=15176", "Samsung SDS", "South Korea", "Gongdan-dong, Gumi, North Gyeongsang Province", "60 MW first, up to 120 MW", "427.3 billion won for the building and certain facilities", "building"),
     ("https://w.media/drax-group-and-brookfield-plan-20-billion-data-center-development-in-north-yorkshire/", "Drax Group, Brookfield and Radiant", "UK", "Drax Power Station, North Yorkshire", "100 MW first, options for 500 MW more", "Over £20bn possible, £2.5bn for the first phase", "announced"),
     ("https://w.media/ntt-data-opens-12mw-new-jakarta-2-annex-data-center/", "NTT Data", "Indonesia", "Jakarta", "12 MW", "", "open"),
+    ("https://dcnnmagazine.com/projects-and-infrastructure/3flash-plans-480mw-data-centre-in-finland/", "3Flash Finland", "Finland", "Huuhansuo, Lappeenranta", "480 MW", "", "announced"),
+    ("https://dplnews.com/eletronet-anuncia-novo-data-center-em-sao-paulo-com-investimento-de-r-25-milhoes/", "Eletronet", "Brazil", "São Paulo", "0.5 MW first, up to 1 MW", "R$ 25m", "building"),
 
 ]
 
@@ -207,6 +209,13 @@ DECISIONS: list[tuple[str, ...]] = [
 
 # Infra stories from after CHECKED_TO checked and left out of all three tables
 LEFT_OUT: set[str] = {
+    "https://dcnnmagazine.com/infrastructure/cabling/centriforce-targets-30m-sales-as-data-centre-demand-grows/",  # a supplier's sales target
+    "https://w.media/epg-tops-out-us120-milllion-factory-for-modular-data-centers/",  # a factory for equipment, not a data centre
+    "https://www.telesemana.com/blog/2026/11/09/deutsche-telekom-invertira-casi-250-millones-de-euros-para-ampliar-su-fabrica-de-ia-en-munich/",  # expansion of an AI factory already open, amount only 'almost' 250m euros
+    "https://theconversation.com/voters-rejected-data-centers-in-dozens-of-communities-fueling-the-narrative-that-opposition-to-the-ai-infrastructure-contributed-to-the-2026-blue-wave-295950",  # opinion and analysis, no single decision
+    "https://w.media/ing-looking-to-offload-us-500-million-in-data-center-debt/",  # debt sale
+    "https://www.channelnewsasia.com/business/nextdc-pauses-uncontracted-projects-after-australian-data-centre-woes-6535716",  # same as the NextDC row in LEFT_OUT: the company's own pause
+    "https://olhardigital.com.br/2026/11/06/pro/governo-destina-r-463-milhoes-a-rede-nacional-de-data-centers/",  # funding for a network linking existing data centres, not a build or a permit
     "https://w.media/airtrunk-nears-deal-to-sell-its-johor-data-centers-for-us1-billion-report/",  # sale of existing data centres
     "https://www.thelec.net/news/articleView.html?idxno=14473",  # owner of the Cheongna project not named in the story
     "https://www.thelec.net/news/articleView.html?idxno=14800",  # supercapacitor orders, parts
