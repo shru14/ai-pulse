@@ -4760,6 +4760,30 @@ def test_topics_a_story_joins_by_words_or_approval_and_the_net_only_suggests(mon
     assert topics.candidates([card]) == [] and not topics.matches("ai-ipos", card)
 
 
+def test_topics_model_net_suggests_only_on_a_clear_close_vote(monkeypatch):
+    from aipulse import topics
+    monkeypatch.setattr(topics, "ADDED", {}), monkeypatch.setattr(topics, "LEFT_OUT", set())
+
+    def card(url, title, day, cat="news"):
+        return {"category": cat, "title": title, "summary": "", "date": day, "url": url, "source": "X", "tags": []}
+    ipo = [card(f"https://x.test/ipo{i}", f"Anthropic IPO filing {i}", "2026-10-01") for i in range(8)]
+    other = [card(f"https://x.test/o{i}", f"Other news {i}", "2026-10-01") for i in range(5)]
+    new = card("https://x.test/new", "Anthropic's stock listing", "2026-11-09")
+    far = card("https://x.test/far", "Weather today", "2026-11-09")
+    paper = card("https://x.test/p", "A paper on listings", "2026-11-09", "research")
+
+    def encode(texts):  # IPO stories and the new listing story point one way, everything else the other
+        import numpy as np
+        return np.array([[1.0, 0.0] if ("IPO" in t or "listing" in t) else [0.0, 1.0] for t in texts])
+    alike = topics.near(ipo + other + [new, far, paper], "2026-11-01", encode)
+    assert alike == {"https://x.test/new": {"ai-ipos": "Anthropic IPO filing 0"}}  # not the weather, not a paper
+    got = topics.candidates([new, far], "2026-11-01", alike)
+    assert [(c["url"], c["for"], c["like"]) for c in got] == [("https://x.test/new", ["ai-ipos"], alike["https://x.test/new"])]
+    assert topics.near(ipo[:6] + other + [new], "2026-11-01", encode) == {}  # six of ten isn't a clear vote
+    monkeypatch.setattr(topics, "LEFT_OUT", {"https://x.test/new"})
+    assert topics.near(ipo + other + [new], "2026-11-01", encode) == {}  # already decided
+
+
 def test_topics_every_net_and_added_slug_is_sound():
     from aipulse import topics
     for t in topics.TOPICS.values():
