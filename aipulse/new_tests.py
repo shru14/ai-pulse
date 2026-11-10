@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-11-05"
+CHECKED_TO = "2026-11-10"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -563,6 +563,12 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "Whether web-search agents still find the true answer when a single convincing false article is planted in "
         "their search results.",
         "No top score: across six frontier models, accuracy collapses despite access to truthful evidence", "", None),
+    "https://arxiv.org/abs/2611.11995": (
+        "Infrathon", "agents",
+        "Whether AI agents can keep improving real AI-infrastructure code (such as video-cache compression) over "
+        "24-hour runs.",
+        "Claude Opus 5.5 raised the mean KV-cache compression ratio from 6.82% (human-designed codec) to 19.86%",
+        "Claude Opus 5.5", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
@@ -606,6 +612,8 @@ LEFT_OUT: dict[str, str] = {
         "Inference Perf is a tool that measures serving speed, not a test of AI models",
     "https://research.google/pubs/libevobench-probing-temporal-knowledge-startification-in-code-generation-models/":
         "LibEvoBench is a June 2026 arXiv paper, before the sample starts",
+    "https://research.google/pubs/outrunning-llm-cutoffs-a-live-kernel-crash-resolution-benchmark-for-all/":
+        "Live-kBench's abstract names no best model or score, and only a summary of it could be read",
 }
 # Tests a later paper beat, by the test's address in TESTS: (the later paper's address, the day arXiv announced it, what
 # it reports in its abstract's own numbers and words, and who got it as the abstract names them). A test counts as beaten
@@ -619,7 +627,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
 }
-BEATS_CHECKED_TO = "2026-11-05"
+BEATS_CHECKED_TO = "2026-11-10"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
