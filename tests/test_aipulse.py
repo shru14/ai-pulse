@@ -3285,6 +3285,23 @@ def test_a_capped_source_keeps_only_its_newest_stories(tmp_path, monkeypatch):
         "https://ex.com/1", "https://www.sciencedaily.com/3", "https://www.sciencedaily.com/4"]
 
 
+def test_microsoft_research_papers_come_once_from_the_papers_feed(tmp_path, monkeypatch):
+    from aipulse import collect
+    from aipulse.sources import SOURCES
+    blog = next(s for s in SOURCES if s["name"] == "Microsoft Research")
+    monkeypatch.setattr(collect, "SOURCES", [blog])
+    conn = store.connect(tmp_path / "t.db")
+    paper = "https://www.microsoft.com/en-us/research/publication/lazare-veni-foras/"
+    for source, url, category in (("Microsoft Research", paper, "tool"),
+                                  ("Microsoft Research papers", paper.replace("foras", "foras-2"), "research"),
+                                  ("Microsoft Research", "https://www.microsoft.com/en-us/research/blog/a-post/", "tool")):
+        store.insert(conn, {"title": url, "summary": "", "url": url, "source": source, "category": category,
+                            "date": "2026-11-10", "tags": [], "authors": []})
+    collect.purge_dropped(conn, log=lambda *_: None)
+    assert sorted(r[0] for r in conn.execute("SELECT source FROM items")) == ["Microsoft Research", "Microsoft Research papers"]
+    assert not conn.execute("SELECT 1 FROM items WHERE url = ?", (paper,)).fetchone()
+
+
 def test_a_labs_new_github_repositories_people_took_up_are_releases():
     import json
     repos = [{"name": "Kimi-K3", "description": "Open Frontier Intelligence model weights", "fork": False,
