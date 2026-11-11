@@ -207,6 +207,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             e["url"] = urljoin(src["url"], e["url"])  # a feed that gives its links as paths (the EIA's)
             if src.get("link") and not re.search(src["link"], e["url"]):
                 continue  # a feed listing other pages too (NVIDIA Research's lists its researchers' profiles)
+            if src.get("skip_link") and re.search(src["skip_link"], e["url"]):
+                continue  # pages another source already brings (Microsoft Research's feed lists its papers)
             published = e["published"] or datetime.now(timezone.utc)
             if published < src_cutoff:
                 continue
@@ -374,6 +376,11 @@ def purge_dropped(conn, log=print) -> int:
         if conn.execute("SELECT 1 FROM sqlite_master WHERE name = 'bills'").fetchone():
             conn.execute("DELETE FROM bills WHERE source = ? OR url LIKE ?", (name, prefix + "%"))
     conn.execute("DELETE FROM meta WHERE key = 'canada_sessions'")  # LEGISinfo's sessions already read
+    for src in SOURCES:  # pages a source now skips, stored before the rule (another source brings them)
+        if src.get("skip_link"):
+            rows = conn.execute("SELECT id, url FROM items WHERE source = ?", (src["name"],)).fetchall()
+            gone = [r[0] for r in rows if re.search(src["skip_link"], r[1])]
+            n += sum(conn.execute("DELETE FROM items WHERE id = ?", (i,)).rowcount for i in gone)
     for src in SOURCES:  # a source whose terms cap how many of its stories may be stored keeps only its newest
         if src.get("keep_max"):
             n += conn.execute("DELETE FROM items WHERE source = ? AND id NOT IN (SELECT id FROM items WHERE source = ? "
