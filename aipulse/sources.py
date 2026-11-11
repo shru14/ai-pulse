@@ -114,9 +114,10 @@ SOURCES = [
     {"name": "Anthropic News", "url": "https://www.anthropic.com/news", "format": "anthropic", "category": "tool",
      "page_lead": True, "max_age_days": 90, "launch_pages": r"^https://www\.anthropic\.com/(?!news/)"},
     {"name": "Hugging Face Blog", "url": "https://huggingface.co/blog/feed.xml", "category": "tool", "page_lead": True},
-    # Its feed lists paper pages too: those come once, from Microsoft Research papers (11 Nov 2026: one was in both)
+    # A blog post announcing one of its own papers, under the paper's title, gives way to the paper from
+    # Microsoft Research papers (11 Nov 2026: one was in both Industry and Research)
     {"name": "Microsoft Research", "url": "https://www.microsoft.com/en-us/research/feed/", "category": "tool",
-     "ai_only": False, "paged": True, "skip_link": r"^https://www\.microsoft\.com/en-us/research/publication/"},
+     "ai_only": False, "paged": True, "papers_from": "Microsoft Research papers"},
     {"name": "NVIDIA Blog", "url": "https://blogs.nvidia.com/feed/", "category": "tool", "ai_only": False,
      "ai_in_title": True, "paged": True},
     {"name": "AWS Machine Learning Blog", "url": "https://aws.amazon.com/blogs/machine-learning/feed/", "category": "tool"},

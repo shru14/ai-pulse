@@ -207,8 +207,6 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             e["url"] = urljoin(src["url"], e["url"])  # a feed that gives its links as paths (the EIA's)
             if src.get("link") and not re.search(src["link"], e["url"]):
                 continue  # a feed listing other pages too (NVIDIA Research's lists its researchers' profiles)
-            if src.get("skip_link") and re.search(src["skip_link"], e["url"]):
-                continue  # pages another source already brings (Microsoft Research's feed lists its papers)
             published = e["published"] or datetime.now(timezone.utc)
             if published < src_cutoff:
                 continue
@@ -307,6 +305,9 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
             log(f"  summaries re-cleaned: {resummarize(conn, log=lambda *_: None)}")  # once, after brief.py changes
             conn.execute("INSERT OR REPLACE INTO meta VALUES ('summaries_version', ?)", (SUMMARIES,))
             conn.commit()
+    if drop_paper_echoes(conn):  # a lab's post and its paper that arrived in this same run
+        conn.execute("UPDATE items SET cluster = id WHERE cluster NOT IN (SELECT id FROM items)")  # lead was deleted
+        conn.commit()
     if backfill:
         return added  # the backfill regroups and looks up logos once, at the end
     cluster.assign(conn)  # put new stories on the same card as other outlets' versions, and on bills' cards
@@ -376,11 +377,7 @@ def purge_dropped(conn, log=print) -> int:
         if conn.execute("SELECT 1 FROM sqlite_master WHERE name = 'bills'").fetchone():
             conn.execute("DELETE FROM bills WHERE source = ? OR url LIKE ?", (name, prefix + "%"))
     conn.execute("DELETE FROM meta WHERE key = 'canada_sessions'")  # LEGISinfo's sessions already read
-    for src in SOURCES:  # pages a source now skips, stored before the rule (another source brings them)
-        if src.get("skip_link"):
-            rows = conn.execute("SELECT id, url FROM items WHERE source = ?", (src["name"],)).fetchall()
-            gone = [r[0] for r in rows if re.search(src["skip_link"], r[1])]
-            n += sum(conn.execute("DELETE FROM items WHERE id = ?", (i,)).rowcount for i in gone)
+    n += drop_paper_echoes(conn)
     for src in SOURCES:  # a source whose terms cap how many of its stories may be stored keeps only its newest
         if src.get("keep_max"):
             n += conn.execute("DELETE FROM items WHERE source = ? AND id NOT IN (SELECT id FROM items WHERE source = ? "
@@ -389,6 +386,24 @@ def purge_dropped(conn, log=print) -> int:
         conn.execute("UPDATE items SET cluster = id WHERE cluster NOT IN (SELECT id FROM items)")  # lead was deleted
         log(f"  removed {n} stories from dropped sources")
     conn.commit()
+    return n
+
+
+def _title_key(title: str) -> str:
+    return re.sub(r"\W+", " ", (title or "").lower()).strip()
+
+
+def drop_paper_echoes(conn) -> int:
+    """Delete a lab blog's post that carries the title of a paper from the same lab's papers feed (papers_from):
+    the paper is the story, in Research, and the post would show it again in another section. Order-free, so
+    it runs before and after each collection. Returns how many were deleted."""
+    n = 0
+    for src in SOURCES:
+        if src.get("papers_from"):
+            papers = {_title_key(r[0]) for r in conn.execute("SELECT title FROM items WHERE source = ?", (src["papers_from"],))}
+            for i, title in conn.execute("SELECT id, title FROM items WHERE source = ?", (src["name"],)).fetchall():
+                if _title_key(title) in papers:
+                    n += conn.execute("DELETE FROM items WHERE id = ?", (i,)).rowcount
     return n
 
 

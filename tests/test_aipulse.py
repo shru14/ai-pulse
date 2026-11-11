@@ -3285,21 +3285,20 @@ def test_a_capped_source_keeps_only_its_newest_stories(tmp_path, monkeypatch):
         "https://ex.com/1", "https://www.sciencedaily.com/3", "https://www.sciencedaily.com/4"]
 
 
-def test_microsoft_research_papers_come_once_from_the_papers_feed(tmp_path, monkeypatch):
+def test_a_microsoft_research_blog_post_on_its_own_paper_gives_way_to_the_paper(tmp_path, monkeypatch):
     from aipulse import collect
     from aipulse.sources import SOURCES
-    blog = next(s for s in SOURCES if s["name"] == "Microsoft Research")
-    monkeypatch.setattr(collect, "SOURCES", [blog])
+    monkeypatch.setattr(collect, "SOURCES", [s for s in SOURCES if s["name"] == "Microsoft Research"])
     conn = store.connect(tmp_path / "t.db")
-    paper = "https://www.microsoft.com/en-us/research/publication/lazare-veni-foras/"
-    for source, url, category in (("Microsoft Research", paper, "tool"),
-                                  ("Microsoft Research papers", paper.replace("foras", "foras-2"), "research"),
-                                  ("Microsoft Research", "https://www.microsoft.com/en-us/research/blog/a-post/", "tool")):
-        store.insert(conn, {"title": url, "summary": "", "url": url, "source": source, "category": category,
+    base = "https://www.microsoft.com/en-us/research/"
+    for source, url, title, category in (
+            ("Microsoft Research papers", base + "publication/lazare/", "Lazare veni foras: Backdoor AI Agents", "research"),
+            ("Microsoft Research", base + "blog/lazare/", "Lazare, veni foras: Backdoor AI Agents", "news"),
+            ("Microsoft Research", base + "blog/other/", "A post about something else", "news")):
+        store.insert(conn, {"title": title, "summary": "", "url": url, "source": source, "category": category,
                             "date": "2026-11-10", "tags": [], "authors": []})
     collect.purge_dropped(conn, log=lambda *_: None)
-    assert sorted(r[0] for r in conn.execute("SELECT source FROM items")) == ["Microsoft Research", "Microsoft Research papers"]
-    assert not conn.execute("SELECT 1 FROM items WHERE url = ?", (paper,)).fetchone()
+    assert sorted(r[0] for r in conn.execute("SELECT url FROM items")) == [base + "blog/other/", base + "publication/lazare/"]
 
 
 def test_a_labs_new_github_repositories_people_took_up_are_releases():
