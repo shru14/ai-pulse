@@ -177,6 +177,16 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://www.fayerwayer.com/internet/2026/11/11/mano-dura-en-nueva-york-openai-y-anthropic-deberan-reportar-fallas-"
+    "criticas-de-ia-en-72-horas-o-enfrentar-multas-millonarias/":
+        "A New York law for all frontier developers (OpenAI and Anthropic only as examples); no order, probe or case "
+        "against a named company",
+    "https://olhardigital.com.br/2026/11/10/pro/microsoft-tenta-barrar-proibicao-de-tecnologia-chinesa-em-data-"
+    "centers/":
+        "A planned import ban still being drafted; Microsoft lobbying, no government action on it",
+    "https://www.xataka.com/empresas-y-economia/debo-disculpa-a-mi-familia-jensen-huang-confiesa-su-infidelidad-"
+    "nvidia-investiga-posible-espionaje-chino":
+        "Nvidia's own board probe of its CEO; a congressional briefing only requested, no government action",
     "https://the-decoder.com/eight-countries-and-top-ai-labs-agree-to-shutdown-mechanisms-in-new-paris-declaration/":
         "A new declaration (Paris Call), not a pledge on the page; no government deal or action against a company",
     "https://techcrunch.com/2026/11/08/nvidia-says-its-investigating-ceo-jensen-huangs-relationship-with-possible-chinese-spy/":
