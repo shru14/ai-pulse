@@ -40,6 +40,28 @@ PLACES = [
 PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://www.engadget.com/2311855/gemini-4-carbon-now-available-worldwide/":
+        "Which countries or regions it covers isn't stated (opened to more users and products, no places named)",
+    "https://nairametrics.com/2026/11/10/anthropic-withdraws-ipo-pricing-details-showing-potential-69-3-billion-raise/":
+        "A company's IPO filing, not a model price change",
+    "https://olhardigital.com.br/2026/11/10/pro/resumo-do-od-novela-nvidia-starship-starlink-no-celular-e-uma-duvida-preco-dinamico-e-legal/":
+        "A news roundup, not a model price or place change",
+    "https://techcrunch.com/2026/11/09/jensen-huang-pulls-out-of-elevenlabs-summit-amid-nvidia-controversy/":
+        "A person leaving an event, not a model pulled",
+    "https://aws.amazon.com/blogs/machine-learning/nvidia-nemotron-3-5-super-vl-is-now-available-in-amazon-sagemaker-jumpstart/":
+        "Availability on a cloud platform, not countries or regions",
+    "https://openai.com/index/chatgpt-enterprise-aws-marketplace":
+        "A product on a cloud marketplace, not a model place change",
+    "https://www.xataka.com/robotica-e-ia/queria-quitar-aplicaciones-que-android-no-me-deja-borrar-asi-que-le-pedi-a-ia-mi-propio-desinstalador-media-hora-tenia":
+        "A how-to about removing apps, not a model pulled",
+    "https://cset.georgetown.edu/article/the-u-s-china-ai-competition-two-paths-to-artificial-general-intelligence/":
+        "Policy analysis, not a model price or place change",
+    "https://www.channelnewsasia.com/business/ubs-ceo-says-ai-investors-had-been-pricing-perfection-until-sectors-sharp-correction-6535121":
+        "Investor sentiment, not a model price change",
+    "https://www.xataka.com/seleccion/17-000-euros-rtx-5090-espana-comprobamos-locura-precios-disponibilidad-plazos-mejor-gpu-nvidia":
+        "GPU hardware prices, not an AI model price change",
+    "https://dplnews.com/siri-ai-espanol/":
+        "A consumer assistant in a language, not an AI model reaching regions",
     "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/":
         "A new model's launch price, not a change",
     "https://pandaily.com/deepseek-harness-1-54-million-daily-active-users-official-plugin-marketplace":
