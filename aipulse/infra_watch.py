@@ -205,6 +205,7 @@ DECISIONS: list[tuple[str, ...]] = [
     ("https://www.foodandwaterwatch.org/press/2026/10/14/allentown-planning-commission-bucks-public-opinion-greenlights-data-center/", "US", "Allentown, Pennsylvania", "Planning Commission", "Approved a data centre", "approved"),
     ("http://www.bernama.com/en/news.php?id=2620497", "Malaysia", "Whole country", "Data Centre Task Force, Digital Ministry", "27 data-centre projects approved up to July 2026, RM 226bn in all", "approved"),
     ("https://w.media/odisha-cabinet-greenlights-us-18-62-million-backup-data-center/", "India", "Keonjhar, Odisha", "Odisha state cabinet", "Approved a US$ 18.6m backup data centre", "approved"),
+    ("https://w.media/thailand-approves-new-data-center-rules-on-noise-heat-zoning-and-cooling/", "Thailand", "Whole country", "Thailand's Cabinet", "Approved new rules on data-centre noise, heat, zoning and cooling; those over 20 MW must be in industrial zones", "limits"),
 ]
 
 # Infra stories from after CHECKED_TO checked and left out of all three tables
@@ -276,6 +277,11 @@ LEFT_OUT: set[str] = {
     "https://w.media/sunway-construction-clinches-us-657-million-data-center-jobs-in-selangor-and-johor/",  # builder's contracts; clients not named, no size
     "https://www.channelnewsasia.com/business/google-plans-17-billion-wyoming-data-center-amid-rising-threats-curbs-6529006",  # can't read to check
     "https://www.foodandwaterwatch.org/press/2026/11/05/160-groups-to-congress-no-permitting-reform-no-ai-data-centers-on-public-lands/",  # groups' letter to Congress; no decision
+    "https://www.canarymedia.com/articles/politics/new-dem-regulators-georgia-power",  # incoming regulators' plans and a campaign promise; no decision yet
+    "https://www.datacenterknowledge.com/data-center-construction/winning-data-center-bids-starts-with-the-investment-tax-credit",  # opinion and advice, no project or decision
+    "https://www.powermag.com/calibrant-energy-secures-145-million-in-project-financing-including-battery-storage-for-hyperscale-data-center-customer-in-pjm/",  # press release on financing; customer, site and plant size not named
+    "https://w.media/ohio-data-center-power-equipment-writedown-pushes-softbank-to-us-7-billion-loss/",  # company results and a writedown, not a new build or power deal
+    "https://dplnews.com/rechazo-centros-de-datos-estados-unidos/",  # roundup of local ballot results across 10 states, not one decision
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
