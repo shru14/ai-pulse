@@ -82,6 +82,26 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-10', by='Google DeepMind', kind='card',
+         title='Gemini 4 Carbon Safety & Security Report',
+         url='https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available/',
+         original='https://storage.googleapis.com/deepmind-media/gemini/gemini_4_carbon_safety_report.pdf',
+         models=('Gemini 4 Carbon',),
+         risks=('cbrn', 'control', 'cyber', 'harm', 'injection', 'jailbreak', 'misalign', 'persuasion', 'rnd', 'tamper'),
+         abstract=('This report describes the results of safety, security, and alignment testing conducted on Gemini 4'
+                   ' Carbon, the next model in our Gemini 4 series. Aligned with our Frontier Safety Framework and '
+                   'Google’s AI Principles, we run rigorous safety and security evaluations designed to ensure the '
+                   'model is safe, helpful, and resilient against misuse. For basic model information, see the Gemini '
+                   '4 Carbon Model Card. Unless otherwise noted, evaluations in this report benchmark the Carbon model'
+                   ' without out-of-model production safeguards and without search grounding to measure intrinsic '
+                   'model behavior, comparing performance against recently released Gemini models (Gemini 4 Argon and '
+                   'Gemini 3.8 Flash). In production deployments, additional safeguards are applied at inference-time '
+                   'to provide multiple layers of protections, as described in Section 2. Key takeaways about Gemini 4'
+                   ' Carbon’s safety and security performance are below. Mitigating Frontier Safety Risks: Our '
+                   'Frontier Safety Framework comprises a set of protocols that aims to address severe risks that may '
+                   'arise from the high-impact capabilities of frontier models. Under our Material Capability Change '
+                   '(MCC) assessment, Gemini 4 Carbon did not show meaningful new capabilities or material increases '
+                   'in performance compared with Gemini 4 Argon. …')),
     dict(date='2026-11-06', by='Anthropic', kind='eval',
          title='Project EVE: Claude plays MMORPGs',
          url='https://www.anthropic.com/research/project-eve-claude-plays-mmorpgs',
