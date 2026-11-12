@@ -33,11 +33,12 @@ STREAMS = ("news", "policy", "regulation", "infra", "tool")  # not research: pap
 # slug: name, kind (the block's label), what (our own words), bills, words, exclude, net (sets of story tags that may
 # mean the topic), related topics
 # The Huang scandal (from 29 Oct 2026). Its stories stay out of the chip-rules topic unless they also speak of exports
-_HUANG = (r"\bAlice Huang\b|\b(Jensen )?Huang\b.{0,120}\b(spy|spies|spying|espionage|affairs?|scandal|infidelity"
-          r"|extramarital|lover|oust\w*|successors?|class[- ]action)\b|\b(spy|spying|espionage|affairs?|scandal"
-          r"|infidelity|extramarital|lover)\b.{0,120}\b(Jensen )?Huang\b|\b(oust\w*|remov\w*|investigar)\b.{0,40}"
-          r"\bJensen Huang\b|\bJensen Huang (problem|scandal|to court)\b|\bNvidia\b.{0,60}\b(scandal|controvers(y|ies)|spy"
-          r"|espionage)\b|\b(scandal|controvers(y|ies)|spy|espionage)\b.{0,60}\bNvidia\b")
+_HUANG = (r"\bAlice Huang\b|\b(Jensen )?Huang\b.{0,120}\b(spy|spies|spying|espionage|espionaje|affairs?|scandal"
+          r"|infidelity|extramarital|lover|oust\w*|successors?|class[- ]action)\b|\b(spy|spies|spying|espionage"
+          r"|espionaje|affairs?|scandal|infidelity|extramarital|lover)\b.{0,120}\b(Jensen )?Huang\b|\b(oust\w*|remov\w*"
+          r"|investigar)\b.{0,40}\bJensen Huang\b|\bJensen Huang (problem|scandal|to court)\b|\bNvidia\b.{0,60}\b(scandal"
+          r"|controvers(y|ies)|spy|spies|espionage|espionaje|intelligence asset|informant)\b|\b(scandal|controvers(y|ies)"
+          r"|spy|spies|espionage|espionaje)\b.{0,60}\bNvidia\b")
 _HUANG_ONLY = rf"(?s)^(?!.*\b(exports?|curbs?|export controls?|smuggl\w*)\b).*(?:{_HUANG})"
 TOPICS = {
     "eu-ai-act": dict(
