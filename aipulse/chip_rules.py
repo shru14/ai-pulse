@@ -140,6 +140,12 @@ LEFT_OUT: dict[str, str] = {
     "https://w.media/firebirds-us-5-billion-kazakhstan-ai-factory-gets-green-light-for-45000-nvidia-gpus/":
         "grid: Firebird says it secured a US export licence for 45,000 Nvidia Grace Blackwell GPUs for Kazakhstan; "
         "a company's licence, no agency or day named, no published rule",
+    "https://techcrunch.com/2026/11/09/"
+    "jensen-huangs-affair-with-alleged-chinese-spy-puts-nvidias-china-ambitions-under-scrutiny/":
+        "espionage and affair story; export moves only as undated background",
+    "https://olhardigital.com.br/2026/11/11/pro/"
+    "suspeita-de-espionagem-envolvendo-ceo-pressiona-imagem-da-nvidia/":
+        "espionage story; export moves only as undated background",
 }
 
 # the newest day every story was read for the lists above; the candidates start after it
