@@ -75,6 +75,23 @@ _STANDARDS = re.compile(r"\bNIST\b|\bISO/IEC\b|\bISO \d{4,5}\b|\bIEEE (?:SA\b|St
                         r"\b(?:AI|artificial intelligence) standards\b", re.I)
 
 
+# The state at work, beyond POLICY_TERMS: defence, courts and Congress, public consultations, visas and tax,
+# liability, rights and surveillance, named leaders. Only keeps a story already in Policy there (categorize);
+# it never pulls an Industry outlet's story in, so "OpenAI signs a Pentagon contract" from a tech site stays put.
+_STATE = re.compile(r"\bPentagon\b|\bDoD\b|\bDHS\b|\bOMB\b|\bDepartment of (?:Defen[cs]e|War|Homeland|Justice|Commerce|Labor|"
+                    r"Education|Energy|State)\b|\bmilitar|\bwarfare\b|\bwar crimes?\b|\bdefen[cs]e\b|national security|"
+                    r"\bbiosecurity\b|\bdirective\b|\btestif|\bhearings?\b|\b(?:sub)?committee\b|\bsenators?\b|\bjudges?\b|"
+                    r"\bunlawful|\bliab(?:le|ility)\b|\bmidterms?\b|\bDemocrats?\b|\bRepublicans?\b|\bpublic (?:input|comment|"
+                    r"interest|sector|defen[cs]e)\b|\bH-1B\b|\bvisas?\b|\btariffs?\b|\btax(?:es|ing|ation)?\b|\bsubsid|"
+                    r"\bsurveillance\b|\bczar\b|\baction plan\b|\bweapons?\b|\barms race\b|\bcold war\b|\bbioterror|\bcounterterror|\bintelligence community\b|"
+                    r"\bimmigration\b|\baccord\b|\bgeopolitic|\binternational relations\b|\bcensorship\b|\bdemocrac|\bsovereign|"
+                    r"\b(?:Trump|Biden|Hegseth|Vance|Xi Jinping|Starmer|Macron|Modi)\b|\bEurope(?:an)?\b|\bsummit\b|"
+                    r"\bcode of practice\b", re.I)
+# ...and in a headline only, since a policy group's own staff lines use them ("leader of its AI and human rights
+# project"): rights and accountability, and China, the subject of much of the security groups' work.
+_STATE_TITLE = re.compile(r"\b(?:civil|human|digital) rights\b|\bcivil liberties\b|\baccountab|\bChin(?:a|ese)\b", re.I)
+
+
 def is_ai_related(title: str, summary: str) -> bool:
     return bool(_ai.search(f"{title} {summary}"))
 
@@ -218,8 +235,9 @@ def categorize(title: str, summary: str, default: str = "news") -> str:
         return "tool" if released(title, summary) else "news"
     if tool >= 3 and tool > policy and launched(title, summary):
         return "tool"
-    if default == "policy" and policy == 0 and regulatory_action(title) is None and not jurisdictions.acting(title):
-        return "news"  # a policy search picked up a story with nothing about government in it
+    if (default == "policy" and policy == 0 and not _STATE.search(f"{title} {summary}") and not _STATE_TITLE.search(title)
+            and regulatory_action(title) is None and not jurisdictions.acting(title)):
+        return "news"  # a policy search, or a policy group's press repost, with nothing about government in it
     return default
 
 

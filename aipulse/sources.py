@@ -30,6 +30,9 @@ Optional per-source keys:
                 Industry or Releases, however little the text sounds like government
   no_releases   a practitioner's or evaluator's blog: its posts are never Releases, however much they read like a
                 launch (they comment on others' launches)
+  press_clips   a policy group that also reposts general press coverage (CSET, AI Now, EPIC): each story is checked
+                and one with nothing about government goes to Industry. Every other policy feed's stories stay
+                Policy (or the tracker), since the group writes them itself (collect.policy_feed_keeps)
   lab           "github_repos", "hf_models" and the labs' APIs: the lab's name in headlines ("Qwen publishes
                 Qwen-Image-2.1 on GitHub")
   key_env       the environment variable holding the project's API key for the source; skipped when unset
@@ -450,12 +453,13 @@ SOURCES = [
     # The newsletter's Substack feed sits behind a Cloudflare check that blocks cloud servers (GitHub Actions);
     # the publisher's own site feed carries its explainers and analysis.
     {"name": "EU AI Act Newsletter", "url": "https://artificialintelligenceact.eu/feed/", "category": "policy", "voice": "rights"},
-    {"name": "CSET", "url": "https://cset.georgetown.edu/feed/", "category": "policy", "voice": "institute", "ai_only": True, "paged": True},
+    {"name": "CSET", "url": "https://cset.georgetown.edu/feed/", "category": "policy", "voice": "institute", "ai_only": True, "paged": True,
+     "press_clips": True},
     {"name": "AI Now Institute", "url": "https://ainowinstitute.org/feed", "category": "policy", "voice": "rights", "ai_only": True,
-     "paged": True},
+     "paged": True, "press_clips": True},
     {"name": "Future of Life Institute", "url": "https://futureoflife.org/feed/", "category": "policy", "voice": "rights", "ai_only": True},
     {"name": "EFF", "url": "https://www.eff.org/rss/updates.xml", "category": "policy", "voice": "rights", "ai_in_title": True},
-    {"name": "EPIC", "url": "https://epic.org/feed/", "category": "policy", "voice": "rights", "paged": True},
+    {"name": "EPIC", "url": "https://epic.org/feed/", "category": "policy", "voice": "rights", "paged": True, "press_clips": True},
     # Added from the sources review (6 Oct 2026)
     {"name": "CLTC (UC Berkeley)", "url": "https://cltc.berkeley.edu/feed/", "category": "policy", "voice": "institute"},
     # Added 7 Oct 2026 (no terms restrict its feed)
