@@ -993,23 +993,29 @@ def tell(name: str, ev: list[dict]) -> None:
 
 def speak(site: Path, cache: Path, log=print) -> int:
     """Each topic's beat clips into site/topics/<slug>/say/, read by the daily listen's offline voice (audio.speak):
-    a clip already in `cache` (kept between runs) is copied, a new one spoken once. Returns how many were spoken."""
+    a clip already in `cache` (kept between runs) is copied, a new one spoken once, and clips no beat uses any more
+    leave the cache. Without the voice (a quick run) only the kept ones are copied; a beat without its clip falls back
+    to the browser's voice on the page. Returns how many were spoken."""
     from . import audio
-    voice, spoken = audio._voice(), 0
+    voice, spoken, used = audio._voice(), 0, set()
     if voice is None:
-        log("topic-voice: no voice (pip install piper-tts lameenc, and audio.VOICE); the page falls back to the browser's")
-        return 0
+        log("topic-voice: no voice (pip install piper-tts lameenc, and audio.VOICE); copying the kept clips only")
     cache.mkdir(parents=True, exist_ok=True)
     for f in sorted((site / "topics").glob("*/events.json")):
         for e in json.loads(f.read_text(encoding="utf-8")):
             if not e.get("clip"):
                 continue
+            used.add(e["clip"])
             kept = cache / e["clip"]
-            if not kept.exists():
+            if not kept.exists() and voice is not None:
                 kept.write_bytes(audio.speak(e["say"], voice))
                 spoken += 1
-            (f.parent / SAY).mkdir(exist_ok=True)
-            shutil.copyfile(kept, f.parent / SAY / e["clip"])
+            if kept.exists():
+                (f.parent / SAY).mkdir(exist_ok=True)
+                shutil.copyfile(kept, f.parent / SAY / e["clip"])
+    for old in cache.glob("*.mp3"):
+        if old.name not in used:
+            old.unlink()
     return spoken
 
 

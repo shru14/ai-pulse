@@ -239,6 +239,28 @@ jobs:
           path: site/listen
           key: listen-${{ github.run_id }}
 
+      # Follow the story's spoken beats (topics.tell, topics.speak): the same offline voice tells each topic's story so
+      # far, a clip per beat, kept between runs, so a full run speaks only new beats and a push or quick run copies the
+      # kept ones (no voice installed). Clips a beat no longer uses leave the cache.
+      - name: Restore the topic clips
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: topic-clips
+          key: topic-clips-${{ github.run_id }}
+          restore-keys: topic-clips-
+
+      - name: Topic voices
+        continue-on-error: true
+        timeout-minutes: 30  # the first run speaks every topic once; a clip not made falls back to the browser's voice
+        run: python -m aipulse --db aipulse.db topic-voice --site site --cache topic-clips
+
+      - name: Save the topic clips
+        if: always() && env.BUILD != 'true' && env.QUICK != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: topic-clips
+          key: topic-clips-${{ github.run_id }}
+
       # The daily cloud jobs (the glossary's and Jobs blamed on AI's drafts) can reach GitHub but not the site: a copy of
       # data.json, gzipped, as the only file of the data branch, replaced each full run (one commit, no history kept).
       - name: Keep a copy of data.json on the data branch
