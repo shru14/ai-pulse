@@ -253,6 +253,12 @@ LEFT_OUT = {
         "first tranche only, round not closed; no amounts per investor, equity or debt not stated",
     "https://techcrunch.com/2026/11/06/openai-reportedly-raises-an-additional-11-billion-at-a-1-25-trillion-valuation/":
         "reportedly; round not closed, no investor named",
+    "https://japantoday.com/category/tech/anthropic-seeks-valuation-of-about-1.3-trillion-when-it-becomes-a-publicly-traded-company":
+        "IPO plans only; Anthropic 'seeks' a valuation, no stake",
+    "https://nairametrics.com/2026/11/10/anthropic-withdraws-ipo-pricing-details-showing-potential-69-3-billion-raise/":
+        "IPO plans only; potential raise, no stake",
+    "https://techcrunch.com/2026/11/10/openai-acquires-odessia-travel-startup-created-by-sonder-founder/":
+        "OpenAI buying a travel startup, not an AI lab",
 }
 
 
