@@ -89,7 +89,7 @@ STYLE = """
 .cp .done{position:absolute;top:10px;right:10px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:#fff;color:#000;border:2px solid var(--line);padding:2px 7px}
 .cp .topics .txt{display:flex;flex-direction:column;gap:8px;padding:14px 16px 16px;flex:1}
 .cp .topics .pic .done{top:10px;right:10px;font-size:11px;padding:2px 7px}
-.cp .done.hot{background:#F0E442;color:#000}
+.cp .done.hot{background:#BFE3F7;color:#000}
 .cp .topics .kind{margin:0}
 .cp .topics .kind{font-size:11.5px}
 .cp .topics b{font:400 21px/1.2 var(--display)}
@@ -146,7 +146,7 @@ STYLE = """
 .cp .topic-hero{position:relative;height:clamp(150px,18vw,220px);margin-top:16px;border:2px solid var(--line);overflow:hidden;box-shadow:6px 6px 0 var(--line)}
 .cp .topic-hero .photo{object-position:right center}  /* the cartoon sits on the right, clear of the title */
 .cp .topic-hero .over{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:clamp(18px,3vw,34px);background:linear-gradient(100deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.55) 45%,transparent 80%),linear-gradient(transparent 50%,rgba(0,0,0,.6))}
-.cp .topic-hero .kind{margin:0;background:#F0E442;color:#000;align-self:flex-start;padding:2px 8px;border:2px solid var(--line)}
+.cp .topic-hero .kind{margin:0;background:#BFE3F7;color:#000;align-self:flex-start;padding:2px 8px;border:2px solid var(--line)}
 .cp .topic-hero h1{color:#fff;margin:0;font-size:clamp(28px,4vw,44px);max-width:16ch}
 .cp .topic-hero .done{position:static;align-self:flex-start}
 .cp .topic-hero .badges .flag{width:36px;height:27px}
@@ -229,6 +229,61 @@ STYLE = """
   .cp .timeline .ev a{font-size:15px}
   .cp .tp h2{margin-top:26px}
 }
+/* Follow the story pages (.tp) in the calm look: one font, no bold, rounded thin outlines, no colour bars or shadows.
+   The monthly issue (.mi) keeps the poster timeline above. Key moments: a soft grey panel, date above each headline, four across. */
+.cp .tp .moments{margin-top:28px;background:color-mix(in srgb,var(--ink) 5%,var(--bg));border-radius:10px;padding:18px 20px}
+.cp .tp .moments h2{margin:0 0 12px;font:400 22px/1.2 var(--display);border:0;padding:0}
+.cp .tp .mlist{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0}
+.cp .tp .mlist li{display:flex;flex-direction:column-reverse;justify-content:flex-end;gap:6px;padding:0;font-size:16px}
+.cp .tp .mlist li::before{content:none}
+.cp .tp .mlist a{font-weight:400;text-decoration:none}
+.cp .tp .mlist a:hover{color:#0072B2}
+.cp .tp .mlist .when{margin:0;font:400 13px var(--body);letter-spacing:0;color:var(--muted)}
+/* headings and legend */
+.cp .tp > h2:not(.mi *){margin-top:38px;border-bottom:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}  /* beats the poster rule below */
+.cp .tp .legend .lg::before{width:9px;height:9px;border:0;border-radius:50%;background:#56B4E9}
+.cp .tp .legend .lg.official::before{border-radius:1px;background:var(--ink);transform:rotate(45deg)}
+/* the year chapters stay; their rules go hairline */
+.cp .tp .chapter .yr{border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+.cp .tp ol.timeline{border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+.cp .tp .chapter .yr span{-webkit-text-stroke:1.5px var(--ink)}
+/* the line and its markers: thin */
+.cp .tp ol.timeline::before{width:1.5px;margin-left:-.75px}
+.cp .tp .timeline .dot{width:13px;height:13px;margin-left:-6.5px;top:24px;border:1.5px solid var(--ink)}
+.cp .tp .timeline .official .dot{width:11px;height:11px;margin-left:-5.5px;top:25px;border-radius:2px}
+.cp .tp .timeline .key .dot{width:17px;height:17px;margin-left:-8.5px;top:22px}
+.cp .tp .timeline .ev .box::after{top:30px;height:1.5px;background:color-mix(in srgb,var(--ink) 45%,transparent)}
+/* cards: rounded, thin outline, no colour bars, no shadows, one font, no bold */
+.cp .tp .timeline .ev .box,.cp .tp .timeline .ev.official .box,.cp .tp .timeline .ev.news .box,
+.cp .tp .timeline .ev.wide .box,.cp .tp .timeline .ev.key .box{border:1.5px solid var(--line);border-radius:10px;box-shadow:none;background:var(--bg)}
+.cp .tp .timeline .ev.key .box{background:color-mix(in srgb,#56B4E9 10%,var(--bg))}
+.cp .tp .timeline .ev.official.key .box{background:color-mix(in srgb,var(--ink) 6%,var(--bg))}
+:root[data-theme="dark"] .cp .tp .timeline .ev.key .box{background:color-mix(in srgb,#56B4E9 14%,var(--bg))}
+:root[data-theme="dark"] .cp .tp .timeline .ev.official.key .box{background:color-mix(in srgb,var(--ink) 8%,var(--bg))}
+.cp .tp .timeline .ev .box *{font-family:var(--body)}
+.cp .tp .timeline .ev .txt{padding:12px 16px 13px}
+.cp .tp .timeline .top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.cp .tp .timeline .when{font:400 13px var(--body);letter-spacing:0;color:var(--muted)}
+.cp .tp .timeline .lane{display:inline-flex;align-items:center;gap:6px;font:400 13px var(--body);letter-spacing:0;text-transform:none;color:var(--ink)}
+.cp .tp .timeline .lane::before{content:"";width:9px;height:9px;border-radius:50%;background:#56B4E9}
+.cp .tp .timeline .official .lane::before{border-radius:1px;background:var(--ink);transform:rotate(45deg) scale(.85)}
+.cp .tp .timeline .ev a{font-weight:400;font-size:17px;line-height:1.32}
+.cp .tp .timeline .ev.key a{font-size:19px}
+.cp .tp .timeline .ev .meta{font-size:13px;color:var(--muted);margin-top:6px}
+.cp .tp .timeline .top .flag{border:1px solid var(--line);border-radius:2px}
+/* "+N more": a rounded-square button, its list a soft panel */
+.cp .tp .timeline .more button{font:400 13.5px var(--body);background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:5px 14px}
+.cp .tp .timeline .more button[aria-expanded="true"]{background:color-mix(in srgb,var(--ink) 8%,var(--bg));color:var(--ink)}
+.cp .tp .timeline .more ul{border:1.5px solid var(--line);border-radius:10px;padding:4px 14px}
+.cp .tp .timeline .more ul li{border-bottom:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .tp .timeline .more ul .when{font:400 13px var(--body);color:var(--muted)}
+.cp .tp .timeline .more ul a{font-weight:400}
+.cp .tp .timeline .now span{font:400 14px var(--body);background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:4px 14px}
+/* related: buttons */
+.cp .tp > .related a{display:inline-block;font-weight:400;text-decoration:none;border:1.5px solid var(--line);border-radius:8px;padding:6px 12px;margin:4px 4px 0 6px}
+@media (max-width:760px){.cp .tp .mlist{grid-template-columns:1fr 1fr}.cp .tp .timeline .ev a{font-size:15.5px}.cp .tp .timeline .ev.key a{font-size:16.5px}}
+@media (max-width:480px){.cp .tp .mlist{grid-template-columns:1fr}}
+@media (max-width:700px){.cp .tp .chapter .yr{border-bottom:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}}  /* phones: thin rule under the year too */
 a.subscribe-btn{text-decoration:none}
 /* section heads in the poster look, as the front page's bands: the title over a thick ink rule, no marker before it.
    The monthly issue and its insights keep their own. */
