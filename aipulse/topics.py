@@ -139,7 +139,7 @@ TOPICS = {
               r"|\b(electricity|power) (bills?|prices?)\b.{0,40}\bdata cent(er|re)s?\b",
         exclude=r"\bbatter(y|ies)\b",
         net=({"Power & grid", "Rules & permits"}, {"Power & grid", "Energy"}, {"Power & grid", "Land & local pushback"}),
-        related=("stargate",)),
+        related=("stargate", "data-centre-backlash")),
     "stargate": dict(
         name="Stargate", kind="Infrastructure",
         what="OpenAI's data centre venture with SoftBank and Oracle, site by site.",
@@ -226,6 +226,34 @@ TOPICS = {
               r"|stake|exclusiv\w*)\b|\bMicrosoft\b.{0,60}\brevenues?\b.{0,40}\bOpenAI\b|\bOpenAI\b.{0,60}\bMicrosoft'?s? revenues?\b",
         net=({"OpenAI", "Microsoft"},),
         related=("openai-restructuring",)),
+    "data-centre-backlash": dict(
+        name="The backlash against data centres", kind="Infrastructure",
+        what="Towns, voters and activists pushing back on AI data centres: moratoriums, protests, ballot results and "
+             "how the industry is answering.",
+        bills=("US-119-s-4214", "US-119-hr-9442"),
+        words=r"\bdata cent(er|re)s?\b.{0,80}\b(moratori(um|a)|opposition|opponents?|oppos(e|es|ed|ing)|protest\w*"
+              r"|backlash|residents|zoning|bans?|banned|banning|block(s|ed|ing)?|reject\w*|NDAs?|secret deals?|pause)\b"
+              r"|\b(moratori(um|a)|opposition|opponents?|oppos(e|es|ed|ing)|protest\w*|backlash|residents|bans?|banned"
+              r"|banning|block(s|ed|ing)?|reject\w*|voters?)\b.{0,80}\bdata cent(er|re)s?\b",
+        exclude=r"TechCabal Daily|Fraud Kingpin|\bOrganizer\b|Facebook Pages|PRC-Linked|explosion in data center "
+                r"spending|really running AI|Power Challenge Behind",
+        net=({"Land & local pushback"},),
+        related=("data-centre-power-bills",)),
+    "chatgpt-ads": dict(
+        name="Ads in ChatGPT", kind="Company",
+        what="OpenAI's move to put adverts in ChatGPT: the first tests, how ads are targeted, and their spread to "
+             "more countries.",
+        words=r"\b(ChatGPT|OpenAI)\b.{0,40}\b(ads|advert\w*|ad (format|stack|platform|business|revenue))\b"
+              r"|\b(ads|advert\w*)\b.{0,30}\bChatGPT\b",
+        exclude=r"top 10 AI mobile apps|Claude 2\.1|Super Bowl ads|theCUBE Pod",
+        related=("openai-restructuring",)),
+    "always-on-agents": dict(
+        name="The always-on agent race", kind="Company",
+        what="AI labs racing to sell agents that keep working in the background: OpenAI's Dots, Anthropic's Claude "
+             "Duet, xAI's Grok Bot and Google's Gemini Spark.",
+        words=r"\balways[- ]on (AI )?agents?\b|\bClaude Duet\b|\bGrok Bot\b|\bDots agents?\b"
+              r"|\b(OpenAI|ChatGPT)'?s?\b.{0,40}\bDots\b|\bDots\b.{0,40}\b(OpenAI|agents?)\b",
+        exclude=r"\bNemotron\b"),
 }
 
 # Each topic's picture is our own cartoon, templates/photos/cartoons/<slug>.svg (no real people, no logos). LOOK holds
@@ -257,6 +285,9 @@ LOOK = {
     "google-antitrust-ai": ("US",),
     "perplexity-legal": (),
     "openai-microsoft": (),
+    "data-centre-backlash": (),
+    "chatgpt-ads": (),
+    "always-on-agents": (),
 }
 # Stories the words miss, checked by hand and approved: slug: {url: why it belongs, in our own words}
 ADDED: dict[str, dict[str, str]] = {
