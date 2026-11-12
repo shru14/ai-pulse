@@ -14,6 +14,7 @@ as the industry pages do; the page itself holds the newest too, for search engin
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -935,6 +936,83 @@ TIMELINE_JS = r"""<script>
 </script>"""
 
 
+_WORDS = ["", "", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"]
+SAY = "say"  # a beat's spoken clip: topics/<slug>/say/<clip>.mp3 (topic-voice), named after its words
+
+
+def _gap(a: str, b: str) -> str:
+    """How long after the last beat, in words (the card's cue uses the same, in STORY_JS)."""
+    d = (date.fromisoformat(b) - date.fromisoformat(a)).days
+    n = lambda k, unit: f"a {unit} later" if k == 1 else f"{(_WORDS[k] if k < len(_WORDS) else str(k)).lower()} {unit}s later"
+    return ("the same day" if d == 0 else "the next day" if d == 1 else n(d, "day") if d < 7 else "a week later"
+            if d < 14 else n(round(d / 7), "week") if d < 30 else n(round(d / 30.4), "month") if d < 365
+            else n(round(d / 365), "year"))
+
+
+def tell(name: str, ev: list[dict]) -> None:
+    """What the voice says for each beat, like a presenter telling the story rather than reading the card: how it
+    started, how each moment followed the last, where it stands. Fixed phrases joining the headline and the
+    publisher's own sentence, credited to them ("As TechCrunch put it"); never a count of outlets, never words of
+    ours about the people in it. Sets each beat's `say` and its clip's name."""
+    from . import audio
+    beats = [e for e in ev if e.get("beat")]
+    if len(beats) < 2:
+        return
+    news = [e for e in beats[1:-1] if not e["official"]]
+    loudest = max(news, key=lambda e: e["outlets"]) if news else None
+    grew, more = iter(("it got bigger.", "it grew again.", "it kept growing.")), iter(("there was more.", "came the next turn.", "another part came out."))
+    for i, e in enumerate(beats):
+        when = date.fromisoformat(e["date"])
+        on = f"{when:%A} the {audio._nth(when)} of {when:%B}"
+        gap = _gap(beats[i - 1]["date"], e["date"]) if i else ""
+        if i == 0:
+            lead = f"Here's the story so far of {name}. It started on {on}."
+        elif i == len(beats) - 1:
+            lead = f"And the latest, {gap}."
+        elif e is loudest and e["outlets"] > 1:
+            lead = f"Then came the biggest moment, {gap}."
+        elif e["official"]:
+            lead = f"{gap[0].upper() + gap[1:]}, it reached the official record."
+        elif e["outlets"] > beats[i - 1]["outlets"]:
+            lead = f"{gap[0].upper() + gap[1:]}, {next(grew, 'it grew again.')}"
+        else:
+            lead = f"{gap[0].upper() + gap[1:]}, {next(more, 'there was more.')}"
+        head = e["title"].strip()
+        head = head if head.endswith((".", "?", "!")) else head + "."
+        if e["official"]:
+            body = f"{head} That's from {e['source']}."
+        elif e.get("line"):
+            body = f"{head} As {e['source']} put it: {e['line']}"
+        else:
+            body = f"{head} That's according to {e['source']}."
+        tail = " That's the story so far. Every report is on the timeline below." if i == len(beats) - 1 else ""
+        said = re.sub(r"\b[A-Z]{5,}\b", lambda m: m[0].title(), f"{lead} {body}{tail}")  # NVIDIA as a word, not letters
+        e["say"] = audio._clean(said)
+        e["clip"] = hashlib.sha1(e["say"].encode()).hexdigest()[:12] + ".mp3"
+
+
+def speak(site: Path, cache: Path, log=print) -> int:
+    """Each topic's beat clips into site/topics/<slug>/say/, read by the daily listen's offline voice (audio.speak):
+    a clip already in `cache` (kept between runs) is copied, a new one spoken once. Returns how many were spoken."""
+    from . import audio
+    voice, spoken = audio._voice(), 0
+    if voice is None:
+        log("topic-voice: no voice (pip install piper-tts lameenc, and audio.VOICE); the page falls back to the browser's")
+        return 0
+    cache.mkdir(parents=True, exist_ok=True)
+    for f in sorted((site / "topics").glob("*/events.json")):
+        for e in json.loads(f.read_text(encoding="utf-8")):
+            if not e.get("clip"):
+                continue
+            kept = cache / e["clip"]
+            if not kept.exists():
+                kept.write_bytes(audio.speak(e["say"], voice))
+                spoken += 1
+            (f.parent / SAY).mkdir(exist_ok=True)
+            shutil.copyfile(kept, f.parent / SAY / e["clip"])
+    return spoken
+
+
 STORY_HTML = (
     '<section class="story" id="moments" hidden aria-label="The story so far">'
     '<div class="st-head"><h2>The story so far</h2><div class="st-ctl">'
@@ -947,8 +1025,8 @@ STORY_HTML = (
     '<div class="st-bar"><span></span></div></div></section>\n')
 
 # The story told a beat at a time: a thin line of how loud it got (reports a day, or a week for long stories) with the
-# beats as dots, and a card per beat. Play steps through on its own; Listen reads each card in the browser's own
-# built-in voice (on the device, nothing sent anywhere). The words joining the beats are fixed phrases.
+# beats as dots, and a card per beat. Play steps through on its own; Listen tells it in the daily listen's offline
+# voice (tell, speak), or the browser's own if a clip is missing. The words joining the beats are fixed phrases.
 STORY_JS = r"""<script>
 window.tellStory = list => {
   const box = document.getElementById("moments"), beats = list.filter(e => e.beat);
@@ -1035,18 +1113,27 @@ window.tellStory = list => {
   const voice = () => { const v = (synth && synth.getVoices() || []).filter(v => v.localService && /^en/i.test(v.lang));
     return v.find(v => /en-GB/i.test(v.lang)) || v[0] || null; };
   let listen = false;
-  if(!synth) { say.disabled = true; say.title = "This browser can't read aloud"; }
-  const words = e => { const i = beats.indexOf(e);
-    return cue(e, i) + ". " + full(e.date) + ". " + e.title + ". " + (e.line ? e.line + " " : "") + (e.official ? "From " : "Reported by ") + e.source + "."; };
-  const stop = () => { playing = false; clearTimeout(timer); if(synth) synth.cancel(); bar.style.transition = "none"; bar.style.width = "0";
+  let clip = null;
+  const stop = () => { playing = false; clearTimeout(timer); if(synth) synth.cancel(); if(clip) clip.pause(); bar.style.transition = "none"; bar.style.width = "0";
     play.textContent = at === beats.length - 1 ? "Play again" : "Play the story"; play.setAttribute("aria-pressed", "false"); };
   const step = () => {
     if(!playing) return;
     const next = () => { if(!playing) return; if(at === beats.length - 1) return stop(); go(at + 1); step(); };
     bar.style.transition = "none"; bar.style.width = "0"; void bar.offsetWidth;
-    if(listen && synth) {
-      const u = new SpeechSynthesisUtterance(words(beats[at])), v = voice(); if(v) u.voice = v; u.rate = 1;
-      u.onend = () => { timer = setTimeout(next, 700); }; bar.style.width = "0"; synth.cancel(); synth.speak(u);
+    if(listen) {
+      const e = beats[at], done = () => { timer = setTimeout(next, 600); };
+      let fell = false;
+      const browser = () => {  // no clip (a build without the voice): the browser's own, same words
+        if(fell) return; fell = true;
+        if(!synth) return done();
+        const u = new SpeechSynthesisUtterance(e.say || e.title), v = voice(); if(v) u.voice = v;
+        u.onend = done; synth.cancel(); synth.speak(u);
+      };
+      if(clip) clip.pause();
+      if(!e.clip) return browser();
+      clip = new Audio(document.getElementById("timeline").dataset.src.replace(/events\.json$/, "say/") + e.clip); clip.onended = done; clip.onerror = browser;
+      clip.ontimeupdate = () => { if(clip.duration) bar.style.width = (100 * clip.currentTime / clip.duration) + "%"; };
+      clip.play().catch(browser);
     } else {
       const ms = 6500 + (beats[at].line ? 2500 : 0);
       bar.style.transition = `width ${ms}ms linear`; bar.style.width = "100%"; timer = setTimeout(next, ms);
@@ -1059,9 +1146,8 @@ window.tellStory = list => {
   });
   say.addEventListener("click", () => {
     listen = !listen; say.setAttribute("aria-pressed", String(listen)); say.textContent = listen ? "Listening" : "Listen";
-    if(playing) { clearTimeout(timer); if(synth) synth.cancel(); step(); }
+    if(playing) { clearTimeout(timer); if(synth) synth.cancel(); if(clip) clip.pause(); step(); }
     else if(listen) { playing = true; play.textContent = "Pause"; play.setAttribute("aria-pressed", "true"); step(); }
-    else if(synth) synth.cancel();
   });
   $(".st-prev").addEventListener("click", () => { stop(); go(at - 1); });
   $(".st-next").addEventListener("click", () => { stop(); go(at + 1); });
@@ -1102,6 +1188,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         done = latest < quiet
         p = path(slug)
         (out / p).mkdir(parents=True, exist_ok=True)
+        tell(t["name"], ev)
         (out / p / "events.json").write_text(json.dumps(ev, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
         badges = _badges(slug, ev)
         status = '<span class="done">Concluded</span>' if done else ""
