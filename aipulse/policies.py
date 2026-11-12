@@ -44,8 +44,9 @@ STYLE = ("<style>"
          ".cp .pol-row table{margin:4px 0 12px;font-size:14.5px}"
          ".cp .pol-also{display:flex;align-items:center;gap:12px;padding:22px 0 0;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent);"
          "font-size:14px;color:var(--muted)}"
-         ".cp .pol-also a{display:inline-flex;align-items:center;height:36px;padding:0 14px;border:1px solid var(--line);"
-         "border-radius:8px;color:var(--ink);text-decoration:none}.cp .pol-also a:hover{border-color:var(--ink)}"
+         ".cp .pol-acts{margin:14px 0 0}"
+         ".cp .pol-also a,.cp .pol-btn{display:inline-flex;align-items:center;height:36px;padding:0 14px;border:1px solid var(--line);"
+         "border-radius:8px;font-size:14px;color:var(--ink);text-decoration:none}.cp .pol-also a:hover,.cp .pol-btn:hover{border-color:var(--ink)}"
          "@media(max-width:640px){.cp .pol-head h1{font-size:28px}.cp .pol-row{grid-template-columns:1fr;padding:18px 0}}"
          "</style>")
 
