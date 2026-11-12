@@ -422,6 +422,8 @@ LEFT_OUT = {
     "https://techpolicy.press/openai-faces-lawsuits-subpoenas-and-eu-scrutiny-in-a-single-week",  # roundup of filings, no court or plaintiffs named, no new step
     "https://www.channelnewsasia.com/business/google-ai-chatbots-use-press-items-may-infringe-copyright-rules-eu-court-adviser-says-6516366",  # can't read to check
     "https://www.engadget.com/2310316/suno-ai-music-generator-sued-again-for-copyright-infringement/",  # Elvis and Eminem rights holders sue Suno, but no court, country or filing date stated
+    "https://techpolicy.press/friends-of-the-court-flock-to-the-openai-copyright-fight",  # no change to the OpenAI cases: amicus briefs accepted, no ruling
+    "https://japantoday.com/category/tech/nvidia-and-huang-face-class-action-lawsuit-over-affair",  # can't read to check
 }
 
 # The companies a case's "sued" names, where splitting it on commas and "and" would be wrong. An empty list: no
