@@ -112,18 +112,22 @@ def privacy_page() -> str:
     rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>" for a, b, c in PRIVACY_ROWS)
     mail = '<a href="mailto:projectaipulse@gmail.com">projectaipulse@gmail.com</a>'
     what = "What AI Pulse keeps about you: nothing about site visitors, and for the daily email only what it needs to send it."
-    body = (pages.band("infra", "M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0v3", "photos/cartoons/pages/privacy.svg", "Privacy",
-                       "What does AI Pulse keep about you?",
-                       f"AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}.")
-            + '<h2>The site</h2><p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site '
-            'you came from, your browser, system, country and screen size. No IP address, cookie or ID is kept. '
-            'Your settings stay in your own browser. GitHub Pages, '
-            'which hosts the site, may log IP addresses for security.</p>'
-            '<h2>The email</h2><p>Only if you sign up, and you can unsubscribe from any email.</p>'
-            f'<table class="mt pv"><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
-            '<p>Kept in the project’s Google account and sent from its Gmail. Never sold or shared.</p>'
-            f'<h2>Your rights</h2><p>Ask to see, correct or delete your data: {mail}. You can also complain to your data '
-            'protection authority.</p>')
+    from . import policies
+    # 12 Nov 2026, owner: no header band and no big sections here; the quiet legal layout shared with terms/
+    body = policies.doc("Privacy", f"AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, {mail}.", [
+        ("The site", '<p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site you came '
+                     'from, your browser, system, country and screen size. No IP address, cookie or ID is kept. Your '
+                     'settings stay in your own browser. GitHub Pages, which hosts the site, may log IP addresses for '
+                     'security.</p>'),
+        ("The email", '<p>Only if you sign up, and you can unsubscribe from any email.</p>'
+                      f'<table class="mt pv"><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
+                      '<p>Kept in the project’s Google account and sent from its Gmail. Never sold or shared.</p>'),
+        # 12 Nov 2026, owner: one short privacy notice for the whole site, Pulse Pro included
+        ("Pulse Pro", '<p>Start a conversation sends your name, email, firm and message to our inbox, only so we can '
+                      'reply. A login is set up from the details you send to buy one. Pro pages read your code and files '
+                      'in your browser; nothing is uploaded to us.</p>'),
+        ("Your rights", f'<p>Ask to see, correct or delete your data: {mail}. You can also complain to your data '
+                        'protection authority.</p>')], ("terms/", "Terms of service"))
     data = {"@context": "https://schema.org", "@type": "WebPage", "name": "Privacy", "description": what}
     return pages.page("Privacy · AI Pulse", what, "privacy.html", body, data, pages.frame(), ("/", "Back to AI Pulse"))
 
@@ -541,6 +545,8 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     places += pacts.build(conn, cards, out, today)  # pledges governments signed and what they made AI companies do (Policy's feature)
     from . import gov_ai
     places += gov_ai.build(conn, cards, out, today)  # what governments' own registers say they use AI for (Policy's feature)
+    from . import policies
+    places += policies.build(conn, cards, out)  # the terms of service for the whole site (owner, 12 Nov 2026); privacy stays at privacy.html
     from . import release_cards
     places += release_cards.build(conn, cards, out, today)  # every major model release: weights, licence, price (Releases' feature)
     from . import lab_timelines

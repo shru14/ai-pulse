@@ -201,20 +201,21 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
          "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
 
 MAIL = "projectaipulse@gmail.com"
+CONTACT = "planner/pulse-pro/contact/"  # Pulse Pro's Start a conversation form (private repo, pro_company.py)
 # what each Pulse Pro product costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once
 # it is paid. (name, how it is billed, price, yearly price). The report is bought once; the three services run on,
 # monthly. No yearly price anywhere (owner, 6 Nov 2026), so that column stays empty; the Store is free and needs no login.
-# No amount shown until the owner sets them (6 Nov 2026); readers email to ask (owner, 6 Nov: "$xx" looked weird)
-PRICES = (("Pulse Compass evidence report", "Bought once", "Email for price", ""),
-          ("Pulse Risk Monitor", "Subscription", "Email for price", ""),
-          ("Pulse Watch", "Subscription", "Email for price", ""),
-          ("Pulse SmartFeed", "Subscription", "Email for price", ""),
+# No amount shown until the owner sets them (6 Nov 2026); readers ask through Start a conversation (owner, 12 Nov 2026)
+PRICES = (("Pulse Compass evidence report", "Bought once", "Price on request", ""),
+          ("Pulse Risk Monitor", "Subscription", "Price on request", ""),
+          ("Pulse Watch", "Subscription", "Price on request", ""),
+          ("Pulse SmartFeed", "Subscription", "Price on request", ""),
           ("Pulse Store", "Free", "No login needed", ""))
 # the Store's paid add-ons (owner, 4 Nov 2026): browsing stays free; the bundle check is bought once, the other two run
 # on. Same columns as PRICES; the login box and What Pulse Pro is list them under Pulse Store
-STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "Email for price", ""),
-                ("Pulse Store Plus", "Subscription", "Email for price", ""),
-                ("Pulse Store for Firms", "Subscription", "Email for price", ""))
+STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "Price on request", ""),
+                ("Pulse Store Plus", "Subscription", "Price on request", ""),
+                ("Pulse Store for Firms", "Subscription", "Price on request", ""))
 PAID = [p for p in PRICES + STORE_ADDONS if p[1] != "Free"]
 REQUEST = ("Hello AI Pulse,\n\nI would like a Pulse Pro login.\n\n"
            "Name:\nFirm:\nRole:\nProduct (" + " / ".join(p[0] for p in PAID) + "):\n"
@@ -228,13 +229,13 @@ def _get_login() -> str:
     from urllib.parse import quote
     rows = "".join(f"<tr><td>{escape(n)}<small>{escape(k)}</small></td><td>{escape(p)}"
                    + (f"<small>or {escape(y)}</small>" if y else "") + "</td></tr>" for n, k, p, y in PRICES + STORE_ADDONS)
-    href = f"mailto:{MAIL}?subject={quote('Pulse Pro login request')}&amp;body={quote(REQUEST)}"
+    # 12 Nov 2026, owner: "Start a conversation" (the Pulse Pro contact form) instead of an email link
+    href = f"/{CONTACT}?about={quote('Prices')}"
     return ('<div class="compass-get"><h2>No login yet?</h2>'
-            '<p>Logins are paid. Choose a product, then send the email below: it is already written, with spaces '
-            'for your details and how you would like to pay.</p>'
+            '<p>Logins are paid. Tell us which product you need and we reply with the price and an invoice.</p>'
             f'<table><thead><tr><th>Product</th><th>Price</th></tr></thead><tbody>{rows}</tbody></table>'
-            f'<a class="cg-mail" href="{href}">Email us for a login</a>'
-            '<p class="cg-note">The reply brings an invoice; your username and password follow once it is paid. Please don\'t put card numbers in the email.</p></div>')
+            f'<a class="cg-mail" href="{href}">Start a conversation</a>'
+            '<p class="cg-note">Your username and password follow once the invoice is paid. Please don\'t send card numbers.</p></div>')
 
 
 def _contents() -> str:

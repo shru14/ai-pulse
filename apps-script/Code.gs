@@ -27,6 +27,9 @@
  *                           length, pro,
  *                           proPick,
  *                           improve, other
+ *   POST action=contact     name, email,    Pulse Pro's "Start a conversation" form: emailed to the project inbox
+ *                           firm, topic,    with Reply-To set to the sender, so a reply goes straight back; nothing
+ *                           message         is kept here (owner, 12 Nov 2026)
  *   POST action=list        key             the confirmed readers, for the daily send (key = LIST_KEY; in the
  *                                            body, never the address, so it stays out of Google's logs)
  *   POST action=interests   key             every interest readers follow, once each and without who follows it,
@@ -76,6 +79,7 @@ function doPost(e) {
     : p.action === "choices" ? choices(p.t)
     : p.action === "save" ? save(p)
     : p.action === "review" ? review(p)
+    : p.action === "contact" ? contact(p)
     : {ok: false};
   return p.action === "subscribe" || p.format === "json" ? json(result) : page(result);
 }
@@ -310,6 +314,39 @@ function review(p) {
   notify(`AI Pulse review: ${answers.useful ? answers.useful[0] + "/5" : "no score"}` +
          (answers.improve ? `, improve first: ${answers.improve[0]}` : ""),
          [...lines, "", "Anything else:", other || "-"].join("\n"));
+  return {ok: true};
+}
+
+// Pulse Pro's "Start a conversation" form (owner, 12 Nov 2026): one email to the project inbox, Reply-To the sender.
+// Capped like the review form so a bot can't use up the day's mail quota.
+const CONTACTS_A_DAY = 25;
+const CONTACT_TOPICS = ["Pulse Compass", "Pulse Risk Monitor", "Pulse Watch", "Pulse SmartFeed", "Pulse Store",
+                        "Prices", "A demo for my team", "Something else"];
+const plain = (s, n) => String(s || "").replace(/[\u0000-\u0008\u000B-\u001F]/g, "").trim().slice(0, n);
+const oneLine = (s, n) => plain(s, n).replace(/\s+/g, " ");
+
+function contact(p) {
+  if (p.website) return {ok: true};  // the hidden field only bots fill in
+  const email = oneLine(p.email, 200), name = oneLine(p.name, 120), firm = oneLine(p.firm, 160);
+  const topic = CONTACT_TOPICS.includes(p.topic) ? p.topic : "Something else";
+  const message = plain(p.message, 3000);
+  if (!EMAIL.test(email) || !name || !message) return {ok: false, error: "missing"};
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const props = store(), key = "contact:" + today(), n = Number(props.getProperty(key) || 0);
+    if (n >= CONTACTS_A_DAY || MailApp.getRemainingDailyQuota() < 20) return {ok: false, error: "busy"};
+    props.setProperty(key, String(n + 1));
+  } finally {
+    lock.releaseLock();
+  }
+  try {
+    MailApp.sendEmail({to: SENDER, replyTo: email, name: "Pulse Pro",
+                       subject: `Pulse Pro conversation: ${topic}, ${name}` + (firm ? ` (${firm})` : ""),
+                       body: [`Name: ${name}`, `Email: ${email}`, `Firm: ${firm || "-"}`, `About: ${topic}`, "", message].join("\n")});
+  } catch (e) {
+    return {ok: false, error: "busy"};
+  }
   return {ok: true};
 }
 
