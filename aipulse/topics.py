@@ -32,6 +32,13 @@ STREAMS = ("news", "policy", "regulation", "infra", "tool")  # not research: pap
 
 # slug: name, kind (the block's label), what (our own words), bills, words, exclude, net (sets of story tags that may
 # mean the topic), related topics
+# The Huang scandal (from 29 Oct 2026). Its stories stay out of the chip-rules topic unless they also speak of exports
+_HUANG = (r"\bAlice Huang\b|\b(Jensen )?Huang\b.{0,120}\b(spy|spies|spying|espionage|affairs?|scandal|infidelity"
+          r"|extramarital|lover|oust\w*|successors?|class[- ]action)\b|\b(spy|spying|espionage|affairs?|scandal"
+          r"|infidelity|extramarital|lover)\b.{0,120}\b(Jensen )?Huang\b|\b(oust\w*|remov\w*|investigar)\b.{0,40}"
+          r"\bJensen Huang\b|\bJensen Huang (problem|scandal|to court)\b|\bNvidia\b.{0,60}\b(scandal|controvers(y|ies)|spy"
+          r"|espionage)\b|\b(scandal|controvers(y|ies)|spy|espionage)\b.{0,60}\bNvidia\b")
+_HUANG_ONLY = rf"(?s)^(?!.*\b(exports?|curbs?|export controls?|smuggl\w*)\b).*(?:{_HUANG})"
 TOPICS = {
     "eu-ai-act": dict(
         name="EU AI Act", kind="Law",
@@ -49,7 +56,15 @@ TOPICS = {
         words=r"\b(H20|H200|Blackwell|Nvidia|AI chips?)\b.{0,60}\b(China|Chinese|Beijing|exports?)\b"
               r"|\b(China|Chinese|Beijing)\b.{0,60}\b(H20|H200|Nvidia)\b|export controls?.{0,40}\b(chips?|AI)\b"
               r"|\bchip exports?\b|\bGAIN AI Act\b",
-        net=({"Nvidia", "China"}, {"Chips", "China"}, {"Export Controls"})),
+        exclude=_HUANG_ONLY,
+        net=({"Nvidia", "China"}, {"Chips", "China"}, {"Export Controls"}),
+        related=("nvidia-huang-scandal",)),
+    "nvidia-huang-scandal": dict(
+        name="Nvidia's Huang scandal", kind="Company",
+        what="Claims that Nvidia's chief Jensen Huang had an affair with an alleged Chinese spy, and what followed: "
+             "the board's inquiry, lawsuits, questions from Congress and the fall in Nvidia's shares.",
+        words=_HUANG,
+        related=("nvidia-chips-china",)),
     "anthropic-pentagon": dict(
         name="Anthropic and the Pentagon", kind="Company",
         what="Anthropic's dispute with the US Department of Defense over military use of Claude, and the "
@@ -218,6 +233,7 @@ TOPICS = {
 LOOK = {
     "eu-ai-act": ("EU",),
     "nvidia-chips-china": ("US", "CN"),
+    "nvidia-huang-scandal": (),
     "anthropic-pentagon": ("US",),
     "chatbots-teens": (),
     "copyright-court": (),
