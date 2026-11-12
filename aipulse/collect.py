@@ -701,6 +701,15 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
                 conn.execute("UPDATE items SET url = ? WHERE id = ?", (url, it["id"]))  # the English version
                 store.set_tags(conn, it["id"], classify.tags_for(title, new_summary, source=it["source"]))
                 changed += 1
+        else:  # a summary translated but its headline kept in the original (read as English before 12 Nov 2026)
+            noted = re.search(r"Machine-translated from (\w+);", summary)
+            lang = noted and {v: k for k, v in translate.LANGUAGE_NAMES.items()}.get(noted.group(1))
+            if lang and not translate.reads_english(it["title"]):
+                title = translate.english(conn, lang, [it["title"]]).get(it["title"])
+                if title and "<unk>" not in title and title != it["title"]:
+                    store.update_text(conn, it["id"], title, summary)
+                    store.set_tags(conn, it["id"], classify.tags_for(title, summary, source=it["source"]))
+                    changed += 1
     for it in conn.execute(f"SELECT id, title, summary FROM items WHERE source IN ({','.join('?' * len(AI_RECHECKED))})",
                            AI_RECHECKED).fetchall():
         if not classify.is_ai_related(it["title"], "" if brief.is_draft(it["summary"]) else it["summary"]):

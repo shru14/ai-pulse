@@ -2311,6 +2311,7 @@ def test_every_story_is_shown_in_english(monkeypatch, tmp_path):
         "Chinese rules require user notices and ban virtual partners for minors Machine-translated from Portuguese; the original is linked.")
     assert translate.reads_english("OpenAI fires 3 safety researchers in a dispute over the risks")
     assert not translate.reads_english("China restringe chatbots que simulam namoros")
+    assert not translate.reads_english("Nvidia contrata a un exfiscal para investigar acusaciones contra Jensen Huang")
     # The publisher's own English version wins, and the card links to it ("-ja" dropped from the address).
     pages = {"https://huggingface.co/blog/nvidia/nemotron-personas-japan":
              b'<meta property="og:title" content="Nemotron-Personas-Japan: Synthesized Data for Sovereign AI">'

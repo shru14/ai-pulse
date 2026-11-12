@@ -44,7 +44,9 @@ VERSION = "2"  # part of each stored translation's key: bump it when the term fi
 BEFORE = {"zh": [("“人工智能+”", "“AI+”"), ("人工智能+", "AI+")],
           "vi": [("Trí tuệ nhân tạo", "AI"), ("trí tuệ nhân tạo", "AI")]}  # else "manic intelligence"
 AFTER = {"nb": [(re.compile(r"\bKIC?\b"), "AI")],  # "KI" (kunstig intelligens), which the model leaves or mangles
-         "es": [(re.compile(r"\bIA\b"), "AI")], "pt": [(re.compile(r"\bIA\b"), "AI")],  # "agentes de IA" -> "IA agents"
+         "es": [(re.compile(r"\bIA\b"), "AI"), (re.compile(r"\ban ex-?fascal\b"), "a former prosecutor"),
+                (re.compile(r"\bex-?fascal\b"), "former prosecutor")],  # "exfiscal"
+         "pt": [(re.compile(r"\bIA\b"), "AI")],  # "agentes de IA" -> "IA agents"
          "zh": [(re.compile(p), r) for p, r in (
     (r"^Circular on the issuance of (the )?", "Notice on issuing the "),
     (r"\b[Ii]nterim (approach|method)(es|s)? (to|for) (the )?management of\b", "Interim Measures for the Administration of"),
@@ -198,10 +200,14 @@ _ENGLISH = set("the a an of and to in for on with is are from by at as how what 
                "was its our we you new can not more".split())
 
 
+_SHARED = {"a"} | set().union(*_WORDS.values())  # short words other languages use as well
+
+
 def reads_english(text: str) -> bool:
     """Whether a text has English's common words (a short headline whose own language detect() can't tell)."""
     words = re.findall(r"[a-z]{1,}", (text or "").lower())
-    return sum(w in _ENGLISH for w in words) >= max(1, len(words) // 6)
+    # "a" is Spanish and Portuguese too ("Nvidia contrata a un exfiscal ..."): it doesn't make a headline English
+    return sum(w in _ENGLISH and w not in _SHARED for w in words) >= max(1, len(words) // 6)
 
 
 def detect(text: str) -> str | None:
