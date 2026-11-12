@@ -223,6 +223,11 @@ DEALS = [
      "Salesforce expects to close in its 2028 fiscal year, which starts next February", ""),
     ("2026-11-04", "Meta", "Conductor", "Runs several AI coding agents side by side on a software project", "Not disclosed",
      None, "bought", "https://techcrunch.com/2026/11/04/meta-acquires-ai-coding-startup-conductor/", "", ""),
+    ("2026-11-10", "OpenAI", "Odessia", "AI travel agent; the app has been shut down", "Not disclosed", None, "bought",
+     "https://techcrunch.com/2026/11/10/openai-acquires-odessia-travel-startup-created-by-sonder-founder/", "", ""),
+    ("2026-11-10", "Oura", "Counsel Health", "AI primary-care service", "$625M", 0.625, "agreed",
+     "https://techcrunch.com/2026/11/10/oura-to-acquire-ai-native-primary-care-startup-counsel-health-for-625m/",
+     "Expected to close before the end of 2027", ""),
 ]
 
 # stories checked by hand and left out, with why, so they aren't checked again
@@ -368,6 +373,12 @@ LEFT_OUT = {
         "Talks only; reported by a source, neither company confirmed",
     "https://techcrunch.com/2026/11/05/dropbox-acquires-tigris-data-for-350m-to-bolster-its-ai-iinfrastructure/":
         "Tigris Data makes cloud storage, not AI",
+    "https://www.channelnewsasia.com/business/anthropic-ipo-could-draw-record-retail-buying-vanda-research-says-6543616":
+        "no company being bought",
+    "https://techcrunch.com/2026/11/09/anthropic-joins-ais-natural-gas-frenzy-buys-3-4b-worth-of-turbines/":
+        "buying turbines, not a company",
+    "https://dcnnmagazine.com/features-list-2022/cloud-computing-storage/netapp-completes-acquisition-of-peakaio-for-ai-storage/":
+        "PEAK:AIO makes storage software, not AI",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
