@@ -1124,33 +1124,29 @@ a.subscribe-btn{text-decoration:none}
 .cp .ft .pc-rows td.pc-s a{display:block;font-size:12px;margin-top:3px}
 .cp .pc-k{display:inline-block;font:700 11px var(--body);text-transform:uppercase;letter-spacing:.04em;border:1.5px solid var(--line);padding:0 5px;color:#111}
 .cp .pc-ord{background:#E9B9D5}.cp .pc-inv{background:#A8D8F2}.cp .pc-crt{background:#F2D27A}
-/* The model economy: a second name under the title; tags for cheaper / same / pricier and for under 30, 30-89 and 90+
-   days of warning */
+/* The model economy: a second name under the title. Calm: regular weight throughout, plain-case headings, colour
+   only where it means something (a price that moved; under 30 days of warning) */
 .cp .fh-sub{margin:2px 0 0;font:700 17px/1.3 var(--body);color:#000}
-.cp .me-same{background:var(--bg);color:var(--ink)}.cp .me-mixed{background:#F2D27A}.cp .me-mid{background:#E69F00}
-.cp .me-models{margin-top:22px}.cp .me .me-more{margin-top:10px}
-/* Launch prices: a line's models together (a heavier rule between lines), each price under its model, "in" and "out"
-   spelled out; on a phone the model before and the new one side by side */
-.cp .me-unit{font-size:13.5px;color:var(--muted);margin:6px 0 8px}
-.cp .me-p{display:block;margin-top:3px;font:500 13.5px var(--body)}
-.cp .me-prices tr.me-top td{border-top:1px solid var(--ink)}
-/* calm: no bar beside the lead, plain-case headings and tags, the "no day" note a real cell, Show all a button */
-.cp .me .pc-lead{border-left:0;padding-left:0}
-.cp .me .fx-t th{font:600 12.5px var(--body);letter-spacing:0;text-transform:none;border-bottom-width:1.5px}
-.cp .me .pc-k{text-transform:none;letter-spacing:0;font:600 12.5px var(--body);padding:1px 7px;border-width:1px}
+.cp .ft.me .pc-hh h2{font:500 24px/1.15 var(--body)}
+.cp .me .pc-hh p{font-weight:400;color:var(--muted)}
+.cp .me .pc-lead{border-left:0;padding-left:0;font:500 16px/1.4 var(--body)}
+.cp .me-unit{font-size:13.5px;color:var(--muted);margin:4px 0 12px}
+.cp .me .fx-t th{font:500 12.5px var(--body);letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:1px solid var(--ink)}
+.cp .me .pc-rows td{font-weight:400}.cp .me .pc-rows td.pc-d{font-weight:400}
+.cp .me .pc-rows td.me-lab{color:var(--muted)}
+.cp .ft.me .pc-rows a{color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.cp .ft.me .pc-rows .fx-c a{color:var(--muted)}
 .cp .me .pc-rows td.fx-c{display:table-cell;margin:0;font-size:13.5px}
-.cp .me .me-more{border:1px solid var(--ink);border-radius:8px;padding:6px 14px;color:var(--ink);text-decoration:none}
+.cp .me-k{display:inline-block;padding:1px 7px;border-radius:4px;font-size:13px;color:#111;white-space:nowrap}
+.cp .me-mixed{background:#F2D27A}
+.cp .me-models{margin-top:26px}
+.cp .me .me-more{margin-top:12px;border:1px solid var(--ink);border-radius:8px;padding:6px 14px;color:var(--ink);text-decoration:none}
 .cp .me .jb-limits td:first-child{width:160px}
-@media (max-width:640px){.cp .ft .fx-t.me-prices tr{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-  .cp .ft .fx-t.me-prices td{grid-column:auto}
-  .cp .ft .fx-t.me-prices td:first-child,.cp .ft .fx-t.me-prices td:last-child{grid-column:1/-1;font-weight:700}
-  .cp .ft .fx-t.me-prices td:is(:nth-child(2),:nth-child(3))::before{content:attr(data-l);display:block;font:400 12.5px var(--body);color:var(--muted)}
-  .cp .ft .fx-t.me-prices td:is(:first-child,:last-child)::before{content:none}
-  .cp .ft .fx-t.me-prices tr.me-top{border-top:1px solid var(--ink)}.cp .ft .fx-t.me-prices tr.me-top td{border-top:0}}
-.cp .ft.me .pc-rows a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
-@media (max-width:640px){.cp .me td[data-l]::before{content:attr(data-l) ": ";color:var(--muted);font-size:12.5px}
-  .cp .me .fx-t.me-labs tr{grid-template-columns:1fr}.cp .me .fx-t.me-labs td{grid-column:1}
-  .cp .me .pc-stack .pc-k{font-size:11.5px;font-weight:600;text-transform:none;letter-spacing:0;padding:0 6px}.cp .me .pc-rows td.fx-c{font-size:13px}}
+@media (max-width:640px){.cp .ft.me .fx-t tbody{display:block;width:100%}.cp .ft.me .fx-t tr{grid-template-columns:1fr;width:100%}.cp .ft.me .fx-t td{grid-column:1}
+  .cp .ft.me .fx-t td.pc-d{grid-row:auto;grid-column:1}
+  .cp .ft.me .fx-t td[data-l]::before{content:attr(data-l) ": ";color:var(--muted);font:400 12.5px var(--body)}
+  .cp .ft.me .fx-t td.me-lab::before{content:none}
+  .cp .me .pc-rows td.fx-c{font-size:13px}}
 /* AI fines and bans: a dot per action on one time line (each linking to its row), then the AI pacts and orders boxes
    stacked, each a table in real columns with a tag for where it stands and a muted line under it */
 .cp .fx-tl{margin:26px 0 22px}
