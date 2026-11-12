@@ -295,6 +295,17 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.channelnewsasia.com/business/anthropic-discloses-month-long-training-pause-ai-security-breaches-in-ipo-filing-6493811": "Anthropic's IPO filing discloses a month-long training pause and AI security breaches",
         "https://techcrunch.com/2026/10/30/anthropic-expected-to-receive-high-junk-rating-from-credit-agencies-following-ipo-report-says/": "Report on the credit rating Anthropic is expected to get after its IPO",
         "https://olhardigital.com.br/2026/10/15/pro/anthropic-investidores-reduzem-expectativa-de-avaliacao-para-ipo-de-r-8-1-trilhoes/": "Investors lower their valuation hopes for Anthropic's planned November IPO",
+        "https://www.xataka.com/empresas-y-economia/salida-a-bolsa-anthropic-se-estaba-desinflando-ahora-tiene-demanda-institucional-que-spacex": "Anthropic sets its IPO share price range, with a valuation lower than earlier talk",
+        "https://japantoday.com/category/tech/anthropic-seeks-valuation-of-about-1.3-trillion-when-it-becomes-a-publicly-traded-company": "Anthropic seeks a valuation of about $1.3 trillion when it goes public",
+        "https://techcrunch.com/2026/11/10/all-7-anthropic-founders-will-each-cash-out-about-250m-in-ipo/": "All seven Anthropic co-founders plan to sell the same number of shares in the IPO",
+        "https://www.xataka.com/empresas-y-economia/blackstone-advierte-que-anthropic-se-arriesga-a-salir-a-bolsa-buena-calificacion-crediticia-golpe-para-sus-planes": "Blackstone warns Anthropic risks going public without a good credit rating",
+        "https://www.thelec.net/news/articleView.html?idxno=15023": "Anthropic's S-1 filing shows its cash holdings",
+        "https://the-decoder.com/anthropic-opens-its-books-for-wall-street-showing-record-revenue-and-mounting-obligations/": "Anthropic files an S-1 with the SEC to list on the Nasdaq",
+        "https://www.xataka.com/empresas-y-economia/anthropic-acaba-dar-uno-pasos-importantes-industria-ia-abrir-sus-cuentas-para-salir-a-bolsa": "Anthropic opens its accounts in a filing on the way to the stock market",
+        "https://olhardigital.com.br/2026/10/20/pro/anthropic-revela-prejuizo-de-r-435-8-bilhoes-e-custos-bilionarios-com-ia/": "Anthropic's preliminary prospectus reveals its revenue, losses and computing commitments",
+        "https://www.xataka.com/empresas-y-economia/anthropic-su-s-1-tenemos-historial-perdidas-posible-que-no-generemos-ingresos-suficientes-futuro": "Anthropic's S-1 warns of a record of losses and uncertain future revenue",
+        "https://www.xataka.com/robotica-e-ia/anthropic-ha-disenado-peculiar-sistema-poder-para-evitar-que-sus-accionistas-controlen-despues-su-salida-a-bolsa": "Anthropic designs a power system to keep shareholders from controlling it after its stock market exit",
+        "https://www.xataka.com/empresas-y-economia/anthropic-propone-destinar-5-sus-acciones-a-fondo-que-podria-abordar-impacto-laboral-ia": "Anthropic proposes putting 5 per cent of its shares into a fund for AI's labour impact",
     },
     "deepseek-us": {
         "https://dplnews.com/estados-unidos-ordena-retirar-deepseek/": "US bans federal civil agencies from buying DeepSeek products and orders existing ones removed",
@@ -306,6 +317,25 @@ ADDED: dict[str, dict[str, str]] = {
     },
     "data-centre-power-bills": {
         "https://www.canarymedia.com/articles/data-centers/virginia-new-energy-plan-ai-boom": "Virginia's new energy plan on utility bills and electricity demand from the AI boom",
+    },
+    "data-centre-backlash": {
+        "https://www.xataka.com/robotica-e-ia/zaragoza-sale-a-calle-centros-datos-no-generan-empleo-no-pagan-impuestos-se-quedan-todos-recursos": "Thousands march in Zaragoza against data centres",
+        "https://www.foodandwaterwatch.org/press/2026/11/05/new-yorkers-to-governor-hochul-stop-the-rush-to-build-ai-data-centers/": "New Yorkers press Governor Hochul to stop the rush to build AI data centres",
+        "https://www.engadget.com/2307590/openai-says-it-will-protect-local-resources-and-report-on-the-impact-of-its-data-centers/": "OpenAI pledges to protect local resources and report on its data centres' impact after the vote",
+        "https://www.xataka.com/robotica-e-ia/centros-datos-tambien-se-presentaban-a-elecciones-eeuu-han-perdido-estrepitosamente": "Data centres lost heavily in the US elections",
+        "https://www.engadget.com/2306534/americans-overwhelmingly-voted-against-data-centers-in-the-midterms/": "Americans voted overwhelmingly against data centres in the midterms",
+        "https://www.xataka.com/robotica-e-ia/elon-musk-tiene-plan-para-acabar-vecinos-quejandose-centros-datos-cerca-comprar-sus-casas": "Plan to buy the houses of neighbours who complain about a nearby data centre",
+        "https://tecnoblog.net/noticias/spacex-quer-comprar-casas-de-vizinhos-incomodados-com-seus-data-centers/": "SpaceX wants to buy houses from neighbours bothered by its data centres",
+        "https://www.404media.co/west-virginia-american-chestnut-trees-data-center/": "Resistance to a West Virginia AI data centre centres on a grove of chestnut trees",
+        "https://www.channelnewsasia.com/business/trump-says-companies-should-pay-dividend-communities-make-data-centers-popular-6478021": "Trump says companies should pay a dividend to communities to make data centres popular",
+        "https://www.foodandwaterwatch.org/press/2026/10/14/allentown-planning-commission-bucks-public-opinion-greenlights-data-center/": "Allentown planning commission approves a data centre against public opinion",
+    },
+    "nvidia-huang-scandal": {
+        "https://the-decoder.com/chinese-spies-targeted-nvidia-ceo-jensen-huang-according-to-the-new-york-times/": "Report that US intelligence believes an executive in Huang's circle is a Chinese informant",
+        "http://www.bernama.com/en/news.php?id=2633535": "Nvidia announces Jensen Huang has resigned as CEO and board member amid the board investigation",
+        "https://olhardigital.com.br/2026/11/11/pro/nvidia-contrata-empresa-para-encontrar-substituto-de-jensen-huang-diz-agencia/": "Nvidia reportedly hires a firm to find a replacement for Huang amid the crisis over his relationship",
+        "https://dplnews.com/nvidia-contrata-exfiscal-investigar-jensen-huang/": "Nvidia hires a former prosecutor to investigate the allegations about Huang",
+        "https://www.channelnewsasia.com/world/nvidia-shares-jensen-huang-probe-affair-6535186": "Nvidia's shares fall out of hours as the firm probes Huang",
     },
 }
 # Stories a topic's net caught that don't belong, checked by hand
@@ -494,6 +524,144 @@ LEFT_OUT: set[str] = {
     "https://openai.com/index/setting-new-standard-responsible-ai-infrastructure",
     # UK government note on an EU regulation, can't tell from the summary it is about the AI Act
     "https://www.gov.uk/government/publications/em-on-eu-regulation-20241689-on-artificial-intelligence",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://www.channelnewsasia.com/world/jensen-huang-nvidia-affair-scrutiny-china-alice-6539171",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://www.channelnewsasia.com/east-asia/nvidia-ceo-jensen-huang-affair-chinese-businesswoman-alice-huang-6538396",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://www.xataka.com/empresas-y-economia/infidelidad-huang-ha-destapado-fragilidad-nvidia-depende-hombre-sucesor-isla-plan-b",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=280892",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://olhardigital.com.br/2026/11/09/pro/nvidia-e-jensen-huang-sao-processados-por-caso-envolvendo-suposta-espia-chinesa/",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://olhardigital.com.br/2026/11/09/pro/china-contesta-suspeitas-de-espionagem-ligadas-ao-ceo-da-nvidia/",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://www.channelnewsasia.com/world/nvidia-alice-huang-spying-jensen-6535566",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://olhardigital.com.br/2026/11/09/inteligencia-artificial/novela-geopolitica-da-nvidia-tem-china-eua-espionagem-e-traicao/",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://olhardigital.com.br/2026/11/06/pro/china-recrutou-empresaria-para-espionar-ceo-da-nvidia-aponta-inteligencia-dos-eua/",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://www.channelnewsasia.com/asia/trump-says-us-looking-closely-report-nvidia-ceo-target-china-spy-plot-6510641",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://www.engadget.com/2301447/nvidia-ceo-jensen-huang-may-have-been-the-target-of-a-chinese-government-spy/",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://techcrunch.com/2026/10/29/u-s-investigated-chinese-spy-plot-aimed-at-nvidia-ceo/",
+    # Huang scandal and the spy claims, not about chip rules
+    "https://japantoday.com/category/tech/nvidia-and-huang-face-class-action-lawsuit-over-affair",
+    # Huang scandal and cloud providers, not about California's laws or preemption
+    "https://www.channelnewsasia.com/world/jensen-huang-nvidia-scandal-scrutiny-cloud-providers-southeast-asia-6542471",
+    # Chinese GPU maker's developer conference, not about US chip rules
+    "https://pandaily.com/moore-threads-mdc-musa-developer-conference-s6000-lushan-huagang",
+    # Huang's net worth, AGI talk and Europe visit, no step in the scandal that the summary shows
+    "https://nairametrics.com/2026/11/09/nvidia-ceo-jensen-huang-loses-7-8-billion-in-24-hours/",
+    # Huang's net worth, AGI talk and Europe visit, no step in the scandal that the summary shows
+    "https://the-decoder.com/frontier-radar-5-if-agi-is-so-close-why-is-everyone-leaving-the-neolabs-and-their-bets/",
+    # Huang's net worth, AGI talk and Europe visit, no step in the scandal that the summary shows
+    "https://japantoday.com/category/tech/nvidia-ceo-encourages-europe%27s-lagging-ai-sector-and-offers-tools-to-accelerate-data-center-buildout",
+    # chain-of-thought research, summary doesn't mention Stargate
+    "https://the-decoder.com/openais-data-suggests-that-frontier-models-are-hiding-their-thoughts-because-developers-optimize-for-capability-and-compute/",
+    # grid-access charge in Malaysia, can't tell from the summary it is about who pays for data centre power
+    "https://w.media/malaysia-raises-by-10-times-penalty-for-data-center-phantom-power-demand-report/",
+    # Malaysian parliament agenda, nothing decided about power bills
+    "http://www.bernama.com/en/news.php?id=2620546",
+    # podcast or video discussion, reports no new step in the topic
+    "https://techcrunch.com/video/why-the-data-center-you-dread-might-never-even-be-built/",
+    # podcast or video discussion, reports no new step in the topic
+    "https://techcrunch.com/podcast/how-backlash-and-red-tape-continue-to-slow-data-centers-post-blue-wave/",
+    # podcast or video discussion, reports no new step in the topic
+    "https://techcrunch.com/podcast/how-a-blue-wave-midterm-might-reshape-the-ai-industry/",
+    # podcast or video discussion, reports no new step in the topic
+    "https://techcrunch.com/video/after-the-midterms-is-the-ai-industry-in-for-a-rough-two-years/",
+    # explainer or feature on data-centre power or building, nothing new
+    "https://www.powermag.com/powering-data-centers-seven-must-do-items-for-renewable-energy-developers/",
+    # explainer or feature on data-centre power or building, nothing new
+    "https://w.media/special-feature-greenfield-versus-brownfield-how-data-centers-projects-are-evolving-around-the-constraints/",
+    # explainer or feature on data-centre power or building, nothing new
+    "https://w.media/special-feature-can-america-be-at-peace-with-the-neighbourhood-data-center/",
+    # explainer or feature on data-centre power or building, nothing new
+    "https://www.datacenterknowledge.com/energy-power-supply/the-power-challenge-behind-hyperscale-ai-expansion",
+    # Anthropic IPO comparison, summary doesn't say what is new
+    "https://www.channelnewsasia.com/business/how-anthropic-stacks-up-against-some-biggest-us-ipos-6545926",
+    # Anthropic model release, not a step in the IPO
+    "https://japantoday.com/category/tech/anthropic-launches-powerful-new-models-ahead-of-wall-street-debut",
+    # analysis or interview around the IPO filing, reports nothing new
+    "https://www.xataka.com/empresas-y-economia/no-todos-tokens-que-producen-modelos-valen-dario-amodei-sugiere-modelo-precios-dinamicos-funcion-tarea",
+    # analysis or interview around the IPO filing, reports nothing new
+    "https://www.xataka.com/robotica-e-ia/negocio-que-anthropic-promete-a-sus-inversores-vale-40-billones-que-cobramos-quienes-hacemos-que-quiere-hacer-su-ia",
+    # analysis or interview around the IPO filing, reports nothing new
+    "https://www.xataka.com/empresas-y-economia/salida-a-bolsa-anthropic-ha-revelado-algo-oculto-a-simple-vista-todas-grandes-tecnologicas-quieren-ser-como-nvidia",
+    # analysis or interview around the IPO filing, reports nothing new
+    "https://www.xataka.com/robotica-e-ia/china-pone-jaque-a-anthropic-competencia-sus-modelos-amenaza-su-valoracion-antes-salir-a-bolsa",
+    # chip financing for Anthropic, not a step in the IPO
+    "https://olhardigital.com.br/2026/10/27/pro/bancos-e-blackstone-vao-financiar-r-340-bilhoes-em-chips-de-ia-para-a-anthropic/",
+    # chip financing for Anthropic, not a step in the IPO
+    "https://www.channelnewsasia.com/business/anthropic-offers-blackstone-double-digit-yield-in-chip-financing-deal-ft-reports-6467711",
+    # quarterly revenue report, can't tell from the summary it comes from the IPO filing
+    "https://www.thelec.net/news/articleView.html?idxno=14613",
+    # New York AI safety law and copyright briefs, not about OpenAI's restructuring or the Musk case
+    "https://techpolicy.press/friends-of-the-court-flock-to-the-openai-copyright-fight",
+    # New York AI safety law and copyright briefs, not about OpenAI's restructuring or the Musk case
+    "https://www.fayerwayer.com/internet/2026/11/11/mano-dura-en-nueva-york-openai-y-anthropic-deberan-reportar-fallas-criticas-de-ia-en-72-horas-o-enfrentar-multas-millonarias/",
+    # New York AI safety law and copyright briefs, not about OpenAI's restructuring or the Musk case
+    "https://techcrunch.com/2026/11/10/openai-anthropic-face-new-oversight-as-new-yorks-ai-safety-law-takes-effect/",
+    # cloud customer story, not about California's laws or preemption
+    "https://aws.amazon.com/blogs/machine-learning/how-dxc-technology-built-a-multi-model-ai-substrate-on-amazon-bedrock/",
+    # Gemini on CarPlay, not about the Siri deal
+    "https://blog.google/innovation-and-ai/products/gemini-app/gemini-on-apple-carplay/",
+    # UK exam rules, not about chips
+    "https://the-decoder.com/uk-regulator-threatens-universities-with-sanctions-unless-they-adopt-ai-proof-exam-formats/",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://www.foodandwaterwatch.org/press/2026/11/11/experts-launch-webinar-series-on-public-health-data-centers-and-fracking-in-pa/",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://dcnnmagazine.com/business/compliance/idca-launches-community-assurance-programme-for-data-centres/",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://w.media/terravolt-plans-240-mw-behind-the-meter-data-center-campus-in-idaho/",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://news.mit.edu/2026/at-new-york-climate-week-mit-connects-global-network-1026",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://datacenterpost.com/duos-edge-ai-earns-global-recognition-for-bringing-compute-closer-to-communities/?utm_source=rss&utm_medium=rss&utm_campaign=duos-edge-ai-earns-global-recognition-for-bringing-compute-closer-to-communities",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://w.media/thailand-moves-to-finalise-data-center-rules-amid-trillion-baht-investment-pipeline/",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://w.media/batam-data-center-expansion-raises-demand-for-independent-water-and-power-supplies/",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://www.aboutamazon.com/news/aws/amazon-data-centers-locations-news?utm_source=rss",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://w.media/cdc-offers-australian-community-au-225m-in-proposed-data-centre-benefits/",
+    # data-centre event, programme or business news that reports no pushback or answer to it
+    "https://www.gov.uk/government/publications/data-centre-covenant",
+    # opinion, roundtable or job ad on data centres, reports nothing new
+    "https://ainowinstitute.org/news/2026-election-breakdown-americans-vote-down-data-centers-ai-and-oligarchy",
+    # opinion, roundtable or job ad on data centres, reports nothing new
+    "https://www.foodandwaterwatch.org/content/2026/11/06/temporary-washington-organizer/",
+    # opinion, roundtable or job ad on data centres, reports nothing new
+    "https://www.404media.co/there-is-one-fight-american-voters-reject-tech-oligarchy/",
+    # opinion, roundtable or job ad on data centres, reports nothing new
+    "https://www.foodandwaterwatch.org/news/2026/10/22/who-really-benefits-from-community-benefit-agreements/",
+    # opinion, roundtable or job ad on data centres, reports nothing new
+    "https://www.foodandwaterwatch.org/news/2026/10/16/californians-are-standing-up-to-data-centers/",
+    # midterm politics or power prices, no specific pushback step in the summary
+    "https://techcrunch.com/2026/10/31/data-centers-are-now-a-midterm-issue-even-in-brooklyn/",
+    # midterm politics or power prices, no specific pushback step in the summary
+    "https://www.dawn.com/news/2041193/power-bills-and-data-centres-cast-rare-spotlight-on-utilities-in-us-midterms",
+    # water and land plans in Thailand, can't tell from the summary it is local pushback
+    "https://www.channelnewsasia.com/asia/thailand-data-centres-water-elephants-6465091",
+    # Anthropic turbine purchase, not a step in the IPO
+    "https://techcrunch.com/2026/11/09/anthropic-joins-ais-natural-gas-frenzy-buys-3-4b-worth-of-turbines/",
+    # election commentary, can't tell from the summary it reports a data-centre pushback step
+    "https://olhardigital.com.br/2026/11/04/pro/eleicao-nos-eua-expoe-reacao-a-bilionarios-e-data-centers-de-ia/",
+    # analysis around the IPO, reports nothing new
+    "https://www.xataka.com/empresas-y-economia/anthropic-ingresa-17-000-millones-al-trimestre-su-factura-computacion-50-veces-mayor",
+    # analysis around the IPO, reports nothing new
+    "https://www.xataka.com/empresas-y-economia/salida-a-bolsa-anthropic-conseguira-algo-poco-habitual-como-que-80-su-plantilla-se-haga-millonaria",
+    # stock exchange listing and a builder, can't tell from the summary it is a step in Anthropic's IPO
+    "https://www.xataka.com/empresas-y-economia/que-anthropic-salga-a-bolsa-va-a-tener-consecuencias-para-constructora-espanola-ferrovial",
+    # opinion on sharing AI's wealth, not a step in the IPO
+    "https://www.xataka.com/robotica-e-ia/elon-musk-anthropic-discrepan-como-repartir-riqueza-generada-ia",
+    # job ad story, not about the IPO
+    "https://www.xataka.com/empresas-y-economia/anthropic-ofrece-172-000-euros-al-ano-a-alguien-que-quiera-hacer-exactamente-trabajo-que-deberia-hacer-agente-ia",
 }
 UPDATED_DAYS = 3  # a topic with a new story this recently shows "Updated" on its card
 SMALL = 25  # a topic with this many events or fewer shows each as a card; a bigger one only its milestones
