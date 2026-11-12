@@ -122,6 +122,10 @@ def privacy_page() -> str:
             '<h2>The email</h2><p>Only if you sign up, and you can unsubscribe from any email.</p>'
             f'<table class="mt pv"><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
             '<p>Kept in the project’s Google account and sent from its Gmail. Never sold or shared.</p>'
+            # 12 Nov 2026, owner: one short privacy notice for the whole site, Pulse Pro included
+            '<h2>Pulse Pro</h2><p>Start a conversation sends your name, email, firm and message to our inbox, only so we '
+            'can reply. A login is set up from the details you send to buy one. Pro pages read your code and files in '
+            'your browser; nothing is uploaded to us.</p>'
             f'<h2>Your rights</h2><p>Ask to see, correct or delete your data: {mail}. You can also complain to your data '
             'protection authority.</p>')
     data = {"@context": "https://schema.org", "@type": "WebPage", "name": "Privacy", "description": what}
@@ -541,6 +545,8 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     places += pacts.build(conn, cards, out, today)  # pledges governments signed and what they made AI companies do (Policy's feature)
     from . import gov_ai
     places += gov_ai.build(conn, cards, out, today)  # what governments' own registers say they use AI for (Policy's feature)
+    from . import policies
+    places += policies.build(conn, cards, out)  # the terms of service for the whole site (owner, 12 Nov 2026); privacy stays at privacy.html
     from . import release_cards
     places += release_cards.build(conn, cards, out, today)  # every major model release: weights, licence, price (Releases' feature)
     from . import lab_timelines
