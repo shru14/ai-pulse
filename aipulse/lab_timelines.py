@@ -40,6 +40,10 @@ PLACES = [
 PULLED = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://aws.amazon.com/blogs/machine-learning/introducing-usage-based-pricing-for-amazon-sagemaker-ai-bidirectional-streaming/":
+        "A cloud service's pricing, not a lab's model API price",
+    "https://focustaiwan.tw/business/202611090013":
+        "Market and company news, not a model price or place change",
     "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/":
         "A new model's launch price, not a change",
     "https://pandaily.com/deepseek-harness-1-54-million-daily-active-users-official-plugin-marketplace":
