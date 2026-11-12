@@ -147,26 +147,31 @@ def _prices_box(ps: list[dict]) -> str:
     # a line's rows together, newest first; the line with the newest launch on top
     ps = sorted(ps, key=lambda p: (newest[_line(p["model"])], _line(p["model"]), p["day"]), reverse=True)
     rows = "".join(
-        f'<tr class="{"me-top" if k and _line(ps[k - 1]["model"]) != _line(p["model"]) else ""}">'
-        f'<td>{escape(p["lab"])}</td>'
-        f'<td data-l="Before">{escape(p["was_model"])}<span class="me-p"><a href="{escape(p["was_url"])}" '
-        f'rel="noopener">{escape(_price(p["was_price"]))}</a></span></td>'
-        f'<td data-l="New"><a href="{escape(p["url"])}" rel="noopener"><b>{escape(p["model"])}</b></a>'
-        f'<span class="me-p"><b>{escape(_price(p["price"].split("|")[0]))}</b></span>'
+        f'<tr><td data-l="Lab" class="me-lab">{escape(p["lab"])}</td>'
+        f'<td><a href="{escape(p["url"])}" rel="noopener">{escape(p["model"])}</a>'
+        f'<span class="fx-c">Launched {_day(p["day"])}</span></td>'
+        f'<td data-l="Price">{escape(_price(p["price"].split("|")[0]))}'
         + (f'<span class="fx-c">{escape(p["price_note"])}</span>' if p["price_note"] else "")
-        + f'<span class="fx-c">Launched {_day(p["day"])}</span></td>'
-        f'<td><span class="pc-k {_WAY[p["way"]]}">{escape(p["say"])}</span></td></tr>'
-        for k, p in enumerate(ps))
+        + f'</td><td data-l="Before">{escape(p["was_model"])}<span class="fx-c"><a href="{escape(p["was_url"])}" '
+        f'rel="noopener">{escape(_price(p["was_price"]))}</a></span></td>'
+        f'<td data-l="Change">{_change(p)}</td></tr>'
+        for p in ps)
     return _box("Launch prices", "Is the new model cheaper or pricier than the one before it?",
                 f'<p class="pc-lead">{escape(lead)}</p><p class="me-unit">Each price is in US dollars per million '
                 "tokens (the chunks of text a model reads and writes), on the lab's own API at launch: one price for "
                 'text sent in, one for text the model writes out.</p><table class="pc-rows fx-t me-prices"><thead>'
-                '<tr><th>Lab</th><th>The model before</th><th>The new model</th><th>Price change</th></tr></thead>'
+                '<tr><th>Lab</th><th>New model</th><th>Price at launch</th><th>The model before</th><th>Change</th></tr></thead>'
                 f'<tbody>{rows}</tbody></table>')
 
 
+def _change(p: dict) -> str:
+    """'Same' as plain text; a price that moved, marked."""
+    return escape(p["say"]) if p["way"] == "same" else f'<span class="me-k {_WAY[p["way"]]}">{escape(p["say"])}</span>'
+
+
 def _tag(n: int) -> str:
-    return f'<span class="pc-k {"pc-no" if n < 30 else "me-mid" if n < 90 else "pc-yes"}">{_days(n)}</span>'
+    """Days of warning as plain text; under 30, marked."""
+    return f'<span class="me-k pc-no">{_days(n)}</span>' if n < 30 else _days(n)
 
 
 def _warnings_box(ws: list[dict]) -> str:
@@ -184,17 +189,17 @@ def _warnings_box(ws: list[dict]) -> str:
         lead = [f"{top[0]} gives the most warning: a median of {_days(int(median(top[2])))}.",
                 f"The shortest was {short['lab']}'s: {_days(short['days'])}."]
     lab_rows = "".join(
-        f'<tr><td><b>{escape(lab)}</b></td><td data-l="Models shutting down">{n}</td>'
-        + (f'<td data-l="Median warning"><b>{_days(int(median(d)))}</b></td><td data-l="Shortest">{_days(min(d))}</td>'
+        f'<tr><td class="me-lab">{escape(lab)}</td><td data-l="Models shutting down">{n}</td>'
+        + (f'<td data-l="Median warning">{_days(int(median(d)))}</td><td data-l="Shortest">{_days(min(d))}</td>'
            f'<td data-l="Longest">{_days(max(d))}</td>' if d else
            '<td colspan="3" class="fx-c">Its page gives no day it told developers</td>') + "</tr>"
         for lab, n, d in labs)
 
     def row(w: dict) -> str:
         url, _ = retired.LABS[w["lab"]]
-        return (f'<tr><td class="pc-d">{_day(w["shuts"])}</td><td><b>{escape(w["model"])}</b></td>'
-                f'<td><a href="{escape(url)}" rel="noopener">{escape(w["lab"])}</a></td><td data-l="Told developers">'
-                f'{_day(w["told"])}</td><td data-l="Warning">{_tag(w["days"])}</td><td>{escape(w.get("replace") or "–")}</td></tr>')
+        return (f'<tr><td class="pc-d" data-l="Shuts down">{_day(w["shuts"])}</td><td class="me-m" data-l="Model">{escape(w["model"])}</td>'
+                f'<td data-l="Lab"><a href="{escape(url)}" rel="noopener">{escape(w["lab"])}</a></td><td data-l="Told developers">'
+                f'{_day(w["told"])}</td><td data-l="Warning">{_tag(w["days"])}</td><td data-l="Replace with">{escape(w.get("replace") or "–")}</td></tr>')
     head = ("<thead><tr><th>Shuts down</th><th>Model</th><th>Lab</th><th>Told developers</th><th>Warning</th>"
             "<th>Replace with</th></tr></thead>")
     rest = told[SHOWN:]
@@ -229,7 +234,7 @@ def body(ps: list[dict], ws: list[dict]) -> str:
          "priced per image, minute or hour, and models with no earlier one in their line, aren't shown."),
         ("Warning", "The days between the day a lab told developers a model will shut down and the shutdown, from "
          "each lab's own deprecation page (Models being retired). Models shutting down since 1 Jan 2026, including "
-         "those scheduled; whole products (an app builder, an API) are left out."),
+         "those scheduled; whole products (an app builder, an API) are left out. Under 30 days is marked."),
         ("Median", "The middle value: half the lab's models had more warning, half less."),
     ]
     return ('<div class="ft jb pc me">\n'
