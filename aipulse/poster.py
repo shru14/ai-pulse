@@ -21,7 +21,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import audio, classify, digest, pages, rss
+from . import audio, classify, cluster, digest, pages, rss
 
 ART = Path(__file__).resolve().parent.parent / "templates" / "photos" / "cartoons" / "png"
 HEAD = "'Archivo Black','Arial Black',Arial,sans-serif"  # headings; Gmail has no web fonts: Arial Black there, and phones lack Arial Black, so every heading also says font-weight:900
@@ -76,8 +76,8 @@ LANES = [
 ]
 
 # The number of the day: a sum of money in a story's headline or summary, shown with the outlet's own sentence
-_MONEY = re.compile(r"(?:US|A|C|S|HK)?([$€£])\s?(\d{1,4}(?:\.\d{1,2})?)\s?(trillion|billion|million|bn|mn|tn)\b", re.I)
-_UNIT = {"trillion": "T", "tn": "T", "billion": "B", "bn": "B", "million": "M", "mn": "M"}
+_MONEY = re.compile(r"(?:US|A|C|S|HK)?([$€£])\s?(\d{1,4}(?:\.\d{1,2})?)\s?((?:trillion|billion|million|bn|mn|tn)\b|(?-i:[TBM])(?![\w$]))", re.I)
+_UNIT = {"trillion": "T", "tn": "T", "billion": "B", "bn": "B", "million": "M", "mn": "M", "t": "T", "b": "B", "m": "M"}
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z\"“])")
 _ABBREVIATION = re.compile(r"\b(?:Inc|Co|Corp|Ltd|Mr|Ms|Dr|St|No|vs|[A-Z])\.$")  # "Pathos AI Inc. today ..." is one sentence
 
@@ -152,11 +152,24 @@ def _table(rows: str, style: str = "") -> str:
             f'table-layout:fixed;{style}">{rows}</table>')
 
 
+NUMBER_OUTLETS = 2  # the number of the day comes from a story at least this many outlets carried
+_FEED_LABEL = re.compile(r"\b(?:TL;?DR|Key takeaways|Summary)\s*:?\s*", re.I)  # a feed's own labels, not the outlet's words
+_TRACKING = re.compile(r"(?<=[?&])(?:utm_[a-z]+|fbclid|gclid|mc_[a-z]+)=[^&#]*&?", re.I)
+
+
+def clean_url(url: str) -> str:
+    """A story's address without a feed's tracking tags (utm_source=rss...)."""
+    return re.sub(r"[?&]+(?=#|$)", "", _TRACKING.sub("", url))
+
+
 def _number(stories: list[dict]) -> tuple[str, str, dict] | None:
     """The day's number: the first sum of money in the ranked stories' headlines or summaries, as "$3.5B", with the
-    sentence that says what it is (the outlet's own words) and the story; None on a day without one."""
+    sentence that says what it is (the outlet's own words, without a feed's labels like "TL;DR") and the story;
+    only a story NUMBER_OUTLETS or more outlets carried; None on a day without one."""
     for c in stories:
-        for text in (c.get("title") or "", c.get("summary") or ""):
+        if digest._outlets(c) < NUMBER_OUTLETS:
+            continue
+        for text in (c.get("title") or "", _FEED_LABEL.sub("", c.get("summary") or "")):
             m = _MONEY.search(text)
             if not m:
                 continue
@@ -271,11 +284,37 @@ def _gemini(title: str, ask=None) -> str | None:
     return answer if _kept(answer, title) else None
 
 
+# "Nvidia's stock drops | as board reportedly preps to oust CEO Jensen Huang": the clause after these words is the news
+_CAUSE = {"as", "after", "amid", "while"}
+_TITLES = {"ceo", "cfo", "cto", "coo", "chief", "founder", "co-founder", "chair", "chairman", "president"}
+
+
+def _the_news(title: str, short: str) -> str | None:
+    """When the rule's cut is only a market's or company's reaction (3 words, no figure) and the clause after "as",
+    "after", "amid" or "while" names a person, that clause is the news: its own words without filler, after the
+    headline's first word when that is a company's ("Nvidia's"), and without a job title before a name if it's long
+    ("Nvidia's board preps to oust Jensen Huang"); None when it doesn't apply or doesn't fit SUBJECT_WORDS."""
+    words, have = title.split(), short.split()
+    n = len(have)
+    if n > 3 or len(words) <= n + 1 or [w.rstrip(",:;") for w in words[:n]] != have or _bare(words[n]) not in _CAUSE \
+            or re.search(r"\d", short):
+        return None
+    rest = [w for w in words[n + 1:] if _bare(w) not in _FILLER]
+    if not digest._people(" ".join(rest)):
+        return None
+    out = ([words[0]] if re.search(r"['’]s$", words[0]) else []) + rest
+    if len(out) > SUBJECT_WORDS:
+        out = [w for i, w in enumerate(out) if not (_bare(w) in _TITLES and out[i + 1:i + 2] and out[i + 1][:1].isupper())]
+    return " ".join(out) if 3 <= len(out) <= SUBJECT_WORDS and _ends_well(out) else None
+
+
 def _subject(title: str, ask=None) -> str:
-    """The lead headline in at most SUBJECT_WORDS of its own words, never with "…": cut by rule (_cut), or by Gemini
-    when no rule cuts it cleanly (_gemini); failing both, its first words up to the last that ends cleanly."""
+    """The lead headline in at most SUBJECT_WORDS of its own words, never with "…": cut by rule (_cut, or the clause
+    that holds the news, _the_news), or by Gemini when no rule cuts it cleanly (_gemini); failing both, its first
+    words up to the last that ends cleanly."""
     if title not in _SHORTENED:
-        short = _cut(title) or _gemini(title, ask)
+        short = _cut(title)
+        short = (short and _the_news(title, short) or short) or _gemini(title, ask)
         if not short:
             cut = re.split(r"\s*(?::|;|\||\s[—–-]\s)\s*", title)[0].split()[:SUBJECT_WORDS]
             while len(cut) > 3 and not _ends_well(cut):
@@ -504,20 +543,24 @@ def lanes_html(cards: list[dict], day: date) -> str | None:
             f'style="color:{INK};font-weight:bold">Every story of {day:%A} →</a></div></div></div></body></html>')
 
 
-def _spread(ranked: list[dict], taken: list[dict], n: int, stream_of: dict[int, str]) -> list[dict]:
+def _spread(ranked: list[dict], taken: list[dict], n: int, stream_of: dict[int, str],
+            idf: dict[str, float] | None = None) -> list[dict]:
     """Up to n more top news stories after `taken` (the hot story first, which isn't a tile), in rank order but at
-    most PER_STREAM tiles from a stream; a story over that still goes first when more outlets carried it than the
-    best one left from another stream (on a quiet day, when most stories have one outlet, the tiles mix the streams
-    instead of filling with the first stream's)."""
+    most PER_STREAM tiles from a stream; a story over that still goes first when more independent outlets carried it
+    than the best one left from another stream (on a quiet day, when most stories have one outlet, the tiles mix the
+    streams instead of filling with the first stream's). A story telling the same event as one already in is left
+    out (digest.same_event), however it ranks."""
+    idf = idf if idf is not None else {}
     per = Counter(stream_of[id(c)] for c in taken[1:])
-    left, out = [c for c in ranked if c not in taken], []
+    left = [c for c in ranked if c not in taken and not any(digest.same_event(c, t, idf) for t in taken)]
+    out = []
     while left and len(out) < n:
         c = next((c for c in left if per[stream_of[id(c)]] < PER_STREAM), left[0])
-        if digest._outlets(left[0]) > digest._outlets(c):
+        if digest._independent(left[0]) > digest._independent(c):
             c = left[0]
         out.append(c)
-        left.remove(c)
         per[stream_of[id(c)]] += 1
+        left = [o for o in left if o is not c and not digest.same_event(o, c, idf)]
     return out
 
 
@@ -538,7 +581,8 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     lead = (mine + [c for c in main if c not in mine])[:1] or ranked[:1]
     taken = lead + [c for c in mine if c not in lead]
     top = taken[:1 + TOP_NEWS]
-    top += _spread([c for c in main if c not in mine] or ranked, top, 1 + TOP_NEWS - len(top), stream_of)
+    top += _spread([c for c in main if c not in mine] or ranked, top, 1 + TOP_NEWS - len(top), stream_of,
+                   cluster.idf_weights(cards))
     shown = {id(c) for c in top}
     text, html = [], []
     stories = len(todays)  # stories, not outlets: the stream rows add up to it
@@ -622,14 +666,14 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     number = _number(top[1:] + [c for c in main if id(c) not in shown] + top[:1])
     if number:
         figure, said, c = number
-        text += [f"NUMBER OF THE DAY: {figure}", said, f"{c['source']}: {c['url']}", ""]
+        text += [f"NUMBER OF THE DAY: {figure}", said, f"{c['source']}: {clean_url(c['url'])}", ""]
         body.append(_table(f'<tr><td class="p-numc" width="34%" valign="middle" style="width:34%;padding:14px 16px;background:{YELLOW};'
                            f'border:2px solid {INK};border-right:0"><div style="font-weight:bold;font-size:12px;letter-spacing:.5px">'
                            f'NUMBER OF THE DAY</div><div class="p-num" style="font-family:{HEAD};font-weight:900;font-size:34px;line-height:1.1;'
                            f'white-space:nowrap">{escape(figure)}</div></td>'
                            f'<td valign="middle" style="padding:14px 16px;background:{YELLOW};border:2px solid {INK};border-left:0;'
                            f'font-size:14px;line-height:1.45">{escape(said)}<div style="font-size:12px;margin-top:6px">'
-                           f'{escape(c["source"])} · <a href="{escape(c["url"])}" style="color:{INK};font-weight:bold">Read it →</a>'
+                           f'{escape(c["source"])} · <a href="{escape(clean_url(c["url"]))}" style="color:{INK};font-weight:bold">Read it →</a>'
                            f'</div></td></tr>', "margin:0 0 26px"))
 
     # New on AI Pulse: the page this day's email introduces, with its own drawing

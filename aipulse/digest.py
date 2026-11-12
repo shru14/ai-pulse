@@ -300,11 +300,60 @@ def _fits_top(c: dict) -> bool:
     return not c.get("late") or bool(LATE_TOP and _outlets(c) >= LATE_TOP)
 
 
+def _independent(c: dict) -> int:
+    """How many outlets carried a story, counting labs' and companies' own blogs only when they first posted it
+    (Google's DeepMind blog repeating the Gemini blog's post is not a second outlet)."""
+    return 1 + len({o["source"] for o in _others(c) if o["source"] not in _OWN_BLOGS})
+
+
 def _rank(c: dict) -> tuple:
-    """How much a story mattered, without any AI: more outlets reporting it, then a company's own launch post,
-    then reporting over opinion, then an official action."""
-    own = c.get("category") == "tool" and (c.get("source") or "") in _OWN_BLOGS
-    return (_outlets(c), own, (c.get("kind") or "news") in ("news", "incident"), c.get("category") in ("regulation", "policy"))
+    """How much a story mattered, without any AI: more outlets reporting it (_independent); then, among stories
+    other outlets carried, their reporting over a company's own post, and among stories only one outlet carried, a
+    company's own launch post over a lone write-up; then more outlets of any kind, reporting over opinion, and an
+    official action."""
+    own = (c.get("source") or "") in _OWN_BLOGS
+    n = _independent(c)
+    return (n, own != (n > 1), _outlets(c), (c.get("kind") or "news") in ("news", "incident"),
+            c.get("category") in ("regulation", "policy"))
+
+
+# The same event told twice in one email's top stories ("Nvidia's board preps to oust Jensen Huang" under Industry,
+# "Jensen Huang scandal could spur tighter scrutiny" under Policy): the site groups stories only within a stream
+_PERSON = re.compile(r"\b([A-Z][a-z]+) ([A-Z][a-z]+)\b")
+
+
+def _people(title: str) -> set[str]:
+    """Full names of people a headline names: two capitalised words that aren't a company or a place."""
+    from . import cluster
+    return {f"{a} {b}" for a, b in _PERSON.findall(title)
+            if not classify.company_tags(f"{a} {b}") and not jurisdictions.detect(f"{a} {b}")
+            and not ({a.lower(), b.lower()} & (cluster._STOP | _NOT_PEOPLE))}
+
+
+# Capitalised pairs in headlines that are places or bodies, not people ("Southeast Asia", "White House")
+_NOT_PEOPLE = {"southeast", "asia", "middle", "east", "north", "south", "west", "america", "europe", "africa", "latin",
+               "united", "states", "kingdom", "silicon", "valley", "white", "house", "wall", "street", "supreme", "court",
+               "big", "tech", "open", "source", "prime", "minister", "general", "federal", "reserve"}
+
+
+# One company's running trouble, told in other words ("Nvidia scandal sparks auto industry watch", "Nvidia CEO
+# controversy unlikely to derail AI demand"): two headlines led by the same company that both name its trouble
+_SAGA = re.compile(r"\b(scandals?|controvers(?:y|ies)|affairs?|crisis|turmoil|probes?|investigations?|lawsuits?|"
+                   r"sued|outages?|breach(?:es)?|hack(?:ed)?|spy|spying|espionage|accused|fraud|oust(?:ed)?)\b", re.I)
+
+
+def same_event(a: dict, b: dict, idf: dict[str, float]) -> bool:
+    """Do two of the day's stories tell the same event, in any streams: the same person named in both headlines,
+    the same company and sum of money, the same company's trouble (_SAGA), or wording as alike as the site's grouping asks (cluster.py; `idf`: its
+    word weights, cluster.idf_weights of the email's stories)."""
+    from . import cluster
+    ta, tb = a.get("title") or "", b.get("title") or ""
+    if _people(ta) & _people(tb) or cluster._same_sum(a, b):
+        return True
+    company = classify.lead_company(ta)
+    if company and company == classify.lead_company(tb) and _SAGA.search(ta) and _SAGA.search(tb):
+        return True
+    return cluster.similarity(cluster.tokens(a), cluster.tokens(b), idf) >= cluster.THRESHOLD
 
 
 def _mine(prefs: dict | None):
