@@ -131,6 +131,32 @@ def test_policy_search_story_about_a_private_person_is_news():
     assert classify.categorize("Maryland Sets AI Guardrails as States Confront Data Center Boom", "", "policy") == "policy"
 
 
+def test_policy_groups_own_stories_stay_policy():
+    # A policy newsroom's own piece is Policy whatever its headline (Tech Policy Press, 12 Nov 2026, was Industry).
+    from aipulse.collect import policy_feed_keeps, stream_of
+    from aipulse.sources import SOURCES
+    by = {s["name"]: s for s in SOURCES}
+    dublin = "Europe’s AI Future and Security Challenges Take Center Stage at Dublin Summit"
+    assert policy_feed_keeps(by["Tech Policy Press"]) and stream_of(by["Tech Policy Press"], dublin, "", "https://e.com/1") == "policy"
+    # Groups that also repost general press have each story checked: government stays, business news goes.
+    cset = by["CSET"]
+    assert not policy_feed_keeps(cset)
+    for title in ["Hegseth warns Anthropic to let the military use the company’s AI tech as it sees fit, AP sources say",
+                  "DOD expands its classified AI work with 8 companies — excluding Anthropic — amid ongoing dispute",
+                  "AI Now Senior Fellow Dr. Katie J. Wells Testifies before the House Subcommittee on Workforce Protections",
+                  "NextGov: OMB wants public input on privacy impact assessments",
+                  "How Trump’s new H-1B fee will hurt Silicon Valley and AI startups"]:
+        assert stream_of(cset, title, "", "https://e.com/2") == "policy", title
+    for title in ["Chipmaker Nvidia joins exclusive club of companies with a $1 trillion market capitalization",
+                  "SpaceX Files to Go Public, Setting Stage for Huge I.P.O.", "How Nvidia became an AI giant"]:
+        assert stream_of(cset, title, "", "https://e.com/3") == "news", title
+    # The wider words only keep a policy story; a tech outlet's Pentagon deal is still Industry.
+    assert classify.categorize("OpenAI signs Pentagon contract for military AI", "", "news") == "news"
+    # A staff line in a summary ("leader of its AI and human rights project") doesn't keep a press repost.
+    assert classify.categorize("CNBC: OpenAI is pursuing a new way to fight A.I. ‘hallucinations’",
+                               "Ben Winters, leader of its AI and human rights project, expressed skepticism", "policy") == "news"
+
+
 def test_policy_needs_action_and_place_to_become_regulation():
     opinion = {"title": "Why AI regulation matters", "summary": "", "category": "policy"}
     apply_regulation(opinion)

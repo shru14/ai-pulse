@@ -518,11 +518,21 @@ def resummarize(conn, log=print) -> int:
     return changed
 
 
+def policy_feed_keeps(src: dict | None) -> bool:
+    """A policy group's or policy newsroom's own feed (Tech Policy Press, EFF, the EU AI Act Newsletter...):
+    it writes its stories itself, so they are all Policy, even one whose headline names no government
+    ("Europe's AI Future and Security Challenges Take Center Stage at Dublin Summit"). Groups that also repost
+    general press coverage (press_clips: CSET, AI Now, EPIC) have each story checked instead."""
+    return bool(src) and src["category"] == "policy" and not src.get("press_clips")
+
+
 def stream_of(src: dict, title: str, summary: str, url: str) -> str:
     """A new story's stream: an infrastructure source's are Infra; an Industry story
     whose headline is about AI's data centres or footprint moves there too (classify.infra_story)."""
     if src["category"] == "infra":
         return "infra"
+    if policy_feed_keeps(src):
+        return "policy"  # apply_regulation may still move it to the tracker
     category = (blog_category(src, title, summary, url) if src["category"] == "tool"
                 else classify.categorize(title, summary, src["category"]))
     if category == "tool" and src.get("no_releases"):
@@ -721,8 +731,14 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
     by_name = {s["name"]: s for s in SOURCES}
     government = {s["name"] for s in SOURCES if s.get("government")}
     for it in store.query(conn, None, None, None, limit=100000):
-        if it["source"] in government and it["action"] != INCIDENT and it["category"] in ("news", "tool"):
-            # A government's own publication is Policy (or the tracker, for a bill or law), never Industry.
+        src = by_name.get(it["source"])
+        back = it["source"] in government or policy_feed_keeps(src) or bool(
+            src and src.get("press_clips") and it["category"] in ("news", "tool", "infra")  # a repost about government
+            and classify.categorize(it["title"], "" if brief.is_draft(it["summary"]) else it["summary"], "policy") == "policy")
+        if back and it["action"] != INCIDENT and it["category"] in (("news", "tool") if it["source"] in government
+                                                                   else ("news", "tool", "infra")):
+            # A government's own publication, or a policy group's own story, is Policy (or the tracker, for a bill
+            # or law), never Industry: stories sorted before 12 Nov 2026 by headline words alone come back.
             before = (it["category"], it["jurisdictions"], it["action"] or None)
             it["category"] = "policy"
             apply_regulation(it, defaults.get(it["source"], []))
@@ -771,7 +787,8 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
         if it["category"] not in ("policy", "regulation"):
             continue
         before = (it["category"], it["jurisdictions"], it["action"] or None)
-        if it["category"] == "policy" and it["source"] not in bills.OFFICIAL_SOURCES and it["source"] not in government:
+        if (it["category"] == "policy" and it["source"] not in bills.OFFICIAL_SOURCES and it["source"] not in government
+                and not policy_feed_keeps(by_name.get(it["source"]))):
             # A story only reaches "policy" from a policy feed or by scoring as policy, so re-sorting
             # with "policy" as the default drops the ones a policy search picked up by mistake.
             text = "" if brief.is_draft(it["summary"]) else it["summary"]
