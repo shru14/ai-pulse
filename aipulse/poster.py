@@ -284,11 +284,37 @@ def _gemini(title: str, ask=None) -> str | None:
     return answer if _kept(answer, title) else None
 
 
+# "Nvidia's stock drops | as board reportedly preps to oust CEO Jensen Huang": the clause after these words is the news
+_CAUSE = {"as", "after", "amid", "while"}
+_TITLES = {"ceo", "cfo", "cto", "coo", "chief", "founder", "co-founder", "chair", "chairman", "president"}
+
+
+def _the_news(title: str, short: str) -> str | None:
+    """When the rule's cut is only a market's or company's reaction (3 words, no figure) and the clause after "as",
+    "after", "amid" or "while" names a person, that clause is the news: its own words without filler, after the
+    headline's first word when that is a company's ("Nvidia's"), and without a job title before a name if it's long
+    ("Nvidia's board preps to oust Jensen Huang"); None when it doesn't apply or doesn't fit SUBJECT_WORDS."""
+    words, have = title.split(), short.split()
+    n = len(have)
+    if n > 3 or len(words) <= n + 1 or [w.rstrip(",:;") for w in words[:n]] != have or _bare(words[n]) not in _CAUSE \
+            or re.search(r"\d", short):
+        return None
+    rest = [w for w in words[n + 1:] if _bare(w) not in _FILLER]
+    if not digest._people(" ".join(rest)):
+        return None
+    out = ([words[0]] if re.search(r"['’]s$", words[0]) else []) + rest
+    if len(out) > SUBJECT_WORDS:
+        out = [w for i, w in enumerate(out) if not (_bare(w) in _TITLES and out[i + 1:i + 2] and out[i + 1][:1].isupper())]
+    return " ".join(out) if 3 <= len(out) <= SUBJECT_WORDS and _ends_well(out) else None
+
+
 def _subject(title: str, ask=None) -> str:
-    """The lead headline in at most SUBJECT_WORDS of its own words, never with "…": cut by rule (_cut), or by Gemini
-    when no rule cuts it cleanly (_gemini); failing both, its first words up to the last that ends cleanly."""
+    """The lead headline in at most SUBJECT_WORDS of its own words, never with "…": cut by rule (_cut, or the clause
+    that holds the news, _the_news), or by Gemini when no rule cuts it cleanly (_gemini); failing both, its first
+    words up to the last that ends cleanly."""
     if title not in _SHORTENED:
-        short = _cut(title) or _gemini(title, ask)
+        short = _cut(title)
+        short = (short and _the_news(title, short) or short) or _gemini(title, ask)
         if not short:
             cut = re.split(r"\s*(?::|;|\||\s[—–-]\s)\s*", title)[0].split()[:SUBJECT_WORDS]
             while len(cut) > 3 and not _ends_well(cut):

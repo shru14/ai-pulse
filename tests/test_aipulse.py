@@ -4678,6 +4678,10 @@ def test_email_subjects_are_a_few_of_the_headlines_own_words_never_cut_with_dots
     assert poster._subject("Amid hardware legal battle, OpenAI releases a $230 keyboard for Codex") == \
         "OpenAI releases a $230 keyboard for Codex"
     assert poster._subject("SpaceXAI releases Grok 4.5, which Elon describes as an Opus-class model") == "SpaceXAI releases Grok 4.5"
+    # the reaction comes first, the news after "as": the subject keeps the news
+    assert poster._subject("Nvidia’s stock drops as board reportedly preps to oust CEO Jensen Huang") == \
+        "Nvidia’s board preps to oust Jensen Huang"
+    assert poster._subject("Apple shares slip as investors weigh China risk") == "Apple shares slip"
     # no rule cuts it cleanly: Gemini picks the words, and only the headline's own, in order, pass
     hard = "U.S. court rules Pentagon's blacklisting of Anthropic was unlawful"
     assert poster._subject(hard, ask=lambda p: '{"subject": "court rules Pentagon\'s blacklisting of Anthropic unlawful"}') == \
