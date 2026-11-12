@@ -1872,8 +1872,23 @@ async function loadData(){
   // A failed download is tried again by the next load.
   try{ await dataLoading; }catch(e){ dataLoading = null; throw e; }
 }
+// What the build wrote into this page (static.boot): the page's first view and recent cards, so it draws at once;
+// data.json is fetched only for what they can't answer (a search, a filter, another range, more stories).
+const BOOT = (() => { try{ return JSON.parse(document.getElementById("boot").textContent); }catch(e){ return null; } })();
+function bootAnswer(params){
+  if(!BOOT || staticData || params.get("q") || params.get("place") || params.get("region")) return null;
+  const days = +params.get("days") || 0, f = BOOT.first;
+  if(f && (params.get("category") || "all") === f.category && days === f.days && +params.get("page") === 1
+     && +params.get("per_page") === f.perPage)
+    return {...f, stories: BOOT.stories, lastRun: BOOT.lastRun, jurisdictions: BOOT.jurisdictions, regions: BOOT.regions};
+  if(!days || (BOOT.lite && days > 2)) return null;
+  const t = new Date(); t.setUTCDate(t.getUTCDate() - days);
+  return t.toISOString().slice(0, 10) >= BOOT.since ? staticPayload(BOOT, params) : null;
+}
 async function fetchItems(params){
   if(!STATIC) return (await fetch("api/items?"+params)).json();
+  const quick = bootAnswer(params);
+  if(quick) return quick;
   await loadData();
   // data.json holds about the last 90 days; "All time" also needs the yearly archive files.
   if(!+params.get("days") && (staticData.archive || []).length){
@@ -2017,7 +2032,8 @@ const byWeight = (a, b) => outlets(b) - outlets(a) || (b.date > a.date ? 1 : b.d
 async function loadHomeCounts(){
   let d = null;
   try{  // on the static site, the build's own total: no archive file to download for one number
-    if(STATIC){ await loadData(); if(staticData.total != null) d = {counts: {all: staticData.total}, lastRun: staticData.lastRun}; }
+    if(STATIC){ const src = BOOT || (await loadData(), staticData);
+      if(src.total != null) d = {counts: {all: src.total}, lastRun: src.lastRun}; }
     d ??= await fetchItems(new URLSearchParams({days: 0, per_page: 1, page: 1}));
   }catch(e){}
   state.allTime = d ? d.counts.all : 0;
@@ -2077,8 +2093,8 @@ async function loadHome(){
   try{
     loadMeme();
     const board = loadBoard();
-    // the past 7 days' stories, and the weeks before them
-    const recent = await fetchItems(new URLSearchParams({days: 36, per_page: 100000, page: 1}));
+    // the past 7 days' stories (and a day's margin), which the page holds already (static.boot)
+    const recent = await fetchItems(new URLSearchParams({days: 8, per_page: 100000, page: 1}));
     const [from, to] = lastWeek();
     HOME.lastWeek = recent.items.filter(it => it.date >= from && it.date < to);
     HOME.recent = recent.items;

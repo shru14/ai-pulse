@@ -1,9 +1,9 @@
 """A stream's stories split into pages, the stream's strip on the front page linking to them: Industry by kind of
 story (industry/<kind>/: opinion and analysis, company blogs, studies, AI-incidents, tutorials and events),
 Releases by company (releases/<company>/), Policy by who is speaking (policy/<who>/), Research by subject
-(research/<subject>/) and Infra by its subjects (infra/<subject>/). The stories are the outlets' own headlines, so
-each page loads them in the reader's browser from data.json (the last 3 months), as the glossary's word pages do;
-the page itself holds the newest too, for search engines (seo.py), and the rule that picks its stories. No date of its own. Company blogs
+(research/<subject>/) and Infra by its subjects (infra/<subject>/). The stories are the outlets' own headlines of the
+last 3 months, written into the page by the build: the newest as links for search engines (seo.py), and all of them as
+JSON its script lists at once, with no download of data.json (owner, 12 Nov 2026); and the rule that picks them. No date of its own. Company blogs
 are grouped by company, a tile each with its logo, like the tracker's places with their flags; the other pages by
 topic (Research's by company and scholar, Infra's by place). Each tile previews its newest story.
 """
@@ -187,14 +187,13 @@ STORIES_JS = r"""<script>
     });
     more.hidden = shown >= list.length;
   };
-  fetch("/data.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
-    list = all = d.cards.filter(has)
-      .sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
-    document.getElementById("stories-count").textContent = list.length + " " + (list.length === 1 ? ul.dataset.noun : ul.dataset.nouns);
-    if(!list.length) return note("None in the last 3 months.");
-    buildTiles(); pick("");
-  }).catch(() => ul.dataset.ssr || note("Couldn't load the stories. Try reloading the page."));  // the build's headlines stay
+  // the page's own stories, written into it by the build: listed at once, no download
+  list = all = json("story-data").map(c => ({tags: [], ...c})).filter(has)
+    .sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  document.getElementById("stories-count").textContent = list.length + " " + (list.length === 1 ? ul.dataset.noun : ul.dataset.nouns);
   more.addEventListener("click", show);
+  if(!list.length) return note("None in the last 3 months.");
+  buildTiles(); pick("");
 })();
 </script>"""
 
@@ -379,7 +378,8 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
                  f'<script type="application/json" id="firms">{safe(who)}</script>\n' if who else
                  f'<script type="application/json" id="topics">{safe(tile_names(cat, p))}</script>\n')
         noun, nouns = ("paper", "papers") if cat == "research" else ("story", "stories")
-        mine = seo.newest([c for c in cards if c["date"] >= since and picks(rule, c)], 20)  # in the HTML (seo.py)
+        listed = seo.newest([c for c in cards if c["date"] >= since and picks(rule, c)], len(cards))
+        mine = listed[:20]  # as links in the HTML (seo.py)
         where = "the paper" if cat == "research" else "the outlet's own page"
         body = (f'<div class="kd">' + pages.band(cat, _icon(p, label), f"photos/cartoons/streams/{cat}.svg", heading,
                                                  ASK.get(p) or ASK[p.split("/")[0]].format(label, label.lower()), escape(what))
@@ -387,6 +387,7 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
                 f'each linking to {escape(where)}.</p>\n'
                 + '<div class="places companies" id="cats"></div>\n' + tiles
                 + f'<script type="application/json" id="rule">{safe(rule)}</script>\n'
+                + seo.data("story-data", listed, ("id", "category", "kind", "title", "url", "date", "source", "tags"))
                 + (f'<ul id="kind-stories" data-noun="{noun}" data-nouns="{nouns}" data-ssr="1">{seo.items(mine)}</ul>\n'
                    if mine else
                    f'<ul id="kind-stories" data-noun="{noun}" data-nouns="{nouns}"><li class="meta">Loading the {nouns}…</li></ul>\n')

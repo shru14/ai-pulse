@@ -128,6 +128,56 @@ def privacy_page() -> str:
     return pages.page("Privacy · AI Pulse", what, "privacy.html", body, data, pages.frame(), ("/", "Back to AI Pulse"))
 
 
+# What each page needs to draw itself at once, written into it as JSON (id="boot"), so no page waits for
+# data.json (6+ MB) to show its stories; data.json is fetched only when a reader searches, filters, changes the
+# range or asks for more (owner, 12 Nov 2026). The front and Today pages get the past 8 days' cards (the week's
+# tiles, Today in AI, the word of the week); the others only the ticker's last 2 days, in the fields it shows; a
+# stream's page also its first view as the page opens it (30 days, 40 cards: the page's state.range and PER_PAGE).
+BOOT_WEEK_DAYS, TICKER_DAYS = 8, 2
+FIRST_DAYS, FIRST_PER_PAGE = 30, 40
+TICKER_FIELDS = ("id", "category", "title", "url", "date", "added_at")
+BOOT_META = ("built", "total", "stories", "lastRun", "jurisdictions", "euMembers", "regions", "paperHomes")
+
+
+def first_view(cards: list[dict], today: date, cat: str) -> dict:
+    """A stream's first page as the page's staticPayload() answers it for {category, days: 30, page 1}: its first
+    40 cards, the counts per stream, and for the tracker, its map's tallies."""
+    since = (today - timedelta(days=FIRST_DAYS)).isoformat()
+    base = [c for c in cards if c["date"] >= since]
+    counts = {c: 0 for c in FRONT_CATS}
+    for c in base:
+        counts[c["category"]] = counts.get(c["category"], 0) + 1
+    counts["all"] = len(base)
+    mine = base if cat == "all" else [c for c in base if c["category"] == cat]
+    out = {"items": [{k: v for k, v in c.items() if k != "s"} for c in mine[:FIRST_PER_PAGE]], "page": 1,
+           "perPage": FIRST_PER_PAGE, "total": len(mine), "hasMore": len(mine) > FIRST_PER_PAGE, "counts": counts}
+    if cat == "regulation":
+        national, laws, n = {}, {}, 0
+        for c in base:
+            if c["category"] == "regulation" and c.get("action") != "expert":
+                n += 1
+                for j in c.get("jurisdictions") or ():
+                    national[j] = national.get(j, 0) + 1
+                    if c.get("action") == "law":
+                        laws[j] = laws.get(j, 0) + 1
+        out["map"] = {"national": national, "laws": laws, "cards": n}
+    return {"category": cat, "days": FIRST_DAYS, **out}
+
+
+def boot(page: str, data: dict, today: date, week: bool = False, cat: str | None = None) -> str:
+    """`page` with what it draws first written into it (id="boot"), before its script."""
+    days = BOOT_WEEK_DAYS if week else TICKER_DAYS
+    since = (today - timedelta(days=days)).isoformat()
+    cards = [c for c in data["cards"] if c["date"] >= since]
+    b = {k: data[k] for k in BOOT_META} | {"since": since, "lite": not week,
+         "cards": [{k: v for k, v in c.items() if k != "s" and (week or k in TICKER_FIELDS)} for c in cards]}
+    if cat:
+        b["first"] = first_view(data["cards"], today, cat)
+    text = json.dumps(b, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    return page.replace("\n<script>\n// Industry cards", f'\n<script type="application/json" id="boot">{text}</script>\n'
+                        "<script>\n// Industry cards", 1)
+
+
 FRONT_CATS = ("tool", "news", "research", "regulation", "policy", "infra")
 
 
@@ -425,21 +475,21 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     page = TEMPLATE.read_text(encoding="utf-8")
     page = page.replace("<html ", '<html data-static="1" ', 1)
     page = subscribers.fill(page).replace("</head>", pages.counter() + "</head>", 1)
-    (out / "index.html").write_text(front_page(page, recent, today), encoding="utf-8")
+    (out / "index.html").write_text(boot(front_page(page, recent, today), data, today, week=True), encoding="utf-8")
     (out / "about").mkdir()
-    (out / "about" / "index.html").write_text(about_page(page), encoding="utf-8")  # the same page, opened at About
+    (out / "about" / "index.html").write_text(boot(about_page(page), data, today), encoding="utf-8")  # the same page, opened at About
     (out / "discussing").mkdir()
-    (out / "discussing" / "index.html").write_text(page_at(page, "discussing", "People are discussing · AI Pulse",
-        "The most-discussed AI threads on Hacker News in the last two days."), encoding="utf-8")
+    (out / "discussing" / "index.html").write_text(boot(page_at(page, "discussing", "People are discussing · AI Pulse",
+        "The most-discussed AI threads on Hacker News in the last two days."), data, today), encoding="utf-8")
     (out / "saved").mkdir()  # the reader's bookmarks (kept in their browser): not in the sitemap
-    (out / "saved" / "index.html").write_text(page_at(page, "saved", "Saved stories · AI Pulse",
-        "The stories you saved on AI Pulse, kept in this browser."), encoding="utf-8")
+    (out / "saved" / "index.html").write_text(boot(page_at(page, "saved", "Saved stories · AI Pulse",
+        "The stories you saved on AI Pulse, kept in this browser."), data, today), encoding="utf-8")
     (out / "today").mkdir()
-    (out / "today" / "index.html").write_text(page_at(page, "today", "Today in AI · AI Pulse",
-        "Today's AI stories, ranked by how many outlets carry them."), encoding="utf-8")
+    (out / "today" / "index.html").write_text(boot(page_at(page, "today", "Today in AI · AI Pulse",
+        "Today's AI stories, ranked by how many outlets carry them."), data, today, week=True), encoding="utf-8")
     for cat, (path, *_) in STREAM_PAGES.items():  # /policy/ and the rest: the same page, opened at that stream
         (out / path).mkdir()
-        (out / path / "index.html").write_text(stream_page(page, cat, recent), encoding="utf-8")
+        (out / path / "index.html").write_text(boot(stream_page(page, cat, recent), data, today, cat=cat), encoding="utf-8")
     # readers' weekly dossiers: the page, and each interest's section the full run kept (weekly.prepare)
     from . import weekly
     (out / "dossier.html").write_text((TEMPLATE.parent / "dossier.html").read_text(encoding="utf-8"), encoding="utf-8")

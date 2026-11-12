@@ -7,6 +7,7 @@ the script replaces them with its full view once its data has loaded. If the dat
 """
 from __future__ import annotations
 
+import json
 from datetime import date
 from html import escape
 
@@ -40,3 +41,11 @@ def feed(cards: list[dict]) -> str:
                        f'<p class="authors">{escape(c.get("source") or "")}</p></div></article>' for c in cs)
         out.append(f'<section class="day"><h2>{day(d)}</h2><div class="items">{arts}</div></section>')
     return "".join(out)
+
+
+def data(id_: str, cards: list[dict], keys: tuple[str, ...]) -> str:
+    """A page's own stories in its HTML, as JSON its script reads at once: only `keys` of each card, so a sub-page
+    or word page needs no download of data.json (6.7 MB) to list its stories (owner, 12 Nov 2026)."""
+    rows = [{k: c[k] for k in keys if c.get(k) not in (None, "", [])} for c in cards]
+    text = json.dumps(rows, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    return f'<script type="application/json" id="{id_}">{text}</script>\n'
