@@ -681,6 +681,13 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert sorted(p.name for p in (tmp_path / "site" / "feeds").iterdir()) == ["all.opml", "infra.xml", "news.xml", "policy.xml", "regulation.xml", "releases.xml", "research.xml"]
     assert (tmp_path / "site" / "feeds" / "all.opml").read_text(encoding="utf-8").count("<outline ") == 6
     assert data["total"] == total  # the front page's all-time count, without the archive files
+    # each page holds what it draws first (static.boot), so it needn't wait for data.json
+    boot = lambda p: json.loads(re.search(r'<script type="application/json" id="boot">(.*?)</script>', p).group(1))
+    front, news = boot(page), boot((tmp_path / "site" / "industry" / "index.html").read_text(encoding="utf-8"))
+    assert front["total"] == total and not front["lite"] and "first" not in front
+    assert news["lite"] and news["first"]["category"] == "news" and news["first"]["days"] == 30
+    assert all("s" not in c for c in front["cards"] + news["first"]["items"])  # no search words: data.json has them
+    assert page.index('id="boot"') < page.index("const BOOT")  # read by the page's script, so before it
     assert (tmp_path / "site" / "tracker.csv").read_text(encoding="utf-8").startswith("date,countries,type,title,source,link")
     # what search engines see: a description and a preview image; the sitemap lists each day's page; AI-training
     # bots are kept out, and readers' own pages are never indexed
@@ -785,8 +792,9 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     assert "<h2>Related terms</h2>" in page and page.count('<li><div><a href="/glossary/') == glossary_pages.RELATED
     assert '<span class="kind"><i>AI glossary</i><i>Models</i></span>' in page and "Added to the glossary" not in page
     assert "Mentioned in 1 story in the last 7 days." in page and '/all/?' not in page
-    # its latest stories, found on the page itself (from data.json, as the site's underlines find them)
+    # its latest stories, as the site's underlines find them, written into the page (no download of data.json)
     assert '<h2 id="stories">Latest stories with this word</h2>' in page and 'data-match="[&quot;MoE&quot;' in page and 'data-case=1' in page
+    assert '<script type="application/json" id="story-data">[' in page and "data.json" not in page
     # what makes it worth a visit: the words in the same stories, and the week's words as a cloud on glossary/
     assert "<h2>Often in the same stories</h2>" in page and 'href="/glossary/parameters/" style="font-size:' in page
     assert '"@type": "DefinedTerm"' in page and 'rel="canonical" href="https://projectaipulse.com/glossary/mixture-of-experts/"' in page

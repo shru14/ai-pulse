@@ -16,13 +16,12 @@ from . import glossary, pages, rss, seo
 
 BOOK = "M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5M4 19.5A2.5 2.5 0 0 1 6.5 17H19M9 7h6M9 10.5h4"  # the header band's icon
 
-# A word's latest stories, found in the reader's browser in data.json (about the last 3 months) as the site's
-# underlines find them, newest first, 10 at a time: the newest are also written into the page (seo.py)
-# for search engines (owner, 6 Nov 2026).
+# A word's latest stories (the last 3 months) as the site's underlines find them, newest first, 10 at a time: the
+# newest written into the page as links for search engines (owner, 6 Nov 2026), and all of them as JSON the script
+# lists at once, with no download of data.json (owner, 12 Nov 2026).
 STORIES_JS = r"""<script>
 (() => {
   const ul = document.getElementById("word-stories"), more = document.getElementById("more-stories");
-  const re = new RegExp("(?<!\\w)(?:" + JSON.parse(ul.dataset.match).join("|") + ")(?![\\w])", ul.dataset.case ? "" : "i");
   const NAMES = {tool: "Releases", news: "Industry", research: "Research", regulation: "Regulation tracker",
                  policy: "Policy", infra: "Infra"};
   const day = d => new Date(d.slice(0, 10) + "T00:00:00Z").toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric", timeZone: "UTC"});
@@ -37,14 +36,13 @@ STORIES_JS = r"""<script>
     });
     more.hidden = shown >= list.length;
   };
-  fetch("/data.json", {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
-    list = d.cards.filter(c => re.test((c.title || "") + " " + (c.summary || "")))
-      .sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
-    document.getElementById("stories-count").textContent = list.length + (list.length === 1 ? " story" : " stories");
-    if(!list.length) return note("No stories used this word in the last 3 months.");
-    ul.replaceChildren(); show();
-  }).catch(() => ul.dataset.ssr || note("Couldn't load the stories. Try reloading the page."));  // the build's headlines stay
+  // the word's stories, written into the page by the build: listed at once, no download
+  list = JSON.parse(document.getElementById("story-data").textContent)
+    .sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  document.getElementById("stories-count").textContent = list.length + (list.length === 1 ? " story" : " stories");
   more.addEventListener("click", show);
+  if(!list.length) return note("No stories used this word in the last 3 months.");
+  ul.replaceChildren(); show();
 })();
 </script>"""
 
@@ -171,7 +169,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 + (seo.items(seo.newest(latest[e["id"]], 10)) if latest.get(e["id"]) else
                    '<li class="meta">Loading the stories…</li>') + '</ul>\n'
                 f'<button type="button" class="more-stories" id="more-stories" hidden>Show more stories</button>\n'
-                f'{STORIES_JS}')
+                + seo.data("story-data", latest.get(e["id"], []), ("category", "title", "url", "date", "source"))
+                + STORIES_JS)
         data = {"@context": "https://schema.org", "@type": "DefinedTerm", "name": e["term"], "description": e["def"],
                 "url": f"{rss.SITE}{path}", "inDefinedTermSet": home}
         (out / path).mkdir(parents=True, exist_ok=True)
