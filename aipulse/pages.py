@@ -176,8 +176,7 @@ STYLE = """
 .cp .ssr-list{list-style:none;margin:0;padding:0}.cp .ssr-list li{margin:0 0 12px}
 .cp .chapter{display:grid;grid-template-columns:150px minmax(0,1fr);gap:0 10px}
 .cp .chapter .yr{position:relative;border-top:2px solid var(--line)}
-.cp .chapter .yr span{position:sticky;top:calc(var(--bar-h,64px) + 14px);display:block;padding-top:10px;font:400 clamp(34px,4vw,50px)/1 var(--display);color:transparent;-webkit-text-stroke:2px var(--ink)}
-.cp .chapter:nth-child(odd) .yr span{color:var(--accent);-webkit-text-stroke:0}
+.cp .chapter .yr span{position:sticky;top:calc(var(--bar-h,64px) + 14px);display:block;padding-top:10px;font:400 clamp(34px,4vw,50px)/1 var(--display);color:var(--ink)}  /* solid, every year */
 .cp ol.timeline{list-style:none;margin:0;padding:18px 0 22px;position:relative;border-top:2px dashed color-mix(in srgb,var(--ink) 30%,transparent)}
 .cp ol.timeline::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:4px;margin-left:-2px;background:var(--ink)}
 .cp .timeline > li{border:0;padding:0;position:relative}
@@ -246,7 +245,6 @@ STYLE = """
 /* the year chapters stay; their rules go hairline */
 .cp .tp .chapter .yr{border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
 .cp .tp ol.timeline{border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
-.cp .tp .chapter .yr span{-webkit-text-stroke:1.5px var(--ink)}
 /* the line and its markers: thin */
 .cp .tp ol.timeline::before{width:1.5px;margin-left:-.75px}
 .cp .tp .timeline .dot{width:13px;height:13px;margin-left:-6.5px;top:24px;border:1.5px solid var(--ink)}
@@ -2626,7 +2624,11 @@ LOCAL_TIME = ('<script>document.querySelectorAll("time[datetime]").forEach(t => 
               # in its own block: a sealed page writes the page into the login box's window, so this script runs
               # twice there and a top-level const would be declared twice
               '{const npd=document.getElementById("np-date");if(npd)npd.textContent=new Date().toLocaleDateString("en-GB",'
-              '{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</script>')
+              '{weekday:"long",day:"numeric",month:"long",year:"numeric"})}'
+              # the sticky masthead's real height on wide screens, so the timeline's years stick just under it
+              '{const m=document.querySelector("header.top"),w=matchMedia("(min-width:701px)"),f=()=>{if(m&&w.matches)'
+              'document.documentElement.style.setProperty("--bar-h",m.offsetHeight+"px")};'
+              'try{new ResizeObserver(f).observe(m)}catch(e){addEventListener("resize",f)}f()}</script>')
 
 
 # Anonymous visit counts (GoatCounter, chosen 12 Oct 2026; terms.PLATFORM): no cookie, no stored IP address or
