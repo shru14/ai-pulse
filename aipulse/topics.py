@@ -14,6 +14,7 @@ as the industry pages do; the page itself holds the newest too, for search engin
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -802,7 +803,8 @@ def events(slug: str, cards: list[dict]) -> list[dict]:
             continue
         out.append({"date": c["date"], "title": c["title"].strip(), "url": c["url"], "source": c["source"],
                     "outlets": 1 + len({a["source"] for a in c.get("also") or []} - {c["source"]}),
-                    "official": False, "logo": _logo(c), "tags": c.get("tags") or [], "category": c["category"]})
+                    "official": False, "logo": _logo(c), "tags": c.get("tags") or [], "category": c["category"],
+                    "summary": ADDED.get(slug, {}).get(c["url"]) or c.get("summary") or ""})
     out.sort(key=lambda e: (e["date"], not e["official"]))
     big = len(out) > SMALL
     for i, e in enumerate(out):  # a milestone gets a card; the rest fold into "+N more" between them
@@ -818,9 +820,24 @@ def events(slug: str, cards: list[dict]) -> list[dict]:
     key += news[:KEY - len(key)]
     for e in key:
         e["key"] = e["milestone"] = True
+    # the story's beats, told one at a time at the top of the page: how it started, its key moments, where it stands
+    for e in (out[:1] + key + out[-1:]) if out else ():
+        e["beat"] = True
+        if not e["official"]:
+            e["line"] = _line(e["title"], e["summary"])
     for e in out:
-        e.pop("tags", None), e.pop("category", None)
+        e.pop("tags", None), e.pop("category", None), e.pop("summary", None)
     return out
+
+
+def _line(title: str, summary: str) -> str:
+    """A beat's one sentence: the first of the publisher's own summary (or our English note), unless it only repeats
+    the headline."""
+    s = re.split(r"(?<=[.!?])(?<!\.[A-Z]\.)(?<!\b[A-Z]\.)(?<!Mr\.)(?<!Ms\.)(?<!Dr\.)(?<!St\.)\s+(?=[A-Z\"“‘'])", " ".join(summary.split()), maxsplit=1)[0].strip()
+    if len(s) < 25 or len(s) > 260:
+        return ""
+    words = lambda t: set(re.findall(r"\w+", t.lower()))
+    return "" if len(words(s) - words(title)) < 4 else s
 
 
 def trend(ev: list[dict], today: date) -> int:
@@ -896,15 +913,7 @@ TIMELINE_JS = r"""<script>
   fetch(tl.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(list => {
     tl.replaceChildren();
     if(!list.length) return tl.append(el("p", "meta", "Nothing yet."));
-    const keys = list.filter(e => e.key);
-    if(keys.length) {
-      const ul = moments.querySelector(".mlist");
-      keys.forEach(e => {
-        const li = el("li"), a = el("a", "", e.title); a.href = e.url; a.rel = "noopener";
-        li.append(a, el("span", "when", full(e.date))); ul.append(li);
-      });
-      moments.hidden = false;
-    }
+    if(window.tellStory) window.tellStory(list);
     let ol = null, n = 0, folded = [];
     const flush = () => { if(folded.length) ol.append(more(folded)); folded = []; };
     list.forEach(e => {
@@ -924,6 +933,240 @@ TIMELINE_JS = r"""<script>
     const now = el("li", "now"); now.append(el("span", "", "Now")); ol.append(now);
   }).catch(() => tl.querySelector(".ssr-list") || tl.replaceChildren(el("p", "meta", "Couldn't load the timeline. Try reloading the page.")));
 })();
+</script>"""
+
+
+_WORDS = ["", "", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"]
+SAY = "say"  # a beat's spoken clip: topics/<slug>/say/<clip>.mp3 (topic-voice), named after its words
+
+
+def _gap(a: str, b: str) -> str:
+    """How long after the last beat, in words (the card's cue uses the same, in STORY_JS)."""
+    d = (date.fromisoformat(b) - date.fromisoformat(a)).days
+    n = lambda k, unit: f"a {unit} later" if k == 1 else f"{(_WORDS[k] if k < len(_WORDS) else str(k)).lower()} {unit}s later"
+    return ("the same day" if d == 0 else "the next day" if d == 1 else n(d, "day") if d < 7 else "a week later"
+            if d < 14 else n(round(d / 7), "week") if d < 30 else n(round(d / 30.4), "month") if d < 365
+            else n(round(d / 365), "year"))
+
+
+def tell(name: str, ev: list[dict]) -> None:
+    """What the voice says for each beat, like a presenter telling the story rather than reading the card: how it
+    started, how each moment followed the last, where it stands. Fixed phrases joining the headline and the
+    publisher's own sentence, credited to them ("As TechCrunch put it"); never a count of outlets, never words of
+    ours about the people in it. Sets each beat's `say` and its clip's name."""
+    from . import audio
+    beats = [e for e in ev if e.get("beat")]
+    if len(beats) < 2:
+        return
+    news = [e for e in beats[1:-1] if not e["official"]]
+    loudest = max(news, key=lambda e: e["outlets"]) if news else None
+    grew, more = iter(("it got bigger.", "it grew again.", "it kept growing.")), iter(("there was more.", "came the next turn.", "another part came out."))
+    for i, e in enumerate(beats):
+        when = date.fromisoformat(e["date"])
+        on = f"{when:%A} the {audio._nth(when)} of {when:%B}"
+        gap = _gap(beats[i - 1]["date"], e["date"]) if i else ""
+        if i == 0:
+            lead = f"Here's the story so far of {name}. It started on {on}."
+        elif i == len(beats) - 1:
+            lead = f"And the latest, {gap}."
+        elif e is loudest and e["outlets"] > 1:
+            lead = f"Then came the biggest moment, {gap}."
+        elif e["official"]:
+            lead = f"{gap[0].upper() + gap[1:]}, it reached the official record."
+        elif e["outlets"] > beats[i - 1]["outlets"]:
+            lead = f"{gap[0].upper() + gap[1:]}, {next(grew, 'it grew again.')}"
+        else:
+            lead = f"{gap[0].upper() + gap[1:]}, {next(more, 'there was more.')}"
+        head = e["title"].strip()
+        head = head if head.endswith((".", "?", "!")) else head + "."
+        if e["official"]:
+            body = f"{head} That's from {e['source']}."
+        elif e.get("line"):
+            body = f"{head} As {e['source']} put it: {e['line']}"
+        else:
+            body = f"{head} That's according to {e['source']}."
+        tail = " That's the story so far. Every report is on the timeline below." if i == len(beats) - 1 else ""
+        said = re.sub(r"\b[A-Z]{5,}\b", lambda m: m[0].title(), f"{lead} {body}{tail}")  # NVIDIA as a word, not letters
+        e["say"] = audio._clean(said)
+        e["clip"] = hashlib.sha1(e["say"].encode()).hexdigest()[:12] + ".mp3"
+
+
+def speak(site: Path, cache: Path, log=print) -> int:
+    """Each topic's beat clips into site/topics/<slug>/say/, read by the daily listen's offline voice (audio.speak):
+    a clip already in `cache` (kept between runs) is copied, a new one spoken once, and clips no beat uses any more
+    leave the cache. Without the voice (a quick run) only the kept ones are copied; a beat without its clip falls back
+    to the browser's voice on the page. Returns how many were spoken."""
+    from . import audio
+    voice, spoken, used = audio._voice(), 0, set()
+    if voice is None:
+        log("topic-voice: no voice (pip install piper-tts lameenc, and audio.VOICE); copying the kept clips only")
+    cache.mkdir(parents=True, exist_ok=True)
+    for f in sorted((site / "topics").glob("*/events.json")):
+        for e in json.loads(f.read_text(encoding="utf-8")):
+            if not e.get("clip"):
+                continue
+            used.add(e["clip"])
+            kept = cache / e["clip"]
+            if not kept.exists() and voice is not None:
+                kept.write_bytes(audio.speak(e["say"], voice))
+                spoken += 1
+            if kept.exists():
+                (f.parent / SAY).mkdir(exist_ok=True)
+                shutil.copyfile(kept, f.parent / SAY / e["clip"])
+    for old in cache.glob("*.mp3"):
+        if old.name not in used:
+            old.unlink()
+    return spoken
+
+
+STORY_HTML = (
+    '<section class="story" id="moments" hidden aria-label="The story so far">'
+    '<div class="st-head"><h2>The story so far</h2><div class="st-ctl">'
+    '<button type="button" class="st-prev" aria-label="Previous moment">Back</button>'
+    '<button type="button" class="st-play">Play the story</button>'
+    '<button type="button" class="st-next" aria-label="Next moment">Next</button>'
+    '<button type="button" class="st-say" aria-pressed="false">Listen</button></div></div>'
+    '<figure class="st-loud"><div class="st-chart"></div><figcaption class="st-note"></figcaption></figure>'
+    '<div class="st-stage" tabindex="0" aria-live="polite"><article class="st-card"></article>'
+    '<div class="st-bar"><span></span></div></div></section>\n')
+
+# The story told a beat at a time: a thin line of how loud it got (reports a day, or a week for long stories) with the
+# beats as dots, and a card per beat. Play steps through on its own; Listen tells it in the daily listen's offline
+# voice (tell, speak), or the browser's own if a clip is missing. The words joining the beats are fixed phrases.
+STORY_JS = r"""<script>
+window.tellStory = list => {
+  const box = document.getElementById("moments"), beats = list.filter(e => e.beat);
+  if(beats.length < 2) return;
+  const $ = s => box.querySelector(s), el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
+  const D = d => new Date(d.slice(0, 10) + "T00:00:00Z"), DAY = 864e5;
+  const fmt = (d, o) => D(d).toLocaleDateString(undefined, {...o, timeZone: "UTC"});
+  const full = d => fmt(d, {day: "numeric", month: "long", year: "numeric"}), short = d => fmt(d, {day: "numeric", month: "short"});
+  const WORDS = ["", "", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
+  const n = (k, unit) => k === 1 ? "A " + unit + " later" : (WORDS[k] || k) + " " + unit + "s later";
+  const gap = (a, b) => {
+    const d = Math.round((D(b) - D(a)) / DAY);
+    return d === 0 ? "The same day" : d === 1 ? "The next day" : d < 7 ? n(d, "day") : d < 14 ? "A week later"
+      : d < 30 ? n(Math.round(d / 7), "week") : d < 365 ? n(Math.round(d / 30.4), "month") : n(Math.round(d / 365), "year");
+  };
+  const loudest = beats.slice(1, -1).reduce((m, e) => !e.official && (!m || e.outlets > m.outlets) ? e : m, null);
+  const cue = (e, i) => {
+    const g = i ? gap(beats[i - 1].date, e.date) : "", low = g.charAt(0).toLowerCase() + g.slice(1);
+    if(!i) return "How it started";
+    if(i === beats.length - 1) return "Where it stands now, " + low;
+    if(e === loudest && e.outlets > 1) return "The biggest moment, " + low;
+    if(e.official) return "On the record, " + low;
+    return g;
+  };
+  // how loud it got: every event's outlets, by day (by week for a story over three months)
+  const t0 = +D(list[0].date), t1 = Math.max(+D(list[list.length - 1].date), t0 + DAY), weekly = (t1 - t0) / DAY > 90;
+  const bin = d => Math.floor((D(d) - t0) / DAY / (weekly ? 7 : 1)), nb = bin(new Date(t1).toISOString()) + 1;
+  const vol = new Array(nb).fill(0); list.forEach(e => vol[bin(e.date)] += e.outlets);
+  const peak = vol.indexOf(Math.max(...vol));
+  $(".st-note").textContent = "How loud it got: reports " + (weekly ? "each week" : "each day") + ", every outlet counted once. "
+    + "The dots are the moments below; tap one.";
+  let at = 0, timer = null, playing = false;
+  const chart = $(".st-chart");
+  const draw = () => {
+    const W = chart.clientWidth || 600, H = 120, L = 6, R = 6, T = 22, B = 22;
+    const x = i => L + (nb > 1 ? i / (nb - 1) : .5) * (W - L - R), top = Math.max(...vol), y = v => T + (1 - v / top) * (H - T - B);
+    const NS = "http://www.w3.org/2000/svg", mk = (tag, a) => { const e = document.createElementNS(NS, tag); for(const k in a) e.setAttribute(k, a[k]); return e; };
+    const svg = mk("svg", {width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "How many reports each " + (weekly ? "week" : "day")});
+    const pts = vol.map((v, i) => [x(i), y(v)]);
+    svg.append(mk("line", {x1: L, x2: W - R, y1: H - B, y2: H - B, class: "ax"}));
+    svg.append(mk("path", {d: "M" + pts.map(p => p.join(",")).join("L") + `L${x(nb - 1)},${H - B}L${x(0)},${H - B}Z`, class: "area"}));
+    svg.append(mk("path", {d: "M" + pts.map(p => p.join(",")).join("L"), class: "ln"}));
+    const lab = (t, xx, yy, anchor, cls) => { const e = mk("text", {x: xx, y: yy, "text-anchor": anchor, class: cls || "lb"}); e.textContent = t; svg.append(e); };
+    lab(short(list[0].date), L, H - 6, "start"); lab(short(list[list.length - 1].date), W - R, H - 6, "end");
+    const px = x(peak), pa = px < 90 ? "start" : px > W - 90 ? "end" : "middle";
+    lab(vol[peak] + " reports" + (weekly ? " in the week of " : " on ") + short(new Date(+t0 + peak * DAY * (weekly ? 7 : 1)).toISOString()), px, T - 8, pa, "lb pk");
+    beats.forEach((e, i) => {
+      const g = mk("g", {class: "bt" + (i === at ? " on" : ""), tabindex: 0, role: "button", "aria-label": cue(e, i) + ", " + full(e.date)});
+      const same = beats.filter(o => bin(o.date) === bin(e.date)), k = same.length - 1 - same.indexOf(e);
+      const cx = x(bin(e.date)) - k * 13, cy = y(vol[bin(e.date)]) + k * 4;  // beats on one day fan out to the left
+      if(i === at) g.append(mk("line", {x1: cx, x2: cx, y1: cy, y2: H - B, class: "drop"}));
+      g.append(mk("circle", {cx, cy, r: 14, class: "hit"}), mk("circle", {cx, cy, r: i === at ? 6 : 4.5, class: "dot"}));
+      g.addEventListener("click", () => { stop(); go(i); });
+      g.addEventListener("keydown", k => { if(k.key === "Enter" || k.key === " ") { k.preventDefault(); stop(); go(i); } });
+      svg.append(g);
+    });
+    chart.replaceChildren(svg);
+  };
+  // the card
+  const logo = e => {
+    if(!e.logo) return null;
+    const s = el("span", "logo"); s.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path></path></svg>';
+    const p = s.querySelector("path"); p.setAttribute("fill", "#" + e.logo.hex.replace("#", "")); p.setAttribute("d", e.logo.path);
+    return s;
+  };
+  const card = $(".st-card");
+  const show = () => {
+    const e = beats[at], c = el("article", "st-card");
+    const top = el("p", "st-cue"); top.append(el("span", "", cue(e, at)), el("span", "st-when", full(e.date)));
+    c.append(top, el("h3", "", e.title));
+    if(e.line) c.append(el("p", "st-line", e.line));
+    const src = el("div", "st-src"), lg = logo(e); if(lg) src.append(lg);
+    src.append(el("span", "", (e.official ? "From " : "Reported by ") + e.source + (e.outlets > 1 ? " and " + (e.outlets - 1) + " more outlet" + (e.outlets > 2 ? "s" : "") : "")));
+    const a = el("a", "st-read", "Read the report"); a.href = e.url; a.rel = "noopener"; a.target = "_blank";
+    src.append(a); c.append(src);
+    const old = box.querySelector(".st-card"); old.replaceWith(c);
+    $(".st-prev").disabled = at === 0; $(".st-next").disabled = at === beats.length - 1;
+    draw();
+  };
+  const go = i => { at = Math.max(0, Math.min(beats.length - 1, i)); show(); };
+  // Play and Listen
+  const bar = $(".st-bar span"), play = $(".st-play"), say = $(".st-say");
+  const synth = window.speechSynthesis;
+  const voice = () => { const v = (synth && synth.getVoices() || []).filter(v => v.localService && /^en/i.test(v.lang));
+    return v.find(v => /en-GB/i.test(v.lang)) || v[0] || null; };
+  let listen = false;
+  let clip = null;
+  const stop = () => { playing = false; clearTimeout(timer); if(synth) synth.cancel(); if(clip) clip.pause(); bar.style.transition = "none"; bar.style.width = "0";
+    play.textContent = at === beats.length - 1 ? "Play again" : "Play the story"; play.setAttribute("aria-pressed", "false"); };
+  const step = () => {
+    if(!playing) return;
+    const next = () => { if(!playing) return; if(at === beats.length - 1) return stop(); go(at + 1); step(); };
+    bar.style.transition = "none"; bar.style.width = "0"; void bar.offsetWidth;
+    if(listen) {
+      const e = beats[at], done = () => { timer = setTimeout(next, 600); };
+      let fell = false;
+      const browser = () => {  // no clip (a build without the voice): the browser's own, same words
+        if(fell) return; fell = true;
+        if(!synth) return done();
+        const u = new SpeechSynthesisUtterance(e.say || e.title), v = voice(); if(v) u.voice = v;
+        u.onend = done; synth.cancel(); synth.speak(u);
+      };
+      if(clip) clip.pause();
+      if(!e.clip) return browser();
+      clip = new Audio(document.getElementById("timeline").dataset.src.replace(/events\.json$/, "say/") + e.clip); clip.onended = done; clip.onerror = browser;
+      clip.ontimeupdate = () => { if(clip.duration) bar.style.width = (100 * clip.currentTime / clip.duration) + "%"; };
+      clip.play().catch(browser);
+    } else {
+      const ms = 6500 + (beats[at].line ? 2500 : 0);
+      bar.style.transition = `width ${ms}ms linear`; bar.style.width = "100%"; timer = setTimeout(next, ms);
+    }
+  };
+  play.addEventListener("click", () => {
+    if(playing) return stop();
+    if(at === beats.length - 1) go(0);
+    playing = true; play.textContent = "Pause"; play.setAttribute("aria-pressed", "true"); step();
+  });
+  say.addEventListener("click", () => {
+    listen = !listen; say.setAttribute("aria-pressed", String(listen)); say.textContent = listen ? "Listening" : "Listen";
+    if(playing) { clearTimeout(timer); if(synth) synth.cancel(); if(clip) clip.pause(); step(); }
+    else if(listen) { playing = true; play.textContent = "Pause"; play.setAttribute("aria-pressed", "true"); step(); }
+  });
+  $(".st-prev").addEventListener("click", () => { stop(); go(at - 1); });
+  $(".st-next").addEventListener("click", () => { stop(); go(at + 1); });
+  const stage = $(".st-stage");
+  stage.addEventListener("keydown", k => { if(k.key === "ArrowLeft") { stop(); go(at - 1); } if(k.key === "ArrowRight") { stop(); go(at + 1); } });
+  let sx = null;
+  stage.addEventListener("pointerdown", p => { sx = p.clientX; });
+  stage.addEventListener("pointerup", p => { if(sx == null) return; const dx = p.clientX - sx; sx = null;
+    if(Math.abs(dx) > 45) { stop(); go(at + (dx < 0 ? 1 : -1)); } });
+  box.hidden = false;
+  show();
+  new ResizeObserver(draw).observe(chart);
+};
 </script>"""
 
 
@@ -951,6 +1194,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         done = latest < quiet
         p = path(slug)
         (out / p).mkdir(parents=True, exist_ok=True)
+        tell(t["name"], ev)
         (out / p / "events.json").write_text(json.dumps(ev, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
         badges = _badges(slug, ev)
         status = '<span class="done">Concluded</span>' if done else ""
@@ -958,7 +1202,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         body = (f'<div class="tp">\n<div class="topic-hero">{_photo(slug)}<div class="over"><span class="kind">'
                 f'{escape(t["kind"])}</span>{status}<h1>{escape(t["name"])}</h1><p class="what">{escape(t["what"])}</p>'
                 f'<div class="badges">{badges}</div></div></div>\n'
-                '<section class="moments" id="moments" hidden><h2>Key moments</h2><ul class="mlist"></ul></section>\n'
+                + STORY_HTML +
                 '<h2>How it unfolded</h2>\n'
                 + ('<p class="legend"><span class="lg official">Official record</span>'
                    '<span class="lg news">In the news</span></p>\n' if any(e["official"] for e in ev) else "")
@@ -966,7 +1210,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 + (f'<ul class="ssr-list">{seo.items(seo.newest(ev, 40))}</ul>' if ev else '<p class="meta">Loading…</p>')
                 + '</div>\n'  # its newest events in the HTML for search engines (seo.py); the timeline replaces them
                 + (f'<p class="related">Related: {related}</p>\n' if related else "")
-                + f'</div>\n{TIMELINE_JS}')
+                + f'</div>\n{STORY_JS}\n{TIMELINE_JS}')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": t["name"],
                 "description": t["what"], "url": f"{rss.SITE}{p}"}
         (out / p / "index.html").write_text(

@@ -202,6 +202,10 @@ def main():
                                        "settings with DIGEST_LIST_KEY, never who they are)")
     li.add_argument("--dir", default="site/listen", help="the site's listen folder, kept between runs")
     li.add_argument("--day", help="YYYY-MM-DD (default: yesterday)")
+    tv = sub.add_parser("topic-voice", help="Follow the story's spoken beats into the built site (offline voice, as "
+                                            "listen); clips kept in --cache are copied, new ones spoken once")
+    tv.add_argument("--site", default="site", help="the built site")
+    tv.add_argument("--cache", default="topic-clips", help="spoken clips kept between runs")
     mo = sub.add_parser("monthly", help="the monthly issues' summaries still due (offline open-source model)")
     mo.add_argument("--due", action="store_true", help="only say whether one is due: exit 0 if so, 1 if not")
     mo.add_argument("--limit", type=int, default=4, help="at most this many months this run (newest first)")
@@ -796,6 +800,10 @@ def main():
         setups.pop("everyone", None)  # always made
         spoken = audio.make(cards, day, list(setups.values()), Path(a.dir))
         print(f"listen: {day}, everyone + {len(setups)} reader setups, {spoken} clip(s) spoken this run")
+    elif a.cmd == "topic-voice":
+        from pathlib import Path
+        from . import topics
+        print(f"topic-voice: {topics.speak(Path(a.site), Path(a.cache))} clip(s) spoken this run")
     elif a.cmd == "prune":
         print(f"Deleted {store.prune(store.connect(a.db), a.keep_days)} old stories.")
 

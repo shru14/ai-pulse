@@ -238,6 +238,58 @@ STYLE = """
 .cp .tp .mlist a{font-weight:400;text-decoration:none}
 .cp .tp .mlist a:hover{color:#0072B2}
 .cp .tp .mlist .when{margin:0;font:400 13px var(--body);letter-spacing:0;color:var(--muted)}
+/* The story so far: a thin line of how loud it got, then one beat at a time as a card (topics.STORY_JS) */
+.cp .tp .story{margin-top:28px;background:color-mix(in srgb,var(--ink) 4%,var(--bg));border-radius:10px;padding:18px 20px 20px;--acc:#0072B2}
+.cp .tp .st-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
+.cp .tp .story h2{margin:0;font:400 22px/1.2 var(--display);border:0;padding:0}
+.cp .tp .st-ctl{display:flex;flex-wrap:wrap;gap:8px}
+.cp .tp .st-ctl button{font:500 14px/1 var(--body);padding:9px 14px;border-radius:8px;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);background:var(--bg);color:var(--ink);cursor:pointer}
+.cp .tp .st-ctl button:hover:not(:disabled){border-color:var(--ink)}
+.cp .tp .st-ctl button:disabled{opacity:.4;cursor:default}
+.cp .tp .st-ctl .st-play{background:var(--ink);color:var(--bg);border-color:var(--ink);min-width:118px}
+.cp .tp .st-ctl .st-say[aria-pressed=true]{background:color-mix(in srgb,var(--acc) 14%,var(--bg));border-color:var(--acc)}
+.cp .tp .st-loud{margin:14px 0 0}
+.cp .tp .st-chart{height:120px}
+.cp .tp .st-chart svg{display:block;overflow:visible}
+.cp .tp .st-chart .ax{stroke:color-mix(in srgb,var(--ink) 25%,transparent);stroke-width:1}
+.cp .tp .st-chart .area{fill:color-mix(in srgb,var(--acc) 10%,transparent)}
+.cp .tp .st-chart .ln{fill:none;stroke:var(--acc);stroke-width:1.5;stroke-linejoin:round}
+.cp .tp .st-chart .lb{font:400 12px var(--body);fill:var(--muted)}
+.cp .tp .st-chart .lb.pk{fill:var(--ink)}
+.cp .tp .st-chart .bt{cursor:pointer;outline:none}
+.cp .tp .st-chart .hit{fill:transparent}
+.cp .tp .st-chart .dot{fill:var(--bg);stroke:var(--ink);stroke-width:1.5}
+.cp .tp .st-chart .bt:hover .dot,.cp .tp .st-chart .bt:focus-visible .dot{stroke:var(--acc);stroke-width:2.5}
+.cp .tp .st-chart .bt.on .dot{fill:var(--acc);stroke:var(--acc)}
+.cp .tp .st-chart .drop{stroke:var(--acc);stroke-width:1;stroke-dasharray:2 3}
+.cp .tp .st-note{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.cp .tp .st-stage{margin-top:14px;background:var(--bg);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:10px;padding:18px 20px 0;overflow:hidden;touch-action:pan-y;outline:none}
+.cp .tp .st-stage:focus-visible{border-color:var(--acc)}
+.cp .tp .st-card{min-height:150px;padding-bottom:16px;animation:st-in .32s ease-out}
+@keyframes st-in{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.cp .tp .st-cue{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin:0 0 8px;font:500 14px var(--body);color:var(--acc)}
+.cp .tp .st-cue .st-when{font-weight:400;color:var(--muted);font-size:13px}
+.cp .tp .st-card h3{margin:0;font:400 24px/1.3 var(--body);letter-spacing:-.01em;color:var(--ink)}
+.cp .tp .st-line{margin:10px 0 0;font-size:16px;line-height:1.5;color:var(--ink)}
+.cp .tp .st-src{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:14px;font-size:14px;color:var(--muted)}
+.cp .tp .st-src .logo{display:inline-flex;width:18px;height:18px}
+.cp .tp .st-src .logo svg{width:18px;height:18px}
+.cp .tp .st-read{margin-left:auto;font:500 14px/1 var(--body);padding:9px 14px;border-radius:8px;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);color:var(--ink);text-decoration:none}
+.cp .tp .st-read:hover{border-color:var(--ink)}
+.cp .tp .st-bar{height:3px;margin:0 -20px;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.cp .tp .st-bar span{display:block;height:100%;width:0;background:var(--acc)}
+:root[data-theme="dark"] .cp .tp .story{--acc:#56B4E9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cp .tp .story{--acc:#56B4E9}}
+@media (prefers-reduced-motion:reduce){.cp .tp .st-card{animation:none}}
+@media (max-width:640px){
+  .cp .tp .story{padding:16px 14px 16px}
+  .cp .tp .st-stage{padding:16px 14px 0}
+  .cp .tp .st-bar{margin:0 -14px}
+  .cp .tp .st-card h3{font-size:20px}
+  .cp .tp .st-ctl{width:100%}
+  .cp .tp .st-ctl button{flex:1 1 auto;padding:10px 8px}
+  .cp .tp .st-read{margin-left:0}
+}
 /* headings and legend */
 .cp .tp > h2:not(.mi *){margin-top:38px;border-bottom:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}  /* beats the poster rule below */
 .cp .tp .legend .lg::before{width:9px;height:9px;border:0;border-radius:50%;background:#56B4E9}
