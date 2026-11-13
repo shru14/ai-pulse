@@ -1092,6 +1092,30 @@ a.subscribe-btn{text-decoration:none}
   .cp .rm-t td:nth-child(4)::before{content:"Replace with ";color:var(--muted);font:500 12.5px var(--body)}
   .cp .rm-t td:nth-child(5)::before{content:"Announced ";color:var(--muted);font:500 12.5px var(--body)}
   .cp .rm-t td.rm-d small{display:inline;margin-left:8px}}
+/* Models being retired: calm boxes, rounded tag buttons, a small orange "in N days" tag instead of row fill */
+.cp .rm:not(.cs) .rm-big{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:12px}
+.cp .rm:not(.cs) .rm-big span{font-weight:400;color:var(--muted)}
+.cp .rm:not(.cs) .sh-filters{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:12px;padding:14px 16px 12px}
+.cp .rm:not(.cs) .sh-tabs{gap:8px;margin:0 0 10px}
+.cp .rm:not(.cs) .rm-filters .sh-tabs + .sh-tabs{margin-top:0}
+.cp .rm:not(.cs) .sh-tab{padding:5px 12px;border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:8px;font-weight:500;color:var(--ink)}
+.cp .rm:not(.cs) .sh-tab:hover{border-color:var(--ink)}
+.cp .rm:not(.cs) .sh-tab b{font-weight:400}
+.cp .rm:not(.cs) .sh-tab[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cp .rm:not(.cs) .sh-tab[aria-pressed=true] b{color:var(--bg)}
+.cp .rm:not(.cs) .sh-q{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:8px}
+.cp .rm:not(.cs) .sh-count,.cp .rm:not(.cs) .sh-count b{font-weight:400}
+.cp .rm:not(.cs) .rm-part{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:12px;padding:16px 18px;margin:18px 0}
+.cp .rm:not(.cs) .rm-part h2{margin-top:0}
+.cp .rm:not(.cs) .rm-t tr.rm-soon td{background:none}
+.cp .rm:not(.cs) .rm-t td.rm-d{font-weight:500}
+.cp .rm:not(.cs) .rm-t tr.rm-soon td.rm-d small{display:block;width:fit-content;margin-top:5px;padding:1px 7px;border-radius:6px;background:#E69F00;color:#000;font-weight:500}
+.cp .rm:not(.cs) .rm-t code{font-weight:500}
+@media (min-width:641px){.cp .rm:not(.cs) .rm-t tr.rm-soon td.rm-same small{display:none}}
+@media (max-width:640px){.cp .rm:not(.cs) .rm-t tr.rm-soon td.rm-d small{display:inline-block;margin:0 0 0 8px}}
+.cp .ft .rm:not(.cs) .rm-t td.rm-lab a,.cp .rm:not(.cs).ft .rm-t td.rm-lab a{border-width:1px;border-radius:6px;font-weight:500}
+@media (max-width:640px){.cp .rm:not(.cs) .rm-part{padding:12px}.cp .rm:not(.cs) .rm-wrap{border-bottom:0}
+  .cp .rm:not(.cs) .sh-filters{padding:10px}}
 /* AI consultations: Models being retired's table, without its phone labels; an outcome's link under the title */
 @media (max-width:640px){.cp .cs-t td:nth-child(4)::before{content:none}}
 .cp .ft .cs-t a.cs-out{font-size:13px;color:var(--muted)}
