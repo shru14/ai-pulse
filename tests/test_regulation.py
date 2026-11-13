@@ -773,6 +773,34 @@ def test_harm_to_rule():
     assert [r["before"] for r in found["companions"]["rules"]] == [2, 6]
 
 
+def test_harm_to_rule_page_draws_each_subjects_harms_and_rules(tmp_path):
+    from datetime import date
+    from aipulse import harms, incidents
+    harm = lambda i, day, title: {"id": i, "date": day, "title": title, "url": f"https://h/{i}", "source": incidents.SOURCE,
+                                  "category": "news", "action": incidents.INCIDENT}
+    rec = lambda i, day, title, place: {"id": i, "date": day, "title": title, "url": f"https://r/{i}", "source": "congress.gov",
+                                        "category": "regulation", "jurisdictions": [place], "action": "proposal"}
+    cards = [harm(f"h{i}", f"2024-0{i}-10", "Character.ai Chatbot Reportedly Targeted Minors") for i in range(1, 7)]
+    cards += [rec("a", "2024-03-01", "H.R. 1: CHATBOT Act", "US"), rec("b", "2024-03-05", "S. 2: Chatbot Safety Act", "US"),
+              rec("e", "2025-02-01", "Chatbot <img src=x onerror=alert(1)> rules", "EU"),
+              rec("c", "2022-05-01", "H.R. 3: An AI chatbot bill", "US")]  # before 2023: left out
+    assert harms.build(store.connect(tmp_path / "t.db"), cards, tmp_path, date(2026, 11, 13)) == [harms.PATH]
+    page = (tmp_path / harms.PATH / "index.html").read_text(encoding="utf-8")
+    # one panel per subject, opening its details below; one dot per rule; the line of harms so far
+    assert page.count('<a class="hp" href="harm-to-rule/#companions">') == 1 and page.count('class="hp"') == 1
+    assert page.count('r="6.5">') == 3 and '<path class="cum"' in page  # the legend's circles are r="6"
+    assert '<details class="er hr" id="companions">' in page
+    # two US rules days apart share one label; the axis runs to a round number above the 6 harms
+    assert ">US ×2</text>" in page and ">EU</text>" in page and '>8</text>' in page
+    # the figures in its opening line
+    assert "logged 6 harms on this subject since January 2023" in page and "3 rules on it appeared on the tracker, in 2 places" in page
+    assert "none adopted yet" in page
+    # the latest five harms, newest first; nothing from before 2023; titles escaped
+    assert page.count('href="https://h/') == 5 and page.index("https://h/h6") < page.index("https://h/h2")
+    assert "An AI chatbot bill" not in page
+    assert "<img src=x" not in page and "&lt;img src=x onerror=alert(1)&gt;" in page
+
+
 def test_ai_consultations_reads_each_list_keeps_titles_naming_ai_and_builds(tmp_path, monkeypatch):
     import json
     from datetime import date

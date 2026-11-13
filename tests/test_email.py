@@ -940,3 +940,69 @@ def test_every_meme_template_can_be_made_from_the_days_stories():
     assert set(memes.ROTATION) <= made, set(memes.ROTATION) - made
     assert memes.launch_of({"title": "Kakao launches AI Model for banks"}) is None
     assert memes.launch_of({"title": "Baidu releases ERNIE 5.5 Flash: a faster model"}) == ("Baidu", "ERNIE 5.5 Flash")
+
+
+def _poster_day(day="2026-11-11"):
+    """A day of stories in all six streams; more outlets means a bigger story."""
+    def card(i, cat, title, outlets, d=day):
+        return {"id": f"p{i}-{d}", "title": title, "summary": "What happened, in one plain line.", "url": f"https://ex.com/{d}/{i}",
+                "source": f"Outlet {i}", "category": cat, "date": d, "added_at": d + "T08:00:00+00:00", "tags": [],
+                "also": [{"title": title, "source": f"Other {i}-{k}", "url": f"https://o{k}.com/{d}/{i}", "date": d}
+                         for k in range(outlets)]}
+    return [card(1, "tool", "OpenAI releases a new reasoning model for coding", 9),
+            card(2, "news", "Nvidia reports record data centre sales", 5),
+            card(3, "research", "A new benchmark tests coding agents on real repositories", 2),
+            card(4, "regulation", "EU adopts guidance for general-purpose AI models", 4),
+            card(5, "policy", "Senators question chatbot makers on teen safety", 3),
+            card(6, "infra", "Ohio approves gas turbines for a data centre", 3),
+            card(7, "news", "Startup <script>alert(1)</script> raises $50M for AI agents", 6),
+            card(8, "news", "Figure shows a new humanoid robot for warehouses", 1)]
+
+
+def test_the_poster_email_leads_with_the_biggest_story_and_shows_every_stream(monkeypatch):
+    from datetime import date
+    from aipulse import digest, rss
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    cards, streams = _poster_day(), ["releases", "news", "research", "regulation", "policy", "infra"]
+    subject, text, html = digest.build(cards, streams, date(2026, 11, 11), "https://example.com/u/abc", layout="poster")
+    assert subject == "Daily Digest: OpenAI releases a new reasoning model"  # the lead, in a few of its own words
+    # the most-reported story leads, ahead of the top news
+    assert text.index("OpenAI releases a new reasoning model") < text.index("TOP NEWS")
+    # the firehose counts every chosen stream's stories, and they add up to the day
+    for n in streams:
+        assert f"  {rss.FEEDS[n][1]}: " in text, n
+    assert f"All {len(cards)} stories of Wednesday" in text
+    # a headline is outside text: never live HTML in the email
+    assert "<script>alert(1)" not in html and "&lt;script&gt;alert(1)&lt;/script&gt;" in html
+    # a reader's own links, to change their choices or leave
+    assert "Unsubscribe: https://example.com/u/abc" in text and 'href="https://example.com/u/abc"' in html
+
+
+def test_the_poster_email_puts_a_readers_pick_first_and_the_web_copy_has_no_reader_links(monkeypatch):
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    cards, streams = _poster_day(), ["releases", "news", "research", "regulation", "policy", "infra"]
+    _, text, html = digest.build(cards, streams, date(2026, 11, 11), "https://example.com/u/abc", layout="poster",
+                                 prefs={"words": ["humanoid"]})
+    # the reader asked for humanoids: that story leads, marked as theirs, though one outlet ran it
+    assert text.index("Figure shows a new humanoid robot") < text.index("OpenAI releases a new reasoning model")
+    assert "HOT TODAY · YOUR CHOICE" in text
+    _, text, html = digest.build(cards, streams, date(2026, 11, 11), layout="poster")  # the web page: nobody's links
+    assert "/u/abc" not in text + html and "https://projectaipulse.com/#subscribe" in html
+
+
+def test_sundays_poster_email_carries_the_week(monkeypatch):
+    """Sunday's email covers Saturday (digest.WEEKLY) and leads with the week, Monday to Saturday."""
+    from datetime import date
+    from aipulse import digest
+    monkeypatch.setenv("DIGEST_EMAIL", "digest@example.com")
+    week = [c for d in ("2026-11-02", "2026-11-04", "2026-11-06") for c in _poster_day(d)]
+    cards = week + _poster_day("2026-11-07")
+    subject, text, html = digest.build(cards, ["releases", "news", "policy"], date(2026, 11, 7), layout="poster")
+    assert subject.startswith("Weekly Digest: ")
+    assert "THE WEEK IN AI, " in text and "STORY OF THE WEEK" in text
+    _, text, _ = digest.build(cards, ["releases", "news", "policy"], date(2026, 11, 4), layout="poster")
+    assert "THE WEEK IN AI" not in text  # a weekday: no week
+    # nothing on the Saturday itself: the week still goes out
+    assert digest.build(week, ["releases", "news", "policy"], date(2026, 11, 7), layout="poster") is not None
