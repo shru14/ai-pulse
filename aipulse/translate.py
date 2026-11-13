@@ -11,6 +11,7 @@ records keep their original language and everything else works as before.
 
 from __future__ import annotations
 
+import logging
 import hashlib
 import json
 import io
@@ -20,6 +21,8 @@ import zipfile
 from pathlib import Path
 
 from . import feeds
+
+logger = logging.getLogger(__name__)
 
 MODELS = {"pt": "https://argos-net.com/v1/translate-pt_en-1_9.argosmodel",
           "zh": "https://argos-net.com/v1/translate-zh_en-1_9.argosmodel",
@@ -89,7 +92,8 @@ def _installed(lang: str) -> Path | None:
     for meta in MODEL_DIR.glob("*/metadata.json"):
         try:
             m = json.loads(meta.read_text(encoding="utf-8"))
-        except Exception:
+        except (OSError, ValueError) as exc:  # a half-unpacked or damaged model folder
+            logger.debug("model metadata not read: %s: %s", meta, exc)
             continue
         if (m.get("from_code") == lang and m.get("to_code") == "en" and (meta.parent / "model" / "model.bin").exists()
                 and (meta.parent / "sentencepiece.model").exists()):  # a package with another tokenizer can't be used
@@ -117,7 +121,8 @@ def _model(lang: str):
     if not folder:
         try:
             data = feeds.fetch(url, timeout=300)
-        except Exception:
+        except Exception as exc:  # that language stays untranslated this run; tried again next run
+            logger.warning("%s translation model not downloaded: %s", lang, exc)
             _loaded[lang] = None
             return None
         MODEL_DIR.mkdir(parents=True, exist_ok=True)

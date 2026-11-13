@@ -37,6 +37,8 @@ def main():
     p = argparse.ArgumentParser(prog="aipulse", description="Track AI releases, news and policy.")
     p.add_argument("--db", default="aipulse.db", help="SQLite database file (default: aipulse.db)")
     p.add_argument("--log", help="append all output to this file (for scheduled or windowless runs)")
+    p.add_argument("--verbose", action="store_true", help="also show each page, paper or logo that failed to load "
+                                                         "and was skipped until the next run")
     sub = p.add_subparsers(dest="cmd")
     p.set_defaults(cmd="run", host="127.0.0.1", port=8000, every_hours=6)
 
@@ -219,7 +221,7 @@ def main():
     if a.log:
         sys.stdout = sys.stderr = open(a.log, "a", encoding="utf-8", buffering=1)
     # warnings and progress from inside the modules (logging.getLogger(__name__)); the commands' own results stay print()
-    logging.basicConfig(level=logging.INFO, stream=sys.stderr, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(level=logging.DEBUG if a.verbose else logging.INFO, stream=sys.stderr, format="%(levelname)s %(name)s: %(message)s")
 
     if a.cmd == "collect":
         print(f"[{datetime.now():%Y-%m-%d %H:%M}] Collecting")
@@ -532,67 +534,6 @@ def main():
         print(f"{len(jobs.CHECKED)} checked, {len(jobs.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-    elif a.cmd == "consultations":
-        # the daily job's to-check list: our stories of governments asking the public about AI, and the official lists'
-        # consultations that name AI only in their summary (read live)
-        from . import consultations as cs
-        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
-        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
-        todo = cs.candidates(found, since)
-        print(f"{len(cs.ADDED)} added by hand, {len(cs.LEFT_OUT)} left out. Stories to check after "
-              f"{max(since, cs.CHECKED_TO)} ({len(todo)}):")
-        for c in todo:
-            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-        try:
-            more = cs.summary_only()
-            print(f"Official list entries naming AI only in their summary ({len(more)}):")
-            for r in more:
-                print(f"  {r['place']}, closes {r['closes']}, {r['who']}: {r['title']}\n    {r['url']}\n    "
-                      f"Summary: {r['summary'][:600]}")
-        except Exception as e:
-            print(f"Official lists not read ({e})")
-    elif a.cmd == "govai":
-        # the daily job's to-check list for What governments use AI for: stories of a government's list of its own AI,
-        # and each hand-kept list's page read again (live)
-        from . import gov_ai
-        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
-        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
-        todo = gov_ai.candidates(found, since)
-        print(f"{len(gov_ai.OTHERS)} lists kept by hand, {len(gov_ai.RECHECK)} to recheck, {len(gov_ai.LEFT_OUT)} left "
-              f"out. Stories to check after {max(since, gov_ai.CHECKED_TO)} ({len(todo)}):")
-        for c in todo:
-            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
-        print("Hand-kept lists read again:")
-        for place, shown, now in gov_ai.recheck():
-            print(f"  {place}: shown '{shown}'; {now}")
-    elif a.cmd == "tests-beaten":
-        from . import new_tests
-        found = new_tests.beat_candidates(a.since or new_tests.BEATS_CHECKED_TO)
-        print(f"{len(new_tests.BEATEN)} beaten. Later papers naming a test, after "
-              f"{a.since or new_tests.BEATS_CHECKED_TO} ({len(found)}):")
-        for c in found:
-            print(f"  {c['test']}: {c['date']} {c['title']}\n    {c['url']}")
-            for x in c["said"]:
-                print(f"      > {x}")
-    elif a.cmd == "topics":
-        from . import topics
-        found = site_data(a.data) if a.data else store.cards(store.connect(a.db), limit=10**9)[0]
-        since = (date.today() - timedelta(days=a.days)).isoformat() if a.days else ""
-        alike = topics.near(found, since)  # the local story model's finds; {} without the model
-        todo = topics.candidates(found, since, alike)
-        print(f"{sum(map(len, topics.ADDED.values()))} added, {len(topics.LEFT_OUT)} left out. To check from {since or 'the start'} ({len(todo)}):")
-        for c in todo:
-            print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}\n    Topics: {', '.join(c['for'])}\n    {c.get('summary') or c.get('s') or ''}")
-            for slug, title in c["like"].items():
-                print(f"    Reads like {slug}'s: {title}")
-    elif a.cmd == "ready-check":
-        from . import ready_tools
-        if a.page:
-            print(ready_tools.read_page(a.page))
-        elif a.accept:
-            ready_tools.accept(a.seen)
-        else:
-            ready_tools.check(a.seen)
     elif a.cmd == "consultations":
         # the daily job's to-check list: our stories of governments asking the public about AI, and the official lists'
         # consultations that name AI only in their summary (read live)

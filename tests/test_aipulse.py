@@ -896,6 +896,34 @@ def test_standards_have_one_page_without_a_date(tmp_path):
     assert "<url><loc>https://projectaipulse.com/standards/</loc></url>" in sitemap([], date(2026, 10, 6), ["standards/"])
 
 
+def test_static_build_escapes_hostile_titles_on_every_page(tmp_path, monkeypatch):
+    """Titles are outside text, and the pages are built from strings, so escaping is by hand: whatever a title holds,
+    no built page may carry it as live HTML or let it end a <script> early. Collecting already strips tags from feed
+    titles; this puts them straight in the database, as an official record or a hand-kept list might, to check the
+    pages' own escaping."""
+    from aipulse import consultations
+    from aipulse.static import build
+    monkeypatch.setattr(consultations, "ADDED", [])
+    hostile = ['<img src=x onerror=alert(1)>', '</script><script>alert(2)</script>']
+    conn = store.connect(tmp_path / "t.db")
+    collect(conn, [{"name": "Fixture", "url": "rss", "category": "news"}], max_age_days=100000,
+            fetcher=lambda u: (FIX / "sample_rss.xml").read_bytes(), log=lambda *_: None)
+    for url, bad in zip(("https://example.com/openai-open-model", "https://example.com/eu-ai-act"), hostile):
+        assert conn.execute("UPDATE items SET title = title || ' ' || ? WHERE url = ?", (bad, url)).rowcount == 1
+    conn.commit()
+    assert sum(any(b in c["title"] for b in hostile) for c in store.cards(conn, limit=100)[0]) == 2
+    build(conn, tmp_path / "site")
+    pages = list((tmp_path / "site").rglob("*.html"))
+    assert len(pages) > 20
+    for page in pages:
+        text = page.read_text(encoding="utf-8")
+        where = page.relative_to(tmp_path)
+        # anywhere, even in a <script>'s data: no title may close the script and start its own
+        assert "</script><script>alert(2)" not in text, where
+        # outside scripts (whose content the browser never reads as HTML): no title's tag as a real tag
+        assert hostile[0] not in re.sub(r"<script[ >].*?</script>", "", text, flags=re.S | re.I), where
+
+
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
     import json
     from datetime import date
