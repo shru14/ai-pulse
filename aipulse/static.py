@@ -14,6 +14,7 @@ import re
 from html import escape
 import shutil
 import unicodedata
+from collections.abc import Sequence
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -56,7 +57,7 @@ def robots_txt() -> str:
 UNDATED = ("standards/", *kind_pages.paths())  # pages without a date of their own: they change only when an entry is added
 
 
-def sitemap(days: list[date], today: date, pages: list[str] = ()) -> str:
+def sitemap(days: list[date], today: date, pages: Sequence[str] = ()) -> str:
     """sitemap.xml: the pages search engines should index: the front page, the streams', the tracker's pages by
     country and the glossary's (`pages`, paths under the site) and each day's full edition. A glossary word's page
     has no date: its meaning, written by hand, rarely changes; nor has a page in UNDATED."""
@@ -82,7 +83,7 @@ STREAM_PAGES = {
 }
 
 
-def stream_page(page: str, cat: str, cards: list[dict] = ()) -> str:
+def stream_page(page: str, cat: str, cards: Sequence[dict] = ()) -> str:
     """The front page as `cat`'s own page: its title, description and address, its heading already written, and
     its newest headlines in the HTML for search engines (seo.py), which the page's script replaces once loaded."""
     path, name, title, desc = STREAM_PAGES[cat]
@@ -156,7 +157,9 @@ def first_view(cards: list[dict], today: date, cat: str) -> dict:
     out = {"items": [{k: v for k, v in c.items() if k != "s"} for c in mine[:FIRST_PER_PAGE]], "page": 1,
            "perPage": FIRST_PER_PAGE, "total": len(mine), "hasMore": len(mine) > FIRST_PER_PAGE, "counts": counts}
     if cat == "regulation":
-        national, laws, n = {}, {}, 0
+        national: dict[str, int] = {}
+        laws: dict[str, int] = {}
+        n = 0
         for c in base:
             if c["category"] == "regulation" and c.get("action") != "expert":
                 n += 1
@@ -298,8 +301,10 @@ def web_edition(html: str, path: str, description: str, title: str | None = None
     one address (daily/latest.html points to the dated page), the link preview, and its opening line as the heading."""
     url = f"{rss.SITE}{path}"
     if title:
-        html = re.sub(r"<title>.*?</title>", lambda m: f"<title>{escape(title)}</title>", html, count=1)
-    title = re.search(r"<title>(.*?)</title>", html).group(1)
+        new = f"<title>{escape(title)}</title>"
+        html = re.sub(r"<title>.*?</title>", lambda m: new, html, count=1)
+    found = re.search(r"<title>(.*?)</title>", html)
+    title = found.group(1) if found else escape(description)  # an email without a title: its description, not a crash
     head = (f'<meta name="description" content="{escape(description)}"><link rel="canonical" href="{url}">'
             f'<meta property="og:title" content="{title}"><meta property="og:description" content="{escape(description)}">'
             f'<meta property="og:url" content="{url}"><meta property="og:image" content="{rss.SITE}og-pulse.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
@@ -403,10 +408,10 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     published = []
     for back in range((today - DAILY_FROM).days, 0, -1):
         day = today - timedelta(days=back)
-        page = digest.build(cards, list(rss.FEEDS), day, layout="full", web=True)
-        if page:
+        email = digest.build(cards, list(rss.FEEDS), day, layout="full", web=True)
+        if email:
             published.append(day)
-            html = web_edition(page[2], f"daily/{day.isoformat()}.html", edition_description(page[2], day))
+            html = web_edition(email[2], f"daily/{day.isoformat()}.html", edition_description(email[2], day))
             for name in (day.isoformat(), "latest"):
                 (out / "daily" / f"{name}.html").write_text(html, encoding="utf-8")
             lanes = poster.lanes_html(cards, day)  # the day's lanes, which the poster email's Pick your lane rows open
@@ -468,9 +473,11 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     memegen.prepare(conn, cards, today)  # the past 7 days' Gemini meme, if the "memes" step made one (no call here)
     meme = memes.payload(cards, today)
     (out / "meme.json").write_text(json.dumps(meme, separators=(",", ":")), encoding="utf-8")
-    if meme["image"]:  # the finished picture: the template with the past 7 days' captions written on
+    made = memes.of_the_7_days(cards, date.fromisoformat(meme["to"])) if meme["image"] else None
+    jpeg = memes.render(made) if made else None
+    if jpeg:  # the finished picture: the template with the past 7 days' captions written on
         (out / "memes").mkdir(exist_ok=True)
-        (out / meme["image"]).write_bytes(memes.render(memes.of_the_7_days(cards, date.fromisoformat(meme["to"]))))
+        (out / meme["image"]).write_bytes(jpeg)
     from . import social, today as board
     (out / "today.json").write_text(json.dumps(board.payload(conn, recent, today), separators=(",", ":")), encoding="utf-8")
     (out / "social.json").write_text(json.dumps(social.payload(conn), separators=(",", ":")), encoding="utf-8")
@@ -554,15 +561,15 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     from . import model_economy
     places += model_economy.build(conn, cards, out, today)  # launch prices against the model before, and shutdown warning (Releases' feature)
     if COMPASS:  # the paid product and what's built from it, from the private repo (aipulse/__init__.py)
-        from . import sectors
+        from . import sectors  # type: ignore[attr-defined]  # private repo, joined to the package at run time
         places += sectors.build(conn, cards, out, today)  # AI by industry: finance's uses (Pro: no sitemap)
-        from . import planner
-        from . import adoption, planner_example, planner_flow
+        from . import planner  # type: ignore[attr-defined]  # private repo, joined to the package at run time
+        from . import adoption, planner_example, planner_flow  # type: ignore[attr-defined]  # private repo, joined to the package at run time
         places += planner.build(conn, cards, out)  # models that fit a finance firm's limits
         places += planner_flow.build(conn, cards, out)  # the planner's first steps: explore AI products, a few questions
         places += planner_example.build(conn, cards, out)  # the planner's last step: the reader's report, from their answers
         places += adoption.build(conn, cards, out)  # the planner's product page, playbook, mistakes and rule book (Pro: no sitemap)
-        from . import coding_tools, compare, patterns, ready_tools, source_check, workflows, workshop
+        from . import coding_tools, compare, patterns, ready_tools, source_check, workflows, workshop  # type: ignore[attr-defined]  # private repo, joined to the package at run time
         places += ready_tools.build(conn, cards, out)  # products a firm can buy instead of building, by job (Pro: no sitemap)
         places += patterns.build(conn, cards, out)  # how each kind of AI product is built (Pro: no sitemap)
         # Source check: hidden (owner, 5 Nov 2026) until it stops flagging correct sentences
