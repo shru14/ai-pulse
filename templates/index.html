@@ -348,7 +348,7 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 .gl-tile-links{display:flex;flex-direction:column;align-items:center;gap:10px}
 .az-btn{text-decoration:none}
 .az-btn svg{display:none}  /* the words alone; the icon only on phones, where the words don't fit */
-.sub-strip .sub-tile-go{align-self:center;flex:none;font-size:16px;padding:12px 26px;background:#0072B2;color:#FFFFFF;box-shadow:none}
+.sub-strip .sub-tile-go{align-self:center;flex:none;font-size:16px;padding:12px 26px;background:#0072B2;color:#FFFFFF;box-shadow:3px 3px 0 #141925}
 .sub-strip .sub-tile-go:hover{filter:brightness(1.12)}
 @media (max-width:1100px){.sub-strip{grid-template-columns:1fr auto}.sub-steps{grid-column:1/-1;grid-row:2}.sub-hint{grid-column:1/-1;grid-row:3}.sub-head{grid-row:auto}}
 @media (max-width:640px){.sub-steps{grid-template-columns:1fr 1fr}}
@@ -545,7 +545,7 @@ header.top{border-bottom:4px solid var(--ink)}
 .sub-strip h2{font:400 26px/1.05 var(--head);text-transform:none}
 .sub-steps b{font-family:var(--head);font-weight:400;text-transform:none}
 .sub-steps li::before{border-radius:0;background:#000;color:#FFFFFF}
-.sub-strip .sub-tile-go,.gl-tile-go{background:#000!important;color:#FFFFFF!important;border-radius:0!important;box-shadow:none;
+.sub-strip .sub-tile-go,.gl-tile-go{background:#000!important;color:#FFFFFF!important;border-radius:0!important;box-shadow:6px 6px 0 #0072B2!important;
   text-transform:none;font-weight:800}
 .mag-cover{background:#000}
 .mag-cover h2{font:400 24px/1.12 var(--head);text-transform:none}
@@ -750,8 +750,9 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .board-t .up{color:var(--ink);font-weight:700}
 .today-main .hn-more{margin-top:0}
 .hn-go{margin-top:auto;align-self:flex-start;text-decoration:none;font-size:14px!important;padding:9px 18px!important;
-  border:2px solid var(--ink)!important;box-shadow:none}  /* Dig deeper: a button, in HN's orange */
-.hn-more{margin-top:auto;padding-top:10px;align-self:flex-start;font:600 14px var(--body);color:var(--ink);text-decoration:underline;text-decoration-color:#E69F00;text-decoration-thickness:3px;text-underline-offset:4px}
+  border:2px solid var(--ink)!important;box-shadow:4px 4px 0 #E69F00!important}  /* Dig deeper: a button, in HN's orange */
+.hn-more{margin-top:auto;align-self:flex-start;font:600 14px var(--body);color:var(--ink);text-decoration:none;padding:9px 18px;border:2px solid var(--ink);border-radius:4px;box-shadow:4px 4px 0 #E69F00}  /* "All topics", "See the full list": buttons like Dig deeper */
+.topics-strip .hn-more{display:inline-block;margin-top:14px}
 /* Follow the story: the topic pages' cards, three to a row */
 .topics-strip{display:flex;flex-direction:column}
 .topics-strip[hidden]{display:none}
@@ -775,7 +776,7 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .month-bar .label{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
 .month-bar h2{font:400 26px/1.05 var(--head);margin:6px 0 4px}
 .month-bar p{margin:0 0 14px;font-size:15px}
-.month-go{display:inline-block;font:600 16px var(--body);padding:11px 24px;background:#000;color:#fff;text-decoration:none;box-shadow:none}
+.month-go{display:inline-block;font:600 16px var(--body);padding:11px 24px;background:#000;color:#fff;text-decoration:none;box-shadow:6px 6px 0 #0072B2}
 .month-go:hover{filter:brightness(1.25)}
 .ms-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .ms-card{display:grid;grid-template-columns:96px minmax(0,1fr);border:3px solid #000;background:#fff;color:#000;text-decoration:none;min-height:118px}
@@ -1004,7 +1005,8 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   .mag-cover .sart .logo .ico svg,.mag-cover .sart .logo .ico img{width:26px;height:26px}
   .week-badge{font-size:12px}
   .gl-tile-go{font-size:12.5px}
-  .hn-go{font-size:12.5px!important;padding:7px 12px!important;box-shadow:none}
+  .hn-go{font-size:12.5px!important;padding:7px 12px!important;box-shadow:3px 3px 0 #E69F00!important}
+  .hn-more{font-size:12.5px;padding:7px 12px;box-shadow:3px 3px 0 #E69F00}
   .disc-t{font-size:13px}
   .ts-cards>*{flex-basis:72%}
   .ts-card b{font-size:14px}
@@ -1013,7 +1015,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   .month-bar{padding:12px;gap:10px}
   .month-bar h2{font-size:16px}
   .month-bar p{font-size:12px;margin-bottom:8px}
-  .month-go{font-size:12.5px;padding:6px 12px;box-shadow:none}
+  .month-go{font-size:12.5px;padding:6px 12px;box-shadow:3px 3px 0 #0072B2}
   .ms-cards{display:flex;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;gap:10px;padding-bottom:6px}
   .ms-card{flex:0 0 80%;scroll-snap-align:start;grid-template-columns:72px minmax(0,1fr);min-height:0;border-width:2px}
   .ms-body b{font-size:14px}
