@@ -109,7 +109,7 @@ def peaks(mine: list[dict], daily: list[tuple[date, int]]) -> list[dict]:
     by date, each with the stories most outlets carried that day (Research left out: a paper is one outlet). A day
     with no story two outlets carried is only a busy feed, with nothing to explain it, so it's passed over."""
     usual = {k: median([n for d, n in daily if (d.weekday() >= 5) == k] or [1]) or 1 for k in (False, True)}
-    out = []
+    out: list[dict] = []
     for d, n in sorted(daily, key=lambda x: -x[1] / usual[x[0].weekday() >= 5]):
         x = n / usual[d.weekday() >= 5]
         if x < STOOD_OUT or len(out) == PEAKS:
@@ -131,12 +131,12 @@ def funds(month: str, ledger: dict[str, list[dict]]) -> dict:
         if any(p.fullmatch(r["company"]) for p in LABS):
             return "AI labs"
         return next((t for t, p in classify._topics.items() if t not in NOT_THEMES and p.search(r["text"])), "Other")
-    by = {}
+    by: dict[str, list] = {}
     for r in rounds:
         t = by.setdefault(theme(r), [0, 0.0])
         t[0] += 1
         t[1] += r["amount"]
-    usual = Counter()
+    usual: Counter[str] = Counter()
     for k in range(1, 4):
         usual.update(theme(r) for r in ledger.get(_prev(month, k), []) if r["kind"] == "round" and r["amount"])
     themes = sorted(((t, n, v, usual[t] / 3) for t, (n, v) in by.items() if t != "Other"), key=lambda x: (-x[1], -x[2]))
@@ -145,8 +145,8 @@ def funds(month: str, ledger: dict[str, list[dict]]) -> dict:
         for r in ledger[m]:
             if r["valuation"]:
                 earlier[r["company"].lower()] = (r["valuation"], m)
-    vals = {r["company"].lower(): r for r in sorted((r for r in mine if r["valuation"]), key=lambda r: r["valuation"])}
-    vals = sorted(vals.values(), key=lambda r: -r["valuation"])[:LADDER]  # each company once, at its highest
+    highest = {r["company"].lower(): r for r in sorted((r for r in mine if r["valuation"]), key=lambda r: r["valuation"])}
+    vals = sorted(highest.values(), key=lambda r: -r["valuation"])[:LADDER]  # each company once, at its highest
     ladder = [dict(r, before=earlier.get(r["company"].lower())) for r in vals]
     deals = sorted((r for r in mine if r["kind"] in ("acquisition", "compute")), key=lambda r: -r["amount"])[:DEALS]
     year = [r for m, rs in ledger.items() if m[:4] == month[:4] and m <= month for r in rs if r["kind"] == "compute"]
@@ -180,7 +180,7 @@ def rivals(month: str, by_month: dict[str, list[dict]]) -> list[tuple]:
     one. A paper counts for the country of each lab or scholar it names (classify.paper_homes)."""
     homes = classify.paper_homes()
     def counts(m: str) -> dict[str, Counter]:
-        out = {"Papers": Counter(), "Open-weight models": Counter()}
+        out: dict[str, Counter] = {"Papers": Counter(), "Open-weight models": Counter()}
         for c in by_month.get(m, []):
             if c["category"] == "research":
                 out["Papers"].update({homes[t] for t in c.get("tags") or [] if t in homes})
@@ -254,10 +254,10 @@ def numbers(month: str, by_month: dict[str, list[dict]], ledger: dict[str, list[
     comp, comp0 = _tags(mine, COMPANIES), _tags(last, COMPANIES)
     place, place0 = _tags(mine, PLACES), _tags(last, PLACES)
     theme = _tags(mine, TOPICS)
-    usual = Counter()
+    seen: Counter[str] = Counter()
     for k in range(1, 4):
-        usual.update(_tags(by_month.get(_prev(month, k), []), TOPICS))
-    usual = {t: n / 3 for t, n in usual.items()}
+        seen.update(_tags(by_month.get(_prev(month, k), []), TOPICS))
+    usual = {t: n / 3 for t, n in seen.items()}
     moves = [(t, theme[t], usual.get(t, 0)) for t in TOPICS if max(theme[t], usual.get(t, 0)) >= MIN]
     rise = sorted([m for m in moves if m[1] > m[2]], key=lambda m: -(m[1] - m[2]) / (m[2] + 5))[:THEMES]
     fade = sorted([m for m in moves if m[1] < m[2]], key=lambda m: (m[1] - m[2]) / (m[2] + 5))[:THEMES]
@@ -320,7 +320,7 @@ def _compare(rows: list[tuple[str, list[tuple[str, float]]]]) -> str:
         now, before = ms[-1][1], [v for _, v in ms[:-1]]
         stats.append((s, now, sum(before) / len(before) if before else None, before, len(ms)))
     scale = math.ceil(max(max(now, u or 0) for _, now, u, _, _ in stats) * 10 + .5) / 10
-    moved = max((t for t in stats if t[2]), key=lambda t: abs(t[1] / t[2] - 1), default=None)
+    moved = max((t for t in stats if t[2]), key=lambda t: abs(t[1] / (t[2] or 1) - 1), default=None)  # t[2] is set: the filter
     def at(v):
         return f"{v / scale * 100:.1f}%"
     out = []
@@ -484,13 +484,13 @@ def _money(f: dict, month: str) -> str:
                  '<p class="ins-note">Valuations the headlines named this month; the change is against the last one we saw.</p></div>')
     deals = ""
     if f["deals"]:
-        rows = "".join(
+        deal_rows = "".join(
             f'<tr><td><a href="{escape(d["url"])}" rel="noopener">{escape(d["company"])} {"→" if d["kind"] == "acquisition" else "↔"} '
             f'{escape(d["partner"] or "—")}</a>{rep if d["reported"] else ""}</td>'
             f'<td><span class="dk dk-{d["kind"]}">{"Acquisition" if d["kind"] == "acquisition" else "Compute deal"}</span></td>'
             f'<td class="n">{money.usd(d["amount"])}</td></tr>' for d in f["deals"])
         n, v = f["compute_year"]
-        deals = (f'<h3 class="ins-h">Big deals</h3><table class="mt ins-deals"><tbody>{rows}</tbody></table>'
+        deals = (f'<h3 class="ins-h">Big deals</h3><table class="mt ins-deals"><tbody>{deal_rows}</tbody></table>'
                  + (f'<p class="ins-note">Compute deals reported in {month[:4]} so far: <b>{money.usd(v)}</b> across {n}.</p>' if n else ""))
     return (f'{score}<div class="ins-two ins-money">{left}{right}</div>{deals}'
             '<p class="ins-note">Amounts as the headlines give them, in US dollars.</p>')
@@ -499,7 +499,7 @@ def _money(f: dict, month: str) -> str:
 def _rivals(rows: list[tuple], opens: Counter, month: str) -> str:
     groups: dict[str, list[str]] = {"US": [], "China": [], "Others": []}
     for lab, n in opens.most_common():
-        where = {"United States": "US", "China": "China"}.get(home(lab), "Others")
+        where = {"United States": "US", "China": "China"}.get(home(lab) or "", "Others")
         groups[where].append(f"{escape(lab)} {n}")
     labs = "".join(f'<tr><td>{where}</td><td>{" · ".join(names)}</td></tr>' for where, names in groups.items() if names)
     line = (f'<h3 class="ins-h">Open-weight models uploaded to Hugging Face this month</h3>'
@@ -594,16 +594,16 @@ def body(month: str, x: dict) -> str:
         n = len(rows[0][1])
         big = [monthly.STREAMS[s] for s, ms in rows if n >= 4 and ms[-1][1] > max(v for _, v in ms[:-1])]
         small = [monthly.STREAMS[s] for s, ms in rows if n >= 4 and ms[-1][1] < min(v for _, v in ms[:-1])]
-        say = []
+        points = []
         if big:
-            say.append(f"{_and(big)} took a bigger share of the news than in any of the {n - 1} months before.")
+            points.append(f"{_and(big)} took a bigger share of the news than in any of the {n - 1} months before.")
         if small:
-            say.append(f"{_and(small)} took {'its' if len(small) == 1 else 'their'} smallest share.")
-        if not say and n > 1:
+            points.append(f"{_and(small)} took {'its' if len(small) == 1 else 'their'} smallest share.")
+        if not points and n > 1:
             s, ms = max(rows, key=lambda r: abs(r[1][-1][1] / (sum(v for _, v in r[1][:-1]) / (n - 1) or 1) - 1))
             usual = sum(v for _, v in ms[:-1]) / (n - 1)
-            say.append(f"{monthly.STREAMS[s]} moved most: {_pct(ms[-1][1])} of the month's stories, against a usual {_pct(usual)}.")
-        sections.append(("compare", "How this month compares", " ".join(say) or "Each stream's share of the month's stories.",
+            points.append(f"{monthly.STREAMS[s]} moved most: {_pct(ms[-1][1])} of the month's stories, against a usual {_pct(usual)}.")
+        sections.append(("compare", "How this month compares", " ".join(points) or "Each stream's share of the month's stories.",
                          _compare(rows) + f'<p class="ins-note">How to read: each stream\'s share of {monthly.name(month)}\'s stories '
                          f'(filled square) against its average over the {n - 1} months before (hollow). '
                          'A share, not a count, as the count grows with our sources.</p>'))
@@ -618,21 +618,21 @@ def body(month: str, x: dict) -> str:
     # money moves
     f = x["money"]
     if f["rounds"] or f["deals"]:
-        say = []
+        points = []
         if f["rounds"]:
-            say.append(f"{f['rounds']} funding rounds, {money.usd(f['raised'])} named in headlines"
+            points.append(f"{f['rounds']} funding rounds, {money.usd(f['raised'])} named in headlines"
                        + (f" ({money.usd(f['unconfirmed'])} of it reported or still in talks)" if f["unconfirmed"] else "")
                        + (f"; {THEME_NAMES.get(f['themes'][0][0], f['themes'][0][0])} drew the most ({f['themes'][0][1]})."
                           if f["themes"] else "."))
             rich = max(f["themes"], key=lambda t: t[2], default=None)
             if rich and rich is not f["themes"][0] and rich[2] >= .5 * f["raised"]:  # the money in a few big rounds
-                say.append(f"{THEME_NAMES.get(rich[0], rich[0])} took {rich[2] / f['raised']:.0%} of the money with "
+                points.append(f"{THEME_NAMES.get(rich[0], rich[0])} took {rich[2] / f['raised']:.0%} of the money with "
                            f"{rich[1]} round{'s' if rich[1] > 1 else ''}.")
         if f["deals"]:
             d = f["deals"][0]
-            say.append(f"The biggest {'acquisition' if d['kind'] == 'acquisition' else 'compute deal'}: {d['company']} {'buying' if d['kind'] == 'acquisition' else 'with'} "
+            points.append(f"The biggest {'acquisition' if d['kind'] == 'acquisition' else 'compute deal'}: {d['company']} {'buying' if d['kind'] == 'acquisition' else 'with'} "
                        f"{d['partner'] or 'a partner'}, {money.usd(d['amount'])}{' (reported)' if d['reported'] else ''}.")
-        sections.append(("money", "Money moves", " ".join(say), _money(f, month)))
+        sections.append(("money", "Money moves", " ".join(points), _money(f, month)))
     # funding pace: is the money speeding up, or is it one big round?
     pc = x["pace"]
     if len(pc) >= 3 and pc[-1][0] == month:
@@ -686,14 +686,14 @@ def body(month: str, x: dict) -> str:
                          + f'<p class="ins-note">How to read: bar = stories naming each company; the change is against {last}, the biggest riser in blue.</p>'))
     # themes
     if x["rise"] or x["fade"]:
-        say = []
+        points = []
         if x["rise"]:
             t, n, u = x["rise"][0]
-            say.append(f"{t} rose most: {n} stories, against about {round(u)} a month before.")
+            points.append(f"{t} rose most: {n} stories, against about {round(u)} a month before.")
         if x["fade"]:
             t, n, u = x["fade"][0]
-            say.append(f"{t} faded most: {n} stories, against about {round(u)} a month before.")
-        sections.append(("themes", "Themes rising and fading", " ".join(say),
+            points.append(f"{t} faded most: {n} stories, against about {round(u)} a month before.")
+        sections.append(("themes", "Themes rising and fading", " ".join(points),
                          f'<div class="ins-two"><div><h3>Rising</h3>{_themes(x["rise"], True)}</div>'
                          f'<div><h3>Fading</h3>{_themes(x["fade"], False)}</div></div>'
                          '<p class="ins-note">Stories a month: about how many in the three months before, and now.</p>'))
