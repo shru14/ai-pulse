@@ -751,7 +751,8 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .today-main .hn-more{margin-top:0}
 .hn-go{margin-top:auto;align-self:flex-start;text-decoration:none;font-size:14px!important;padding:9px 18px!important;
   border:2px solid var(--ink)!important;box-shadow:4px 4px 0 #E69F00!important}  /* Dig deeper: a button, in HN's orange */
-.hn-more{margin-top:auto;padding-top:10px;align-self:flex-start;font:600 14px var(--body);color:var(--ink);text-decoration:underline;text-decoration-color:#E69F00;text-decoration-thickness:3px;text-underline-offset:4px}
+.hn-more{margin-top:auto;align-self:flex-start;font:600 14px var(--body);color:var(--ink);text-decoration:none;padding:9px 18px;border:2px solid var(--ink);border-radius:4px;box-shadow:4px 4px 0 #E69F00}  /* "All topics", "See the full list": buttons like Dig deeper */
+.topics-strip .hn-more{display:inline-block;margin-top:14px}
 /* Follow the story: the topic pages' cards, three to a row */
 .topics-strip{display:flex;flex-direction:column}
 .topics-strip[hidden]{display:none}
@@ -1005,6 +1006,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   .week-badge{font-size:12px}
   .gl-tile-go{font-size:12.5px}
   .hn-go{font-size:12.5px!important;padding:7px 12px!important;box-shadow:3px 3px 0 #E69F00!important}
+  .hn-more{font-size:12.5px;padding:7px 12px;box-shadow:3px 3px 0 #E69F00}
   .disc-t{font-size:13px}
   .ts-cards>*{flex-basis:72%}
   .ts-card b{font-size:14px}
