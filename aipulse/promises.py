@@ -367,15 +367,19 @@ PROMISES_JS = r"""<script>
     const launched = list.filter(p => p.launch), wait = median(launched.map(p => p.days));
     // a typical overrun only from 5 late launches up: from fewer it is one or two promises, not a pattern
     const lates = list.filter(p => p.late).map(p => p.late), over = lates.length >= 5 ? median(lates) : null;
-    const cos = {}; list.forEach(p => cos[p.company] = (cos[p.company] || 0) + 1);
-    const [topCo, topN] = Object.entries(cos).sort((a, b) => b[1] - a[1])[0], years = list.map(p => p.date.slice(0, 4)).sort();
-    document.getElementById("plead").textContent = "Of " + list.length + " promises, " + count("shipped") + " shipped, " +
-      count("late") + " shipped late and " + count("waiting") + " have no launch yet." +
-      (wait != null ? " A launch typically came " + days(wait) + " after the promise (the middle value of " + launched.length + " launches)." : "") +
-      (over != null ? " Late launches came a typical " + days(over) + " after their date." : "");
-    document.getElementById("psample").textContent = "The promises come from " + Object.keys(cos).length + " companies, " +
-      years[0] + "–" + years[years.length - 1] + "; " + topN + " are " + topCo + "'s. A small sample: it shows these companies' record, " +
-      "not the whole industry's." + (missed.length ? " " + missed.length + " more, with no launch found, are listed at the end." : "");
+    // every promise checked, the ones with no launch found too, so the counts add up to the total
+    const cos = {}; all.forEach(p => cos[p.company] = (cos[p.company] || 0) + 1);
+    const [topCo, topN] = Object.entries(cos).sort((a, b) => b[1] - a[1])[0], first = all.map(p => p.date.slice(0, 4)).sort()[0];
+    const nCos = Object.keys(cos).length, nLate = count("late");
+    document.getElementById("plead").textContent = "We checked " + all.length + " promises from " + nCos +
+      (nCos === 1 ? " company" : " companies") + ", made since " + first + ". " + launched.length + " have shipped" +
+      (nLate ? " (" + nLate + " of them late)" : "") + ", " + count("waiting") + " are still waiting" +
+      (missed.length ? " and for " + missed.length + " we found no launch." : ".");
+    // the median, said plainly: half the launches came within it
+    document.getElementById("pwait").textContent = wait == null ? "" : "Half the launches came within " + days(wait) +
+      " of the promise." + (over != null ? " Half the late ones came within " + days(over) + " of their date." : "");
+    document.getElementById("psample").textContent = topN + " of the " + all.length + " are " + topCo +
+      "'s, so this shows a few companies' record, not the whole industry's.";
     // each company's record: counts, not a rate, which would leave out the promises with no launch found
     const [ct, cb] = table(["Company", "Shipped", "Shipped late", "No launch yet", "No launch found"], "pco");
     const by = {}; list.forEach(p => (by[p.company] = by[p.company] || []).push(p));
@@ -436,7 +440,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     body = ('<div class="ft pp">\n'
             + pages.feature_head(PATH, "Promised vs shipped", what.split("? ", 1)[0] + "?",
                                  f"{escape(what.split('? ', 1)[1])} We look for a launch headline up to 18 months later.")
-            + '<section class="pbox"><h2>In short</h2><p id="plead"></p><p class="meta" id="psample"></p></section>\n'
+            + '<section class="pbox"><h2>In short</h2><p id="plead"></p><p id="pwait"></p><p class="meta" id="psample"></p></section>\n'
             '<section class="pbox" id="pcos"><h2>By company</h2></section>\n'
             '<section class="pbox"><h2>The promises</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
