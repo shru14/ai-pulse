@@ -16,11 +16,13 @@ import re
 import smtplib
 import ssl
 from collections import Counter
+from collections.abc import Collection
 from datetime import date, datetime, timedelta, timezone
 from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
 from pathlib import Path
+from typing import cast
 
 from . import brief, classify, config, glossary, jurisdictions, quality, rss, subscribers
 from .sources import SOURCES
@@ -102,7 +104,7 @@ def by_streams(cards: list[dict], streams: list[str], day: date, since: str | No
     out = {n: [c for c in _day_cards(cards, rss.FEEDS[n][0], day) + late(cards, rss.FEEDS[n][0], day, since)
                if quality.on_topic(c)] for n in streams}
     if "news" in out:
-        out["news"].sort(key=lambda c: list(KIND).index(c.get("kind") if c.get("kind") in KIND else "news"))
+        out["news"].sort(key=lambda c: list(KIND).index(c["kind"] if c.get("kind") in KIND else "news"))
     return out
 
 
@@ -413,7 +415,7 @@ def _text(c: dict) -> str:
     return f"{c.get('title') or ''} {c.get('summary') or ''}"
 
 
-def _hardest(stories: list[dict], cards: list[dict], avoid: set[str] = frozenset()) -> str | None:
+def _hardest(stories: list[dict], cards: list[dict], avoid: Collection[str] = frozenset()) -> str | None:
     """The hardest specialist word these stories use (SPECIALIST, not one of `avoid`): the one used least in the
     stories we have, the least familiar. None when they use none."""
     found = {i for c in stories for i in _terms(c) if i in SPECIALIST and i not in avoid}
@@ -425,7 +427,7 @@ def _hardest(stories: list[dict], cards: list[dict], avoid: set[str] = frozenset
     return min(found, key=lambda i: (seen[i], first[i], not glossary.mentions(i, stories[first[i]].get("title") or ""), i))
 
 
-def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: set[str] = frozenset()) -> tuple[str | None, list[dict]]:
+def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: Collection[str] = frozenset()) -> tuple[str | None, list[dict]]:
     """The hardest technical word in the first tier of stories that has one: (word, that tier's stories)."""
     for stories in tiers:
         wid = _hardest(stories, cards, avoid)
@@ -455,7 +457,7 @@ def _given(cards: list[dict], day: date, streams: list[str], prefs: dict | None)
         d = day - timedelta(days=back)
         if weekly(d):
             continue  # Sunday's email gives the week's word, not the day's
-        avoid = {gave.get(d - timedelta(days=k)) for k in range(1, 8)} - {None}
+        avoid = {w for k in range(1, 8) if (w := gave.get(d - timedelta(days=k)))}
         key = (*reader, d, frozenset(avoid))
         if key not in _GAVE:
             _GAVE[key] = (_pick_word(cards, _tiers(cards, d, streams, prefs), avoid)[0]
@@ -522,7 +524,7 @@ def _meme(cards: list[dict], day: date) -> tuple[list[str], str]:
     from . import memes
     meme = memes.of_the_day(cards, day)
     picture = meme and memes.render(meme)
-    if not picture:
+    if not meme or not picture:
         return [], ""
     INLINE[MEME_CID] = picture
     return memes.text(meme), (f'<div style="margin:0 0 14px"><div style="font-size:11px;font-weight:bold;letter-spacing:2px;'
@@ -795,7 +797,7 @@ def _week_meme(cards: list[dict], day: date) -> tuple[list[str], str]:
     monday, _ = _span(day)
     meme = memes.of_the_week([c for c in cards if (c.get("date") or "") <= day.isoformat()], monday)
     picture = meme and memes.render(meme)
-    if not picture:
+    if not meme or not picture:
         return [], ""
     INLINE[MEME_WEEK_CID] = picture
     return memes.text(meme), (f'<div style="margin:16px 0 4px"><div style="font-size:11px;font-weight:bold;letter-spacing:2px;'
@@ -817,8 +819,8 @@ def _the_week(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[
     story = _week_story(cards, day, prefs)
     if story:
         name = next((rss.FEEDS[n][1] for n in rss.FEEDS if rss.FEEDS[n][0] == story["category"]), "")
-        more = _outlets(story) - 1
-        by = story["source"] + (f" +{more} outlet{'s' if more > 1 else ''}" if more else "")
+        others = _outlets(story) - 1
+        by = story["source"] + (f" +{others} outlet{'s' if others > 1 else ''}" if others else "")
         summary = _short(story.get("summary") or "", 180, story.get("source", ""))
         text += ["STORY OF THE WEEK: " + story["title"], *([summary] if summary else []), f"{by}", story["url"], ""]
         html += (f'<div style="padding:12px 0 14px;border-top:4px solid {BRIGHT.get(next((n for n in rss.FEEDS if rss.FEEDS[n][0] == story["category"]), ""), NAVY)}">'
@@ -891,7 +893,9 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
     # then the full email
     if sunday:  # the week's story, word and meme in place of the day's word and meme
         week_text, week_html = _the_week(cards, day, prefs)
-        word_text, word_html, meme_text, meme_html = [], "", [], ""
+        word_text: list[str] = []
+        meme_text: list[str] = []
+        word_html, meme_html = "", ""
     else:
         week_text, week_html = [], ""
         word_text, word_html = _word(cards, day, streams, prefs, [_biggest(by_stream, streams), top, todays])
@@ -1063,7 +1067,7 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     `since`: the newest arrival the last email saw; stories that arrived after it, dated before `day`, go in too.
     `listen`: a reader's email (not a web page): the poster email's bar to their clip on the site (audio.py)."""
     by_stream = by_streams(cards, streams, day, since)
-    left = []
+    left: list[dict] = []
     if layout in ("short", "poster"):
         by_stream, left = _leave_out(by_stream, prefs)
     sunday = layout in ("short", "poster") and weekly(day)
@@ -1085,7 +1089,8 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     page, band, top = "#eef0f3", "", 22
     if layout == "short":
         open_text, open_html = _brief(by_stream, cards, streams, day, prefs, left, dossier, (change, change_words))
-        table_text, table_html = [], ""
+        table_text: list[str] = []
+        table_html = ""
         page, band, top = PAGE, _band(open_text[0], (prefs or {}).get("often") != "weekly"), 16
     else:
         open_text, open_html = _opening(by_stream, cards, streams, day)
@@ -1134,7 +1139,7 @@ def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "")
     for cid, data in INLINE.items():  # the meme, inside the email (named, so a mail app that lists it says what it is)
         if f"cid:{cid}" in html:
             kind = _kind(data)
-            msg.get_payload()[1].add_related(data, "image", kind, cid=f"<{cid}>", disposition="inline",
+            cast("list[EmailMessage]", msg.get_payload())[1].add_related(data, "image", kind, cid=f"<{cid}>", disposition="inline",
                                              filename=f"{cid.split('@')[0]}.{'png' if kind == 'png' else 'jpg'}")
     return msg
 

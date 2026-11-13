@@ -415,7 +415,7 @@ HARD = ["KL divergence", "On-policy distillation", "On-policy learning", "Specul
         "Diffusion model", "World model", "Vector database", "Context window", "Prompt injection", "Acquihire", "Hyperscaler"]
 WEEK_WORD_STORIES = 2
 
-ENTRIES =[{"id": _key(t), "term": t, "group": g, "def": d, "match": m, "case": cs, "search": SEARCH.get(t, t),
+ENTRIES: list[dict] = [{"id": _key(t), "term": t, "group": g, "def": d, "match": m, "case": cs, "search": SEARCH.get(t, t),
             "added": ADDED.get(t, LAUNCH).isoformat(), "level": "Technical" if t in TECHNICAL else "Everyday"}
            for t, g, d, m, cs in _ENTRIES]
 
