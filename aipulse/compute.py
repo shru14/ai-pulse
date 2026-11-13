@@ -285,9 +285,7 @@ def _limits(rows: list[dict], base: dict, read: str, today: date) -> str:
             f"shown; {closed} of them {'does' if closed == 1 else 'do'}n't share their weights.")] if missing else []),
     ]
     body = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td></tr>" for a, b in notes)
-    return (f'<section><h2>About these counts</h2>\n<table class="mt pn-notes"><tbody>{body}</tbody></table>'
-            f'<p class="nt-how">Data: <a href="{DATASET}" rel="noopener">Epoch AI, Data on AI Models</a>, '
-            '<a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>.</p></section>\n')
+    return (f'<section><h2>About these counts</h2>\n<table class="mt pn-notes"><tbody>{body}</tbody></table></section>\n')
 
 
 def page_body(saved: dict, today: date) -> str:
