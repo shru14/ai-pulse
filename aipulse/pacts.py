@@ -177,6 +177,10 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "http://www.bernama.com/en/news.php?id=2633535":
+        "Nvidia's own board probe and its CEO's resignation; no government action against the company",
+    "https://dplnews.com/nvidia-contrata-exfiscal-investigar-jensen-huang/":
+        "Nvidia's own board probe of its CEO; lawmakers only asked for a briefing, no government action on Nvidia",
     "https://the-decoder.com/eight-countries-and-top-ai-labs-agree-to-shutdown-mechanisms-in-new-paris-declaration/":
         "A new declaration (Paris Call), not a pledge on the page; no government deal or action against a company",
     "https://techcrunch.com/2026/11/08/nvidia-says-its-investigating-ceo-jensen-huangs-relationship-with-possible-chinese-spy/":
