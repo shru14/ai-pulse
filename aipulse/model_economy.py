@@ -52,6 +52,8 @@ LEFT_OUT = {
     "Kimi K3.1 Pro": "Earlier model (Kimi K3) is a Release cards row; pairing not yet checked",
     "Muse Spark 1.1": "Earlier model's launch price not found",
     "Grok 4.5": "Earlier model's launch price not found",
+    "Muse Ember": "No earlier model in its line",
+    "Claude Fable 5.2": "Earlier model (Claude Fable 5.1) is a Release cards row; pairing held for approval",
 }
 FROM = "2026-01-01"  # How long before you must switch counts shutdowns from this day
 SHOWN = 10  # model rows shown before "Show all"

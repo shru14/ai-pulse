@@ -254,6 +254,10 @@ RELEASES = [
      "https://the-decoder.com/openais-gpt-6-cyber-can-both-break-into-systems-and-propose-how-to-fix-them/", ""),
     ("2026-11-05", "Thinking Machines", "Inkling 2 Small", "Closed", "Weights promised next week", "", "", "", False, "",
      "https://the-decoder.com/thinking-machines-inkling-2-small-claims-top-spot-among-western-open-weight-models/", ""),
+    ("2026-11-09", "Anthropic", "Claude Fable 5.2", "Closed", "Its Mythos 5.2 version: vetted organizations only", "", "",
+     "", False, "$8 / $40", "https://www.anthropic.com/claude-fable-and-mythos-5-2", ""),
+    ("2026-11-09", "Meta", "Muse Ember", "Closed", "", "", "", "", False, "$0.10 / $0.50|prompts up to 200K tokens",
+     "https://research.meta.ai/blog/muse-ember", ""),
 ]
 # what each release is for, from its story: "General" reads and writes text (images or audio too, for some);
 # the rest do one job. The adoption planner lists a model only for the jobs its kind can do
@@ -284,7 +288,7 @@ KIND = {
     "Nemotron 3.5 Super VL": "General", "Step 5 Preview": "General", "Nemotron 3.5 Bolt 74B-A9B 24GB": "General",
     "Clairic": "Extraction", "MiniMax M3.1 Flash": "General", "Hy4": "General", "Ripple-65B Preview": "General",
     "ERNIE 5.5 Flash Base": "General", "Gemini Omni 1.2 Flash": "Video", "GPT-6 Cyber": "Cyber",
-    "Inkling 2 Small": "General",
+    "Inkling 2 Small": "General", "Claude Fable 5.2": "General", "Muse Ember": "General",
 }
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -292,7 +296,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-10"
+SAFETY_CHECKED = "2026-11-12"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -328,6 +332,9 @@ SAFETY = {
     "Gemini Robotics 2": ("2026-07-29", "https://storage.googleapis.com/deepmind-media/gemini-robotics/Gemini-Robotics-2-Safety.pdf", ""),
     "GPT-6 Cyber": ("2026-11-05", "https://deploymentsafety.openai.com/gpt-6-cyber", ""),
     "Inkling 2 Small": ("2026-11-05", "https://thinkingmachines.ai/model-card/inkling-2-small/", "In its model card"),
+    "Claude Fable 5.2": ("2026-11-09", "https://www.anthropic.com/claude-fable-and-mythos-5-2", "In the launch post"),
+    "Muse Ember": ("", "https://research.meta.ai/static/muse-ember-evaluation-report",
+                   "Evaluation report gives no safety test results for it"),
     "Gemini 3.8 Live": ("", "https://deepmind.google/models/model-cards/gemini-3-8-audio/",
                         "Model card gives no test results for it"),
     "Gemini 3.5 Transcribe": ("", "https://deepmind.google/models/model-cards/gemini-3-5-audio/",
@@ -601,10 +608,42 @@ LEFT_OUT = {
         "same as Kimi K3.1 Pro",
     "https://cohere.com/blog/embed-rerank-5-openrouter":
         "Cohere Embed 5 and Rerank 5 on OpenRouter: hosting news, no news outlet within 3 days",
+    "https://deepmind.google/blog/gemini-robotics-2-5-accelerates-real-world-physical-intelligence/":
+        "Gemini Robotics 2.5: one news outlet within 3 days",
+    "https://the-decoder.com/google-deepminds-gemini-robotics-2-5-scores-96-percent-sorting-metal-parts-in-a-mercedes-benz-assembly-pilot/":
+        "same as Gemini Robotics 2.5",
+    "https://pandaily.com/tokenrhythm-neohorse-1-5-flash-preview-agent-model-limited-beta":
+        "NeoHorse-1.5-Flash Preview: one news outlet within 3 days",
+    "https://aws.amazon.com/blogs/machine-learning/nvidia-nemotron-3-5-super-vl-is-now-available-in-amazon-sagemaker-jumpstart/":
+        "same as Nemotron 3.5 Super VL",
+    "https://aws.amazon.com/blogs/machine-learning/introducing-claude-fable-5-2-on-aws/":
+        "same as Claude Fable 5.2",
+    "https://japantoday.com/category/tech/anthropic-launches-powerful-new-models-ahead-of-wall-street-debut":
+        "same as Claude Fable 5.2",
+    "https://www.xataka.com/robotica-e-ia/anthropic-acaba-lanzar-sus-dos-modelos-ia-avanzados-uno-tendra-acceso-general-otro-estara-restringido":
+        "same as Claude Fable 5.2",
+    "https://the-decoder.com/claude-fable-5-2-and-mythos-5-2-cement-anthropics-ai-lead-just-before-its-ipo/":
+        "same as Claude Fable 5.2",
+    "https://techcrunch.com/2026/11/09/anthropic-releases-new-mythos-and-fable-models-amid-rsi-concerns/":
+        "same as Claude Fable 5.2",
+    "https://www.channelnewsasia.com/business/anthropic-unveils-new-fable-mythos-models-competition-heats-up-ahead-ipo-6536966":
+        "same as Claude Fable 5.2",
+    "https://siliconangle.com/2026/11/09/anthropic-launches-fable-5-2-and-mythos-5-2-with-science-coding-upgrades/":
+        "same as Claude Fable 5.2",
+    "https://www.marktechpost.com/2026/11/10/anthropic-claude-fable-5-2-mythos-5-2-release/":
+        "same as Claude Fable 5.2",
+    "https://techcrunch.com/2026/11/09/meta-releases-muse-ember-a-new-lightweight-model-for-agent-execution/":
+        "same as Muse Ember",
+    "https://the-decoder.com/meta-launches-muse-ember-a-small-ai-model-built-for-the-repetitive-work-agents-actually-do/":
+        "same as Muse Ember",
+    "https://siliconangle.com/2026/11/09/meta-introduces-muse-ember-to-power-cost-efficient-ai-agents/":
+        "same as Muse Ember",
+    "https://www.marktechpost.com/2026/11/09/meta-muse-ember-small-agent-model/":
+        "same as Muse Ember",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-07"
+CHECKED_TO = "2026-11-09"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
