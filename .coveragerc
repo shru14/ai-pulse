@@ -1,12 +1,13 @@
 # Test coverage: how much of aipulse/ the tests run. Measure with:
 #   python -m pytest -n auto --cov
 # It lists each module's missed lines (fully covered ones are hidden) and fails if the total drops below the floor.
-# The floor is the level measured on 13 Nov 2026 (80.4%); raise it when tests are added, never lower it.
+# Measured 83.0% on 13 Nov 2026 (after tests for the poster email and Harm → rule); the floor sits a point
+# below, so a small change elsewhere doesn't trip it. Raise it when tests are added, never lower it.
 [run]
 source = aipulse
 
 [report]
-fail_under = 80
+fail_under = 82
 precision = 1
 show_missing = True
 skip_covered = True
