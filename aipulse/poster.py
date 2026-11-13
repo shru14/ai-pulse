@@ -726,7 +726,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     numbers = "".join(f'<td style="padding:0 6px 0 0"><a href="{escape(review)}#useful-{k}" style="display:block;width:34px;'
                       f'height:34px;line-height:34px;text-align:center;border:2px solid {INK};font-weight:bold;font-size:16px;'
                       f'color:{INK};text-decoration:none">{k}</a></td>' for k in range(1, 6))
-    html.append(f'<tr><td class="p-pad" style="padding:20px">' + _table(
+    html.append('<tr><td class="p-pad" style="padding:20px">' + _table(
         f'<tr><td style="padding:12px 14px;border:2px solid {INK}"><div style="font-weight:bold;font-size:15px">How useful is '
         f'AI Pulse to you?</div><div style="font-size:12px;color:{GREY};margin:3px 0 10px">Tap a number, then four more quick '
         f'questions. 1 not useful · 5 very useful</div><table role="presentation" cellpadding="0" cellspacing="0"><tr>{numbers}'

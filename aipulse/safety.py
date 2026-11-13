@@ -1725,7 +1725,7 @@ def _filters(rows: list[dict]) -> str:
 
 
 # the filters, in the reader's browser: every filter set must match; the search matches every word typed
-SCRIPT = """<script>
+SCRIPT = r"""<script>
 (()=>{const hub=document.querySelector('.sh'),docs=[...hub.querySelectorAll('.sh-doc')],q=hub.querySelector('.sh-q'),
 count=hub.querySelector('.sh-count b'),none=hub.querySelector('.sh-none'),risk=hub.querySelector('select[data-f=risk]');
 let kind='';

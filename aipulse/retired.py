@@ -208,7 +208,7 @@ def _filters(shown: list[dict], counts: dict) -> str:
 
 # the filters, in the reader's browser: every tag set must match, the search every word typed; a table left empty
 # is hidden, and each day's date is shown on its first row still showing
-SCRIPT = """<script>
+SCRIPT = r"""<script>
 (()=>{const pg=document.querySelector('.rm'),rows=[...pg.querySelectorAll('tbody tr[data-lab]')],q=pg.querySelector('.sh-q'),
 count=pg.querySelector('.sh-count b'),none=pg.querySelector('.sh-none'),f={lab:'',when:''};
 function run(){const words=q.value.toLowerCase().split(/\s+/).filter(Boolean);let n=0;

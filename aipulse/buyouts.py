@@ -487,7 +487,7 @@ def _row(n: int, r) -> str:
     d, buyer, bought, what, price, b, st, url, nt, nu = r
     after = ""
     if nt:
-        after = f'<span class="fx-c">' + (f'<a href="{escape(nu)}" rel="noopener">{escape(nt)}</a>' if nu
+        after = '<span class="fx-c">' + (f'<a href="{escape(nu)}" rel="noopener">{escape(nt)}</a>' if nu
                                           else escape(nt)) + "</span>"
     return (f'<tr id="by-{n}"><td class="pc-d" data-f="{_mid(d):%b}">{_day(d)}</td><td><b>{escape(buyer)}</b></td>'
             f'<td data-f="{escape(bought)}"><b>{escape(bought)}</b><span class="fx-c">{escape(what)}</span></td>'

@@ -381,7 +381,7 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
         listed = seo.newest([c for c in cards if c["date"] >= since and picks(rule, c)], len(cards))
         mine = listed[:20]  # as links in the HTML (seo.py)
         where = "the paper" if cat == "research" else "the outlet's own page"
-        body = (f'<div class="kd">' + pages.band(cat, _icon(p, label), f"photos/cartoons/streams/{cat}.svg", heading,
+        body = ('<div class="kd">' + pages.band(cat, _icon(p, label), f"photos/cartoons/streams/{cat}.svg", heading,
                                                  ASK.get(p) or ASK[p.split("/")[0]].format(label, label.lower()), escape(what))
                 + f'<p class="intro"><span id="stories-count">The {nouns}</span> in the last 3 months, newest first, '
                 f'each linking to {escape(where)}.</p>\n'

@@ -753,7 +753,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         nxt = f'<a href="/{path(issues[i + 1])}">{monthly.name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
         what = (f"What the AI news of {monthly.name(m)} adds up to: how it compares with the months before, what made the "
                 "busiest days, and the companies, themes and places in the news.")
-        html = (f'<div class="mi">\n<div class="ins-top">'
+        html = ('<div class="mi">\n<div class="ins-top">'
                 + pages.band("all", "M4 20h16M4 20V4M8 16v-4M12 16V8M16 16v-6", "photos/cartoons/pages/monthly.svg",
                              f"{monthly.name(m)} in numbers", f"What did {monthly.name(m)}'s AI news add up to?", escape(what),
                              '<button class="ins-pdf" type="button" onclick="window.print()">Save as PDF</button>')

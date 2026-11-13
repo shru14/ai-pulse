@@ -1248,7 +1248,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                '</span>' if b["latest"] else "")
             + "</span></a>")
     what = "Pick a topic to see how it unfolded, from the first report to today, with laws and news on one timeline."
-    body = (f'<div class="ti">\n' + pages.band("all", "M3 12h18M7 12v.01M12 12v.01M17 12v.01M7 8V5M12 16v3M17 8V5",
+    body = ('<div class="ti">\n' + pages.band("all", "M3 12h18M7 12v.01M12 12v.01M17 12v.01M7 8V5M12 16v3M17 8V5",
                                               "photos/cartoons/pages/topics.svg", "Follow the story",
                                               "How did the biggest AI stories unfold?", escape(what))
             + f'<div class="topics">{"".join(cards_html)}</div>\n</div>\n{CARDS_JS}\n')
