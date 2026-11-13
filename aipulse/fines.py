@@ -210,29 +210,41 @@ def _and(n: int, one: str, many: str) -> str:
 
 
 def _strip(bans: list, fines: list, today: date) -> str:
-    """Every action as a dot on one time line from SINCE to the end of this year, bans above and fines below,
-    coloured by where it stands; pointing at a dot names its action, clicking it jumps to its row."""
+    """Every action as a dot on one time line from SINCE to the end of this year: a lane for bans and one for fines,
+    each named on the left with its count, dots coloured by where the action stands. Dots too close to sit side by
+    side stack upward. Pointing at a dot names its action, clicking it jumps to its row."""
     lo, hi = date.fromisoformat(SINCE), date(today.year, 12, 31)
     x = lambda d: round((date.fromisoformat(d) - lo).days / (hi - lo).days * 100, 2)
+    grid = "".join(f'<i class="fx-gl" style="left:{x(f"{y}-01-01")}%"></i>' for y in range(lo.year + 1, hi.year + 1))
 
-    def dot(rid: str, d: str, tag: tuple[str, str], tip: str) -> str:
-        side = " fx-l" if x(d) > 60 else ""  # near the right edge the tip opens to the left
-        return (f'<a class="fx-dot {tag[1]}{side}" href="{PATH}#{rid}" style="left:{x(d)}%" aria-label="{escape(tip)}" '
-                f'data-tip="{escape(tip)}"></a>')
-    years = "".join(f'<i class="fx-gl" style="left:{x(f"{y}-01-01")}%"></i>'
-                    f'<span class="fx-yr" style="left:{x(f"{y}-07-01")}%">{y}</span>' for y in range(lo.year, hi.year + 1))
-    b = "".join(dot(f"fx-b{n}", d, ("Lifted", "fx-li") if end else ("In force", "fx-in"),
-                    f"{_short(d)} · {co} · {w} · {'Lifted' if end else 'In force'}")
-                for n, (d, reg, c, co, w, why, u, end, en, eu) in enumerate(bans))
-    f = "".join(dot(f"fx-f{n}", d, STATUSES[st], f"{_short(d)} · {co} · {amt} {kind} · {STATUSES[st][0]}")
-                for n, (d, reg, c, co, amt, kind, why, u, st, sn, su) in enumerate(fines))
-    key = "".join(f'<span class="pc-k {c}">{escape(t)}</span>'
+    def lane(name: str, rows: list) -> str:
+        """rows: (row id, day, tag, tip). Each dot takes the lowest level no nearer dot already holds."""
+        levels: list[float] = []
+        level = {}
+        for rid, d, *_ in sorted(rows, key=lambda r: r[1]):
+            at = x(d)
+            level[rid] = n = next((i for i, last in enumerate(levels) if at - last >= 1.1), len(levels))
+            levels[n:n + 1] = [at]
+        dots = []
+        for rid, d, tag, tip in rows:  # written newest first, like the rows
+            at, n = x(d), level[rid]
+            side = " fx-l" if at > 60 else ""  # near the right edge the tip opens to the left
+            dots.append(f'<a class="fx-dot {tag[1]}{side}" href="{PATH}#{rid}" style="left:{at}%;bottom:{8 + n * 12}px" '
+                        f'aria-label="{escape(tip)}" data-tip="{escape(tip)}"></a>')
+        return (f'<div class="fx-ln"><p class="fx-lab">{name}<span>{len(rows)}</span></p>'
+                f'<div class="fx-plot" style="height:{18 + len(levels) * 12}px">{grid}{"".join(dots)}</div></div>')
+    b = lane("Bans", [(f"fx-b{n}", d, ("Lifted", "fx-li") if end else ("In force", "fx-in"),
+                       f"{_short(d)} · {co} · {w} · {'Lifted' if end else 'In force'}")
+                      for n, (d, reg, c, co, w, why, u, end, en, eu) in enumerate(bans)])
+    f = lane("Fines", [(f"fx-f{n}", d, STATUSES[st], f"{_short(d)} · {co} · {amt} {kind} · {STATUSES[st][0]}")
+                       for n, (d, reg, c, co, amt, kind, why, u, st, sn, su) in enumerate(fines)])
+    years = "".join(f'<span class="fx-yr" style="left:{x(f"{y}-07-01")}%">{y}</span>' for y in range(lo.year, hi.year + 1))
+    key = "".join(f'<span><i class="fx-kd {c}"></i>{escape(t)}</span>'
                   for t, c in [("In force", "fx-in"), ("Lifted", "fx-li")] + [v for k, v in STATUSES.items() if k != "force"])
-    return (f'<section class="fx-tl"><h2>Every action since {SINCE[:4]}</h2><div class="fx-strip">{years}'
-            f'<span class="fx-lane" style="top:6px">Bans · {len(bans)}</span><div class="fx-row" style="top:44px">{b}</div>'
-            f'<span class="fx-lane" style="top:70px">Fines · {len(fines)}</span><div class="fx-row" style="top:108px">{f}'
-            f'</div></div><p class="fx-key">{key}<span>One dot per action: point at a dot to see it, click to jump to '
-            f'its row.</span></p></section>')
+    return (f'<section class="fx-tl"><h2>Every action since {SINCE[:4]}</h2><div class="fx-chart">{b}{f}'
+            f'<div class="fx-ln fx-ax"><p class="fx-lab"></p><div class="fx-plot">{years}</div></div></div>'
+            f'<p class="fx-key">{key}</p><p class="fx-note">One dot per action. Point at a dot to see it; click it to '
+            f'jump to its row.</p></section>')
 
 
 def body(today: date) -> str:
