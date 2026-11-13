@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import re
 import shutil
+from collections.abc import Sequence
 from datetime import date, timedelta
 from html import escape
 from pathlib import Path
@@ -231,7 +232,7 @@ def logos(names) -> dict[str, str]:
             continue
         brand = si.get(name)
         d = brand and brands.si_path(brand["slug"])
-        if d:
+        if brand and d:
             out[name] = f'<svg viewBox="0 0 24 24"><path fill="#{_dark(brand["hex"])}" d="{escape(d)}"/></svg>'
     return out
 
@@ -245,11 +246,11 @@ def slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
-def stream_pages(cards: list[dict] = ()) -> list[tuple[str, str, str, str, str, dict]]:
+def stream_pages(cards: Sequence[dict] = ()) -> list[tuple[str, str, str, str, str, dict]]:
     """Every page: (stream, address, its button's words, heading, what's on it, the rule that picks its stories).
     Releases' rules list their stories of the last 3 months (data.json's): the company named in the headline (a
     summary's passing mention isn't its release) or from one of its own blogs."""
-    out = [("news", f"industry/{a}/", digest.KIND[k][0], h, w, {"kind": k}) for k, (a, h, w) in KINDS.items()]
+    out: list[tuple[str, str, str, str, str, dict]] = [("news", f"industry/{a}/", digest.KIND[k][0], h, w, {"kind": k}) for k, (a, h, w) in KINDS.items()]
     since = (date.today() - timedelta(days=92)).isoformat()
     ids: dict[str, list[str]] = {}
     for c in cards:
@@ -370,7 +371,7 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
         home, name = STREAMS[cat]
         others = " · ".join(f'<a href="/{q}">{escape(label)}</a>' for c, q, label, *_ in every if c == cat)
         who = speakers(p, rule)
-        if p == "policy/governments/":  # its tiles' flags, which no other page may have copied (Malaysia's)
+        if p == "policy/governments/" and who:  # its tiles' flags, which no other page may have copied (Malaysia's)
             (out / "flags").mkdir(parents=True, exist_ok=True)
             for f in re.findall(r'/flags/([\w-]+\.svg)', "".join(who["logo"].values())):
                 shutil.copy(countries.FLAGS / f, out / "flags" / f)
