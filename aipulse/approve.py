@@ -5,6 +5,7 @@ owner's yes). The job cuts' and the glossary's notes are written in their own mo
 from __future__ import annotations
 
 import ast
+from collections.abc import Sequence
 from html import escape
 
 
@@ -20,7 +21,7 @@ def lists_in(source: str, names: tuple[str, ...]) -> dict[str, set[str]]:
     return found
 
 
-def note(page: str, what: str, branch: str, head: tuple[str, ...], rows: list[tuple[str, ...]],
+def note(page: str, what: str, branch: str, head: tuple[str, ...], rows: Sequence[tuple[str, ...]],
          dropped: list[str]) -> tuple[str, str, str]:
     """(subject, text, html) of the note: `rows` are the branch's new entries, each a tuple of cells under `head`, its
     last cell the story's URL."""
