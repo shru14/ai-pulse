@@ -1,6 +1,7 @@
 #!/bin/sh
 # Runs before every commit. Turned on once per clone with: git config core.hooksPath hooks
-# When a commit changes Python files: lints them with ruff (rules in ruff.toml), then runs the tests (about 90 seconds).
+# When a commit changes Python files: lints them with ruff (rules in ruff.toml), type-checks with mypy (mypy.ini), then
+# runs the tests (about 90 seconds).
 # Commits that change no Python file (templates, data, docs) go straight through. Skip once, in an emergency: git commit --no-verify
 files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.py')
 [ -z "$files" ] && exit 0
@@ -12,11 +13,19 @@ if ! python -m ruff check --quiet $files; then
     echo "pre-commit: fix the problems above (many fix themselves with: python -m ruff check --fix), then commit again"
     exit 1
 fi
+if ! python -m mypy --version >/dev/null 2>&1; then
+    echo "pre-commit: mypy is not installed. Run: pip install -r requirements-dev.txt"
+    exit 1
+fi
+if ! python -m mypy --no-error-summary; then
+    echo "pre-commit: fix the type problems above (what each check covers: mypy.ini), then commit again"
+    exit 1
+fi
 log=$(mktemp)  # its own file: other sessions may be committing in this folder too
 if ! python -m pytest -n auto -q -x -p no:cacheprovider >"$log" 2>&1; then
     tail -25 "$log"
     echo "pre-commit: a test failed (above). Fix it, then commit again"
     exit 1
 fi
-echo "pre-commit: lint OK, $(grep -o '[0-9]* passed' "$log")"
+echo "pre-commit: lint and types OK, $(grep -o '[0-9]* passed' "$log")"
 rm -f "$log"

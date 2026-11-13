@@ -17,6 +17,7 @@ compass/
 
 __pycache__/
 .pytest_cache/
+.mypy_cache/
 .claude/
 data/translate-models/
 data/embed-models/
