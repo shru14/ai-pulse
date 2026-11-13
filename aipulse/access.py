@@ -14,10 +14,13 @@ import base64
 import getpass
 import hashlib
 import json
+import logging
 import os
 import shutil
 import subprocess
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 ROOT = "planner"
 # what anyone can read: the product pages and one sample report. Source check went behind the login on 3 Nov 2026: on real AI
@@ -84,7 +87,7 @@ def users() -> dict:
         found = json.loads(os.environ.get("COMPASS_USERS") or "{}")
         return {n: u for n, u in found.items() if len(base64.b64decode(u["kek"])) == 32 and base64.b64decode(u["salt"])}
     except (ValueError, TypeError, KeyError, AttributeError):
-        print("COMPASS_USERS can't be read: the paid pages stay unpublished.")
+        log.warning("COMPASS_USERS can't be read: the paid pages stay unpublished.")
         return {}
 
 
@@ -310,7 +313,7 @@ def seal(out: Path, conn, cards: list[dict], people: dict | None = None) -> int:
             if box:
                 p.with_name(p.name + ".sealed").write_text(box(raw), encoding="ascii")
             p.unlink()
-    print(f"Pulse Compass: {len(paid)} paid files sealed for {len(people)} users.")
+    log.info("Pulse Compass: %d paid files sealed for %d users.", len(paid), len(people))
     return len(paid)
 
 

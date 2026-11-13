@@ -19,6 +19,7 @@ account, so nothing can ever be billed. GEMINI_MODEL picks the model (default be
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import urllib.error
@@ -26,6 +27,8 @@ import urllib.request
 from datetime import date, timedelta
 
 from . import memes
+
+log = logging.getLogger(__name__)
 
 MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")  # always Google's newest Flash model
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -219,12 +222,12 @@ def write(cards: list[dict], span: str, key: str | None = None, ask=None, avoid:
     try:
         answer = json.loads((ask or _ask)(_prompt(stories, span, avoid), key))
     except Exception as e:  # network, quota, a malformed answer: the rule-based meme is used
-        print(f"Gemini meme skipped: {type(e).__name__} {getattr(e, 'code', '')}".rstrip())
+        log.warning("Gemini meme skipped: %s", f"{type(e).__name__} {getattr(e, 'code', '')}".rstrip())
         return None
     for m in (answer.get("memes") if isinstance(answer, dict) else None) or []:
         if isinstance(m, dict) and (ok := check(m, stories, avoid)):
             return {**ok, "by": "gemini"}
-    print("Gemini meme skipped: no candidate passed the checks")
+    log.warning("Gemini meme skipped: no candidate passed the checks")
     return None
 
 

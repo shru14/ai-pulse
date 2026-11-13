@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import logging
 import os
 import sys
 import threading
@@ -217,6 +218,8 @@ def main():
     a = p.parse_args()
     if a.log:
         sys.stdout = sys.stderr = open(a.log, "a", encoding="utf-8", buffering=1)
+    # warnings and progress from inside the modules (logging.getLogger(__name__)); the commands' own results stay print()
+    logging.basicConfig(level=logging.INFO, stream=sys.stderr, format="%(levelname)s %(name)s: %(message)s")
 
     if a.cmd == "collect":
         print(f"[{datetime.now():%Y-%m-%d %H:%M}] Collecting")
