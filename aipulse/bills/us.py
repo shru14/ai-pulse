@@ -24,7 +24,7 @@ def _crs_summary(congress, kind: str, number, title: str, key: str, fetcher=feed
     """The Congressional Research Service's latest summary of a bill (a US government work), or "" (CRS
     writes one some weeks after a bill is introduced)."""
     try:
-        data = _get_json(f"{CONGRESS_API}/bill/{congress}/{kind.lower()}/{number}/summaries?format=json&api_key={key}",
+        data = _get_json(f"{CONGRESS_API}/bill/{congress}/{kind.lower()}/{number}/summaries?format=json",
                          fetcher)
     except Exception as exc:  # none yet, or congress.gov unreachable: asked again next run
         logger.debug("CRS summary of %s %s not read: %s", kind, number, exc)
@@ -72,9 +72,9 @@ def _us_context(congress, kind: str, number, key: str, fetcher=feeds.fetch) -> d
     """From congress.gov, for a bill CRS hasn't summarised yet: its sponsor, cosponsors, committees and short
     title (a short title appears once the text is published)."""
     base = f"{CONGRESS_API}/bill/{congress}/{kind.lower()}/{number}"
-    bill = _get_json(f"{base}?format=json&api_key={key}", fetcher).get("bill") or {}
-    committees = _get_json(f"{base}/committees?format=json&api_key={key}", fetcher).get("committees") or []
-    titles = _get_json(f"{base}/titles?format=json&api_key={key}", fetcher).get("titles") or []
+    bill = _get_json(f"{base}?format=json", fetcher).get("bill") or {}
+    committees = _get_json(f"{base}/committees?format=json", fetcher).get("committees") or []
+    titles = _get_json(f"{base}/titles?format=json", fetcher).get("titles") or []
     sponsor = (bill.get("sponsors") or [{}])[0]
     who = ""
     if sponsor.get("lastName"):
@@ -141,14 +141,14 @@ def sync_congress(conn, fetcher=feeds.fetch, since: datetime | None = None, max_
     changed = pages = 0
     while pages < max_pages:
         data = _get_json(f"{CONGRESS_API}/bill/{congress}?format=json&limit=250&offset={offset}"
-                         f"&sort=updateDate+asc&fromDateTime={cursor['from']}&api_key={key}", fetcher)
+                         f"&sort=updateDate+asc&fromDateTime={cursor['from']}", fetcher)
         pages += 1
         listed = data.get("bills", [])
         for b in listed:
             if b.get("type") not in _US_TYPES or not AI_TITLE.search(b.get("title", "")):
                 continue
             acts = _get_json(f"{CONGRESS_API}/bill/{b['congress']}/{b['type'].lower()}/{b['number']}/actions"
-                             f"?format=json&limit=250&api_key={key}", fetcher)
+                             f"?format=json&limit=250", fetcher)
             label, path = _US_TYPES[b["type"]]
             bill = {"key": f"US-{b['congress']}-{b['type'].lower()}-{b['number']}", "jurisdiction": "US",
                     "number": f"{label} {b['number']}", "title": b["title"],

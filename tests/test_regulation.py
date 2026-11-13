@@ -94,6 +94,26 @@ def test_us_stages_from_congress_actions():
     assert bills.current(vetoed)["stage"] == "vetoed"
 
 
+def test_the_congress_key_goes_in_a_header_never_in_an_address(tmp_path, monkeypatch):
+    """Secret keys never go in a URL (addresses end up in logs and error messages): congress.gov's goes in a header."""
+    monkeypatch.setenv("CONGRESS_API_KEY", "secret-test-key")
+    import json
+    from aipulse import bills, feeds
+    monkeypatch.setattr(bills.time, "sleep", lambda s: None)
+    listing = json.loads((FIX / "congress_bills.json").read_text(encoding="utf-8"))
+    listing["pagination"] = {}
+    actions = json.loads((FIX / "congress_actions.json").read_text(encoding="utf-8"))
+    asked = []
+    def fetch(url):
+        asked.append(url)
+        return json.dumps(actions if "/actions" in url else listing).encode()
+    bills.sync_congress(store.connect(tmp_path / "t.db"), fetch, log=lambda *_: None)
+    assert asked and all(u.startswith("https://api.congress.gov/") for u in asked)
+    assert not [u for u in asked if "secret-test-key" in u or "api_key" in u]
+    env, auth = feeds.API_KEYS["api.congress.gov"]
+    assert env == "CONGRESS_API_KEY" and auth("secret-test-key") == {"X-Api-Key": "secret-test-key"}
+
+
 def test_congress_sync_keeps_ai_bills_and_builds_cards(tmp_path, monkeypatch):
     monkeypatch.setenv("CONGRESS_API_KEY", "test-key")
     import json
