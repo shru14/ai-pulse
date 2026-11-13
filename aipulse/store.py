@@ -114,7 +114,7 @@ def connect(path: str | Path) -> sqlite3.Connection:
     if "alerted" not in {r["name"] for r in conn.execute("PRAGMA table_info(sources)")}:
         conn.execute("ALTER TABLE sources ADD COLUMN alerted INTEGER NOT NULL DEFAULT 0")
     conn.executescript(FTS_SCHEMA)
-    from .bills import connect_tables  # bills.py imports this module
+    from .bills import connect_tables  # bills/ imports this module
     connect_tables(conn)
     version = conn.execute("SELECT value FROM meta WHERE key = 'fts'").fetchone()
     if rebuilt or not version or version[0] != FTS_VERSION:

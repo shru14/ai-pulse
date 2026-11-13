@@ -522,7 +522,7 @@ def test_the_words_of_the_week_are_glossary_words_and_the_front_page_gets_them()
 def test_settings_and_secrets_are_read_only_in_config():
     """aipulse/config.py lists every setting and secret the app reads; nothing else reads the environment itself."""
     here = Path(__file__).parent.parent / "aipulse"
-    readers = [p.name for p in here.glob("*.py") if p.name != "config.py"
+    readers = [p.name for p in here.rglob("*.py") if p.name != "config.py"
                and re.search(r"os\.environ|os\.getenv|getenv\(", p.read_text(encoding="utf-8"))]
     assert not readers, f"read through aipulse/config.py instead: {readers}"
     from aipulse import config

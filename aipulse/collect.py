@@ -507,7 +507,7 @@ def resummarize(conn, log=print) -> int:
     changed = 0
     for it in store.query(conn, None, None, None, limit=100000):
         if it.get("bill") or "arxiv.org/abs/" in it["url"] or it["source"] in AS_PROVIDED:
-            continue  # official records and papers have summaries of their own (bills.py, paper_summary)
+            continue  # official records and papers have summaries of their own (bills/, paper_summary)
         title = brief.clean_title(it["title"], it["source"])
         # Drafts are rebuilt from scratch so they reflect the story's current sorting.
         summary = "" if brief.is_draft(it["summary"]) else brief.clean_summary(it["summary"], title, it["source"])
@@ -553,7 +553,7 @@ def apply_regulation(item: dict, default_jurisdictions: list[str] = ()) -> None:
     """
     if item["category"] not in ("policy", "regulation") or item.get("action") == EXPERT:
         return
-    if item.get("source") in bills.OFFICIAL_SOURCES:  # official bill records are sorted by bills.py
+    if item.get("source") in bills.OFFICIAL_SOURCES:  # official bill records are sorted by bills/
         return
     action = classify.regulatory_action(item["title"])
     # A summary that repeats the headline plus the publisher's name can name a country.

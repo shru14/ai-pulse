@@ -10,7 +10,7 @@ What's taken:
   (Council of Europe convention, UNESCO, G7, African Union, ASEAN, UN, ...), when they're about AI;
 - EU member states' own records are left out: the EU counts as one. EU-level binding acts are already
   tracked from the European Parliament, so only its non-binding ones come from here;
-- for countries tracked from their own official records (bills.py) only non-binding items (guidance),
+- for countries tracked from their own official records (bills/) only non-binding items (guidance),
   so no law appears twice;
 - AI governance bodies (safety institutes, regulators, advisory and coordination offices) for every
   country, as "AI body" cards tagged with their kind.
@@ -34,7 +34,7 @@ REFRESH_DAYS = 7
 SYNC_KEY = "oecd_sync_v4"  # a new key makes the next run read everything again after the rules change
 MARK = "OECD-"  # items.bill for these cards: each record stands alone (see cluster.py) and isn't re-sorted
 
-# Countries with official records of their own in bills.py.
+# Countries with official records of their own in bills/.
 OWN_RECORDS = {"US", "GB", "CA", "BR", "AU", "CN", "IN", "JP", "VN", "CH", "MY", "TW", "KR"}
 BINDING_TYPES = {"Law/legislation/act (by legislative body)", "Regulation (by government authority)",
                  "Amendment to/repeal of existing legislation", "Regulation", "Directive", "Treaty"}

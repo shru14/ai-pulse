@@ -280,7 +280,7 @@ TERMS: dict[str, tuple[str, str, str]] = {
                        "paper's code repository and project page addresses (Code and demo links)"),
 }
 
-# Everything else the platform reads or shows: the regulation tracker's official records (bills.py, oecd.py,
+# Everything else the platform reads or shows: the regulation tracker's official records (bills/, oecd.py,
 # incidents.py), and the icons, photos, fonts and data it uses. Same kinds; "owner's choice" marks a risk the
 # project owner accepted knowingly (7 Oct 2026). The audit reads these terms pages too.
 PLATFORM: dict[str, tuple[str, str, str]] = {
