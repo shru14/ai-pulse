@@ -41,7 +41,7 @@ _HUANG = (r"\bAlice Huang\b|\b(Jensen )?Huang\b.{0,120}\b(spy|spies|spying|espio
           r"|controvers(y|ies)|spy|spies|espionage|espionaje|intelligence asset|informant)\b|\b(scandal|controvers(y|ies)"
           r"|spy|spies|espionage|espionaje)\b.{0,60}\bNvidia\b")
 _HUANG_ONLY = rf"(?s)^(?!.*\b(exports?|curbs?|export controls?|smuggl\w*)\b).*(?:{_HUANG})"
-TOPICS = {
+TOPICS: dict[str, dict] = {
     "eu-ai-act": dict(
         name="EU AI Act", kind="Law",
         what="The EU's law on AI: its adoption, the rules for general-purpose models, and the Digital Omnibus that "
@@ -730,12 +730,12 @@ def near(cards: list[dict], since: str = "", encode=None) -> dict[str, dict[str,
     todo = [c for c in newest if _open(c, since, held)]
     if not todo:
         return {}
-    ref = [(slug, c) for slug in TOPICS for c in [c for c in newest if matches(slug, c)][:NEAR_REF]]
+    ref: list[tuple[str | None, dict]] = [(slug, c) for slug in TOPICS for c in [c for c in newest if matches(slug, c)][:NEAR_REF]]
     ref += [(None, c) for c in [c for c in newest if c["date"] < since and c.get("category") in STREAMS
                                 and not part_of(c)][:NEAR_OTHER]]
     vecs = np.asarray(encode([embed.story_text(c["title"], c.get("summary") or "") for _, c in ref + [(None, c) for c in todo]]))
     alike = vecs[len(ref):] @ vecs[:len(ref)].T
-    out = {}
+    out: dict[str, dict[str, str]] = {}
     for c, row in zip(todo, alike):
         top = np.argsort(-row)[:NEIGHBOURS]
         for slug in {ref[j][0] for j in top} - {None}:
@@ -1185,7 +1185,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     parts = pages.frame(conn, len(cards))
     (out / "flags").mkdir(exist_ok=True)
     quiet = (today - timedelta(days=QUIET_DAYS)).isoformat()
-    blocks, paths = [], []
+    blocks: list[dict] = []
+    paths: list[str] = []
     for slug, t in TOPICS.items():
         ev = events(slug, cards)
         for f in {countries.flag(f) for f in LOOK[slug]} | {e["flag"] for e in ev if e.get("flag")}:
