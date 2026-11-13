@@ -102,7 +102,9 @@ def usual(cards: list[dict], category: str, day: date) -> float:
 def problems(by_stream: dict[str, list[dict]], cards: list[dict], day: date) -> list[str]:
     """Everything wrong with the day's email, one line each ("" list: fine to send). `by_stream` is what the
     email shows; `cards` covers the two weeks before too, for what's usual."""
-    out, links, titles = [], {}, {}
+    out: list[str] = []
+    links: dict[str, str] = {}
+    titles: dict[str, str] = {}
     for name, day_cards in by_stream.items():
         category, stream, _ = rss.FEEDS[name]
         for c in day_cards:
