@@ -1214,7 +1214,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ft .pc-hh h2{font:400 26px/1.1 var(--display);margin:0;border:0;padding:0}
 .cp .pc-hh p{margin:3px 0 0;font-size:14px;font-weight:600}
 .cp .pc-in{padding:12px 14px 14px}
-.cp .pc-lead{font:700 16.5px/1.4 var(--body);margin:2px 0 4px;padding-left:10px;border-left:5px solid var(--ink)}
+.cp .pc-lead{font:500 16px/1.4 var(--body);margin:2px 0 4px}
 .cp .pc .pc-in h3{font:700 12px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:18px 0 8px;padding-top:8px;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
 .cp .pc-y.pc-rat{background:var(--ink);box-shadow:0 0 0 2px #009E73}
 .cp .pc-find{font:14px var(--body);padding:6px 9px;border:2px solid var(--line);width:min(280px,100%);margin:0 0 6px;background:var(--bg);color:var(--ink)}
