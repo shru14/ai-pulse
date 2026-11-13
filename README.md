@@ -177,13 +177,42 @@ AI laws and bills, and each place's main data protection law with the bills amen
 | ~60 more countries and bodies (UN, UNESCO, G7, AU, ASEAN…) | OECD.AI Policy Observatory | CC BY 4.0 |
 | International AI standards | ISO/IEC and IEEE, kept by hand | Facts only (number, title, date, link) |
 
+## How it works
+
+Python, almost all standard library, and one SQLite database. There is no server and no paid API. Every 6 hours a
+GitHub Actions run collects, sorts and builds, then publishes plain pages to GitHub Pages.
+
+| Step | What happens | Code |
+|---|---|---|
+| Collect | Each source's feed, sitemap or official API is read, where its robots.txt and terms allow. One broken source never stops a run | `sources.py`, `feeds.py`, `collect.py`, `bills.py`, `terms.py` |
+| Sort | Each story gets a short headline and summary, and keyword rules decide whether it is about AI, its stream, its places and its tags (no AI model). Non-English official records are translated offline | `brief.py`, `classify.py`, `jurisdictions.py`, `translate.py` |
+| Group | Reports of the same event become one card, and cards join the storylines they belong to | `cluster.py`, `topics.py` |
+| Keep | One SQLite file, carried between runs in the Actions cache and backed up after each full run for 14 days | `store.py` |
+| Build | Every page is written as static HTML holding its own stories; `data.json` serves search and filters | `static.py`, `pages.py`, `seo.py` and a module per feature page |
+| Send | The daily and weekly email, checked before it goes out; sign-ups are kept by a Google Apps Script web app | `digest.py`, `poster.py`, `quality.py`, `subscribers.py`, `apps-script/Code.gs` |
+
+| Where | What's there |
+|---|---|
+| `aipulse/__main__.py` | The command line: every job the workflows run (`python -m aipulse --help`) |
+| `aipulse/config.py` | Every setting and secret the code reads, what each is for and where it is set |
+| `aipulse/<feature>.py` | One module per feature page, such as `court.py` for AI in court; each file's first lines say which page |
+| `aipulse/access.py` | Seals the paid Pulse Compass pages at build; Compass's own code is in a private repo |
+| `templates/` | The pages' shell, fonts, icons and pictures |
+| `tests/` | The tests and their sample feeds |
+| `.github/workflows/` | `pages.yml` collects and publishes, `digest.yml` sends the email, each `*-note.yml` emails a draft branch for approval |
+| `data/seed.db.gz` | The database a run starts from when there is no saved copy or backup |
+
 ## Run it
 
 ```bash
-python -m aipulse collect     # fetch every source into aipulse.db
-python -m aipulse serve       # http://127.0.0.1:8000
-python -m aipulse audit       # check every source's robots.txt and terms again
-python -m pytest -q           # tests (run locally)
+pip install -r requirements-dev.txt   # the pinned packages, with the test and lint tools
+git config core.hooksPath hooks       # once: lint and tests run before each commit that changes Python
+python -m aipulse collect             # fetch every source into aipulse.db (add --verbose before collect: each page skipped)
+python -m aipulse serve               # http://127.0.0.1:8000
+python -m aipulse audit               # check every source's robots.txt and terms again
+python -m pytest -n auto              # tests, run on this PC (never on Actions)
+python -m pytest -n auto --cov        # the same, with how much of the code they cover (at least 80%)
+python -m ruff check .                # lint
 ```
 
 Hosted on GitHub Pages (`.github/workflows/pages.yml`); the email is sent by `.github/workflows/digest.yml` and
