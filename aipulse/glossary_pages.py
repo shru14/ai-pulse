@@ -61,7 +61,8 @@ def _first_sentence(text: str) -> str:
 
 def _links(entry: dict) -> tuple[str, list[str]]:
     """The meaning as HTML, the first mention of each other glossary word linked to its page, and those words' ids."""
-    text, spans = entry["def"], []
+    text = entry["def"]
+    spans: list[tuple[int, int, str]] = []
     for e in glossary.ENTRIES:
         if e["id"] == entry["id"]:
             continue
@@ -123,7 +124,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     pages.write_css(out)
     # each recent story's glossary words: the past 7 days' counts (the cloud) and which words share stories
     week, since = (today - timedelta(days=7)).isoformat(), (today - timedelta(days=TOGETHER_DAYS)).isoformat()
-    recent, together = Counter(), {e["id"]: Counter() for e in glossary.ENTRIES}
+    recent: Counter[str] = Counter()
+    together: dict[str, Counter[str]] = {e["id"]: Counter() for e in glossary.ENTRIES}
     three = (today - timedelta(days=92)).isoformat()  # data.json's last 3 months, which the word's list reads
     latest: dict[str, list[dict]] = {}  # each word's stories, for the headlines in its page's HTML (seo.py)
     for c in cards:
