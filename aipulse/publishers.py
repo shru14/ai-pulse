@@ -108,8 +108,8 @@ def _glance(comp: list[dict], rise, today: date) -> str:
 
 def _companies(comp: list[dict], today: date) -> str:
     def rows(part):
-        return "".join(f'<tr><td><b>{escape(r["name"])}</b></td><td>{escape(r["home"])}</td>'
-                       f'<td class="pn-num"><b>{r["papers"]}</b></td><td>{escape(r["subject"])}</td></tr>'
+        return "".join(f'<tr><td>{escape(r["name"])}</td><td>{escape(r["home"])}</td>'
+                       f'<td class="pn-num">{r["papers"]}</td><td>{escape(r["subject"])}</td></tr>'
                        for r in part)
     head = ('<thead><tr><th>Company</th><th>Based in</th><th>Papers</th><th>Most papers on</th></tr></thead>')
     more = (f'<details class="wp-more"><summary>Show all {len(comp)} companies</summary><table class="mt wp-table">'
@@ -136,7 +136,7 @@ def chart(subject: str, months: list[str], v: list[float], today: date) -> str:
 
 
 def _people(ppl: list[dict], today: date) -> str:
-    body = "".join(f'<tr><td><b>{escape(r["name"])}</b></td><td class="pn-num"><b>{r["papers"]}</b></td>'
+    body = "".join(f'<tr><td>{escape(r["name"])}</td><td class="pn-num">{r["papers"]}</td>'
                    f'<td>{escape(", ".join(r["subjects"]))}</td></tr>' for r in ppl)
     return (f'<section><h2>Researchers we follow who published most</h2>\n<table class="mt wp-table"><thead><tr>'
             f'<th>Researcher</th><th>Papers in {today.year}</th><th>Mostly on</th></tr></thead><tbody>{body}</tbody>'

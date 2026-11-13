@@ -1606,34 +1606,34 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh-cite-box .fh-cite-x{position:absolute;top:6px;right:8px;padding:0 6px;border:0;background:none;color:var(--ink);font:700 20px/1 var(--body)}
 @media (max-width:640px){.cp .fh-cite-box{position:relative;width:auto;margin-top:8px}}
 /* New tests for AI and Compute behind notable models (Research's features) */
-.cp .nt-glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:6px 0 34px;border:1.5px solid var(--line);border-radius:10px}
+.cp .nt-glance{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin:6px 0 34px;border:1.5px solid var(--line);border-radius:10px}
 .cp .nt-glance div{padding:16px 20px}.cp .nt-glance div+div{border-left:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
 .cp .nt-glance span{display:block;font-size:14.5px;line-height:1.4;color:var(--muted)}
-.cp .nt-glance .nt-n1{margin-bottom:6px;font:500 30px/1.1 var(--body);color:var(--ink);font-variant-numeric:tabular-nums}
-@media (max-width:640px){.cp .nt-glance{grid-template-columns:1fr}.cp .nt-glance div{padding:12px 14px}
+.cp .nt-glance .nt-n1{margin-bottom:6px;font:400 26px/1.1 var(--body);color:var(--ink);font-variant-numeric:tabular-nums}
+@media (max-width:640px){.cp .nt-glance{grid-auto-flow:row}.cp .nt-glance div{padding:12px 14px}
   .cp .nt-glance div+div{border-left:0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
   .cp .nt-glance .nt-n1{font-size:24px}}
 .cp .nt .nt-how{margin:0 0 14px;max-width:none;font-size:14.5px;color:var(--muted)}
 .cp .nt-scores{list-style:none;margin:0 0 34px;padding:0;border-top:2px solid var(--line)}
-.cp .nt-scores li{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) minmax(0,15rem);gap:14px;align-items:center;
+.cp .nt-scores li{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 6.5rem;gap:14px;align-items:center;
   padding:7px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
-.cp .nt-scores a{color:var(--ink);font-weight:600;text-decoration:none}
+.cp .nt-scores a{color:var(--ink);font-weight:400;text-decoration:none}
 .cp .nt-scores a:hover{text-decoration:underline}
 .cp .nt-track{position:relative;height:14px;background:linear-gradient(var(--line),var(--line)) 0 50%/100% 1.5px no-repeat}
 .cp .nt-track::before,.cp .nt-track::after{content:"";position:absolute;top:2px;width:1.5px;height:10px;background:var(--line)}
 .cp .nt-track::before{left:0}.cp .nt-track::after{right:0}
+.cp .nt-track{background:linear-gradient(var(--line),var(--line)) 0 50%/100% 1.5px no-repeat,linear-gradient(var(--muted),var(--muted)) 50% 3px/1px 8px no-repeat}
 .cp .nt-track i{position:absolute;top:50%;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:var(--f-research);border:2px solid var(--line)}
-.cp .nt-pct{font-size:14px;color:var(--muted)}.cp .nt-pct b{font:700 16px var(--body);color:var(--ink)}
+.cp .nt-pct{font-size:14.5px;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .cp .nt h3{margin:26px 0 6px;font:400 19px var(--display)}
 .cp .nt-n{margin-left:8px;font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .cp .nt-table td:first-child{width:12rem}.cp .nt-table td:nth-child(3){width:17rem}
 .cp .nt-table td small,.cp .cg-table td small{display:block;margin-top:2px;font-size:13px;color:var(--muted)}
 .cp .nt-table td:last-child{white-space:nowrap;color:var(--muted);font-size:14px}
 /* Who publishes AI research on Hugging Face (Research's feature) */
-.cp .wp-table td:first-child{width:14rem}.cp .wp-more{margin:10px 0 0}.cp .wp-more summary{cursor:pointer;font-weight:600}
-.cp .wp-rise{border-left:4px solid var(--f-research);padding-left:14px}
+.cp .wp-table td:first-child{width:14rem}.cp .wp-table .pn-num,.cp .cg-table .pn-num{font-variant-numeric:tabular-nums}.cp .wp-more{margin:10px 0 0}.cp .wp-more summary{cursor:pointer}
 .cp .wp-chart{display:block;width:100%;max-width:640px;height:auto}
-.cp .wp-chart polyline{fill:none;stroke:var(--f-research);stroke-width:2}.cp .wp-chart circle{fill:var(--f-research)}
+.cp .wp-chart polyline{fill:none;stroke:var(--f-research);stroke-width:1.5}.cp .wp-chart circle{fill:var(--f-research)}
 .cp .wp-chart text{font:12px var(--body);fill:var(--ink);text-anchor:middle}.cp .wp-chart .wp-m{fill:var(--muted)}
 .cp .nt-table td small.nt-beat{margin-top:6px;color:var(--ink)}.cp .ft .nt-table td small.nt-beat a{font-weight:400;text-decoration:underline}
 .cp .nt-table td.cl{font-size:14px;white-space:nowrap}.cp .ft .nt-table td.cl a{font-weight:400;text-decoration:underline}
@@ -1646,10 +1646,10 @@ a.subscribe-btn{text-decoration:none}
 .cp .cg-dot{fill:var(--f-research);fill-opacity:.55;stroke:color-mix(in srgb,var(--ink) 45%,transparent);stroke-width:.6}
 .cp .cg-dot.cg-built{fill:var(--bg);fill-opacity:1;stroke:var(--ink);stroke-width:1}
 .cp .cg-top{fill:var(--ink)}
-.cp .cg-name{fill:var(--ink);font-size:13px;font-weight:600}
+.cp .cg-name{fill:var(--ink);font-size:13px}
 .cp .cg-label{fill:var(--bg);fill-opacity:.92;stroke:color-mix(in srgb,var(--ink) 30%,transparent);stroke-width:.8}
 .cp .cg-lead{stroke:var(--ink);stroke-width:1}
-.cp .cg-table td:nth-child(4){white-space:nowrap}.cp .cg-table td:nth-child(4) b{font:700 16px var(--body)}
+.cp .cg-table td:nth-child(4){white-space:nowrap}
 @media (max-width:640px){.cp .nt-scores li{grid-template-columns:1fr auto;gap:2px 10px}
   .cp .nt-track{grid-column:1/-1;grid-row:2}.cp .nt-pct{grid-column:2;grid-row:1;text-align:right}
   .cp .nt-table td:first-child,.cp .nt-table td:nth-child(3){width:auto}
@@ -1812,7 +1812,7 @@ a.subscribe-btn{text-decoration:none}
   /* New tests' best scores: the name, score and dot on one short line each */
   .cp .nt-scores li{padding:4px 0;gap:0 8px}
   .cp .nt-scores a{font-size:12.5px}
-  .cp .nt-pct{font-size:11px}.cp .nt-pct b{font-size:12.5px}
+  .cp .nt-pct{font-size:12px}
   .cp .nt-track{height:10px}
   .cp .nt-track i{width:10px;height:10px;margin:-5px 0 0 -5px}
   /* Papers that made the news: a newspaper on a phone, the lead across the top, then two ruled columns, small serif */
