@@ -180,7 +180,7 @@ def rules(laws: list[dict], month: str) -> list[dict]:
 
 def word_counts(cards: list[dict]) -> Counter:
     """How many of these stories use each glossary word (in the headline or the description)."""
-    n = Counter()
+    n: Counter[str] = Counter()
     for c in cards:
         text = f"{c.get('title') or ''} {c.get('summary') or ''}"
         n.update(e["id"] for e in glossary.ENTRIES if glossary._PATTERNS[e["id"]].search(text))

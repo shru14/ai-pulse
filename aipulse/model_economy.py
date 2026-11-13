@@ -18,7 +18,7 @@ PATH = "model-economy/"
 # a new model (as Release cards names it): the model before it in the same line, as Release cards names it (its
 #  launch price and story taken from there); or, for one Release cards doesn't hold at a single per-token price, a tuple
 #  of (that model, its launch price on the lab's own API as "$in / $out" per 1M tokens, its story or the lab's page)
-BEFORE = {
+BEFORE: dict[str, str | tuple[str, str, str]] = {
     "Claude Opus 5": "Claude Opus 4.8",
     "Claude Opus 5.5": "Claude Opus 5",
     "Grok 4.6": "Grok 4.5",
@@ -92,8 +92,11 @@ def prices() -> list[dict]:
     for r in rows:
         if r["model"] not in BEFORE or not (new := _per_token(r["price"])):
             continue
-        was_model, was_price, was_url = held[BEFORE[r["model"]]] if isinstance(BEFORE[r["model"]], str)             else BEFORE[r["model"]]
+        before = BEFORE[r["model"]]
+        was_model, was_price, was_url = held[before] if isinstance(before, str) else before
         was = _per_token(was_price)
+        if not was:  # the model before has no per-token price (per image, per minute): nothing to compare
+            continue
         if new == was:
             way, say = "same", "Same"
         elif new[0] <= was[0] and new[1] <= was[1]:
@@ -127,8 +130,8 @@ _WAY = {"down": "pc-yes", "same": "me-same", "up": "pc-no", "mixed": "me-mixed"}
 
 def _line(model: str) -> str:
     """The first model of `model`'s line, following BEFORE back, so a line's rows sit together."""
-    while isinstance(BEFORE.get(model), str):
-        model = BEFORE[model]
+    while isinstance(prev := BEFORE.get(model), str):
+        model = prev
     return BEFORE[model][0] if model in BEFORE else model
 
 
