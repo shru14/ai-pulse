@@ -21,7 +21,9 @@ from __future__ import annotations
 
 import time
 import urllib.error
+from collections.abc import Callable
 from datetime import date, timedelta
+from typing import Any
 from urllib.parse import quote
 
 from . import brands, cluster, feeds, store
@@ -82,12 +84,14 @@ def feed_archives(conn, since: date, fetcher=feeds.fetch, log=print, stream: str
         row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
         if row and row[0] == "done":
             continue
-        start, n_src, seen, failed, finished = (int(row[0]) + 1 if row else 1), 0, set(), 0, True
+        start, n_src, failed, finished = (int(row[0]) + 1 if row else 1), 0, 0, True
+        seen: set[str] = set()
         for n in range(start, (MAX_PAGES if src.get("paged") else 1) + 1):
             if stop_at is not None and time.monotonic() >= stop_at:
                 finished = False  # out of time: the next run carries on from the last page read
                 break
-            body, entries, error = None, [], None
+            body, entries = None, []
+            error: Exception | None = None
             for attempt in range(PAGE_TRIES):
                 try:
                     body = fetcher(page_url(src["url"], n, src.get("page_param", "paged")))
@@ -154,7 +158,7 @@ def paper_sources(since: date, until: date) -> list[dict]:
     return out
 
 
-GROUPS = {"feeds": feed_archives, "official": official_sources, "research": arxiv_sources, "papers": paper_sources}
+GROUPS: dict[str, Callable[..., Any]] = {"feeds": feed_archives, "official": official_sources, "research": arxiv_sources, "papers": paper_sources}
 
 
 def stream_history(conn, stream: str, minutes: float, since: date = date(2023, 1, 1), fetcher=feeds.fetch,
