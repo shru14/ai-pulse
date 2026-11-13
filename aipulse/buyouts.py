@@ -379,6 +379,8 @@ LEFT_OUT = {
         "buying turbines, not a company",
     "https://dcnnmagazine.com/features-list-2022/cloud-computing-storage/netapp-completes-acquisition-of-peakaio-for-ai-storage/":
         "PEAK:AIO makes storage software, not AI",
+    "https://tecnoblog.net/noticias/united-airlines-bane-agentes-de-ia-na-compra-de-passagens/":
+        "no company being bought",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
