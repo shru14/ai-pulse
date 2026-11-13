@@ -225,12 +225,23 @@ CHECKED: dict[str, dict] = {
              link="https://arxiv.org/abs/2610.26770", subject="agents",
              about="Tests a method that lets AI coding agents improve their own harness without answer keys, finding an "
                    "average 2.0-point gain in tasks solved and a 26.1% cut in cost per task against an earlier method."),
+    "https://news.mit.edu/2026/new-research-could-lead-faster-trustworthy-ai-models-climate-prediction-1112":
+        dict(paper="Optimal scenario design for climate emulation", link="https://doi.org/10.1073/pnas.2620731123",
+             subject="science",
+             about="Shows that a climate emulator trained on one optimised scenario predicts new scenarios better than "
+                   "one trained on six standard scenarios, despite using less training data."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
     "https://tecnoblog.net/noticias/chatgpt-e-gemini-indicam-lojas-falsas-para-compras-aponta-estudo/",  # a company report (Podqi, AI Search Brand Risk Report 2026), no paper
+    "https://pandaily.com/tencent-yuanbao-search-standalone-ai-search-so-qq-com",  # a product launch, no paper
+    "https://theconversation.com/nobody-cared-new-research-shows-deepfakes-are-hurting-regular-people-not-just-celebrities-296154",  # paper found (a Taylor & Francis journal survey study) but its abstract can't be read to check: tandfonline.com refuses us
+    "https://saudigazette.com.sa/article/666179/saudi-arabia/saudi-arabia-among-worlds-top-3-in-ai-talent-growth-and-model-development",  # can't read to check (the site refuses us)
+    "https://www.dawn.com/news/2043817/nadra-launches-chatbot-that-tells-families-exact-papers-needed-for-succession-certificates",  # a news story on a product launch, no paper
+    "https://theconversation.com/why-the-doomsday-prediction-of-1960-matters-today-295817",  # an essay on a 1960 Science paper about population, not AI research
+    "https://techcrunch.com/2026/11/10/psi-is-trying-to-make-a-business-out-of-ai-driven-scientific-discovery/",  # a company profile; the result is linked only as a company page and blog post, no paper named
     "https://theconversation.com/most-uni-students-now-use-ai-but-that-doesnt-mean-they-like-it-295170",  # the authors' own survey project (AIinHE) and a company survey report, no one paper
     "https://the-decoder.com/ai-auditors-catch-most-agent-misbehavior-but-flood-reviewers-with-false-alarms-new-study-finds/",  # a story on a Substack blog post, on no preprint server or journal
     "https://techcrunch.com/2026/11/06/hundreds-of-artex-ai-hacking-tools-found-publicly-exposed-to-the-web/",  # a news story on a security company's blog post (Censys), no paper
