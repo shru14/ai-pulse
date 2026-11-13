@@ -20,6 +20,7 @@ import hmac
 import json
 import re
 from collections import Counter
+from collections.abc import Collection
 from datetime import date, timedelta
 from html import escape
 
@@ -48,7 +49,7 @@ def last_week(day: date) -> tuple[date, date]:
     return monday - timedelta(days=7), monday
 
 
-def earlier(conn, card: dict, week: search.Index, past: search.Index, topic, used: set[str] = frozenset()) -> list[dict]:
+def earlier(conn, card: dict, week: search.Index, past: search.Index, topic, used: Collection[str] = frozenset()) -> list[dict]:
     """The stories before this week that this card follows on from: close to it in meaning and on the reader's
     topic (`topic`, its vector), the TRACKED closest to both, not `used` already, oldest first."""
     from . import store
@@ -63,7 +64,7 @@ def earlier(conn, card: dict, week: search.Index, past: search.Index, topic, use
             break
         if c != card["id"] and c not in used and on_topic.get(i, 0) >= search.MIN_SIMILARITY:
             both[c] = max(both.get(c, -1.0), min(s, on_topic[i]))
-    picked = sorted(both, key=both.get, reverse=True)[:TRACKED]
+    picked = sorted(both, key=lambda c: both[c], reverse=True)[:TRACKED]
     return sorted(store.cards_by_id(conn, picked), key=lambda c: c["date"])
 
 
@@ -74,8 +75,8 @@ def _indexes(conn, day: date) -> tuple[search.Index, search.Index]:
     return week, search.Index(conn, since - timedelta(days=HISTORY), since, mean=week.mean)
 
 
-def _section(conn, topic: str, week: search.Index, past: search.Index, shown: set[str] = frozenset(),
-             threaded: set[str] = frozenset()) -> dict:
+def _section(conn, topic: str, week: search.Index, past: search.Index, shown: Collection[str] = frozenset(),
+             threaded: Collection[str] = frozenset()) -> dict:
     """One topic: its stories that week (none `shown` already), the lead first, and the earlier stories on it."""
     found = [c for c in search.search(conn, topic, week.since, week.until, k=PER_TOPIC + len(shown), index=week)
              if c["id"] not in shown][:PER_TOPIC]
@@ -119,16 +120,17 @@ def prepare(conn, interests: list[str], key: str, day: date, log=print) -> int:
     Returns how many interests were worked out."""
     conn.executescript("DROP TABLE IF EXISTS dossiers;" + SCHEMA)  # made afresh each run, so always in today's shape
     since, _ = last_week(day)
-    distinct = {}
+    distinct: dict[str, str] = {}
     for i in interests:
         t = clean_interest(i)
         if t:
             distinct.setdefault(interest_id(key, t), t)
-    week, past = _indexes(conn, day) if distinct else (None, None)
     rows = []
-    for id_, topic in distinct.items():
-        sec = _section(conn, topic, week, past)
-        rows.append((id_, since.isoformat(), topic, len(sec["cards"]), _body(sec)))
+    if distinct:
+        week, past = _indexes(conn, day)
+        for id_, topic in distinct.items():
+            sec = _section(conn, topic, week, past)
+            rows.append((id_, since.isoformat(), topic, len(sec["cards"]), _body(sec)))
     conn.executemany("INSERT INTO dossiers (id, week, topic, count, html) VALUES (?, ?, ?, ?, ?)", rows)
     conn.commit()
     log(f"dossiers: {len(rows)} interests for the week of {since.isoformat()}")
@@ -163,7 +165,8 @@ def samples(conn, index: search.Index, k: int = SAMPLES) -> list[str]:
               "Companies": lambda t: f"What {t} is building",
               "Places": lambda t: f"AI rules in {'the ' if t.startswith('United') else ''}{t}"}
     ranked = {g: [q for t, _ in c.most_common(6) if (q := phrase[g](t))] for g, c in counts.items()}
-    out, turn = [], 0
+    out: list[str] = []
+    turn = 0
     while len(out) < k and any(ranked.values()):
         g = ("Topics", "Companies", "Places")[turn % 3]
         turn += 1
@@ -248,7 +251,8 @@ def who_and_where(cards: list[dict], topic: str) -> tuple[list[str], list[str]]:
     filters group them), most often first; not what the topic itself names."""
     from .preferences import group_of  # it builds on the digest, as this module does
     asked = set(search.words(topic))
-    names, places = Counter(), Counter()
+    names: Counter[str] = Counter()
+    places: Counter[str] = Counter()
     for c in cards:
         for t in story_tags(c):
             if set(search.words(t)) <= asked:
