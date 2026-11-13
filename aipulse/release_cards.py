@@ -640,10 +640,20 @@ LEFT_OUT = {
         "same as Muse Ember",
     "https://www.marktechpost.com/2026/11/09/meta-muse-ember-small-agent-model/":
         "same as Muse Ember",
+    "https://the-decoder.com/nvidias-model-gr00t-2-watches-humans-on-video-then-imagines-itself-as-the-robot/":
+        "GR00T 2: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/11/10/zyphra-zonos3-mini-open-source-tts/":
+        "ZONOS3-Mini: one news outlet within 3 days",
+    "https://elevenlabs.io/blog/scribe-v3": "Scribe v3: one news outlet within 3 days",
+    "https://deepmind.google/blog/introducing-alphaproof-code/": "AlphaProof Code: one news outlet within 3 days",
+    "https://arxiv.org/abs/2611.10224": "Jais 3: no news outlet within 3 days",
+    "https://github.com/MiniMax-AI/MiniMax-H3-Image": "MiniMax-H3-Image: no news outlet within 3 days",
+    "https://www.engadget.com/2311855/gemini-4-carbon-now-available-worldwide/": "same as Gemini 4 Carbon",
+    "https://pytorch.org/blog/optimizing-muse-spark-open-on-tpu-v7-with-sglang-torchtpu/": "same as Muse Spark Open",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-09"
+CHECKED_TO = "2026-11-10"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
