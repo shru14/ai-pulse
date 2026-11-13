@@ -698,17 +698,16 @@ def _num(p: float) -> str:
 
 
 def _glance(rows: list[dict]) -> str:
-    """Three big numbers, each saying what it counts."""
+    """Three numbers in one box, each saying what it counts."""
     scored = [r for r in rows if r["pct"] is not None]
     under = sum(r["pct"] < 50 for r in scored)
     top, top_n = Counter(r["subject"] for r in rows).most_common(1)[0]
-    tiles = [(len(rows), f"new tests for AI in papers since {_day(SINCE)}", "#CC79A7"),
+    tiles = [(len(rows), f"new tests for AI in papers since {_day(SINCE)}"),
              (f"{under} of {len(scored)}", "tests that give a top score as a percentage, where the best model scored "
-              "under half", "#E69F00"),
-             (top_n, f"of them test {SUBJECTS[top].lower()}, the most of any subject", "#56B4E9")]
-    body = "".join(f'<div class="iw-big" style="--c:{c}"><b>{n}</b><span>{escape(label)}</span></div>'
-                   for n, label, c in tiles)
-    return f'<section class="iw-glance"><h2>At a glance</h2>\n<div class="iw-bigs">{body}</div></section>\n'
+              "under half"),
+             (top_n, f"of them test {SUBJECTS[top].lower()}, the most of any subject")]
+    body = "".join(f'<div><span class="nt-n1">{n}</span><span>{escape(label)}</span></div>' for n, label in tiles)
+    return f'<section><h2>At a glance</h2>\n<div class="nt-glance">{body}</div></section>\n'
 
 
 def _scores(rows: list[dict]) -> str:

@@ -238,7 +238,7 @@ def test_new_tests_for_ai_rows_scores_and_candidates(tmp_path):
     assert nt.build(None, cards, tmp_path, date(2026, 10, 17)) == ["new-tests-for-ai/"]
     page = (tmp_path / "new-tests-for-ai" / "index.html").read_text(encoding="utf-8")
     assert "<h1>New tests for AI</h1>" in page and 'style="left:63.40%"' in page and "GPT-5.6 Sol" in page
-    assert "0 of 1" in page and "<b>1</b><span>new tests for AI" in page
+    assert "0 of 1" in page and "<span class=\"nt-n1\">1</span><span>new tests for AI" in page
     assert [c["url"] for c in nt.candidates(cards)] == ["https://arxiv.org/abs/2610.99999"]
     assert all(s in nt.SUBJECTS for _, s, *_ in nt.TESTS.values())
     assert nt.note(open(nt.__file__, encoding="utf-8").read(), "tests/2026-10-18") is None

@@ -1540,6 +1540,13 @@ a.subscribe-btn{text-decoration:none}
 .cp .fh-cite-box .fh-cite-x{position:absolute;top:6px;right:8px;padding:0 6px;border:0;background:none;color:var(--ink);font:700 20px/1 var(--body)}
 @media (max-width:640px){.cp .fh-cite-box{position:relative;width:auto;margin-top:8px}}
 /* New tests for AI and Compute behind notable models (Research's features) */
+.cp .nt-glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:6px 0 34px;border:1.5px solid var(--line);border-radius:10px}
+.cp .nt-glance div{padding:16px 20px}.cp .nt-glance div+div{border-left:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+.cp .nt-glance span{display:block;font-size:14.5px;line-height:1.4;color:var(--muted)}
+.cp .nt-glance .nt-n1{margin-bottom:6px;font:500 30px/1.1 var(--body);color:var(--ink);font-variant-numeric:tabular-nums}
+@media (max-width:640px){.cp .nt-glance{grid-template-columns:1fr}.cp .nt-glance div{padding:12px 14px}
+  .cp .nt-glance div+div{border-left:0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+  .cp .nt-glance .nt-n1{font-size:24px}}
 .cp .nt .nt-how{margin:0 0 14px;max-width:none;font-size:14.5px;color:var(--muted)}
 .cp .nt-scores{list-style:none;margin:0 0 34px;padding:0;border-top:2px solid var(--line)}
 .cp .nt-scores li{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) minmax(0,15rem);gap:14px;align-items:center;
