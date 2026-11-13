@@ -284,6 +284,8 @@ LEFT_OUT: set[str] = {
     "https://w.media/ohio-data-center-power-equipment-writedown-pushes-softbank-to-us-7-billion-loss/",  # company results and a writedown, not a new build or power deal
     "https://dplnews.com/rechazo-centros-de-datos-estados-unidos/",  # roundup of local ballot results across 10 states, not one decision
     "https://w.media/australia-sets-30mw-threshold-for-new-data-centre-grid-standards/",  # grid connection standard for all large inverter-based loads, not specific to data centres
+    "https://www.techerati.com/news-hub/polarise-plans-150mw-ai-data-centre-expansion-in-germany-by-2028/",  # can't read to check
+    "https://www.powermag.com/rowan-digital-infrastructure-secures-1-5-billion-in-financing-for-hyperscale-development-platform/",  # press release on corporate credit facilities for a pipeline, no single new campus
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
