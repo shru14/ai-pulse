@@ -433,7 +433,7 @@ def _lead(saved: dict, counts: dict[str, dict[str, int]]) -> str:
     full = [p for p in PLACES if saved.get(p, {}).get("rows")]
     out = (f"<b>{len(full)} governments</b> publish a full list of the AI they use as open data; {len(OTHERS)} more "
            "publish part of one, or a count.")
-    tops = {p: max(counts[p], key=counts[p].get) for p in counts if any(counts[p].values())}
+    tops = {p: max(counts[p], key=lambda k: counts[p][k]) for p in counts if any(counts[p].values())}
     if len(tops) > 1 and len(set(tops.values())) == 1:
         v = next(iter(tops.values()))
         out += (f" In all {len(tops)} that name suppliers, <b>{escape(v)}</b> is named most ("

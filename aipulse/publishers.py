@@ -39,7 +39,8 @@ def subjects(title: str) -> list[str]:
 
 def companies(rows: list[dict]) -> list[dict]:
     """[{name, home, papers, subject}] for each company with MIN or more papers, most first."""
-    n, subj = Counter(), {}
+    n: Counter[str] = Counter()
+    subj: dict[str, Counter[str]] = {}
     for c in rows:
         for name in {_COMPANY[t.lower()] for t in c["tags"] if t.lower() in _COMPANY}:
             n[name] += 1
@@ -52,7 +53,8 @@ def companies(rows: list[dict]) -> list[dict]:
 
 def people(rows: list[dict]) -> list[dict]:
     """[{name, papers, subjects}] for the PEOPLE researchers we follow with the most papers."""
-    n, subj = Counter(), {}
+    n: Counter[str] = Counter()
+    subj: dict[str, Counter[str]] = {}
     for c in rows:
         for name in {t for t in c["tags"] if t in _PEOPLE}:
             n[name] += 1
@@ -79,7 +81,7 @@ def rising(rows: list[dict], today: date) -> tuple[str, list[str], list[float]] 
     if len(full) < 6:
         return None
     gain = {s: sum(v[i] for i in full[-3:]) / 3 - sum(v[i] for i in full[:3]) / 3 for s, v in shares.items()}
-    best = max(gain, key=gain.get)
+    best = max(gain, key=lambda s: gain[s])
     return (best, months, shares[best]) if gain[best] > 0 else None
 
 
@@ -88,7 +90,7 @@ def _month(m: str) -> str:
 
 
 def _glance(comp: list[dict], rise, today: date) -> str:
-    home = Counter()
+    home: Counter[str] = Counter()
     for r in comp:
         home[r["home"]] += r["papers"]
     bigs = [("#CC79A7", f'{home["China"]:,} vs {home["United States"]:,}',

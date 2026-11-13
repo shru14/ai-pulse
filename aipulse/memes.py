@@ -519,7 +519,7 @@ def payload(cards: list[dict], today: date | None = None) -> dict:
     behind = [{"title": t, "url": week[t]["url"], "source": week[t].get("source") or ""}
               for t in (meme or {}).get("based_on") or [] if t in week and week[t].get("url")][:3]
     return {"from": (today - timedelta(days=6)).isoformat(), "to": today.isoformat(),
-            "html": html(meme, image) if ok else "", "format": meme["format"] if ok else None, "image": image if ok else None,
+            "html": html(meme, image) if ok and meme else "", "format": meme["format"] if ok and meme else None, "image": image if ok else None,
             "stories": behind if ok else [], "week": len(week)}
 
 
@@ -621,7 +621,7 @@ def _caption(img, text: str, box: tuple) -> None:
         draw.text(((bw - lw) / 2, top + i * step), line, font=font, fill="white" if style == "photo" else "black",
                   stroke_width=stroke, stroke_fill="black")
     if turn:
-        layer = layer.rotate(turn, expand=True, resample=Image.BICUBIC)
+        layer = layer.rotate(turn, expand=True, resample=Image.Resampling.BICUBIC)
     cx, cy = int((x + w / 2) * W), int((y + h / 2) * H)
     img.alpha_composite(layer, (cx - layer.width // 2, cy - layer.height // 2))
 
@@ -639,7 +639,7 @@ def render(meme: dict) -> bytes | None:
         from PIL import Image
         file, _, boxes = TEMPLATES[meme["format"]]
         img = Image.open(DIR / file).convert("RGBA")
-        img = img.resize((WIDTH, round(img.height * WIDTH / img.width)), Image.LANCZOS)
+        img = img.resize((WIDTH, round(img.height * WIDTH / img.width)), Image.Resampling.LANCZOS)
         for words, box in zip(captions(meme), boxes):
             _caption(img, words, box)
         if meme["format"] == "nopeyep" and meme.get("who"):  # whose choice: a white band on top

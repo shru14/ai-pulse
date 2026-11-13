@@ -37,7 +37,7 @@ PLACES = [
 ]
 # a model the lab took away from its users after launch (not one cancelled before it, nor a feature or app): (day,
 #  lab, model, why in a few words as the lab or story gives it, the story or lab page)
-PULLED = []
+PULLED: list[tuple[str, str, str, str, str]] = []
 # stories checked and left out, with why
 LEFT_OUT = {
     "https://aws.amazon.com/blogs/machine-learning/introducing-usage-based-pricing-for-amazon-sagemaker-ai-bidirectional-streaming/":

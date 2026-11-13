@@ -90,7 +90,7 @@ def clean_summary(text: str, title: str, source: str = "") -> str:
         if not rest or len(rest.strip(" —–-:|").split()) <= 8:
             return ""
     # The lede: one full sentence says what happened. A second only when the first is very short and both fit.
-    out = []
+    out: list[str] = []
     for s in _sentences(text):
         s = s.strip()
         if not s or _BOILERPLATE.search(s) or similarity(s, title) > 0.7 or len(s.split()) < 4:
@@ -160,7 +160,7 @@ def paper_summary(abstract: str, title: str = "") -> str:
     return summary
 
 
-_KIND = {"tool": "A release", "news": "Industry news", "policy": "Policy news", "research": "A paper",
+_KIND: dict[str | tuple[str, str], str] = {"tool": "A release", "news": "Industry news", "policy": "Policy news", "research": "A paper",
          "infra": "Infrastructure news",
          ("regulation", "proposal"): "A proposal", ("regulation", "law"): "A law adopted",
          ("regulation", "expert"): "Commentary"}
@@ -191,7 +191,7 @@ def _join(names: list[str]) -> str:
 
 def draft(item: dict, place_names: dict[str, str]) -> str:
     """A factual one-liner from the story's category, places and tags; "" if it would say nothing."""
-    kind = _KIND.get((item["category"], item.get("action"))) or _KIND.get(item["category"], "A story")
+    kind = _KIND.get((item["category"], item.get("action") or "")) or _KIND.get(item["category"], "A story")
     codes = item.get("jurisdictions") or jurisdictions.detect(item["title"])
     places = [_the(place_names.get(c, c)) for c in codes]
     who = [t for t in item.get("tags") or [] if t not in _PLACE_TAGS and t not in _TOPIC_TAGS]

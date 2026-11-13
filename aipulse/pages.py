@@ -49,10 +49,18 @@ def phone_type(css: str, scale: float = .85, floor: float = 11) -> str:
     return "@media (max-width:640px){\n" + "\n".join(f"  {s}{{font-size:{v}}}" for s, v in sizes.items()) + "\n}\n"
 
 
+def _part(pattern: str, page: str) -> re.Match[str]:
+    """A part the front page's template must have (its styles, masthead, footer); a clear error if it's gone."""
+    found = re.search(pattern, page, re.S)
+    if not found:
+        raise ValueError(f"the front page's template has no {pattern[:30]!r}")
+    return found
+
+
 def write_css(out: Path) -> None:
     """site.css: the front page's styles (its masthead and footer) and these pages' own, then these pages' type a size
     smaller on phones."""
-    style = re.search(r"<style>(.*?)</style>", TEMPLATE.read_text(encoding="utf-8"), re.S).group(1)
+    style = _part(r"<style>(.*?)</style>", TEMPLATE.read_text(encoding="utf-8"))[1]
     (out / "site.css").write_text(style + STYLE + phone_type(STYLE), encoding="utf-8")
 
 
@@ -61,7 +69,7 @@ def frame(conn=None, total: int = 0) -> tuple[str, str]:
     a database (the privacy page) the masthead leaves out the story count and last update."""
     t = TEMPLATE.read_text(encoding="utf-8")
     last = ((store.last_run(conn) or {}).get("ran_at") or "") if conn else ""
-    header = re.search(r'<header class="top home">.*?</header>', t, re.S).group(0)
+    header = _part(r'<header class="top home">.*?</header>', t)[0]
     header = re.sub(r"\s*<!-- Each stream.*?</nav>", "", header, flags=re.S)
     header = re.sub(r'<button class="(subscribe-btn[^"]*)" id="(\w+)-open" type="button" aria-haspopup="dialog"',
                     r'<a class="\1" href="/#\2"', header).replace("</button>", "</a>")
@@ -69,7 +77,7 @@ def frame(conn=None, total: int = 0) -> tuple[str, str]:
     when = (f'<div>Updated <time datetime="{escape(last)}">{escape(last[:16].replace("T", " "))} UTC</time>'
             ' · every 6 hours</div>' if last else "")
     header = header.replace("Loading feed…", when)
-    footer = re.search(r'<footer class="site-foot">.*?</footer>', t, re.S).group(0)
+    footer = _part(r'<footer class="site-foot">.*?</footer>', t)[0]
     return header, footer
 
 

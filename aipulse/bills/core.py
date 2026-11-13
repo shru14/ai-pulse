@@ -233,7 +233,7 @@ def upsert(conn, bill: dict) -> bool:
         summary = summary or us_interim(conn, bill)
     lang = bill.get("lang")  # an official record in another language: its English version, if made
     english = lang and translate.cached(conn, lang, bill["title"])
-    if english:
+    if lang and english:
         name = english
         summary = (summary + " " if summary else "") + \
             f"Machine-translated from {translate.LANGUAGE_NAMES[lang]}; the official text is linked."

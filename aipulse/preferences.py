@@ -95,9 +95,10 @@ def labels(c: dict) -> set[str]:
     if c.get("category") == "infra":  # the stream's every story counts as the theme, tag or not
         tags.add(classify.INFRA_TAG)
     tags |= {old for old, new in classify.INFRA_SAYS.items() if new in tags}  # saved choices of the topics these replaced
-    wider = {THEME_OF.get(t) for t in tags} | {CONTINENT_OF.get(t) for t in tags}
+    wider = {w for t in tags for w in (THEME_OF.get(t), CONTINENT_OF.get(t)) if w}
     wider |= {old for old, new in RENAMED.items() if new in wider}
-    return tags | (wider - {None, ""}) | ({story_type(c)} - {None})
+    kind = story_type(c)
+    return tags | wider | ({kind} if kind is not None else set())
 
 
 def group_of(label: str) -> str:
@@ -117,13 +118,14 @@ def options(cards: list[dict], today: date | None = None) -> dict:
     (`search`: every label any stored story has, the most used in the last DAYS days first) and a line saying so.
     `themes`: which topics each theme stands for."""
     since = ((today or date.today()) - timedelta(days=DAYS)).isoformat()
-    every, recent = set(), Counter()
+    every: set[str] = set()
+    recent: Counter[str] = Counter()
     for c in cards:
         mine = labels(c)
         every |= mine
         if (c.get("date") or "") >= since:
             recent.update(mine)
-    found = {g: [] for g in GROUPS}
+    found: dict[str, list] = {g: [] for g in GROUPS}
     for label in every - set(THEMES) - set(CONTINENTS) - set(TYPES):
         found[group_of(label)].append(label)
     for items in found.values():

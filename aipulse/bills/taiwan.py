@@ -59,7 +59,10 @@ def sync_taiwan(conn, fetcher=None, log=print, opener=None) -> int:
     found = {}
     for term in TW_SEARCHES:
         form = opener.open(TW_LAWS, timeout=30).read().decode("utf-8", "replace")
-        action = re.search(r'<form[^>]*action="([^"]+)"', form).group(1)
+        has_form = re.search(r'<form[^>]*action="([^"]+)"', form)
+        if not has_form:
+            raise ValueError("Taiwan's law search page has no search form")
+        action = has_form.group(1)
         fields = dict(re.findall(r"<input type=hidden name=([^ >]+) value=[\"']?([^\"'>]*)", form))
         fields.update({"_1_6_T": term, "_IMG_檢索.x": "10", "_IMG_檢索.y": "10"})
         page = opener.open("https://lis.ly.gov.tw" + action, data=urllib.parse.urlencode(fields).encode(),

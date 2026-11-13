@@ -177,7 +177,7 @@ def chart(rows: list[dict], base: dict, today: date) -> str:
         xx = x(f"{yr}-01-01")
         parts.append(f'<line class="cg-tick" x1="{xx:.1f}" x2="{xx:.1f}" y1="{H - B}" y2="{H - B + 5}"/>'
                      f'<text class="cg-x" x="{x(f"{yr}-07-01"):.1f}" y="{H - B + 22}">{yr}</text>')
-    tops = {}
+    tops: dict[str, dict] = {}
     for r in filter(own, est):
         if r["date"][:4] not in tops or r["flop"] > tops[r["date"][:4]]["flop"]:
             tops[r["date"][:4]] = r
@@ -189,7 +189,7 @@ def chart(rows: list[dict], base: dict, today: date) -> str:
     named = sorted([*tops.values(), base], key=lambda r: r["date"])
     spots = [(x(r["date"]), y(r["flop"])) for r in named]
     line = y(base["flop"])
-    boxes = []  # each name's box, so no name is written over another, a named dot or the GPT-4 line
+    boxes: list[tuple[float, float, float, float]] = []  # each name's box, so no name is written over another, a named dot or the GPT-4 line
 
     def clear(b: tuple, own: int) -> bool:
         bx, by, bw, bh = b

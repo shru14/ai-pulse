@@ -245,8 +245,8 @@ def note(base: str, branch: str) -> tuple[str, str, str] | None:
     leaves out; None when it changes nothing. `base` is main's copy of this file."""
     import ast
     from . import approve
-    had = next((ast.literal_eval(n.value) for n in ast.parse(base).body if isinstance(n, ast.AnnAssign)
-                and isinstance(n.target, ast.Name) and n.target.id == "CHECKED"), {})
+    had: dict = next((ast.literal_eval(n.value) for n in ast.parse(base).body if isinstance(n, ast.AnnAssign)
+                      and n.value is not None and isinstance(n.target, ast.Name) and n.target.id == "CHECKED"), {})
     changed = {u: v for u, v in CHECKED.items() if u not in had or had[u] != v}
     rows = [("Shipped" if v else "No launch found", v or "", u) for u, v in changed.items() if v is not None]
     dropped = [u for u, v in changed.items() if v is None]
@@ -310,7 +310,7 @@ def found(cards: list[dict], today: date) -> list[dict]:
     return sorted(out, key=lambda p: p["date"], reverse=True)
 
 
-def _promise(c: dict, who: str, d: date, by: date | None, launch: dict | None, today: date) -> dict:
+def _promise(c: dict, who: str | None, d: date, by: date | None, launch: dict | None, today: date) -> dict:
     row = {"date": c["date"], "company": who, "title": c["title"].strip(), "url": c["url"], "source": c["source"],
            "due": by.isoformat() if by else ""}
     if launch:

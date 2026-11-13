@@ -9,6 +9,7 @@ to ("Viral AI agent Instinct raises" -> Instinct). FIXES corrects the reader by 
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from .jurisdictions import JURISDICTIONS
 
@@ -134,7 +135,7 @@ def _clean(words: list[str]) -> str:
 
 def _run(words: list[str]) -> str:
     """The first run of name-like words."""
-    out = []
+    out: list[str] = []
     for w in words:
         if _name_tok(w) or (out and w in _JOIN):
             out.append(w)
@@ -152,7 +153,7 @@ def subject(title: str) -> str:
     words = (title[:v.start()] if v else title).split()
     while words and not _name_tok(words[-1]):
         words.pop()
-    run = []
+    run: list[str] = []
     while words and (_name_tok(words[-1]) or words[-1] == "&"):
         run.insert(0, words.pop())
     return _clean(run) or _run(title.split())
@@ -160,7 +161,9 @@ def subject(title: str) -> str:
 
 def _last_run(text: str) -> str:
     """The last run of name-like words before a preposition: "AI cloud startup Volta in ..." -> Volta."""
-    words, runs, cur = re.split(r"\s+(?:for|in|at|after|amid|as|to|over|and|—|–|-)\s+", text, maxsplit=1)[0].split(), [], []
+    words = re.split(r"\s+(?:for|in|at|after|amid|as|to|over|and|—|–|-)\s+", text, maxsplit=1)[0].split()
+    runs: list[list[str]] = []
+    cur: list[str] = []
     for w in words + [""]:
         if w and (_name_tok(w) or (cur and w in _JOIN)):
             cur.append(w)
@@ -192,7 +195,7 @@ def read(c: dict) -> dict | None:
     v = _VERB.search(t)
     # the amount the verb goes with: "After Nvidia's $20B not-acqui-hire, Groq reportedly raising $650M" -> $650M
     rest = [a for p, a in found if a != val and (not v or p > v.start())] or [a for p, a in found if a != val]
-    out = {"reported": bool(REPORTED.search(t)), "valuation": val, "partner": "", "amount": rest[0] if rest else 0.0}
+    out: dict[str, Any] = {"reported": bool(REPORTED.search(t)), "valuation": val, "partner": "", "amount": rest[0] if rest else 0.0}
     if acq and out["amount"] and _after(t, acq):
         out.update(kind="acquisition", company=subject(t), partner=_after(t, acq))
     elif COMPUTE.search(t) and _DEAL.search(t) and out["amount"]:

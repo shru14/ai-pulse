@@ -196,7 +196,7 @@ def note_rows(base: str) -> tuple[list[tuple[str, ...]], list[str]]:
     from . import approve
     had = approve.lists_in(base, ("ROUNDS", "COMPUTE", "INVEST_SELL", "SHARES_BACK", "SKIPPED")) if base else {}
     seen = set().union(*had.values()) if had else set()
-    rows = [(f"Round: {w}", n, s, d, u) for d, w, s, b, n, u in ROUNDS if u not in seen]
+    rows: list[tuple[str, ...]] = [(f"Round: {w}", n, s, d, u) for d, w, s, b, n, u in ROUNDS if u not in seen]
     rows += [(f"Compute: {w}", o, s + " (reported)" * r, d, u) for d, w, o, s, b, r, u in COMPUTE if u not in seen]
     rows += [(f"Comes back: {x}", y, f"{put}; {back}", m1, u1)
              for x, y, put, m1, back, m2, u1, u2, rep in INVEST_SELL + SHARES_BACK if u1 not in seen]

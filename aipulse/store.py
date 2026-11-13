@@ -184,7 +184,8 @@ def log_run(conn: sqlite3.Connection, added: int, errors: list[str]) -> None:
 
 def query(conn: sqlite3.Connection, category: str | None = None, q: str | None = None,
           days: int | None = None, limit: int = 300) -> list[dict]:
-    sql, args = "SELECT * FROM items WHERE 1=1", []
+    sql = "SELECT * FROM items WHERE 1=1"
+    args: list[str | int] = []
     if category in CATEGORIES:
         sql += " AND category = ?"; args.append(category)
     if q:

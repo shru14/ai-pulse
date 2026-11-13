@@ -45,8 +45,10 @@ def prefs_of(r: dict) -> dict[str, list[str]]:
     prefs = {k: clean(r.get(k), n) for k, n in LIMITS.items()}
     prefs["more"] = [t for t in prefs["more"] if t not in prefs["less"]]
     from .weekly import TOPICS, clean_interest  # the weekly dossier: up to TOPICS interests in their own words
-    given = r.get("interests") if isinstance(r.get("interests"), list) else []
-    once = {}  # the same interest, however capitalised, once
+    given = r.get("interests")
+    if not isinstance(given, list):
+        given = []
+    once: dict[str, str] = {}  # the same interest, however capitalised, once
     for t in filter(None, map(clean_interest, given)):
         once.setdefault(t.lower(), t)
     prefs["interests"] = list(once.values())[:TOPICS]

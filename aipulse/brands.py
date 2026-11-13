@@ -245,7 +245,7 @@ def logo_for(title: str, tags: list[str], common: set[str], budget: list[int]) -
                 continue
         brand = si.get(name)
         path = brand and si_path(brand["slug"])
-        if path:
+        if brand and path:
             return {"name": brand["title"], "hex": "#" + brand["hex"], "path": path}
     return None
 
