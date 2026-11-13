@@ -4959,3 +4959,15 @@ def test_every_meme_template_can_be_made_from_the_days_stories():
     assert set(memes.ROTATION) <= made, set(memes.ROTATION) - made
     assert memes.launch_of({"title": "Kakao launches AI Model for banks"}) is None
     assert memes.launch_of({"title": "Baidu releases ERNIE 5.5 Flash: a faster model"}) == ("Baidu", "ERNIE 5.5 Flash")
+
+
+def test_settings_and_secrets_are_read_only_in_config():
+    """aipulse/config.py lists every setting and secret the app reads; nothing else reads the environment itself."""
+    here = Path(__file__).parent.parent / "aipulse"
+    readers = [p.name for p in here.glob("*.py") if p.name != "config.py"
+               and re.search(r"os\.environ|os\.getenv|getenv\(", p.read_text(encoding="utf-8"))]
+    assert not readers, f"read through aipulse/config.py instead: {readers}"
+    from aipulse import config
+    listed = config.__doc__
+    named = set(re.findall(r'secret\("([A-Z_]+)"\)|os\.environ\.get\("([A-Z_]+)"', (here / "config.py").read_text(encoding="utf-8")))
+    assert all((a or b) in listed for a, b in named)  # each one it reads is described at the top

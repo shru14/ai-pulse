@@ -15,12 +15,11 @@ import logging
 import hashlib
 import json
 import io
-import os
 import re
 import zipfile
 from pathlib import Path
 
-from . import feeds
+from . import config, feeds
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +104,7 @@ def _model(lang: str):
     """(translator, tokenizer) for `lang` -> English, downloading the model once; None if unavailable."""
     if lang in _loaded:
         return _loaded[lang]
-    if os.environ.get("AIPULSE_OFFLINE"):  # tests: stored translations only
+    if config.offline():  # tests: stored translations only
         return None
     try:
         import ctranslate2

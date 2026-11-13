@@ -5,7 +5,6 @@ from __future__ import annotations
 import gzip
 import html
 import json
-import os
 import re
 import ssl
 import threading
@@ -18,6 +17,8 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import urlsplit
+
+from . import config
 
 USER_AGENT = "AIPulse/1.0 (+https://github.com/shru14/ai-pulse; personal news reader)"
 ROBOT_NAME = "AIPulse"  # the name robots.txt rules are matched against
@@ -175,11 +176,11 @@ def fetch(url: str, timeout: int = 20, attempts: int = ATTEMPTS) -> bytes:
     if not allowed(url):
         raise Disallowed(f"robots.txt of {urlsplit(url).netloc} doesn't allow fetching {url}")
     headers = {"User-Agent": USER_AGENT}
-    if urlsplit(url).netloc.lower() == "api.github.com" and os.environ.get("GITHUB_TOKEN"):
-        headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
+    if urlsplit(url).netloc.lower() == "api.github.com" and config.github_token():
+        headers["Authorization"] = "Bearer " + config.github_token()
     if urlsplit(url).netloc.lower() in API_KEYS:
         env, auth = API_KEYS[urlsplit(url).netloc.lower()]
-        headers.update(auth(os.environ.get(env, "")))
+        headers.update(auth(config.secret(env)))
     req = urllib.request.Request(url, headers=headers)
     for attempt in range(attempts):
         try:

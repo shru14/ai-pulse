@@ -39,12 +39,11 @@ from __future__ import annotations
 import logging
 import html
 import json
-import os
 import re
 import time
 from datetime import date, datetime, timedelta, timezone
 
-from . import feeds, store, translate
+from . import config, feeds, store, translate
 
 logger = logging.getLogger(__name__)
 
@@ -301,7 +300,7 @@ CONGRESS_API = "https://api.congress.gov/v3"
 
 
 def _congress_key() -> str:
-    return os.environ.get("CONGRESS_API_KEY", "")
+    return config.congress_key()
 
 
 def _get_json(url: str, fetcher=feeds.fetch) -> dict:

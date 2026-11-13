@@ -16,11 +16,10 @@ from __future__ import annotations
 import logging
 import hashlib
 import importlib.util
-import os
 import unicodedata
 from pathlib import Path
 
-from . import feeds
+from . import config, feeds
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +111,7 @@ def _model():
     if "m" in _loaded:
         return _loaded["m"]
     _loaded["m"] = None
-    if os.environ.get("AIPULSE_OFFLINE") and not (MODEL_DIR / "model.bin").exists():  # tests: never download
+    if config.offline() and not (MODEL_DIR / "model.bin").exists():  # tests: never download
         return None
     try:
         import ctranslate2

@@ -20,17 +20,16 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 import urllib.error
 import urllib.request
 from datetime import date, timedelta
 
-from . import memes
+from . import config, memes
 
 log = logging.getLogger(__name__)
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")  # always Google's newest Flash model
+MODEL = config.gemini_model()
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 MAX = 72  # characters a caption may have
 
@@ -215,7 +214,7 @@ def check(m: dict, stories: list[dict], avoid: set[str] = frozenset()) -> dict |
 def write(cards: list[dict], span: str, key: str | None = None, ask=None, avoid: set[str] = frozenset()) -> dict | None:
     """A Gemini meme for these stories, checked, or None (no key, no light stories, an error or no candidate passed).
     `avoid`: templates it mustn't use (the last days')."""
-    key = key or os.environ.get("GEMINI_API_KEY")
+    key = key or config.gemini_key()
     stories = sorted([c for c in cards if memes.light(c)], key=lambda c: -len(c.get("also") or []))[:30]
     if not key or len(stories) < 3:
         return None
@@ -253,7 +252,7 @@ def stored(conn, kind: str, when: date, cards: list[dict], make: bool, avoid: se
     else:
         period = [c for c in cards if c.get("date") == when.isoformat()]
     meme = write(period, "day" if kind == "day" else "week", avoid=avoid)
-    if meme or os.environ.get("GEMINI_API_KEY"):  # keep a failure too, so a bad day isn't retried at every build
+    if meme or config.gemini_key():  # keep a failure too, so a bad day isn't retried at every build
         conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (k, json.dumps(meme)))
         conn.commit()
     return meme

@@ -3,7 +3,6 @@
 import argparse
 import json
 import logging
-import os
 import sys
 import threading
 import time
@@ -11,7 +10,7 @@ import traceback
 from datetime import date, datetime, timedelta, timezone
 from importlib import import_module
 
-from . import cluster, rss, store
+from . import cluster, config, rss, store
 
 
 def site_data(path: str) -> list[dict]:
@@ -376,7 +375,7 @@ def main():
         elif a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(source_alert(rows)[2])
             print(f"{len(rows)} newly failing -> wrote {a.dry_run}")
-        elif not os.environ.get("DIGEST_EMAIL"):
+        elif not config.digest_email():
             print(f"{len(rows)} newly failing; DIGEST_EMAIL isn't set, so nothing was sent")
         else:
             note = source_alert(rows)
@@ -450,8 +449,8 @@ def main():
             from . import subscribers
             # Each confirmed reader gets their own streams and choices; nothing on a day their streams were empty.
             # Only counts are printed: addresses never appear in the (public) logs.
-            key = os.environ.get("DIGEST_LIST_KEY", "")
-            readers = subscribers.current(key, os.environ.get("DIGEST_SIGNUP_URL", ""))
+            key = config.digest_list_key()
+            readers = subscribers.current(key, config.digest_signup_url())
             from . import weekly
             # Sunday's email (the day is a Saturday): a reader with questions gets the note of their weekly dossier
             dossier = (lambda prefs: weekly.note(conn, key, prefs.get("interests") or [], day)) if digest.weekly(day) else (lambda prefs: None)
@@ -470,12 +469,12 @@ def main():
                       f"({weekly_only} weekly only{'' if digest.weekly(day) else ', not today'}) {counts}")
             return
         link, prefs, note = "", None, None
-        if os.environ.get("DIGEST_LIST_KEY") and a.to:
+        if config.digest_list_key() and a.to:
             # a sample to a subscriber's own address (the project inbox): their own email, with their link, choices
             # and dossier, as they'd get it; the address itself never appears in the log
             from . import subscribers as sb, weekly as wk
-            key = os.environ["DIGEST_LIST_KEY"]
-            mine = sb.current(key, os.environ.get("DIGEST_SIGNUP_URL", "")).get(a.to.lower())
+            key = config.digest_list_key()
+            mine = sb.current(key, config.digest_signup_url()).get(a.to.lower())
             if mine:
                 streams, _, link, prefs = mine
                 note = wk.note(conn, key, prefs.get("interests") or [], day) if digest.weekly(day) else None
@@ -661,7 +660,7 @@ def main():
         elif a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(note[2])
             print(f"{note[0]} -> wrote {a.dry_run}")
-        elif not os.environ.get("DIGEST_EMAIL"):
+        elif not config.digest_email():
             print(f"{note[0]}; DIGEST_EMAIL isn't set, so nothing was sent")
         else:
             digest.send(digest.sender(), *note)
@@ -677,7 +676,7 @@ def main():
         elif a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(jobs.note(new, dropped, a.branch)[2])
             print(f"{len(new)} new cuts -> wrote {a.dry_run}")
-        elif not os.environ.get("DIGEST_EMAIL"):
+        elif not config.digest_email():
             print(f"{len(new)} new cuts; DIGEST_EMAIL isn't set, so nothing was sent")
         else:
             note = jobs.note(new, dropped, a.branch)
@@ -696,7 +695,7 @@ def main():
         elif a.dry_run:
             open(a.dry_run, "w", encoding="utf-8").write(glossary.note(new, a.branch)[2])
             print(f"{len(new)} new words -> wrote {a.dry_run}")
-        elif not os.environ.get("DIGEST_EMAIL"):
+        elif not config.digest_email():
             print(f"{len(new)} new words; DIGEST_EMAIL isn't set, so nothing was sent")
         else:
             note = glossary.note(new, a.branch)
@@ -720,7 +719,7 @@ def main():
         monthly.summarise(conn, today, limit=a.limit, only=a.month)
     elif a.cmd == "dossiers":
         from . import embed, subscribers, weekly
-        key = os.environ.get("DIGEST_LIST_KEY", "")
+        key = config.digest_list_key()
         if not key or not embed.available():
             print("dossiers: skipped (needs DIGEST_LIST_KEY and the embedding model)")
         else:
@@ -735,7 +734,7 @@ def main():
         from . import audio, digest, subscribers
         day = date.fromisoformat(a.day) if a.day else digest.yesterday()
         cards, _ = store.cards(store.connect(a.db), days=(date.today() - day).days + 8, limit=10**6)
-        setups, key = {}, os.environ.get("DIGEST_LIST_KEY", "")
+        setups, key = {}, config.digest_list_key()
         try:  # each distinct setup once (readers who set the same share a clip)
             for streams, _, _, prefs in digest.due(subscribers.current(key), day).values() if key else ():
                 setups.setdefault(audio.setup(streams, prefs), (streams, prefs))
