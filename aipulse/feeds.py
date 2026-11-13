@@ -569,7 +569,9 @@ def _hf_released(model: dict) -> datetime:
 # skipped, collect.collect): each model the API serves, under the day the lab says it was created. Models a lab has
 # retired are no longer listed, so their launches aren't there.
 API_KEYS = {"api.anthropic.com": ("ANTHROPIC_API_KEY", lambda k: {"x-api-key": k, "anthropic-version": "2023-06-01"}),
-            "api.openai.com": ("OPENAI_API_KEY", lambda k: {"Authorization": "Bearer " + k})}
+            "api.openai.com": ("OPENAI_API_KEY", lambda k: {"Authorization": "Bearer " + k}),
+            # congress.gov's gateway (api.data.gov) takes the key as a header, so it is never in an address or a log
+            "api.congress.gov": ("CONGRESS_API_KEY", lambda k: {"X-Api-Key": k})}
 ANTHROPIC_MODELS_PAGE = "https://docs.claude.com/en/docs/about-claude/models/overview?model="
 
 
