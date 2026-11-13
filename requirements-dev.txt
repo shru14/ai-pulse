@@ -1,0 +1,4 @@
+# For running the tests on this PC: pip install -r requirements-dev.txt, then python -m pytest -n auto
+-r requirements.txt
+pytest==9.2.0
+pytest-xdist==3.8.0

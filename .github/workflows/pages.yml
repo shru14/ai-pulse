@@ -82,7 +82,7 @@ jobs:
       # English versions of non-English official records (aipulse/translate.py): an open-source model
       # (OPUS-MT, CC BY 4.0) run on the runner with two small libraries. No API; the model is cached.
       - name: Install the offline translator
-        run: pip install --quiet ctranslate2 sentencepiece certifi pillow cryptography  # pillow: writes the meme's captions onto its template; cryptography: seals Pulse Compass's pages
+        run: pip install --quiet -r requirements.txt  # pinned versions; what each package is for is noted there
 
       - name: Restore the translation model
         if: env.BUILD != 'true'
@@ -223,7 +223,7 @@ jobs:
         env:
           DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the readers' streams and choices (the log shows counts only)
         run: |
-          pip install --quiet piper-tts lameenc
+          pip install --quiet piper-tts==1.8.0 lameenc==1.9.0  # pinned, as in requirements.txt
           voice="$(python -c 'from aipulse import audio; print(audio.VOICE)')"
           url="$(python -c 'from aipulse import audio; print(audio.VOICE_URL)')"
           if [ ! -f "$voice" ]; then

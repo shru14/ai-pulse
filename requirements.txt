@@ -1,0 +1,9 @@
+# Python packages the site build needs (GitHub Actions installs these in pages.yml). Everything else is the standard library.
+# Pinned to exact versions so a new release can't break a scheduled run unnoticed; raise a pin on purpose, then run the tests.
+# Installed only in the steps that use them, with the same pins: llama-cpp-python (monthly summary, pages.yml),
+# piper-tts and lameenc (daily listen clip, pages.yml), pillow (digest.yml).
+ctranslate2==4.9.0     # offline translator for non-English official records (aipulse/translate.py, aipulse/embed.py)
+sentencepiece==0.2.3   # the translator's tokenizer
+certifi==2026.10.23    # up-to-date certificates for fetching feeds (aipulse/feeds.py)
+pillow==13.0.0         # writes the meme's captions onto its template
+cryptography==50.0.2   # seals the Pulse Compass pages (aipulse/access.py)

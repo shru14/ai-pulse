@@ -86,7 +86,7 @@ jobs:
 
       - name: Install Pillow (writes the meme's captions onto its template)
         if: steps.done.outputs.cache-hit != 'true'
-        run: pip install --quiet pillow
+        run: pip install --quiet pillow==13.0.0  # same pin as requirements.txt
 
       - name: Restore the database (read only)
         if: steps.done.outputs.cache-hit != 'true'
