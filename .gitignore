@@ -22,3 +22,7 @@ data/translate-models/
 data/embed-models/
 data/summary-models/
 data/voice/
+
+# Test coverage data (python -m pytest --cov)
+.coverage
+.coverage.*
