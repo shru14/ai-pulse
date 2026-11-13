@@ -247,7 +247,7 @@ def body(today: date) -> str:
                          f'<td class="fx-n" data-f="{kind.capitalize()}">{escape(amt)}<span class="fx-c">{kind}</span></td>'
                          f'<td>{escape(why)}</td>',
                          u, STATUSES[st],
-                         (f'<span class="fx-c">' + (f'<a href="{escape(su)}" rel="noopener">{escape(sn)}</a>' if su
+                         ('<span class="fx-c">' + (f'<a href="{escape(su)}" rel="noopener">{escape(sn)}</a>' if su
                                                     else escape(sn)) + '</span>') if sn else "")
                     for n, (d, reg, c, co, amt, kind, why, u, st, sn, su) in enumerate(fines))
     on = sum(r[7] is None for r in bans)

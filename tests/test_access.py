@@ -57,6 +57,7 @@ def test_a_broken_secret_counts_as_no_users(monkeypatch):
 
 def test_sealed_pages_open_only_with_the_right_password(tmp_path, monkeypatch):
     aead = pytest.importorskip("cryptography.hazmat.primitives.ciphers.aead")
+    from cryptography.exceptions import InvalidTag
     out = site(tmp_path, monkeypatch)
     monkeypatch.setenv("COMPASS_USERS", json.dumps({"client one": access.new_user("client one", "long enough password")}))
     assert access.seal(out, None, []) == 3  # the report, its sheet and Source check
@@ -75,7 +76,7 @@ def test_sealed_pages_open_only_with_the_right_password(tmp_path, monkeypatch):
 
     assert read("long enough password", sealed["page"]) == SECRET
     assert read("long enough password", (out / "planner/example/sheet.csv.sealed").read_text(encoding="ascii")) == SECRET
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidTag):  # the wrong key fails the AES-GCM check
         read("the wrong password here", sealed["page"])
 
 

@@ -144,7 +144,7 @@ def _labels(s: dict, x, y) -> str:
         left = b["x0"] - 10 - w >= L
         edge = b["x0"] - 10 if left else b["x1"] + 10
         bottom = max(b["y"] - 4, T + len(lines) * LINE)
-        box = lambda: (edge - w if left else edge, edge if left else edge + w, bottom - len(lines) * LINE, bottom)
+        box = lambda: (edge - w if left else edge, edge if left else edge + w, bottom - len(lines) * LINE, bottom)  # noqa: B023 (used only in this pass)
         while any(a[0] < box()[1] + 4 and box()[0] < a[1] + 4 and a[2] < box()[3] and box()[2] < a[3] for a in placed):
             bottom -= LINE
         placed.append(box())

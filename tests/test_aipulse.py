@@ -3443,12 +3443,10 @@ def test_a_source_whose_api_key_isnt_set_is_skipped(tmp_path, monkeypatch):
 
 
 def test_github_pages_are_never_read_only_its_api():
+    import pytest
     assert not feeds.allowed("https://github.com/MoonshotAI/Kimi-K3")  # its terms: scraping only for research or archives
-    try:
+    with pytest.raises(feeds.Disallowed):
         feeds.fetch("https://github.com/MoonshotAI/Kimi-K3")
-        assert False, "fetched a github.com page"
-    except feeds.Disallowed:
-        pass
 
 
 def test_every_source_has_legal_evidence():

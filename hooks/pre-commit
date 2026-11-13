@@ -1,0 +1,13 @@
+#!/bin/sh
+# Runs before every commit. Turned on once per clone with: git config core.hooksPath hooks
+# Lints the Python files being committed with ruff (rules in ruff.toml). Skip once, in an emergency: git commit --no-verify
+files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.py')
+[ -z "$files" ] && exit 0
+if ! python -m ruff --version >/dev/null 2>&1; then
+    echo "pre-commit: ruff is not installed. Run: pip install -r requirements-dev.txt"
+    exit 1
+fi
+if ! python -m ruff check --quiet $files; then
+    echo "pre-commit: fix the problems above (many fix themselves with: python -m ruff check --fix), then commit again"
+    exit 1
+fi

@@ -1,0 +1,17 @@
+# Lint rules (ruff: pip install -r requirements-dev.txt; run with `ruff check .`). The pre-commit hook in hooks/ runs it.
+# Chosen to catch real bugs, not to restyle: undefined names, unused imports, broken escapes, late-bound loop variables,
+# mutable defaults and similar. Long lines and one-line statements are this codebase's style and are left alone.
+target-version = "py311"
+
+[lint]
+select = [
+    "E9",   # syntax errors
+    "F",    # pyflakes: undefined or unused names, broken f-strings
+    "W6",   # invalid escape sequences (an error in a future Python)
+    "B",    # bugbear: likely bugs (loop-variable closures, mutable defaults, blind asserts)
+    "PLE",  # pylint errors
+]
+ignore = [
+    "B905",  # zip() without strict=: the pairs here are built to match
+    "B007",  # unused loop variable: kept where it names what is being skipped
+]

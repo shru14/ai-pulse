@@ -159,7 +159,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                    + cloud([(by_id[i], k) for i, k in together[e["id"]].most_common(TOGETHER)], "Often in the same stories",
                            small=True)
                    if together[e["id"]] else "")
-                + f'<h2>Related terms</h2>\n<ul class="terms small">\n' + "\n".join(_row(r) for r in related(e, named))
+                + '<h2>Related terms</h2>\n<ul class="terms small">\n' + "\n".join(_row(r) for r in related(e, named))
                 + "\n</ul>\n"
                 f'<h2 id="stories">Latest stories with this word</h2>\n'
                 f'<p class="intro"><span id="stories-count">The stories</span> in the last 3 months where the glossary '
@@ -168,7 +168,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 f'{" data-ssr=1" if latest.get(e["id"]) else ""}>'
                 + (seo.items(seo.newest(latest[e["id"]], 10)) if latest.get(e["id"]) else
                    '<li class="meta">Loading the stories…</li>') + '</ul>\n'
-                f'<button type="button" class="more-stories" id="more-stories" hidden>Show more stories</button>\n'
+                '<button type="button" class="more-stories" id="more-stories" hidden>Show more stories</button>\n'
                 + seo.data("story-data", latest.get(e["id"], []), ("category", "title", "url", "date", "source"))
                 + STORIES_JS)
         data = {"@context": "https://schema.org", "@type": "DefinedTerm", "name": e["term"], "description": e["def"],
@@ -187,8 +187,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     body = (pages.band("research", BOOK, "photos/cartoons/pages/glossary.svg", "AI glossary",
                        "What do the hard words in AI news mean?", f"The hard words in AI news, in plain English: "
                        f"{len(words)} words, A to Z. New words are added as new stories use them.")
-            + (f'<h2>In the news · past 7 days</h2>\n<p class="intro">The glossary words in the last 7 days\' stories; '
-               f'the bigger the word, the more stories used it.</p>\n'
+            + ('<h2>In the news · past 7 days</h2>\n<p class="intro">The glossary words in the last 7 days\' stories; '
+               'the bigger the word, the more stories used it.</p>\n'
                + cloud([(by_id[i], n) for i, n in recent.most_common(CLOUD)], "In the news · past 7 days") if recent else "")
             + f'<h2>A to Z</h2>\n<nav class="letters" aria-label="Jump to a letter">{jump}</nav>\n'
             + f'<div id="az">\n{sections}\n</div>')
