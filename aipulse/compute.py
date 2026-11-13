@@ -142,9 +142,9 @@ def _glance(rows: list[dict], base: dict, today: date) -> str:
     if first:
         tiles.append((f"{big['flop'] / first['flop']:,.0f}×", f"{big['model']}'s compute against {first['model'].split(' (')[0]}'s, "
                       f"the largest run of {CHART_FROM}", "#56B4E9"))
-    body = "".join(f'<div class="iw-big" style="--c:{c}"><b>{escape(n)}</b><span>{escape(label)}</span></div>'
-                   for n, label, c in tiles)
-    return f'<section class="iw-glance"><h2>At a glance</h2>\n<div class="iw-bigs">{body}</div></section>\n'
+    body = "".join(f'<div><span class="nt-n1">{escape(n)}</span><span>{escape(label)}</span></div>'
+                   for n, label, _ in tiles)
+    return f'<section><h2>At a glance</h2>\n<div class="nt-glance">{body}</div></section>\n'
 
 
 def chart(rows: list[dict], base: dict, today: date) -> str:
@@ -243,7 +243,7 @@ def _rows(rows: list[dict], base: dict, built: bool = True) -> str:
     return "".join(
         f'<tr><td>{name(r)}</td><td>{escape(r["lab"])}</td>' + (f'<td>{escape(r["base"]) or "—"}</td>' if built else "")
         + f'<td>{_month(r["date"])}</td>'
-        f'<td class="pn-num"><b>{times(r["flop"], base["flop"])}</b> GPT-4<small>{flops(r["flop"])} FLOP</small>'
+        f'<td class="pn-num">{times(r["flop"], base["flop"])} GPT-4<small>{flops(r["flop"])} FLOP</small>'
         + (f'<small>Post-training: {times(r["post"], base["flop"])} GPT-4</small>' if r["post"] else "") + '</td>'
         f'<td>{escape(r["sure"])}</td><td>{"Yes" if r["open"] else "No"}</td></tr>' for r in rows)
 

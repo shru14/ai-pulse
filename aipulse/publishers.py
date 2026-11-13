@@ -101,15 +101,15 @@ def _glance(comp: list[dict], rise, today: date) -> str:
         last = len(months) - 1 - (months[-1] == f"{today.year}-{today.month:02d}")  # the last full month
         bigs.append(("#56B4E9", f"{round(v[0])}% → {round(v[last])}%",
                      f"of papers are about {s.lower()}, {_month(months[0])} vs {_month(months[last])}"))
-    tiles = "".join(f'<div class="iw-big" style="--c:{c}"><b>{escape(b)}</b><span>{escape(t)}</span></div>'
-                    for c, b, t in bigs)
-    return f'<section class="iw-glance"><h2>At a glance</h2>\n<div class="iw-bigs">{tiles}</div></section>\n'
+    tiles = "".join(f'<div><span class="nt-n1">{escape(b)}</span><span>{escape(t)}</span></div>'
+                    for _, b, t in bigs)
+    return f'<section><h2>At a glance</h2>\n<div class="nt-glance">{tiles}</div></section>\n'
 
 
 def _companies(comp: list[dict], today: date) -> str:
     def rows(part):
-        return "".join(f'<tr><td><b>{escape(r["name"])}</b></td><td>{escape(r["home"])}</td>'
-                       f'<td class="pn-num"><b>{r["papers"]}</b></td><td>{escape(r["subject"])}</td></tr>'
+        return "".join(f'<tr><td>{escape(r["name"])}</td><td>{escape(r["home"])}</td>'
+                       f'<td class="pn-num">{r["papers"]}</td><td>{escape(r["subject"])}</td></tr>'
                        for r in part)
     head = ('<thead><tr><th>Company</th><th>Based in</th><th>Papers</th><th>Most papers on</th></tr></thead>')
     more = (f'<details class="wp-more"><summary>Show all {len(comp)} companies</summary><table class="mt wp-table">'
@@ -136,7 +136,7 @@ def chart(subject: str, months: list[str], v: list[float], today: date) -> str:
 
 
 def _people(ppl: list[dict], today: date) -> str:
-    body = "".join(f'<tr><td><b>{escape(r["name"])}</b></td><td class="pn-num"><b>{r["papers"]}</b></td>'
+    body = "".join(f'<tr><td>{escape(r["name"])}</td><td class="pn-num">{r["papers"]}</td>'
                    f'<td>{escape(", ".join(r["subjects"]))}</td></tr>' for r in ppl)
     return (f'<section><h2>Researchers we follow who published most</h2>\n<table class="mt wp-table"><thead><tr>'
             f'<th>Researcher</th><th>Papers in {today.year}</th><th>Mostly on</th></tr></thead><tbody>{body}</tbody>'
