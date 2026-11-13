@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import logging
 import json
-import os
 import re
 import time
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin
 
-from . import bills, brands, brief, classify, cluster, feeds, jurisdictions, store, translate
+from . import bills, brands, brief, classify, cluster, config, feeds, jurisdictions, store, translate
 from .sources import COMPANIES, EXPERT_FIELDS, PROFESSORS, SOURCES
 
 logger = logging.getLogger(__name__)
@@ -190,7 +189,7 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
     purge_dropped(conn, log)
 
     for src in sources:
-        if src.get("key_env") and not os.environ.get(src["key_env"]):  # a lab's API whose key isn't set up
+        if src.get("key_env") and not config.secret(src["key_env"]):  # a lab's API whose key isn't set up
             continue
         try:
             entries = (page_list_entries(conn, src, fetcher) if src.get("format") == "page_list"

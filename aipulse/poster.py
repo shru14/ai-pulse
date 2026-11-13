@@ -13,7 +13,6 @@ words, shortened by rule or, when no rule cuts it cleanly, by Gemini picking whi
 from __future__ import annotations
 
 import json
-import os
 import re
 import urllib.request
 from collections import Counter
@@ -21,7 +20,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import audio, classify, cluster, digest, pages, rss
+from . import audio, classify, cluster, config, digest, pages, rss
 
 ART = Path(__file__).resolve().parent.parent / "templates" / "photos" / "cartoons" / "png"
 HEAD = "'Archivo Black','Arial Black',Arial,sans-serif"  # headings; Gmail has no web fonts: Arial Black there, and phones lack Arial Black, so every heading also says font-weight:900
@@ -108,10 +107,10 @@ def _tags(c: dict) -> set[str]:
 def _picture(name: str) -> str:
     """A drawing's address: on the site (static.py publishes templates/photos), or, for a sample sent from another
     branch on GitHub Actions, that branch's copy on GitHub. Linked, not attached, so the inbox lists no attachments."""
-    ref = os.environ.get("GITHUB_REF_NAME", "main")
+    ref = config.github_ref()
     if ref == "main":
         return f"{rss.SITE}photos/cartoons/png/{name}.png"
-    repo = os.environ.get("GITHUB_REPOSITORY", "shru14/ai-pulse")
+    repo = config.github_repository()
     return f"https://raw.githubusercontent.com/{repo}/{ref}/templates/photos/cartoons/png/{name}.png"
 
 
@@ -267,7 +266,7 @@ def _kept(short: str, title: str) -> bool:
 def _gemini(title: str, ask=None) -> str | None:
     """For a headline no rule cuts cleanly, Gemini (free tier, memegen._ask) picks which of its words to keep; the
     answer must pass _kept (only the headline's own words, in order), so it can't add or change a fact."""
-    key = os.environ.get("GEMINI_API_KEY")
+    key = config.gemini_key()
     if not (ask or key) or GEMINI_ASKS[0] <= 0:
         return None
     GEMINI_ASKS[0] -= 1

@@ -19,7 +19,6 @@ page itself holds the top headlines too, for search engines (seo.py).
 from __future__ import annotations
 
 import json
-import os
 import re
 import shutil
 import urllib.request
@@ -28,7 +27,7 @@ from datetime import date, datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 
-from . import countries, feeds, glossary, pages, rss, seo, standards, topics
+from . import config, countries, feeds, glossary, pages, rss, seo, standards, topics
 
 FIRST = "2026-01"  # the first issue (the owner's choice, 11 Oct 2026: 2026 on, no earlier years)
 REPO = "unsloth/Qwen3-4B-Instruct-2507-GGUF"
@@ -288,7 +287,7 @@ def _download() -> Path | None:
     path = MODEL_DIR / FILE
     if path.exists():
         return path
-    if os.environ.get("AIPULSE_OFFLINE"):  # tests: never download
+    if config.offline():  # tests: never download
         return None
     url = f"https://huggingface.co/{REPO}/resolve/{REVISION}/{FILE}"
     if not feeds.allowed(url):

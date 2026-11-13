@@ -12,7 +12,6 @@ List-Unsubscribe header, which mail apps show as an "Unsubscribe" button). No tr
 from __future__ import annotations
 
 import json
-import os
 import re
 import smtplib
 import ssl
@@ -23,7 +22,7 @@ from email.utils import formataddr
 from html import escape
 from pathlib import Path
 
-from . import brief, classify, glossary, jurisdictions, quality, rss, subscribers
+from . import brief, classify, config, glossary, jurisdictions, quality, rss, subscribers
 from .sources import SOURCES
 
 AS_PROVIDED = {s["name"] for s in SOURCES if s.get("as_provided")}  # shown as their feed gives them
@@ -64,7 +63,7 @@ SMTP_HOST = "smtp.gmail.com"
 
 
 def sender() -> str:
-    return os.environ.get("DIGEST_EMAIL", "").strip()
+    return config.digest_email()
 
 
 def _mentioned(cards: list[dict], n: int = 5) -> list[tuple[str, int]]:
@@ -1120,7 +1119,7 @@ def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "")
 def send_all(emails: list[tuple]) -> int:
     """Send (to, subject, text, HTML[, unsubscribe link]) emails through the project's Gmail account over one connection.
     Returns how many were sent; one failed address doesn't stop the rest."""
-    address, password = sender(), os.environ.get("DIGEST_APP_PASSWORD", "").replace(" ", "")
+    address, password = sender(), config.digest_app_password()
     if not (address and password):
         raise RuntimeError("DIGEST_EMAIL and DIGEST_APP_PASSWORD must be set")
     sent = 0

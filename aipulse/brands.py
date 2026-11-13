@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import logging
 import json
-import os
 import re
 import time
 import unicodedata
@@ -27,7 +26,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from . import classify, feeds, jurisdictions
+from . import classify, config, feeds, jurisdictions
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +72,7 @@ def slug(title: str) -> str:
 
 
 def _get(url: str, timeout: int = 10) -> bytes:
-    if os.environ.get("AIPULSE_OFFLINE"):  # tests: use only what is cached
+    if config.offline():  # tests: use only what is cached
         raise OSError("offline")
     if not feeds.allowed(url):  # robots.txt (Wikidata's API is allowed by its terms; see feeds.API_HOSTS)
         raise feeds.Disallowed(url)

@@ -20,6 +20,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from . import config
+
 log = logging.getLogger(__name__)
 
 ROOT = "planner"
@@ -58,7 +60,7 @@ def is_open(rel: str) -> bool:
 ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
-REPO = "shru14/ai-pulse"
+REPO = config.REPO
 # 6 Nov 2026, owner: one username for every client, filled in by the page; a visitor types only the password
 CLIENT = "pulse-client"
 
@@ -84,7 +86,7 @@ def new_user(name: str, password: str) -> dict:
 def users() -> dict:
     """The users the build may let in, from the COMPASS_USERS secret; anything unreadable counts as no users."""
     try:
-        found = json.loads(os.environ.get("COMPASS_USERS") or "{}")
+        found = json.loads(config.compass_users() or "{}")
         return {n: u for n, u in found.items() if len(base64.b64decode(u["kek"])) == 32 and base64.b64decode(u["salt"])}
     except (ValueError, TypeError, KeyError, AttributeError):
         log.warning("COMPASS_USERS can't be read: the paid pages stay unpublished.")
