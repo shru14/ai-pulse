@@ -937,16 +937,15 @@ def test_fines_and_bans_halves_tags_and_links(tmp_path):
     page = (tmp_path / "ai-fines-and-bans" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI fines and bans</h1>" in page and page.count('class="pc-half') == 2
     assert page.count("<td class=\"pc-d\" data-f=") == len(fines.BANS) + len(fines.FINES)
-    # a dot per action on the time line, each linking to its row (with the page's path: every page has <base href="/">)
-    assert page.count('class="fx-dot') == len(fines.BANS) + len(fines.FINES)
-    assert all(f'id="fx-{h}{n}"' in page and f'href="ai-fines-and-bans/#fx-{h}{n}"' in page
-               for h, rows in (("b", fines.BANS), ("f", fines.FINES)) for n in range(len(rows)))
+    # every action counted by year; the All row adds up to every row, and what still stands
     lifted = sum(r[7] is not None for r in fines.BANS)
-    assert page.count(">Lifted<") == lifted + 1 and page.count(">In force<") == (  # + the time line's key
-        len(fines.BANS) - lifted + sum(r[8] == "force" for r in fines.FINES) + 1)
+    standing = len(fines.BANS) - lifted + sum(r[8] == "force" for r in fines.FINES)
+    assert (f'<tr class="fx-all"><td>All</td><td>{len(fines.BANS)}</td><td>{len(fines.FINES)}</td>'
+            f'<td>{standing} of {len(fines.BANS) + len(fines.FINES)}</td></tr>') in page
+    assert page.count(">Lifted<") == lifted and page.count(">In force<") == standing
     assert f"{len(fines.BANS) - lifted} still in force." in page and ">Annulled<" in page
     assert ">notice</a>" in page and ">report</a>" in page  # the regulator's own page, or a news report
-    assert "€824,990,000 fine" in page and "$1,400,000,000 settlement" in page  # amounts as set, never added up
+    assert '€824,990,000<span class="fx-c">fine' in page and '$1,400,000,000<span class="fx-c">settlement' in page  # amounts as set, never added up
     # newest first in each half
     days = [fines._short(d) for d in sorted((r[0] for r in fines.BANS), reverse=True)]
     assert page.index(days[0]) < page.index(days[-1])
