@@ -1133,6 +1133,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .rc-t .rc-none{color:var(--muted)}
 .cp .rc-t td.rc-p{white-space:nowrap}
 .cp .rc-t td.rc-s{white-space:nowrap}.cp .rc-t td.rc-s small{white-space:normal;max-width:190px}
+.cp .ft .rc-t td.rc-m a,.cp .rc-w,.cp .rc-t td.rc-out{font-weight:500}  /* no bold on this page */
 .cp .rc-s-day{background:#009E73}.cp .rc-s-later{background:#E69F00}
 .cp .rc-s-none{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px #8C8C8C}
 .cp .ft .rc-t td.rc-s a{text-decoration:none}.cp .ft .rc-t td.rc-s a .rc-w::after{content:" ↗"}
