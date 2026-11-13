@@ -1,6 +1,7 @@
 #!/bin/sh
 # Runs before every commit. Turned on once per clone with: git config core.hooksPath hooks
-# Lints the Python files being committed with ruff (rules in ruff.toml). Skip once, in an emergency: git commit --no-verify
+# When a commit changes Python files: lints them with ruff (rules in ruff.toml), then runs the tests (about 90 seconds).
+# Commits that change no Python file (templates, data, docs) go straight through. Skip once, in an emergency: git commit --no-verify
 files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.py')
 [ -z "$files" ] && exit 0
 if ! python -m ruff --version >/dev/null 2>&1; then
@@ -11,3 +12,11 @@ if ! python -m ruff check --quiet $files; then
     echo "pre-commit: fix the problems above (many fix themselves with: python -m ruff check --fix), then commit again"
     exit 1
 fi
+log=$(mktemp)  # its own file: other sessions may be committing in this folder too
+if ! python -m pytest -n auto -q -x -p no:cacheprovider >"$log" 2>&1; then
+    tail -25 "$log"
+    echo "pre-commit: a test failed (above). Fix it, then commit again"
+    exit 1
+fi
+echo "pre-commit: lint OK, $(grep -o '[0-9]* passed' "$log")"
+rm -f "$log"
