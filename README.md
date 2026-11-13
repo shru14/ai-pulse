@@ -184,7 +184,7 @@ GitHub Actions run collects, sorts and builds, then publishes plain pages to Git
 
 | Step | What happens | Code |
 |---|---|---|
-| Collect | Each source's feed, sitemap or official API is read, where its robots.txt and terms allow. One broken source never stops a run | `sources.py`, `feeds.py`, `collect.py`, `bills.py`, `terms.py` |
+| Collect | Each source's feed, sitemap or official API is read, where its robots.txt and terms allow. One broken source never stops a run | `sources.py`, `feeds.py`, `collect.py`, `bills/`, `terms.py` |
 | Sort | Each story gets a short headline and summary, and keyword rules decide whether it is about AI, its stream, its places and its tags (no AI model). Non-English official records are translated offline | `brief.py`, `classify.py`, `jurisdictions.py`, `translate.py` |
 | Group | Reports of the same event become one card, and cards join the storylines they belong to | `cluster.py`, `topics.py` |
 | Keep | One SQLite file, carried between runs in the Actions cache and backed up after each full run for 14 days | `store.py` |

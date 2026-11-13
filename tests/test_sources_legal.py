@@ -16,7 +16,7 @@ def test_sources_avoid_hosts_that_block_cloud_servers():
 def test_no_source_or_lookup_uses_sites_that_forbid_automated_access():
     # Google News (robots.txt) and Bing News (its feed terms) don't allow this use; neither does Google's
     # favicon service. Nothing in the app may fetch from them.
-    code = "\n".join(f.read_text(encoding="utf-8") for f in (FIX.parent.parent / "aipulse").glob("*.py") if f.name != "collect.py")
+    code = "\n".join(f.read_text(encoding="utf-8") for f in (FIX.parent.parent / "aipulse").rglob("*.py") if f.name != "collect.py")
     for host in ("news.google.com", "bing.com", "google.com/s2"):
         assert host not in code, host
     from aipulse.sources import SOURCES
