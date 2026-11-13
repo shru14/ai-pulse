@@ -1600,7 +1600,7 @@ a.subscribe-btn{text-decoration:none}
 /* Phones, on every feature and page band: small type and a short header band (title and question beside a small
    cartoon, the description under them), small big-number tiles three to a row, smaller tabs, headings and tables */
 @media (max-width:640px){
-  :is(.cp,.about-page) .fh{grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;margin:12px 0 18px;padding:12px;border-width:2px;box-shadow:3px 3px 0 var(--line)}
+  :is(.cp,.about-page) .fh{grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;margin:12px 0 18px;padding:12px;border-width:2px}
   :is(.cp,.about-page) .fh-t{grid-column:1;grid-row:1;gap:10px;align-items:flex-start}
   :is(.cp,.about-page) .fh-ic{width:32px;height:32px}
   :is(.cp,.about-page) .fh-ic svg{width:19px;height:19px}
