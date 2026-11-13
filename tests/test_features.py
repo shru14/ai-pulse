@@ -298,7 +298,7 @@ def test_compute_page_measures_against_gpt4_and_counts_missing_estimates(tmp_pat
     assert compute.refresh(conn, fetcher=lambda url: text.encode()) == "3 of 4 models with an estimate"
     assert compute.build(conn, [], tmp_path, date(2026, 10, 17)) == ["compute-behind-notable-models/"]
     page = (tmp_path / "compute-behind-notable-models" / "index.html").read_text(encoding="utf-8")
-    assert "<b>45×</b>" in page and "Lab A, Lab B" in page and "9.4 × 10²⁶" in page and "1/67" in page
+    assert '<td class="pn-num">45× GPT-4' in page and "Lab A, Lab B" in page and "9.4 × 10²⁶" in page and "1/67" in page
     assert "1 of 2" in page
     assert "have none, so they aren&#x27;t shown; 1 of them doesn&#x27;t share their weights" in page
     assert compute.times(2.1e25, 2.1e25) == "1×" and compute.since(date(2026, 1, 5)) == "2025-10-01"

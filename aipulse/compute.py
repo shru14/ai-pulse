@@ -243,7 +243,7 @@ def _rows(rows: list[dict], base: dict, built: bool = True) -> str:
     return "".join(
         f'<tr><td>{name(r)}</td><td>{escape(r["lab"])}</td>' + (f'<td>{escape(r["base"]) or "—"}</td>' if built else "")
         + f'<td>{_month(r["date"])}</td>'
-        f'<td class="pn-num"><b>{times(r["flop"], base["flop"])}</b> GPT-4<small>{flops(r["flop"])} FLOP</small>'
+        f'<td class="pn-num">{times(r["flop"], base["flop"])} GPT-4<small>{flops(r["flop"])} FLOP</small>'
         + (f'<small>Post-training: {times(r["post"], base["flop"])} GPT-4</small>' if r["post"] else "") + '</td>'
         f'<td>{escape(r["sure"])}</td><td>{"Yes" if r["open"] else "No"}</td></tr>' for r in rows)
 

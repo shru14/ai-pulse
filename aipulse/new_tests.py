@@ -718,11 +718,11 @@ def _scores(rows: list[dict]) -> str:
     lines = "".join(
         f'<li><a href="{escape(r["url"])}" rel="noopener">{escape(r["name"])}</a>'
         f'<span class="nt-track" aria-hidden="true"><i style="left:{r["pct"]:.2f}%"></i></span>'
-        f'<span class="nt-pct"><b>{_num(r["pct"])}</b>{" · " + escape(r["model"]) if r["model"] else ""}</span></li>'
+        f'<span class="nt-pct">{_num(r["pct"])} of 100</span></li>'
         for r in scored)
-    return ('<section><h2>The best score on each test</h2>\n<p class="nt-how">0 means nothing done right, 100 means '
-            'every task done right. Each dot is the best score the paper reports; the model is named where the paper '
-            f'names it.</p>\n<ol class="nt-scores">{lines}</ol></section>\n')
+    return ('<section><h2>The best score on each test</h2>\n<p class="nt-how">The best score each paper reports, out of '
+            '100, lowest first. The further right the dot, the closer the best model came to getting every task right; '
+            f'the small mark in the middle is half.</p>\n<ol class="nt-scores">{lines}</ol></section>\n')
 
 
 def _table(rows: list[dict], links: dict) -> str:
