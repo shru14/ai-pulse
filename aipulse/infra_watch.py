@@ -168,6 +168,7 @@ POWER: list[tuple[str, ...]] = [
     ("https://w.media/nxera-sembcorp-ink-deal-for-green-energy-supply-to-nxera-data-centers/", "Sembcorp Utilities, for Nxera", "notstated", "Nxera's data centres in Singapore; an MOU to explore renewable and low-carbon supply", "", "planned"),
     ("https://w.media/johor-plans-to-meet-dc-power-demand-with-5-gw-solar-energy-by-2031/", "Johor state government", "renewable", "Solar for data centres and large industry in Johor, Malaysia, by 2030 or 2031", "About 5 GW more", "planned"),
     ("https://w.media/malaysian-firm-lands-2-solar-plus-bess-deals-totalling-189mw-for-data-centers/", "Northern Solar Holdings, for two Malaysian data-centre developers it doesn't name", "renewable", "Solar and batteries for two data centres in Malaysia; letters of award accepted, definitive agreements not yet signed", "100 MW and 89 MW", "planned"),
+    ("https://w.media/airtrunk-targets-610mw-of-new-renewable-generation-in-nsw/", "European Energy Australia, for AirTrunk", "renewable", "AirTrunk's data centres in New South Wales, Australia; an exclusivity agreement for solar, wind and batteries in the Hunter region, a long-term power purchase agreement still under discussion", "610 MW", "planned"),
 
 ]
 
@@ -282,6 +283,7 @@ LEFT_OUT: set[str] = {
     "https://www.powermag.com/calibrant-energy-secures-145-million-in-project-financing-including-battery-storage-for-hyperscale-data-center-customer-in-pjm/",  # press release on financing; customer, site and plant size not named
     "https://w.media/ohio-data-center-power-equipment-writedown-pushes-softbank-to-us-7-billion-loss/",  # company results and a writedown, not a new build or power deal
     "https://dplnews.com/rechazo-centros-de-datos-estados-unidos/",  # roundup of local ballot results across 10 states, not one decision
+    "https://w.media/australia-sets-30mw-threshold-for-new-data-centre-grid-standards/",  # grid connection standard for all large inverter-based loads, not specific to data centres
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
