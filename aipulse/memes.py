@@ -482,7 +482,9 @@ def of_the_day(cards: list[dict], day: date) -> dict | None:
     stories can't fill it)."""
     made, want = GENERATED.get(("day", day)), template_of(day)
     if not (made and made.get("format") == want and not plugs(made)):
-        f = {**facts([c for c in cards if c.get("date") == day.isoformat()]), "turn": _turn(day)}
+        # +2: the site's tile shows this template 6 days earlier on the same turn (of_the_7_days), so the email
+        # takes another wording, never the one readers saw on the site that week (owner, 2026-11-13)
+        f = {**facts([c for c in cards if c.get("date") == day.isoformat()]), "turn": _turn(day) + 2}
         made = _made(want, f, "today", day.isoformat() in {c.get("date") for c in cards})
     return made and {**made, "title": "Meme of the day"}
 
