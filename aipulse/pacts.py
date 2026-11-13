@@ -177,6 +177,13 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techcrunch.com/2026/11/12/democrats-launch-nvidia-investigation-write-scathing-letter-on-huangs-scheme-"
+    "with-trump/":
+        "Two minority-party lawmakers' letter to the Commerce Secretary (they can't compel answers); no government "
+        "order, probe or case against Nvidia",
+    "https://aws.amazon.com/blogs/machine-learning/fine-grained-access-control-for-amazon-bedrock-managed-knowledge-"
+    "base-tools/":
+        "A company's technical blog post; no government action",
     "https://the-decoder.com/eight-countries-and-top-ai-labs-agree-to-shutdown-mechanisms-in-new-paris-declaration/":
         "A new declaration (Paris Call), not a pledge on the page; no government deal or action against a company",
     "https://techcrunch.com/2026/11/08/nvidia-says-its-investigating-ceo-jensen-huangs-relationship-with-possible-chinese-spy/":
