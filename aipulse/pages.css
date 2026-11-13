@@ -1295,27 +1295,15 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft.me .fx-t td[data-l]::before{content:attr(data-l) ": ";color:var(--muted);font:400 12.5px var(--body)}
   .cp .ft.me .fx-t td.me-lab::before{content:none}
   .cp .me .pc-rows td.fx-c{font-size:13px}}
-/* AI fines and bans: a dot per action on one time line (each linking to its row), then the AI pacts and orders boxes
+/* AI fines and bans: a plain table of actions by year, then the AI pacts and orders boxes
    stacked, each a table in real columns with a tag for where it stands and a muted line under it */
 .cp .fx-tl{margin:26px 0 22px}
 .cp .fx .fx-tl h2{margin:0 0 8px}
-.cp .fx-chart{margin:14px 0 10px}
-.cp .fx-ln{display:grid;grid-template-columns:72px 1fr;align-items:end}
-.cp .fx-lab{margin:0 0 4px;font:500 14px var(--body)}
-.cp .fx-lab span{display:block;font:400 12.5px var(--body);color:var(--muted)}
-.cp .fx-plot{position:relative;border-bottom:1px solid color-mix(in srgb,var(--ink) 35%,transparent)}
-.cp .fx-ln + .fx-ln .fx-plot{margin-top:6px}
-.cp .fx-ax .fx-plot{height:22px;border:0}
-.cp .fx-gl{position:absolute;top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}
-.cp .fx-yr{position:absolute;top:6px;transform:translateX(-50%);font:400 12.5px var(--body);color:var(--muted)}
-.cp .fx-dot{position:absolute;width:10px;height:10px;border-radius:50%;transform:translateX(-50%);box-sizing:border-box;border:1px solid var(--bg)}
-.cp .fx-dot:hover,.cp .fx-dot:focus-visible{z-index:3;outline:1.5px solid var(--ink);outline-offset:1px}
-.cp .fx-dot:hover::after,.cp .fx-dot:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:-4px;background:#111;color:#fff;font:400 12.5px/1.3 var(--body);padding:5px 8px;border-radius:6px;white-space:nowrap}
-.cp .fx-dot.fx-l:hover::after,.cp .fx-dot.fx-l:focus-visible::after{left:auto;right:-4px}
-.cp .fx-key{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;font-size:13px;color:var(--muted);margin:0 0 2px}
-.cp .fx-key span{display:inline-flex;align-items:center;gap:6px}
-.cp .fx-kd{display:inline-block;width:10px;height:10px;border-radius:50%;box-sizing:border-box}
-.cp .fx .fx-key .fx-aw,.cp .fx .fx-plot .fx-aw{border:1.5px dashed var(--ink);background:transparent}
+.cp .fx-yt{width:100%;border-collapse:collapse;font-size:15px;margin:10px 0 8px}
+.cp .fx-yt th{text-align:left;font:500 13px var(--body);color:var(--muted);padding:0 12px 6px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 35%,transparent)}
+.cp .fx-yt td{padding:7px 12px 7px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.cp .fx-yt th:not(:first-child),.cp .fx-yt td:not(:first-child){text-align:right}
+.cp .fx-yt tr.fx-all td{border-bottom:0;border-top:1px solid color-mix(in srgb,var(--ink) 35%,transparent)}
 .cp .fx-note{font-size:13px;color:var(--muted);margin:0}
 .cp .fx-stack{display:grid;gap:22px}
 .cp .fx-t th{text-align:left;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 10px 6px 0;border-bottom:3px solid var(--ink)}
@@ -1325,10 +1313,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .fx-t td.fx-s{width:190px}
 .cp .fx-t tr:target td{animation:fx-hit 2.5s ease-out}
 @keyframes fx-hit{from{background:color-mix(in srgb,#F2D27A 70%,var(--bg))}to{background:transparent}}
-@media (max-width:640px){.cp .fx-ln{grid-template-columns:52px 1fr}
-  .cp .fx-dot:hover::after,.cp .fx-dot:focus-visible::after{white-space:normal;width:200px}
-  .cp .fx-yr{font-size:11px}
-  .cp .fx-t thead{display:none}
+@media (max-width:640px){.cp .fx-t thead{display:none}
   .cp .fx-t tr{display:grid;grid-template-columns:auto 1fr;column-gap:10px;border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent);padding:6px 0}
   .cp .fx-t td{border:0;padding:2px 0;grid-column:2}
   .cp .fx-t td.pc-d{grid-column:1;grid-row:1/span 6}

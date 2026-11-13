@@ -209,42 +209,24 @@ def _and(n: int, one: str, many: str) -> str:
     return f"{n} {one if n == 1 else many}"
 
 
-def _strip(bans: list, fines: list, today: date) -> str:
-    """Every action as a dot on one time line from SINCE to the end of this year: a lane for bans and one for fines,
-    each named on the left with its count, dots coloured by where the action stands. Dots too close to sit side by
-    side stack upward. Pointing at a dot names its action, clicking it jumps to its row."""
-    lo, hi = date.fromisoformat(SINCE), date(today.year, 12, 31)
-    x = lambda d: round((date.fromisoformat(d) - lo).days / (hi - lo).days * 100, 2)
-    grid = "".join(f'<i class="fx-gl" style="left:{x(f"{y}-01-01")}%"></i>' for y in range(lo.year + 1, hi.year + 1))
-
-    def lane(name: str, rows: list) -> str:
-        """rows: (row id, day, tag, tip). Each dot takes the lowest level no nearer dot already holds."""
-        levels: list[float] = []
-        level = {}
-        for rid, d, *_ in sorted(rows, key=lambda r: r[1]):
-            at = x(d)
-            level[rid] = n = next((i for i, last in enumerate(levels) if at - last >= 1.1), len(levels))
-            levels[n:n + 1] = [at]
-        dots = []
-        for rid, d, tag, tip in rows:  # written newest first, like the rows
-            at, n = x(d), level[rid]
-            side = " fx-l" if at > 60 else ""  # near the right edge the tip opens to the left
-            dots.append(f'<a class="fx-dot {tag[1]}{side}" href="{PATH}#{rid}" style="left:{at}%;bottom:{8 + n * 12}px" '
-                        f'aria-label="{escape(tip)}" data-tip="{escape(tip)}"></a>')
-        return (f'<div class="fx-ln"><p class="fx-lab">{name}<span>{len(rows)}</span></p>'
-                f'<div class="fx-plot" style="height:{18 + len(levels) * 12}px">{grid}{"".join(dots)}</div></div>')
-    b = lane("Bans", [(f"fx-b{n}", d, ("Lifted", "fx-li") if end else ("In force", "fx-in"),
-                       f"{_short(d)} · {co} · {w} · {'Lifted' if end else 'In force'}")
-                      for n, (d, reg, c, co, w, why, u, end, en, eu) in enumerate(bans)])
-    f = lane("Fines", [(f"fx-f{n}", d, STATUSES[st], f"{_short(d)} · {co} · {amt} {kind} · {STATUSES[st][0]}")
-                       for n, (d, reg, c, co, amt, kind, why, u, st, sn, su) in enumerate(fines)])
-    years = "".join(f'<span class="fx-yr" style="left:{x(f"{y}-07-01")}%">{y}</span>' for y in range(lo.year, hi.year + 1))
-    key = "".join(f'<span><i class="fx-kd {c}"></i>{escape(t)}</span>'
-                  for t, c in [("In force", "fx-in"), ("Lifted", "fx-li")] + [v for k, v in STATUSES.items() if k != "force"])
-    return (f'<section class="fx-tl"><h2>Every action since {SINCE[:4]}</h2><div class="fx-chart">{b}{f}'
-            f'<div class="fx-ln fx-ax"><p class="fx-lab"></p><div class="fx-plot">{years}</div></div></div>'
-            f'<p class="fx-key">{key}</p><p class="fx-note">One dot per action. Point at a dot to see it; click it to '
-            f'jump to its row.</p></section>')
+def _years(bans: list, fines: list, today: date) -> str:
+    """Every action counted by year in a plain table: bans, fines, and how many of them still stand (a ban not
+    lifted, a fine in force). The last row adds them up."""
+    rows, tb, tf, ts = [], 0, 0, 0
+    for y in range(int(SINCE[:4]), today.year + 1):
+        nb = [r for r in bans if r[0][:4] == str(y)]
+        nf = [r for r in fines if r[0][:4] == str(y)]
+        st = sum(r[7] is None for r in nb) + sum(r[8] == "force" for r in nf)
+        tb, tf, ts = tb + len(nb), tf + len(nf), ts + st
+        rows.append((str(y), len(nb), len(nf), st))
+    rows.append(("All", tb, tf, ts))
+    all_ = ' class="fx-all"'
+    body = "".join(f'<tr{all_ * (y == "All")}><td>{y}</td><td>{b}</td><td>{f}</td>'
+                   f'<td>{f"{s} of {b + f}" if b + f else "–"}</td></tr>' for y, b, f, s in rows)
+    return (f'<section class="fx-tl"><h2>Every action since {SINCE[:4]}</h2><table class="fx-yt"><thead><tr>'
+            '<th>Year</th><th>Bans</th><th>Fines</th><th>Still standing</th></tr></thead>'
+            f'<tbody>{body}</tbody></table><p class="fx-note">Still standing: a ban not lifted, or a fine in force. '
+            'Fines challenged, annulled or awaiting a judge are not counted as standing.</p></section>')
 
 
 def body(today: date) -> str:
@@ -292,7 +274,7 @@ def body(today: date) -> str:
                                  f"Bans, blocks, fines and settlements regulators have decided against AI makers and "
                                  f"companies using AI since {SINCE[:4]}. Each row links to the regulator's notice and "
                                  "says whether the action was lifted, challenged or annulled.")
-            + _strip(bans, fines, today) + '<div class="fx-stack">'
+            + _years(bans, fines, today) + '<div class="fx-stack">'
             f'<section class="pc-half pc-orders"><div class="pc-hh"><h2>Bans</h2><p>AI products a regulator banned, '
             f'blocked or stopped · since {SINCE[:4]}</p></div><div class="pc-in iw"><p class="pc-lead">{escape(blead)}</p>'
             f'{_count(len(bans), "bans")}<table class="pc-rows fx-t xf-t">{_head("Date", "Company", "Regulator", "What and why", "Where it stands")}'
