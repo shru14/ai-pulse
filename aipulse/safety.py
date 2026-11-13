@@ -102,6 +102,26 @@ DOCS: list[dict] = [
                    'arise from the high-impact capabilities of frontier models. Under our Material Capability Change '
                    '(MCC) assessment, Gemini 4 Carbon did not show meaningful new capabilities or material increases '
                    'in performance compared with Gemini 4 Argon. …')),
+    dict(date='2026-11-09', by='Anthropic', kind='card',
+         title='System Card: Claude Fable 5.2 & Claude Mythos 5.2',
+         url='https://www.anthropic.com/claude-fable-5-2-mythos-5-2-system-card',
+         original="",
+         models=('Claude Fable 5.2', 'Claude Mythos 5.2'),
+         risks=('cbrn', 'cyber', 'harm', 'injection', 'jailbreak', 'misalign', 'persuasion', 'rnd'),
+         abstract=('Claude Fable 5.2 and Claude Mythos 5.2 are two configurations of a new large language model from '
+                   'Anthropic. As with previous models in this class, we are releasing it in two forms. Claude Fable 5.2 '
+                   'is available for general use and has additional safeguards that prevent it from performing certain '
+                   'tasks in high-risk, dual-use domains, such as biology and cybersecurity. Claude Mythos 5.2 has more '
+                   'permissive safeguards in these domains. Direct access to Claude Mythos 5.2 is limited to vetted '
+                   'individuals and organizations through our trusted access programs. Claude Mythos 5.2 also powers '
+                   'Claude Security, which is available to all Claude Enterprise customers. Claude Fable 5.2 and Claude '
+                   'Mythos 5.2 advance the frontier in coding, knowledge work, and problem-solving, with improved '
+                   'capabilities for novel mathematical and scientific reasoning. In this system card, we report the '
+                   'results of pre-deployment evaluations in seven areas: Our Responsible Scaling Policy (RSP) and '
+                   'Frontier Compliance Framework (FCF) evaluations found that autonomy threat model 1 (misalignment in '
+                   'high-stakes settings) is applicable to Claude Mythos 5.2, as it is to some of our previous AI '
+                   'models.'
+                   ' …')),
     dict(date='2026-11-06', by='Anthropic', kind='eval',
          title='Project EVE: Claude plays MMORPGs',
          url='https://www.anthropic.com/research/project-eve-claude-plays-mmorpgs',
@@ -1612,6 +1632,7 @@ LEFT_OUT: set[str] = {
     'https://www.nist.gov/blogs/caissi-research-blog/accelerating-ai-innovation-through-measurement-science',
     'https://www.nist.gov/blogs/caissi-research-blog/cheating-ai-agent-evaluations',
     'https://www.thelec.net/news/articleView.html?idxno=15338',  # news: Korean Financial Security Institute cloud security assessments, not an AI safety document
+    'https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/',  # product launch; its model card is product information with no safety evaluation
 }
 
 # a story that may be a safety document: from a publisher the hub reads, or a headline naming one
