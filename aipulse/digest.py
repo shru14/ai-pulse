@@ -878,19 +878,8 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
                   f"{day:%A}: {intro[0].lower() + intro[1:] if intro.startswith('A lighter') else intro}"]
     quiet = _quiet(by_stream, cards, streams, day) if todays else ""  # an empty day (a Sunday) says so once
     everything = full_page(day)  # every story of the day, whatever streams this reader chose
-    top = (sorted([c for c in todays if _fits_top(c)], key=_rank, reverse=True) if light else
-           sorted([c for c in todays if c.get("kind") not in SIDE_KINDS and _fits_top(c)], key=_rank, reverse=True)[:TOP])
     prefs = prefs or {}
-    tuned = bool(prefs.get("more") or prefs.get("words"))
-    _, theirs = _mine(prefs)
-    picks = {id(c) for c in todays if tuned and theirs(c)}
-    if tuned and not light:
-        # up to PICKS of the reader's own (any kind, a tutorial too if they asked for it), then the day's biggest
-        mine = sorted([c for c in todays if id(c) in picks and _fits_top(c)], key=_rank, reverse=True)[:PICKS]
-        biggest = [c for c in top + sorted([c for c in todays if _fits_top(c)], key=_rank, reverse=True) if c not in mine]
-        top = mine + list({id(c): c for c in biggest}.values())[:TOP - len(mine)]
-    elif tuned:  # a lighter day: every story is in, the reader's own first
-        top = sorted(top, key=lambda c: id(c) not in picks)
+    top, picks = _pick_top(todays, light, prefs)
     title = (f"Here {'is the one story' if len(top) == 1 else f'are all {len(top)} stories'} of the day." if light
              else "Here are the stories that mattered the most.")
     if sunday:  # after the week, the day: said plainly which
@@ -920,8 +909,6 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
              *([quiet] if quiet else []), *(["", *week_text] if week_text else []),
              *([*dossier_text, ""] if dossier_text else []), *(["", *word_text, ""] if word_text else []),
              *([*meme_text, ""] if meme_text else []), title]
-    head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
-                          f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
     note = lambda words, style: f'<p style="margin:0 0 10px;font-size:13px;line-height:1.5;{style}">{escape(words)}</p>'
     html = ["".join(f'<p style="margin:0 0 {4 if k < len(counts) - 1 else 10}px;font-size:15px;line-height:1.5;color:#3c4043">'
                     f'{escape(c)}</p>' for k, c in enumerate(counts))
@@ -942,7 +929,37 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         return lines, "".join(html)
     html.append(f'<div style="font-size:22px;font-weight:bold;line-height:1.2;color:{INK};margin:26px 0 14px;'
                 f'padding-top:10px;border-top:3px solid {INK}">{escape(title)}</div>')
-    cells = []
+    grid_text, grid_html = _top_grid(top, picks, stream_of)
+    rest_text, rest_html = _rest_of_day(by_stream, streams, day, top, light)
+    lines += [*grid_text, *rest_text, "", f"Every story of the day in one table: {everything}"]
+    html += [grid_html, rest_html]
+    html.append(f'<p style="margin:16px 0 0;font-size:14px"><a href="{escape(everything)}" style="color:{LINK};'
+                f'text-decoration:none;font-weight:bold">Every story of the day in one table →</a></p>')
+    return lines, "".join(html)
+
+
+def _pick_top(todays: list[dict], light: bool, prefs: dict) -> tuple[list[dict], set[int]]:
+    """The short email's top stories, and which of them are the reader's own picks (by id). On a lighter day every
+    story is in; otherwise the TOP that mattered most, after up to PICKS of the reader's own (`prefs`)."""
+    top = (sorted([c for c in todays if _fits_top(c)], key=_rank, reverse=True) if light else
+           sorted([c for c in todays if c.get("kind") not in SIDE_KINDS and _fits_top(c)], key=_rank, reverse=True)[:TOP])
+    tuned = bool(prefs.get("more") or prefs.get("words"))
+    _, theirs = _mine(prefs)
+    picks = {id(c) for c in todays if tuned and theirs(c)}
+    if tuned and not light:
+        # up to PICKS of the reader's own (any kind, a tutorial too if they asked for it), then the day's biggest
+        mine = sorted([c for c in todays if id(c) in picks and _fits_top(c)], key=_rank, reverse=True)[:PICKS]
+        biggest = [c for c in top + sorted([c for c in todays if _fits_top(c)], key=_rank, reverse=True) if c not in mine]
+        top = mine + list({id(c): c for c in biggest}.values())[:TOP - len(mine)]
+    elif tuned:  # a lighter day: every story is in, the reader's own first
+        top = sorted(top, key=lambda c: id(c) not in picks)
+    return top, picks
+
+
+def _top_grid(top: list[dict], picks: set[int], stream_of: dict[int, str]) -> tuple[list[str], str]:
+    """The top stories as plain-text bullets and as a grid of two (one on a phone): a coloured rule over each story,
+    its kind, the headline, one line, who reported it."""
+    lines, cells = [], []
     for c in top:  # ordered by _rank, but not numbered: past the few big stories, most tie
         label, bg, fg = tag(c, stream_of[id(c)])
         more, summary, tags = _outlets(c) - 1, _short(c.get("summary") or "", 100, c.get("source", "")), story_tags(c)
@@ -964,12 +981,20 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
         cells.append('<td class="cell" width="50%"></td>')
     # a grid of two (one on a phone): a coloured rule over each story, its kind, the headline, one line, who reported it
     gap = '<td class="gap" width="20" style="width:20px;font-size:0">&nbsp;</td>'
-    html.append('<table class="grid" role="presentation" width="100%" cellpadding="0" cellspacing="0" '
-                'style="border-collapse:collapse;table-layout:fixed">'
-                + "".join(f"<tr>{cells[k]}{gap}{cells[k + 1]}</tr>" for k in range(0, len(cells), 2)) + "</table>")
-    lines += ["", "THE REST OF THE DAY"]
-    html.append(head("The rest of the day") + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
-                'style="border-collapse:collapse">')
+    return lines, ('<table class="grid" role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+                   'style="border-collapse:collapse;table-layout:fixed">'
+                   + "".join(f"<tr>{cells[k]}{gap}{cells[k + 1]}</tr>" for k in range(0, len(cells), 2)) + "</table>")
+
+
+def _rest_of_day(by_stream: dict[str, list[dict]], streams: list[str], day: date, top: list[dict],
+                 light: bool) -> tuple[list[str], str]:
+    """THE REST OF THE DAY: per stream its count, the next HEADLINES headlines past the top stories and a link to the
+    rest; streams wholly in the top stories, or empty that day, said in one line each."""
+    head = lambda words: (f'<div style="font-size:13px;font-weight:bold;color:{GREY};text-transform:uppercase;'
+                          f'letter-spacing:.5px;margin:22px 0 8px">{escape(words)}</div>')
+    lines = ["", "THE REST OF THE DAY"]
+    html = [head("The rest of the day") + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+            'style="border-collapse:collapse">']
     shown = {id(c) for c in top}
     covered, empty = [], []  # streams said in one line: all in the top stories; nothing that day
     for n in streams:
@@ -1014,9 +1039,7 @@ def _brief(by_stream: dict[str, list[dict]], cards: list[dict], streams: list[st
                 f'font-size:13px;font-weight:bold;color:{GREY}">{escape(k)}</td><td valign="top" style="padding:10px 0 10px 8px;'
                 f'border-top:1px solid {RULE};font-size:13px;color:{GREY}">{escape(v)}</td></tr>' for k, v in said)
     html.append("</table>")
-    lines += [*(f"{k}: {v}." for k, v in said), "", f"Every story of the day in one table: {everything}"]
-    html.append(f'<p style="margin:16px 0 0;font-size:14px"><a href="{escape(everything)}" style="color:{LINK};'
-                f'text-decoration:none;font-weight:bold">Every story of the day in one table →</a></p>')
+    lines += [f"{k}: {v}." for k, v in said]
     return lines, "".join(html)
 
 
