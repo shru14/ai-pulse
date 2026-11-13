@@ -211,7 +211,7 @@ python -m aipulse collect             # fetch every source into aipulse.db (add 
 python -m aipulse serve               # http://127.0.0.1:8000
 python -m aipulse audit               # check every source's robots.txt and terms again
 python -m pytest -n auto              # tests, run on this PC (never on Actions)
-python -m pytest -n auto --cov        # the same, with how much of the code they cover (at least 83%)
+python -m pytest -n auto --cov        # the same, with how much of the code they cover (at least 82%)
 python -m ruff check .                # lint
 ```
 
