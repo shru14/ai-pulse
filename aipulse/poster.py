@@ -91,7 +91,7 @@ STYLE = (":root{color-scheme:light only;supported-color-schemes:light only}"  # 
 
 
 def _sentences(text: str) -> list[str]:
-    out = []
+    out: list[str] = []
     for piece in _SENTENCE.split(text):
         if out and _ABBREVIATION.search(out[-1]):
             out[-1] += " " + piece
@@ -379,7 +379,7 @@ def _word_and_meme(cards: list[dict], day: date, streams: list[str], prefs: dict
     from . import memes
     meme = memes.of_the_day(cards, day)
     picture = meme and memes.render(meme)
-    if picture:
+    if meme and picture:
         src = f"{rss.SITE}daily/{day.isoformat()}-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
         text += memes.text(meme) + [""]
         html += _meme_tile(meme, picture, src, digest.MEME_CID, "MEME OF THE DAY")
@@ -475,7 +475,7 @@ def _week_word_and_meme(cards: list[dict], day: date) -> tuple[list[str], str]:
                            + '</div>')
     meme = memes.of_the_week([c for c in cards if (c.get("date") or "") <= day.isoformat()], monday)
     picture = meme and memes.render(meme)
-    if picture:
+    if meme and picture:
         src = f"{rss.SITE}daily/{day.isoformat()}-week-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
         text += memes.text(meme) + [""]
         html += _meme_tile(meme, picture, src, digest.MEME_WEEK_CID, "MEME OF THE WEEK")
@@ -552,7 +552,7 @@ def _spread(ranked: list[dict], taken: list[dict], n: int, stream_of: dict[int, 
     idf = idf if idf is not None else {}
     per = Counter(stream_of[id(c)] for c in taken[1:])
     left = [c for c in ranked if c not in taken and not any(digest.same_event(c, t, idf) for t in taken)]
-    out = []
+    out: list[dict] = []
     while left and len(out) < n:
         c = next((c for c in left if per[stream_of[id(c)]] < PER_STREAM), left[0])
         if digest._independent(left[0]) > digest._independent(c):
@@ -736,15 +736,15 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     text += ["THE FIREHOSE", f"All {stories} stories of {day:%A}: {web}"]
     rows = []
     for n in streams:
-        name, count = rss.FEEDS[n][1], len(by_stream[n])
-        text.append(f"  {name}: {count} {'story' if count == 1 else 'stories'}")
-        words = f"{count} {'story' if count == 1 else 'stories'}" if count else "nothing new"
+        name, size = rss.FEEDS[n][1], len(by_stream[n])
+        text.append(f"  {name}: {size} {'story' if size == 1 else 'stories'}")
+        words = f"{size} {'story' if size == 1 else 'stories'}" if size else "nothing new"
         rows.append(f'<tr class="p-row"><td width="14" style="width:14px;padding:11px 0"><div style="width:12px;height:12px;'
-                    f'background:{FILL[n] if count else "#cccccc"};border:2px solid {INK}"></div></td>'
+                    f'background:{FILL[n] if size else "#cccccc"};border:2px solid {INK}"></div></td>'
                     f'<td style="padding:11px 10px;border-bottom:1px solid #cccccc"><a href="{escape(web)}#{n}" style="color:{INK};'
                     f'text-decoration:none;font-weight:bold;font-size:15px">{escape(name)}</a></td>'
                     f'<td align="right" style="padding:11px 0;border-bottom:1px solid #cccccc;font-size:14px;white-space:nowrap">'
-                    f'<a href="{escape(web)}#{n}" style="color:{INK if count else GREY};text-decoration:none">{words} ▸</a></td></tr>')
+                    f'<a href="{escape(web)}#{n}" style="color:{INK if size else GREY};text-decoration:none">{words} ▸</a></td></tr>')
     html.append(f'<tr><td class="p-pad" style="padding:18px 20px 16px;background:{INK};color:#ffffff"><div style="font-family:{HEAD};font-weight:900;'
                 f'font-size:22px;line-height:1.2;color:#ffffff">The Firehose</div><div style="font-size:14px;line-height:1.45;'
                 f'margin-top:4px;color:#ffffff">'
@@ -765,9 +765,9 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                 f'</td></tr>')
 
     # "Daily Digest: " (Sunday: "Weekly Digest: " and the story of the week), then the lead in a few of its own words
-    lead = week or (top[0] if top else None)
+    top_story = week or (top[0] if top else None)
     subject = (("Weekly Digest: " if digest.weekly(day) else "Daily Digest: ")
-               + (_subject(lead["title"]) if lead else digest.long_day(day)))
+               + (_subject(top_story["title"]) if top_story else digest.long_day(day)))
     page = ('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             '<meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">'
             '<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;display=swap" rel="stylesheet">'
