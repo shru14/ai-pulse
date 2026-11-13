@@ -110,11 +110,11 @@ PRIVACY_ROWS = [
 def privacy_page() -> str:
     """The privacy notice: the site keeps nothing about visitors; the daily email keeps only what it needs."""
     rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>" for a, b, c in PRIVACY_ROWS)
-    mail = '<a class="pol-btn" href="mailto:projectaipulse@gmail.com">Email projectaipulse@gmail.com</a>'
+    mail = '<a class="pol-btn" href="mailto:projectaipulse@gmail.com">Email us</a>'
     what = "What AI Pulse keeps about you: nothing about site visitors, and for the daily email only what it needs to send it."
     from . import policies
     # 12 Nov 2026, owner: no header band and no big sections here; the quiet legal layout shared with terms/
-    body = policies.doc("Privacy", "AI Pulse is free and non-commercial. Responsible for your data: AI Pulse, projectaipulse@gmail.com.", [
+    body = policies.doc("Privacy", "AI Pulse is free and non-commercial. Responsible for your data: AI Pulse.", [
         ("The site", '<p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site you came '
                      'from, your browser, system, country and screen size. No IP address, cookie or ID is kept. Your '
                      'settings stay in your own browser. GitHub Pages, which hosts the site, may log IP addresses for '

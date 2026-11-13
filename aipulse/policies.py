@@ -25,7 +25,7 @@ SECTIONS = [
                   "owners' terms (see Sources and licences)."),
     ("Liability", "Provided as it is. As far as the law allows, we are not liable for losses from relying on the content; "
                   "for Pulse Pro, our liability is limited to what your firm paid us in the last twelve months."),
-    ("Changes and law", f"Updates are posted here with their date. The law of England and Wales applies. Questions: {MAIL}."),
+    ("Changes and law", "Updates are posted here with their date. The law of England and Wales applies. Questions? Email us."),
 ]
 
 STYLE = ("<style>"
@@ -61,7 +61,8 @@ def doc(title: str, lede: str, sections: list[tuple[str, str]], also: tuple[str,
 
 def build(conn, cards: list[dict], out: Path) -> list[str]:
     """Write terms/ for the news site, in the same layout as privacy.html; it goes in the sitemap."""
-    body = doc(TITLE, escape(WHAT), [(h, f"<p>{escape(p)}</p>") for h, p in SECTIONS], ("privacy.html", "Privacy"))
+    button = f'<p class="pol-acts"><a class="pol-btn" href="mailto:{MAIL}">Email us</a></p>'
+    body = doc(TITLE, escape(WHAT), [(h, f"<p>{escape(p)}</p>" + (button if h == SECTIONS[-1][0] else "")) for h, p in SECTIONS], ("privacy.html", "Privacy"))
     data = {"@context": "https://schema.org", "@type": "WebPage", "name": TITLE, "description": WHAT,
             "url": f"{rss.SITE}{PATH}"}
     html = pages.page(f"{TITLE} · AI Pulse", WHAT, PATH, body, data, pages.frame(conn, len(cards)), ("/", "Back to AI Pulse"))
