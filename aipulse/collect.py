@@ -6,6 +6,7 @@ import logging
 import json
 import re
 import time
+from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin
 
@@ -108,7 +109,7 @@ def in_english(conn, title: str, summary: str, url: str = "", source: str = "",
     out = []
     for text, text_lang in zip((title, summary), langs):
         if text_lang:
-            text = translate.english(conn, text_lang, [text]).get(text)
+            text = translate.english(conn, text_lang, [text]).get(text) or ""
             if not text or "<unk>" in text:
                 break
         out.append(text)
@@ -132,7 +133,7 @@ def page_list_entries(conn, src: dict, fetcher=feeds.fetch) -> list[dict]:
     key = f"page_list:{src['name']}"
     row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
     notes = src.get("notes")  # a page of release notes: the entries are on it (feeds.parse_xai_notes, ...)
-    listed = feeds.PARSERS[notes](fetcher(src["url"])) if notes else None
+    listed = feeds.PARSERS[notes](fetcher(src["url"])) if notes else []
     links = [e["url"] for e in listed] if notes else feeds.listed_links(fetcher(src["url"]), src["url"], src["link"])
     if not links:
         raise EmptyFeed("no posts listed")
@@ -528,7 +529,9 @@ def policy_feed_keeps(src: dict | None) -> bool:
     it writes its stories itself, so they are all Policy, even one whose headline names no government
     ("Europe's AI Future and Security Challenges Take Center Stage at Dublin Summit"). Groups that also repost
     general press coverage (press_clips: CSET, AI Now, EPIC) have each story checked instead."""
-    return bool(src) and src["category"] == "policy" and not src.get("press_clips")
+    if not src:
+        return False
+    return src["category"] == "policy" and not src.get("press_clips")
 
 
 def stream_of(src: dict, title: str, summary: str, url: str) -> str:
@@ -545,7 +548,7 @@ def stream_of(src: dict, title: str, summary: str, url: str) -> str:
     return "infra" if category == "news" and classify.infra_story(title) else category
 
 
-def apply_regulation(item: dict, default_jurisdictions: list[str] = ()) -> None:
+def apply_regulation(item: dict, default_jurisdictions: Sequence[str] = ()) -> None:
     """Move a policy story into the regulation tracker when it reports a proposal or an adopted law.
 
     Needs both one of those actions and at least one jurisdiction; anything else (including
@@ -655,7 +658,7 @@ def resummarize_papers(conn, fetcher=feeds.fetch, limit: int = 3000, log=print) 
         for e in entries:
             r = ids.get(re.sub(r"v\d+$", "", e["url"].rsplit("/abs/", 1)[-1]))
             summary = brief.paper_summary(e["summary"], r["title"]) if r else ""
-            if summary:
+            if summary and r:
                 conn.execute("UPDATE items SET summary = ? WHERE id = ?", (summary, r["id"]))
                 changed += 1
         conn.execute("INSERT OR REPLACE INTO meta VALUES ('papers_resummarized', ?)", (str(batch[-1]["rowid"]),))
@@ -722,7 +725,7 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
             noted = re.search(r"Machine-translated from (\w+);", summary)
             lang = noted and {v: k for k, v in translate.LANGUAGE_NAMES.items()}.get(noted.group(1))
             if lang and not translate.reads_english(it["title"]):
-                title = translate.english(conn, lang, [it["title"]]).get(it["title"])
+                title = translate.english(conn, lang, [it["title"]]).get(it["title"]) or ""
                 if title and "<unk>" not in title and title != it["title"]:
                     store.update_text(conn, it["id"], title, summary)
                     store.set_tags(conn, it["id"], classify.tags_for(title, summary, source=it["source"]))
