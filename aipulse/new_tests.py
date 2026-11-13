@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-11-10"
+CHECKED_TO = "2026-11-13"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -614,6 +614,8 @@ LEFT_OUT: dict[str, str] = {
         "LibEvoBench is a June 2026 arXiv paper, before the sample starts",
     "https://research.google/pubs/outrunning-llm-cutoffs-a-live-kernel-crash-resolution-benchmark-for-all/":
         "Live-kBench's abstract names no best model or score, and only a summary of it could be read",
+    "https://www.amazon.science/publications/fev-bench-a-realistic-benchmark-for-time-series-forecasting":
+        "fev-bench's abstract names no best model or score, and this page gives only a summary of it (an older arXiv paper)",
 }
 # Tests a later paper beat, by the test's address in TESTS: (the later paper's address, the day arXiv announced it, what
 # it reports in its abstract's own numbers and words, and who got it as the abstract names them). A test counts as beaten
@@ -627,7 +629,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
 }
-BEATS_CHECKED_TO = "2026-11-10"
+BEATS_CHECKED_TO = "2026-11-12"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
