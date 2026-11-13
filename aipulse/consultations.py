@@ -124,6 +124,8 @@ LEFT_OUT: dict[str, str] = {
         "no government asking the public (a vendor piece on shadow AI)",
     "https://www.federalregister.gov/documents/2026/11/05/2026-22615/proposed-priorities-and-definitions-secretarys-supplemental-priorities-and-definitions":
         "AI only in passing (names an earlier AI-in-education priorities notice among those it amends)",
+    "https://www.canada.ca/en/employment-social-development/programs/accessible-canada/consultation-accessibility-regulations-information-communication-technologies-phase-two.html":
+        "no closing date on its page, and only selected stakeholders are invited (public comment comes later)",
 }
 # a headline that may report a consultation: the words governments use for asking the public
 _ASKS = re.compile(r"\b(consult(s|ed|ing|ation|ations)?|public comments?|call for (evidence|views|input|comments?)|"
