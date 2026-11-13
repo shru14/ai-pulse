@@ -359,13 +359,14 @@ def _years(rows: list[dict], shown: list[tuple]) -> str:
 def lists_in(source: str) -> tuple[set[str], set[str]]:
     """The URLs in CHECKED and LEFT_OUT of another copy of this file (main's, to tell what a branch adds)."""
     import ast
-    found = {}
+    found: dict[str, set[str]] = {}
     for node in ast.parse(source).body:
         if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:
             for t in (node.targets if isinstance(node, ast.Assign) else [node.target]):
                 if isinstance(t, ast.Name) and t.id in ("CHECKED", "LEFT_OUT"):
-                    items = node.value.keys if isinstance(node.value, ast.Dict) else node.value.elts
-                    found[t.id] = {k.value for k in items if isinstance(k, ast.Constant)}
+                    v = node.value
+                    items = v.keys if isinstance(v, ast.Dict) else v.elts if isinstance(v, (ast.List, ast.Set, ast.Tuple)) else []
+                    found[t.id] = {k.value for k in items if isinstance(k, ast.Constant) and isinstance(k.value, str)}
     return found.get("CHECKED", set()), found.get("LEFT_OUT", set())
 
 

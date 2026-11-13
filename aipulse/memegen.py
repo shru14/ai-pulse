@@ -18,6 +18,7 @@ account, so nothing can ever be billed. GEMINI_MODEL picks the model (default be
 
 from __future__ import annotations
 
+from collections.abc import Collection
 import json
 import logging
 import re
@@ -91,7 +92,7 @@ ASK = {"day": "Create a funny meme out of this current AI news for today.",
        "week": "Analyse these weekly AI updates and create a meme for the week for our readers."}
 
 
-def _prompt(stories: list[dict], span: str, avoid: set[str] = frozenset()) -> str:
+def _prompt(stories: list[dict], span: str, avoid: Collection[str] = frozenset()) -> str:
     lines = "\n".join(f"{i}. {c['title']} ({c.get('source') or ''})" for i, c in enumerate(stories))
     kinds = "\n".join(f'- "{k}": {d} Fields: ' + "; ".join(f"{f}: {h}" for f, h in fields.items())
                       for k, (d, fields) in TEMPLATES.items() if k not in avoid)  # not the last days' templates
@@ -159,7 +160,7 @@ def _clean(t) -> str | None:
     return t if 0 < len(t) <= MAX else None
 
 
-def check(m: dict, stories: list[dict], avoid: set[str] = frozenset()) -> dict | None:
+def check(m: dict, stories: list[dict], avoid: Collection[str] = frozenset()) -> dict | None:
     """The meme in memes.py's shape, or None if it breaks a rule (or uses a template in `avoid`)."""
     f = m.get("format")
     if f not in TEMPLATES or f in avoid:
@@ -211,7 +212,7 @@ def check(m: dict, stories: list[dict], avoid: set[str] = frozenset()) -> dict |
     return out
 
 
-def write(cards: list[dict], span: str, key: str | None = None, ask=None, avoid: set[str] = frozenset()) -> dict | None:
+def write(cards: list[dict], span: str, key: str | None = None, ask=None, avoid: Collection[str] = frozenset()) -> dict | None:
     """A Gemini meme for these stories, checked, or None (no key, no light stories, an error or no candidate passed).
     `avoid`: templates it mustn't use (the last days')."""
     key = key or config.gemini_key()
@@ -230,7 +231,7 @@ def write(cards: list[dict], span: str, key: str | None = None, ask=None, avoid:
     return None
 
 
-def stored(conn, kind: str, when: date, cards: list[dict], make: bool, avoid: set[str] = frozenset()) -> dict | None:
+def stored(conn, kind: str, when: date, cards: list[dict], make: bool, avoid: Collection[str] = frozenset()) -> dict | None:
     """The period's Gemini meme from the database; with make, ask Gemini once and keep its answer (or that it failed).
     `avoid`: templates it mustn't use; a kept one on such a template is asked for again (with make) or not used."""
     k = f"meme:{kind}:{when.isoformat()}"

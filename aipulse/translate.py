@@ -79,7 +79,7 @@ _OPENERS = [(re.compile(p, re.I), r) for p, r in (
     (r"^It deals with\b", "Provides for"), (r"^It (amends|alters|changes)\b", "Amends"),
     (r"^It (establishes|institutes)\b", "Establishes"), (r"^It\s+(\w)", r"\1"))]
 
-_loaded: dict[str, tuple] = {}
+_loaded: dict[str, tuple | None] = {}
 
 
 def _key(lang: str, text: str) -> str:

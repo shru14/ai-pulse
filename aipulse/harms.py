@@ -137,7 +137,7 @@ def _labels(s: dict, x, y) -> str:
         b["places"][name] = b["places"].get(name, 0) + 1
     # each block drawn, and each dot: left, right, top, bottom
     placed = [(x(r['since']) - 7, x(r['since']) + 7, y(r['before']) - 7, y(r['before']) + 7) for r in s['rules']]
-    out = []
+    out: list[str] = []
     for b in bunches:
         lines = [p + (f" ×{n}" if n > 1 else "") for p, n in b["places"].items()]
         w = max(len(t) for t in lines) * 6.4

@@ -9,6 +9,7 @@ regulation the action (proposal / law) and jurisdictions, with a note on why whe
 
 from __future__ import annotations
 
+from typing import Any
 import csv
 from pathlib import Path
 
@@ -34,7 +35,7 @@ def predict(title: str, text: str, feed_default: str) -> dict:
 
 def evaluate(rows: list[dict] | None = None) -> dict:
     rows = load() if rows is None else rows
-    report = {"n": len(rows), "mistakes": []}
+    report: dict[str, Any] = {"n": len(rows), "mistakes": []}
     right_cat = tp = fp = fn = right_action = right_places = 0
     for r in rows:
         want_places = sorted(p for p in r["jurisdictions"].split(",") if p)

@@ -12,6 +12,8 @@ billed; VOICE_NAME); without it (`pip install piper-tts lameenc` and the VOICE m
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
+from typing import Any
 import hashlib
 import io
 import json
@@ -47,7 +49,7 @@ def _key(prefs: dict):
 
 
 def _one_each(by_stream: dict[str, list[dict]], streams: list[str], prefs: dict, n: int,
-              skip: list[dict] = ()) -> list[tuple[str, dict]]:
+              skip: Sequence[dict] = ()) -> list[tuple[str, dict]]:
     """Up to n stories as (stream, story), biggest first: each stream's biggest, then, for streams with nothing, the
     biggest left from the others."""
     key = _key(prefs)
@@ -64,12 +66,12 @@ def plan(cards: list[dict], day: date, streams: list[str], prefs: dict | None = 
     week's other important updates: every story IMPORTANT outlets carried, and each stream's biggest one 2+ carried
     (so every stream is heard), at most WEEK_ALSO. Saturday's six then leave out what the week already said."""
     prefs = prefs or {}
-    said = []
-    out = {}
+    said: list[dict] = []
+    out: dict[str, Any] = {}
     if digest.weekly(day):
         week = digest._week_story(cards, day, prefs)
         monday, _ = digest._span(day)
-        whole = {s: [] for s in streams}
+        whole: dict[str, list[dict]] = {s: [] for s in streams}
         for k in range((day - monday).days + 1):
             for s, cs in digest._leave_out(digest.by_streams(cards, streams, monday + timedelta(days=k)), prefs)[0].items():
                 whole[s] += [c for c in cs if digest._outlets(c) >= 2 and c is not week]
@@ -77,7 +79,7 @@ def plan(cards: list[dict], day: date, streams: list[str], prefs: dict | None = 
         also = _one_each(whole, streams, prefs, len(streams))
         also += [(s, c) for s in streams for c in whole[s] if digest._outlets(c) >= IMPORTANT and (s, c) not in also]
         out["week"], out["also"] = week, sorted(also, key=lambda sc: key(sc[1]), reverse=True)[:WEEK_ALSO] if week else []
-        said = [week] + [c for _, c in out["also"]]
+        said = ([week] if week else []) + [c for _, c in out["also"]]
     by_stream, _ = digest._leave_out(digest.by_streams(cards, streams, day), prefs)
     out["six"] = _one_each(by_stream, streams, prefs, TOP, said)
     return out

@@ -18,6 +18,7 @@ import logging
 import os
 import shutil
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 
 from . import config
@@ -257,7 +258,8 @@ def _contents() -> str:
 
 def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: list[str]) -> str:
     """The published page: the login box, with the real page beside it as unreadable bytes."""
-    from . import adoption, pages, rss
+    from . import adoption  # type: ignore[attr-defined]  # private repo, joined to the package at run time
+    from . import pages, rss
     head, lead, extra = "Log in to Pulse Pro", "Enter the password you were given.", ""
     if path == REPORT:
         head, lead, extra = ("Log in to see your report",
@@ -289,16 +291,17 @@ def seal(out: Path, conn, cards: list[dict], people: dict | None = None) -> int:
     if not root.is_dir():
         return 0
     people = users() if people is None else people
-    box = None
+    box: Callable[[bytes], str] | None = None  # seals a page; None when nobody can log in
     table: dict = {"_rounds": ROUNDS}
     if people:  # only then is the library needed: with no users nothing gets encrypted
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
         key = os.urandom(32)
         sealer = AESGCM(key)
 
-        def box(raw: bytes) -> str:
+        def seal(raw: bytes) -> str:
             iv = os.urandom(12)
             return _b64(iv + sealer.encrypt(iv, raw, None))
+        box = seal
 
         for name, u in people.items():
             iv = os.urandom(12)

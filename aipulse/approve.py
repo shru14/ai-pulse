@@ -11,7 +11,7 @@ from html import escape
 
 def lists_in(source: str, names: tuple[str, ...]) -> dict[str, set[str]]:
     """Every URL in each named list or dict of another copy of a module (main's, to tell what a branch adds)."""
-    found = {n: set() for n in names}
+    found: dict[str, set[str]] = {n: set() for n in names}
     for node in ast.parse(source).body:
         if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:
             for t in (node.targets if isinstance(node, ast.Assign) else [node.target]):

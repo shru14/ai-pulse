@@ -457,8 +457,8 @@ def main():
             # a weekly reader gets Sunday's email only (the day is a Saturday); daily readers get every one
             weekly_only = sum(1 for r in readers.values() if r[3].get("often") == "weekly")
             readers = digest.due(readers, day)
-            emails = [(to, *e, one_click) for to, (chosen, one_click, link, prefs) in readers.items()
-                      if (e := digest.build(cards, chosen, day, link, a.layout, prefs=prefs, dossier=dossier(prefs), since=since,
+            emails = [(to, *built, one_click) for to, (chosen, one_click, link, prefs) in readers.items()
+                      if (built := digest.build(cards, chosen, day, link, a.layout, prefs=prefs, dossier=dossier(prefs), since=since,
                                                listen=True))]
             if a.dry_run:
                 tuned = sum(1 for r in readers.values() if any(v for k, v in r[3].items() if k != "often"))

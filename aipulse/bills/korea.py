@@ -68,7 +68,7 @@ def kr_english(name: str) -> tuple[str, str]:
 
 def kr_laws(page: str) -> dict[str, dict]:
     """Each law's first enactment, first entry into force and (if its latest version repeals it) repeal."""
-    laws = {}
+    laws: dict[str, dict] = {}
     for m in _KR_ITEM.finditer(page):
         name, kind = m.group(1).strip(), m.group(10).strip()
         if "인공지능" not in name and not DATA_LAWS["KR"].search(name):

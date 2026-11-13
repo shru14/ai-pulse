@@ -54,25 +54,27 @@ def read_xlsx(data: bytes) -> dict[str, list[dict]]:
         shared = ["".join(t.text or "" for t in si.iter(_X + "t")) for si in ET.fromstring(z.read("xl/sharedStrings.xml"))]
     rels = {r.get("Id"): r.get("Target") for r in ET.fromstring(z.read("xl/_rels/workbook.xml.rels"))}
     out = {}
-    for sh in ET.fromstring(z.read("xl/workbook.xml")).find(_X + "sheets"):
+    sheets = ET.fromstring(z.read("xl/workbook.xml")).find(_X + "sheets")
+    for sh in sheets if sheets is not None else []:
         rid = sh.get("{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id")
-        target = rels[rid].lstrip("/").removeprefix("xl/")
+        target = (rels[rid] or "").lstrip("/").removeprefix("xl/")
         header, rows = None, []
         for r in ET.fromstring(z.read("xl/" + target)).iter(_X + "row"):
             cells = {}
             for c in r.findall(_X + "c"):
-                col = "".join(ch for ch in c.get("r") if ch.isalpha())
+                col = "".join(ch for ch in c.get("r") or "" if ch.isalpha())
                 v = c.find(_X + "v")
                 if v is None:
                     cells[col] = "".join(t.text or "" for t in c.iter(_X + "t")).strip()
                 else:
-                    cells[col] = (shared[int(v.text)] if c.get("t") == "s" else v.text or "").strip()
+                    text = v.text or ""
+                    cells[col] = (shared[int(text)] if c.get("t") == "s" and text else text).strip()
             if header is None:
                 if cells.get("A") in HEADERS:
                     header = cells
                 continue
             rows.append({header[k]: v for k, v in cells.items() if k in header})
-        out[sh.get("name")] = rows
+        out[sh.get("name") or ""] = rows
     return out
 
 
@@ -129,7 +131,7 @@ def sync_snapshot(conn, fetcher=feeds.fetch, log=print) -> int:
 def _page(number: str, fetcher) -> tuple[str, str, str]:
     """(title, description, incident date) from an incident's page."""
     page = fetcher(incident_url(number) + "/").decode("utf-8", "replace")
-    meta = lambda prop: html.unescape((re.search(rf'<meta[^>]*property="og:{prop}"[^>]*content="([^"]*)"', page) or [None, ""])[1])
+    meta = lambda prop: html.unescape((re.search(rf'<meta[^>]*property="og:{prop}"[^>]*content="([^"]*)"', page) or ["", ""])[1])
     title = re.sub(rf"^Incident {number}:\s*", "", meta("title"))
     day = re.search(r"Incident Date\s*(?:<[^>]+>\s*)*(\d{4}-\d{2}-\d{2})", page)
     return title, meta("description"), day.group(1) if day else ""

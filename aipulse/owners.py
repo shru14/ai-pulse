@@ -289,7 +289,7 @@ def note(base: str, branch: str, money_base: str | None = None) -> tuple[str, st
     ai_money.py ("" when main has none; None leaves those out)."""
     from . import approve
     had = approve.lists_in(base, ("DEALS", "LEFT_OUT"))
-    rows = [(i, lab, w, m, u) for i, lab, w, m, _, u in DEALS if u not in had["DEALS"]]
+    rows: list[tuple[str, ...]] = [(i, lab, w, m, u) for i, lab, w, m, _, u in DEALS if u not in had["DEALS"]]
     dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
     more, skipped = ai_money.note_rows(money_base) if money_base is not None else ([], [])
     rows, dropped = rows + more, dropped + skipped

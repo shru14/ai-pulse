@@ -503,7 +503,7 @@ def body(today: date) -> str:
         count[r[1]] = count.get(r[1], 0) + 1
     most = max(count.values())
     top = sorted(b for b, n in count.items() if n == most)
-    big = max((r for r in deals if r[5] and r[6] != "blocked"), key=lambda r: r[5])
+    big = max((r for r in deals if r[5] and r[6] != "blocked"), key=lambda r: r[5] or 0)  # r[5] is set: the filter
     lead = (f'<p class="by-lead"><b>{" and ".join(top)}</b> made the most deals in {SINCE[:4]} ({most}). The biggest '
             f'price: <b>{escape(big[1])}</b> buying <b>{escape(big[2])}</b> for <b>{escape(big[4])}</b>.</p>'
             f'<p class="by-sub">{len(deals)} deals by {len(count)} buyers since 1 Jan {SINCE[:4]}, counting the ones '

@@ -33,7 +33,8 @@ def items(cards: list[dict]) -> str:
 
 def feed(cards: list[dict]) -> str:
     """A stream page's stories by day, in the markup its script draws (section.day > h2 + article.item h3)."""
-    out, by = [], {}
+    out: list[str] = []
+    by: dict[str, list[dict]] = {}
     for c in cards:
         by.setdefault(c["date"][:10], []).append(c)
     for d, cs in by.items():

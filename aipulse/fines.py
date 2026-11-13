@@ -248,10 +248,10 @@ def body(today: date) -> str:
     blead = (f"{_and(len(bans), 'ban or stop order', 'bans and stop orders')} in "
              f"{_and(len({r[2] for r in bans}), 'country', 'countries')}; {on} still in force.")
     court = sum(r[8] in ("challenged", "annulled") for r in fines)
-    counts = {}
+    counts: dict[str, int] = {}
     for r in fines:
         counts[r[3]] = counts.get(r[3], 0) + 1
-    most = max(counts, key=counts.get) if counts else ""
+    most = max(counts, key=lambda k: counts[k]) if counts else ""
     flead = (f"{_and(len(fines), 'fine or settlement', 'fines and settlements')} in "
              f"{_and(len({r[2] for r in fines}), 'country', 'countries')}"
              + (f"; {court} challenged or annulled in court" if court else "")

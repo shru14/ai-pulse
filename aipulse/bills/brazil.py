@@ -94,8 +94,8 @@ def sync_brazil(conn, fetcher=feeds.fetch, log=print) -> int:
             continue
         events = _get_json(f"{BR_API}/proposicoes/{p['id']}/tramitacoes", fetcher).get("dados", [])
         history = br_history(detail.get("dataApresentacao") or "", events)
-        number = f"{p['siglaTipo']} {p['numero']}/{p['ano']}"
-        bill = {"key": f"BR-{p['siglaTipo']}-{p['numero']}-{p['ano']}", "jurisdiction": "BR", "number": number,
+        label = f"{p['siglaTipo']} {p['numero']}/{p['ano']}"
+        bill = {"key": f"BR-{p['siglaTipo']}-{p['numero']}-{p['ano']}", "jurisdiction": "BR", "number": label,
                 "title": (p.get("ementa") or "").strip(),
                 "url": f"https://www.camara.leg.br/propostas-legislativas/{p['id']}",
                 "source": "Câmara dos Deputados", "history": history, "lang": "pt"}
