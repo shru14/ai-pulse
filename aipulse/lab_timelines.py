@@ -206,6 +206,10 @@ LEFT_OUT = {
         "A GPU cluster going commercial, not a model price or place change",
     "https://the-decoder.com/goldman-sachs-pulls-ai-coding-tools-from-traders-and-bankers/":
         "A bank removing tools from its staff, not a lab taking a model away",
+    "https://siliconangle.com/2026/11/12/cloud-native-developers-top-21-million-lead-ai-adoption-kubeconna/":
+        "Survey news on developers, not a model price or place change",
+    "https://techcrunch.com/2026/11/11/nvidias-stock-drops-as-board-reportedly-preps-to-oust-ceo-jensen-huang/":
+        "A company's stock and leadership news, not a model price change",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
