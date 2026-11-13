@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import json
 import os
 import re
@@ -11,6 +12,8 @@ from urllib.parse import urljoin
 
 from . import bills, brands, brief, classify, cluster, feeds, jurisdictions, store, translate
 from .sources import COMPANIES, EXPERT_FIELDS, PROFESSORS, SOURCES
+
+logger = logging.getLogger(__name__)
 
 # The regulation tracker follows proposals and adopted laws; other actions stay under "policy".
 TRACKED_ACTIONS = ("proposal", "law")
@@ -71,12 +74,13 @@ def english_version(url: str, fetcher=feeds.fetch) -> tuple[str, str, str] | Non
         page = fetcher(url).decode("utf-8", "replace")
         declared = re.findall(r"""<link[^>]+hreflang=["']en(?:-[A-Za-z]+)?["'][^>]*href=["']([^"']+)""", page)
         tries += [u for u in declared if u not in tries and u != url]
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("page not read for its English version: %s: %s", url, exc)
     for candidate in tries[:3]:
         try:
             post = feeds.page_meta(fetcher(candidate))
-        except Exception:
+        except Exception as exc:
+            logger.debug("English version not read: %s: %s", candidate, exc)
             continue
         if post["title"] and not translate.detect(post["title"]) and not translate.detect(post["summary"]):
             return post["title"], post["summary"], candidate
@@ -150,7 +154,8 @@ def page_list_entries(conn, src: dict, fetcher=feeds.fetch) -> list[dict]:
             time.sleep(src.get("pause", 0.5))  # before each read, so the site's crawl delay follows the list's read too
             try:
                 post = (feeds.paper_meta if src.get("abstract") else feeds.page_meta)(fetcher(url))
-            except Exception:  # a listed page that's gone (a stale sitemap entry): skipped, and remembered
+            except Exception as exc:  # a listed page that's gone (a stale sitemap entry): skipped, and remembered
+                logger.debug("listed page not read: %s: %s", url, exc)
                 continue
             if post["title"]:
                 entries.append({**post, "url": url, "authors": [],
@@ -255,8 +260,8 @@ def collect(conn, sources=SOURCES, max_age_days: int = 3, fetcher=feeds.fetch, l
                     lead = (feeds.LEAD_READERS.get(src.get("format"), feeds.article_lead)(page) if src.get("page_lead")
                             else feeds.lead_paragraph(page, e["title"]))
                     summary = brief.clean_summary(lead, title, source)
-                except Exception:
-                    pass
+                except Exception as exc:  # `e` is the feed's entry here
+                    logger.debug("first paragraph not read: %s: %s", e["url"], exc)
 
             item = {
                 "title": title.strip(),
@@ -417,7 +422,8 @@ def subscriber_only(conn, url: str, fetcher=feeds.fetch) -> bool:
         return True
     try:
         paid = not feeds.free_to_read(fetcher(url))
-    except Exception:
+    except Exception as exc:
+        logger.debug("paywall check not read, counted as paid: %s: %s", url, exc)
         return True
     if paid:
         conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", ("paid:" + url, _days_ago(0)))
@@ -616,7 +622,8 @@ def fill_page_leads(conn, fetcher=feeds.fetch, limit: int = 150, log=print) -> i
     for r in rows:
         try:
             summary = brief.clean_summary(feeds.article_lead(fetcher(r["url"])), r["title"], r["source"])
-        except Exception:
+        except Exception as exc:
+            logger.debug("first paragraph not read: %s: %s", r["url"], exc)
             summary = ""
         if summary:
             conn.execute("UPDATE items SET summary = ? WHERE id = ?", (summary, r["id"]))
@@ -694,7 +701,8 @@ def reclassify(conn, fetcher=feeds.fetch) -> int:
     for it in bare[:LEADS_PER_RUN]:
         try:
             lead = brief.clean_summary(readers[it["source"]](fetcher(it["url"])), it["title"], it["source"])
-        except Exception:
+        except Exception as exc:
+            logger.debug("first paragraph not read: %s: %s", it["url"], exc)
             continue
         if lead:
             store.update_text(conn, it["id"], it["title"], lead)

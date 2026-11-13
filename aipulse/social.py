@@ -8,11 +8,14 @@ Reddit was considered and left out: its robots.txt refuses every reader, its API
 
 from __future__ import annotations
 
+import logging
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 
 from . import classify, feeds
+
+logger = logging.getLogger(__name__)
 
 API = "https://hacker-news.firebaseio.com/v0/"
 SCAN = 200       # how many of HN's top stories to look at
@@ -29,7 +32,8 @@ def hacker_news(conn, fetcher=feeds.fetch, now: float | None = None) -> int:
     def item(i):
         try:
             return json.loads(fetcher(f"{API}item/{i}.json"))
-        except Exception:
+        except Exception as exc:
+            logger.debug("Hacker News item %s not read: %s", i, exc)
             return None
 
     with ThreadPoolExecutor(8) as ex:

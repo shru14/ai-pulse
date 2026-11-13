@@ -13,6 +13,7 @@ It's optional: without ctranslate2 or the model, nothing is embedded and everyth
 
 from __future__ import annotations
 
+import logging
 import hashlib
 import importlib.util
 import os
@@ -20,6 +21,8 @@ import unicodedata
 from pathlib import Path
 
 from . import feeds
+
+logger = logging.getLogger(__name__)
 
 REPO = "michaelfeil/ct2fast-bge-base-en-v1.5"
 REVISION = "2de9369ae5d9ea282d10ebf838f312780e923fff"  # pinned: the vectors stay comparable run to run
@@ -124,7 +127,8 @@ def _model():
                 data = feeds.fetch(f"https://huggingface.co/{REPO}/resolve/{REVISION}/{f}", timeout=300)
                 (MODEL_DIR / (f + ".part")).write_bytes(data)
                 (MODEL_DIR / (f + ".part")).replace(MODEL_DIR / f)
-        except Exception:
+        except Exception as exc:  # no embeddings this run; the download is tried again next run
+            logger.warning("embedding model not downloaded, related stories skipped this run: %s", exc)
             return None
     _loaded["m"] = (ctranslate2.Encoder(str(MODEL_DIR), device="cpu", compute_type="float32"),
                     WordPiece(MODEL_DIR / "vocab.txt"))

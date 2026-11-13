@@ -17,6 +17,7 @@ category symbol. The AI companies in classify.COMPANY_TERMS keep their colour lo
 
 from __future__ import annotations
 
+import logging
 import json
 import os
 import re
@@ -27,6 +28,8 @@ import urllib.request
 from pathlib import Path
 
 from . import classify, feeds, jurisdictions
+
+logger = logging.getLogger(__name__)
 
 SI_VERSION = "16"  # Simple Icons major version; jsDelivr serves its latest release
 SI_INDEX_URL = f"https://cdn.jsdelivr.net/npm/simple-icons@{SI_VERSION}/data/simple-icons.json"
@@ -104,7 +107,8 @@ def si_index() -> dict[str, dict]:
             entries = [{"title": i["title"], "slug": i.get("slug") or slug(i["title"]), "hex": i["hex"]} for i in icons]
             DATA.mkdir(exist_ok=True)
             SI_INDEX_FILE.write_text(json.dumps(entries), encoding="utf-8")
-        except Exception:
+        except Exception as exc:
+            logger.warning("brand logo index not refreshed, the saved copy is used: %s", exc)
             entries = None  # offline: keep the old copy if there is one
     if entries is None and SI_INDEX_FILE.exists():
         entries = json.loads(SI_INDEX_FILE.read_text(encoding="utf-8"))
@@ -121,7 +125,8 @@ def si_path(brand_slug: str) -> str | None:
             f.write_bytes(_get(SI_ICON_URL.format(slug=brand_slug)))
         m = re.search(r'<path d="([^"]+)"', f.read_text(encoding="utf-8"))
         return m.group(1) if m else None
-    except Exception:
+    except Exception as exc:
+        logger.debug("logo of %s not read: %s", brand_slug, exc)
         return None
 
 
@@ -134,7 +139,7 @@ def _wd_cache() -> dict[str, dict]:
     if _wd is None:
         try:
             _wd = json.loads(WIKIDATA_FILE.read_text(encoding="utf-8"))
-        except Exception:
+        except (OSError, ValueError):  # not made yet, or damaged: looked up again
             _wd = {}
     return _wd
 
@@ -176,7 +181,8 @@ def wikidata(name: str, budget: list[int]) -> dict | None:
     budget[0] -= 1
     try:
         entry = dict(_lookup(name), checked=int(time.time()))
-    except Exception:
+    except Exception as exc:
+        logger.debug("brand %s not looked up: %s", name, exc)
         return None  # network trouble: try again next time
     cache[name] = entry
     return entry

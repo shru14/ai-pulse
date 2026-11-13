@@ -13,6 +13,7 @@ week (meta key "links"); a paper that can't be read keeps the links last read. P
 """
 from __future__ import annotations
 
+import logging
 import json
 import re
 import time
@@ -22,6 +23,8 @@ from html import escape
 from urllib.parse import urlsplit
 
 from . import feeds, store
+
+logger = logging.getLogger(__name__)
 
 KEY = "links"  # the meta row: {arXiv id: {"read": ISO time, "links": {kind: url}}}
 HEALTH = "Code and demo links: arXiv abstracts and Hugging Face papers"
@@ -92,7 +95,8 @@ def _hugging_face(aid: str, fetcher) -> list[str]:
     """The code repository and project page Hugging Face lists for the paper ([] when it has no page for it)."""
     try:
         d = json.loads(fetcher(HF_API + aid))
-    except Exception:
+    except Exception as exc:  # most papers have no Hugging Face page
+        logger.debug("Hugging Face page of %s not read: %s", aid, exc)
         return []
     return [u for u in (d.get("githubRepo"), d.get("projectPage")) if isinstance(u, str) and u.startswith("http")]
 

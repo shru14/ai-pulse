@@ -36,6 +36,7 @@ has no public API.
 
 from __future__ import annotations
 
+import logging
 import html
 import json
 import os
@@ -44,6 +45,8 @@ import time
 from datetime import date, datetime, timedelta, timezone
 
 from . import feeds, store, translate
+
+logger = logging.getLogger(__name__)
 
 # Cards made from official records; the keyword rules for news stories never re-sort them.
 OFFICIAL_SOURCES = ("congress.gov", "European Parliament", "UK Parliament",
@@ -311,7 +314,8 @@ def _crs_summary(congress, kind: str, number, title: str, key: str, fetcher=feed
     try:
         data = _get_json(f"{CONGRESS_API}/bill/{congress}/{kind.lower()}/{number}/summaries?format=json&api_key={key}",
                          fetcher)
-    except Exception:
+    except Exception as exc:  # none yet, or congress.gov unreachable: asked again next run
+        logger.debug("CRS summary of %s %s not read: %s", kind, number, exc)
         return ""
     found = sorted(data.get("summaries") or [], key=lambda s: s.get("updateDate") or "")
     return describe(found[-1].get("text", ""), title) if found else ""
@@ -384,7 +388,8 @@ def _us_remember_context(conn, bill_key: str, congress, kind, number, key, fetch
     """Store a bill's context for its interim summary; returns its short title, if it has one yet."""
     try:
         ctx = _us_context(congress, kind, number, key, fetcher)
-    except Exception:
+    except Exception as exc:
+        logger.debug("context of %s not read: %s", bill_key, exc)
         return ""
     conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (f"us-context:{bill_key}", json.dumps(ctx)))
     return ctx["short_title"]
