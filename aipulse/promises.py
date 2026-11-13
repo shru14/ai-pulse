@@ -1,6 +1,6 @@
 """Promised vs shipped (promises/): headlines in which a company says it will release something ("OpenAI plans to
-launch its GPT Store next week"), each matched to a later headline saying it did ("OpenAI launches GPT Store"), drawn
-as a bar from the promise to the launch. The company must be the subject of both headlines, and every name the promise
+launch its GPT Store next week"), each matched to a later headline saying it did ("OpenAI launches GPT Store"), shown
+in a table beside it with how long it took. The company must be the subject of both headlines, and every name the promise
 gives ("GPT", "Store") must be in the launch's headline. The matcher only proposes: the page shows the promises in
 CHECKED, each checked by hand with its launch, and `python -m aipulse promises` lists what the matcher finds that
 isn't checked yet. A promise past its date (or 18 months old) with no launch found is kept out of the list and the
@@ -332,8 +332,8 @@ PROMISES_JS = r"""<script>
   const el = (tag, cls, text) => { const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; };
   const link = e => { const a = el("a", "", e.title); a.href = e.url; a.rel = "noopener"; return a; };
   const days = n => n === 1 ? "1 day" : n + " days";
-  const WORDS = {shipped: "Shipped", late: "Shipped late", waiting: "No launch found yet"};
-  const ms = d => Date.parse(d + "T00:00:00Z"), DAY = 864e5, today = box.dataset.today;
+  const WORDS = {shipped: "Shipped", late: "Shipped late", waiting: "No launch yet"};
+  const ms = d => Date.parse(d + "T00:00:00Z"), DAY = 864e5, today = box.dataset.today, after = d => Math.round(ms(d) / DAY);
   const LOGOS = JSON.parse(document.getElementById("logos").textContent);
   // a company's initials, for one without a mark: "IBM", "Baidu" -> "B", "Character.AI" -> "CA"
   const initials = n => /^[A-Z]{2,4}$/.test(n) ? n : n.split(/[\s.]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
@@ -345,98 +345,69 @@ PROMISES_JS = r"""<script>
   fetch(box.dataset.src, {cache: "no-cache"}).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(all => {
     // the promises our matching found no launch for go in a table of their own, out of the list and the numbers
     const list = all.filter(p => p.status !== "not-found"), missed = all.filter(p => p.status === "not-found");
+    const table = (heads, cls) => { const t = el("table", "mt " + cls), th = el("thead"), hr = el("tr"), tb = el("tbody");
+      heads.forEach(w => hr.append(el("th", "", w))); th.append(hr); t.append(th, tb); return [t, tb]; };
+    const said = (p, d) => el("div", "meta", p.source + " · " + fmt(d));
     const miss = document.getElementById("missed");
     if(missed.length) {
-      const tb = el("tbody");
+      const [t, tb] = table(["Company", "The promise", "Promised", "Due"], "pv");
       missed.forEach(p => {
-        const tr = el("tr"), co = el("td"), pr = el("td");
-        co.append(p.company); pr.append(link(p), el("div", "meta", p.source));
-        tr.append(co, pr, el("td", "", fmt(p.date)), el("td", "", p.due ? fmt(p.due) : "None given")); tb.append(tr);
+        const tr = el("tr"), pr = el("td");
+        pr.append(link(p), el("div", "meta", p.source));
+        tr.append(el("td", "", p.company), pr, el("td", "", fmt(p.date)), el("td", "", p.due ? fmt(p.due) : "None given")); tb.append(tr);
       });
-      const t = el("table", "mt pv"), th = el("thead"), hr = el("tr");
-      ["Company", "The promise", "Promised", "Due"].forEach(w => hr.append(el("th", "", w)));
-      th.append(hr); t.append(th, tb);
       miss.querySelector(".n").textContent = missed.length;
       miss.append(t); miss.hidden = false;
     }
     if(!list.length) return box.replaceChildren(el("p", "meta", "No promises yet."));
-    // what the sample is, so its pattern is read as these companies', not the whole industry's
-    const cos = {}; list.forEach(p => cos[p.company] = (cos[p.company] || 0) + 1);
-    const [topCo, topN] = Object.entries(cos).sort((a, b) => b[1] - a[1])[0], years = list.map(p => p.date.slice(0, 4)).sort();
-    document.getElementById("psample").textContent = list.length + " promises from " + Object.keys(cos).length +
-      " companies, made " + years[0] + "–" + years[years.length - 1] + ", " + topN + " of them " + topCo + "'s. A small sample: " +
-      "it shows these companies' record, not the whole industry's." +
-      (missed.length ? " " + missed.length + " more, with no launch found, are listed at the end." : "");
-    // one plain bar per promise: its length is the days from the promise (up to 18 months), its colour how it went
-    const SPAN = 548, after = d => Math.round(ms(d) / DAY);
-    const head = el("div", "pr-head"); head.append(el("span", "", "The promise"), el("span", "", "Days from the promise"));
-    const ol = el("ol", "pr-list");
-    list.forEach(p => {
-      const li = el("li", "pr"); li.dataset.s = p.status;
-      const info = el("div", "pi"), top = el("div", "top");
-      top.append(logo(p.company), el("span", "co", p.company), el("span", "ps " + p.status, WORDS[p.status]));
-      info.append(top, link(p), el("div", "meta", p.source + " · " + fmt(p.date)));
-      if(p.launch) {
-        const l = el("div", "ln"); l.append(el("span", "lbl", "Launch"), link(p.launch),
-          el("div", "meta", p.launch.source + " · " + fmt(p.launch.date)));
-        info.append(l);
-      }
-      const since = d => after(d) - after(p.date);  // days from the promise
-      // how long: to the launch; with none found yet, since the promise
-      const n = p.launch ? p.days : since(today);
-      const t = el("div", "pt"), b = el("span", "pbar " + p.status);
-      b.style.width = "max(6px, " + (Math.min(n, SPAN) / SPAN * 100).toFixed(2) + "%)";
-      const said = p.launch ? (p.days === 0 ? "Same day" : days(p.days)) + (p.late ? ", " + days(p.late) + " late" : "") :
-        days(n) + " since the promise" + (p.due ? ", due " + fmt(p.due) : "");
-      t.append(b, el("span", "lab", said));
-      li.append(info, t); ol.append(li);
-    });
-    box.replaceChildren(head, ol);
-    // the stats: how the promises turned out, the typical wait and overrun, and each company's record
-    const ORDER = ["shipped", "late", "waiting"];
+    const count = s => list.filter(p => !s || p.status === s).length;
+    // the short version, in plain words: how the promises turned out and the typical wait
     const median = a => { if(!a.length) return null; const s = [...a].sort((m, n) => m - n), h = s.length >> 1;
       return s.length % 2 ? s[h] : Math.round((s[h - 1] + s[h]) / 2); };
-    const stats = document.getElementById("pstats"), out = el("div", "st-out"), obar = el("div", "obar"), olab = el("div", "olab");
-    out.append(el("h3", "", "Where " + list.length + " promises stand"));
-    ORDER.forEach(s => {
-      const n = list.filter(p => p.status === s).length; if(!n) return;
-      const seg = el("span", "seg " + s); seg.style.flexGrow = n; seg.title = WORDS[s] + ": " + n;
-      obar.append(seg);
-      const l = el("span", "", ""); l.style.flexGrow = n; l.append(el("b", "", n), " " + WORDS[s].toLowerCase()); olab.append(l);
-    });
-    out.append(obar, olab);
-    const hero = el("div", "st-hero");
-    const tile = (n, unit, words) => { if(n == null) return; const d = el("div"); d.append(el("b", "", n + " " + unit), el("span", "", words)); hero.append(d); };
+    const launched = list.filter(p => p.launch), wait = median(launched.map(p => p.days));
     // a typical overrun only from 5 late launches up: from fewer it is one or two promises, not a pattern
-    const lates = list.filter(p => p.late).map(p => p.late);
-    const wait = median(list.filter(p => p.launch).map(p => p.days)), over = lates.length >= 5 ? median(lates) : null;
-    const launched = list.filter(p => p.launch).length;
-    tile(wait, wait === 1 ? "day" : "days", "median wait from promise to launch, across " + launched + " launches");
-    tile(over, over === 1 ? "day" : "days", "median overrun, across " + lates.length + " launches after their date");
-    const co = el("div", "st-co"), grid = el("div", "crs"); co.append(el("h3", "", "By company"), grid);
+    const lates = list.filter(p => p.late).map(p => p.late), over = lates.length >= 5 ? median(lates) : null;
+    const cos = {}; list.forEach(p => cos[p.company] = (cos[p.company] || 0) + 1);
+    const [topCo, topN] = Object.entries(cos).sort((a, b) => b[1] - a[1])[0], years = list.map(p => p.date.slice(0, 4)).sort();
+    document.getElementById("plead").textContent = "Of " + list.length + " promises, " + count("shipped") + " shipped, " +
+      count("late") + " shipped late and " + count("waiting") + " have no launch yet." +
+      (wait != null ? " A launch typically came " + days(wait) + " after the promise (the middle value of " + launched.length + " launches)." : "") +
+      (over != null ? " Late launches came a typical " + days(over) + " after their date." : "");
+    document.getElementById("psample").textContent = "The promises come from " + Object.keys(cos).length + " companies, " +
+      years[0] + "–" + years[years.length - 1] + "; " + topN + " are " + topCo + "'s. A small sample: it shows these companies' record, " +
+      "not the whole industry's." + (missed.length ? " " + missed.length + " more, with no launch found, are listed at the end." : "");
+    // each company's record: counts, not a rate, which would leave out the promises with no launch found
+    const [ct, cb] = table(["Company", "Shipped", "Shipped late", "No launch yet", "No launch found"], "pco");
     const by = {}; list.forEach(p => (by[p.company] = by[p.company] || []).push(p));
     Object.entries(by).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).forEach(([name, ps]) => {
-      const row = el("div", "cr"), dots = el("span", "dots");
-      ps.sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status)).forEach(p => {
-        const d = el("a", "dot " + p.status); d.href = p.url; d.rel = "noopener"; d.title = WORDS[p.status] + ": " + p.title; dots.append(d);
-      });
-      // counts, not a rate: a rate would leave out the promises with no launch found, and flatter the company
-      const kept = ps.filter(p => p.launch).length, open = ps.length - kept;
-      const gone = missed.filter(p => p.company === name).length;
-      const who = el("div", "cw"); who.append(logo(name), el("span", "nm", name));
-      row.append(who, dots, el("span", "meta", [kept && kept + " shipped", open && open + " no launch yet",
-        gone && gone + " none found"].filter(Boolean).join(", ")));
-      grid.append(row);
+      const tr = el("tr"), who = el("td", "cw"); who.append(logo(name), el("span", "", name)); tr.append(who);
+      ["shipped", "late", "waiting"].forEach((s, i) => { const td = el("td", "", ps.filter(p => p.status === s).length); td.dataset.l = ["Shipped", "Shipped late", "No launch yet"][i]; tr.append(td); });
+      const gone = el("td", "", missed.filter(p => p.company === name).length); gone.dataset.l = "No launch found";
+      tr.append(gone); cb.append(tr);
     });
-    stats.replaceChildren(out, hero, co);
-    // the filter buttons, which are also the colours' key
-    const count = s => list.filter(p => !s || p.status === s).length;
-    [["", "All"], ["shipped", "Shipped"], ["late", "Shipped late"], ["waiting", WORDS.waiting]].forEach(([s, w]) => {
-      const b = el("button", "chip " + (s || "all")); b.type = "button"; b.setAttribute("aria-pressed", String(!s));
-      b.append(el("span", "sw"), w + " ", el("b", "", count(s)));
+    document.getElementById("pcos").append(ct);
+    // the promises: one row each, the promise beside its launch and how long it took
+    const [t, tb] = table(["Company", "The promise", "The launch", "How long"], "plist");
+    list.forEach(p => {
+      const tr = el("tr"); tr.dataset.s = p.status;
+      const who = el("td", "cw"), pr = el("td"), ln = el("td", "lnc"), took = el("td", "took");
+      who.append(logo(p.company), el("span", "", p.company));
+      pr.append(link(p), said(p, p.date));
+      ln.dataset.l = "Launch";
+      if(p.launch) ln.append(link(p.launch), said(p.launch, p.launch.date)); else ln.append(el("span", "meta", "None yet"));
+      took.append(el("span", "ps " + p.status, WORDS[p.status]), el("div", "", p.launch ?
+        (p.days === 0 ? "Same day" : days(p.days)) + (p.late ? ", " + days(p.late) + " late" : "") :
+        days(after(today) - after(p.date)) + " so far" + (p.due ? ", due " + fmt(p.due) : "")));
+      tr.append(who, pr, ln, took); tb.append(tr);
+    });
+    box.replaceChildren(t);
+    // the filter buttons
+    [["", "All"], ["shipped", WORDS.shipped], ["late", WORDS.late], ["waiting", WORDS.waiting]].forEach(([s, w]) => {
+      const b = el("button", "chip"); b.type = "button"; b.setAttribute("aria-pressed", String(!s));
+      b.append(w + " ", el("span", "c", count(s)));
       b.addEventListener("click", () => {
         bar.querySelectorAll("button").forEach(o => o.setAttribute("aria-pressed", String(o === b)));
-        ol.querySelectorAll(".pr").forEach(li => li.hidden = !!s && li.dataset.s !== s);
+        tb.querySelectorAll("tr").forEach(r => r.hidden = !!s && r.dataset.s !== s);
       });
       bar.append(b);
     });
@@ -461,19 +432,19 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     kept = [p for p in found if p.get("status") != "not-found"]
     marks = json.dumps(logos).replace("</", "<\\/")  # safe inside the page's <script>
     what = ("When an AI company says it will release something, how long until it ships? Promises made since 2023, "
-            "each checked by hand against the day a headline says it was out, drawn from the promise to that day.")
-    body = ('<div class="ft">\n'
+            "each checked by hand against the day a headline says it was out.")
+    body = ('<div class="ft pp">\n'
             + pages.feature_head(PATH, "Promised vs shipped", what.split("? ", 1)[0] + "?",
                                  f"{escape(what.split('? ', 1)[1])} We look for a launch headline up to 18 months later.")
-            + '<p class="intro" id="psample"></p>\n'
-            '<section class="pstats" id="pstats" aria-label="The promises in numbers"></section>\n'
-            '<h2>The promises</h2>\n'
+            + '<section class="pbox"><h2>In short</h2><p id="plead"></p><p class="meta" id="psample"></p></section>\n'
+            '<section class="pbox" id="pcos"><h2>By company</h2></section>\n'
+            '<section class="pbox"><h2>The promises</h2>\n'
             '<div class="pf" id="pf" role="group" aria-label="Show"></div>\n'
             f'<div class="pr-wrap" id="promises" data-src="/{PATH}promises.json" data-today="{today.isoformat()}">'
             + (f'<ul class="ssr-list">{seo.items(kept)}</ul>' if kept else '<p class="meta">Loading…</p>')
-            + '</div>\n'  # the promises' headlines in the HTML for search engines (seo.py), until the list draws
-            '<section id="missed" hidden><h2>No launch found: <span class="n"></span></h2>\n'
-            '<p class="intro">These promises are past their date, or 18 months old, and we found no launch '
+            + '</div></section>\n'  # the promises' headlines in the HTML for search engines (seo.py), until the list draws
+            '<section class="pbox" id="missed" hidden><h2>No launch found (<span class="n"></span>)</h2>\n'
+            '<p class="meta">These promises are past their date, or 18 months old, and we found no launch '
             'headline for them. That is a limit of our data, not a finding about the company: the launch may have been '
             'reported in words we don\'t match, or by an outlet we don\'t read.</p></section>\n</div>\n'
             f'<script type="application/json" id="logos">{marks}</script>\n'

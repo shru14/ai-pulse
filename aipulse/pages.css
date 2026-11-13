@@ -575,6 +575,38 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft .mt thead{display:none}
   .cp .ft .mt tr{display:block;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent);padding:8px 0}
   .cp .ft .mt td{display:block;border:0;padding:2px 0}}
+/* promised vs shipped, plain: each section in its own box, tables in normal case, no coloured bars or side lines */
+.cp .pp .pbox{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:12px;background:var(--bg);padding:16px 18px;margin:18px 0}
+.cp .pp .pbox h2{display:block;margin:0 0 10px;padding:0;border:0;font:500 20px/1.3 var(--body);text-transform:none;letter-spacing:0}
+.cp .pp .pbox > p{margin:0 0 6px;font-size:16px;line-height:1.5}
+.cp .pp .pbox > p.meta{font-size:14px}
+.cp .pp .pr-wrap{border:0;margin-top:10px;overflow:visible}
+.cp .pp .mt{width:100%;border-collapse:collapse}
+.cp .pp .mt th{font:500 13px var(--body);text-transform:none;letter-spacing:0;color:var(--muted);padding:0 14px 8px 0;text-align:left}
+.cp .pp .mt td{border-top:1px solid color-mix(in srgb,var(--ink) 15%,transparent);padding:12px 14px 12px 0}
+.cp .pp .mt td:last-child,.cp .pp .mt th:last-child{text-align:left;white-space:normal;padding-right:0}
+.cp .pp .mt td a{font-weight:500}
+.cp .pp .mt tr[hidden]{display:none}
+.cp .pp .cw{white-space:nowrap}
+.cp .pp .cw .logo{width:24px;height:24px;border-width:1px;vertical-align:middle;margin-right:8px}
+.cp .pp .cw .logo svg{width:13px;height:13px}
+.cp .pp .plist td:nth-child(2),.cp .pp .plist td:nth-child(3){width:36%}
+.cp .pp .took{min-width:150px}
+.cp .pp .ps{display:inline-block;margin-bottom:4px;padding:1px 8px;border:0;border-radius:6px;font:500 13px var(--body);text-transform:none;letter-spacing:0;color:#000}
+.cp .pp .pco th:not(:first-child),.cp .pp .pco td:not(:first-child){text-align:right}
+.cp .pp .pf{margin:0}
+.cp .pp .pf .chip{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:8px;font:500 14px var(--body);padding:6px 12px}
+.cp .pp .pf .chip:hover{border-color:var(--ink)}
+.cp .pp .pf .chip .c{color:var(--muted)}
+.cp .pp .pf .chip[aria-pressed="true"]{border-color:var(--ink)}
+.cp .pp .pf .chip[aria-pressed="true"] .c{color:var(--bg)}
+@media (max-width:760px){
+  .cp .pp .pbox{padding:12px 14px}
+  .cp .pp .mt td{padding:3px 0}
+  .cp .pp .mt tr{padding:10px 0}
+  .cp .pp .plist td:nth-child(2),.cp .pp .plist td:nth-child(3){width:auto}
+  .cp .pp .plist .lnc{margin-top:6px}
+  .cp .pp .pco th:not(:first-child),.cp .pp .pco td:not(:first-child){text-align:left}}
 /* a phone: the rule echoes are the wide-screen chart, drawn 760px wide and shrunk to fit (--z, set by the page);
    an opened subject's records are back at full size, so they stay readable */
 @media (max-width:640px){
@@ -2615,3 +2647,11 @@ a.subscribe-btn{text-decoration:none}
 .cp .pl table.jb-limits{font-size:12.5px;line-height:1.4}.cp .pl .jb-limits td{padding:4px 8px}.cp .pl .jb-limits td:first-child{width:18%;font-weight:400}
 @media (max-width:900px){.cp .pl-prof{grid-template-columns:1fr}}
 @media (max-width:640px){.cp .pl-prof{grid-template-columns:1fr}.cp .pl .rm-wrap{overflow:auto}}
+/* promised vs shipped on a phone: each row a soft rounded card, every value full width, labels in plain words */
+@media (max-width:640px){
+  .cp .ft.pp .pbox .mt tr{grid-template-columns:1fr 1fr;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);border-radius:10px;padding:10px 12px}
+  .cp .ft.pp .pbox .mt td{font-size:14px}
+  .cp .ft.pp .pbox .mt td:first-child{font-weight:500}
+  .cp .ft.pp .pbox .plist td,.cp .ft.pp .pbox .pv td:nth-child(2){grid-column:1/-1}
+  .cp .ft.pp .pbox .mt td[data-l]::before{content:attr(data-l) ": ";display:inline;font:400 13px var(--body);letter-spacing:0;text-transform:none;color:var(--muted)}
+  .cp .ft.pp .pbox .plist .lnc a,.cp .ft.pp .pbox .plist .lnc div.meta{display:block}}
