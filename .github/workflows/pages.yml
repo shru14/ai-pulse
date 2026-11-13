@@ -1,9 +1,11 @@
 # Every 6 hours: collect new stories from every source, then publish the static site to GitHub Pages.
 # In between, every 30 minutes, a quick run reads only the labs' and companies' own blogs (where launches appear
 # first: "Introducing Claude Sonnet 5.5") and republishes; it skips the re-sort, which the full run does.
-# The database is carried from run to run in the Actions cache; the first run (or one after the cache
-# was evicted) starts from data/seed.db.gz. The "v2" in the cache key marks the seed with history back to
-# 2023 (python -m aipulse backfill); bump it whenever a new seed should replace the saved database.
+# The database is carried from run to run in the Actions cache, and each full run also keeps a backup of it for 14
+# days (an artifact named "database"). A run that finds no cache (GitHub empties it after 7 days unused, or when the
+# repo's caches pass 10 GB) starts from the newest backup, and only without one from data/seed.db.gz, which may be
+# weeks older. The "v4" in the cache key marks the seed with history back to 2023 (python -m aipulse backfill); bump
+# it whenever a new seed should replace the saved database.
 # A push to main (a change to the code or the page) only rebuilds and publishes the site from the saved database, in
 # a few minutes: no collecting, re-sorting, memes or dossiers (the next scheduled run does those, and "Run workflow"
 # by hand does everything at once). Run workflow with run=build does the same as a push: the private Pulse Compass
@@ -26,6 +28,7 @@ on:
 
 permissions:
   contents: write  # the data branch (below); the code itself is never changed
+  actions: read  # the newest backup of the database, when the cache has none (below)
   pages: write
   id-token: write
 
@@ -91,8 +94,20 @@ jobs:
           path: data/translate-models
           key: translate-models-pt_en-1_9-zh_en-1_9-ja_en-1_1-vi_en-1_9-de_en-1_3-es-fr-ko-ru-ar-nb
 
-      - name: Start from the seed if there is no saved database
-        run: "[ -f aipulse.db ] || gunzip -c data/seed.db.gz > aipulse.db"
+      - name: Start from the newest backup, or the seed, if there is no saved database
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f aipulse.db ] && exit 0
+          ok() { python -c "import sqlite3, sys; sys.exit(sqlite3.connect('aipulse.db').execute('PRAGMA quick_check').fetchone()[0] != 'ok')"; }
+          url=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=database&per_page=1"                 --jq '.artifacts[0] | select(.expired | not) | .archive_download_url' || true)
+          if [ -n "$url" ] && gh api "$url" > "$RUNNER_TEMP/database.zip"              && unzip -p "$RUNNER_TEMP/database.zip" aipulse.db.gz | gunzip > aipulse.db && ok; then
+            echo "::notice::The cache had no database: started from the newest backup"
+          else
+            rm -f aipulse.db
+            gunzip -c data/seed.db.gz > aipulse.db
+            echo "::warning::The cache had no database and no usable backup: started from the seed (data/seed.db.gz)"
+          fi
 
       - name: Collect
         if: env.BUILD != 'true'
@@ -191,6 +206,26 @@ jobs:
         with:
           path: aipulse.db
           key: aipulse-db-v4-${{ github.run_id }}
+
+      # The backup the step above starts from when the cache is gone; also a way back from a bad run (Actions > a run >
+      # Artifacts). Full runs only, and only a database that passes SQLite's own check. Public stories only, like the seed.
+      - name: Check and pack the database for its backup
+        id: pack
+        if: env.QUICK != 'true' && env.BUILD != 'true'
+        continue-on-error: true
+        run: |
+          python -c "import sqlite3, sys; r = sqlite3.connect('aipulse.db').execute('PRAGMA quick_check').fetchone()[0]; print('SQLite check:', r); sys.exit(r != 'ok')"
+          gzip -6 -c aipulse.db > "$RUNNER_TEMP/aipulse.db.gz"
+
+      - name: Back up the database (kept 14 days)
+        if: steps.pack.outcome == 'success'
+        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: database
+          path: ${{ runner.temp }}/aipulse.db.gz
+          retention-days: 14
+          compression-level: 0  # already gzipped
 
       - name: Build the site
         env:
