@@ -345,15 +345,14 @@ def _src(r: dict) -> str:
 
 
 def _glance(first: str, last: str, items: list[tuple[str, str, int]]) -> str:
-    """The three commonest kinds in the table's chip column as big numbers, each saying what it counts, under about
+    """The three commonest kinds in the table's chip column as plain numbers in one box, each saying what it counts, under about
     how long the table covers, in whole months."""
     top = sorted((i for i in items if i[2]), key=lambda i: -i[2])[:3]
-    tiles = "".join(f'<div class="iw-big" style="--c:{c}"><b>{n}</b><span>{escape(label)}</span></div>'
-                    for label, c, n in top)
+    tiles = "".join(f'<div><span class="iw-n">{n}</span><span>{escape(label)}</span></div>' for label, c, n in top)
     months = max(1, round((date.fromisoformat(last[:10]) - date.fromisoformat(first[:10])).days / 30.4))
     span = "Past month" if months == 1 else f"Past {months} months"
     return (f'<section class="iw-glance"><h2>At a glance <span class="iw-when">{span}</span>'
-            f'</h2>\n<div class="iw-bigs">{tiles}</div></section>\n')
+            f'</h2>\n<div class="iw-bigs" style="--k:{len(top)}">{tiles}</div></section>\n')
 
 
 # Excel-style filters, in the reader's browser: each column heading opens a list of that column's values (a cell's

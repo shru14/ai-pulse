@@ -1032,10 +1032,10 @@ a.subscribe-btn{text-decoration:none}
 .cp .iw .ct-tables .jb-small td{vertical-align:middle}
 .cp .iw-glance h2{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .cp .iw-when{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.cp .iw-bigs{display:flex;flex-wrap:wrap;gap:14px 40px;margin:6px 0 30px}
-.cp .iw-big{border-left:6px solid var(--c);padding:2px 0 2px 14px}
-.cp .iw-big b{display:block;font:800 44px/1 var(--display,var(--body))}
-.cp .iw-big span{display:block;margin-top:4px;font-size:14.5px;color:var(--muted)}
+.cp .iw-bigs{display:grid;grid-template-columns:repeat(var(--k,3),minmax(0,1fr));margin:6px 0 30px;border:1.5px solid var(--line);border-radius:10px}
+.cp .iw-bigs div{padding:16px 20px}.cp .iw-bigs div+div{border-left:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+.cp .iw-bigs span{display:block;font-size:14.5px;line-height:1.4;color:var(--muted)}
+.cp .iw-bigs .iw-n{margin-bottom:6px;font:400 26px/1.1 var(--body);color:var(--ink);font-variant-numeric:tabular-nums}
 .cp .iw-fbar{display:none}
 .cp .iw-count{margin:4px 0 8px;font:500 13px var(--mono);color:var(--muted)}
 .cp .iw-count b{color:var(--ink)}
@@ -1058,7 +1058,9 @@ a.subscribe-btn{text-decoration:none}
 @media (max-width:640px){.cp .iw-fbar{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
   .cp .iw-fbar .iw-hb{font:600 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1.5px solid var(--line);padding:5px 8px}
   .cp .iw-fbar .iw-hb.on{color:var(--ink);border-color:var(--ink)}
-  .cp .iw-wrap{max-height:none;overflow:visible;border-bottom:0}.cp .iw-big b{font-size:34px}}
+  .cp .iw-wrap{max-height:none;overflow:visible;border-bottom:0}
+  .cp .iw-bigs{grid-template-columns:1fr}.cp .iw-bigs div{padding:12px 14px}
+  .cp .iw-bigs div+div{border-left:0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}.cp .iw-bigs .iw-n{font-size:24px}}
 .cp .iw-t{font-size:14.5px}
 .cp .iw-t td.when{font:500 12.5px var(--mono);color:var(--muted);white-space:nowrap}
 .cp .iw-t td.who{font-weight:600}

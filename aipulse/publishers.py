@@ -101,9 +101,9 @@ def _glance(comp: list[dict], rise, today: date) -> str:
         last = len(months) - 1 - (months[-1] == f"{today.year}-{today.month:02d}")  # the last full month
         bigs.append(("#56B4E9", f"{round(v[0])}% → {round(v[last])}%",
                      f"of papers are about {s.lower()}, {_month(months[0])} vs {_month(months[last])}"))
-    tiles = "".join(f'<div class="iw-big" style="--c:{c}"><b>{escape(b)}</b><span>{escape(t)}</span></div>'
+    tiles = "".join(f'<div><span class="iw-n">{escape(b)}</span><span>{escape(t)}</span></div>'
                     for c, b, t in bigs)
-    return f'<section class="iw-glance"><h2>At a glance</h2>\n<div class="iw-bigs">{tiles}</div></section>\n'
+    return f'<section class="iw-glance"><h2>At a glance</h2>\n<div class="iw-bigs" style="--k:{len(bigs)}">{tiles}</div></section>\n'
 
 
 def _companies(comp: list[dict], today: date) -> str:

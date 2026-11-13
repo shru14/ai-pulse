@@ -142,9 +142,9 @@ def _glance(rows: list[dict], base: dict, today: date) -> str:
     if first:
         tiles.append((f"{big['flop'] / first['flop']:,.0f}×", f"{big['model']}'s compute against {first['model'].split(' (')[0]}'s, "
                       f"the largest run of {CHART_FROM}", "#56B4E9"))
-    body = "".join(f'<div class="iw-big" style="--c:{c}"><b>{escape(n)}</b><span>{escape(label)}</span></div>'
+    body = "".join(f'<div><span class="iw-n">{escape(n)}</span><span>{escape(label)}</span></div>'
                    for n, label, c in tiles)
-    return f'<section class="iw-glance"><h2>At a glance</h2>\n<div class="iw-bigs">{body}</div></section>\n'
+    return f'<section class="iw-glance"><h2>At a glance</h2>\n<div class="iw-bigs" style="--k:{len(tiles)}">{body}</div></section>\n'
 
 
 def chart(rows: list[dict], base: dict, today: date) -> str:
