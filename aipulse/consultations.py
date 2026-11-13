@@ -354,7 +354,8 @@ def _coming_table(rows: list[tuple]) -> str:
 
 def _filters(n: int, places: list[tuple[str, int]], counts: dict) -> str:
     def tags(f: str, label: str, items) -> str:
-        return (f'<div class="sh-tabs" role="group" aria-label="{label}" data-f="{f}"><button type="button" '
+        return (f'<div class="sh-tabs" role="group" aria-label="{label}" data-f="{f}"><span class="cs-lab">{label}</span>'
+                f'<button type="button" '
                 f'class="sh-tab" data-v="" aria-pressed="true">All <b>{n}</b></button>'
                 + "".join(f'<button type="button" class="sh-tab" data-v="{v}" aria-pressed="false">{escape(t)} '
                           f'<b>{k}</b></button>' for v, t, k in items if k) + "</div>")
@@ -406,8 +407,8 @@ def body(saved: dict, today: date) -> str:
                                 "Consultations on AI, from the official lists of the UK, the US, the EU and Canada, and "
                                 "others checked by hand. Each title links to the page where you can respond while it "
                                 "is open.")
-           + '<div class="rm-bigs">' + "".join(f'<div class="rm-big cs-big{i}"><b>{n}</b><span>{escape(s)}</span></div>'
-                                             for i, (n, s) in enumerate(bigs)) + "</div>\n"]
+           + '<div class="rm-bigs">' + "".join(f'<div class="rm-big"><b>{n}</b><span>{escape(s)}</span></div>'
+                                             for n, s in bigs) + "</div>\n"]
     out.append(_filters(len(shown) + len(coming), places,
                         {"open": len(open_), "soon": len(coming), "closed": len(closed)}))
     if open_:
