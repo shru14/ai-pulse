@@ -78,7 +78,7 @@ class Robots:
     not the longest (EIA's "Allow: /" above "Disallow: /rss"). Here the longest matching rule decides, and Allow
     wins a tie; the groups naming our robot apply, or else the "*" groups."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.groups: list[tuple[list[str], list[tuple[bool, str]]]] = []
 
     def parse(self, lines) -> None:
@@ -90,7 +90,7 @@ class Robots:
             if not key:
                 continue
             if key == "user-agent":
-                if not after_agent:  # User-agent lines in a row share one group
+                if not after_agent or agents is None:  # User-agent lines in a row share one group
                     agents = []
                     self.groups.append((agents, []))
                 agents.append(value.lower())
@@ -426,7 +426,7 @@ def parse_hf_models(json_bytes: bytes, lab: str = "", min_likes: int = HF_MIN_LI
     for m in models:
         key = _hf_family(m["id"].split("/", 1)[1]).lower()
         group = open_groups.get(key)
-        if group and (parse_date(m["createdAt"]) - parse_date(group[0]["createdAt"])).days <= HF_GROUP_DAYS:
+        if group and (_hf_date(m) - _hf_date(group[0])).days <= HF_GROUP_DAYS:
             group.append(m)
         else:
             open_groups[key] = [m]
@@ -486,7 +486,7 @@ def parse_hf_trending(json_bytes: bytes, fetcher=None, now: datetime | None = No
             continue
         author, name = m["id"].split("/", 1)
         if (author.lower() in watched or m.get("likes", 0) < HF_TRENDING_LIKES
-                or (now - parse_date(m["createdAt"])).days > HF_NEW_DAYS or _HF_COPY.search(name) or _HF_REMIX.search(name)
+                or (now - _hf_date(m)).days > HF_NEW_DAYS or _HF_COPY.search(name) or _HF_REMIX.search(name)
                 or any(t.startswith(_HF_COPY_OF) for t in m.get("tags") or [])):
             continue
         by_author.setdefault(author, []).append(m)
@@ -555,10 +555,16 @@ FETCHING = {"hf_trending"}
 _HF_MONTH_TAG = re.compile(r"-(2[3-9])(0[1-9]|1[0-2])$")  # Mistral-Small-4-119B-2603: released March 2026
 
 
+def _hf_date(model: dict) -> datetime:
+    """When a model's repository was created; one with a date that can't be read counts as long ago (left out as
+    old) instead of stopping the whole Hugging Face source."""
+    return parse_date(model["createdAt"]) or datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+
 def _hf_released(model: dict) -> datetime:
     """When a model came out: the day its repository was created, which a lab may do privately long before the
     launch; a name that carries its release month (Mistral's "-2603") is dated no earlier than that month."""
-    created = parse_date(model["createdAt"])
+    created = _hf_date(model)
     tag = _HF_MONTH_TAG.search(model["id"])
     if tag:
         created = max(created, datetime(2000 + int(tag[1]), int(tag[2]), 1, tzinfo=timezone.utc))
@@ -769,7 +775,7 @@ def _plain(fragment: str) -> str:
 def parse_xai_notes(html_bytes: bytes, base: str = "https://docs.x.ai/developers/release-notes") -> list[dict]:
     """docs.x.ai release notes: each entry is an <h3 id=...> title followed by a paragraph."""
     page = html_bytes.decode("utf-8", "replace")
-    out = []
+    out: list[dict] = []
     for m in re.finditer(r'<h3\b[^>]*\bid="([^"]+)"[^>]*>(.*?)</h3>', page, re.S):
         para = _P.search(page, m.end())
         nxt = re.search(r"<h[1-3]\b", page[m.end():])
@@ -782,7 +788,8 @@ def parse_xai_notes(html_bytes: bytes, base: str = "https://docs.x.ai/developers
 def parse_perplexity_notes(html_bytes: bytes, base: str = "https://docs.perplexity.ai/changelog") -> list[dict]:
     """docs.perplexity.ai changelog: each entry is a bold line followed by a line describing it."""
     page = html_bytes.decode("utf-8", "replace")
-    out, seen = [], set()
+    out: list[dict] = []
+    seen: set[str] = set()
     for m in re.finditer(r'<span data-as="p"><strong>(.*?)</strong></span>\s*<span data-as="p">(.*?)</span>', page, re.S):
         title = _plain(m.group(1))
         slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
@@ -822,7 +829,7 @@ def page_meta(page_bytes: bytes) -> dict:
     page = page_bytes.decode("utf-8", "replace")
     title = _meta(page, "og:title", "twitter:title")
     if not title:  # the browser tab's title, which often ends " - Site name"
-        title = html.unescape(re.sub(r"\s+", " ", (re.search(r"<title[^>]*>(.*?)</title>", page, re.S) or [None, ""])[1]))
+        title = html.unescape(re.sub(r"\s+", " ", (re.search(r"<title[^>]*>(.*?)</title>", page, re.S) or ["", ""])[1]))
         title = re.sub(r"\s+-\s+[^-]{1,25}$", "", title.strip())
     title = re.sub(r"\s+[|–—]\s+[^|–—]{1,40}$", "", title.strip())
     title = re.sub(r"(?<=\S)- [A-Z][^-]{1,30}$", "", title)  # "EmbeddingGemma 2: The Developer Guide- Google Developers Blog"

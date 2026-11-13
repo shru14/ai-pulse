@@ -454,7 +454,7 @@ def payload(cards: list[dict], today: date | None = None, days: int = 7) -> dict
     and whether it is new (added in the last NEW_DAYS days)."""
     today = today or date.today()
     since = (today - timedelta(days=days)).isoformat()
-    seen = Counter()
+    seen: Counter[str] = Counter()
     for c in cards:
         if (c.get("date") or "") >= since:
             seen.update(terms_in(f"{c.get('title') or ''} {c.get('summary') or ''}"))
@@ -545,7 +545,8 @@ def candidates(cards: list[dict], today: date | None = None, top: int = 30) -> l
     """Words recent stories use that no entry explains, most outlets first: {"word", "stories", "outlets",
     "examples" (up to two headlines)}. To write up by hand; nothing here reaches the site."""
     since = ((today or date.today()) - timedelta(days=CANDIDATE_DAYS)).isoformat()
-    names, found = _names(), {}
+    names = _names()
+    found: dict[str, dict] = {}
     for c in cards:
         if (c.get("date") or "") < since:
             continue
