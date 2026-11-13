@@ -282,6 +282,8 @@ LEFT_OUT: set[str] = {
     "https://www.powermag.com/calibrant-energy-secures-145-million-in-project-financing-including-battery-storage-for-hyperscale-data-center-customer-in-pjm/",  # press release on financing; customer, site and plant size not named
     "https://w.media/ohio-data-center-power-equipment-writedown-pushes-softbank-to-us-7-billion-loss/",  # company results and a writedown, not a new build or power deal
     "https://dplnews.com/rechazo-centros-de-datos-estados-unidos/",  # roundup of local ballot results across 10 states, not one decision
+    "https://www.techerati.com/news-hub/polarise-plans-150mw-ai-data-centre-expansion-in-germany-by-2028/",  # can't read to check
+    "https://www.powermag.com/rowan-digital-infrastructure-secures-1-5-billion-in-financing-for-hyperscale-development-platform/",  # press release on corporate credit facilities for a pipeline, no single new campus
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
