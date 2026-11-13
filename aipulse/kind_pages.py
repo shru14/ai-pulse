@@ -352,9 +352,9 @@ def speakers(path: str, rule: dict) -> dict | None:
         code = {s["name"]: (s.get("jurisdictions") or ["INTL"])[0] for s in sources.SOURCES}
         place = {n: jurisdictions.JURISDICTIONS[code[n]][0] for n in rule["sources"]}
         return {"of": place, "logo": {jurisdictions.JURISDICTIONS[c][0]: f'<img src="/flags/{countries.flag(c)}" alt="">'
-                                      for c in {code[n] for n in rule["sources"]}}}
+                                      for c in sorted({code[n] for n in rule["sources"]})}}
     of = {n: company(n) if path == "policy/ai-companies/" else n for n in rule["sources"]}
-    return {"of": of, "logo": logos(set(of.values()))}
+    return {"of": of, "logo": logos(sorted(set(of.values())))}
 
 
 def build(conn, cards: list[dict], out: Path) -> list[str]:
@@ -362,7 +362,7 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
     parts = pages.frame(conn, len(cards))
     safe = lambda v: json.dumps(v).replace("</", "<\\/")
     of = {s: company(s) for s in sorted({c["source"] for c in cards if c.get("kind") == "blog"})}
-    firms = safe({"of": of, "logo": logos(set(of.values()))})
+    firms = safe({"of": of, "logo": logos(sorted(set(of.values())))})
     every = stream_pages(cards)
     since = (date.today() - timedelta(days=92)).isoformat()  # data.json's last 3 months, which the page's list reads
     paths = []
