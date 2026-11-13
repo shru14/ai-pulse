@@ -61,7 +61,7 @@ GITHUB_REPO = r"^https://github\.com/"  # every new repository that passes the s
 HF_ORG = "https://huggingface.co/api/models?author={}&sort=likes&direction=-1&limit=500"
 HF_MODEL = r"^https://huggingface\.co/"  # every model family that passes the likes test is a release
 
-SOURCES = [
+SOURCES: list[dict] = [
     # --- Labs and product blogs (mostly releases) ---
     {"name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/", "category": "tool"},
     {"name": "Google DeepMind Blog", "url": "https://deepmind.google/blog/rss.xml", "category": "tool"},
