@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-11-13"
+CHECKED_TO = "2026-11-14"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -569,6 +569,11 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "24-hour runs.",
         "Claude Opus 5.5 raised the mean KV-cache compression ratio from 6.82% (human-designed codec) to 19.86%",
         "Claude Opus 5.5", None),
+    "https://research.google/pubs/android-bench-measuring-frontier-coding-agents-on-long-horizon-mobile-engineering/": (
+        "Android Bench 2.0", "agents",
+        "Whether coding agents can build and change real Android apps from long tasks, run on a live phone emulator.",
+        "Passes 41% of tasks with the tests hidden (mean partial score 0.85); the best with tests available is 84% "
+        "(claude-fable-5-1)", "claude-sonnet-5-5", 41.0),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
