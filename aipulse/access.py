@@ -29,10 +29,10 @@ ROOT = "planner"
 # what anyone can read: the product pages and one sample report. Source check went behind the login on 3 Nov 2026: on real AI
 # notes it flagged 206 of 306 correct sentences, so it stays there until it is fixed and measured again
 # 4 Nov 2026: each Pulse Pro product has its own open page (Compass is planner/ itself)
-PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store", "pulse-pro")  # pulse-pro: the family page
-FAMILY = "planner/pulse-pro/"  # What Pulse Pro is: the five products, what each is for and what it costs
+PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store")
+FAMILY = "pulse-pro/"  # its own address since 14 Nov 2026 (planner/ is Compass). What Pulse Pro is: the five products, what each is for and what it costs
 OPEN = ({"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf"}
-        | {f"planner/{p}/index.html" for p in PRODUCTS})
+        | {f"planner/{p}/index.html" for p in PRODUCTS} | {FAMILY + "index.html"})
 # each Pulse Pro product's read-only sample (4 Nov 2026, the owner): everything under this folder is open too
 OPEN_DIR = "planner/samples/"
 # 4 Nov 2026, owner: the login blocked anyone from trying the product, so the first three steps (Explore, Questions, Plan
@@ -207,7 +207,7 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
          "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
 
 MAIL = "projectaipulse@gmail.com"
-CONTACT = "planner/pulse-pro/contact/"  # Pulse Pro's Start a conversation form (private repo, pro_company.py)
+CONTACT = "pulse-pro/contact/"  # Pulse Pro's Start a conversation form (private repo, pro_company.py)
 # what each Pulse Pro product costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once
 # it is paid. (name, how it is billed, price, yearly price). The report is bought once; the three services run on,
 # monthly. No yearly price anywhere (owner, 6 Nov 2026), so that column stays empty; the Store is free and needs no login.
