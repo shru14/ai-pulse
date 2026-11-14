@@ -177,6 +177,10 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-"
+    "jensen/":
+        "Analysis of Chinese models on export-banned chips; only an undated mention of probes into Megaspeed, a "
+        "data-center firm, no dated government action on an AI company",
     "http://www.bernama.com/en/news.php?id=2633535":
         "Nvidia's own board probe and its CEO's resignation; no government action against the company",
     "https://dplnews.com/nvidia-contrata-exfiscal-investigar-jensen-huang/":
