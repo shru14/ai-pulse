@@ -326,11 +326,16 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.engadget.com/2307590/openai-says-it-will-protect-local-resources-and-report-on-the-impact-of-its-data-centers/": "OpenAI pledges to protect local resources and report on its data centres' impact after the vote",
         "https://www.xataka.com/robotica-e-ia/centros-datos-tambien-se-presentaban-a-elecciones-eeuu-han-perdido-estrepitosamente": "Data centres lost heavily in the US elections",
         "https://www.engadget.com/2306534/americans-overwhelmingly-voted-against-data-centers-in-the-midterms/": "Americans voted overwhelmingly against data centres in the midterms",
+        "https://www.xataka.com/robotica-e-ia/eeuu-ha-votado-masa-centros-datos-todos-pueblo-dakota-norte-mil-habitantes": "The US voted heavily against data centres, with one small North Dakota town the exception",
         "https://www.xataka.com/robotica-e-ia/elon-musk-tiene-plan-para-acabar-vecinos-quejandose-centros-datos-cerca-comprar-sus-casas": "Plan to buy the houses of neighbours who complain about a nearby data centre",
         "https://tecnoblog.net/noticias/spacex-quer-comprar-casas-de-vizinhos-incomodados-com-seus-data-centers/": "SpaceX wants to buy houses from neighbours bothered by its data centres",
         "https://www.404media.co/west-virginia-american-chestnut-trees-data-center/": "Resistance to a West Virginia AI data centre centres on a grove of chestnut trees",
         "https://www.channelnewsasia.com/business/trump-says-companies-should-pay-dividend-communities-make-data-centers-popular-6478021": "Trump says companies should pay a dividend to communities to make data centres popular",
         "https://www.foodandwaterwatch.org/press/2026/10/14/allentown-planning-commission-bucks-public-opinion-greenlights-data-center/": "Allentown planning commission approves a data centre against public opinion",
+    },
+    "nvidia-chips-china": {
+        "https://www.channelnewsasia.com/east-asia/nvidia-jensen-huang-megaspeed-international-6505791": "Huang says Nvidia's dealings with Megaspeed were proper and it checked that no AI chips were diverted to China",
+        "https://olhardigital.com.br/2026/11/10/pro/caso-de-espia-chinesa-facilitou-envio-de-r-40-bi-em-chips-da-nvidia-a-china/": "Report that the alleged spy used Nvidia and distributor contacts to help send chips to China",
     },
     "nvidia-huang-scandal": {
         "https://the-decoder.com/chinese-spies-targeted-nvidia-ceo-jensen-huang-according-to-the-new-york-times/": "Report that US intelligence believes an executive in Huang's circle is a Chinese informant",
@@ -338,6 +343,17 @@ ADDED: dict[str, dict[str, str]] = {
         "https://olhardigital.com.br/2026/11/11/pro/nvidia-contrata-empresa-para-encontrar-substituto-de-jensen-huang-diz-agencia/": "Nvidia reportedly hires a firm to find a replacement for Huang amid the crisis over his relationship",
         "https://dplnews.com/nvidia-contrata-exfiscal-investigar-jensen-huang/": "Nvidia hires a former prosecutor to investigate the allegations about Huang",
         "https://www.channelnewsasia.com/world/nvidia-shares-jensen-huang-probe-affair-6535186": "Nvidia's shares fall out of hours as the firm probes Huang",
+        "https://www.fayerwayer.com/internet/2026/11/13/la-salida-de-jensen-huang-sigue-golpeando-a-nvidia-y-arrastra-al-sector-tecnologico-en-wall-street/": "Huang's resignation keeps hitting Nvidia and drags other tech stocks down on Wall Street",
+        "https://www.xataka.com/empresas-y-economia/donald-trump-intento-que-jensen-huang-siguiera-como-ceo-nvidia-demasiado-grande-como-para-caer": "Trump reportedly tried to keep Huang as Nvidia's CEO before he left",
+        "https://www.businesskorea.co.kr/news/articleView.html?idxno=281207": "Nvidia's forward price-to-earnings ratio hits a 14-year low as Huang's exit sends shares tumbling",
+        "https://www.fayerwayer.com/internet/2026/11/12/jensen-huang-ex-ceo-de-nvidia-en-llamas-no-eran-dos-amantes-dicen-que-eran-tres/": "Reuters reports a further intimate relationship with another Nvidia worker",
+        "https://www.channelnewsasia.com/world/nvidia-markets-jensen-huang-resigns-6547596": "Markets swing as Huang quits and Nvidia shares plunge 13 per cent at the open",
+        "https://olhardigital.com.br/2026/11/12/pro/nvidia-agencia-de-noticias-revela-novo-relacionamento-atribuido-a-jensen-huang/": "Reuters cites two sources on a new relationship attributed to Huang",
+        "https://www.xataka.com/empresas-y-economia/jensen-huang-ha-salvado-a-nvidia-seis-veces-septima-crisis": "Nvidia's board goes from voicing trust in Huang to preparing for his dismissal",
+        "https://www.engadget.com/2314584/jensen-huang-is-out-as-nvidia-ceo/": "Jensen Huang is out as Nvidia CEO",
+        "https://www.fayerwayer.com/internet/2026/11/12/quien-es-colette-kress-la-nueva-ceo-interina-de-nvidia-tras-la-salida-de-jensen-huang/": "Colette Kress becomes Nvidia's interim CEO after Huang leaves",
+        "https://www.dawn.com/news/2044062/who-is-nvidia-interim-ceo-colette-kress": "Nvidia says finance chief Colette Kress will take over as interim CEO from Huang",
+        "https://www.channelnewsasia.com/business/nvidia-next-ceo-candidates-engineer-cfo-6544986": "Ian Buck and CFO Colette Kress are seen as the likeliest candidates to succeed Huang",
     },
 }
 # Stories a topic's net caught that don't belong, checked by hand
@@ -664,6 +680,54 @@ LEFT_OUT: set[str] = {
     "https://www.xataka.com/robotica-e-ia/elon-musk-anthropic-discrepan-como-repartir-riqueza-generada-ia",
     # job ad story, not about the IPO
     "https://www.xataka.com/empresas-y-economia/anthropic-ofrece-172-000-euros-al-ano-a-alguien-que-quiera-hacer-exactamente-trabajo-que-deberia-hacer-agente-ia",
+    # column on the Nvidia crisis, opinion that reports nothing new
+    "https://olhardigital.com.br/2026/11/09/colunistas/spotlight-espionagem-poder-e-chips-nos-bastidores-da-crise-da-nvidia/",
+    # AI safety talks between Trump and Xi, not about chip rules
+    "https://www.dawn.com/news/2044477/nvidia-scandal-looms-over-us-china-ai-talks",
+    # former researcher's view on Anthropic's compute needs, not about Stargate
+    "https://the-decoder.com/anthropic-can-already-retrain-mythos-with-a-fraction-of-the-compute-originally-needed-says-former-researcher-coxon/",
+    # Malaysian queen's call to weigh data centre impact, nothing about who pays for power
+    "http://www.bernama.com/en/news.php?id=2634184",
+    # podcast on AI policy, reports nothing new in these laws
+    "https://ainowinstitute.org/news/lawfare-daily-aya-ibrahim-on-progressive-priorities-for-the-new-democratic-congress",
+    # outlook on startup funding after Huang's exit, no new step in the scandal
+    "https://techcrunch.com/2026/11/13/jensen-huangs-departure-blasts-big-hole-in-ai-startup-funding-vcs-and-founders-say/",
+    # explainer on rules already in force, reports nothing new
+    "https://artificialintelligenceact.eu/prohibited-ai-practices-under-the-ai-act/?utm_source=rss&utm_medium=rss&utm_campaign=prohibited-ai-practices-under-the-ai-act",
+    # ITAR limits on investors in Anthropic's IPO, not about chip rules
+    "https://the-decoder.com/banks-bar-chinese-and-hong-kong-investors-from-anthropic-ipo-over-us-export-controls/",
+    # crypto market losses after the Nvidia shock, no step in the scandal
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=281301",
+    # impact on Taiwan suppliers, no step in the scandal
+    "https://focustaiwan.tw/business/202611130015",
+    # Chinese AI share moves, no step in the scandal itself
+    "https://www.channelnewsasia.com/business/chinese-ai-shares-tumble-nvidia-jensen-huang-resigns-6548711",
+    # Nvidia's Africa plans, no step in the scandal
+    "https://techcabal.com/2026/11/12/jensen-huang-exit-puts-nvidia-africa-test/",
+    # Hugging Face CEO's reaction, no step in the scandal
+    "https://techcrunch.com/2026/11/12/hugging-face-ceo-vows-to-keep-fighting-for-open-source-ai-after-jensen-huangs-exit/",
+    # researcher's earlier report on Nvidia in China, not about chip rules
+    "https://olhardigital.com.br/2026/11/11/pro/investidor-de-31-anos-investigou-nvidia-meses-antes-de-escandalo-envolvendo-ceo/",
+    # Huang scandal and Congress, not about chip rules
+    "https://techcrunch.com/2026/11/11/congress-to-call-jensen-huang-in-to-answer-for-alleged-chinese-spy-affair/",
+    # commentary on the alleged spy, not about chip rules
+    "https://cset.georgetown.edu/article/the-phantom-life-of-alice-huang-alleged-chinese-spy-who-had-affair-with-nvidia-ceo/",
+    # Huang scandal and Nvidia's inquiry, not about chip rules
+    "https://olhardigital.com.br/2026/11/10/pro/nvidia-contrata-advogados-para-apurar-caso-que-envolve-jensen-huang-e-suposta-espia/",
+    # Huang scandal and shareholder suit, not about chip rules
+    "https://tecnoblog.net/noticias/nvidia-e-ceo-sao-processados-por-omitir-riscos-em-caso-com-executiva-chinesa/",
+    # explainer on Nvidia's power, reports nothing new
+    "https://theconversation.com/why-is-nvidia-so-powerful-in-the-ai-world-and-what-could-jensen-huangs-scandal-really-cost-296257",
+    # Huang scandal and a short seller's earlier warning, not about chip rules
+    "https://techcrunch.com/2026/11/09/a-short-seller-flagged-nvidia-ceos-ties-to-a-suspected-chinese-spy-six-months-before-the-scandal/",
+    # news roundup, Huang scandal not chip rules
+    "https://olhardigital.com.br/2026/11/09/pro/resumo-do-od-crise-na-nvidia-nova-teoria-para-o-comeco-do-universo-procuram-se-astronautas/",
+    # Huang's confession and Nvidia's probe, not about chip rules
+    "https://www.xataka.com/empresas-y-economia/debo-disculpa-a-mi-familia-jensen-huang-confiesa-su-infidelidad-nvidia-investiga-posible-espionaje-chino",
+    # Huang scandal and Congress, not about chip rules
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=280681",
+    # grid reliability standards, not about who pays for power
+    "https://www.datacenterknowledge.com/regulations/reliability-standards-for-ai-data-centers-crypto-miners-move-closer-to-adoption",
 }
 UPDATED_DAYS = 3  # a topic with a new story this recently shows "Updated" on its card
 SMALL = 25  # a topic with this many events or fewer shows each as a card; a bigger one only its milestones
