@@ -146,6 +146,12 @@ LEFT_OUT: dict[str, str] = {
     "https://olhardigital.com.br/2026/11/11/pro/"
     "suspeita-de-espionagem-envolvendo-ceo-pressiona-imagem-da-nvidia/":
         "espionage story; export moves only as undated background",
+    "https://japantoday.com/category/world/"
+    "bessent-blames-commerce%27s-lutnick-for-not-restricting-nvidia-chip-exports-to-china":
+        "can't read to check",
+    "https://the-decoder.com/"
+    "former-openai-researcher-says-he-found-nvidia-blackwell-fingerprints-hidden-inside-six-chinese-ai-models/":
+        "can't read to check",
 }
 
 # the newest day every story was read for the lists above; the candidates start after it
