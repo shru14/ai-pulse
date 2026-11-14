@@ -126,6 +126,8 @@ LEFT_OUT: dict[str, str] = {
         "AI only in passing (names an earlier AI-in-education priorities notice among those it amends)",
     "https://www.canada.ca/en/employment-social-development/programs/accessible-canada/consultation-accessibility-regulations-information-communication-technologies-phase-two.html":
         "no closing date on its page, and only selected stakeholders are invited (public comment comes later)",
+    "https://www.federalregister.gov/documents/2026/11/16/2026-23239/federal-motor-vehicle-safety-standards-modernization-of-fmvss-no-108-to-accommodate-ads-equipped":
+        "AI only in passing (a company's name, Gatik AI, in an extension notice about vehicle lamps)",
 }
 # a headline that may report a consultation: the words governments use for asking the public
 _ASKS = re.compile(r"\b(consult(s|ed|ing|ation|ations)?|public comments?|call for (evidence|views|input|comments?)|"
