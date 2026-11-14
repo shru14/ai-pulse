@@ -40,6 +40,12 @@ PLACES = [
 PULLED: list[tuple[str, str, str, str, str]] = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://www.marktechpost.com/2026/11/14/cmpnd-dspy-wsp-weight-space-programming/":
+        "A software library release, not a model price or place change",
+    "https://pandaily.com/openjiuwen-rsi-native-agentos-extension-packages-workswarm-system-plugins":
+        "Agent plugins rolled back by an agent system, not a model pulled",
+    "https://www.marktechpost.com/2026/11/13/best-ai-video-generation-models-2026/":
+        "A buyer's comparison of models, not a price change",
     "https://aws.amazon.com/blogs/machine-learning/introducing-usage-based-pricing-for-amazon-sagemaker-ai-bidirectional-streaming/":
         "A cloud service's pricing, not a lab's model API price",
     "https://focustaiwan.tw/business/202611090013":
