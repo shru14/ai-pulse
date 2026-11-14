@@ -139,6 +139,8 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/ntt-data-opens-12mw-new-jakarta-2-annex-data-center/", "NTT Data", "Indonesia", "Jakarta", "12 MW", "", "open"),
     ("https://dcnnmagazine.com/projects-and-infrastructure/3flash-plans-480mw-data-centre-in-finland/", "3Flash Finland", "Finland", "Huuhansuo, Lappeenranta", "480 MW", "", "announced"),
     ("https://dplnews.com/eletronet-anuncia-novo-data-center-em-sao-paulo-com-investimento-de-r-25-milhoes/", "Eletronet", "Brazil", "São Paulo", "0.5 MW first, up to 1 MW", "R$ 25m", "building"),
+    ("https://dplnews.com/astella-inaugura-data-center-curitiba/", "Astella (Grupo ABL)", "Brazil", "Curitiba", "3.5 MW, up to 5 MW", "R$ 60m", "open"),
+    ("https://w.media/syntys-breaks-ground-on-new-20-mw-data-center-in-qatar/", "Syntys", "Qatar", "", "20 MW", "", "building"),
 
 ]
 
@@ -211,6 +213,8 @@ DECISIONS: list[tuple[str, ...]] = [
 
 # Infra stories from after CHECKED_TO checked and left out of all three tables
 LEFT_OUT: set[str] = {
+    "https://dplnews.com/astella-centro-de-datos-curitiba/",  # same as the Astella row
+    "https://www.channelnewsasia.com/business/spacex-plans-over-74-billion-investment-in-texas-arizona-ai-campuses-6547056",  # can't read to check
     "https://dcnnmagazine.com/infrastructure/cabling/centriforce-targets-30m-sales-as-data-centre-demand-grows/",  # a supplier's sales target
     "https://w.media/epg-tops-out-us120-milllion-factory-for-modular-data-centers/",  # a factory for equipment, not a data centre
     "https://www.telesemana.com/blog/2026/11/09/deutsche-telekom-invertira-casi-250-millones-de-euros-para-ampliar-su-fabrica-de-ia-en-munich/",  # expansion of an AI factory already open, amount only 'almost' 250m euros
