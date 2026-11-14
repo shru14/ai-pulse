@@ -258,6 +258,8 @@ RELEASES = [
      "", False, "$8 / $40", "https://www.anthropic.com/claude-fable-and-mythos-5-2", ""),
     ("2026-11-09", "Meta", "Muse Ember", "Closed", "", "", "", "", False, "$0.10 / $0.50|prompts up to 200K tokens",
      "https://research.meta.ai/blog/muse-ember", ""),
+    ("2026-11-11", "Google", "Gemini Decision 1", "Closed", "", "", "", "", False, "$0.10 / $0",
+     "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/", ""),
 ]
 # what each release is for, from its story: "General" reads and writes text (images or audio too, for some);
 # the rest do one job. The adoption planner lists a model only for the jobs its kind can do
@@ -289,6 +291,7 @@ KIND = {
     "Clairic": "Extraction", "MiniMax M3.1 Flash": "General", "Hy4": "General", "Ripple-65B Preview": "General",
     "ERNIE 5.5 Flash Base": "General", "Gemini Omni 1.2 Flash": "Video", "GPT-6 Cyber": "Cyber",
     "Inkling 2 Small": "General", "Claude Fable 5.2": "General", "Muse Ember": "General",
+    "Gemini Decision 1": "Classification",
 }
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -296,7 +299,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-12"
+SAFETY_CHECKED = "2026-11-14"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -650,10 +653,20 @@ LEFT_OUT = {
     "https://github.com/MiniMax-AI/MiniMax-H3-Image": "MiniMax-H3-Image: no news outlet within 3 days",
     "https://www.engadget.com/2311855/gemini-4-carbon-now-available-worldwide/": "same as Gemini 4 Carbon",
     "https://pytorch.org/blog/optimizing-muse-spark-open-on-tpu-v7-with-sglang-torchtpu/": "same as Muse Spark Open",
+    "https://runway.com/research/praxis-1-video-pretraining-to-robot-control":
+        "Praxis-1: one news outlet within 3 days",
+    "https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease/":
+        "AlphaGenome 2: Kind unclear",
+    "https://www.marktechpost.com/2026/11/10/ifm-pan-2-open-world-model/": "PAN 2: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/11/10/fish-audio-live-3-full-duplex-voice-model/":
+        "Live 3: one news outlet within 3 days",
+    "https://huggingface.co/blog/qvac/botpsy": "BotPsy: no news outlet within 3 days",
+    "https://aws.amazon.com/blogs/machine-learning/introducing-kimi-k3-1-pro-on-amazon-bedrock/":
+        "same as Kimi K3.1 Pro",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-10"
+CHECKED_TO = "2026-11-11"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
