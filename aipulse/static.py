@@ -42,7 +42,7 @@ RECENT_DAYS = 92  # a little over the page's longest range short of "All time"
 DAILY_FROM = date(2026, 9, 28)  # the first daily email's day: every day since has its full email under daily/
 
 
-# Bots that gather pages to train AI models. Search engines may read everything; these may not, as AI Pulse only
+# Bots that gather pages to train AI models. Search engines may read everything; these may not, as AI Pulse Central only
 # reads sites that allow it and carries other publishers' headlines (Google-Extended doesn't affect Google Search).
 AI_TRAINING_BOTS = ("GPTBot", "Google-Extended", "CCBot", "ClaudeBot", "anthropic-ai", "Applebot-Extended",
                     "meta-externalagent", "Bytespider", "cohere-training-data-crawler", "Amazonbot")
@@ -91,7 +91,7 @@ def stream_page(page: str, cat: str, cards: Sequence[dict] = ()) -> str:
     if mine:
         page = page.replace('<main id="feed"></main>', f'<main id="feed" data-ssr="1">{seo.feed(mine)}</main>', 1)
     page = page.replace('<section class="section" id="section" hidden>', '<section class="section" id="section">', 1)
-    title, desc, url = escape(f"{title} · AI Pulse"), escape(f"{desc} Updated every 6 hours."), f"{rss.SITE}{path}/"
+    title, desc, url = escape(f"{title} · AI Pulse Central"), escape(f"{desc} Updated every 6 hours."), f"{rss.SITE}{path}/"
     page = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", page, count=1)
     page = re.sub(r'(<meta (?:name="description"|property="og:description") content=")[^"]*', rf"\g<1>{desc}", page)
     page = re.sub(r'(<meta property="og:title" content=")[^"]*', rf"\g<1>{title}", page, count=1)
@@ -112,10 +112,10 @@ def privacy_page() -> str:
     """The privacy notice: the site keeps nothing about visitors; the daily email keeps only what it needs."""
     rows = "".join(f"<tr><td>{escape(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>" for a, b, c in PRIVACY_ROWS)
     mail = '<a class="pol-btn" href="mailto:projectaipulse@gmail.com">Email us</a>'
-    what = "What AI Pulse keeps about you: nothing about site visitors, and for the daily email only what it needs to send it."
+    what = "What AI Pulse Central keeps about you: nothing about site visitors, and for the daily email only what it needs to send it."
     from . import policies
     # 12 Nov 2026, owner: no header band and no big sections here; the quiet legal layout shared with terms/
-    body = policies.doc("Privacy", "AI Pulse is free and non-commercial. Responsible for your data: AI Pulse.", [
+    body = policies.doc("Privacy", "AI Pulse Central is free and non-commercial. Responsible for your data: AI Pulse Central.", [
         ("The site", '<p>No cookies or ads. Visits are counted anonymously with GoatCounter: the page, the site you came '
                      'from, your browser, system, country and screen size. No IP address, cookie or ID is kept. Your '
                      'settings stay in your own browser. GitHub Pages, which hosts the site, may log IP addresses for '
@@ -123,14 +123,14 @@ def privacy_page() -> str:
         ("The email", '<p>Only if you sign up, and you can unsubscribe from any email.</p>'
                       f'<table class="mt pv"><thead><tr><th>What we keep</th><th>Why</th><th>How long</th></tr></thead><tbody>{rows}</tbody></table>'
                       '<p>Kept in the project’s Google account and sent from its Gmail. Never sold or shared.</p>'),
-        # 12 Nov 2026, owner: one short privacy notice for the whole site, Pulse Pro included
-        ("Pulse Pro", '<p>Start a conversation sends your name, email, firm and message to our inbox, only so we can '
+        # 12 Nov 2026, owner: one short privacy notice for the whole site, Pulse Pro Engine included
+        ("Pulse Pro Engine", '<p>Start a conversation sends your name, email, firm and message to our inbox, only so we can '
                       'reply. A login is set up from the details you send to buy one. Pro pages read your code and files '
                       'in your browser; nothing is uploaded to us.</p>'),
         ("Your rights", '<p>Ask to see, correct or delete your data by email. You can also complain to your data '
                         f'protection authority.</p><p class="pol-acts">{mail}</p>')], ("terms/", "Terms of service"))
     data = {"@context": "https://schema.org", "@type": "WebPage", "name": "Privacy", "description": what}
-    return pages.page("Privacy · AI Pulse", what, "privacy.html", body, data, pages.frame(), ("/", "Back to AI Pulse"))
+    return pages.page("Privacy · AI Pulse Central", what, "privacy.html", body, data, pages.frame(), ("/", "Back to AI Pulse Central"))
 
 
 # What each page needs to draw itself at once, written into it as JSON (id="boot"), so no page waits for
@@ -213,7 +213,7 @@ def front_page(page: str, cards: list[dict], today: date) -> str:
 
 def about_page(page: str) -> str:
     """The site's page opened at About (the template holds its text): its own title, description and address."""
-    return page_at(page, "about", "About · AI Pulse", "What AI Pulse is, where its stories come from and how it is made.")
+    return page_at(page, "about", "About · AI Pulse Central", "What AI Pulse Central is, where its stories come from and how it is made.")
 
 
 def page_at(page: str, path: str, title: str, desc: str) -> str:
@@ -226,7 +226,7 @@ def page_at(page: str, path: str, title: str, desc: str) -> str:
     return re.sub(r'(<link rel="canonical" href="|<meta property="og:url" content=")[^"]*', rf"\g<1>{url}", page)
 
 
-def opml(title: str = "AI Pulse") -> str:
+def opml(title: str = "AI Pulse Central") -> str:
     """feeds/all.opml: every stream's RSS feed in one file, for a feed reader to import at once."""
     rows = "".join(f'    <outline type="rss" text="{escape(f"{title} · {name}")}" title="{escape(f"{title} · {name}")}" '
                    f'xmlUrl="{rss.SITE}feeds/{key}.xml" htmlUrl="{rss.SITE}#{category}"/>\n'
@@ -317,7 +317,7 @@ def web_edition(html: str, path: str, description: str, title: str | None = None
 def edition_description(html: str, day: date) -> str:
     """A day's page description: the day, how many stories, the streams."""
     read = re.search(r"We read (\d+ stor(?:y|ies) from \d+ sources?)", html)
-    return (f"AI Pulse daily, {digest.long_day(day)}: " + (f"{read.group(1)} " if read else "stories ")
+    return (f"AI Pulse Central daily, {digest.long_day(day)}: " + (f"{read.group(1)} " if read else "stories ")
             + "on AI releases, industry, research, laws, policy and infrastructure.")
 
 
@@ -343,9 +343,9 @@ def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | 
         (out / "daily" / name).write_bytes(picture)
         html = re.sub(r'src="(?:cid:meme-of-the-(?:day|week)@aipulse|' + re.escape(rss.SITE)
                       + r'daily/[\d-]+-(?:week-)?meme\.(?:png|jpg))"', f'src="{name}"', html)
-    return web_edition(html, "daily/sample.html", "What the AI Pulse daily email looks like: the day's hot story, top "
+    return web_edition(html, "daily/sample.html", "What the AI Pulse Central daily email looks like: the day's hot story, top "
                        "news, word and meme of the day, every story by who it matters to, with sample stories.",
-                       "Sample daily email · AI Pulse")
+                       "Sample daily email · AI Pulse Central")
 
 
 def daily_index(conn, total: int, days: list[date], out: Path) -> None:
@@ -363,16 +363,16 @@ def daily_index(conn, total: int, days: list[date], out: Path) -> None:
                        "tagged table. On Sundays the email is the weekly edition: the week in AI (Monday to Saturday), "
                        'then Saturday\'s stories. <a href="/#subscribe">Get it in your inbox</a>')
             + "\n".join(f'<h2>{m}</h2>\n<ul class="days">\n' + "\n".join(rows) + "\n</ul>" for m, rows in months.items()))
-    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI Pulse daily editions",
+    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI Pulse Central daily editions",
             "url": f"{rss.SITE}daily/"}
     pages.write_css(out)
     (out / "daily" / "index.html").write_text(pages.page(
-        "Daily AI news, every edition · AI Pulse", "Every AI Pulse daily email as a page: the day's AI releases, "
+        "Daily AI news, every edition · AI Pulse Central", "Every AI Pulse Central daily email as a page: the day's AI releases, "
         "industry news, research, laws and policy in one table. On Sundays, the week in AI.", "daily/", body, data,
-        pages.frame(conn, total), ("/", "Back to AI Pulse")), encoding="utf-8")
+        pages.frame(conn, total), ("/", "Back to AI Pulse Central")), encoding="utf-8")
 
 
-SEAL = True  # the Pulse Pro login: off 5 Nov 2026, back on 6 Nov 2026 (owner: one password, product pages + samples open)
+SEAL = True  # the Pulse Pro Engine login: off 5 Nov 2026, back on 6 Nov 2026 (owner: one password, product pages + samples open)
 SOURCE_CHECK = False  # Source check stays hidden until it stops flagging correct sentences (owner, 5 Nov 2026)
 
 
@@ -417,7 +417,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
             lanes = poster.lanes_html(cards, day)  # the day's lanes, which the poster email's Pick your lane rows open
             if lanes:
                 (out / "daily" / f"{day.isoformat()}-lanes.html").write_text(web_edition(
-                    lanes, f"daily/{day.isoformat()}-lanes.html", f"AI Pulse, {digest.long_day(day)}: the day's AI stories "
+                    lanes, f"daily/{day.isoformat()}-lanes.html", f"AI Pulse Central, {digest.long_day(day)}: the day's AI stories "
                     "sorted by who they matter to: researchers, policy and law, investors, founders, builders."), encoding="utf-8")
     for d in published[-7:]:  # the past week's memes of the day as pictures, which the poster email links to
         memegen.prepare(conn, cards, today, day=d)
@@ -490,13 +490,13 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     (out / "about").mkdir()
     (out / "about" / "index.html").write_text(boot(about_page(page), data, today), encoding="utf-8")  # the same page, opened at About
     (out / "discussing").mkdir()
-    (out / "discussing" / "index.html").write_text(boot(page_at(page, "discussing", "People are discussing · AI Pulse",
+    (out / "discussing" / "index.html").write_text(boot(page_at(page, "discussing", "People are discussing · AI Pulse Central",
         "The most-discussed AI threads on Hacker News in the last two days."), data, today), encoding="utf-8")
     (out / "saved").mkdir()  # the reader's bookmarks (kept in their browser): not in the sitemap
-    (out / "saved" / "index.html").write_text(boot(page_at(page, "saved", "Saved stories · AI Pulse",
-        "The stories you saved on AI Pulse, kept in this browser."), data, today), encoding="utf-8")
+    (out / "saved" / "index.html").write_text(boot(page_at(page, "saved", "Saved stories · AI Pulse Central",
+        "The stories you saved on AI Pulse Central, kept in this browser."), data, today), encoding="utf-8")
     (out / "today").mkdir()
-    (out / "today" / "index.html").write_text(boot(page_at(page, "today", "Today in AI · AI Pulse",
+    (out / "today" / "index.html").write_text(boot(page_at(page, "today", "Today in AI · AI Pulse Central",
         "Today's AI stories, ranked by how many outlets carry them."), data, today, week=True), encoding="utf-8")
     for cat, (path, *_) in STREAM_PAGES.items():  # /policy/ and the rest: the same page, opened at that stream
         (out / path).mkdir()

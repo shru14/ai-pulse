@@ -77,13 +77,13 @@ def record(c: dict, place_name: str) -> dict:
 def dataset(records: list[dict], places: list[str], today: date) -> dict:
     """tracker.csv as a Dataset, for Google Dataset Search: what it holds, where and when, and the file."""
     days = sorted({c["date"][:10] for c in records}) or [today.isoformat()]
-    return {"@type": "Dataset", "name": "AI Pulse Regulation tracker: AI laws, bills, bodies and standards",
+    return {"@type": "Dataset", "name": "AI Pulse Central Regulation tracker: AI laws, bills, bodies and standards",
             "description": ("Official records of artificial intelligence laws, bills, regulators and technical "
                             "standards worldwide, from legislatures, OECD.AI, ISO/IEC and IEEE: each record's date, "
                             "countries, type, title, source and link. Updated every 6 hours."),
             "url": f"{rss.SITE}tracker/", "isAccessibleForFree": True,
             "keywords": ["artificial intelligence", "AI regulation", "AI law", "legislation", "AI standards"],
-            "creator": {"@type": "Organization", "name": "AI Pulse", "url": rss.SITE},
+            "creator": {"@type": "Organization", "name": "AI Pulse Central", "url": rss.SITE},
             "license": "https://github.com/shru14/ai-pulse#credits-and-licences",
             "spatialCoverage": places, "temporalCoverage": f"{days[0]}/{days[-1]}", "dateModified": today.isoformat(),
             "distribution": [{"@type": "DataDownload", "encodingFormat": "text/csv",
@@ -131,7 +131,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                                       + f'<td data-l="Date">{day}</td></tr>' for cells, stage, trail, day in rows)
                 sections.append(f'<h2>{label}</h2>\n<div class="gt-wrap"><table class="gt"><thead>{head}</thead><tbody>\n'
                                 + body_rows + "\n</tbody></table></div>")
-        title = f"{heading(code, name)} · AI Pulse"
+        title = f"{heading(code, name)} · AI Pulse Central"
         description = (f"AI bills, laws and regulators in {place(name)}"
                        f": official records with their stages and links to the sources, updated every 6 hours.")
         data = {"@context": "https://schema.org", "@type": "ItemList", "name": heading(code, name),
@@ -161,7 +161,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         dataset([c for code in by_place for c in by_place[code]], [names[code] for code in places], today)]}
     (out / "tracker").mkdir(parents=True, exist_ok=True)
     (out / "tracker" / "index.html").write_text(
-        pages.page("AI laws by country · AI Pulse", "AI bills, laws and regulators by country, from official "
+        pages.page("AI laws by country · AI Pulse Central", "AI bills, laws and regulators by country, from official "
               "records, updated every 6 hours.", "tracker/", body, data, parts, back, note), encoding="utf-8")
     return ["tracker/", *paths]
 
@@ -241,7 +241,7 @@ def type_pages(conn, cards: list[dict], out: Path) -> list[str]:
                     next((x for x in c.get("jurisdictions") or [] if x in names), "INTL"), "International"))}
                     for i, c in enumerate(items[:100])]}
         (out / path).mkdir(parents=True, exist_ok=True)
-        (out / path / "index.html").write_text(pages.page(f"{title} · AI Pulse", intro, path, body, data, parts, back, note),
+        (out / path / "index.html").write_text(pages.page(f"{title} · AI Pulse Central", intro, path, body, data, parts, back, note),
                                                encoding="utf-8")
         paths.append(path)
     return paths
@@ -292,7 +292,7 @@ def standards_page(conn, cards: list[dict], out: Path) -> list[str]:
             {"@type": "ListItem", "position": i + 1, "item": record(c, "International")} for i, c in enumerate(items)]}]}
     (out / "standards").mkdir(parents=True, exist_ok=True)
     (out / "standards" / "index.html").write_text(pages.page(
-        "AI standards: ISO/IEC, IEEE and national · AI Pulse",
+        "AI standards: ISO/IEC, IEEE and national · AI Pulse Central",
         "Published AI standards from ISO/IEC (JTC 1/SC 42), IEEE and national standards bodies: what each covers, "
         "when it was published and a link to its official page.", "standards/", body, data, parts, back, note),
         encoding="utf-8")

@@ -459,7 +459,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page("AI consultations · AI Pulse", what, PATH, body(saved, today), data,
+        pages.page("AI consultations · AI Pulse Central", what, PATH, body(saved, today), data,
                    pages.frame(conn, len(cards)), ("/policy/", "Back to Policy"),
                    "Open and closed consultations' titles, dates and who is asking are each government's own, linking "
                    "to its page."),

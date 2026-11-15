@@ -28,12 +28,12 @@ log = logging.getLogger(__name__)
 ROOT = "planner"
 # what anyone can read: the product pages and one sample report. Source check went behind the login on 3 Nov 2026: on real AI
 # notes it flagged 206 of 306 correct sentences, so it stays there until it is fixed and measured again
-# 4 Nov 2026: each Pulse Pro product has its own open page (Compass is planner/ itself)
+# 4 Nov 2026: each Pulse Pro Engine product has its own open page (Compass is planner/ itself)
 PRODUCTS = ("risk-monitor", "pulse-watch", "smartfeed", "pulse-store")
-FAMILY = "pulse-pro/"  # its own address since 14 Nov 2026 (planner/ is Compass). What Pulse Pro is: the five products, what each is for and what it costs
+FAMILY = "pulse-pro/"  # its own address since 14 Nov 2026 (planner/ is Compass). What Pulse Pro Engine is: the five products, what each is for and what it costs
 OPEN = ({"planner/index.html", "planner/sample-report/index.html", "planner/sample-report/sample-report.pdf"}
         | {f"planner/{p}/index.html" for p in PRODUCTS} | {FAMILY + "index.html"})
-# each Pulse Pro product's read-only sample (4 Nov 2026, the owner): everything under this folder is open too
+# each Pulse Pro Engine product's read-only sample (4 Nov 2026, the owner): everything under this folder is open too
 OPEN_DIR = "planner/samples/"
 # 4 Nov 2026, owner: the login blocked anyone from trying the product, so the first three steps (Explore, Questions, Plan
 # your report) are open, with everything under them. The report itself (step 4), its PDF and the Resources stay sealed;
@@ -200,15 +200,15 @@ STYLE = ("<style>.compass-login{max-width:420px;margin:56px auto 64px;padding:32
          ".compass-get .cg-mail:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}"
          ".compass-get .cg-note{margin:10px 0 0;font-size:13px}"
          ".compass-get td small{display:block;font-size:12.5px;color:var(--muted)}"
-         # 6 Nov 2026, owner: What Pulse Pro is as a pill button, not a link
+         # 6 Nov 2026, owner: What Pulse Pro Engine is as a pill button, not a link
          ".compass-more .cg-more{display:inline-block;padding:9px 20px;font:600 14px var(--body);color:var(--ink);"
          "text-decoration:none;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);border-radius:999px}"
          ".compass-more .cg-more:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}"
          "@media (max-width:560px){.compass-login{margin:28px auto 40px;padding:24px 18px 20px}}</style>")
 
 MAIL = "projectaipulse@gmail.com"
-CONTACT = "pulse-pro/contact/"  # Pulse Pro's Start a conversation form (private repo, pro_company.py)
-# what each Pulse Pro product costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once
+CONTACT = "pulse-pro/contact/"  # Pulse Pro Engine's Start a conversation form (private repo, pro_company.py)
+# what each Pulse Pro Engine product costs (owner, 4 Nov 2026): set by hand here, paid on an invoice; the login is added once
 # it is paid. (name, how it is billed, price, yearly price). The report is bought once; the three services run on,
 # monthly. No yearly price anywhere (owner, 6 Nov 2026), so that column stays empty; the Store is free and needs no login.
 # No amount shown until the owner sets them (6 Nov 2026); readers ask through Start a conversation (owner, 12 Nov 2026)
@@ -218,12 +218,12 @@ PRICES = (("Pulse Compass evidence report", "Bought once", "Price on request", "
           ("Pulse SmartFeed", "Subscription", "Price on request", ""),
           ("Pulse Store", "Free", "No login needed", ""))
 # the Store's paid add-ons (owner, 4 Nov 2026): browsing stays free; the bundle check is bought once, the other two run
-# on. Same columns as PRICES; the login box and What Pulse Pro is list them under Pulse Store
+# on. Same columns as PRICES; the login box and What Pulse Pro Engine is list them under Pulse Store
 STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "Price on request", ""),
                 ("Pulse Store Plus", "Subscription", "Price on request", ""),
                 ("Pulse Store for Firms", "Subscription", "Price on request", ""))
 PAID = [p for p in PRICES + STORE_ADDONS if p[1] != "Free"]
-REQUEST = ("Hello AI Pulse,\n\nI would like a Pulse Pro login.\n\n"
+REQUEST = ("Hello AI Pulse Central,\n\nI would like a Pulse Pro Engine login.\n\n"
            "Name:\nFirm:\nRole:\nProduct (" + " / ".join(p[0] for p in PAID) + "):\n"
            "How I would like to pay (for example bank transfer or a card payment link):\n\n"
            "Please send the invoice. I understand the username and password follow once it is paid.\n\nThanks,\n")
@@ -235,7 +235,7 @@ def _get_login() -> str:
     from urllib.parse import quote
     rows = "".join(f"<tr><td>{escape(n)}<small>{escape(k)}</small></td><td>{escape(p)}"
                    + (f"<small>or {escape(y)}</small>" if y else "") + "</td></tr>" for n, k, p, y in PRICES + STORE_ADDONS)
-    # 12 Nov 2026, owner: "Start a conversation" (the Pulse Pro contact form) instead of an email link
+    # 12 Nov 2026, owner: "Start a conversation" (the Pulse Pro Engine contact form) instead of an email link
     href = f"/{CONTACT}?about={quote('Prices')}"
     return ('<div class="compass-get"><h2>No login yet?</h2>'
             '<p>Logins are paid. Tell us which product you need and we reply with the price and an invoice.</p>'
@@ -260,7 +260,7 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
     """The published page: the login box, with the real page beside it as unreadable bytes."""
     from . import adoption  # type: ignore[attr-defined]  # private repo, joined to the package at run time
     from . import pages, rss
-    head, lead, extra = "Log in to Pulse Pro", "Enter the password you were given.", ""
+    head, lead, extra = "Log in to Pulse Pro Engine", "Enter the password you were given.", ""
     if path == REPORT:
         head, lead, extra = ("Log in to see your report",
                              "Your answers are kept for this visit. Enter the password to read the report and download it as a PDF.",
@@ -271,16 +271,16 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
               '<label>Password<input name="password" type="password" autocomplete="current-password" required></label>'
               '<button type="submit">Log in</button><p id="compass-msg" role="status"></p>'
               f'{_get_login()}'
-              f'<p class="compass-more"><a class="cg-more" href="/{FAMILY}">What Pulse Pro is</a></p></form>'
+              f'<p class="compass-more"><a class="cg-more" href="/{FAMILY}">What Pulse Pro Engine is</a></p></form>'
               '<noscript><p>Logging in needs JavaScript switched on.</p></noscript>'
               f'<script type="application/json" id="compass-table">{json.dumps(table)}</script>'
               f'<script type="application/json" id="compass-files">{json.dumps(files)}</script>'
               f'<script type="text/plain" id="compass-page">{page}</script>' + SCRIPT)
-    html = pages.page("Log in · Pulse Pro", "Log in to Pulse Pro.", path,
+    html = pages.page("Log in · Pulse Pro Engine", "Log in to Pulse Pro Engine.", path,
                       f'<div class="ft jb ap">{body}</div>',
                       {"@context": "https://schema.org", "@type": "WebPage", "name": "Pulse Compass", "url": f"{rss.SITE}{path}"},
                       pages.frame(conn, len(cards)), ("/planner/", "About Pulse Compass"))
-    # the Pulse Pro top bar, as on the product page, in place of the news masthead; its Pro pill is the way back
+    # the Pulse Pro Engine top bar, as on the product page, in place of the news masthead; its Pro pill is the way back
     html = adoption.product_header(html).replace('<a class="back" href="/planner/">← About Pulse Compass</a>\n', "", 1)
     return html.replace('<meta charset="utf-8">', f'<meta charset="utf-8">\n<meta name="robots" content="noindex">\n{HIDE}', 1)
 

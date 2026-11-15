@@ -1,6 +1,6 @@
 """The glossary as pages, like a dictionary: glossary/ lists the past 7 days' words, then every word A to Z, and
 glossary/<word>/ has its meaning (other glossary words in it linked), the latest stories that use it, its related terms. The meanings are our own
-writing, the part of AI Pulse search engines can rank; the site's Glossary panel stays as it is.
+writing, the part of AI Pulse Central search engines can rank; the site's Glossary panel stays as it is.
 """
 from __future__ import annotations
 
@@ -177,7 +177,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 "url": f"{rss.SITE}{path}", "inDefinedTermSet": home}
         (out / path).mkdir(parents=True, exist_ok=True)
         (out / path / "index.html").write_text(pages.page(
-            f"{e['term']}: what it means in AI · AI Pulse glossary", f"{e['term']}: {_first_sentence(e['def'])}"[:300],
+            f"{e['term']}: what it means in AI · AI Pulse Central glossary", f"{e['term']}: {_first_sentence(e['def'])}"[:300],
             path, body, data, parts, ("/glossary/", "Back to the AI glossary (all words)"), note), encoding="utf-8")
         paths.append(path)
     letters: dict[str, list[dict]] = {}
@@ -194,12 +194,12 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                + cloud([(by_id[i], n) for i, n in recent.most_common(CLOUD)], "In the news · past 7 days") if recent else "")
             + f'<h2>A to Z</h2>\n<nav class="letters" aria-label="Jump to a letter">{jump}</nav>\n'
             + f'<div id="az">\n{sections}\n</div>')
-    data = {"@context": "https://schema.org", "@type": "DefinedTermSet", "name": "AI Pulse glossary", "url": home,
+    data = {"@context": "https://schema.org", "@type": "DefinedTermSet", "name": "AI Pulse Central glossary", "url": home,
             "hasDefinedTerm": [{"@type": "DefinedTerm", "name": e["term"], "url": f"{rss.SITE}glossary/{e['id']}/"}
                                for e in words]}
     (out / "glossary").mkdir(parents=True, exist_ok=True)
     (out / "glossary" / "index.html").write_text(pages.page(
-        "AI glossary: the hard words in AI news, in plain English · AI Pulse",
+        "AI glossary: the hard words in AI news, in plain English · AI Pulse Central",
         f"{len(words)} AI words explained in plain English, from LLM and tokens to compute, agents and AI law. Written by hand.",
-        "glossary/", body, data, parts, ("/", "Back to AI Pulse"), note), encoding="utf-8")
+        "glossary/", body, data, parts, ("/", "Back to AI Pulse Central"), note), encoding="utf-8")
     return ["glossary/", *paths]

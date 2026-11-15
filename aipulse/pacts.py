@@ -653,7 +653,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page("AI pacts and orders · AI Pulse", what, PATH, body(cards, today), data, pages.frame(conn, len(cards)),
+        pages.page("AI pacts and orders · AI Pulse Central", what, PATH, body(cards, today), data, pages.frame(conn, len(cards)),
                    ("/policy/", "Back to Policy"),
                    "Pledges and the treaty as each official list gives them; every other row links to the story that reported it, "
                    "checked by hand."),

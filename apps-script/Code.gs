@@ -1,8 +1,8 @@
 /**
- * AI Pulse daily: sign-ups for the email digest. A Google Apps Script web app in the project's Google account
+ * AI Pulse Central daily: sign-ups for the email digest. A Google Apps Script web app in the project's Google account
  * (projectaipulse@gmail.com): free, no billing, and the list never leaves that account.
  *
- * Emails only ever link to the AI Pulse site (a link to script.google.com looks like phishing to spam filters);
+ * Emails only ever link to the AI Pulse Central site (a link to script.google.com looks like phishing to spam filters);
  * the site's page then talks to this web app:
  *
  *   POST action=subscribe   email, streams  the site's form: the reader is subscribed at once, no email sent; with
@@ -27,7 +27,7 @@
  *                           length, pro,
  *                           proPick,
  *                           improve, other
- *   POST action=contact     name, email,    Pulse Pro's "Start a conversation" form: emailed to the project inbox
+ *   POST action=contact     name, email,    Pulse Pro Engine's "Start a conversation" form: emailed to the project inbox
  *                           firm, topic,    with Reply-To set to the sender, so a reply goes straight back; nothing
  *                           message         is kept here (owner, 12 Nov 2026)
  *   POST action=list        key             the confirmed readers, for the daily send (key = LIST_KEY; in the
@@ -65,7 +65,7 @@ const names = streams => streams.map(s => STREAMS[s]).join(", ");
 function doGet(e) {
   const p = e.parameter || {};
   if (p.action === "confirm" || p.action === "unsubscribe") return button(p.action, p.t);  // links sent before the site handled them
-  return page({title: "AI Pulse daily", text: "Sign up for the daily digest on the AI Pulse site."});
+  return page({title: "AI Pulse Central daily", text: "Sign up for the daily digest on the AI Pulse Central site."});
 }
 
 function doPost(e) {
@@ -140,7 +140,7 @@ function subscribe(p) {
     props.setProperty("sent:" + day, String(signups + 1));
     const prefs = prefsFrom(p);
     enroll(email, rec, streams, hasPrefs(prefs) ? prefs : undefined);
-    notify(`AI Pulse: new subscriber (${count()} subscribers)`, `${email} subscribed to: ${names(streams)}.` +
+    notify(`AI Pulse Central: new subscriber (${count()} subscribers)`, `${email} subscribed to: ${names(streams)}.` +
            (hasPrefs(prefs) ? ` Choices: ${summary(prefs)}.` : ""));
     return {ok: true};
   } finally {
@@ -180,7 +180,7 @@ function addReaders() {
   props.deleteProperty("ADD_READERS");
   const line = `Added ${done.added}; already on the list ${done.alreadyOn}; not valid ${done.invalid}; no room ${done.noRoom}. Now ${n} subscribers.`;
   console.log(line);
-  notify("AI Pulse: readers added by hand", line);
+  notify("AI Pulse Central: readers added by hand", line);
 }
 
 function confirm(t) {
@@ -191,7 +191,7 @@ function confirm(t) {
     if (!rec || rec.ctoken !== t || Date.now() - rec.asked > PENDING_DAYS * 864e5)
       return {ok: false, title: "This link has expired", text: "Please sign up again with the Daily digest button."};
     if (!rec.confirmed && count() >= MAX_SUBSCRIBERS)
-      return {ok: false, title: "AI Pulse daily is full for now", text: "Please try again in a few weeks."};
+      return {ok: false, title: "AI Pulse Central daily is full for now", text: "Please try again in a few weeks."};
     const changed = rec.confirmed;
     rec.streams = rec.pending;
     if (rec.pendingPrefs) rec.prefs = rec.pendingPrefs;
@@ -202,7 +202,7 @@ function confirm(t) {
     props.setProperty("u:" + rec.token, email);
     props.setProperty("s:" + email, JSON.stringify(rec));
     if (!changed)  // new subscribers only: the project inbox isn't told about changed streams or choices
-      notify(`AI Pulse: new subscriber (${count()} subscribers)`, `${email} subscribed to: ${names(rec.streams)}.` +
+      notify(`AI Pulse Central: new subscriber (${count()} subscribers)`, `${email} subscribed to: ${names(rec.streams)}.` +
              (hasPrefs(rec.prefs) ? ` Choices: ${summary(rec.prefs)}.` : ""));
     return {ok: true, title: changed ? "Your streams are changed" : "Welcome aboard, you're subscribed!",
             text: (weeklyOnly(rec.prefs) ? `${changed ? "From Sunday" : "Every Sunday"} you'll get the week in AI: ${names(rec.streams)}. `
@@ -233,10 +233,10 @@ function unsubscribe(t) {
   let threads;
   while ((threads = GmailApp.search(`to:${email} OR from:${email} OR "${email}"`, 0, 100)).length)
     GmailApp.moveThreadsToTrash(threads);
-  notify(`AI Pulse: someone unsubscribed (${count()} subscribers)`,
+  notify(`AI Pulse Central: someone unsubscribed (${count()} subscribers)`,
          "A reader unsubscribed; their address is deleted, so it isn't named here.");
   return {ok: true, title: "You're unsubscribed",
-          text: "Your address is deleted from AI Pulse daily, and our emails with you are deleted within 30 days. " +
+          text: "Your address is deleted from AI Pulse Central daily, and our emails with you are deleted within 30 days. " +
                 "You won't hear from us again."};
 }
 
@@ -286,8 +286,8 @@ const REVIEW = {
   improve: ["Easier to find things", "Clearer charts and numbers", "Shorter emails", "More sources", "Better on phones",
             "Nothing, it's good"],
 };
-const REVIEW_NAMES = {channels: "Reads AI Pulse via", uses: "Uses it for", useful: "How useful (1-5)", section: "Uses most",
-                      opens: "Opens the daily email", length: "Daily email is", pro: "Looked at Pulse Pro",
+const REVIEW_NAMES = {channels: "Reads AI Pulse Central via", uses: "Uses it for", useful: "How useful (1-5)", section: "Uses most",
+                      opens: "Opens the daily email", length: "Daily email is", pro: "Looked at Pulse Pro Engine",
                       proPick: "Pro product of interest", improve: "Improve first"};
 const REVIEWS_A_DAY = 15;
 const OTHER_MAX = 1000;  // characters in "Anything else?"
@@ -311,13 +311,13 @@ function review(p) {
     lock.releaseLock();
   }
   const lines = Object.entries(REVIEW_NAMES).map(([k, name]) => `${name}: ${answers[k] ? answers[k].join(", ") : "-"}`);
-  notify(`AI Pulse review: ${answers.useful ? answers.useful[0] + "/5" : "no score"}` +
+  notify(`AI Pulse Central review: ${answers.useful ? answers.useful[0] + "/5" : "no score"}` +
          (answers.improve ? `, improve first: ${answers.improve[0]}` : ""),
          [...lines, "", "Anything else:", other || "-"].join("\n"));
   return {ok: true};
 }
 
-// Pulse Pro's "Start a conversation" form (owner, 12 Nov 2026): one email to the project inbox, Reply-To the sender.
+// Pulse Pro Engine's "Start a conversation" form (owner, 12 Nov 2026): one email to the project inbox, Reply-To the sender.
 // Capped like the review form so a bot can't use up the day's mail quota.
 const CONTACTS_A_DAY = 25;
 const CONTACT_TOPICS = ["Pulse Compass", "Pulse Risk Monitor", "Pulse Watch", "Pulse SmartFeed", "Pulse Store",
@@ -341,8 +341,8 @@ function contact(p) {
     lock.releaseLock();
   }
   try {
-    MailApp.sendEmail({to: SENDER, replyTo: email, name: "Pulse Pro",
-                       subject: `Pulse Pro conversation: ${topic}, ${name}` + (firm ? ` (${firm})` : ""),
+    MailApp.sendEmail({to: SENDER, replyTo: email, name: "Pulse Pro Engine",
+                       subject: `Pulse Pro Engine conversation: ${topic}, ${name}` + (firm ? ` (${firm})` : ""),
                        body: [`Name: ${name}`, `Email: ${email}`, `Firm: ${firm || "-"}`, `About: ${topic}`, "", message].join("\n")});
   } catch (e) {
     return {ok: false, error: "busy"};
@@ -377,7 +377,7 @@ function startDailyEmail(check) {
   }) : null;
   const code = answer ? answer.getResponseCode() : 0;
   if (code === 204) return console.log(check === true ? "GitHub accepted the token (a dry run started)." : "Daily email started.");
-  notify("AI Pulse: the daily email could not be started",
+  notify("AI Pulse Central: the daily email could not be started",
          (token ? `GitHub answered ${code}: ${answer.getContentText().slice(0, 300)}` : "No GITHUB_TOKEN script property.") +
          "\nThe token may have expired or lost its Actions permission: make a new one and save it as GITHUB_TOKEN." +
          " The workflow's own schedule may still send it; to send by hand: GitHub > Actions > Daily digest > Run workflow, dry run unticked.");
@@ -387,7 +387,7 @@ function startDailyEmail(check) {
 // reader's own step if it fails.
 function notify(subject, text) {
   try {
-    MailApp.sendEmail({to: SENDER, name: "AI Pulse", subject, body: text});
+    MailApp.sendEmail({to: SENDER, name: "AI Pulse Central", subject, body: text});
   } catch (e) {
     console.log("notice not sent: " + e);
   }
@@ -431,7 +431,7 @@ function list(key) {
 
 function button(action, t) {
   const label = action === "confirm" ? "Confirm my subscription" : "Unsubscribe";
-  return page({title: action === "confirm" ? "One more click" : "Unsubscribe from AI Pulse daily", text: ""},
+  return page({title: action === "confirm" ? "One more click" : "Unsubscribe from AI Pulse Central daily", text: ""},
     `<form method="post" action="${esc(ScriptApp.getService().getUrl())}" target="_top">` +
     `<input type="hidden" name="action" value="${esc(action)}"><input type="hidden" name="t" value="${esc(t || "")}">` +
     `<button style="background:#2F4FD8;color:#fff;border:0;border-radius:8px;padding:11px 20px;font-size:15px;` +
@@ -443,6 +443,6 @@ function page(result, extra) {
     `<div style="font-family:Arial,sans-serif;max-width:520px;margin:48px auto;padding:0 16px;color:#1a1a1a;` +
     `font-size:16px;line-height:1.55"><h2 style="margin:0 0 12px">${esc(result.title)}</h2>` +
     (result.text ? `<p>${esc(result.text)}</p>` : "") + (extra || "") +
-    `<p><a href="${SITE}" target="_top">AI Pulse</a></p></div>`)
-    .setTitle("AI Pulse daily");
+    `<p><a href="${SITE}" target="_top">AI Pulse Central</a></p></div>`)
+    .setTitle("AI Pulse Central daily");
 }

@@ -1,4 +1,4 @@
-"""AI Pulse: a self-hosted tracker for AI releases, industry news and policy."""
+"""AI Pulse Central: a self-hosted tracker for AI releases, industry news and policy."""
 from pathlib import Path
 
 # Pulse Compass, the paid product, lives in a private repo: its modules join this package when that repo is checked out

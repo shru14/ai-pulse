@@ -535,7 +535,7 @@ def lanes_html(cards: list[dict], day: date) -> str | None:
             'margin:0 auto 3px}}</style></head>'
             f'<body style="margin:0;background:#ffffff;font-family:{BODY};color:{INK}"><div style="max-width:680px;margin:0 auto">'
             f'<div style="background:{INK};color:#ffffff;padding:20px"><a href="{rss.SITE}" style="color:#ffffff;font-size:13px;'
-            f'font-weight:bold;text-decoration:none">AI Pulse</a><h1 style="margin:6px 0 0;font-family:{HEAD};font-size:26px;'
+            f'font-weight:bold;text-decoration:none">AI Pulse Central</a><h1 style="margin:6px 0 0;font-family:{HEAD};font-size:26px;'
             f'font-weight:900">Pick your lane</h1><div style="font-size:14px;margin-top:4px">{digest.long_day(day)}: the day\'s '
             f'stories sorted by who they matter to. Each story sits in one lane.</div></div><div style="padding:16px 16px 30px">'
             f'{jumps}{"".join(sections)}<div style="margin-top:26px;font-size:14px"><a href="{escape(digest.full_page(day))}" '
@@ -675,7 +675,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                            f'{escape(c["source"])} · <a href="{escape(clean_url(c["url"]))}" style="color:{INK};font-weight:bold">Read it →</a>'
                            f'</div></td></tr>', "margin:0 0 26px"))
 
-    # New on AI Pulse: the page this day's email introduces, with its own drawing
+    # New on AI Pulse Central: the page this day's email introduces, with its own drawing
     feature = digest._feature(day)
     if feature:
         name, what, path = feature
@@ -727,7 +727,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
                       f'color:{INK};text-decoration:none">{k}</a></td>' for k in range(1, 6))
     html.append('<tr><td class="p-pad" style="padding:20px">' + _table(
         f'<tr><td style="padding:12px 14px;border:2px solid {INK}"><div style="font-weight:bold;font-size:15px">How useful is '
-        f'AI Pulse to you?</div><div style="font-size:12px;color:{GREY};margin:3px 0 10px">Tap a number, then four more quick '
+        f'AI Pulse Central to you?</div><div style="font-size:12px;color:{GREY};margin:3px 0 10px">Tap a number, then four more quick '
         f'questions. 1 not useful · 5 very useful</div><table role="presentation" cellpadding="0" cellspacing="0"><tr>{numbers}'
         f'</tr></table></td></tr>') + '</td></tr>')
 
@@ -756,12 +756,12 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
     text += ["", f"Know someone who'd like this? Forward this email; they can sign up at {rss.SITE}#subscribe",
              f"You chose: {chose}.", f"Change my streams and choices: {change}", f"Unsubscribe: {stop}",
-             f"AI Pulse, your briefing on what's happening in AI worldwide: {rss.SITE}"]
+             f"AI Pulse Central, your briefing on what's happening in AI worldwide: {rss.SITE}"]
     html.append(f'<tr><td style="border-top:3px solid {INK};padding:14px 20px 18px;font-size:12px;line-height:1.7;color:{GREY}">'
                 f'Know someone who&#39;d like this? Forward it; they can <a href="{rss.SITE}#subscribe" style="color:{INK};'
                 f'font-weight:bold">sign up</a>.<br>You chose: {escape(chose)}.<br><a href="{escape(change)}" '
                 f'style="color:{GREY}">Change my streams and choices</a> · <a href="{escape(stop)}" style="color:{GREY}">'
-                f'Unsubscribe</a><br>AI Pulse, your briefing on what&#39;s happening in AI worldwide · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a>'
+                f'Unsubscribe</a><br>AI Pulse Central, your briefing on what&#39;s happening in AI worldwide · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a>'
                 f'</td></tr>')
 
     # "Daily Digest: " (Sunday: "Weekly Digest: " and the story of the week), then the lead in a few of its own words

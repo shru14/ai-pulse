@@ -18,7 +18,7 @@ def test_email_digest_lists_the_chosen_streams_for_one_day(monkeypatch):
     cards = [card(1, "tool", "2026-09-27T06:00:00+00:00"), card(2, "regulation", "2026-09-27T18:00:00+00:00"),
              card(3, "news", "2026-09-27T12:00:00+00:00"), card(4, "tool", "2026-09-28T00:30:00+00:00")]
     subject, text, html = digest.build(cards, ["releases", "regulation"], date(2026, 9, 27), layout="full")
-    assert subject == "AI Pulse daily · Sunday, 27 September 2026"  # no short forms
+    assert subject == "AI Pulse Central daily · Sunday, 27 September 2026"  # no short forms
     assert "Let's explore what happened in AI on Sunday, 27 September 2026." in text
     assert "6-hour" not in text + html and "Daily update" not in html  # the subject already names the day
     assert "Story 1" in text and "Story 2" in text and "Story 3" not in text and "Story 4" not in text  # chosen streams, that day
@@ -156,7 +156,7 @@ def test_daily_email_shows_the_ten_that_mattered_then_headlines(monkeypatch):
     cards = ([card(0, "tool", 4)] + [card(i, "news", 2 if i == 1 else 0) for i in range(1, 16)]
              + [card(20, "news", 0, "tutorial"), card(21, "policy")])
     subject, text, html = digest.build(cards, ["releases", "news", "policy"], date(2026, 9, 28))  # short by default
-    assert subject == "AI Pulse daily · Monday, 28 September 2026" and "Here are the stories that mattered the most." in text
+    assert subject == "AI Pulse Central daily · Monday, 28 September 2026" and "Here are the stories that mattered the most." in text
     top = text.split("Here are the stories that mattered the most.")[1].split("THE REST OF THE DAY")[0]
     assert top.index("Story 0") < top.index("Story 1") and "Outlet 0 +4 outlets" in top  # most reported first
     assert top.count("• [") == 10 and "Story 20" not in top  # ten, never a tutorial
@@ -183,7 +183,7 @@ def test_every_email_links_to_the_days_full_email(monkeypatch):
     # the page itself: every stream, the full table, a sign-up line instead of a reader's own settings
     _, text, html = digest.build(cards, ["releases", "news", "research", "regulation", "policy"], date(2026, 9, 28),
                                  layout="full", web=True)
-    assert "Type</th>" in html and "Story 9" in text and "Get AI Pulse daily in your inbox" in text
+    assert "Type</th>" in html and "Story 9" in text and "Get AI Pulse Central daily in your inbox" in text
     assert "Unsubscribe" not in text and "You chose" not in text
 
 
@@ -480,7 +480,7 @@ def test_infrastructure_reaches_the_email_and_its_readers():
     _, text, html = digest.build([card], ["research"], date(2026, 10, 5), one_click)
     mine = one_click.replace("#unsubscribe=", "#choices=")
     assert f"following button\nAdd Infra: {mine}" in text
-    note = html.split("New on AI Pulse: Infra")[1].split("</div>")[0]
+    note = html.split("New on AI Pulse Central: Infra")[1].split("</div>")[0]
     assert f'href="{mine}"' in note and "Add Infra →" in note
     assert digest._new_stream(date(2026, 11, 1), ["research"]) == ""
     # its stories are on topic without naming AI, and carry the tag and theme readers can choose
@@ -507,7 +507,7 @@ def test_the_email_introduces_one_new_feature_a_day_each_once():
     _, text, html = digest.build([card], ["research"], day)
     name, _, path = digest._feature(day)
     assert f"NEW ON AI PULSE: {name}" in text and f"Have a look: {digest.rss.SITE}{path}" in text
-    assert html.index("New on AI Pulse:") < html.index("A paper on AI agents") < html.index("Every story of the day in one table")
+    assert html.index("New on AI Pulse Central:") < html.index("A paper on AI agents") < html.index("Every story of the day in one table")
 
 
 def test_the_email_on_a_month_s_first_links_the_new_issue_and_the_queue_waits_a_day(monkeypatch):
@@ -761,7 +761,7 @@ def test_sunday_email_brings_the_week_and_skips_the_days_word_and_meme(monkeypat
              + [card(9, "2026-10-04", "news", 9, "Sunday's story is next week's email")]  # not Monday to Saturday
              + [card(i, "2026-10-03", "tool" if i % 2 else "news") for i in range(10, 22)])
     subject, text, html = digest.build(cards, ["releases", "news"], date(2026, 10, 3))
-    assert subject == "AI Pulse · The week in AI, and Saturday, 3 October 2026"
+    assert subject == "AI Pulse Central · The week in AI, and Saturday, 3 October 2026"
     assert "THE WEEK IN AI, 28 Sep – 3 Oct" in text and "The week in AI" in html
     # the week's count and the day's, a line each
     assert "This week, 28 Sep – 3 Oct: 20 stories.\nSaturday: " in text  # Monday to Saturday, not Sunday's
@@ -780,17 +780,17 @@ def test_sunday_email_brings_the_week_and_skips_the_days_word_and_meme(monkeypat
     readers = {"d@x.org": (["news"], "", "", {"often": "daily"}), "w@x.org": (["news"], "", "", {"often": "weekly"})}
     assert list(digest.due(readers, date(2026, 10, 3))) == ["d@x.org", "w@x.org"]  # Sunday's email (a Saturday)
     assert list(digest.due(readers, date(2026, 10, 2))) == ["d@x.org"]
-    # a weekly reader's Sunday email isn't headed "AI Pulse daily"; a daily reader's still is
+    # a weekly reader's Sunday email isn't headed "AI Pulse Central daily"; a daily reader's still is
     base = {"more": [], "less": [], "words": []}
     for often, headed in (("weekly", False), ("daily", True)):
         html = digest.build(cards, ["news"], date(2026, 10, 3), prefs={**base, "often": often})[2]
-        assert ("AI Pulse daily</div>" in html) is headed and "Your week in AI" in html
+        assert ("AI Pulse Central daily</div>" in html) is headed and "Your week in AI" in html
     # the other days stay as they were
     friday = digest.build(cards, ["releases", "news"], date(2026, 10, 1))
-    assert friday[0] == "AI Pulse daily · Thursday, 1 October 2026" and "Word of the day" in friday[2]
+    assert friday[0] == "AI Pulse Central daily · Thursday, 1 October 2026" and "Word of the day" in friday[2]
     assert "The week in AI" not in friday[2]
     # the full email (the site's daily page) is the same every day
-    assert digest.build(cards, ["releases", "news"], date(2026, 10, 3), layout="full")[0] == "AI Pulse daily · Saturday, 3 October 2026"
+    assert digest.build(cards, ["releases", "news"], date(2026, 10, 3), layout="full")[0] == "AI Pulse Central daily · Saturday, 3 October 2026"
     digest.INLINE.clear()
     memes.GENERATED.clear()
 
@@ -919,12 +919,12 @@ def test_no_meme_is_promotional():
     for f, wordings in memes.STANDBY.items():
         for w in wordings:
             assert not memes.plugs({"format": f, **w}), (f, w)
-    for t in ["Letting AI Pulse pick", "Asking a chatbot to read them for you", "Reading only the 10 that mattered",
+    for t in ["Letting AI Pulse Central pick", "Asking a chatbot to read them for you", "Reading only the 10 that mattered",
               "Subscribe for more", "Keeping up with AI", "A data-driven AI insights engine", "A big spreadsheet"]:
         assert memes.PROMO.search(t), t
     day = date(2026, 11, 8)
     want = memes.template_of(day)
-    memes.GENERATED[("day", day)] = {"format": want, **memes.STANDBY[want][0], "labels": ["Read AI Pulse"] * 4, "based_on": []}
+    memes.GENERATED[("day", day)] = {"format": want, **memes.STANDBY[want][0], "labels": ["Read AI Pulse Central"] * 4, "based_on": []}
     card = {"title": "x", "summary": "", "url": "u", "source": "E", "category": "news", "kind": "news",
             "date": day.isoformat(), "also": [], "tags": []}
     m = memes.of_the_day([card], day)

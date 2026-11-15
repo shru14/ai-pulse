@@ -134,7 +134,7 @@ def make_handler(db_path: str):
 
 def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000):
     httpd = ThreadingHTTPServer((host, port), make_handler(db_path))
-    print(f"AI Pulse running at http://{host}:{port}  (Ctrl+C to stop)")
+    print(f"AI Pulse Central running at http://{host}:{port}  (Ctrl+C to stop)")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

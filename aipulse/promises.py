@@ -456,7 +456,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Promised vs shipped",
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH / "index.html").write_text(
-        pages.page("Promised vs shipped · AI Pulse", what, PATH, body, data, pages.frame(conn, len(cards)),
+        pages.page("Promised vs shipped · AI Pulse Central", what, PATH, body, data, pages.frame(conn, len(cards)),
                    ("/industry/", "Back to Industry"),
                    "Headlines are the outlets' own, each linking to its story; updated with every run."), encoding="utf-8")
     return [PATH]

@@ -575,7 +575,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Papers that made the news",
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH / "index.html").write_text(
-        pages.page("Papers that made the news · AI Pulse", what, PATH, page_body(rows, read_by, read), data,
+        pages.page("Papers that made the news · AI Pulse Central", what, PATH, page_body(rows, read_by, read), data,
                    pages.frame(conn, len(cards)), ("/research/", "Back to Research"),
                    "Headlines are the outlets' own, each linking to its story; paper titles link to the paper. New "
                    "papers are added once checked by hand."),

@@ -66,7 +66,7 @@ def feed_xml(name: str, cards: list[dict], today: date | None = None, site: str 
     now = format_datetime(datetime.now(timezone.utc))
     return ('<?xml version="1.0" encoding="utf-8"?>\n'
             '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>'
-            f"<title>AI Pulse · {_text(stream)} (daily)</title><link>{_text(site + '#' + category)}</link>"
+            f"<title>AI Pulse Central · {_text(stream)} (daily)</title><link>{_text(site + '#' + category)}</link>"
             f"<description>{_text(about)} One post a day.</description>"
             f"<language>en</language><lastBuildDate>{now}</lastBuildDate>"
             f'<atom:link href="{_text(site + "feeds/" + name + ".xml")}" rel="self" type="application/rss+xml"/>'

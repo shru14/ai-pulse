@@ -1,4 +1,4 @@
-"""The terms of service for the whole site, AI Pulse and Pulse Pro (owner, 12 Nov 2026), at terms/, and the quiet legal
+"""The terms of service for the whole site, AI Pulse Central and Pulse Pro Engine (owner, 12 Nov 2026), at terms/, and the quiet legal
 layout it shares with the privacy notice (privacy.html, static.privacy_page). Short and plain (owner: the long version
 "looks like a lot"); no header band and no big headings (owner: "they also can look sophisticated"): a small title,
 then each section as a row, its name on the left and its text on the right, between hairlines."""
@@ -14,17 +14,17 @@ UPDATED = "12 November 2026"
 MAIL = "projectaipulse@gmail.com"
 PATH = "terms/"
 TITLE = "Terms of service"
-WHAT = "The terms for using AI Pulse, its emails and the paid Pulse Pro products."
+WHAT = "The terms for using AI Pulse Central, its emails and the paid Pulse Pro Engine products."
 SECTIONS = [
-    ("The content", "AI Pulse summarises and links to news, official records and research by others; the source is what "
+    ("The content", "AI Pulse Central summarises and links to news, official records and research by others; the source is what "
                     "counts. Nothing here is legal, financial or investment advice, so check anything you act on."),
-    ("Pulse Pro", "Sold to firms by invoice. A login and its outputs are for the buying firm's own use: share them inside "
+    ("Pulse Pro Engine", "Sold to firms by invoice. A login and its outputs are for the buying firm's own use: share them inside "
                   "your firm and with your advisers, but don't resell or republish them. The Pulse Store links to other "
                   "sellers, whose own prices and terms apply."),
-    ("Copyright", "Our own text, design and code are © AI Pulse, all rights reserved. Others' material stays under its "
+    ("Copyright", "Our own text, design and code are © AI Pulse Central, all rights reserved. Others' material stays under its "
                   "owners' terms (see Sources and licences)."),
     ("Liability", "Provided as it is. As far as the law allows, we are not liable for losses from relying on the content; "
-                  "for Pulse Pro, our liability is limited to what your firm paid us in the last twelve months."),
+                  "for Pulse Pro Engine, our liability is limited to what your firm paid us in the last twelve months."),
     ("Changes and law", "Updates are posted here with their date. The law of England and Wales applies. Questions? Email us."),
 ]
 
@@ -65,7 +65,7 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
     body = doc(TITLE, escape(WHAT), [(h, f"<p>{escape(p)}</p>" + (button if h == SECTIONS[-1][0] else "")) for h, p in SECTIONS], ("privacy.html", "Privacy"))
     data = {"@context": "https://schema.org", "@type": "WebPage", "name": TITLE, "description": WHAT,
             "url": f"{rss.SITE}{PATH}"}
-    html = pages.page(f"{TITLE} · AI Pulse", WHAT, PATH, body, data, pages.frame(conn, len(cards)), ("/", "Back to AI Pulse"))
+    html = pages.page(f"{TITLE} · AI Pulse Central", WHAT, PATH, body, data, pages.frame(conn, len(cards)), ("/", "Back to AI Pulse Central"))
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(html, encoding="utf-8")
     return [PATH]

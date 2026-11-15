@@ -66,7 +66,7 @@ def test_nothing_is_fetched_against_robots_txt(monkeypatch):
     monkeypatch.setattr(feeds, "_robots", {"news.example": rules, "export.arxiv.org": None})
     fetched = []
     monkeypatch.setattr(feeds.urllib.request, "urlopen", lambda req, timeout: fetched.append(req.full_url))
-    assert not feeds.allowed("https://news.example/feeds/ai.xml")  # a rule for AI Pulse by name
+    assert not feeds.allowed("https://news.example/feeds/ai.xml")  # a rule for AI Pulse Central by name
     assert feeds.allowed("https://news.example/rss/ai.xml")
     with pytest.raises(feeds.Disallowed):
         feeds.fetch("https://news.example/feeds/ai.xml")
