@@ -62,8 +62,9 @@ ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a b
 MIN_PASSWORD = 12
 LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
 REPO = config.REPO
-# 6 Nov 2026, owner: one username for every client, filled in by the page; a visitor types only the password
-CLIENT = "pulse-client"
+# 15 Nov 2026, owner: each client its own username and password (python -m aipulse compass-user add NAME), typed in the
+# login box, so removing one client and building again shuts out only that client. The shared "pulse-client" of 6 Nov
+# still works while it is in the list, typed as its username
 
 
 def _b64(raw: bytes) -> str:
@@ -160,7 +161,7 @@ if(f)f.onsubmit=async function(e){
         key=await opened(id,kek);
     try{sessionStorage.setItem(KEY,JSON.stringify({id:id,kek:b64(kek),name:name}))}catch(x){}
     await enter(key)
-  }catch(x){msg.textContent='That password is not right.';b.disabled=false}
+  }catch(x){msg.textContent='That username or password is not right.';b.disabled=false}
 }})();
 </script>"""
 HIDE = ("<script>try{if(sessionStorage.getItem('compass-login'))document.documentElement.style.visibility='hidden'}"
@@ -260,14 +261,14 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
     """The published page: the login box, with the real page beside it as unreadable bytes."""
     from . import adoption  # type: ignore[attr-defined]  # private repo, joined to the package at run time
     from . import pages, rss
-    head, lead, extra = "Log in to Pulse Pro Engine", "Enter the password you were given.", ""
+    head, lead, extra = "Log in to Pulse Pro Engine", "Enter the username and password you were given.", ""
     if path == REPORT:
         head, lead, extra = ("Log in to see your report",
-                             "Your answers are kept for this visit. Enter the password to read the report and download it as a PDF.",
+                             "Your answers are kept for this visit. Enter your username and password to read the report and download it as a PDF.",
                              _contents())
     body = (STYLE + '<form class="compass-login" id="compass-form" hidden autocomplete="on">'
               f'<h1>{head}</h1><p class="cl-lead">{lead}</p>{extra}'
-              f'<input type="hidden" name="name_" autocomplete="username" value="{CLIENT}">'
+              '<label>Username<input name="name_" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>'
               '<label>Password<input name="password" type="password" autocomplete="current-password" required></label>'
               '<button type="submit">Log in</button><p id="compass-msg" role="status"></p>'
               f'{_get_login()}'

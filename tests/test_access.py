@@ -113,8 +113,8 @@ def test_the_secret_holds_no_password(tmp_path, monkeypatch):
     assert told[-1] == {}
 
 
-def test_login_box_asks_only_the_password_and_gives_one_email():
-    # 6 Nov 2026, owner: one username for every client (filled in by the page), the visitor types only the password;
+def test_login_box_asks_each_clients_own_username_and_gives_one_email():
+    # 15 Nov 2026, owner: each client its own username and password, typed in the box (6 Nov: one shared username);
     # under it the prices (on request until set) and Start a conversation (12 Nov 2026)
     box = access._get_login()
     assert len(access.PRICES) == 5 and box.count("<tr>") == 6 + len(access.STORE_ADDONS)
@@ -127,7 +127,7 @@ def test_login_box_asks_only_the_password_and_gives_one_email():
     assert all(n in access.REQUEST for n, *_ in access.STORE_ADDONS)
     # 6 Nov 2026, owner: no yearly price anywhere
     assert "a year" not in box and "yearly" not in access.REQUEST.lower()
-    assert access.CLIENT == "pulse-client"
+    assert not hasattr(access, "CLIENT") and "That username or password is not right." in access.SCRIPT
     assert "sessionStorage" in access.SCRIPT and "localStorage" not in access.SCRIPT + access.HIDE  # the login lasts the visit
     # the Pro top bar adds its script before the first </body> it meets: one inside the login script broke the box
     assert "</body>" not in access.SCRIPT
