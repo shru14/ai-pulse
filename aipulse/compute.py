@@ -313,7 +313,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page("Compute behind notable models · AI Pulse Central", what, PATH, page_body(saved, today), data,
+        pages.page("Compute behind notable models · Pulse Central", what, PATH, page_body(saved, today), data,
                    pages.frame(conn, len(cards)), ("/research/", "Back to Research"),
                    "Estimates are Epoch AI's (CC BY 4.0); model names link to each model's own page."),
         encoding="utf-8")

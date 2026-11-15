@@ -223,7 +223,7 @@ STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "Price on request", ""),
                 ("Pulse Store Plus", "Subscription", "Price on request", ""),
                 ("Pulse Store for Firms", "Subscription", "Price on request", ""))
 PAID = [p for p in PRICES + STORE_ADDONS if p[1] != "Free"]
-REQUEST = ("Hello AI Pulse Central,\n\nI would like a Pulse Pro Engine login.\n\n"
+REQUEST = ("Hello Pulse Central,\n\nI would like a Pulse Pro Engine login.\n\n"
            "Name:\nFirm:\nRole:\nProduct (" + " / ".join(p[0] for p in PAID) + "):\n"
            "How I would like to pay (for example bank transfer or a card payment link):\n\n"
            "Please send the invoice. I understand the username and password follow once it is paid.\n\nThanks,\n")

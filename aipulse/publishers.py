@@ -186,7 +186,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page(f"{TITLE} · AI Pulse Central", what, PATH, page_body(rows, today), data, pages.frame(conn, len(cards)),
+        pages.page(f"{TITLE} · Pulse Central", what, PATH, page_body(rows, today), data, pages.frame(conn, len(cards)),
                    ("/research/", "Back to Research"), "Counts are read from the papers on our Research cards."),
         encoding="utf-8")
     return [PATH]

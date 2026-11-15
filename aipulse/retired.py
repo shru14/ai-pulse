@@ -279,7 +279,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page("Models being retired · AI Pulse Central", what, PATH, body(saved, today), data,
+        pages.page("Models being retired · Pulse Central", what, PATH, body(saved, today), data,
                    pages.frame(conn, len(cards)), ("/releases/", "Back to Releases"),
                    "Dates and model names are the labs' own, each linking to the lab's page."),
         encoding="utf-8")

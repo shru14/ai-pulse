@@ -137,7 +137,7 @@ def _rules(scheme: str, host: str) -> Robots:
 
 
 def allowed(url: str) -> bool:
-    """May AI Pulse Central fetch this URL? (robots.txt, fetched once per site per run; see API_HOSTS)"""
+    """May Pulse Central fetch this URL? (robots.txt, fetched once per site per run; see API_HOSTS)"""
     parts = urlsplit(url)
     host = parts.netloc.lower()
     if host in API_HOSTS:

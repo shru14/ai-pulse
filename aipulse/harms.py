@@ -208,6 +208,6 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             'CC BY-SA 4.0, each linking to its incident. Rules: the Regulation tracker\'s official records. Updated with '
             'every run. <a href="/rule-echoes/">Rule echoes</a>')
     (out / PATH / "index.html").write_text(
-        pages.page("Harm → rule · AI Pulse Central", what, PATH, body, data, pages.frame(conn, len(cards)),
+        pages.page("Harm → rule · Pulse Central", what, PATH, body, data, pages.frame(conn, len(cards)),
                    ("/regulation/", "Back to the Regulation tracker"), note), encoding="utf-8")
     return [PATH]

@@ -433,7 +433,7 @@ def _turn(when: date, days: int = 16) -> int:
 # Never promotional (owner, 2026-10-21 and 2026-11-06): a caption about us, the email, or reading/keeping up with the
 # news ("Asking a chatbot to read them for you") is an advert, not a joke. Every finished meme is checked with it,
 # whoever wrote it (Gemini, a rule, a standby), and a meme that plugs is replaced.
-PROMO = re.compile(r"\bAI ?Pulse\b|\bnewsletter|\bthis email\b|\bdigest\b|\bnews\b|\bheadlines?\b|\bbriefing|"
+PROMO = re.compile(r"\bAI ?Pulse\b|\bPulse (?:Central|Daily|Weekly|Pro)\b|\bnewsletter|\bthis email\b|\bdigest\b|\bnews\b|\bheadlines?\b|\bbriefing|"
                    r"\bsummar(?:y|ies|ise|ize)\b|\breading list\b|\btop 10\b|\bthe 10\b|\bkeep(?:ing)? up\b|"
                    r"\bsubscri\w*|\bsign up\b|\bour (?:site|app|readers)\b|\binsights?\b|\bspreadsheets?\b|"
                    r"\bdata-driven\b|\bdashboards?\b|\btrack(?:er|ing)\b|"

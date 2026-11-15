@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Your AI Pulse Central dossier</title>
+<title>Your Pulse Central dossier</title>
 <!-- The weekly dossier page, opened from the Sunday email's dossier button (ask.html#<the reader's private token>,
      as their unsubscribe link). The reader writes up to 3 questions in their own words, each in its own box side
      by side ("+ Add another"), and "Make my dossier" shows last week's stories on them right here: found in the
@@ -19,7 +19,7 @@
   .band .brand{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px}
   .band h1,.band h2{font-size:22px;line-height:1.3;margin:0}
   .band .span{font-size:13px;color:#c9d3ef;margin-top:4px}
-  /* the header band every AI Pulse Central page has (aipulse/pages.py band), on this page's own fonts */
+  /* the header band every Pulse Central page has (aipulse/pages.py band), on this page's own fonts */
   .fh{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) auto;gap:12px 22px;align-items:center;
     padding:20px 20px 18px;background:#56B4E9;color:#000;border-bottom:3px solid #000}
   .fh-t{display:flex;align-items:center;gap:14px;min-width:0}
@@ -76,7 +76,7 @@
 <body>
 <main class="paper">
   <header class="fh"><div class="fh-t"><span class="fh-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM15.5 15.5L20 20"/></svg></span>
-    <div><div class="brand">AI Pulse Central weekly dossier</div><h1>Follow what you care about</h1><p class="fh-q">What do you want to follow in AI?</p></div></div>
+    <div><div class="brand">Pulse Weekly dossier</div><h1>Follow what you care about</h1><p class="fh-q">What do you want to follow in AI?</p></div></div>
     <p class="fh-d">Ask in your own words, and get last week's stories on it, picked just for you.</p>
     <img class="fh-art" src="photos/cartoons/pages/ask.svg" alt="" aria-hidden="true"></header>
   <div class="inner">
@@ -88,8 +88,8 @@
     <p class="msg" id="msg" role="status" aria-live="polite"></p>
   </div>
   <div class="dossier" id="dossier"></div>
-  <div class="inner"><p class="foot">Picked by search over AI Pulse Central's stories, by meaning, by words and by the site's
-    tags; every line is the publisher's own. AI Pulse Central · Your briefing on what's happening in AI worldwide · <a href="./">projectaipulse.com</a></p></div>
+  <div class="inner"><p class="foot">Picked by search over Pulse Central's stories, by meaning, by words and by the site's
+    tags; every line is the publisher's own. Pulse Central · Your briefing on what's happening in AI worldwide · <a href="./">projectaipulse.com</a></p></div>
 </main>
 <script>
 const SIGNUP_URL = "__SIGNUP_URL__", MAX = 3;
@@ -300,7 +300,7 @@ async function show(questions){
   const when = iso => { const d = new Date(iso + "T00:00:00Z"); return d.getUTCDate() + " " + MON[d.getUTCMonth()]; };
   const end = new Date(new Date(until + "T00:00:00Z") - 864e5).toISOString().slice(0, 10);
   let cards;
-  try{ cards = await stories(); }catch(err){ return say("Couldn't load AI Pulse Central's stories. Please try again in a moment.", "error"); }
+  try{ cards = await stories(); }catch(err){ return say("Couldn't load Pulse Central's stories. Please try again in a moment.", "error"); }
   say("Finding last week's stories on your questions…");
   const sections = [];
   const mineIds = new Set();  // the stories on any of their questions, each once
@@ -334,7 +334,7 @@ async function show(questions){
     return wrap;
   };
   const band = el("div", "band");
-  band.append(el("div", "brand", "AI Pulse Central weekly dossier"), el("h2", "", "Last week on what you follow"),
+  band.append(el("div", "brand", "Pulse Weekly dossier"), el("h2", "", "Last week on what you follow"),
               el("div", "span", `${when(since)} – ${when(end)} ${end.slice(0, 4)} · ${n(mineIds.size, "story", "stories")} on your `
                  + `${questions.length === 1 ? "question" : "questions"}, of ${n(total, "story", "stories")} last week`));
   const inner = el("div", "inner"), cardsRow = el("div", "interests"), section = el("div");

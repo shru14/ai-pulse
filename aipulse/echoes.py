@@ -257,6 +257,6 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     note = ("From the Regulation tracker's official records, each linking to its source; updated with the tracker. "
             '<a href="/tracker/">AI laws by country</a>')
     (out / PATH / "index.html").write_text(
-        pages.page("Rule echoes · AI Pulse Central", what, PATH, body, data, pages.frame(conn, len(cards)),
+        pages.page("Rule echoes · Pulse Central", what, PATH, body, data, pages.frame(conn, len(cards)),
                    ("/regulation/", "Back to the Regulation tracker"), note), encoding="utf-8")
     return [PATH]

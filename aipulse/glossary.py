@@ -524,7 +524,7 @@ def note(new: list[dict], branch: str) -> tuple[str, str, str]:
     group, meaning), and how to publish them (they go live only once approved)."""
     from html import escape
     n = len(new)
-    subject = f"AI Pulse Central glossary: {n} new word{'s' if n > 1 else ''} to approve"
+    subject = f"Pulse Central glossary: {n} new word{'s' if n > 1 else ''} to approve"
     lead = f"Drafted today on the branch {branch}, not on the site yet:"
     tail = f"To publish them, tell Claude: merge {branch}. To change one, say which. Changes: {REPO}/compare/main...{branch}"
     text = [lead, ""] + [f"{e['term']} ({e['group']})\n  {e['def']}\n" for e in new] + [tail]

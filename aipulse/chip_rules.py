@@ -303,7 +303,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page("Chip export rules · AI Pulse Central", what, PATH, body(today), data, pages.frame(conn, len(cards)),
+        pages.page("Chip export rules · Pulse Central", what, PATH, body(today), data, pages.frame(conn, len(cards)),
                    ("/infra/", "Back to Infra"),
                    "Every cell and row checked by hand against the official notice, the company's filing, or a news "
                    "report where neither exists."),

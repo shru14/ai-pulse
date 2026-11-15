@@ -270,7 +270,7 @@ def test_source_is_flagged_after_three_failed_runs(tmp_path):
     from aipulse.collect import source_alert
     rows = store.newly_failing(conn, ["rss", "dead"])
     subject, text, html = source_alert(rows)
-    assert subject == "AI Pulse Central: 1 source stopped working" and "Dead feed" in text and "404" in html and "<table" in html
+    assert subject == "Pulse Central: 1 source stopped working" and "Dead feed" in text and "404" in html and "<table" in html
     store.mark_alerted(conn, ["dead"])
     collect(conn, [bad], max_age_days=100000, fetcher=fetch, log=quiet)
     assert store.newly_failing(conn, ["rss", "dead"]) == []

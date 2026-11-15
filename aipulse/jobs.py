@@ -376,7 +376,7 @@ def note(new: dict[str, dict], dropped: list[str], branch: str) -> tuple[str, st
     stories it adds to LEFT_OUT, and how to publish them (they go live only once approved)."""
     from .glossary import REPO
     n = len(new)
-    subject = f"AI Pulse Central, Jobs blamed on AI: {n} new cut{'s' * (n != 1)} to approve"
+    subject = f"Pulse Central, Jobs blamed on AI: {n} new cut{'s' * (n != 1)} to approve"
     lead = f"Drafted today on the branch {branch}, not on the site yet:"
     tail = f"To publish them, tell Claude: merge {branch}. To change one, say which. Changes: {REPO}/compare/main...{branch}"
     left = f"Also checked and left out: {len(dropped)} stor{'ies' if len(dropped) != 1 else 'y'}." if dropped else ""
@@ -408,7 +408,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Jobs blamed on AI",
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH / "index.html").write_text(
-        pages.page("Jobs blamed on AI · AI Pulse Central", what, PATH, page_body(rows), data, pages.frame(conn, len(cards)),
+        pages.page("Jobs blamed on AI · Pulse Central", what, PATH, page_body(rows), data, pages.frame(conn, len(cards)),
                    ("/industry/", "Back to Industry"),
                    "Headlines are the outlets' own, each linking to its story. New cuts are added once checked by hand."),
         encoding="utf-8")

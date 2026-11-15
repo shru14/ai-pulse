@@ -27,7 +27,7 @@ def note(page: str, what: str, branch: str, head: tuple[str, ...], rows: Sequenc
     last cell the story's URL."""
     from .glossary import REPO
     n = len(rows)
-    subject = f"AI Pulse Central, {page}: {n} new {what} to approve"
+    subject = f"Pulse Central, {page}: {n} new {what} to approve"
     lead = f"Drafted today on the branch {branch}, not on the site yet:"
     tail = f"To publish them, tell Claude: merge {branch}. To change one, say which. Changes: {REPO}/compare/main...{branch}"
     left = f"Also checked and left out: {len(dropped)} stor{'ies' if len(dropped) != 1 else 'y'}." if dropped else ""
