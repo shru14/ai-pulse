@@ -235,6 +235,7 @@ CHECKED: dict[str, dict] = {
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://www.sciencedaily.com/releases/2026/11/261112230456.htm",  # paper found (Nature) but its abstract can't be read to check: nature.com asks for a sign-in
     "https://elevenlabs.io/blog/impact-sofia-oxford-said",  # a company blog post (ElevenLabs), not a paper
     "https://www.sciencedaily.com/releases/2026/11/261110042553.htm",  # can't read to check (the site refuses us)
     "https://tecnoblog.net/noticias/chatgpt-e-gemini-indicam-lojas-falsas-para-compras-aponta-estudo/",  # a company report (Podqi, AI Search Brand Risk Report 2026), no paper
