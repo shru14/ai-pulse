@@ -33,6 +33,7 @@ BEFORE: dict[str, str | tuple[str, str, str]] = {
 }
 # priced releases checked and left out of Launch prices, with why
 LEFT_OUT = {
+    "Gemini 4 Hydrogen": "No earlier model in its line",
     "MiniMax M3.1 Flash": "Earlier model's launch price not found",
     "Gemini Omni 1.2 Flash": "Earlier model's launch price not found",
     "Gemini 4 Carbon": "Earlier model's launch price not found",
