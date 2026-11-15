@@ -168,7 +168,7 @@ def total(by_stream: dict[str, list[dict]]) -> int:
 def alert(day: date, found: list[str], streams: list[str]) -> tuple[str, str, str]:
     """(subject, text, HTML) of the note to the project inbox when a digest is held."""
     from html import escape
-    subject = f"AI Pulse digest HELD · {day}: {len(found)} problem{'s' if len(found) != 1 else ''}"
+    subject = f"AI Pulse Central digest HELD · {day}: {len(found)} problem{'s' if len(found) != 1 else ''}"
     intro = (f"The daily digest for {day} ({', '.join(streams)}) was not sent to anyone, because the check "
              "before sending found the problems below. Fix them (or the rule that flagged them) and send it again.")
     text = "\n".join([intro, "", *[f"- {p}" for p in found]])

@@ -269,7 +269,7 @@ def test_topics_note_lists_what_the_branch_adds(monkeypatch):
     monkeypatch.setattr(topics, "ADDED", {"ai-ipos": {"https://x.test/old": "x", "https://x.test/new": "Rating after the IPO"}})
     monkeypatch.setattr(topics, "LEFT_OUT", {"https://x.test/gone", "https://x.test/no"})
     subject, text, html = topics.note(base, "topics/2026-10-31")
-    assert subject == "AI Pulse, Follow the story: 1 new story to approve"
+    assert subject == "AI Pulse Central, Follow the story: 1 new story to approve"
     assert "Rating after the IPO" in html and "https://x.test/old" not in html and "1 story" in text
     monkeypatch.setattr(topics, "ADDED", {"ai-ipos": {"https://x.test/old": "x"}})
     monkeypatch.setattr(topics, "LEFT_OUT", {"https://x.test/gone"})

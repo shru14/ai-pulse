@@ -584,7 +584,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             if (FLAGS / fl).exists():
                 shutil.copy(FLAGS / fl, out / "flags" / fl)
         (out / path / "index.html").write_text(
-            pages.page(f"{title} · AI Pulse", desc, path, html_body, data, pages.frame(conn, len(cards)), back,
+            pages.page(f"{title} · AI Pulse Central", desc, path, html_body, data, pages.frame(conn, len(cards)), back,
                        "Every entry is the government's own, in its own words."),
             encoding="utf-8")
         written.append(path)

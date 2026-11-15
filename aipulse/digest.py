@@ -242,7 +242,7 @@ def _ledger(by_stream: dict[str, list[dict]], streams: list[str], day: date) -> 
         if rest > 0:
             text.append(f"…and {rest} more: {more}")
             rows.append(f'<tr><td colspan="3" style="padding:8px;font-size:13px"><a href="{escape(more)}" style="color:{LINK}">'
-                        f'…and {rest} more {escape(stream)} stories on AI Pulse</a></td></tr>')
+                        f'…and {rest} more {escape(stream)} stories on AI Pulse Central</a></td></tr>')
     return text, (f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;'
                   f'margin-top:14px">{"".join(rows)}</table>')
 
@@ -283,11 +283,11 @@ def story_tags(c: dict, in_stream: bool = False) -> list[str]:
 
 
 def _band(hello: str, daily: bool = True) -> str:
-    """The short email's header: a navy row across the top of the card ("AI Pulse daily" above it, but not for a
+    """The short email's header: a navy row across the top of the card ("AI Pulse Central daily" above it, but not for a
     weekly reader, who gets only Sunday's)."""
     return (f'<tr><td style="background:{NAVY};color:#ffffff;padding:22px 20px 18px;border-radius:6px 6px 0 0">'
             + ('<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9fb3ff;margin-bottom:6px">'
-               'AI Pulse daily</div>' if daily else "")
+               'AI Pulse Central daily</div>' if daily else "")
             + f'<div style="font-size:22px;font-weight:bold;line-height:1.3;color:#ffffff">'
             f'{escape(hello)}</div></td></tr>')
 
@@ -493,7 +493,7 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
     e, story = _word_entry(cards, day, streams, prefs, tiers)
     more = f"{rss.SITE}glossary/"  # the glossary page, every word A to Z
     text = ["WORD OF THE DAY: " + e["term"], e["def"], *([f"Where it came up: {story['title']} {story['url']}"] if story else []),
-            f"More words in the AI Pulse glossary: {more}"]
+            f"More words in the AI Pulse Central glossary: {more}"]
     html = (f'<div style="margin:14px 0 12px;padding:14px 16px;background:#eef2ff;border-left:4px solid {NAVY};border-radius:4px">'
             f'<div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:{HEADLINE};'
             f'margin-bottom:4px">Word of the day</div>'
@@ -503,7 +503,7 @@ def _word(cards: list[dict], day: date, streams: list[str] | None = None, prefs:
                f'<a href="{escape(story["url"])}" style="color:{LINK};text-decoration:none">{escape(story["title"])}</a></div>'
                if story else "")
             + f'<div style="font-size:13px;margin-top:7px"><a href="{escape(more)}" style="color:{LINK};text-decoration:none">'
-              f'More words in the AI Pulse glossary →</a></div></div>')
+              f'More words in the AI Pulse Central glossary →</a></div></div>')
     return text, html
 
 
@@ -558,7 +558,7 @@ def _new_stream(day: date, streams: list[str]) -> str:
     words), with its button (see _brief). Nothing for a reader who has it."""
     if day > NEW_STREAM_UNTIL or "infra" in streams:
         return ""
-    return ("New on AI Pulse: Infra section, AI's data centres and the power, water and land they "
+    return ("New on AI Pulse Central: Infra section, AI's data centres and the power, water and land they "
             "draw on. Add it to your feed by clicking on following button")
 
 
@@ -638,7 +638,7 @@ def _feature(day: date) -> tuple[str, str, str] | None:
 
 
 def _review_box() -> tuple[list[str], str]:
-    """The email's review strip, above the footer: "How useful is AI Pulse to you?" and 1 to 5, each a link to the
+    """The email's review strip, above the footer: "How useful is AI Pulse Central to you?" and 1 to 5, each a link to the
     site's review form (review/) with that number picked; the form asks four more quick questions."""
     link = rss.SITE + "review/"
     text = ["HOW USEFUL IS AI PULSE TO YOU? Tap a number, then four more quick questions: " + link]
@@ -646,7 +646,7 @@ def _review_box() -> tuple[list[str], str]:
                     f'padding:6px 0;text-align:center;border:1px solid {NAVY};border-radius:5px;color:{NAVY};font-size:14px;'
                     f'font-weight:bold;text-decoration:none">{n}</a></td>' for n in range(1, 6))
     html = (f'<div style="margin:24px 0 0;padding:10px 12px 12px;background:#f4f6fa;border-radius:4px">'
-            f'<div style="font-size:14px;font-weight:bold;color:{INK};margin-bottom:8px">How useful is AI Pulse to you?</div>'
+            f'<div style="font-size:14px;font-weight:bold;color:{INK};margin-bottom:8px">How useful is AI Pulse Central to you?</div>'
             f'<table role="presentation" cellpadding="0" cellspacing="0"><tr>{cells}'
             f'<td style="font-size:12px;color:{GREY};padding-left:4px">1 not useful · 5 very useful</td></tr></table>'
             f'<div style="font-size:12px;color:{GREY};margin-top:8px">Tap a number, then four more quick questions.</div></div>')
@@ -654,7 +654,7 @@ def _review_box() -> tuple[list[str], str]:
 
 
 def _feature_box(day: date) -> tuple[list[str], str]:
-    """The email's "New on AI Pulse" box: the feature's name, its line and a link to its page."""
+    """The email's "New on AI Pulse Central" box: the feature's name, its line and a link to its page."""
     feature = _feature(day)
     if not feature:
         return [], ""
@@ -663,7 +663,7 @@ def _feature_box(day: date) -> tuple[list[str], str]:
     text = ["NEW ON AI PULSE: " + name, what, f"Have a look: {link}"]
     # a small yellow strip at the top of the email, a line or two of small type
     html = (f'<div style="margin:0 0 10px;padding:6px 10px;background:#F0E442;color:{INK};font-size:12px;line-height:1.4;'
-            f'border-radius:4px"><b>New on AI Pulse: {escape(name)}.</b> {escape(what)} '
+            f'border-radius:4px"><b>New on AI Pulse Central: {escape(name)}.</b> {escape(what)} '
             f'<a href="{escape(link)}" style="color:{INK};font-weight:bold">Have a look →</a></div>')
     return text, html
 
@@ -836,7 +836,7 @@ def _the_week(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[
                       key=lambda c: (1 + len(c.get("also") or []), c.get("date") or ""), reverse=True)
         more = f"{rss.SITE}glossary/"
         text += ["WORD OF THE WEEK: " + e["term"], e["def"], f"It came up in {len(used)} of the week's stories, like:",
-                 *(f"  {c['title']} {c['url']}" for c in used[:2]), f"More words in the AI Pulse glossary: {more}", ""]
+                 *(f"  {c['title']} {c['url']}" for c in used[:2]), f"More words in the AI Pulse Central glossary: {more}", ""]
         html += (f'<div style="margin:12px 0;padding:14px 16px;background:#eef2ff;border-left:4px solid {NAVY};border-radius:4px">'
                  + label("Word of the week")
                  + f'<div style="font-size:18px;font-weight:bold;color:{NAVY}">{escape(e["term"])}</div>'
@@ -846,7 +846,7 @@ def _the_week(cards: list[dict], day: date, prefs: dict | None = None) -> tuple[
                  + " · ".join(f'<a href="{escape(c["url"])}" style="color:{LINK};text-decoration:none">{escape(c["title"])}</a>'
                               for c in used[:2])
                  + f'</div><div style="font-size:13px;margin-top:7px"><a href="{escape(more)}" style="color:{LINK};'
-                   f'text-decoration:none">More words in the AI Pulse glossary →</a></div></div>')
+                   f'text-decoration:none">More words in the AI Pulse Central glossary →</a></div></div>')
     meme_text, meme_html = _week_meme(cards, day)
     text += [*meme_text, *([""] if meme_text else [])]
     return text, html + meme_html
@@ -1031,7 +1031,7 @@ def _rest_of_day(by_stream: dict[str, list[dict]], streams: list[str], day: date
         if extra > 0:
             lines.append(f"  +{extra} more: {more}" + (f" (incl. {side_words})" if side_words else ""))
             heads += (f'<a href="{escape(more)}" style="color:{LINK};font-size:13px;text-decoration:none">+{extra} more on '
-                      f'AI Pulse →</a>' + (f'<span style="font-size:12px;color:{GREY}"> (incl. {escape(side_words)})</span>'
+                      f'AI Pulse Central →</a>' + (f'<span style="font-size:12px;color:{GREY}"> (incl. {escape(side_words)})</span>'
                                            if side_words else ""))
         html.append(f'<tr><td valign="top" width="118" style="padding:10px;border-top:1px solid {RULE};border-left:4px solid '
                     f'{COLOR[n]}"><div style="font-size:14px;font-weight:bold">{escape(stream)}</div><div style="font-size:12px;'
@@ -1073,8 +1073,8 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     sunday = layout in ("short", "poster") and weekly(day)
     if not any(by_stream.values()) and not (sunday and _week_has(cards, day)):
         return None  # nothing that day; but Sunday's email goes whenever the week had stories, for the week
-    subject = (f"AI Pulse · The week in AI, and {long_day(day)}" if layout == "short" and weekly(day) else
-               f"AI Pulse daily · {long_day(day)}")
+    subject = (f"AI Pulse Central · The week in AI, and {long_day(day)}" if layout == "short" and weekly(day) else
+               f"AI Pulse Central daily · {long_day(day)}")
     chose = ", ".join(rss.FEEDS[n][1] for n in streams)
     # A reader's own link opens the form with their streams and choices filled in; saving changes them at once.
     # Without one (a sample, the web page), the sign-up form.
@@ -1098,13 +1098,13 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
     feeds = [(rss.FEEDS[n][1], f"{rss.SITE}feeds/{n}.xml") for n in streams]
     # a reader's email asks them to pass it on; the friend signs up on the site
     forward = f"Know someone who'd like this? Forward this email; they can sign up at {rss.SITE}#subscribe"
-    settings = (["Get AI Pulse daily in your inbox: " + change] if web else
+    settings = (["Get AI Pulse Central daily in your inbox: " + change] if web else
                 [forward, f"You chose: {chose}.", "RSS: " + " · ".join(f"{name} {url}" for name, url in feeds),
                  f"{change_words}: {change}", f"Unsubscribe: {stop}"])
     review_text, review_html = _review_box() if layout == "short" and not web else ([], "")
     text = [*open_text, *table_text, *(["", *review_text] if review_text else []), "", *settings,
-            f"AI Pulse, your briefing on what's happening in AI worldwide: {rss.SITE}"]
-    settings_html = (f'<a href="{escape(change)}" style="color:{GREY}">Get AI Pulse daily in your inbox</a><br>' if web else
+            f"AI Pulse Central, your briefing on what's happening in AI worldwide: {rss.SITE}"]
+    settings_html = (f'<a href="{escape(change)}" style="color:{GREY}">Get AI Pulse Central daily in your inbox</a><br>' if web else
                      f'<span style="color:{INK}">Know someone who&#39;d like this? Forward this email; they can '
                      f'<a href="{rss.SITE}#subscribe" style="color:{LINK}">sign up</a>.</span><br>'
                      f'You chose: {escape(chose)}.<br>RSS: '
@@ -1121,14 +1121,14 @@ def build(cards: list[dict], streams: list[str], day: date, unsubscribe: str = "
             + open_html + table_html + review_html
             + f'<p style="margin-top:28px;padding-top:12px;border-top:1px solid #e3e5e8;color:{GREY};font-size:13px;'
               f'line-height:1.6">' + settings_html
-            + f'AI Pulse, your briefing on what&#39;s happening in AI worldwide · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'
+            + f'AI Pulse Central, your briefing on what&#39;s happening in AI worldwide · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a></p>'
               '</td></tr></table></td></tr></table></body></html>')
     return subject, "\n".join(text), html
 
 
 def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "") -> EmailMessage:
     msg = EmailMessage()
-    msg["From"] = formataddr(("AI Pulse", sender()))
+    msg["From"] = formataddr(("AI Pulse Central", sender()))
     msg["To"] = to  # one reader per email: nobody sees anyone else's address
     msg["Subject"] = subject
     if unsubscribe.startswith("https://"):  # mail apps show an "Unsubscribe" button that works in one click

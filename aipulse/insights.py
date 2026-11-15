@@ -763,7 +763,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
               "description": what, "url": f"{rss.SITE}{p}"}
         (out / p).mkdir(parents=True, exist_ok=True)
         (out / p / "index.html").write_text(
-            pages.page(f"{monthly.name(m)} in numbers · AI Pulse", what, p, html, ld, parts,
+            pages.page(f"{monthly.name(m)} in numbers · AI Pulse Central", what, p, html, ld, parts,
                        (f"/{monthly.path(m)}", f"The {monthly.name(m)} issue")), encoding="utf-8")
         paths.append(p)
     return paths

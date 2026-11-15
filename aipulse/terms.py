@@ -1,4 +1,4 @@
-"""Why AI Pulse may read each site: its terms page, what it says, and when that was checked.
+"""Why AI Pulse Central may read each site: its terms page, what it says, and when that was checked.
 
 One entry per host in sources.SOURCES (tests/test_sources_legal.py fails if a source has none). The standard
 (README, "How we keep it legal"): robots.txt must allow us, and the site's terms, site-wide ones included, must not

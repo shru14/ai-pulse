@@ -421,7 +421,7 @@ def build(conn, cards: list[dict], out: Path, today) -> list[str]:
             "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page("Lab timelines · AI Pulse", what, PATH, body(ev, today), data, pages.frame(conn, len(cards)),
+        pages.page("Lab timelines · AI Pulse Central", what, PATH, body(ev, today), data, pages.frame(conn, len(cards)),
                    ("/releases/", "Back to Releases"),
                    "Releases come from Release cards and shutdowns from the labs' own deprecation pages. Price "
                    "changes and new places are added once checked by hand."),

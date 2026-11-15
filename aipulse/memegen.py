@@ -1,4 +1,4 @@
-"""Meme captions written by Google's Gemini on its free tier: the one place AI Pulse uses an AI model, by the
+"""Meme captions written by Google's Gemini on its free tier: the one place AI Pulse Central uses an AI model, by the
 project owner's choice (2026-10-03); since 25 Oct 2026 it also shortens an email subject no rule cuts cleanly (poster._gemini, only
 the headline's own words). Nothing else (summaries, sorting, the tracker) uses it.
 
@@ -82,7 +82,7 @@ _DRAWING = re.compile(r"\b(?:techie|hoodie|cartoon|caricature|girlfriend|boyfrie
                       r"\b(?:the|a|smug) cat\b|\b(?:the|a) dog\b|\b(?:his|her|the) partner\b", re.I)
 
 
-# A caption about us instead of AI ("Letting AI Pulse pick") is an advert, not a joke (owner, 2026-10-21); so is one
+# A caption about us instead of AI ("Letting AI Pulse Central pick") is an advert, not a joke (owner, 2026-10-21); so is one
 # about reading the news or a bot that reads it for you ("Asking a chatbot to read them for you", owner, 2026-11-06)
 _PROMO = memes.PROMO  # kept in memes.py, which also checks every finished meme with it
 

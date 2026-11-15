@@ -1,4 +1,4 @@
-"""Feeds AI Pulse collects from.
+"""Feeds AI Pulse Central collects from.
 
 Each source has a default category ("tool", "news", "policy", "research" or "regulation").
 The classifier can override it per item based on keywords, so a policy story
