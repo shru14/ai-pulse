@@ -530,11 +530,14 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 .site-foot a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
 .site-foot a:hover{color:var(--accent);text-decoration-color:currentColor}
 .site-foot{grid-template-columns:1.6fr 1fr 1fr 1fr}
-.site-foot .social{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:260px}
-.site-foot .social a{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:13px}
-.site-foot .social a:hover{border-color:var(--muted);color:var(--ink)}
-.site-foot .social svg{width:14px;height:14px;flex:none;fill:currentColor}
-.site-foot .social svg.ln{fill:none;stroke:currentColor;stroke-width:2}
+.social{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:260px}
+.social a{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:13px}
+.social a:hover{border-color:var(--muted);color:var(--ink)}
+.social svg{width:14px;height:14px;flex:none;fill:currentColor}
+.social svg.ln{fill:none;stroke:currentColor;stroke-width:2}
+.sub-follow{margin:12px 0 0;font-size:14px}.sub-follow p{margin:0 0 8px}
+.sub-follow .social{grid-template-columns:repeat(4,auto);justify-content:start;max-width:none}
+@media (max-width:480px){.sub-follow .social{grid-template-columns:1fr 1fr}}
 @media (max-width:760px){.site-foot{grid-template-columns:1fr}}
 /* The sections' icons: filled, in the section's colour on a white tile. */
 .ico.sec{background:#141925;border-radius:10px}
@@ -1223,6 +1226,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       </details>
       <button class="sub-go" id="subscribe-go" type="submit">Subscribe</button>
       <p class="sub-msg" id="sub-msg" role="status" aria-live="polite"></p>
+      <div class="sub-follow" id="sub-follow" hidden><p>Follow us for the day's news between emails</p></div>
       <p class="sub-small">Already subscribed? Change your streams with the link in any email. One-click unsubscribe in
         every email.</p>
     </form>
@@ -2462,7 +2466,11 @@ const DIGEST_SENDER = "projectaipulse@gmail.com";
 const subDialog = $("subscribe");
 const chosenStreams = () => [...subDialog.querySelectorAll(".sub-streams input[type=checkbox]:checked")].map(i => i.value);
 const chosenOften = () => (subDialog.querySelector('input[name="often"]:checked') || {}).value === "weekly" ? "weekly" : "daily";
-function subMessage(text, kind){ $("sub-msg").textContent = text; $("sub-msg").dataset.kind = kind || ""; }
+function subMessage(text, kind){ $("sub-msg").textContent = text; $("sub-msg").dataset.kind = kind || ""; $("sub-follow").hidden = true; }
+// after a sign-up: the footer's Follow buttons, once, under the "You're on the list" message
+function showFollow(){ const box = $("sub-follow"), links = document.querySelector(".site-foot .social");
+  if(links && !box.querySelector(".social")) box.append(links.cloneNode(true));
+  box.hidden = !links; }
 function openSubscribe(){ subMessage(""); subDialog.showModal(); $("sub-email").focus(); }
 subDialog.addEventListener("change", () => { $("subscribe-go").disabled = !chosenStreams().length; });
 $("subscribe-open").addEventListener("click", openSubscribe);
@@ -2665,6 +2673,7 @@ $("sub-form").addEventListener("submit", async e => {
     if(r.ok){
       subMessage("You're on the list: " + email + ". " + (chosenOften() === "weekly" ? "Your email comes on Sunday." : "Your email comes tomorrow morning.")
         + "\n\nAdd " + DIGEST_SENDER + " to your contacts so it lands in your inbox, not in spam.", "ok");
+      showFollow();
       $("sub-email").value = "";
       try{ localStorage.setItem("aipulse-sub-prompt", "subscribed"); }catch(err){}  // no more pop-ups
     } else {
