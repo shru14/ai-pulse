@@ -1797,7 +1797,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "AI safety hub",
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH / "index.html").write_text(
-        pages.page("AI safety hub · AI Pulse Central", what, PATH, page_body(rows), data, pages.frame(conn, len(cards)),
+        pages.page("AI safety hub · Pulse Central", what, PATH, page_body(rows), data, pages.frame(conn, len(cards)),
                    ("/policy/", "Back to Policy"),
                    "Titles and abstracts are the publishers' own, each linking to the document. New documents are "
                    "added once checked by hand."),

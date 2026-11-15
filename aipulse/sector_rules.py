@@ -371,7 +371,7 @@ def page(conn, cards: list[dict], out: Path) -> list[str]:
                                               "legislationJurisdiction": name(r)}} for i, r in enumerate(items[:100])]}
         path = f"{PATH}{sid}/"
         (out / path).mkdir(parents=True, exist_ok=True)
-        (out / path / "index.html").write_text(pages.page(f"{title} · AI Pulse Central", intro, path, body, data, parts,
+        (out / path / "index.html").write_text(pages.page(f"{title} · Pulse Central", intro, path, body, data, parts,
                                                           (f"/{PATH}", "Back to all sectors"), NOTE), encoding="utf-8")
         paths.append(path)
         tiles.append(f'<a href="/{path}"><span class="sr-ic"><svg viewBox="0 0 24 24"><path d="{ICONS[sid]}"/></svg></span>'
@@ -386,6 +386,6 @@ def page(conn, cards: list[dict], out: Path) -> list[str]:
             + '<div class="sr-tiles">\n' + "\n".join(tiles) + "\n</div>")
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": title}
     (out / PATH).mkdir(parents=True, exist_ok=True)
-    (out / PATH / "index.html").write_text(pages.page(f"{title} · AI Pulse Central", intro, PATH, body, data, parts, BACK, NOTE),
+    (out / PATH / "index.html").write_text(pages.page(f"{title} · Pulse Central", intro, PATH, body, data, parts, BACK, NOTE),
                                            encoding="utf-8")
     return [PATH, *paths]

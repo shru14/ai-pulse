@@ -166,7 +166,7 @@ FEATURES = {
 def cite(path: str, title: str) -> str:
     """A feature's "Cite this" box: one citation with the page's address and the day it was built, and a Copy button."""
     day = datetime.now(timezone.utc)
-    text = f'AI Pulse Central. "{title}." {rss.SITE}{path} (data as of {day.day} {day:%b %Y}).'
+    text = f'Pulse Central. "{title}." {rss.SITE}{path} (data as of {day.day} {day:%b %Y}).'
     return (f'<details class="fh-cite"><summary>Cite this</summary><div class="fh-cite-box"><p>{escape(text)}</p>'
             '<p class="fh-cite-src">Quoting one row? Cite the source linked in that row as well.</p>'
             '<button type="button" onclick="navigator.clipboard.writeText(this.parentNode.firstChild.textContent)'

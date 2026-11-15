@@ -3,26 +3,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- The stream pages (/policy/…) are this page too: every relative link and file is from the site's root -->
 <base href="/">
-<title>AI Pulse Central · Daily AI news, laws and research from around the world</title>
+<title>Pulse Central · Daily AI news, laws and research from around the world</title>
 <!-- What search engines and link previews show (the image is our own drawing, templates/og.png) -->
 <meta name="description" content="Your briefing on what's happening in AI worldwide.">
 <link rel="canonical" href="https://projectaipulse.com/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="AI Pulse Central">
-<meta property="og:title" content="AI Pulse Central · Daily AI news, laws and research from around the world">
+<meta property="og:site_name" content="Pulse Central">
+<meta property="og:title" content="Pulse Central · Daily AI news, laws and research from around the world">
 <meta property="og:description" content="A daily briefing on AI worldwide: releases, industry, research, policy and an AI law tracker from 200+ public sources.">
 <meta property="og:url" content="https://projectaipulse.com/">
 <meta property="og:image" content="https://projectaipulse.com/og-pulse.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="AI Pulse Central: Your briefing on what's happening in AI worldwide. Releases, Industry, Research, Regulation, Policy, Infra">
+<meta property="og:image:alt" content="Pulse Central: Your briefing on what's happening in AI worldwide. Releases, Industry, Research, Regulation, Policy, Infra">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="alternate" type="application/rss+xml" title="AI Pulse Central · Releases" href="feeds/releases.xml">
-<link rel="alternate" type="application/rss+xml" title="AI Pulse Central · Industry" href="feeds/news.xml">
-<link rel="alternate" type="application/rss+xml" title="AI Pulse Central · Research" href="feeds/research.xml">
-<link rel="alternate" type="application/rss+xml" title="AI Pulse Central · Regulation tracker" href="feeds/regulation.xml">
-<link rel="alternate" type="application/rss+xml" title="AI Pulse Central · Policy" href="feeds/policy.xml">
-<link rel="alternate" type="application/rss+xml" title="AI Pulse Central · Infra" href="feeds/infra.xml">
+<link rel="alternate" type="application/rss+xml" title="Pulse Central · Releases" href="feeds/releases.xml">
+<link rel="alternate" type="application/rss+xml" title="Pulse Central · Industry" href="feeds/news.xml">
+<link rel="alternate" type="application/rss+xml" title="Pulse Central · Research" href="feeds/research.xml">
+<link rel="alternate" type="application/rss+xml" title="Pulse Central · Regulation tracker" href="feeds/regulation.xml">
+<link rel="alternate" type="application/rss+xml" title="Pulse Central · Policy" href="feeds/policy.xml">
+<link rel="alternate" type="application/rss+xml" title="Pulse Central · Infra" href="feeds/infra.xml">
 <!-- Dark or light before the first paint: the reader's own pick (the header's moon button), else their device's -->
 <script>try{document.documentElement.dataset.theme=localStorage.getItem("aipulse-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){}</script>
 <style>
@@ -1075,8 +1075,8 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 .front-page .mast-line .lede strong{font:600 20px/1.25 var(--body);letter-spacing:0;text-transform:none}
 .front-page .mast-line .home-status{justify-self:end;font:inherit;color:inherit}
 @media (max-width:560px){
-  .front-page header.top .brand h1{font-size:24px}
-  .front-page header.top .brand .mark{width:26px;height:26px}
+  .front-page header.top .brand h1{font-size:28px}
+  .front-page header.top .brand .mark{width:30px;height:30px}
   .front-page .mast-line{grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:2px;font-size:10.5px}  /* the date and update time stay small on a phone */
   .front-page .np-date,.front-page .mast-line .home-status{justify-self:center}
   .front-page .mast-line .lede{line-height:1.25;justify-self:stretch;padding:5px 0;border-top:1px solid color-mix(in srgb,var(--ink) 20%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ink) 20%,transparent)}  /* the tagline's two lines sit together; thin rules part it from the date and update time */
@@ -1094,7 +1094,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
     </button>
     <a class="brand" href="/" data-go="home">
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>
-      <h1>AI Pulse Central</h1>
+      <h1>Pulse Central</h1>
     </a>
     <a class="pro-btn" href="/pulse-pro/"><svg viewBox="0 0 22 22" aria-hidden="true"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/></svg><span>Pulse <b>Pro</b> Engine</span></a>
     <div class="mast-line" id="mast-line"><span class="np-date" id="np-date"></span><p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
@@ -1135,9 +1135,9 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   <!-- Latest: the newest stories as they arrived (with each update), gliding past (still for readers who turn motion off) -->
   <div class="ticker" id="ticker" hidden><span class="live">Latest</span><div class="tk-view" role="region" aria-label="Latest stories"><div class="tk-track" id="tk-track"></div></div></div>
   <dialog class="side-menu" id="side-menu" aria-label="Sections">
-    <div class="sm-head"><div><span class="sm-brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>AI Pulse Central</span><span class="sm-tag">Your briefing on what's happening in AI worldwide.</span></div><form method="dialog"><button class="sub-close" aria-label="Close">×</button></form></div>
+    <div class="sm-head"><div><span class="sm-brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>Pulse Central</span><span class="sm-tag">Your briefing on what's happening in AI worldwide.</span></div><form method="dialog"><button class="sub-close" aria-label="Close">×</button></form></div>
     <nav>
-      <a href="/about/" data-go="about" class="sm-link">About AI Pulse Central</a>
+      <a href="/about/" data-go="about" class="sm-link">About Pulse Central</a>
       <a href="/releases/" data-go="tool" class="sm-tab k-tool"><b>Releases</b><span></span><img src="photos/cartoons/streams/tool.svg" alt=""></a>
       <a href="/industry/" data-go="news" class="sm-tab k-news"><b>Industry</b><span></span><img src="photos/cartoons/streams/news.svg" alt=""></a>
       <a href="/research/" data-go="research" class="sm-tab k-research"><b>Research</b><span></span><img src="photos/cartoons/streams/research.svg" alt=""></a>
@@ -1266,7 +1266,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
         <article class="mag-cover" id="hero"><p class="tile-note">Loading the past 7 days' stories…</p></article>
         <div class="tile gl-tile">
           <div><span class="week-badge"><b>Word of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="gl-label">Past 7 days</span></span>
-            <div class="gl-card"><span class="gl-kind">From the AI Pulse Central glossary</span><b id="gl-word"><mark>Glossary</mark></b>
+            <div class="gl-card"><span class="gl-kind">From the Pulse Central glossary</span><b id="gl-word"><mark>Glossary</mark></b>
               <p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p></div>
             <div class="gl-viz" id="gl-viz"></div></div>
           <div class="gl-tile-links"><button class="gl-tile-go" type="button" data-open="glossary">Open the glossary →</button></div>
@@ -1291,10 +1291,10 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
     </div>
   </section>
 
-  <!-- About: what AI Pulse Central is and how it's made (its own page, /about/) -->
+  <!-- About: what Pulse Central is and how it's made (its own page, /about/) -->
   <section class="about-page" id="about-page" hidden>
     <!-- one dark band: headline on the left, three notes on the right (they come in one by one), the pulse below -->
-    <div class="ab-hero"><div class="ab-top"><div><p class="ab-k">About AI Pulse Central</p>
+    <div class="ab-hero"><div class="ab-top"><div><p class="ab-k">About Pulse Central</p>
       <h2>Filter the noise.<br>Hear the pulse.</h2>
       <p class="ab-sub">The global AI landscape evolves every minute. We capture the raw signal so you can skip the clutter.</p>
       <a class="ab-btn ab-cta" href="/">Explore the feed</a></div>
@@ -1463,7 +1463,7 @@ const SECTION_DESC = {
   regulation: "AI bills, laws, bodies and standards, from proposal to force, by country.",
   policy: "What governments, courts and politicians do about AI, worldwide.",
   infra: "AI's data centres and their power, water, land and emissions, worldwide."};
-// A section being designed (docs: AI Pulse Central Discover): its page and tile are in place, its stories come later.
+// A section being designed (docs: Pulse Central Discover): its page and tile are in place, its stories come later.
 const SOON = new Set();
 // Each stream's address (/policy/…): static.build writes a page there for search engines, with its own title.
 const PATH = {all: "all", tool: "releases", news: "industry", research: "research", regulation: "regulation", policy: "policy", infra: "infra", about: "about", discussing: "discussing", today: "today", saved: "saved"};
@@ -1515,11 +1515,11 @@ function showPage(){
   document.querySelectorAll("#secnav a, #side-menu nav a, .about-link").forEach(a => a.toggleAttribute("aria-current", a.dataset.go === state.cat));
   const open = document.querySelector("#secnav a[aria-current]"), nav = $("secnav");  // on a phone, the open one in sight
   if(open && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = open.offsetLeft - nav.offsetLeft - 16;
-  if(tday){ document.title = "Today in AI · AI Pulse Central"; renderTodayPage(); loadHome(); return; }
-  if(saved){ document.title = "Saved stories · AI Pulse Central"; renderSaved(); if(state.allTime === undefined) loadHomeCounts(); return; }
-  if(about || disc){ document.title = (about ? "About" : "People are discussing") + " · AI Pulse Central";
+  if(tday){ document.title = "Today in AI · Pulse Central"; renderTodayPage(); loadHome(); return; }
+  if(saved){ document.title = "Saved stories · Pulse Central"; renderSaved(); if(state.allTime === undefined) loadHomeCounts(); return; }
+  if(about || disc){ document.title = (about ? "About" : "People are discussing") + " · Pulse Central";
     if(state.allTime === undefined) loadHomeCounts(); return; }
-  if(home){ document.title = "AI Pulse Central · Daily AI news, laws and research from around the world"; return loadHome(); }
+  if(home){ document.title = "Pulse Central · Daily AI news, laws and research from around the world"; return loadHome(); }
   if(state.allTime === undefined) loadHomeCounts();  // the masthead's all-time total
   const hero = $("sec-hero");
   hero.className = "sec-hero k-" + state.cat;
@@ -1531,7 +1531,7 @@ function showPage(){
   $("sec-art").innerHTML = heroArt(state.cat);
   $("sec-cart").src = "photos/cartoons/streams/" + state.cat + ".svg";
   $("sec-ico").replaceWith(Object.assign(sectionIcon(state.cat), {id: "sec-ico"}));
-  document.title = PAGE_TITLE[state.cat] + " · AI Pulse Central";
+  document.title = PAGE_TITLE[state.cat] + " · Pulse Central";
   const soon = SOON.has(state.cat);
   document.querySelector(".controls").style.display = soon ? "none" : "";
   if(!soon) return load(true);
@@ -1609,7 +1609,7 @@ function render(){
         body.append(row);
       }
       // A story or record we translated: the original, read through Google Translate's own page in the reader's
-      // browser (a link like any other: nothing is fetched or copied by AI Pulse Central).
+      // browser (a link like any other: nothing is fetched or copied by Pulse Central).
       const untranslated = /Translate and read: the original is in \w+\./.test(it.summary||"");
       if(untranslated || /Machine-translated from \w+;/.test(it.summary||"")){
         const tr = el("a","read-en", untranslated ? "Translate and read" : "Read the original in English");
@@ -2467,8 +2467,8 @@ if(subLink){
     $("sub-action-title").textContent = title; $("sub-action-text").textContent = text;
     $("sub-action-go").textContent = button || ""; $("sub-action-go").hidden = !button;
   };
-  show(action === "confirm" ? "One more click" : "Unsubscribe from AI Pulse Central daily",
-       action === "confirm" ? "Confirm your subscription to AI Pulse Central daily." : "You'll stop getting the daily email, and your address is deleted.",
+  show(action === "confirm" ? "One more click" : "Unsubscribe from Pulse Daily",
+       action === "confirm" ? "Confirm your subscription to Pulse Daily." : "You'll stop getting the daily email, and your address is deleted.",
        action === "confirm" ? "Confirm my subscription" : "Unsubscribe");
   $("sub-action-go").addEventListener("click", async () => {
     $("sub-action-go").disabled = true;
@@ -2658,7 +2658,7 @@ $("sub-form").addEventListener("submit", async e => {
       try{ localStorage.setItem("aipulse-sub-prompt", "subscribed"); }catch(err){}  // no more pop-ups
     } else {
       subMessage({email: "Please enter a valid email address.", streams: "Pick at least one stream.",
-                  full: "AI Pulse Central daily is full for now. Please try again in a few weeks.",
+                  full: "Pulse Daily is full for now. Please try again in a few weeks.",
                   busy: "We've had many sign-ups today. Please try again tomorrow."}[r.error]
                  || "Something went wrong. Please try again.", "error");
     }

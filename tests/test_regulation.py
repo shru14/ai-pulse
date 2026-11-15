@@ -895,7 +895,7 @@ def test_ai_consultations_daily_job_finds_unchecked_ones_and_shows_rows_checked_
     assert 'class="rm-lab cs-australia"><span>Australia</span>' in page  # no list of its own to link
     base = open(consultations.__file__, encoding="utf-8").read()
     subject, text, html = consultations.note(base, "consultations/2026-10-20")
-    assert subject == "AI Pulse Central, AI consultations: 1 new consultation to approve"
+    assert subject == "Pulse Central, AI consultations: 1 new consultation to approve"
     assert "mandatory guardrails" in html and "30 Nov 2026" in html and "left out: 1 story" in text
     monkeypatch.setattr(consultations, "COMING", [
         ("India", "Paper on AI rules", "The ministry", "In the coming weeks", "https://news.example/in", "2026-10-26"),
@@ -1133,7 +1133,7 @@ def test_government_ai_use_daily_job_finds_list_stories_rereads_counts_and_notes
                                              "151 initiatives", "KI Norge (Digdir)", "Reported by choice", "2026-10-22"),
                                             *gov_ai.OTHERS[1:]])
     subject, text, html = gov_ai.note(base, "govai/2026-10-22")
-    assert subject == "AI Pulse Central, What governments use AI for: 1 new government list to approve"
+    assert subject == "Pulse Central, What governments use AI for: 1 new government list to approve"
     assert "151 initiatives" in text and "22 Oct 2026" in text and "Estonia" not in text
     assert "left out: 1 story" in text
 

@@ -459,7 +459,7 @@ def status_report(conn) -> str:
     week = conn.execute("SELECT COUNT(*) FROM items WHERE date >= ?", (_days_ago(7),)).fetchone()[0]
     total = conn.execute("SELECT COUNT(*) FROM items").fetchone()[0]
     failing = [h["name"] for h in store.source_health(conn, [s["url"] for s in SOURCES]) if h["failing"]]
-    lines = ["### AI Pulse Central",
+    lines = ["### Pulse Central",
              f"- **Stories:** {total:,} in total, {week:,} from the last 7 days",
              f"- **Failing sources:** {', '.join(failing) if failing else 'none'}"]
     from . import glossary
@@ -476,7 +476,7 @@ def source_alert(rows: list[dict]) -> tuple[str, str, str]:
     from html import escape
     when = lambda iso: datetime.fromisoformat(iso).strftime("%d %b %Y, %H:%M UTC") if iso else "never"
     n = len(rows)
-    subject = f"AI Pulse Central: {n} source{'s' if n > 1 else ''} stopped working"
+    subject = f"Pulse Central: {n} source{'s' if n > 1 else ''} stopped working"
     text = [f"{n} source{'s have' if n > 1 else ' has'} failed {store.FAILING_AFTER} or more collections in a row:", ""]
     for r in rows:
         text += [r["name"], f"  failed {r['failures']} runs in a row; last worked {when(r['last_success'])}",

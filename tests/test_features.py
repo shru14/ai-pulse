@@ -190,7 +190,7 @@ def test_lab_timelines_grid_by_month_collapses_one_release_labs_and_drafts_chang
                                                     "Now $1.40 / $4.20 per 1M tokens in / out", story["url"])])
     assert lt.candidates([story]) == []
     subject, text, html = lt.note(base, "timelines/2026-10-21")
-    assert subject == "AI Pulse Central, Lab timelines: 1 new change to approve" and "Price cut: Now $1.40" in html
+    assert subject == "Pulse Central, Lab timelines: 1 new change to approve" and "Price cut: Now $1.40" in html
 
 
 def test_who_owns_whom_grid_shows_only_deals_whose_story_we_have(tmp_path):

@@ -222,7 +222,7 @@ def script(day: date, plan_: dict, own: bool = False) -> str:
     yours = "your" if own else "the"
     if week:
         monday, _ = digest._span(day)
-        lines.append(f"This is AI Pulse Central for the week of {monday:%A} the {_nth(monday)} to {day:%A} the {_nth(day)} of "
+        lines.append(f"This is Pulse Weekly for the week of {monday:%A} the {_nth(monday)} to {day:%A} the {_nth(day)} of "
                      f"{day:%B}. These were the important updates this week.")
         lines.append(f"The story of the week, from {_stream(week)}. {_said(week)} {_reported(week)} {_first_sentence(week)}")
         lines += [f"In {_SPOKEN[n]}. {_said(c)} {_reported(c)}" for n, c in plan_.get("also") or []]
@@ -230,7 +230,7 @@ def script(day: date, plan_: dict, own: bool = False) -> str:
             lines.append(f"Now, {day:%A} the {_nth(day)}, in short. "
                          + " ".join(f"From {_SPOKEN[n]}: {_said(c)} {_reported(c)}" for n, c in six))
     else:
-        lines.append(f"This is AI Pulse Central for {day:%A} the {_nth(day)} of {day:%B}. Here are {yours} {len(six)} "
+        lines.append(f"This is Pulse Daily for {day:%A} the {_nth(day)} of {day:%B}. Here are {yours} {len(six)} "
                      + ("top stories, from the streams and choices you picked." if own else "stories that mattered most."))
         for i, (n, c) in enumerate(six):
             lines.append(f"{'Up first' if i == 0 else 'The ' + count[i] + ' story'}, from {_SPOKEN[n]}. "

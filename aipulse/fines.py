@@ -295,7 +295,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             "description": what, "url": f"{rss.SITE}{PATH}"}
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(
-        pages.page("AI fines and bans · AI Pulse Central", what, PATH, body(today), data, pages.frame(conn, len(cards)),
+        pages.page("AI fines and bans · Pulse Central", what, PATH, body(today), data, pages.frame(conn, len(cards)),
                    ("/regulation/", "Back to the Regulation tracker"),
                    "Every row links to the regulator's own notice, or a news report where it published none, checked "
                    "by hand."),

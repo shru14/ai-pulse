@@ -1,4 +1,4 @@
-"""Topics: storylines AI Pulse Central follows over time (topics/), laws and news together, a page each (topics/<slug>/).
+"""Topics: storylines Pulse Central follows over time (topics/), laws and news together, a page each (topics/<slug>/).
 
 Each topic is a rule kept by hand: the tracked bills it follows (their stages are its official record) and the words
 a story must have (`words`, in its headline or summary) and must not (`exclude`). A card joins a topic when it matches
@@ -1279,7 +1279,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": t["name"],
                 "description": t["what"], "url": f"{rss.SITE}{p}"}
         (out / p / "index.html").write_text(
-            pages.page(f"{t['name']} · AI Pulse Central", t["what"], p, body, data, parts, ("/topics/", "All topics")), encoding="utf-8")
+            pages.page(f"{t['name']} · Pulse Central", t["what"], p, body, data, parts, ("/topics/", "All topics")), encoding="utf-8")
         paths.append(p)
         flags = sorted({countries.flag(f) for f in LOOK[slug]} | {e["flag"] for e in ev if e.get("flag")})
         blocks.append({"slug": slug, "done": done, "latest": latest, "badges": badges, "score": trend(ev, today),
@@ -1320,5 +1320,5 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Topics", "description": what,
             "url": f"{rss.SITE}topics/"}
     (out / "topics" / "index.html").write_text(
-        pages.page("Topics · AI Pulse Central", what, "topics/", body, data, parts, ("/", "Back to AI Pulse Central")), encoding="utf-8")
+        pages.page("Topics · Pulse Central", what, "topics/", body, data, parts, ("/", "Back to Pulse Central")), encoding="utf-8")
     return ["topics/", *paths]

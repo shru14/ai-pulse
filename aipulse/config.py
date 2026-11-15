@@ -1,4 +1,4 @@
-"""Every setting and secret AI Pulse Central reads from its environment, in one place.
+"""Every setting and secret Pulse Central reads from its environment, in one place.
 
 On GitHub Actions they come from the repo's secrets (Settings > Secrets and variables > Actions), passed to each step in
 the workflow's `env:`; on a PC, from the shell. Nothing here has a value written in: an unset secret switches its feature

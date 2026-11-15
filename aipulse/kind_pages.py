@@ -397,14 +397,14 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": heading, "description": what,
                 "url": f"{rss.SITE}{p}"}
         (out / p).mkdir(parents=True, exist_ok=True)
-        (out / p / "index.html").write_text(pages.page(f"{heading} · AI Pulse Central", what, p, body, data, parts,
+        (out / p / "index.html").write_text(pages.page(f"{heading} · Pulse Central", what, p, body, data, parts,
                                                        (f"/{home}/", f"Back to {name}"), f"More from {name}: {others}"),
                                             encoding="utf-8")
         paths.append(p)
     for old, new in MOVED.items():  # old addresses send readers on (not in the sitemap)
         (out / old).mkdir(parents=True, exist_ok=True)
         (out / old / "index.html").write_text(
-            f'<!doctype html><meta charset="utf-8"><title>Moved · AI Pulse Central</title><link rel="canonical" '
+            f'<!doctype html><meta charset="utf-8"><title>Moved · Pulse Central</title><link rel="canonical" '
             f'href="https://projectaipulse.com/{new}"><meta name="robots" content="noindex">'
             f'<meta http-equiv="refresh" content="0; url=/{new}"><p><a href="/{new}">This page has moved.</a></p>',
             encoding="utf-8")

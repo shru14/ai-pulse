@@ -1,4 +1,4 @@
-# AI Pulse Central
+# Pulse Central
 
 A worldwide briefing on AI. It reads 200+ public sources, keeps only AI stories, sorts them into
 six streams and links every card to the original.
@@ -220,7 +220,7 @@ sign-ups go to a Google Apps Script web app (`apps-script/Code.gs`). The domain 
 
 ## Credits and licences
 
-AI Pulse Central's own code, writing and hand-checked tables: © 2026 Shruti Kakade, all rights reserved. They are public so anyone can read and check them; reusing them needs written permission (see [LICENSE](LICENSE)). The material below stays under its owners' terms.
+Pulse Central's own code, writing and hand-checked tables: © 2026 Shruti Kakade, all rights reserved. They are public so anyone can read and check them; reusing them needs written permission (see [LICENSE](LICENSE)). The material below stays under its owners' terms.
 
 European Parliament, European Commission and EDPB content: © European Union, reused with acknowledgement of the source. ESMA, EBA and EIOPA: reproduction authorised with the source acknowledged (Source: ESMA, EBA, EIOPA). Consumer Financial Protection Bureau: US public domain. European Central Bank: free use with the ECB cited as the source. Bank for International Settlements: limited extracts reproduced with the BIS cited as the source. UK Parliament data: Open Parliament Licence v3.0. GOV.UK and UK AI Security Institute: Open Government Licence v3.0. Federal Register,
 congress.gov: US public domain. Montreal AI Ethics Institute and CIPESA: CC BY 4.0. Research ICT Africa: CC BY-SA 4.0, non-commercial use with credit. DINUM (numerique.gouv.fr): Licence Ouverte 2.0. MCTI (gov.br): CC BY-ND 3.0. AESIA: reuse under Spain's Ley 37/2007, source: Agencia Española de Supervisión de Inteligencia Artificial. Canada: Canada Gazette and ISED content reproduced from gazette.gc.ca and canada.ca, not affiliated with or endorsed by the Government of Canada.
@@ -229,12 +229,12 @@ Law Information Center (https://www.law.go.kr), Ministry of Government Legislati
 Legislative Yuan law system (https://lis.ly.gov.tw). Malaysian bills: Parliament of Malaysia
 (https://www.parlimen.gov.my). OECD.AI Policy
 Observatory (https://oecd.ai): CC BY 4.0. Japanese laws: e-Gov Law Search (https://laws.e-gov.go.jp),
-Government of Japan Standard Terms of Use 2.0; titles machine-translated by AI Pulse Central. Vietnamese legal
+Government of Japan Standard Terms of Use 2.0; titles machine-translated by Pulse Central. Vietnamese legal
 documents: National Legal Database (https://vbpl.vn). Australian legislation: based on content from the
 Federal Register of Legislation (CC BY 4.0); for the latest information go to https://www.legislation.gov.au.
 Irish bills: Houses of the Oireachtas (https://www.oireachtas.ie), Oireachtas (Open Data) PSI Licence, which
 incorporates CC BY 4.0. Norwegian proposals: Stortinget (https://data.stortinget.no), Norwegian Licence for Open
-Government Data (NLOD); titles machine-translated by AI Pulse Central.
+Government Data (NLOD); titles machine-translated by Pulse Central.
 AI incidents: [AI Incident Database](https://incidentdatabase.ai) (Responsible AI Collaborative), incident titles and descriptions CC BY-SA 4.0 (shared here under the same licence). Translations: OPUS-MT (Helsinki-NLP, CC BY 4.0) via Argos Translate (MIT). Monthly summaries: Qwen3-4B-Instruct-2507 (Qwen team, Apache 2.0), GGUF by Unsloth, run with llama.cpp (MIT). Audio digest voice: [Piper](https://github.com/rhasspy/piper) (MIT), LJ Speech voice (trained on public-domain recordings). Logos: [Lobe Icons](https://github.com/lobehub/lobe-icons)
 (MIT, © 2023 LobeHub), [Simple Icons](https://simpleicons.org) (CC0) (no icons are fetched from brands' own sites). Fonts: Archivo Black, Archivo, Anton and IBM Plex Mono (SIL Open Font License 1.1), served
 from this site. Section icons: [Phosphor Icons](https://phosphoricons.com) (MIT, © 2023 Phosphor Icons).

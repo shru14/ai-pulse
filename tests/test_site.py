@@ -127,7 +127,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert sitemap.count("<url>") == 1 + 7 + 11 + len(tracker_pages) + len([p for p in (tmp_path / "site" / "daily").iterdir() if p.name not in ("latest.html", "sample.html") and p.suffix == ".html"]) + (daily_sample := (tmp_path / "site" / "daily" / "sample.html").exists())  # the front page, 7 stream pages, about/, discussing/, today/, release-cards/, ai-pacts-and-orders/, ai-fines-and-bans/, chip-export-rules/, ai-buyouts/, lab-timelines/, model-economy/, terms/ (the adoption planner's pages are Pro: none in the sitemap)
     # each stream has its own address: the same page, with its own title, description, canonical link and heading
     policy = (tmp_path / "site" / "policy" / "index.html").read_text(encoding="utf-8")
-    assert "<title>AI policy news: governments, courts and politics · AI Pulse Central</title>" in policy
+    assert "<title>AI policy news: governments, courts and politics · Pulse Central</title>" in policy
     assert policy.count('content="What governments, courts and politicians do about AI, worldwide. Updated every 6 hours') == 2
     assert 'rel="canonical" href="https://projectaipulse.com/policy/"' in policy and 'og:url" content="https://projectaipulse.com/policy/"' in policy
     assert '<h2 id="sec-title">Policy</h2>' in policy and '<base href="/">' in policy and 'data-static="1"' in policy
@@ -494,7 +494,7 @@ def test_glossary_note_lists_the_branchs_new_words_to_approve():
     from aipulse import glossary
     e = {"term": "Vision-language model", "group": "Models", "def": "An AI model that reads pictures and text."}
     subject, text, html = glossary.note([e], "glossary/2026-10-11")
-    assert subject == "AI Pulse Central glossary: 1 new word to approve"
+    assert subject == "Pulse Central glossary: 1 new word to approve"
     assert "not on the site yet" in text and "merge glossary/2026-10-11" in text
     assert "<th align" in html and "<b>Vision-language model</b>" in html  # a table: word, group, meaning
 

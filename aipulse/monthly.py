@@ -534,7 +534,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         prev = f'<a href="/{path(issues[i - 1])}">← {name(issues[i - 1])}</a>' if i else "<span></span>"
         nxt = f'<a href="/{path(issues[i + 1])}">{name(issues[i + 1])} →</a>' if i + 1 < len(issues) else "<span></span>"
         body = (f'<div class="mi" id="issue" data-src="/{p}issue.json">\n'
-                f'<div class="topic-hero">{_img(photo)}<div class="over"><span class="kind">AI Pulse Central · The month in AI</span>'
+                f'<div class="topic-hero">{_img(photo)}<div class="over"><span class="kind">Pulse Central · The month in AI</span>'
                 f'<span class="num">No. {number(m)}</span><h1>{name(m)}</h1></div></div>\n'
                 '<ol class="contents">' + "".join(f'<li><a href="/{p}#{k}">{t}</a></li>' for k, t in sections) + "</ol>\n"
                 + f'<a class="ins-link" href="/{p}insights/"><span><span class="label">Insights</span><b>{name(m)} in numbers</b>'
@@ -563,7 +563,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
               "name": f"The month in AI: {name(m)}", "description": what, "url": f"{rss.SITE}{p}",
               "datePublished": (_last_day(m) + timedelta(days=1)).isoformat()}
         (out / p / "index.html").write_text(
-            pages.page(f"{name(m)} · The month in AI · AI Pulse Central", what[:300], p, body, ld, parts,
+            pages.page(f"{name(m)} · The month in AI · Pulse Central", what[:300], p, body, ld, parts,
                        ("/monthly/", "All monthly issues")), encoding="utf-8")
         paths.append(p)
         shelf.append({"month": m, "photo": photo, "summary": summary})
@@ -582,7 +582,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "The month in AI", "description": what,
           "url": f"{rss.SITE}monthly/"}
     (out / "monthly" / "index.html").write_text(
-        pages.page("The month in AI · AI Pulse Central", what, "monthly/", body, ld, parts, ("/", "Back to AI Pulse Central")),
+        pages.page("The month in AI · Pulse Central", what, "monthly/", body, ld, parts, ("/", "Back to Pulse Central")),
         encoding="utf-8")
     # the front page's monthly bar: the FRONT newest issues, each with its summary's first sentence (index.html, loadMonthly)
     (out / "monthly" / "front.json").write_text(json.dumps([
