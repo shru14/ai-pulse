@@ -294,6 +294,7 @@ LOOK = {
 # Stories the words miss, checked by hand and approved: slug: {url: why it belongs, in our own words}
 ADDED: dict[str, dict[str, str]] = {
     "ai-ipos": {
+        "https://japantoday.com/category/tech/anthropic-ceo-sells-investors-on-safety-%27no-jerks%27-culture": "Anthropic's chief executive pitches investors on safety and hiring culture days before the stock market debut",
         "https://www.channelnewsasia.com/business/anthropic-discloses-month-long-training-pause-ai-security-breaches-in-ipo-filing-6493811": "Anthropic's IPO filing discloses a month-long training pause and AI security breaches",
         "https://techcrunch.com/2026/10/30/anthropic-expected-to-receive-high-junk-rating-from-credit-agencies-following-ipo-report-says/": "Report on the credit rating Anthropic is expected to get after its IPO",
         "https://olhardigital.com.br/2026/10/15/pro/anthropic-investidores-reduzem-expectativa-de-avaliacao-para-ipo-de-r-8-1-trilhoes/": "Investors lower their valuation hopes for Anthropic's planned November IPO",
@@ -358,6 +359,12 @@ ADDED: dict[str, dict[str, str]] = {
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # Meituan's model trained on Chinese hardware, no US rule or Nvidia response in the summary
+    "https://the-decoder.com/meituan-releases-a-1-6-trillion-parameter-agent-model-that-never-touched-an-nvidia-gpu/",
+    # An expert's view of Nvidia's future and TSMC after Huang's exit, nothing new about the scandal itself
+    "https://focustaiwan.tw/business/202611130010",
+    # xAI's data center pollution suit in Memphis, not about Grok's images
+    "https://www.engadget.com/2303462/judge-says-xai-must-face-naacp-lawsuit-on-data-center-pollution/",
     # Huang's personal relationship and Nvidia's internal probe, not about chip rules or China's response
     "https://techcentral.co.za/nvidia-jensen-huang-problem-rattles-investors/288157/",
     # Huang scandal and the auto industry, not about chip rules
