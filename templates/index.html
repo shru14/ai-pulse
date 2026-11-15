@@ -123,11 +123,11 @@ header.top{gap:10px}
 /* Pulse Pro Engine, the paid service, right beside the name */
 header.top .brand:has(+ .pro-btn){margin-right:0}
 .pro-btn{flex:none;box-sizing:border-box;margin-right:auto;height:36px;display:inline-flex;align-items:center;gap:7px;padding:0 16px;border:1px solid #F0E442;border-radius:999px;background:#F0E442;color:#000;font:600 14.5px/1 var(--body);text-decoration:none;transition:background .15s,border-color .15s}  /* the same yellow pill as the Pulse Pro Engine page's top bar */
-.pro-btn b{font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.pro-btn b{font-weight:inherit}  /* one even weight: Pulse Pro Engine reads as one name */
 .pro-btn svg{width:16px;height:16px;fill:none;stroke:#000;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .pro-btn:hover,.pro-btn:focus-visible{background:#e3d634;border-color:#e3d634}
 @media (max-width:560px){.pro-btn{height:32px;padding:0 11px;font-size:13px;gap:4px}.pro-btn svg{display:none}}
-@media (max-width:400px){.pro-btn{font-size:0;gap:0}.pro-btn b{font-size:12px}}  /* the smallest phones: just "PRO" */
+@media (max-width:359px){.pro-btn{font-size:0;gap:0}.pro-btn b{font-size:12px}}  /* the smallest phones: just "Pro" */
 .saved-nav svg{width:14px;height:14px}
 .foot .src{margin-left:auto}
 .save{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin:-6px -6px -6px 0;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
@@ -1075,8 +1075,8 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 .front-page .mast-line .lede strong{font:600 20px/1.25 var(--body);letter-spacing:0;text-transform:none}
 .front-page .mast-line .home-status{justify-self:end;font:inherit;color:inherit}
 @media (max-width:560px){
-  .front-page header.top .brand h1{font-size:28px}
-  .front-page header.top .brand .mark{width:30px;height:30px}
+  .front-page header.top .brand h1{font-size:24px}
+  .front-page header.top .brand .mark{width:26px;height:26px}
   .front-page .mast-line{grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:2px;font-size:10.5px}  /* the date and update time stay small on a phone */
   .front-page .np-date,.front-page .mast-line .home-status{justify-self:center}
   .front-page .mast-line .lede{line-height:1.25;justify-self:stretch;padding:5px 0;border-top:1px solid color-mix(in srgb,var(--ink) 20%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ink) 20%,transparent)}  /* the tagline's two lines sit together; thin rules part it from the date and update time */
@@ -1096,7 +1096,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       <span class="mark" aria-hidden="true"><svg viewBox="0 0 22 22"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/><circle cx="20.5" cy="12" r="1.8"/></svg></span>
       <h1>AI Pulse Central</h1>
     </a>
-    <a class="pro-btn" href="/pulse-pro/"><svg viewBox="0 0 22 22" aria-hidden="true"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/></svg>Pulse <b>Pro</b> Engine</a>
+    <a class="pro-btn" href="/pulse-pro/"><svg viewBox="0 0 22 22" aria-hidden="true"><polyline points="1,12 6,12 8.5,5 12,18 14.5,9 16,12 19,12"/></svg><span>Pulse <b>Pro</b> Engine</span></a>
     <div class="mast-line" id="mast-line"><span class="np-date" id="np-date"></span><p class="lede"><strong>Your briefing on what's happening in AI worldwide.</strong></p>
       <div class="status home-status" id="home-status">Loading feed…</div></div>
     <!-- Each stream is its own page (/releases/, /industry/…); the brand goes back to the front page. All stories
