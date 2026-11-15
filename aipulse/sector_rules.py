@@ -31,7 +31,7 @@ HAND = [
      "Where a bank, insurer or investment firm uses AI, its own finance supervisor checks that the AI Act is met.",
      EU_AI_ACT),
     ("finance", "EU", "Law", "AI Act: credit scoring and life and health insurance pricing are high-risk (Annex III, "
-     "point 5)", "From 2 Dec 2027, moved by the Digital Omnibus",
+     "point 5)", "2 Aug 2026 in law; 2 Dec 2027 agreed, waiting for formal adoption",
      "Such AI needs risk management, human oversight, records and checks before use. Finding fraud is left out.",
      EU_AI_ACT),
     ("finance", "EU", "Law", "AI Act: AI literacy (Article 4)", "Since 2 Feb 2025",
