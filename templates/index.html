@@ -628,10 +628,10 @@ header.top.home{height:auto;padding-top:10px}
 .mast-line .home-status{margin:0}
 /* the streams as a newspaper's section bar: a ruled strip across the page, the open one with its colour on top */
 header.top .secnav{gap:0;padding:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
-.secnav a{flex:1 1 auto;text-align:center;border:0;border-top:5px solid transparent;border-radius:0;margin:-1px 0 0;padding:9px 12px 8px;background:none;color:var(--ink);text-transform:none;letter-spacing:0;font:600 14px var(--body)}
+.secnav a{flex:1 1 auto;text-align:center;border:0;border-bottom:5px solid transparent;border-radius:0;margin:0 0 -1px;padding:9px 12px 8px;background:none;color:var(--ink);text-transform:none;letter-spacing:0;font:600 14px var(--body)}
 .secnav a + a{border-left:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
-.secnav a:hover{background:none;border-top-color:var(--cat-f)}
-.secnav a[aria-current]{border-top-color:var(--cat-f);background:color-mix(in srgb,var(--cat-f) 16%,var(--bg));box-shadow:none}
+.secnav a:hover{background:none;border-bottom-color:var(--cat-f)}
+.secnav a[aria-current]{border-bottom-color:var(--cat-f);background:color-mix(in srgb,var(--cat-f) 16%,var(--bg));box-shadow:none}
 header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself */
 .about-link{flex:none;height:36px;display:inline-flex;align-items:center;padding:0 12px;border:2px solid var(--ink);background:var(--surface);font:600 14px var(--body);color:var(--ink);text-decoration:none}
 .about-link:hover{background:color-mix(in srgb,var(--ink) 8%,var(--surface))}
@@ -964,6 +964,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   header.top .secnav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin-inline:0;padding:0;-webkit-mask-image:none;mask-image:none}
   header.top .secnav a{padding:6px 2px 5px;font-size:11.5px;border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
   header.top .secnav a:nth-child(3n+1){border-left:0}
+  header.top .secnav a[aria-current],header.top .secnav a:hover{border-bottom:3px solid var(--cat-f);padding-bottom:3px}
   /* the jump row: every section of the page, all in view, above the email strip */
   .jump{flex-wrap:nowrap;gap:4px;margin:0 0 -20px;padding:2px 0 0}  /* the five on one row */
   .jump a{flex:1 1 auto;text-align:center;font:600 10.5px var(--body);padding:4px 3px;border:1.5px solid var(--ink);color:var(--ink);background:var(--surface);text-decoration:none;white-space:nowrap}
