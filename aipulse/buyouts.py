@@ -381,6 +381,8 @@ LEFT_OUT = {
         "PEAK:AIO makes storage software, not AI",
     "https://dcnnmagazine.com/projects-and-infrastructure/kddi-telehouse-acquire-220m-london-docklands-site/":
         "buying a data centre site, not a company",
+    "https://www.databricks.com/blog/turn-buying-signals-pipeline-sendoso-gifts-genie-one":
+        "no company being bought",
 }
 
 # the newest day every story was read for the list above; the candidates start after it
