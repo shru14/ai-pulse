@@ -15,6 +15,7 @@ import json
 import re
 import smtplib
 import ssl
+import time
 from collections import Counter
 from collections.abc import Collection
 from datetime import date, datetime, timedelta, timezone
@@ -1144,6 +1145,26 @@ def _message(to: str, subject: str, text: str, html: str, unsubscribe: str = "")
     return msg
 
 
+def _signed_in(address: str, password: str, tries: int = 3, wait: float = 30) -> smtplib.SMTP_SSL:
+    """A signed-in Gmail connection. Gmail sometimes drops a sign-in for no reason (16 Nov 2026), so a dropped
+    connection is tried again, a short wait apart; a refused password (SMTPAuthenticationError) fails at once."""
+    for attempt in range(1, tries + 1):
+        smtp = None
+        try:
+            smtp = smtplib.SMTP_SSL(SMTP_HOST, 465, context=ssl.create_default_context(), timeout=30)
+            smtp.login(address, password)
+            return smtp
+        except smtplib.SMTPAuthenticationError:
+            smtp.close() if smtp else None
+            raise
+        except OSError:  # includes SMTPServerDisconnected and network timeouts
+            smtp.close() if smtp else None
+            if attempt == tries:
+                raise
+            time.sleep(wait)
+    raise AssertionError("unreachable")
+
+
 def send_all(emails: list[tuple]) -> int:
     """Send (to, subject, text, HTML[, unsubscribe link]) emails through the project's Gmail account over one connection.
     Returns how many were sent; one failed address doesn't stop the rest."""
@@ -1151,8 +1172,7 @@ def send_all(emails: list[tuple]) -> int:
     if not (address and password):
         raise RuntimeError("DIGEST_EMAIL and DIGEST_APP_PASSWORD must be set")
     sent = 0
-    with smtplib.SMTP_SSL(SMTP_HOST, 465, context=ssl.create_default_context(), timeout=30) as smtp:
-        smtp.login(address, password)
+    with _signed_in(address, password) as smtp:
         for email in emails:
             try:
                 smtp.send_message(_message(*email))
