@@ -757,7 +757,8 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     # 15 Nov 2026, owner: Pulse Central's social profiles, one line under "Forward it"
     social = (("X", "https://x.com/Pulse_Central_"), ("LinkedIn", "https://www.linkedin.com/company/pulse-central/"),
               ("Instagram", "https://www.instagram.com/pulse_central_/"),
-              ("Bluesky", "https://bsky.app/profile/pulsecentral.bsky.social"))
+              ("Bluesky", "https://bsky.app/profile/pulsecentral.bsky.social"),
+              ("Reddit", "https://www.reddit.com/user/pulse_central_/"), ("Substack", "https://substack.com/@pulsecentral"))
     text += ["", f"Know someone who'd like this? Forward this email; they can sign up at {rss.SITE}#subscribe",
              "Follow Pulse Central: " + " · ".join(f"{n} {u}" for n, u in social),
              f"You chose: {chose}.", f"Change my streams and choices: {change}", f"Unsubscribe: {stop}",
@@ -766,7 +767,9 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     cell = f'padding:3px 0;font-size:12px;line-height:1.6;color:{GREY};vertical-align:top'
     lines = [("Share", f'Know someone who&#39;d like this? Forward it; they can <a href="{rss.SITE}#subscribe" '
                        f'style="color:{INK}">sign up</a>.'),
-             ("Follow", " · ".join(f'<a href="{u}" style="color:{GREY}">{n}</a>' for n, u in social)),
+             # 16 Nov 2026, owner: six names wrap on phones; each name keeps its dot so a new line starts flush
+             ("Follow", " ".join(f'<span style="white-space:nowrap"><a href="{u}" style="color:{GREY}">{n}</a>'
+                                 f'{" ·" if i < len(social) - 1 else ""}</span>' for i, (n, u) in enumerate(social))),
              ("Your streams", f'{escape(chose)}'),
              ("Settings", f'<a href="{escape(change)}" style="color:{GREY}">Change my streams and choices</a> · '
                           f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a>')]
