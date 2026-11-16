@@ -641,7 +641,7 @@ def _review_box() -> tuple[list[str], str]:
     """The email's review strip, above the footer: "How useful is Pulse Central to you?" and 1 to 5, each a link to the
     site's review form (review/) with that number picked; the form asks four more quick questions."""
     link = rss.SITE + "review/"
-    text = ["HOW USEFUL IS PULSE CENTRAL TO YOU? Tap a number, then four more quick questions: " + link]
+    text = ["How useful is Pulse Central to you? Tap a number, then four more quick questions: " + link]
     cells = "".join(f'<td style="padding:0 6px 0 0"><a href="{escape(link)}#useful-{n}" style="display:inline-block;width:34px;'
                     f'padding:6px 0;text-align:center;border:1px solid {NAVY};border-radius:5px;color:{NAVY};font-size:14px;'
                     f'font-weight:bold;text-decoration:none">{n}</a></td>' for n in range(1, 6))
@@ -660,7 +660,7 @@ def _feature_box(day: date) -> tuple[list[str], str]:
         return [], ""
     name, what, path = feature
     link = rss.SITE + path
-    text = ["NEW ON PULSE CENTRAL: " + name, what, f"Have a look: {link}"]
+    text = ["New on Pulse Central: " + name, what, f"Have a look: {link}"]
     # a small yellow strip at the top of the email, a line or two of small type
     html = (f'<div style="margin:0 0 10px;padding:6px 10px;background:#F0E442;color:{INK};font-size:12px;line-height:1.4;'
             f'border-radius:4px"><b>New on Pulse Central: {escape(name)}.</b> {escape(what)} '

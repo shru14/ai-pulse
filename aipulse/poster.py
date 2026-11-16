@@ -682,10 +682,10 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
         fill = FEATURE_FILL.get(pages.FEATURES.get(path, ("news",))[0], YELLOW)
         art = f"features/{path.strip('/')}"
         picture = _picture(art) if (ART / f"{art}.png").exists() else _picture("streams/all")
-        text += [f"NEW ON PULSE CENTRAL: {name}", what, f"Have a look: {rss.SITE}{path}", ""]
+        text += [f"New on Pulse Central: {name}", what, f"Have a look: {rss.SITE}{path}", ""]
         body.append(_table(f'<tr><td width="30%" valign="middle" style="width:30%;background:{fill};border:2px solid {INK};'
                            f'padding:0"><img src="{picture}" width="170" alt="" style="display:block;width:100%;height:auto;border:0"></td>'
-                           f'<td valign="top" style="padding:12px 14px;border:2px solid {INK};border-left:0">{_label("NEW ON PULSE CENTRAL")}'
+                           f'<td valign="top" style="padding:12px 14px;border:2px solid {INK};border-left:0">{_label("New on Pulse Central")}'
                            f'<div style="font-family:{HEAD};font-weight:900;font-size:18px;line-height:1.2;margin:8px 0 6px">{escape(name)}</div>'
                            f'<div style="font-size:14px;line-height:1.45">{escape(what)}</div><div style="margin-top:8px">'
                            f'<a href="{escape(rss.SITE + path)}" style="color:{INK};font-weight:bold;font-size:13px">Have a look →</a>'
@@ -721,7 +721,7 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
 
     # How useful is it: 1 to 5, each opens the site's review form with that number picked (all five alike)
     review = rss.SITE + "review/"
-    text += ["HOW USEFUL IS PULSE CENTRAL TO YOU? Tap a number, then four more quick questions: " + review, ""]
+    text += ["How useful is Pulse Central to you? Tap a number, then four more quick questions: " + review, ""]
     numbers = "".join(f'<td style="padding:0 6px 0 0"><a href="{escape(review)}#useful-{k}" style="display:block;width:34px;'
                       f'height:34px;line-height:34px;text-align:center;border:2px solid {INK};font-weight:bold;font-size:16px;'
                       f'color:{INK};text-decoration:none">{k}</a></td>' for k in range(1, 6))

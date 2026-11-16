@@ -506,7 +506,7 @@ def test_the_email_introduces_one_new_feature_a_day_each_once():
             "category": "research", "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00"}
     _, text, html = digest.build([card], ["research"], day)
     name, _, path = digest._feature(day)
-    assert f"NEW ON PULSE CENTRAL: {name}" in text and f"Have a look: {digest.rss.SITE}{path}" in text
+    assert f"New on Pulse Central: {name}" in text and f"Have a look: {digest.rss.SITE}{path}" in text
     assert html.index("New on Pulse Central:") < html.index("A paper on AI agents") < html.index("Every story of the day in one table")
 
 
