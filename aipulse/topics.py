@@ -334,10 +334,16 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.foodandwaterwatch.org/press/2026/10/14/allentown-planning-commission-bucks-public-opinion-greenlights-data-center/": "Allentown planning commission approves a data centre against public opinion",
     },
     "nvidia-chips-china": {
+        "https://w.media/us-to-restrict-chinese-remote-access-to-ai-chips-from-southeast-asian-data-centers-report/": "Report that the US will soon stop Chinese AI firms remotely using advanced chips in data centres in Malaysia, Singapore, Thailand, Indonesia and other countries",
+        "https://w.media/us-moves-to-stop-chip-diversion-through-southeast-asia-and-brazil/": "The US Commerce Department's BIS will require export licences for advanced chips going to Indonesia, Malaysia, Singapore, Thailand and Brazil to stop diversion",
+        "https://olhardigital.com.br/2026/11/16/pro/estados-unidos-ampliam-restricoes-a-chips-de-ia-e-incluem-o-brasil/": "New US rule requires authorisation to export advanced chips to five countries to stop Chinese firms getting round sanctions through data centres abroad",
         "https://www.channelnewsasia.com/east-asia/nvidia-jensen-huang-megaspeed-international-6505791": "Huang says Nvidia's dealings with Megaspeed were proper and it checked that no AI chips were diverted to China",
         "https://olhardigital.com.br/2026/11/10/pro/caso-de-espia-chinesa-facilitou-envio-de-r-40-bi-em-chips-da-nvidia-a-china/": "Report that the alleged spy used Nvidia and distributor contacts to help send chips to China",
     },
     "nvidia-huang-scandal": {
+        "https://olhardigital.com.br/2026/11/09/pro/trump-diz-que-ceo-da-nvidia-nao-sabia-que-mulher-com-quem-teve-caso-seria-espia/": "Trump says he was surprised by the accusations and believes Huang's version that he did not know the woman was a spy",
+        "https://tecnoblog.net/noticias/ceos-de-tecnologia-pedem-volta-de-jensen-huang-a-nvidia/": "Tech CEOs including Elon Musk, Tim Sweeney, Garry Tan and Travis Kalanick back a campaign for Huang to return to Nvidia",
+        "https://focustaiwan.tw/business/202611160014": "Taiwan shares have their second-largest daily point drop on concerns over Huang's resignation as Nvidia CEO",
         "https://the-decoder.com/chinese-spies-targeted-nvidia-ceo-jensen-huang-according-to-the-new-york-times/": "Report that US intelligence believes an executive in Huang's circle is a Chinese informant",
         "http://www.bernama.com/en/news.php?id=2633535": "Nvidia announces Jensen Huang has resigned as CEO and board member amid the board investigation",
         "https://olhardigital.com.br/2026/11/11/pro/nvidia-contrata-empresa-para-encontrar-substituto-de-jensen-huang-diz-agencia/": "Nvidia reportedly hires a firm to find a replacement for Huang amid the crisis over his relationship",
@@ -358,6 +364,26 @@ ADDED: dict[str, dict[str, str]] = {
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # Microsoft on a ban of Chinese parts in US data centres, not about selling AI chips to China
+    "https://olhardigital.com.br/2026/11/10/pro/microsoft-tenta-barrar-proibicao-de-tecnologia-chinesa-em-data-centers/",
+    # Malaysian customs seizure of smuggled AI chips, can't tell from the summary it involves Nvidia, China or the US rules
+    "https://e.vnexpress.net/news/news/malaysia-intercepts-30-ai-chip-servers-bound-for-undisclosed-asian-country-5138009.html",
+    # Altman's view that the industry will be fine without Huang, a comment with nothing new about the case
+    "https://techcrunch.com/2026/11/16/sam-altman-on-nvidia-without-jensen-huang-the-industry-will-be-fine/",
+    # Taiwan's agency says it has no information on a reported US warning about a suspected spy, not about chip rules or China's response to them
+    "https://focustaiwan.tw/politics/202611120022",
+    # Analysis of the difference between resigning and being fired, can't tell from the summary that it reports anything new
+    "https://www.xataka.com/empresas-y-economia/nvidia-no-ha-despedido-a-jensen-huang-ha-aceptado-su-dimision-esa-diferencia-puede-servir-vuelva",
+    # Column on Huang's fall from grace, a profile with nothing new in the summary
+    "https://www.dawn.com/news/2044826/corporate-window-nvidia-ceos-fall-from-grace",
+    # Opinion-style piece on what Huang's bad news means for the AI industry, nothing new about the case
+    "https://techcrunch.com/2026/11/15/is-bad-news-for-jensen-huang-also-bad-news-for-the-ai-industry/",
+    # Huang's talk to German manufacturers, not about the scandal
+    "https://japantoday.com/category/tech/nvidia-ceo-urges-german-manufacturers-to-adopt-ai-saying-digital-tech-won%27t-replace-heavy-industry",
+    # Healthcare network cabling guide, not about California laws or state preemption
+    "https://datacenterpost.com/healthcare-lans-building-reliability-into-every-connection/?utm_source=rss&utm_medium=rss&utm_campaign=healthcare-lans-building-reliability-into-every-connection",
+    # Musk's reaction to Huang's resignation, a comment rather than a development in the case
+    "https://www.fayerwayer.com/internet/2026/11/12/nvidia-elon-musk-quiere-reciclar-a-jensen-huang-y-dice-que-seria-un-honor/",
     # Huang's personal relationship and Nvidia's internal probe, not about chip rules or China's response
     "https://techcentral.co.za/nvidia-jensen-huang-problem-rattles-investors/288157/",
     # Huang scandal and the auto industry, not about chip rules
