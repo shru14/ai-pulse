@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-11-14"
+CHECKED_TO = "2026-11-16"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -574,6 +574,11 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "Whether coding agents can build and change real Android apps from long tasks, run on a live phone emulator.",
         "Passes 41% of tasks with the tests hidden (mean partial score 0.85); the best with tests available is 84% "
         "(claude-fable-5-1)", "claude-sonnet-5-5", 41.0),
+    "https://arxiv.org/abs/2611.17870": (
+        "OmniScore-Bench", "vision",
+        "Whether AI models that read images can recognise, structure and interpret the notation in sheet music.",
+        "No top score: across twelve models, different ones lead transcription of excerpts, single pages and "
+        "multipage scores", "", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
@@ -634,7 +639,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
 }
-BEATS_CHECKED_TO = "2026-11-12"
+BEATS_CHECKED_TO = "2026-11-13"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
