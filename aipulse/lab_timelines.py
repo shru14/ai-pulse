@@ -40,6 +40,10 @@ PLACES = [
 PULLED: list[tuple[str, str, str, str, str]] = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://techcentral.co.za/honeylog-ai-licensing-first-party-data/288450/":
+        "Opinion on AI content licensing, not a model price or place change",
+    "https://pandaily.com/huawei-cloud-maas-openpangu-2-1-pro-api-agents-arkts-ascend-operators":
+        "Looks like a new model's launch price, and the page text couldn't be read to show a change",
     "https://www.marktechpost.com/2026/11/14/cmpnd-dspy-wsp-weight-space-programming/":
         "A software library release, not a model price or place change",
     "https://pandaily.com/openjiuwen-rsi-native-agentos-extension-packages-workswarm-system-plugins":
