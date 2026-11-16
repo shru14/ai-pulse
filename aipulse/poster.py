@@ -762,13 +762,19 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
              "Follow Pulse Central: " + " · ".join(f"{n} {u}" for n, u in social),
              f"You chose: {chose}.", f"Change my streams and choices: {change}", f"Unsubscribe: {stop}",
              f"Pulse Central, your briefing on what's happening in AI worldwide: {rss.SITE}"]
-    html.append(f'<tr><td style="border-top:3px solid {INK};padding:14px 20px 18px;font-size:12px;line-height:1.7;color:{GREY}">'
-                f'Know someone who&#39;d like this? Forward it; they can <a href="{rss.SITE}#subscribe" style="color:{INK};'
-                f'font-weight:bold">sign up</a>.<br>Follow Pulse Central: '
-                + " · ".join(f'<a href="{u}" style="color:{GREY}">{n}</a>' for n, u in social)
-                + f'<br>You chose: {escape(chose)}.<br><a href="{escape(change)}" '
-                f'style="color:{GREY}">Change my streams and choices</a> · <a href="{escape(stop)}" style="color:{GREY}">'
-                f'Unsubscribe</a><br>Pulse Central, your briefing on what&#39;s happening in AI worldwide · <a href="{rss.SITE}" style="color:{GREY}">{rss.SITE}</a>'
+    # 16 Nov 2026, owner: the footer in two aligned columns, a short label on the left
+    cell = f'padding:3px 0;font-size:12px;line-height:1.6;color:{GREY};vertical-align:top'
+    lines = [("Share", f'Know someone who&#39;d like this? Forward it; they can <a href="{rss.SITE}#subscribe" '
+                       f'style="color:{INK}">sign up</a>.'),
+             ("Follow", " · ".join(f'<a href="{u}" style="color:{GREY}">{n}</a>' for n, u in social)),
+             ("Your streams", f'{escape(chose)}'),
+             ("Settings", f'<a href="{escape(change)}" style="color:{GREY}">Change my streams and choices</a> · '
+                          f'<a href="{escape(stop)}" style="color:{GREY}">Unsubscribe</a>')]
+    footer = "".join(f'<tr><td width="96" style="width:96px;{cell};color:{INK}">{k}</td><td style="{cell}">{v}</td></tr>'
+                     for k, v in lines)
+    html.append(f'<tr><td class="p-pad" style="border-top:3px solid {INK};padding:14px 20px 18px">{_table(footer)}'
+                f'<div style="margin-top:10px;font-size:12px;line-height:1.6;color:{GREY}">Pulse Central, your briefing on '
+                f'what&#39;s happening in AI worldwide · <a href="{rss.SITE}" style="color:{GREY}">projectaipulse.com</a></div>'
                 f'</td></tr>')
 
     # "Daily Digest: " (Sunday: "Weekly Digest: " and the story of the week), then the lead in a few of its own words
