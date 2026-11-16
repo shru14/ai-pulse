@@ -81,6 +81,8 @@ LEFT_OUT: dict[str, str] = {
     "https://www.data.gouv.fr/datasets/inventaire-des-algorithmes-publics-de-lodap":
         "France: kept by an independent observatory (ODAP), not the government",
     "https://algoritmospublicos.cl/": "Chile: kept by a university (GobLab UAI), not the government",
+    "https://www.thelec.net/news/articleView.html?idxno=15619":
+        "not a government list of its AI (a company approved for Korea's M.AX Alliance)",
 }
 # a headline or summary that may report a government's list of the AI it uses
 _LIST = re.compile(r"\b(AI|artificial intelligence|algorithm(ic|s)?)\b[^.]{0,60}\b(register|registry|inventory|"
