@@ -30,6 +30,7 @@ BILL_SOURCES = [("us", "US"), ("eu", "EU"), ("uk", "UK"), ("br", "Brazil"), ("au
 
 
 HELD = 3  # exit code of a digest the quality check held (an error is 1)
+NO_LIST = 4  # exit code when the sign-up web app (the reader list) can't be reached; the day is left for the next chance
 
 
 def main():
@@ -101,6 +102,8 @@ def main():
     dg.add_argument("--since", default="", help="the newest arrival the last email saw (its --seen); stories dated "
                     "before the day that arrived after it go in too")
     dg.add_argument("--seen", metavar="FILE", help="write the newest arrival this email sees to FILE (the next one's --since)")
+    dg.add_argument("--no-list-alert", action="store_true",
+                    help="don't email the project inbox if the reader list can't be reached (it already was today)")
     gl = sub.add_parser("glossary", help="words recent stories use that the glossary doesn't explain yet (to write up by hand)")
     gl.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) instead "
                     "of the database")
@@ -450,7 +453,14 @@ def main():
             # Each confirmed reader gets their own streams and choices; nothing on a day their streams were empty.
             # Only counts are printed: addresses never appear in the (public) logs.
             key = config.digest_list_key()
-            readers = subscribers.current(key, config.digest_signup_url())
+            try:
+                readers = subscribers.current(key, config.digest_signup_url())
+            except (OSError, ValueError) as e:  # urllib errors are OSErrors; a page that isn't JSON is a ValueError
+                print(f"Reader list unreachable: {e}")
+                if not (a.dry_run or a.no_list_alert):
+                    digest.send(digest.sender(), *quality.list_alert(day, str(e)))
+                    print("Alert sent to the project inbox")
+                sys.exit(NO_LIST)
             from . import weekly
             # Sunday's email (the day is a Saturday): a reader with questions gets the note of their weekly dossier
             dossier = (lambda prefs: weekly.note(conn, key, prefs.get("interests") or [], day)) if digest.weekly(day) else (lambda prefs: None)

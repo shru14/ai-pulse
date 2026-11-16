@@ -176,3 +176,18 @@ def alert(day: date, found: list[str], streams: list[str]) -> tuple[str, str, st
             f'<p style="font-size:15px">{escape(intro)}</p><ol style="font-size:14px;line-height:1.5">'
             + "".join(f"<li>{escape(p)}</li>" for p in found) + "</ol></div>")
     return subject, text, html
+
+
+def list_alert(day: date, error: str) -> tuple[str, str, str]:
+    """(subject, text, HTML) of the note to the project inbox when the reader list can't be read, so nobody got the email."""
+    from html import escape
+    subject = f"Pulse Daily NOT SENT · {day}: reader list unreachable"
+    lines = [f"The daily email for {day} was not sent to anyone: the sign-up web app didn't give the reader list "
+             f"({error}). Sign-up on the site is probably down too.",
+             "1. Open the sign-up script at script.google.com, then Deploy, Manage deployments.",
+             "2. Check Execute as: Me and Who has access: Anyone; deploy a new version and authorise if asked.",
+             "3. Nothing else to do: the next run tries again and sends the day. This alert comes once a day."]
+    text = "\n".join(lines)
+    html = ('<div style="font-family:Arial,sans-serif;max-width:640px;color:#1a1a1a;font-size:15px;line-height:1.5">'
+            + "".join(f"<p>{escape(x)}</p>" for x in lines) + "</div>")
+    return subject, text, html

@@ -97,6 +97,15 @@ jobs:
           restore-keys: aipulse-db-v4-
           fail-on-cache-miss: true
 
+      - name: Was the project inbox already told the reader list is down today?
+        id: alerted
+        if: steps.done.outputs.cache-hit != 'true' && !inputs.dry_run && !inputs.sample
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: list-alerted
+          key: digest-list-alert-${{ steps.day.outputs.day }}
+          lookup-only: true
+
       - name: Check the day, then send it to every subscriber
         id: send
         if: steps.done.outputs.cache-hit != 'true'
@@ -113,11 +122,13 @@ jobs:
             python -m aipulse --db aipulse.db digest --to "$DIGEST_EMAIL" --day ${{ steps.day.outputs.day }} --layout ${{ inputs.layout }} --since "$since"
             exit $?
           fi
-          python -m aipulse --db aipulse.db digest --subscribers --day ${{ steps.day.outputs.day }} --since "$since" --seen seen.txt ${{ inputs.dry_run && '--dry-run check.html' || '' }}
+          python -m aipulse --db aipulse.db digest --subscribers --day ${{ steps.day.outputs.day }} --since "$since" --seen seen.txt ${{ inputs.dry_run && '--dry-run check.html' || '' }} ${{ steps.alerted.outputs.cache-hit == 'true' && '--no-list-alert' || '' }}
           code=$?
           # 0 = sent, 3 = held by the quality check (alert sent): either way the day is handled. Anything else (the
           # list or Gmail unreachable) leaves it for the next chance.
           if [ "$code" = 0 ] || [ "$code" = 3 ]; then echo "handled=1" >> "$GITHUB_OUTPUT"; fi
+          # 4 = the reader list was unreachable: the inbox was told once; later chances retry without telling again
+          if [ "$code" = 4 ]; then echo "listdown=1" >> "$GITHUB_OUTPUT"; date -u > list-alerted; fi
           exit $code
 
       - name: Mark the day as handled
@@ -130,3 +141,10 @@ jobs:
         with:
           path: digest-sent
           key: digest-sent-${{ steps.day.outputs.day }}
+
+      - name: Remember the inbox was told the reader list is down
+        if: always() && !inputs.dry_run && !inputs.sample && steps.send.outputs.listdown == '1' && steps.alerted.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: list-alerted
+          key: digest-list-alert-${{ steps.day.outputs.day }}
