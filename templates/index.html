@@ -531,14 +531,12 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 .site-foot a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
 .site-foot a:hover{color:var(--accent);text-decoration-color:currentColor}
 .site-foot{grid-template-columns:1.6fr 1fr 1fr 1fr}
-.social{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:260px}
-.social a{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:13px}
+.social{display:flex;flex-wrap:wrap;gap:8px}
+.social a{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);text-decoration:none;font-size:0}
 .social a:hover{border-color:var(--muted);color:var(--ink)}
-.social svg{width:14px;height:14px;flex:none;fill:currentColor}
+.social svg{width:16px;height:16px;flex:none;fill:currentColor}
 .social svg.ln{fill:none;stroke:currentColor;stroke-width:2}
 .sub-follow{margin:12px 0 0;font-size:14px}.sub-follow p{margin:0 0 8px}
-.sub-follow .social{grid-template-columns:repeat(4,auto);justify-content:start;max-width:none}
-@media (max-width:480px){.sub-follow .social{grid-template-columns:1fr 1fr}}
 @media (max-width:760px){.site-foot{grid-template-columns:1fr}}
 /* The sections' icons: filled, in the section's colour on a white tile. */
 .ico.sec{background:#141925;border-radius:10px}
@@ -945,7 +943,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
 .side-menu nav .sm-more{border-top:1px solid var(--ink)}
 .side-menu nav .sm-link[aria-current]{background:color-mix(in srgb,var(--ink) 8%,var(--bg))}
 .sm-follow{margin:16px 18px 20px}.sm-follow h5{margin:0 0 8px;font:600 13px var(--body);color:var(--muted)}
-.sm-follow .social{grid-template-columns:1fr 1fr;max-width:none}
+.sm-follow .social{max-width:none}
 @media (max-width:400px){.sm-tab img{width:40px;height:40px}.sm-tab span{font-size:12px}}
 @media (max-width:560px){header.top .menu-btn{padding:0 8px 0 0}header.top .menu-btn span{display:inline;font-size:9px}}
 @media (max-width:359px){header.top .brand h1{display:none}}  /* the smallest phones: the logo alone */
