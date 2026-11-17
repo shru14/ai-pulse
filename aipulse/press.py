@@ -453,6 +453,11 @@ LEFT_OUT = {
     "https://the-decoder.com/the-myth-of-claude-mythos-crumbles-as-small-open-models-hunt-the-same-cybersecurity-bugs-anthropic-showcased/",  # two company blog posts (AISLE, Vidoc), not a paper
     "https://the-decoder.com/chinese-ai-models-are-politically-complex-not-just-government-mouthpieces-study-finds/",  # a Vals AI blog post, not a paper
     "https://japantoday.com/category/features/opinions/spewing-us-election-falsehoods-ai-chatbots-face-scrutiny",  # the outlet refuses automated reads: can't read to check
+    "https://japantoday.com/category/features/environment/study-estimates-magnitude-of-us-data-center-pollution-as-climate-talks-unveil-clean-ai-pledge",  # can't read to check (the site refuses us)
+    "https://news.mit.edu/2026/learning-language-of-machine-learning-jacob-andreas-1117",  # a profile of a researcher, no one paper reported on
+    "https://e.vnexpress.net/news/news/education/vietnamese-educator-explores-ai-and-learning-sciences-at-singapore-s-nie-5142512.html",  # a profile of a student, no paper named
+    "https://openai.com/index/expanding-chatgpt-for-academic-researchers",  # a company page (OpenAI) about a product, no paper
+    "https://openai.com/index/science-at-the-frontier",  # a company page (OpenAI), no paper
 }
 
 # a headline (or the start of its summary) that may report on a paper
