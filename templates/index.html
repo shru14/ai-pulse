@@ -821,6 +821,10 @@ header.top:has(.secnav){border-bottom:0}  /* the strip ends the masthead itself 
 .gl-card{margin-top:10px;padding:10px 12px 12px!important;box-shadow:none}
 .mag-row .gl-tile-go{min-width:0!important;padding:9px 18px!important;font-size:14px!important}
 .meme-tile #meme img{max-height:170px;object-fit:contain;width:100%}
+/* the meme fills the tile down to its button: no empty band between them */
+@media (min-width:861px){.meme-tile:not(.grow) #meme{flex:1;min-height:0;display:flex}
+.meme-tile:not(.grow) #meme > div{flex:1;display:flex;flex-direction:column;min-height:0}
+.meme-tile:not(.grow) #meme img{flex:1;min-height:0;height:auto!important;max-height:none}}
 .about-page{margin-top:20px;display:grid;gap:18px}
 .about-page[hidden]{display:none}
 /* About: one dark band (headline, three notes on the right, pulse line), then Pulse Pro Engine (stacked on phones) */
