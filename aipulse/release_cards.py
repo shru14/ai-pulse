@@ -301,7 +301,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-15"
+SAFETY_CHECKED = "2026-11-18"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -686,10 +686,16 @@ LEFT_OUT = {
     "https://www.marktechpost.com/2026/11/13/google-gemini-4-hydrogen/": "same as Gemini 4 Hydrogen",
     "https://www.xataka.com/robotica-e-ia/google-cree-haber-dado-santo-grial-ia-gemini-4-hydrogen-rapido-bueno-casi-barato":
         "same as Gemini 4 Hydrogen",
+    "https://www.marktechpost.com/2026/11/15/bland-tofu-1-full-duplex-speech-to-speech-model/":
+        "Tofu-1: one news outlet within 3 days",
+    "https://the-decoder.com/meituan-releases-a-1-6-trillion-parameter-agent-model-that-never-touched-an-nvidia-gpu/":
+        "LongCat-2.5: one news outlet within 3 days",
+    "https://pandaily.com/endless-frontier-fx-bio-1031-open-weights-bioinformatics-agent-model-biomysterybench":
+        "Fx-Bio-1031: one news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-12"
+CHECKED_TO = "2026-11-15"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
