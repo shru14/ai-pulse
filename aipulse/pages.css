@@ -2339,7 +2339,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .ex-pager{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px 18px;margin-top:24px;padding-top:12px;border-top:2px solid var(--line)}
 .cp .ex-pager>span:first-child{margin-right:auto;font:700 12px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .cp .ex-pager .ap-btn{padding:6px 14px;font-size:14px}
-.cp .ex-end .ap-flow{margin:30px 0 0;padding:12px 0 0;border-bottom:0;border-top:2px solid var(--line)}
+.cp .ex-end .ap-flow{margin:30px 0 0}
 @media (max-width:640px){.cp .ex-rail{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:72%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.cp .ex .ex-rail a{scroll-snap-align:start}.cp .ex-rail a[aria-selected=true]::after{display:none}}
 @media print{.cp .ex-rail,.cp .ex-pager,.cp .ex-end{display:none}.cp .ex-part[hidden]{display:block!important}}
 @media (max-width:640px){.cp .ex-to{display:none}.cp .ex-lanes{grid-template-columns:1fr}.cp .ex-lanes div{border-right:0;border-bottom:1px solid var(--ink)}.cp .ex-lanes div:last-child{border-bottom:0}.cp .ex-gl td,.cp .ex-rk td,.cp .ex-steps td,.cp .ex-stages td{width:auto!important}}
