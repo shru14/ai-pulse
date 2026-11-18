@@ -25,3 +25,24 @@ def test_big_labs_left_out():
     cards = [_card("2026-11-18", "OpenAI raises $10B in new round", "B"),
              _card("2026-11-18", "Acme Robotics raises $40M Series B", "B")]
     assert [c["company"] for c in companies.candidates(cards)] == ["Acme Robotics"]
+
+
+def test_hacker_news_keeps_ai_launches_two_weeks(tmp_path):
+    import json
+    from aipulse import social, store
+    conn = store.connect(tmp_path / "t.db")
+    now = 1_800_000_000
+    items = {1: {"id": 1, "type": "story", "title": "Launch HN: Pomerado - an MCP for any website, for AI agents",
+                 "url": "https://p.example", "score": 80, "descendants": 30, "time": now - 3600},
+             2: {"id": 2, "type": "story", "title": "Show HN: my bread recipe", "score": 900, "descendants": 400, "time": now - 60}}
+    fetcher = lambda url: json.dumps(list(items) if url.endswith("topstories.json")
+                                     else items[int(url.rsplit("/", 1)[1][:-5])]).encode()
+    social.hacker_news(conn, fetcher=fetcher, now=now)
+    items.pop(1)  # gone from the top stories the next run: still kept
+    social.hacker_news(conn, fetcher=fetcher, now=now + 86400)
+    (t,) = social.payload(conn)["launches"]
+    assert t["points"] == 80 and t["hn"].endswith("id=1")
+    social.hacker_news(conn, fetcher=fetcher, now=now + 15 * 86400)
+    assert social.payload(conn)["launches"] == []
+    companies_rows = companies.launches({"launches": [t]})
+    assert [r["title"] for r in companies_rows] == [t["title"]]

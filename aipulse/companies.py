@@ -9,13 +9,16 @@ it on a companies/<day> branch; it goes in the email only once the owner merges 
 them, marked "reported" when they come from a news report rather than the company. A day with no approved profile
 has no box: nothing is padded and no company comes back.
 
+Launches on Hacker News (Show HN, Launch HN) with their points are a second list of candidates (launches), a sign of
+early interest; a profile still needs a story to check it against.
+
 The week's company is ranked, never scored: the most outlets that reported it Monday to Saturday, then the most
 days it was in the news, then the latest story.
 """
 from __future__ import annotations
 
 import re
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from . import classify, money
 
@@ -139,6 +142,18 @@ def candidates(cards: list[dict], since: str = "") -> list[dict]:
             continue
         out.append(dict(c, company=name, signal=what, outlets=_outlets(c)))
     return sorted(out, key=lambda c: (c["date"][:10], c["outlets"]), reverse=True)
+
+
+def launches(social: dict, since: str = "") -> list[dict]:
+    """AI startups launching on Hacker News (Show HN, Launch HN; social.py keeps them two weeks) after CHECKED_TO (or
+    `since`, if later) that no profile or LEFT_OUT has, the most points first: a sign of early interest, to check
+    against a story before any profile. `social` is the site's social.json (social.payload)."""
+    since = max(since, CHECKED_TO + "~")
+    used = {p["url"] for p in profiles()} | set(LEFT_OUT)
+    rows = [dict(t, date=datetime.fromtimestamp(t["time"], timezone.utc).strftime("%Y-%m-%d %H:%M"))
+            for t in social.get("launches") or []]
+    return sorted([t for t in rows if t["date"] >= since and t["url"] not in used and t["hn"] not in used],
+                  key=lambda t: t["points"], reverse=True)
 
 
 def note(base: str, branch: str) -> tuple[str, str, str] | None:

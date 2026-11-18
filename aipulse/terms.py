@@ -145,6 +145,8 @@ TERMS: dict[str, tuple[str, str, str]] = {
                                 "Copyright policy (Korean), as The Elec's: no reproduction without consent; nothing on "
                                 "robots, feeds or personal use; checked 10 Oct 2026"),
     "contxto.com": ("no terms", "", "No terms page linked from the site; checked 10 Oct 2026"),
+    "www.lavca.org": ("no terms", "", "No terms page linked from the site (its privacy policy says nothing on reading "
+                      "the feed); checked 18 Nov 2026"),
     "dplnews.com": ("terms read", "https://dplnews.com/aviso-legal/",
                     "Aviso legal (Spanish): no reproduction or commercial use of its content without consent; nothing on "
                     "robots, feeds or personal use; checked 10 Oct 2026"),
@@ -161,6 +163,8 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "www.fayerwayer.com": ("robots.txt", "", "robots.txt allows the feed; no terms page linked or found"),
     "www.telesemana.com": ("robots.txt", "", "robots.txt allows the feed; no terms page linked or found"),
     "www.dawn.com": ("robots.txt", "", "robots.txt allows the feed; its terms page answers our reader 403"),
+    "yourstory.com": ("robots.txt", "", "robots.txt allows the feed; its site and terms pages answer our reader 403; "
+                      "checked 18 Nov 2026"),
     "japantoday.com": ("robots.txt", "https://japantoday.com/terms", "robots.txt allows the feed; its terms page is "
                        "blank to our reader"),
     "www.channelnewsasia.com": ("robots.txt", "", "robots.txt allows the feed; no terms page linked or found"),

@@ -152,6 +152,7 @@ def main():
                         "yet for AI buyouts (to check by hand and add to buyouts.DEALS or buyouts.LEFT_OUT)")
     co = sub.add_parser("companies", help="startup stories not checked yet for Company of the day (to write up by hand "
                         "in companies.PROFILES, or add to companies.LEFT_OUT)")
+    co.add_argument("--social", metavar="FILE", help="the site's social.json, for AI launches on Hacker News")
     us = sub.add_parser("uses", help="finance stories naming AI, not checked yet for AI in finance (to check by hand "
                         "and add to finance_uses.USES or finance_uses.LEFT_OUT)")
     rd = sub.add_parser("ready-check", help="read every Ready-made tools page once and print what moved since the last "
@@ -641,6 +642,11 @@ def main():
         print(f"{done}, {len(m.LEFT_OUT)} left out. To check from {since} ({len(todo)}):")
         for c in todo:
             print(f"  {c['date']} {c['source']}: {c['title']}\n    {c['url']}")
+        if m is companies and a.social:  # startups launching on Hacker News, the most points first
+            more = companies.launches(json.load(open(a.social, encoding="utf-8")), since if a.days else "")
+            print(f"Launches on Hacker News ({len(more)}):")
+            for t in more:
+                print(f"  {t['date']} {t['points']} points, {t['comments']} comments: {t['title']}\n    {t['url']}\n    {t['hn']}")
         if m is owners:  # AI money's $1B+ rounds and compute deals, on the same page
             from . import ai_money
             more = ai_money.candidates(found, since if a.days else "")
