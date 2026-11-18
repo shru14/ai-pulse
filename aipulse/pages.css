@@ -1186,6 +1186,17 @@ a.subscribe-btn{text-decoration:none}
 .cp .rc .sh-tab{padding:5px 12px;border:2px solid var(--line);color:var(--ink)}
 .cp .rc .sh-tab[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .cp .rc .sh-tab[aria-pressed=true] b{color:var(--bg)}
+/* simpler look (18 Nov): plain sentences in place of the big-number tiles, each part in a rounded box, column heads
+   in normal case; the details button shows on phones only */
+.cp .rc .rc-sum,.cp .rc .rm-wrap,.cp .rc .jb-lim{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.cp .rc .rc-sum h2,.cp .rc .jb-lim h2{margin:0 0 8px;padding:0;border:0}
+.cp .rc .rc-sum p{margin:4px 0}
+.cp .rc .rm-wrap{padding:4px 18px 8px}
+.cp .rc .rc-t{margin-top:0}
+.cp .rc .rc-t th{font:500 13px var(--body);letter-spacing:0;text-transform:none;color:var(--muted)}
+.cp .rc .sh-count,.cp .rc .sh-count b{font-family:var(--body)}
+@media (min-width:641px){.cp .rc .rc-t td.rc-m{min-width:170px}}
+.cp .rc .rc-more{display:none}
 @media (max-width:640px){.cp .rc .rm-big b{font-size:26px}
   .cp .rc .rm-wrap{overflow:auto}
   .cp .ft .rc-t{min-width:880px}
@@ -1741,6 +1752,18 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft .rc-t td:nth-child(5)::before{content:"Where you can use it: "}
   .cp .ft .rc-t td:nth-child(6)::before{content:"Launch price (in / out, per 1M tokens): "}
   .cp .ft .rc-t td:nth-child(7)::before{content:"Safety report "}
+  /* folded: model, date, weights and safety tags; a tap opens licence, places, price and the notes */
+  .cp .rc .rc-sum,.cp .rc .jb-lim{padding:12px}
+  .cp .rc .rc-sum h2{font-size:15px;margin-bottom:4px}
+  .cp .rc .rc-sum p{margin:0;padding:7px 0;font-size:13px;line-height:1.4;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+  .cp .rc .rm-wrap{padding:0;border:0;border-radius:0}
+  .cp .rc.ft .rc-t tr{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:10px;padding:10px 12px;gap:6px 10px;cursor:pointer}
+  .cp .rc.ft .rc-t tr:not(.rc-x) td:is(:nth-child(4),:nth-child(5),:nth-child(6)),
+  .cp .rc.ft .rc-t tr:not(.rc-x) td:is(:nth-child(3),:nth-child(7)) small{display:none}
+  .cp .rc.ft .rc-t tr.rc-x td:is(:nth-child(3),:nth-child(7)) small{display:block;margin:3px 0 0}
+  .cp .rc.ft .rc-t tr.rc-x td:nth-child(4){margin-top:4px;padding-top:8px;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+  .cp .rc .rc-more{display:inline-block;margin-left:8px;padding:0 7px;border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:8px;background:none;color:var(--ink);font:500 12px/18px var(--body);cursor:pointer}
+  .cp .rc tr.rc-x .rc-more{transform:rotate(180deg)}
   .cp .pl .pl-t td:nth-child(1){grid-column:1/-1;grid-row:1;text-align:left;font-size:12.5px}
   .cp .pl .pl-t td:nth-child(2){grid-column:1/-1;grid-row:2}
   .cp .pl .pl-t td:nth-child(3){grid-column:1/-1;grid-row:3}.cp .pl .pl-t td:nth-child(6){grid-row:4}
