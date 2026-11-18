@@ -397,6 +397,7 @@ LEFT_OUT = {
     "https://incidentdatabase.ai/cite/1346",
     "https://the-decoder.com/columbia-university-launches-tracker-for-ai-deals-and-lawsuits-from-media-companies/",
     "https://incidentdatabase.ai/cite/1682",
+    "https://incidentdatabase.ai/cite/1829",  # criminal DUI case, not a suit against an AI maker
     "https://incidentdatabase.ai/cite/1576",
     "https://techcrunch.com/2025/06/07/lawyers-could-face-severe-penalties-for-fake-ai-generated-citations-uk-court-warns/",
     "https://incidentdatabase.ai/cite/1257",
