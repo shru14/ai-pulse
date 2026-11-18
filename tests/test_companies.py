@@ -1,6 +1,19 @@
 from datetime import date
 
+import pytest
+
 from aipulse import companies, poster
+
+# The tests' own profiles and checked-to day, so the daily drafts (new PROFILES rows, a later CHECKED_TO) never break them
+WEEK = [("2026-11-16", "Noeri", "d", "m", "$110M raised", "Concept", "b", "https://n.example", "N"),
+        ("2026-11-17", "Model ML", "d", "m", "$250M raised", "Business model", "b", "https://m.example", "M")]
+
+
+@pytest.fixture(autouse=True)
+def _own_profiles(monkeypatch):
+    monkeypatch.setattr(companies, "PROFILES", WEEK)
+    monkeypatch.setattr(companies, "LEFT_OUT", [])
+    monkeypatch.setattr(companies, "CHECKED_TO", "2026-11-17")
 
 
 def _card(day, title, *others):
