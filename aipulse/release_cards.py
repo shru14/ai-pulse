@@ -784,7 +784,8 @@ def _row(r: dict) -> str:
         + small(s["note"])
     return (f'<tr data-w="{r["weights"]}" data-out="{"1" if r["out"] else ""}" data-s="{s["when"]}" '
             f'data-text="{text}">'
-            f'<td class="rm-d">{_day(r["day"])}</td>'
+            f'<td class="rm-d">{_day(r["day"])}<button type="button" class="rc-more" aria-expanded="false" '
+            f'aria-label="Details for {escape(r["model"], quote=True)}">▾</button></td>'
             f'<td class="rc-m"><a href="{escape(r["url"])}" rel="noopener">{escape(r["model"])}</a>'
             f'{small(r["lab"] + (" · " + r["country"] if r["country"] else ""))}</td>'
             f'<td><span class="rc-w {tag}">{escape(r["weights"])}</span>{small(r["note"])}</td>'
@@ -817,19 +818,25 @@ rows.forEach(r=>{const ok=(!f||r.dataset[f]===v)&&words.every(w=>r.dataset.text.
 count.textContent=n;none.hidden=n>0}
 pg.querySelectorAll('.sh-tab').forEach(b=>b.addEventListener('click',()=>{f=b.dataset.f;v=b.dataset.v;
 pg.querySelectorAll('.sh-tab').forEach(t=>t.setAttribute('aria-pressed',t===b));run()}));
-q.addEventListener('input',run)})();
+q.addEventListener('input',run);
+rows.forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('a')||!matchMedia('(max-width:640px)').matches)return;
+const o=r.classList.toggle('rc-x');r.querySelector('.rc-more').setAttribute('aria-expanded',o)}))})();
 </script>"""
 
 
 def body(rs: list[dict]) -> str:
     since = _day(SINCE).rsplit(" ", 1)[0]
+    n = len(rs)
     down = [r for r in rs if r["weights"] != "Closed"]
     china = sum(r["country"] == "China" for r in down)
-    bigs = [(f"{len(down)} of {len(rs)}", f"major releases since {since} came with weights you can download"),
-            (f"{china}", f"of those {len(down)} came from labs in China"),
-            (f"{sum(r['out'] for r in rs)}", f"releases since {since} left some places out at launch"),
-            (f"{sum(r['safety']['when'] == 'day' for r in rs)} of {len(rs)}",
-             f"major releases since {since} had a report of their safety tests out on launch day")]
+    when = {k: sum(r["safety"]["when"] == k for r in rs) for k in ("day", "later", "none")}
+    out = sum(r["out"] for r in rs)
+    # the old big-number tiles as plain sentences, each set of counts adding up to the total
+    short = [f"Of {n} major releases since {since}, {len(down)} came with weights you can download ({china} of them "
+             f"from labs in China) and {n - len(down)} did not.",
+             f"{when['day']} had a report of their safety tests out on launch day, {when['later']} later, and for "
+             f"{when['none']} we found none.",
+             f"{out} left some places out at launch; for the other {n - out}, no place left out was named."]
     limits = [
         ("What counts", "A new AI model that at least two news outlets reported within three days of its launch. The "
          "lab's own posts, its partners' blogs and hosting services don't count towards the two."),
@@ -850,12 +857,10 @@ def body(rs: list[dict]) -> str:
     ]
     return ('<div class="ft jb rm rc">\n'
             + pages.feature_head(PATH, "Release cards", "What came out and can I use it?",
-                                 f"Every major AI model release since {since}, newest first: whether you can download "
-                                 "it, under what licence, where you can use it, its price at launch and whether the "
-                                 "lab published its safety test results. Each row is "
-                                 "checked by hand against the lab's own page, its licence text or Hugging Face.")
-            + '<div class="rm-bigs">' + "".join(f'<div class="rm-big"><b>{escape(n)}</b><span>{escape(s)}</span></div>'
-                                              for n, s in bigs) + "</div>\n"
+                                 f"Every major AI model release since {since}, checked by hand: can you download it, "
+                                 "under what licence, where, at what price, and with safety results?")
+            + '<section class="rc-sum"><h2>In short</h2>' + "".join(f"<p>{escape(t)}</p>" for t in short)
+            + "</section>\n"
             + _filters(rs)
             + '<div class="rm-wrap"><table class="mt rm-t rc-t"><thead><tr><th>Released</th><th>Model</th>'
               '<th>Weights</th><th>Licence</th><th>Where you can use it</th>'
