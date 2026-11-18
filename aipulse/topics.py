@@ -319,6 +319,7 @@ ADDED: dict[str, dict[str, str]] = {
     },
     "data-centre-power-bills": {
         "https://www.canarymedia.com/articles/data-centers/virginia-new-energy-plan-ai-boom": "Virginia's new energy plan on utility bills and electricity demand from the AI boom",
+        "http://www.bernama.com/en/news.php?id=2635825": "Malaysia's government says its rules keep data centres' electricity supply and costs from hurting household consumers",
     },
     "data-centre-backlash": {
         "https://www.xataka.com/robotica-e-ia/zaragoza-sale-a-calle-centros-datos-no-generan-empleo-no-pagan-impuestos-se-quedan-todos-recursos": "Thousands march in Zaragoza against data centres",
@@ -364,6 +365,32 @@ ADDED: dict[str, dict[str, str]] = {
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # US chip export curbs and Southeast Asia's AI ambitions, experts' view with nothing about China or Nvidia in the summary
+    "https://www.channelnewsasia.com/singapore/us-ai-chip-export-control-southeast-asia-singapore-6558276",
+    # Oregon's child safety suit against OpenAI, not about the restructuring or Musk's case
+    "https://www.engadget.com/2320041/oregon-is-the-latest-state-to-sue-openai-over-child-safety/",
+    # SEC probe of Nvidia after Huang's exit, about the Huang case rather than chip rules or China's response
+    "https://techcrunch.com/2026/11/17/sec-reportedly-investigating-nvidia-amid-huang-exit/",
+    # OpenAI legal-AI product launch, not about the restructuring or the Musk case
+    "https://openai.com/index/astra-law-6-2",
+    # Huang asked to testify to Congress, about the Huang case rather than chip rules
+    "https://olhardigital.com.br/2026/11/17/pro/caso-com-suposta-espia-chinesa-leva-ex-chefe-da-nvidia-ao-congresso/",
+    # Nvidia's new export control committee, summary doesn't mention California laws or state preemption
+    "https://www.engadget.com/2319262/nvidia-establishes-export-control-committee-following-jensen-huang-resignation/",
+    # Nvidia's board committee on national security after Huang's exit, a company governance step rather than a chip rule or China's response
+    "https://techcrunch.com/2026/11/17/nvidias-first-big-move-after-jensen-huangs-exit-targets-national-security/",
+    # Alice Huang's husband and China data centres, about the Huang case rather than chip rules
+    "https://olhardigital.com.br/2026/11/17/pro/marido-de-alice-huang-construiu-rede-de-data-centers-na-china/",
+    # TensorWave capacity deal for OpenAI's AMD buildout, summary doesn't mention Stargate
+    "https://w.media/tensorwave-signs-457-mw-deal-to-support-openais-amd-buildout/",
+    # Sarvam inference platform hosting open models in India, not about Stargate or DeepSeek and the US
+    "https://www.marktechpost.com/2026/11/17/sarvam-token-factory-india-inference-platform/",
+    # California AG suit over OpenAI agent incidents, not about the restructuring or Musk's case
+    "https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/",
+    # Trump on the Huang affair and national security, about the Huang case rather than chip rules
+    "https://techcrunch.com/2026/11/16/trump-says-ex-nvidia-ceo-jensen-huangs-affair-with-an-alleged-chinese-spy-did-not-threaten-national-security/",
+    # Nvidia investigating reports about Huang and spy efforts, about the Huang case rather than chip rules
+    "https://www.engadget.com/2310336/nvidia-is-investigating-reports-that-ceo-jensen-huang-was-the-target-of-chinese-spy-efforts/",
     # Microsoft on a ban of Chinese parts in US data centres, not about selling AI chips to China
     "https://olhardigital.com.br/2026/11/10/pro/microsoft-tenta-barrar-proibicao-de-tecnologia-chinesa-em-data-centers/",
     # Malaysian customs seizure of smuggled AI chips, can't tell from the summary it involves Nvidia, China or the US rules
