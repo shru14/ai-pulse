@@ -2315,7 +2315,15 @@ a.subscribe-btn{text-decoration:none}
 .cp .ex-f2{display:flex;flex-direction:column;gap:2px;font-size:14.5px}.cp .ex-f2 small{color:var(--muted);font-size:13px}
 .cp .ex-f2 input{margin-top:4px;font:700 16px var(--body);padding:7px 9px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
 .cp .ex-out{margin-top:14px}.cp .ex .ex-big{margin:0 0 6px;font-size:16px;line-height:1.45}.cp .ex-big b{display:block;font:900 34px/1.1 var(--body)}
-.cp .ex-taps{display:flex;flex-direction:column;gap:14px}.cp .ex-tap{border:0;padding:0;margin:0}.cp .ex-tap legend{font-weight:700;margin-bottom:6px;padding:0}
+.cp .ex-taps{display:flex;flex-direction:column;gap:0}.cp .ex-tap{border:0;padding:0;margin:0}.cp .ex-tap legend{font-weight:700;margin-bottom:6px;padding:0}
+/* Budget and return: one question per row, plain labels, separate rounded options (18 Nov) */
+.cp .ex-taps .fl-q{border-bottom:0;padding:10px 0}.cp .ex-taps [data-pages]:not([hidden]){display:contents}
+.cp .ex-taps .fl-q legend{font:400 16px/1.4 var(--body);margin:0}.cp .ex-taps legend small{display:block;font-size:13.5px;color:var(--muted)}
+.cp .ex-taps .fl-seg{justify-self:start;align-items:center;gap:6px;border:0;border-radius:0;overflow:visible}
+.cp .ex-taps .fl-seg label span{border:1px solid color-mix(in srgb,var(--ink) 22%,transparent)!important;padding:5px 14px;background:var(--bg);font-weight:400}
+.cp .ex-taps .fl-seg input:checked+span{background:color-mix(in srgb,#56B4E9 28%,var(--bg));border-color:#56B4E9!important;color:var(--ink)}
+.cp .ex-taps .ex-num .fl-seg>span{border:0!important;padding:0;background:none;font-size:15px}
+.cp .ex-taps .ex-num .fl-num{width:96px;text-align:left;padding:5px 10px;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);border-radius:10px}
 .cp .ex-rate summary{cursor:pointer;color:var(--muted);font-size:14.5px}.cp .ex-rate .ex-f2{max-width:320px;margin-top:8px}.cp .ex .ex-mline{margin:0 0 8px;font-size:16px}
 .cp .ex-more-m{margin-top:10px}.cp .ex-more-m summary{cursor:pointer;font-weight:700}
 /* part 6: rules as risks to weigh */
