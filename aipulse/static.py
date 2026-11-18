@@ -7,7 +7,9 @@ data.json in the browser instead of calling /api/items.
 
 from __future__ import annotations
 
+import base64
 import csv
+import gzip
 import io
 import json
 import re
@@ -181,8 +183,11 @@ def boot(page: str, data: dict, today: date, week: bool = False, cat: str | None
          "cards": [{k: v for k, v in c.items() if k != "s" and (week or k in TICKER_FIELDS)} for c in cards]}
     if cat:
         b["first"] = first_view(data["cards"], today, cat)
-    text = json.dumps(b, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-    return page.replace("\n<script>\n// Industry cards", f'\n<script type="application/json" id="boot">{text}</script>\n'
+    # packed (gzip, then base64) and unpacked by the page: 8 days' cards in full made the front page 1.1 MB, past
+    # what many bots and link previews read; packed it is under half that, every field kept (owner, 18 Nov 2026)
+    raw = json.dumps(b, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    text = base64.b64encode(gzip.compress(raw, mtime=0)).decode("ascii")
+    return page.replace("\n<script>\n// Industry cards", f'\n<script type="application/gzip" id="boot">{text}</script>\n'
                         "<script>\n// Industry cards", 1)
 
 

@@ -1,4 +1,6 @@
 """Building the site: pages, search, glossary, feeds, logos, settings and the paid pages' seal."""
+import base64
+import gzip
 import re
 from datetime import date
 from pathlib import Path
@@ -84,12 +86,12 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     assert (tmp_path / "site" / "feeds" / "all.opml").read_text(encoding="utf-8").count("<outline ") == 6
     assert data["total"] == total  # the front page's all-time count, without the archive files
     # each page holds what it draws first (static.boot), so it needn't wait for data.json
-    boot = lambda p: json.loads(re.search(r'<script type="application/json" id="boot">(.*?)</script>', p).group(1))
+    boot = lambda p: json.loads(gzip.decompress(base64.b64decode(re.search(r'<script type="application/gzip" id="boot">(.*?)</script>', p).group(1))))
     front, news = boot(page), boot((tmp_path / "site" / "industry" / "index.html").read_text(encoding="utf-8"))
     assert front["total"] == total and not front["lite"] and "first" not in front
     assert news["lite"] and news["first"]["category"] == "news" and news["first"]["days"] == 30
     assert all("s" not in c for c in front["cards"] + news["first"]["items"])  # no search words: data.json has them
-    assert page.index('id="boot"') < page.index("const BOOT")  # read by the page's script, so before it
+    assert page.index('id="boot"') < page.index("let BOOT")  # read by the page's script, so before it
     assert (tmp_path / "site" / "tracker.csv").read_text(encoding="utf-8").startswith("date,countries,type,title,source,link")
     # what search engines see: a description and a preview image; the sitemap lists each day's page; AI-training
     # bots are kept out, and readers' own pages are never indexed

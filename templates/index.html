@@ -1910,7 +1910,12 @@ async function loadData(){
 }
 // What the build wrote into this page (static.boot): the page's first view and recent cards, so it draws at once;
 // data.json is fetched only for what they can't answer (a search, a filter, another range, more stories).
-const BOOT = (() => { try{ return JSON.parse(document.getElementById("boot").textContent); }catch(e){ return null; } })();
+// It is packed (gzip, then base64) to keep the page small; a browser that can't unpack it reads data.json instead.
+let BOOT = null;
+const bootReady = (async () => { try{
+  const bytes = Uint8Array.from(atob(document.getElementById("boot").textContent.trim()), c => c.charCodeAt(0));
+  BOOT = JSON.parse(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).text());
+}catch(e){ BOOT = null; } })();
 function bootAnswer(params){
   if(!BOOT || staticData || params.get("q") || params.get("place") || params.get("region")) return null;
   const days = +params.get("days") || 0, f = BOOT.first;
@@ -1923,6 +1928,7 @@ function bootAnswer(params){
 }
 async function fetchItems(params){
   if(!STATIC) return (await fetch("api/items?"+params)).json();
+  await bootReady;
   const quick = bootAnswer(params);
   if(quick) return quick;
   await loadData();
@@ -2068,7 +2074,7 @@ const byWeight = (a, b) => outlets(b) - outlets(a) || (b.date > a.date ? 1 : b.d
 async function loadHomeCounts(){
   let d = null;
   try{  // on the static site, the build's own total: no archive file to download for one number
-    if(STATIC){ const src = BOOT || (await loadData(), staticData);
+    if(STATIC){ await bootReady; const src = BOOT || (await loadData(), staticData);
       if(src.total != null) d = {counts: {all: src.total}, lastRun: src.lastRun}; }
     d ??= await fetchItems(new URLSearchParams({days: 0, per_page: 1, page: 1}));
   }catch(e){}
