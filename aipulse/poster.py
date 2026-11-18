@@ -758,7 +758,8 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     social = (("X", "https://x.com/Pulse_Central_"), ("LinkedIn", "https://www.linkedin.com/company/pulse-central/"),
               ("Instagram", "https://www.instagram.com/pulse_central_/"),
               ("Bluesky", "https://bsky.app/profile/pulsecentral.bsky.social"),
-              ("Reddit", "https://www.reddit.com/user/pulse_central_/"), ("Substack", "https://substack.com/@pulsecentral"))
+              ("Reddit", "https://www.reddit.com/user/pulse_central_/"), ("Substack", "https://substack.com/@pulsecentral"),
+              ("YouTube", "https://www.youtube.com/@OfficialPulseCentral"))
     text += ["", f"Know someone who'd like this? Forward this email; they can sign up at {rss.SITE}#subscribe",
              "Follow Pulse Central: " + " · ".join(f"{n} {u}" for n, u in social),
              f"You chose: {chose}.", f"Change my streams and choices: {change}", f"Unsubscribe: {stop}",
