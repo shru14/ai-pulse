@@ -220,6 +220,18 @@ LEFT_OUT = {
         "Survey news on developers, not a model price or place change",
     "https://techcrunch.com/2026/11/11/nvidias-stock-drops-as-board-reportedly-preps-to-oust-ceo-jensen-huang/":
         "A company's stock and leadership news, not a model price change",
+    "https://openai.com/index/introducing-gpt-6-2-astra-sol":
+        "Looks like a new model's launch; the page couldn't be read to show a price or place change",
+    "https://about.fb.com/news/2026/11/muse-is-now-available-in-australia/":
+        "An app (a personal AI agent) reaching Australia, not an AI model",
+    "https://www.channelnewsasia.com/business/us-data-centers-slash-electric-bills-brief-demand-cuts-raising-questions-over-who-pays-6559321":
+        "Data centre electricity bills, not a model price change",
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=281496":
+        "Copper market prices, not an AI model price change",
+    "https://techcrunch.com/2026/11/16/cybersecurity-ai-startup-corma-reaches-1b-valuation-in-about-3-months/":
+        "A startup's valuation, not a model price change",
+    "https://www.marktechpost.com/2026/11/16/alibaba-qwen4-max-release/":
+        "Looks like a new model's release; the page couldn't be read to show a price or place change",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
