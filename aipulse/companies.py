@@ -22,7 +22,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from . import classify, money
 
-CHECKED_TO = "2026-11-17"  # stories up to this day are checked
+CHECKED_TO = "2026-11-18"  # stories up to this day are checked
 GAP = 30  # days before a company can be featured again
 REASONS = ("Concept", "Revenue", "Business model")  # why it's here
 
@@ -38,10 +38,18 @@ PROFILES: list[tuple[str, str, str, str, str, str, str, str, str]] = [
      "Built for investment banks and consulting firms; the story gives no prices.", "$250M raised",
      "Business model", "Takes on the routine model and slide updates that junior bankers do by hand.",
      "https://techcrunch.com/2026/11/17/model-ml-raises-250m-to-automate-investment-banking-grunt-work/", "TechCrunch"),
+    ("2026-11-18", "Humyn Labs", "Records people doing everyday tasks on its own cameras and labels the footage as robot training data.",
+     "Built for AI labs, robotics companies and world-model developers (12 paying customers); the story gives no prices.",
+     "$10M revenue between April and October, reported", "Revenue",
+     "Founded in February, it reports revenue within months and has raised $47M in a Series A.",
+     "https://techcrunch.com/2026/11/18/accel-backs-indias-humyn-labs-to-supply-training-data-needed-by-u-s-robotics-ai-developers/",
+     "TechCrunch"),
 ]
 
 # Stories checked and not picked (a big company's, a round still in talks, a pick already made that day)
 LEFT_OUT: list[str] = [
+    # Not a company's news: banks' policy on AI agents
+    "https://techcrunch.com/2026/11/18/more-banks-says-customers-using-ai-agents-are-on-their-own-even-if-they-get-hacked/",
 ]
 
 _REVENUE = re.compile(r"\b(revenue|ARR|annuali[sz]ed|run[- ]rate|profitab\w*|customers|subscribers|paying users)\b", re.I)
