@@ -30,7 +30,10 @@
  *   POST action=contact     name, email,    Pulse Pro Engine's "Start a conversation" form: emailed to the project inbox
  *                           firm, topic,    with Reply-To set to the sender, so a reply goes straight back; nothing
  *                           message         is kept here (owner, 12 Nov 2026)
- *   POST action=list        key             the confirmed readers, for the daily send (key = LIST_KEY; in the
+ *   POST action=comment     post, name,     a reader's comment on a Pulse Pro Engine blog post: a row in the
+ *                           comment         "Pulse blog comments" Sheet, shown only once the owner ticks Approved
+ *   POST action=comments    post            the approved comments on that post (name, date, text)
+ *   POST action=list        key           the confirmed readers, for the daily send (key = LIST_KEY; in the
  *                                            body, never the address, so it stays out of Google's logs)
  *   POST action=interests   key             every interest readers follow, once each and without who follows it,
  *                                            for the site's weekly dossiers (key = LIST_KEY)
@@ -73,6 +76,8 @@ function doPost(e) {
   if (p["List-Unsubscribe"] === "One-Click") return (unsubscribe(p.t), json({ok: true}));
   if (p.action === "list") return json(list(p.key));
   if (p.action === "interests") return json(interests(p.key));
+  if (p.action === "comments") return json(comments(p));
+  if (p.action === "comment") return json(comment(p));
   const result = p.action === "subscribe" ? subscribe(p)
     : p.action === "confirm" ? confirm(p.t)
     : p.action === "unsubscribe" ? unsubscribe(p.t)
@@ -348,6 +353,60 @@ function contact(p) {
     return {ok: false, error: "busy"};
   }
   return {ok: true};
+}
+
+// Blog comments (owner, 18 Nov 2026): readers post a name and a comment under a Pulse Pro Engine blog post. Each lands
+// as a row in the "Pulse blog comments" Google Sheet in this account, unticked; only rows the owner ticks in the
+// Approved column are shown on the site. The project inbox gets a short note for each new comment.
+// Setup, once: run setUpComments from the editor and allow the Sheets permission it asks for, then deploy a new version.
+const COMMENTS_A_DAY = 50;
+const COMMENT_HEAD = ["Date", "Post", "Name", "Comment", "Approved"];
+
+function commentSheet() {
+  const id = store().getProperty("COMMENTS_SHEET");
+  if (id) return SpreadsheetApp.openById(id).getSheets()[0];
+  const book = SpreadsheetApp.create("Pulse blog comments"), sheet = book.getSheets()[0];
+  sheet.appendRow(COMMENT_HEAD);
+  sheet.setFrozenRows(1);
+  sheet.getRange("E2:E").insertCheckboxes();
+  store().setProperty("COMMENTS_SHEET", book.getId());
+  return sheet;
+}
+
+function setUpComments() {
+  Logger.log("Comments Sheet: " + commentSheet().getParent().getUrl());
+}
+
+function comment(p) {
+  if (p.website) return {ok: true};  // the hidden field only bots fill in
+  const post = String(p.post || "").replace(/[^a-z0-9-]/g, "").slice(0, 120);
+  const name = oneLine(p.name, 60), text = plain(p.comment, 1500);
+  if (!post || !name || !text) return {ok: false, error: "missing"};
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const props = store(), key = "comment:" + today(), n = Number(props.getProperty(key) || 0);
+    if (n >= COMMENTS_A_DAY) return {ok: false, error: "busy"};
+    props.setProperty(key, String(n + 1));
+    const sheet = commentSheet();
+    sheet.appendRow([today(), post, name, text, false]);
+    sheet.getRange(sheet.getLastRow(), 5).insertCheckboxes();
+  } finally {
+    lock.releaseLock();
+  }
+  if (MailApp.getRemainingDailyQuota() >= 20)
+    notify(`New blog comment on ${post}, from ${name}`,
+           [text, "", "Tick Approved to show it on the site: " + commentSheet().getParent().getUrl()].join("\n"));
+  return {ok: true};
+}
+
+// The approved comments on one post, oldest first: name, date and text only.
+function comments(p) {
+  const post = String(p.post || "").replace(/[^a-z0-9-]/g, "");
+  if (!post || !store().getProperty("COMMENTS_SHEET")) return {ok: true, comments: []};
+  const rows = commentSheet().getDataRange().getValues().slice(1);
+  return {ok: true, comments: rows.filter(r => r[1] === post && r[4] === true)
+    .map(r => ({date: r[0] instanceof Date ? r[0].toISOString().slice(0, 10) : String(r[0]), name: String(r[2]), text: String(r[3])}))};
 }
 
 // The daily email starts here, on time: GitHub's own scheduler starts runs late or not at all (it never started the
