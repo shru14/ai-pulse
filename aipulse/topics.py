@@ -1109,9 +1109,32 @@ def speak(site: Path, cache: Path, log=print) -> int:
     return spoken
 
 
+# Where we posted a topic's video, shown as icons in the story bar: (name, post link, icon)
+_ICON = {
+    "Instagram": '<svg class="ln" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/></svg>',
+    "YouTube": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.930 24 12 24 12s0-3.930-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>',
+    "X": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>',
+    "Substack": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>',
+}
+VIDEO_POSTS = {
+    "nvidia-huang-scandal": (
+        ("Instagram", "https://www.instagram.com/reel/Df0dyCdMNB3/"),
+        ("YouTube", "https://youtu.be/6HKMCG5LMDQ"),
+        ("X", "https://x.com/Pulse_Central_/status/2122462365732286874"),
+        ("Substack", "https://substack.com/@pulsecentral/note/c-389313756"),
+    ),
+}
+
+
+def _posts(slug):
+    links = "".join(f'<a href="{u}" target="_blank" rel="noopener" aria-label="Watch on {n}" title="Watch on {n}">{_ICON[n]}</a>'
+                    for n, u in VIDEO_POSTS.get(slug, ()))
+    return f'<div class="st-posts"><span>Watch the video</span>{links}</div>' if links else ""
+
+
 STORY_HTML = (
     '<section class="story" id="moments" hidden aria-label="The story so far">'
-    '<div class="st-head"><h2>The story so far</h2><div class="st-ctl">'
+    '<div class="st-head"><h2>The story so far</h2><!--posts--><div class="st-ctl">'
     '<button type="button" class="st-prev" aria-label="Previous moment">Back</button>'
     '<button type="button" class="st-play">Play the story</button>'
     '<button type="button" class="st-next" aria-label="Next moment">Next</button>'
@@ -1293,7 +1316,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         body = (f'<div class="tp">\n<div class="topic-hero">{_photo(slug)}<div class="over"><span class="kind">'
                 f'{escape(t["kind"])}</span>{status}<h1>{escape(t["name"])}</h1><p class="what">{escape(t["what"])}</p>'
                 f'<div class="badges">{badges}</div></div></div>\n'
-                + STORY_HTML +
+                + STORY_HTML.replace("<!--posts-->", _posts(slug)) +
                 '<h2>How it unfolded</h2>\n'
                 + ('<p class="legend"><span class="lg official">Official record</span>'
                    '<span class="lg news">In the news</span></p>\n' if any(e["official"] for e in ev) else "")

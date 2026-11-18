@@ -228,6 +228,12 @@
 .cp .tp .st-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
 .cp .tp .story h2{margin:0;font:400 22px/1.2 var(--display);border:0;padding:0}
 .cp .tp .st-ctl{display:flex;flex-wrap:wrap;gap:8px}
+.cp .tp .st-posts{display:flex;align-items:center;gap:6px;margin-right:auto;font:400 13px var(--body);color:var(--muted)}
+.cp .tp .st-posts span{margin:0 4px 0 6px}
+.cp .tp .st-posts a{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);border-radius:8px;background:var(--bg);color:var(--ink)}
+.cp .tp .st-posts a:hover{border-color:var(--ink)}
+.cp .tp .st-posts svg{width:16px;height:16px;fill:currentColor}
+.cp .tp .st-posts svg.ln{fill:none;stroke:currentColor;stroke-width:2}
 .cp .tp .st-ctl button{font:500 14px/1 var(--body);padding:9px 14px;border-radius:8px;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);background:var(--bg);color:var(--ink);cursor:pointer}
 .cp .tp .st-ctl button:hover:not(:disabled){border-color:var(--ink)}
 .cp .tp .st-ctl button:disabled{opacity:.4;cursor:default}
