@@ -70,6 +70,9 @@ TOOLS = [
      "https://www.federalregister.gov/documents/2022/10/13/2022-21658", "force", "", ""),
 ]
 BUYERS = [
+    ("2026-11-16", "US", "Advanced AI chips for Indonesia, Malaysia, Singapore, Thailand and Brazil need a licence",
+     "Also for data centres serving Chinese firms; US-headquartered buyers exempt if they report. Interim final rule",
+     "https://www.bis.gov/media/documents/rin-0694-ak50.pdf", "force", "", ""),
     ("2025-09-30", "US", "Firms 50% owned by a blacklisted company are blacklisted too",
      "Closes a route through subsidiaries", "https://www.federalregister.gov/documents/2025/09/30/2025-19001",
      "paused", "Paused to 9 Nov 2026", "https://www.federalregister.gov/documents/2025/11/12/2025-19846"),
@@ -137,6 +140,15 @@ ENTITY = (47, 35, 140, "2024-12-05", "https://www.federalregister.gov/documents/
 
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://w.media/us-moves-to-stop-chip-diversion-through-southeast-asia-and-brazil/": "same as US, 2026-11-16",
+    "https://tecnoblog.net/noticias/eua-impoem-restricoes-ao-brasil-para-compra-de-chips-de-ia/":
+        "same as US, 2026-11-16",
+    "https://www.channelnewsasia.com/singapore/us-ai-chip-export-control-southeast-asia-singapore-6558276":
+        "can't read to check",
+    "https://www.engadget.com/2319262/nvidia-establishes-export-control-committee-following-jensen-huang-resignation/":
+        "company board committee, no government rule",
+    "https://techcrunch.com/2026/11/17/nvidias-first-big-move-after-jensen-huangs-exit-targets-national-security/":
+        "company board committee, no government rule",
     "https://w.media/firebirds-us-5-billion-kazakhstan-ai-factory-gets-green-light-for-45000-nvidia-gpus/":
         "grid: Firebird says it secured a US export licence for 45,000 Nvidia Grace Blackwell GPUs for Kazakhstan; "
         "a company's licence, no agency or day named, no published rule",
