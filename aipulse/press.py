@@ -453,6 +453,9 @@ LEFT_OUT = {
     "https://the-decoder.com/the-myth-of-claude-mythos-crumbles-as-small-open-models-hunt-the-same-cybersecurity-bugs-anthropic-showcased/",  # two company blog posts (AISLE, Vidoc), not a paper
     "https://the-decoder.com/chinese-ai-models-are-politically-complex-not-just-government-mouthpieces-study-finds/",  # a Vals AI blog post, not a paper
     "https://japantoday.com/category/features/opinions/spewing-us-election-falsehoods-ai-chatbots-face-scrutiny",  # the outlet refuses automated reads: can't read to check
+    "https://www.itweb.co.za/article/whitepaper-corporate-ai-adoption/P3gQ2MGAV2EvnRD1",  # a company whitepaper (CompTIA) behind a download form, no paper
+    "https://www.404media.co/gallup-study-friendship-ai-companions/",  # a survey and data report (Gallup), not a paper
+    "https://www.xataka.com/robotica-e-ia/pusieron-a-unos-agentes-ia-a-jugar-al-minecraft-crearon-algo-no-estaban-disenadas-burocracia",  # an experiment on a company project page (Y Combinator lab), no paper named
 }
 
 # a headline (or the start of its summary) that may report on a paper
