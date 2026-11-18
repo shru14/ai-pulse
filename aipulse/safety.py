@@ -82,6 +82,22 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-17', by='OpenAI', kind='card',
+         title='GPT-6.2 System Card',
+         url='https://deploymentsafety.openai.com/gpt-6-2-astra-sol',
+         original='https://deploymentsafety.openai.com/gpt-6-2-astra-sol/gpt-6-2-astra-sol.pdf',
+         models=('GPT-6.2 Astra', 'GPT-6.2 Sol'),
+         risks=('cbrn', 'cyber', 'harm', 'injection', 'jailbreak', 'misalign', 'rnd', 'tamper'),
+         abstract=('Today, we are releasing GPT-6.2 Astra and GPT-6.2 Sol, the most capable models we have deployed '
+                   'externally to date. Both models meet the Critical threshold for Cybersecurity capabilities and '
+                   'the High threshold for Biological and Chemical capabilities under our Preparedness Framework '
+                   '[1]. GPT-6.2 Astra meets the High threshold for AI Self-Improvement capabilities, while GPT-6.2 '
+                   'Sol falls below it. The most important things to know about the safety of this launch are as '
+                   'follows: Our evaluations show that GPT-6.2 Astra and GPT-6.2 Sol are the most capable models '
+                   'we’ve released for cybersecurity tasks. Both were better than GPT-6 Astra and GPT-6.1 Sol at '
+                   'developing working exploits from known software vulnerabilities. In response, we tightened '
+                   'default restrictions on higher-risk cybersecurity assistance and require additional vetting for '
+                   'more permissive access. …')),
     dict(date='2026-11-10', by='Google DeepMind', kind='card',
          title='Gemini 4 Carbon Safety & Security Report',
          url='https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available/',
@@ -1586,6 +1602,9 @@ DOCS: list[dict] = [
 # Documents read and left out, so `python -m aipulse safety` doesn't list them again: research on training methods,
 # essays, usage studies, testimony, organisation news, a product launch, and documents from before 2026.
 LEFT_OUT: set[str] = {
+    'https://deploymentsafety.openai.com/csam-image-classifier',  # model card of a child-safety image classifier product, not a test of models or a safety framework
+    'https://www.apolloresearch.ai/blog/pilot-towards-embedded-evaluations',  # organisation news: announcement of a pilot with OpenAI, no evaluation or framework yet
+    'https://www.anthropic.com/research/coordinated-vulnerability-disclosure-timelines',  # a software vulnerability disclosure policy, not about testing or managing AI models
     'https://www.aisi.gov.uk/research/alignment-investigation-of-mythos-5s-behaviour-in-uk-aisis-july-2026-security-incident',  # the same report as the AISI blog post already in DOCS (same PDF)
     'https://openai.com/index/community-safety-report-and-new-protections-for-teens',  # document not readable (openai.com refuses, 403)
     'https://www.aisi.gov.uk/research/the-effectiveness-and-durability-of-pretraining-data-filtering-in-protein-language-models',  # research on training-data filtering in protein models, not an evaluation of LLMs
