@@ -141,6 +141,8 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://dplnews.com/eletronet-anuncia-novo-data-center-em-sao-paulo-com-investimento-de-r-25-milhoes/", "Eletronet", "Brazil", "São Paulo", "0.5 MW first, up to 1 MW", "R$ 25m", "building"),
     ("https://dplnews.com/astella-inaugura-data-center-curitiba/", "Astella (Grupo ABL)", "Brazil", "Curitiba", "3.5 MW, up to 5 MW", "R$ 60m", "open"),
     ("https://w.media/syntys-breaks-ground-on-new-20-mw-data-center-in-qatar/", "Syntys", "Qatar", "", "20 MW", "", "building"),
+    ("https://dcnnmagazine.com/projects-and-infrastructure/alg-magnom-properties-plan-750m-egypt-data-centre/", "ALG and Magnom Properties", "Egypt", "Forbes International Tower, New Capital", "", "US$ 750m", "announced"),
+    ("https://w.media/airtrunk-planning-1-8-gw-of-data-center-capacity-in-andhra-pradesh/", "AirTrunk", "India", "Anakapalli district, Andhra Pradesh", "1.8 GW in all", "", "announced"),
 
 ]
 
@@ -290,6 +292,11 @@ LEFT_OUT: set[str] = {
     "https://w.media/australia-sets-30mw-threshold-for-new-data-centre-grid-standards/",  # grid connection standard for all large inverter-based loads, not specific to data centres
     "https://www.techerati.com/news-hub/polarise-plans-150mw-ai-data-centre-expansion-in-germany-by-2028/",  # can't read to check
     "https://www.powermag.com/rowan-digital-infrastructure-secures-1-5-billion-in-financing-for-hyperscale-development-platform/",  # press release on corporate credit facilities for a pipeline, no single new campus
+    "https://www.canarymedia.com/articles/geothermal/google-superhot-geothermal-oregon-data-centers",  # Google agreed to buy 50 MW from Quaise's geothermal project; story doesn't say if binding
+    "https://www.channelnewsasia.com/business/giga-energy-signs-1-billion-lease-texas-ai-data-center-cloud-provider-6559516",  # can't read to check
+    "https://w.media/tensorwave-signs-457-mw-deal-to-support-openais-amd-buildout/",  # lease of capacity; no site named
+    "https://www.itweb.co.za/article/teraco-brings-wind-power-into-sa-data-centre-mix/mQwkoq6YrAnM3r9A",  # company power update (wind already delivered, own solar plant); no clear single deal or status
+    "https://w.media/blackstone-to-acquire-75-percent-stake-in-us-5-billion-aws-data-center-portfolio/",  # sale of existing data centres
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
