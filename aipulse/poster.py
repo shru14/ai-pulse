@@ -1,5 +1,5 @@
 """The poster email (the daily email since 25 Oct 2026): the daily digest in the site's Swiss-poster look. In order: the hot story (the
-day's most-reported), top news, the word and meme of the day, the number of the day, the newest page on the site,
+day's most-reported), top news, the word and meme of the day, the company of the day, the number of the day, the newest page on the site,
 the rest of the day by reader ("Pick your lane"), the review strip, then The Firehose: a row per stream that opens
 every story of the day on the site. One layout at every width (no phone-only rules), so phones show what a computer
 does. Nothing in it is written by AI: headlines and sentences are the outlets' own (the subject is the lead's own
@@ -20,7 +20,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import audio, classify, cluster, config, digest, pages, rss
+from . import audio, classify, cluster, companies, config, digest, pages, rss
 
 ART = Path(__file__).resolve().parent.parent / "templates" / "photos" / "cartoons" / "png"
 HEAD = "'Archivo Black','Arial Black',Arial,sans-serif"  # headings; Gmail has no web fonts: Arial Black there, and phones lack Arial Black, so every heading also says font-weight:900
@@ -386,6 +386,39 @@ def _word_and_meme(cards: list[dict], day: date, streams: list[str], prefs: dict
     return text, html
 
 
+def _company_tile(kicker: str, p: dict, why: str) -> tuple[list[str], str]:
+    """A startup (companies.py) in a white tile: its name, then what it does, how it makes money, the number and why
+    it's here, a row each, and the story it came from."""
+    rows = [("What it does", p["does"]), ("How it makes money", p["money"]), ("The number", p["number"]),
+            ("Why it's here", why)]
+    text = [f"{kicker}: {p['name']}", *(f"{k}: {v}" for k, v in rows), f"{p['source']}: {p['url']}", ""]
+    cell = "padding:6px 0;vertical-align:top;font-size:14px;line-height:1.45;border-top:1px solid #d9d9d9"
+    grid = "".join(f'<tr><td width="34%" style="width:34%;{cell};color:{GREY};padding-right:10px">{escape(k)}</td>'
+                   f'<td style="{cell}">{escape(v)}</td></tr>' for k, v in rows)
+    html = _table(f'<tr><td style="padding:14px 16px 14px;border:2px solid {INK};background:#ffffff">{_label(kicker)}'
+                  f'<div style="font-family:{HEAD};font-weight:900;font-size:22px;line-height:1.2;margin:8px 0 8px">'
+                  f'{escape(p["name"])}</div>{_table(grid)}<div style="font-size:12px;margin-top:8px">{escape(p["source"])} · '
+                  f'<a href="{escape(clean_url(p["url"]))}" style="color:{INK};font-weight:bold">Read it →</a></div></td></tr>',
+                  "margin:0 0 26px")
+    return text, html
+
+
+def _company_of_day(day: date) -> tuple[list[str], str]:
+    """Company of the day: the day's approved profile (companies.of_day), or nothing that day."""
+    p = companies.of_day(day)
+    return _company_tile("COMPANY OF THE DAY", p, f'{p["why"]}. {p["because"]}') if p else ([], "")
+
+
+def _company_of_week(cards: list[dict], day: date) -> tuple[list[str], str]:
+    """Company of the week: of the week's companies of the day, the one most outlets reported (companies.of_week),
+    and what put it first."""
+    found = companies.of_week(cards, day)
+    if not found:
+        return [], ""
+    p, outlets, seen, picks, rule = found
+    return _company_tile("COMPANY OF THE WEEK", p, f'{p["why"]}. {p["because"]} {companies.why_week(outlets, seen, picks, rule)}')
+
+
 def _nth(d: date) -> str:
     return f"{d.day}{'th' if 10 < d.day % 100 < 14 else {1: 'st', 2: 'nd', 3: 'rd'}.get(d.day % 10, 'th')}"
 
@@ -628,6 +661,8 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     # day's own sections follow it
     if digest.weekly(day):
         word_text, word_html = _week_word_and_meme(cards, day)
+        company_text, company_html = _company_of_week(cards, day)
+        word_text, word_html = word_text + company_text, word_html + company_html
         dossier_text, dossier_html = _dossier(dossier)
         text += word_text + ([*dossier_text, ""] if dossier_html else []) + [f"{day:%A} {day.day} {day:%B}".upper(), ""]
         html.append(f'<tr><td {pad}>{word_html}{dossier_html}</td></tr>'
@@ -651,8 +686,9 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     # The word and the meme of the day, high up (Sunday's email has the week's, above)
     if not digest.weekly(day):
         word_text, word_html = _word_and_meme(cards, day, streams, prefs, [digest._biggest(by_stream, streams), top, todays])
-        text += word_text
-        body.append(word_html)
+        company_text, company_html = _company_of_day(day)
+        text += word_text + company_text
+        body.append(word_html + company_html)
 
     news = digest._new_stream(day, streams)
     if news:

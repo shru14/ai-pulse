@@ -3,6 +3,7 @@
 Read through Hacker News' official API (hacker-news.firebaseio.com, whose robots.txt allows its .json files; terms in
 terms.PLATFORM). Only each thread's title, links, points and comment count are kept: no comments are copied. Fetched
 once per full run (not the labs' quick runs) and kept in the database, so the build itself calls nothing.
+AI launches (Show HN, Launch HN) among those stories are also kept for two weeks, for Company of the day's candidates.
 Reddit was considered and left out: its robots.txt refuses every reader, its API included (10 Oct 2026).
 """
 
@@ -22,6 +23,8 @@ SCAN = 200       # how many of HN's top stories to look at
 KEEP = 30        # threads kept: five on the front page, all on /discussing/
 MAX_AGE_H = 48   # only threads from the last two days
 KEY = "social-hn"
+LAUNCH_DAYS = 14  # launches kept, for Company of the day's candidates (companies.py)
+_LAUNCH = ("Show HN:", "Launch HN:")
 
 
 def hacker_news(conn, fetcher=feeds.fetch, now: float | None = None) -> int:
@@ -45,7 +48,13 @@ def hacker_news(conn, fetcher=feeds.fetch, now: float | None = None) -> int:
                if x.get("type") == "story" and not x.get("dead") and not x.get("deleted") and x.get("title")
                and now - x.get("time", 0) < MAX_AGE_H * 3600 and classify.is_ai_related(x["title"], "")]
     threads.sort(key=lambda t: (t["comments"] + t["points"]), reverse=True)
-    value = json.dumps({"fetched": int(now), "threads": threads[:KEEP]})
+    # AI startups launching on HN (Show HN, Launch HN) among the same stories, kept LAUNCH_DAYS with their best points
+    before = {t["hn"]: t for t in payload(conn).get("launches", []) if now - t["time"] < LAUNCH_DAYS * 86400}
+    for t in threads:
+        if t["title"].startswith(_LAUNCH) and t["points"] >= before.get(t["hn"], {}).get("points", -1):
+            before[t["hn"]] = t
+    launches = sorted(before.values(), key=lambda t: t["time"], reverse=True)
+    value = json.dumps({"fetched": int(now), "threads": threads[:KEEP], "launches": launches})
     conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", (KEY, value))
     conn.commit()
     return len(threads[:KEEP])

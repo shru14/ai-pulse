@@ -1,0 +1,32 @@
+# The daily Company of the day job (a local Claude routine) drafts new company profiles on a companies/<day> branch; this emails
+# the project inbox what that branch adds, to approve. Nothing goes on the site until the branch is merged into main
+# (only with the owner's yes). Sent with the same Gmail account as the glossary's and the job cuts' notes.
+name: Company of the day to approve
+
+on:
+  push:
+    branches: ["companies/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  note:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Email the new profiles to the project inbox
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: |
+          git show origin/main:aipulse/companies.py > "$RUNNER_TEMP/base_companies.py"
+          python -m aipulse companies-note --base "$RUNNER_TEMP/base_companies.py" --branch "$GITHUB_REF_NAME"
