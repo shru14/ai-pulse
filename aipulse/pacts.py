@@ -138,6 +138,9 @@ BANS = [
 
 # Orders, investigations and court cases a government brought: (day, government, company, kind, what, its story)
 ORDERS = [
+    ("2026-11-16", "California (Attorney General)", "OpenAI", "Court case", "Sues OpenAI, calling its testing "
+     "practices a public nuisance, and seeks an injunction",
+     "https://techcrunch.com/2026/11/16/california-state-ag-sues-openai-over-rogue-agent-incidents/"),
     ("2026-09-30", "US (FTC)", "OpenAI, Anthropic and others", "Investigation", "Consumer-protection probe",
      "https://the-decoder.com/ftc-launches-sweeping-probe-into-openai-anthropic-and-other-ai-labs-over-consumer-"
      "protection-concerns/"),
@@ -177,6 +180,10 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techcrunch.com/2026/11/16/sam-altman-on-nvidia-without-jensen-huang-the-industry-will-be-fine/":
+        "Altman's comments on Nvidia's CEO leaving; no government action",
+    "https://techcrunch.com/2026/11/16/openai-will-embed-apollo-researchers-to-investigate-ai-subversion/":
+        "OpenAI's own safety pilot; mentions a White House accord only in passing, no new government deal or action",
     "https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-"
     "jensen/":
         "Analysis of Chinese models on export-banned chips; only an undated mention of probes into Megaspeed, a "
