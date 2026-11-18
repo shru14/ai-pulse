@@ -832,11 +832,9 @@ def body(rs: list[dict]) -> str:
     when = {k: sum(r["safety"]["when"] == k for r in rs) for k in ("day", "later", "none")}
     out = sum(r["out"] for r in rs)
     # the old big-number tiles as plain sentences, each set of counts adding up to the total
-    short = [f"Of {n} major releases since {since}, {len(down)} came with weights you can download ({china} of them "
-             f"from labs in China) and {n - len(down)} did not.",
-             f"{when['day']} had a report of their safety tests out on launch day, {when['later']} later, and for "
-             f"{when['none']} we found none.",
-             f"{out} left some places out at launch; for the other {n - out}, no place left out was named."]
+    short = [f"{len(down)} of {n} can be downloaded ({china} of those from labs in China); {n - len(down)} can't.",
+             f"Safety test results: {when['day']} out on launch day, {when['later']} later, {when['none']} none found.",
+             f"{out} left some places out at launch."]
     limits = [
         ("What counts", "A new AI model that at least two news outlets reported within three days of its launch. The "
          "lab's own posts, its partners' blogs and hosting services don't count towards the two."),

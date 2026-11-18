@@ -1754,6 +1754,8 @@ a.subscribe-btn{text-decoration:none}
   .cp .ft .rc-t td:nth-child(7)::before{content:"Safety report "}
   /* folded: model, date, weights and safety tags; a tap opens licence, places, price and the notes */
   .cp .rc .rc-sum,.cp .rc .jb-lim{padding:12px}
+  .cp .rc .rc-sum h2{font-size:15px;margin-bottom:4px}
+  .cp .rc .rc-sum p{margin:0;padding:7px 0;font-size:13px;line-height:1.4;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
   .cp .rc .rm-wrap{padding:0;border:0;border-radius:0}
   .cp .rc.ft .rc-t tr{border:1px solid color-mix(in srgb,var(--ink) 28%,transparent);border-radius:10px;padding:10px 12px;gap:6px 10px;cursor:pointer}
   .cp .rc.ft .rc-t tr:not(.rc-x) td:is(:nth-child(4),:nth-child(5),:nth-child(6)),
