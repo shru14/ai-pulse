@@ -2156,6 +2156,7 @@ async function loadStartup(){
     const num = $("co-num"); num.replaceChildren(s.number + " · ");
     const src = el("a", null, s.source); src.href = s.url; src.target = "_blank"; src.rel = "noopener"; src.style.color = "inherit";
     num.append(src);
+    if(s.site){ const site = el("a", null, "Official website"); site.href = s.site; site.target = "_blank"; site.rel = "noopener"; site.style.color = "inherit"; num.append(" · ", site); }
     $("co-tile").hidden = false;
   }catch(e){}
 }
