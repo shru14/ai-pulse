@@ -25,7 +25,7 @@ from html import escape
 from pathlib import Path
 from typing import cast
 
-from . import brief, classify, config, glossary, jurisdictions, quality, rss, subscribers
+from . import brief, classify, config, glossary, jurisdictions, quality, rss, shown, subscribers
 from .sources import SOURCES
 
 AS_PROVIDED = {s["name"] for s in SOURCES if s.get("as_provided")}  # shown as their feed gives them
@@ -391,6 +391,9 @@ SPECIALIST = {
     "red-teaming", "prompt-injection", "interpretability", "recursive-self-improvement",
     "tpu", "asic", "hbm", "cuda", "kv-cache", "speculative-decoding", "bf16-and-fp8", "rack-scale-system",
     "test-time-compute", "swe-bench", "zero-shot-few-shot"}
+# A word of the day is never one shown before (shown.py, from shown.START). When the day's stories use no specialist
+# word that hasn't been, any other technical glossary word they use will do (glossary.TECHNICAL), so it doesn't run out
+WIDER = {e["id"] for e in glossary.ENTRIES if e["level"] == "Technical"} - SPECIALIST
 _TERMS: dict[str, frozenset[str]] = {}
 # A past day's word for one reader's choices, worked out once for the stories it was worked out from (_GAVE_FOR)
 _GAVE: dict[tuple, str] = {}
@@ -431,10 +434,11 @@ def _seen(cards: list[dict], wid: str) -> int:
     return _SEEN[wid]
 
 
-def _hardest(stories: list[dict], cards: list[dict], avoid: Collection[str] = frozenset()) -> str | None:
-    """The hardest specialist word these stories use (SPECIALIST, not one of `avoid`): the one used least in the
-    stories we have, the least familiar. None when they use none."""
-    found = {i for c in stories for i in _terms(c) if i in SPECIALIST and i not in avoid}
+def _hardest(stories: list[dict], cards: list[dict], avoid: Collection[str] = frozenset(),
+             pool: Collection[str] = SPECIALIST) -> str | None:
+    """The hardest word of `pool` these stories use (not one of `avoid`): the one used least in the stories we
+    have, the least familiar. None when they use none."""
+    found = {i for c in stories for i in _terms(c) if i in pool and i not in avoid}
     if not found:
         return None
     seen = {i: _seen(cards, i) for i in found}
@@ -443,13 +447,29 @@ def _hardest(stories: list[dict], cards: list[dict], avoid: Collection[str] = fr
     return min(found, key=lambda i: (seen[i], first[i], not glossary.mentions(i, stories[first[i]].get("title") or ""), i))
 
 
-def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: Collection[str] = frozenset()) -> tuple[str | None, list[dict]]:
-    """The hardest technical word in the first tier of stories that has one: (word, that tier's stories)."""
-    for stories in tiers:
-        wid = _hardest(stories, cards, avoid)
-        if wid:
-            return wid, stories
+def _pick_word(cards: list[dict], tiers: list[list[dict]], avoid: Collection[str] = frozenset(),
+               wider: bool = False) -> tuple[str | None, list[dict]]:
+    """The hardest specialist word in the first tier of stories that has one, then (with wider) the same among the
+    WIDER words: (word, that tier's stories)."""
+    for pool in (SPECIALIST, WIDER) if wider else (SPECIALIST,):
+        for stories in tiers:
+            wid = _hardest(stories, cards, avoid, pool)
+            if wid:
+                return wid, stories
     return None, []
+
+
+def _no_story_word(day: date, avoid: Collection[str]) -> str:
+    """The word when the day's stories give none: glossary.word_of_the_day among SPECIALIST. From shown.START, among
+    the specialist words not shown (and not `avoid`), then the WIDER ones; when all have been, the one shown longest
+    ago."""
+    if day < shown.START:
+        return glossary.word_of_the_day(day, SPECIALIST)["id"]
+    for pool in (SPECIALIST, WIDER):
+        if left := set(pool) - set(avoid):
+            return glossary.word_of_the_day(day, left)["id"]
+    before = shown.words_before(day)
+    return min(SPECIALIST, key=lambda w: before.get(w, date.min))
 
 
 def _tiers(cards: list[dict], day: date, streams: list[str], prefs: dict | None) -> list[list[dict]]:
@@ -473,11 +493,11 @@ def _given(cards: list[dict], day: date, streams: list[str], prefs: dict | None)
         d = day - timedelta(days=back)
         if weekly(d):
             continue  # Sunday's email gives the week's word, not the day's
-        avoid = {w for k in range(1, 8) if (w := gave.get(d - timedelta(days=k)))}
+        avoid = {w for k in range(1, 8) if (w := gave.get(d - timedelta(days=k)))} | set(shown.words_before(d))
         key = (*reader, d, frozenset(avoid))
         if key not in _GAVE:
-            _GAVE[key] = (_pick_word(cards, _tiers(cards, d, streams, prefs), avoid)[0]
-                          or glossary.word_of_the_day(d, SPECIALIST)["id"])
+            _GAVE[key] = (_pick_word(cards, _tiers(cards, d, streams, prefs), avoid, d >= shown.START)[0]
+                          or _no_story_word(d, avoid))
         gave[d] = _GAVE[key]
     return {gave[d] for k in range(1, 8) if (d := day - timedelta(days=k)) in gave}
 
@@ -485,16 +505,21 @@ def _given(cards: list[dict], day: date, streams: list[str], prefs: dict | None)
 def _word_entry(cards: list[dict], day: date, streams: list[str] | None = None, prefs: dict | None = None,
                 tiers: list[list[dict]] | None = None) -> tuple[dict, dict | None]:
     """The word of the day: the hardest specialist word in the day's biggest stories in this reader's email, else
-    in their top 10, else anywhere in their email (`tiers`), and not one the week before gave; else
-    glossary.word_of_the_day among SPECIALIST. Returns its glossary entry and the story that used it (a headline
-    that shows it first)."""
+    in their top 10, else anywhere in their email (`tiers`), and not one the week before gave nor one ever shown
+    (shown.py); else _no_story_word. For a reader of every stream, a day already kept keeps its word. Returns its
+    glossary entry and the story that used it (a headline that shows it first)."""
     streams = streams or list(rss.FEEDS)
-    week = _given(cards, day, streams, prefs)  # so no word comes back within a week
-    wid, stories = _pick_word(cards, tiers or [], week)
-    e = next(x for x in glossary.ENTRIES if x["id"] == wid) if wid else glossary.word_of_the_day(day, SPECIALIST)
-    if wid:
-        used = [c for c in stories if wid in _terms(c)]
+    entries = {x["id"]: x for x in glossary.ENTRIES}
+    if not prefs and set(streams) == set(rss.FEEDS) and shown.WORDS.get(day) in entries:
+        wid = shown.WORDS[day]  # what daily/words/ shows for the day
+        stories = next((t for t in tiers or [] if any(wid in _terms(c) for c in t)), [])
     else:
+        avoid = _given(cards, day, streams, prefs) | set(shown.words_before(day))  # nothing shown comes back
+        found, stories = _pick_word(cards, tiers or [], avoid, day >= shown.START)
+        wid = found or _no_story_word(day, avoid)
+    e = entries[wid]
+    used = [c for c in stories if wid in _terms(c)]
+    if not used:
         since = (day - timedelta(days=6)).isoformat()
         used = [c for c in cards if since <= (c.get("date") or "") <= day.isoformat() and glossary.mentions(e["id"], _text(c))]
     # A headline that shows the word beats one whose summary does; then the latest, then the most reported
@@ -799,9 +824,12 @@ def _week_word(cards: list[dict], day: date) -> str | None:
     if (day, len(cards)) in _WEEK_WORD:
         return _WEEK_WORD[(day, len(cards))]
     monday, _ = _span(day)
-    skip = {w for d, w in _SHOWN.items() if day - timedelta(weeks=WORD_WEEKS) <= d < day}
     week = [_text(c) for c in cards if monday.isoformat() <= (c.get("date") or "") <= day.isoformat()]
-    word = next((i for i in map(glossary._key, glossary.HARD) if i not in skip and sum(
+    # From shown.START, never an earlier word of the week or of the day; if that leaves none, the WORD_WEEKS rule
+    skips = [{w for d, w in _SHOWN.items() if day - timedelta(weeks=WORD_WEEKS) <= d < day}]
+    if day >= shown.START:
+        skips.insert(0, {w for d, w in _SHOWN.items() if d < day} | set(shown.words_before(day)))
+    word = next((i for skip in skips for i in map(glossary._key, glossary.HARD) if i not in skip and sum(
         1 for t in week if glossary.mentions(i, t)) >= glossary.WEEK_WORD_STORIES), None)
     _WEEK_WORD[(day, len(cards))] = word
     return word

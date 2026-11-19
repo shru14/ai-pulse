@@ -20,7 +20,7 @@ from collections.abc import Sequence
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from . import archives, brands, classify, companies, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, store
+from . import archives, brands, classify, cluster, companies, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, shown as shown_before, store
 from . import COMPASS, pages, poster, seo, subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
@@ -400,6 +400,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
 
     cards, _ = store.cards(conn, limit=10**9, eu_members=EU_MEMBERS)
     shown = digest.load_week_words(conn)  # the words of the week shown so far (the email's and its sample's)
+    shown_before.load(conn)  # every word and meme of the day shown so far, which no later day shows again
     text = search_text(conn)
     brands.add_logos(conn, cards, lookups=400)
     icons = {c["logo"]["src"] for c in cards if c.get("logo", {}).get("src")}
@@ -434,8 +435,10 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
                 (out / "daily" / f"{day.isoformat()}-lanes.html").write_text(web_edition(
                     lanes, f"daily/{day.isoformat()}-lanes.html", f"Pulse Central, {digest.long_day(day)}: the day's AI stories "
                     "sorted by who they matter to: researchers, policy and law, investors, founders, builders."), encoding="utf-8")
+    idf = cluster.idf_weights(cards)
     for d in published:  # every day's meme as a picture, which the poster email and daily/memes/ show
         memegen.prepare(conn, cards, today, day=d)
+        archives.record(conn, cards, d, idf)  # the day's word and meme, kept as shown (oldest day first)
         meme = memes.of_the_day(cards, d)
         if meme and (picture := memes.render(meme)):
             (out / "daily" / f"{d.isoformat()}-meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}").write_bytes(picture)

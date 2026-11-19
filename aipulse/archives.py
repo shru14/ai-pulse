@@ -10,7 +10,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from . import cluster, companies, digest, glossary, memes, pages, poster, rss
+from . import cluster, companies, digest, glossary, memes, pages, poster, rss, shown
 
 ART = "photos/cartoons/pages/daily.svg"  # the daily editions' own cartoon
 # path: (header colour, icon, title, question, intro, page title, description)
@@ -40,19 +40,45 @@ ARCHIVES = {
 }
 
 
-def _entries(cards: list[dict], day: date, idf: dict[str, float]) -> dict[str, str]:
-    """The day's parts as HTML, by archive (a part the day had none of is left out)."""
+def _picks(cards: list[dict], day: date, idf: dict[str, float]):
+    """The day's email for a reader of every stream: (stories by stream, top news, each top story's stream, its meme,
+    its word's glossary entry and the story it came up in). Sunday's has the week's meme and word."""
     streams = list(rss.FEEDS)
     by_stream = digest._leave_out(digest.by_streams(cards, streams, day), None)[0]
+    if not any(by_stream.values()):
+        return by_stream, [], {}, None, None, None
+    top, _, stream_of, _, _ = poster.top_news(cards, by_stream, streams, idf=idf)
+    story = None
+    if digest.weekly(day):
+        meme = memes.of_the_week([c for c in cards if (c.get("date") or "") <= day.isoformat()], digest._span(day)[0])
+        wid = digest._week_word(cards, day)
+        e = next((x for x in glossary.ENTRIES if x["id"] == wid), None) if wid else None
+    else:
+        meme = memes.of_the_day(cards, day)
+        todays = [c for n in streams for c in by_stream[n]]
+        e, story = digest._word_entry(cards, day, streams, None, [digest._biggest(by_stream, streams), top, todays])
+    return by_stream, top, stream_of, meme, e, story
+
+
+def record(conn, cards: list[dict], day: date, idf: dict[str, float]) -> None:
+    """Keep the day's word and meme of the day (Sunday's: its meme of the week) as shown, once (shown.py), so no
+    later day shows them again. The build calls it for each published day, oldest first."""
+    if day in shown.WORDS and ("week" if digest.weekly(day) else "day", day) in shown.MEMES:
+        return
+    _, _, _, meme, e, _ = _picks(cards, day, idf)
+    week = digest.weekly(day)
+    shown.keep(conn, day, None if week else e and e["id"], meme, "week" if week else "day")
+
+
+def _entries(cards: list[dict], day: date, idf: dict[str, float]) -> dict[str, str]:
+    """The day's parts as HTML, by archive (a part the day had none of is left out)."""
+    by_stream, top, stream_of, meme, e, story = _picks(cards, day, idf)
     week = digest.weekly(day)
     out: dict[str, str] = {}
     if not any(by_stream.values()):
         return out
-    top, _, stream_of, _, _ = poster.top_news(cards, by_stream, streams, idf=idf)
 
     # Meme: the picture static.py wrote beside the day's edition
-    meme = (memes.of_the_week([c for c in cards if (c.get("date") or "") <= day.isoformat()], digest._span(day)[0])
-            if week else memes.of_the_day(cards, day))
     picture = meme and memes.render(meme)
     if meme and picture:
         name = f"{day.isoformat()}-{'week-' * week}meme.{'png' if digest._kind(picture) == 'png' else 'jpg'}"
@@ -62,16 +88,8 @@ def _entries(cards: list[dict], day: date, idf: dict[str, float]) -> dict[str, s
                         f'<p class="meta">Template via imgflip.com</p>')
 
     # Word: the day's (from the email's biggest stories, then its top news, then any story), or the week's on Sunday
-    came = ""
-    if week:
-        wid = digest._week_word(cards, day)
-        e = next((x for x in glossary.ENTRIES if x["id"] == wid), None) if wid else None
-    else:
-        todays = [c for n in streams for c in by_stream[n]]
-        e, story = digest._word_entry(cards, day, streams, None, [digest._biggest(by_stream, streams), top, todays])
-        if story:
-            came = (f'<p class="meta">Where it came up: <a href="{escape(story["url"])}" rel="noopener">'
-                    f'{escape(story["title"])}</a></p>')
+    came = (f'<p class="meta">Where it came up: <a href="{escape(story["url"])}" rel="noopener">'
+            f'{escape(story["title"])}</a></p>') if story else ""
     if e:
         out["words"] = (f'<p class="lab">Word of the {"week" if week else "day"}</p>'
                         f'<p class="term"><a href="/glossary/{e["id"]}/">{escape(e["term"])}</a></p>'

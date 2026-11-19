@@ -1006,3 +1006,25 @@ def test_sundays_poster_email_carries_the_week(monkeypatch):
     assert "THE WEEK IN AI" not in text  # a weekday: no week
     # nothing on the Saturday itself: the week still goes out
     assert digest.build(week, ["releases", "news", "policy"], date(2026, 11, 7), layout="poster") is not None
+
+
+def test_shown_words_and_memes_never_come_back():
+    """A word or meme shown on an earlier day is skipped; when every choice was shown, the oldest comes back."""
+    from datetime import date
+    from aipulse import memes, shown
+    before = {"a": date(2026, 11, 20), "b": date(2026, 11, 21)}
+    assert shown.fresh(["a", "b", "c"], before) == "c"
+    assert shown.fresh(["b", "a"], before) == "a"
+    day = date(2026, 11, 25)
+    old_w, old_m = dict(shown.WORDS), dict(shown.MEMES)
+    try:
+        shown.WORDS.clear(), shown.MEMES.clear()
+        first = memes.of_the_day([], day)  # no stories: no meme
+        assert first is None
+        cards = [{"date": day.isoformat(), "title": "x", "summary": ""}]
+        made = memes.of_the_day(cards, day)
+        shown.MEMES[("day", day.replace(day=24))] = made
+        again = memes.of_the_day(cards, day)
+        assert shown.meme_key(again) != shown.meme_key(made)
+    finally:
+        shown.WORDS.clear(), shown.WORDS.update(old_w), shown.MEMES.clear(), shown.MEMES.update(old_m)
