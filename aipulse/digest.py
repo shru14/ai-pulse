@@ -416,13 +416,28 @@ def _text(c: dict) -> str:
     return f"{c.get('title') or ''} {c.get('summary') or ''}"
 
 
+_SEEN: dict[str, int] = {}
+_SEEN_FOR: list[list[dict]] = [[]]
+
+
+def _seen(cards: list[dict], wid: str) -> int:
+    """How many of `cards` use the glossary word `wid` (counted once per word and card list: only the few words a
+    day's stories use are counted, not every word in every story)."""
+    if _SEEN_FOR[0] is not cards:
+        _SEEN.clear()
+        _SEEN_FOR[0] = cards
+    if wid not in _SEEN:
+        _SEEN[wid] = sum(1 for c in cards if glossary.mentions(wid, _text(c)))
+    return _SEEN[wid]
+
+
 def _hardest(stories: list[dict], cards: list[dict], avoid: Collection[str] = frozenset()) -> str | None:
     """The hardest specialist word these stories use (SPECIALIST, not one of `avoid`): the one used least in the
     stories we have, the least familiar. None when they use none."""
     found = {i for c in stories for i in _terms(c) if i in SPECIALIST and i not in avoid}
     if not found:
         return None
-    seen = Counter(i for c in cards for i in _terms(c) & found)
+    seen = {i: _seen(cards, i) for i in found}
     # a tie goes to the word of the bigger story, then the one its headline shows
     first = {i: next(k for k, c in enumerate(stories) if i in _terms(c)) for i in found}
     return min(found, key=lambda i: (seen[i], first[i], not glossary.mentions(i, stories[first[i]].get("title") or ""), i))
