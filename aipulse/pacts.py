@@ -88,6 +88,10 @@ SAY = {"United States": "the US", "United Kingdom": "the UK", "US": "the US", "U
 
 # Deals a government signed with an AI company: (day, government, company, what, the story)
 DEALS = [
+    ("2026-11-18", "Colombia", "Meta", "A four-year MoU with the Ministry of ICT (MinTIC) on digital skills, online "
+     "safety and AI training for public servants",
+     "https://dplnews.com/colombia-fortalecer-las-habilidades-digitales-y-la-inteligencia-artificial-gracias-a-"
+     "memorando-de-entendimiento-firmado-por-mintic-y-meta-en-la-milagro-week/"),
     ("2026-10-14", "Singapore", "Anthropic", "An MoU with the Ministry of Digital Development and Information",
      "https://www.anthropic.com/news/singapore-office-opening"),
     ("2026-10-14", "Singapore", "Google DeepMind", "A scam-detection model built with GovTech Singapore",
@@ -177,6 +181,10 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=281705":
+        "Samsung and Google AI glasses pre-orders sold out; a product launch, no government action",
+    "https://the-decoder.com/sec-probes-nvidia-over-undisclosed-chip-sales-tied-to-china/":
+        "SEC probe of Nvidia only as the Wall Street Journal reports it; no SEC statement or filing in the story",
     "https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-"
     "jensen/":
         "Analysis of Chinese models on export-banned chips; only an undated mention of probes into Megaspeed, a "
