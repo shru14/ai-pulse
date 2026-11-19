@@ -22,7 +22,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from . import classify, money
 
-CHECKED_TO = "2026-11-18"  # stories up to this day are checked
+CHECKED_TO = "2026-11-19"  # stories up to this day are checked
 GAP = 30  # days before a company can be featured again
 REASONS = ("Concept", "Revenue", "Business model")  # why it's here
 
@@ -50,6 +50,8 @@ PROFILES: list[tuple[str, str, str, str, str, str, str, str, str]] = [
 LEFT_OUT: list[str] = [
     # Not a company's news: banks' policy on AI agents
     "https://techcrunch.com/2026/11/18/more-banks-says-customers-using-ai-agents-are-on-their-own-even-if-they-get-hacked/",
+    # Story couldn't be read (403), and its summary doesn't say what the company does or how it earns
+    "https://yourstory.com/2026/11/disseqt-ai-raises-8m-to-build-enterprise-ai-safeguards",
 ]
 
 _REVENUE = re.compile(r"\b(revenue|ARR|annuali[sz]ed|run[- ]rate|profitab\w*|customers|subscribers|paying users)\b", re.I)
