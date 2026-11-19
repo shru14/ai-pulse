@@ -582,6 +582,9 @@ header.top{border-bottom:4px solid var(--ink)}
 .co-tile .gl-card p{margin:0;font-size:14.5px;line-height:1.5}
 .co-tile .co-num{margin-top:10px;font:500 12px var(--mono);letter-spacing:.04em;color:#5A6172;text-transform:uppercase}
 .co-tile .co-num a{text-decoration:none}
+.co-tile .co-site{display:inline-block;margin-top:12px;padding:6px 12px;border:2px solid var(--ink);border-radius:6px;background:#FFFFFF;color:#000;font:500 14px var(--body);text-decoration:none}
+.co-tile .co-site[hidden]{display:none}
+.co-tile .co-site:hover{background:#F0E442}
 .co-tile .gl-tile-go{border:2px solid #FFFFFF!important;box-shadow:none!important;align-self:center;margin-top:auto}
 .week-badge{border-radius:0;box-shadow:none;border:3px solid #000;background:#FFFFFF;color:#000;text-transform:none;letter-spacing:0;font-family:var(--head);font-weight:400;font-size:15px}
 .lead{border-radius:0!important;border:3px solid var(--ink)}
@@ -1318,7 +1321,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
         <div class="tile co-tile" id="co-tile" hidden>
           <div><span class="week-badge"><b>Startup of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="co-label">Past 7 days</span></span>
             <div class="gl-card"><span class="gl-kind" id="co-why"></span><b class="co-name"><mark id="co-name"></mark></b>
-              <p id="co-does"></p><div class="co-num" id="co-num"></div></div></div>
+              <p id="co-does"></p><a class="co-site" id="co-site" target="_blank" rel="noopener" hidden>Official website</a><div class="co-num" id="co-num"></div></div></div>
           <button class="gl-tile-go" type="button" data-open="subscribe">Get a startup every day →</button>
         </div>
       </div></section>
@@ -2156,7 +2159,7 @@ async function loadStartup(){
     const num = $("co-num"); num.replaceChildren(s.number + " · ");
     const src = el("a", null, s.source); src.href = s.url; src.target = "_blank"; src.rel = "noopener"; src.style.color = "inherit";
     num.append(src);
-    if(s.site){ const site = el("a", null, "Official website"); site.href = s.site; site.target = "_blank"; site.rel = "noopener"; site.style.color = "inherit"; num.append(" · ", site); }
+    if(s.site){ $("co-site").href = s.site; $("co-site").hidden = false; }
     $("co-tile").hidden = false;
   }catch(e){}
 }
