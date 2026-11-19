@@ -52,6 +52,19 @@
 .cp .terms.small .short{font-size:13.5px}
 .cp .days li a{font-size:16px}
 .cp .days .grp{margin-left:10px;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.cp .arc{border:2px solid var(--line);border-radius:8px;padding:14px 16px;margin:12px 0}  /* daily/memes/, words/, top-news/, companies/: a box per day */
+.cp .arc h3{margin:0 0 6px;font:600 16px var(--body)}
+.cp .arc h3 a{color:var(--ink);text-decoration:none}
+.cp .arc .lab{margin:10px 0 0;color:var(--muted);font-size:14px}
+.cp .arc .term{font:400 22px/1.2 var(--display);margin:4px 0}
+.cp .arc .term a{color:var(--ink);text-decoration:none}
+.cp .arc img{display:block;width:100%;max-width:460px;height:auto;margin-top:8px;border-radius:6px}
+.cp .arc li{padding:8px 0}
+.cp .arc li:last-child{border-bottom:0}
+.cp .arc table{width:100%;border-collapse:collapse;margin-top:6px;font-size:15px}
+.cp .arc th,.cp .arc td{text-align:left;vertical-align:top;padding:6px 0;border-top:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
+.cp .arc th{width:34%;padding-right:10px;font-weight:400;color:var(--muted)}
+.cp .arc .meta a{color:var(--accent);text-decoration:none}
 .cp .note{margin-top:28px;font-size:14px;color:var(--muted)}
 .cp .note a{color:var(--accent)}
 .cp:has(> .ti) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}

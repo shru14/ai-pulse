@@ -20,7 +20,7 @@ from collections.abc import Sequence
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, store
+from . import archives, brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, store
 from . import COMPASS, pages, poster, seo, subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
@@ -368,6 +368,8 @@ def daily_index(conn, total: int, days: list[date], out: Path) -> None:
                        "Every morning's email as a page: the day before in AI, every story from every stream in one "
                        "tagged table. On Sundays the email is the weekly edition: the week in AI (Monday to Saturday), "
                        'then Saturday\'s stories. <a href="/#subscribe">Get it in your inbox</a>')
+            + '<nav class="places" aria-label="Daily archives">' + "".join(
+                f'<a href="/daily/{p}/">{escape(a[2])}</a>' for p, a in archives.ARCHIVES.items()) + "</nav>\n"
             + "\n".join(f'<h2>{m}</h2>\n<ul class="days">\n' + "\n".join(rows) + "\n</ul>" for m, rows in months.items()))
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Pulse Daily editions",
             "url": f"{rss.SITE}daily/"}
@@ -425,7 +427,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
                 (out / "daily" / f"{day.isoformat()}-lanes.html").write_text(web_edition(
                     lanes, f"daily/{day.isoformat()}-lanes.html", f"Pulse Central, {digest.long_day(day)}: the day's AI stories "
                     "sorted by who they matter to: researchers, policy and law, investors, founders, builders."), encoding="utf-8")
-    for d in published[-7:]:  # the past week's memes of the day as pictures, which the poster email links to
+    for d in published:  # every day's meme as a picture, which the poster email and daily/memes/ show
         memegen.prepare(conn, cards, today, day=d)
         meme = memes.of_the_day(cards, d)
         if meme and (picture := memes.render(meme)):
@@ -443,6 +445,8 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     if sample:  # the front page's "See what the email looks like"
         (out / "daily" / "sample.html").write_text(sample, encoding="utf-8")
     daily_index(conn, len(cards), published, out)  # daily/: every edition, by month
+    # the email's memes, words, top news and companies, an archive page each (daily/memes/, ...), for search engines
+    archive_paths = archives.build(conn, cards, published, len(cards), out)
     from . import topics
     for c in cards:
         c["s"] = text.get(c["id"], "")
@@ -520,7 +524,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     weekly.publish_vectors(conn, out, today)  # the dossier page's search by meaning, in the reader's browser
     (out / "robots.txt").write_text(robots_txt(), encoding="utf-8")
     from . import countries
-    places = countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
+    places = archive_paths + countries.build(conn, cards, out, today)  # the tracker by country (tracker/), for search engines
     places += countries.standards_page(conn, cards, out)  # every AI standard on the tracker (standards/)
     places += countries.type_pages(conn, cards, out)  # laws adopted, bills, AI bodies: every place's, one page each
     from . import sector_rules

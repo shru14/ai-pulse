@@ -115,6 +115,13 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
                      tmp_path / "site" / "papers-in-the-news" / "index.html", tmp_path / "site" / "ai-in-court" / "index.html",
                      tmp_path / "site" / "ai-safety-hub" / "index.html"]
     tracker_pages += [tmp_path / "site" / p / "index.html" for p in ("data-centre-builds", "who-powers-ai", "pushback-and-permits")]
+    # the daily email's memes, words, top news and companies: an archive page each, linked from daily/, in the sitemap
+    from aipulse import archives
+    editions = (tmp_path / "site" / "daily" / "index.html").read_text(encoding="utf-8")
+    for p in archives.ARCHIVES:
+        tracker_pages.append(tmp_path / "site" / "daily" / p / "index.html")
+        assert f'href="/daily/{p}/"' in editions and f"<loc>https://projectaipulse.com/daily/{p}/</loc>" in sitemap
+        assert '"@type": "CollectionPage"' in tracker_pages[-1].read_text(encoding="utf-8")
     assert "<url><loc>https://projectaipulse.com/industry/tutorials/</loc></url>" in sitemap  # no date of its own
     tutorials = (tmp_path / "site" / "industry" / "tutorials" / "index.html").read_text(encoding="utf-8")
     assert "<h1>AI tutorials</h1>" in tutorials and '"kind": "tutorial"' in tutorials and "Updated" not in tutorials.split('<main')[1]  # the masthead's own update line aside
