@@ -213,6 +213,8 @@ DECISIONS: list[tuple[str, ...]] = [
 
 # Infra stories from after CHECKED_TO checked and left out of all three tables
 LEFT_OUT: set[str] = {
+    "https://energyinnovation.org/expert-voice/a-gas-customer-protection-pledge-can-fix-data-center-gas-price-hikes/",  # opinion (expert voice), no single deal or decision
+    "https://www.foodandwaterwatch.org/press/2026/11/18/schumer-must-step-down-after-pushing-pro-data-center-permitting-bill/",  # advocacy call about a bill; no decision
     "https://dplnews.com/astella-centro-de-datos-curitiba/",  # same as the Astella row
     "https://www.channelnewsasia.com/business/spacex-plans-over-74-billion-investment-in-texas-arizona-ai-campuses-6547056",  # can't read to check
     "https://dcnnmagazine.com/infrastructure/cabling/centriforce-targets-30m-sales-as-data-centre-demand-grows/",  # a supplier's sales target
