@@ -55,6 +55,8 @@
 .cp .arc{border:2px solid var(--line);border-radius:8px;padding:14px 16px;margin:12px 0}  /* daily/memes/, words/, top-news/, companies/: a box per day */
 .cp .arc h3{margin:0 0 6px;font:600 16px var(--body)}
 .cp .arc h3 a{color:var(--ink);text-decoration:none}
+.cp .places.one{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}  /* the daily archives' links: one line */
+@media (max-width:600px){.cp .places.one{grid-template-columns:1fr 1fr}}
 .cp .arc .lab{margin:10px 0 0;color:var(--muted);font-size:14px}
 .cp .arc .term{font:400 22px/1.2 var(--display);margin:4px 0}
 .cp .arc .term a{color:var(--ink);text-decoration:none}

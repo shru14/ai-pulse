@@ -368,7 +368,7 @@ def daily_index(conn, total: int, days: list[date], out: Path) -> None:
                        "Every morning's email as a page: the day before in AI, every story from every stream in one "
                        "tagged table. On Sundays the email is the weekly edition: the week in AI (Monday to Saturday), "
                        'then Saturday\'s stories. <a href="/#subscribe">Get it in your inbox</a>')
-            + '<nav class="places" aria-label="Daily archives">' + "".join(
+            + '<nav class="places one" aria-label="Daily archives">' + "".join(
                 f'<a href="/daily/{p}/">{escape(a[2])}</a>' for p, a in archives.ARCHIVES.items()) + "</nav>\n"
             + "\n".join(f'<h2>{m}</h2>\n<ul class="days">\n' + "\n".join(rows) + "\n</ul>" for m, rows in months.items()))
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Pulse Daily editions",
