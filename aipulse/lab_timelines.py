@@ -40,6 +40,30 @@ PLACES = [
 PULLED: list[tuple[str, str, str, str, str]] = []
 # stories checked and left out, with why
 LEFT_OUT = {
+    "https://pandaily.com/deepseek-model-triggered-search-fetch-fee-change-client-api-pricing":
+        "A search and fetch tool fee, not a change to a model's token price",
+    "https://the-decoder.com/googles-latest-ai-model-is-faster-cheaper-and-smarter-than-its-flagship-predecessor-from-just-weeks-ago/":
+        "A new model's launch price, not a change",
+    "https://deepmind.google/blog/genie-4-is-now-available/":
+        "Which countries or regions it covers isn't stated (opened to Ultra subscribers, no places named)",
+    "https://tecnoblog.net/noticias/microsoft-amplia-linha-propria-de-ia-com-sete-novos-modelos/":
+        "New models' launch, not a price or place change",
+    "https://tecnoblog.net/noticias/desativou-o-historico-do-gemini-o-google-salva-mesmo-assim/":
+        "A consumer app's privacy setting, not a model price or place change",
+    "https://energyinnovation.org/expert-voice/a-gas-customer-protection-pledge-can-fix-data-center-gas-price-hikes/":
+        "Gas prices for data centres, not an AI model price change",
+    "https://olhardigital.com.br/2026/11/18/pro/anthropic-chega-a-bolsa-com-acoes-mais-caras-que-o-previsto/":
+        "A company's IPO share price, not a model price change",
+    "https://techcrunch.com/2026/11/18/anthropic-reportedly-prices-ipo-at-83-a-share-above-projected-range/":
+        "A company's IPO share price, not a model price change",
+    "https://olhardigital.com.br/2026/11/18/pro/anthropic-pode-elevar-preco-de-acoes-em-ipo-apos-forte-demanda/":
+        "A company's IPO share price, not a model price change",
+    "https://www.xataka.com/componentes/disparatado-precio-memoria-almacenamiento-ia-esta-reviviendo-tecnologia-hace-50-anos-cinta-magnetica":
+        "Storage hardware prices, not an AI model price change",
+    "https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/":
+        "A developer tool feature, not a model price or place change",
+    "https://huggingface.co/blog/openrouter":
+        "A platform partnership, not a model price or place change",
     "https://www.marktechpost.com/2026/11/14/cmpnd-dspy-wsp-weight-space-programming/":
         "A software library release, not a model price or place change",
     "https://pandaily.com/openjiuwen-rsi-native-agentos-extension-packages-workswarm-system-plugins":
