@@ -1319,7 +1319,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
           <button class="gl-tile-go meme-go" type="button" data-open="subscribe">Get a meme every day →</button>
         </div>
         <div class="tile co-tile" id="co-tile" hidden>
-          <div><span class="week-badge"><b>Startup of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="co-label">Past 7 days</span></span>
+          <div><span class="week-badge"><b>Startup of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="co-label">This week</span></span>
             <div class="gl-card"><span class="gl-kind" id="co-why"></span><b class="co-name"><mark id="co-name"></mark></b>
               <p id="co-does"></p><a class="co-site" id="co-site" target="_blank" rel="noopener" hidden>Official website</a><div class="co-num" id="co-num"></div></div></div>
           <button class="gl-tile-go" type="button" data-open="subscribe">Get a startup every day →</button>
@@ -2147,14 +2147,14 @@ function fitMeme(){
 let memeWidth = 0;
 try{ new ResizeObserver(([e]) => { if(Math.abs(e.contentRect.width - memeWidth) > 1){ memeWidth = e.contentRect.width; requestAnimationFrame(fitMeme); } })
   .observe($("meme-tile")); }catch(e){ addEventListener("resize", fitMeme); }
-// The startup of the week: of the past 7 days' companies of the day (checked by hand), the one most outlets reported
-// (companies.front); no tile when none was picked in those days.
+// The startup of the week: of the last finished week's companies of the day (checked by hand), the one most outlets
+// reported (companies.front); it changes on Sundays; no tile when none was picked.
 async function loadStartup(){
   try{
     const m = await (await fetch("startup.json", {cache:"no-cache"})).json(), s = m.startup;
     if(!s) return;
     const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
-    $("co-label").textContent = "Past 7 days · " + fmt(m.from) + " – " + fmt(m.to);
+    $("co-label").textContent = "Week of " + fmt(m.from) + " – " + fmt(m.to);
     $("co-why").textContent = s.why; $("co-name").textContent = s.name; $("co-does").textContent = s.does;
     const num = $("co-num"); num.replaceChildren(s.number + " · ");
     const src = el("a", null, s.source); src.href = s.url; src.target = "_blank"; src.rel = "noopener"; src.style.color = "inherit";

@@ -109,17 +109,17 @@ def of_week(cards: list[dict], saturday: date) -> tuple[dict, int, int, int, str
     return _ranked(cards, [(monday + timedelta(days=k)).isoformat() for k in range((saturday - monday).days + 1)])
 
 
-def of_7_days(cards: list[dict], today: date) -> tuple[dict, int, int, int, str] | None:
-    """The front page's startup of the week: of the past 7 days' daily picks (today and the 6 days before, as the
-    word and the meme of the week), ranked as of_week ranks the email's."""
-    return _ranked(cards, [(today - timedelta(days=k)).isoformat() for k in range(6, -1, -1)])
-
-
 def front(cards: list[dict], today: date) -> dict:
-    """startup.json, for the front page's Startup of the week tile: the past 7 days and the pick (None: no tile)."""
-    got = of_7_days(cards, today)
+    """startup.json, for the front page's Startup of the week tile: the last finished week (Monday to Saturday), the
+    same pick as that Sunday's email, so the tile changes once a week, on Sunday (owner, 2026-11-19). Until a finished
+    week has picks, this week so far. None: no tile."""
+    saturday = today - timedelta(days=(today.weekday() - 5) % 7 or 7)
+    got = of_week(cards, saturday)
+    if not got:
+        saturday = min(saturday + timedelta(days=7), today)
+        got = of_week(cards, saturday)
     keys = ("name", "does", "number", "why", "url", "source", "site")
-    return {"from": (today - timedelta(days=6)).isoformat(), "to": today.isoformat(),
+    return {"from": (saturday - timedelta(days=saturday.weekday())).isoformat(), "to": saturday.isoformat(),
             "startup": got and {k: got[0][k] for k in keys}}
 
 
