@@ -262,6 +262,8 @@ RELEASES = [
      "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/", ""),
     ("2026-11-12", "Google", "Gemini 4 Hydrogen", "Closed", "", "", "", "Worldwide from launch, says Google", False,
      "$1.50 / $7.50", "https://deepmind.google/blog/introducing-gemini-4-hydrogen/", ""),
+    ("2026-11-16", "Alibaba", "Qwen4-Max", "Closed", "", "", "", "", False, "$1.50 / $4.50",
+     "https://the-decoder.com/alibabas-qwen4-max-takes-on-opus-5-5-gpt-6-and-kimi-k3-1-pro-at-much-lower-prices/", ""),
 ]
 # what each release is for, from its story: "General" reads and writes text (images or audio too, for some);
 # the rest do one job. The adoption planner lists a model only for the jobs its kind can do
@@ -293,7 +295,7 @@ KIND = {
     "Clairic": "Extraction", "MiniMax M3.1 Flash": "General", "Hy4": "General", "Ripple-65B Preview": "General",
     "ERNIE 5.5 Flash Base": "General", "Gemini Omni 1.2 Flash": "Video", "GPT-6 Cyber": "Cyber",
     "Inkling 2 Small": "General", "Claude Fable 5.2": "General", "Muse Ember": "General",
-    "Gemini Decision 1": "Classification", "Gemini 4 Hydrogen": "General",
+    "Gemini Decision 1": "Classification", "Gemini 4 Hydrogen": "General", "Qwen4-Max": "General",
 }
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -301,7 +303,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-15"
+SAFETY_CHECKED = "2026-11-19"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -686,10 +688,13 @@ LEFT_OUT = {
     "https://www.marktechpost.com/2026/11/13/google-gemini-4-hydrogen/": "same as Gemini 4 Hydrogen",
     "https://www.xataka.com/robotica-e-ia/google-cree-haber-dado-santo-grial-ia-gemini-4-hydrogen-rapido-bueno-casi-barato":
         "same as Gemini 4 Hydrogen",
+    "https://www.liquid.ai/blog/d1-2": "d1.2: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/11/17/liquid-ai-d1-2-omnimodal-decision-models/":
+        "d1.2: one news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-12"
+CHECKED_TO = "2026-11-16"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform

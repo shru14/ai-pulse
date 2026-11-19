@@ -56,6 +56,7 @@ LEFT_OUT = {
     "Muse Ember": "No earlier model in its line",
     "Gemini Decision 1": "No earlier model in its line",
     "Claude Fable 5.2": "Earlier model (Claude Fable 5.1) is a Release cards row; pairing held for approval",
+    "Qwen4-Max": "Earlier model (Qwen3.8-Max) is a Release cards row; pairing held for approval",
 }
 FROM = "2026-01-01"  # How long before you must switch counts shutdowns from this day
 SHOWN = 10  # model rows shown before "Show all"
