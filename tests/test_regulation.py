@@ -855,6 +855,7 @@ def test_ai_consultations_reads_each_list_keeps_titles_naming_ai_and_builds(tmp_
     assert consultations.build(conn, [], tmp_path, today) == ["ai-consultations/"]
     page = (tmp_path / "ai-consultations" / "index.html").read_text(encoding="utf-8")
     open_, closed = page.split("Closed · past 6 months</h2>")
+    open_ = open_[open_.index("<h2>Open now</h2>"):]  # not the cite box, whose "data as of 19 Nov" holds "9 Nov"
     assert open_.index("20 Oct 2026") < open_.index("9 Nov 2026") < open_.index("20 Nov 2026")  # closing soonest first
     assert open_.count('class="rm-soon"') == 1  # 20 Oct is within 14 days
     assert closed.index("23 Sep 2026") < closed.index("4 Aug 2026") < closed.index("1 Jun 2026")  # latest first
