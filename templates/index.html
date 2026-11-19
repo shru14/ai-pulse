@@ -305,8 +305,9 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 .mag-cover .sart .logo .ico svg,.mag-cover .sart .logo .ico img{width:38px;height:38px}
 .mag-cover .sart .logo .ico.mono{font-size:22px}
 .mag-cover .sart .logo{top:50%}
-.mag-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch}
+.mag-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:stretch}
 @media (max-width:1000px){.mag-row{grid-template-columns:1fr}}
+@media (min-width:861px) and (max-width:1200px){.mag-row{grid-template-columns:repeat(2,minmax(0,1fr))}}  /* four tiles, two to a row */
 /* Meme of the week (memes.py): a joke format drawn in plain HTML, filled from the past 7 days' stories */
 .meme-tile{background:var(--p-meme);color:#141925;border:0;display:flex;flex-direction:column;gap:12px}
 .meme-tile[hidden]{display:none}
@@ -573,6 +574,15 @@ header.top{border-bottom:4px solid var(--ink)}
 .gl-tile .gl-tile-go,.meme-tile .gl-tile-go,.mag-cover .gl-tile-go{min-width:260px;border:2px solid #FFFFFF!important;box-shadow:none!important;
   align-self:center}  /* the three tiles' buttons alike, at the same height */
 .meme-tile{background:#B85000;color:#FFFFFF}  /* a deeper vermillion: white text at 5:1, as on the word's blue */
+/* Startup of the week (companies.front): a deeper bluish green, white text at 5:1, a card as the word's */
+.co-tile{background:#007A5A;color:#FFFFFF;border:3px solid var(--ink)!important;border-radius:0!important}
+.co-tile[hidden]{display:none}
+.co-tile .co-name{display:block;font:400 26px/1.05 var(--head);margin:6px 0 8px}
+.co-tile .co-name mark{background:#F0E442;color:inherit;padding:0 3px}
+.co-tile .gl-card p{margin:0;font-size:14.5px;line-height:1.5}
+.co-tile .co-num{margin-top:10px;font:500 12px var(--mono);letter-spacing:.04em;color:#5A6172;text-transform:uppercase}
+.co-tile .co-num a{text-decoration:none}
+.co-tile .gl-tile-go{border:2px solid #FFFFFF!important;box-shadow:none!important;align-self:center;margin-top:auto}
 .week-badge{border-radius:0;box-shadow:none;border:3px solid #000;background:#FFFFFF;color:#000;text-transform:none;letter-spacing:0;font-family:var(--head);font-weight:400;font-size:15px}
 .lead{border-radius:0!important;border:3px solid var(--ink)}
 .lead h3{font-family:var(--head);font-weight:400;text-transform:none;letter-spacing:-.01em}
@@ -1288,8 +1298,8 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
             <table class="social-t"><tbody id="social-rows"></tbody></table>
             <a class="gl-tile-go hn-go" href="/discussing/" data-go="discussing">Dig deeper →</a></aside>
         </div></section>
-      <!-- Past week in AI: the week's biggest story, the word and meme of the week -->
-      <section class="week" id="week"><div class="band-head"><h2>Past week in AI</h2><span class="kicker">The biggest story, word and meme of the last 7 days</span></div>
+      <!-- Past week in AI: the week's biggest story, the word, meme and startup of the week -->
+      <section class="week" id="week"><div class="band-head"><h2>Past week in AI</h2><span class="kicker">The biggest story, word, meme and startup of the last 7 days</span></div>
       <div class="mag-row">
         <article class="mag-cover" id="hero"><p class="tile-note">Loading the past 7 days' stories…</p></article>
         <div class="tile gl-tile">
@@ -1304,6 +1314,12 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
           <div class="meme" id="meme"></div>
           <div class="meme-more" id="meme-more"></div>
           <button class="gl-tile-go meme-go" type="button" data-open="subscribe">Get a meme every day →</button>
+        </div>
+        <div class="tile co-tile" id="co-tile" hidden>
+          <div><span class="week-badge"><b>Startup of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="co-label">Past 7 days</span></span>
+            <div class="gl-card"><span class="gl-kind" id="co-why"></span><b class="co-name"><mark id="co-name"></mark></b>
+              <p id="co-does"></p><div class="co-num" id="co-num"></div></div></div>
+          <button class="gl-tile-go" type="button" data-open="subscribe">Get a startup every day →</button>
         </div>
       </div></section>
       <!-- Monthly issues: a yellow bar to the shelf, then the two newest issues (aipulse/monthly.py, monthly/front.json) -->
@@ -2128,12 +2144,27 @@ function fitMeme(){
 let memeWidth = 0;
 try{ new ResizeObserver(([e]) => { if(Math.abs(e.contentRect.width - memeWidth) > 1){ memeWidth = e.contentRect.width; requestAnimationFrame(fitMeme); } })
   .observe($("meme-tile")); }catch(e){ addEventListener("resize", fitMeme); }
+// The startup of the week: of the past 7 days' companies of the day (checked by hand), the one most outlets reported
+// (companies.front); no tile when none was picked in those days.
+async function loadStartup(){
+  try{
+    const m = await (await fetch("startup.json", {cache:"no-cache"})).json(), s = m.startup;
+    if(!s) return;
+    const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
+    $("co-label").textContent = "Past 7 days · " + fmt(m.from) + " – " + fmt(m.to);
+    $("co-why").textContent = s.why; $("co-name").textContent = s.name; $("co-does").textContent = s.does;
+    const num = $("co-num"); num.replaceChildren(s.number + " · ");
+    const src = el("a", null, s.source); src.href = s.url; src.target = "_blank"; src.rel = "noopener"; src.style.color = "inherit";
+    num.append(src);
+    $("co-tile").hidden = false;
+  }catch(e){}
+}
 async function loadHome(){
   loadHomeCounts();
   if(HOME.by || HOME.loading) return renderHome();
   HOME.loading = true; HOME.error = false; renderHome();
   try{
-    loadMeme();
+    loadMeme(); loadStartup();
     const board = loadBoard();
     // the past 7 days' stories (and a day's margin), which the page holds already (static.boot)
     const recent = await fetchItems(new URLSearchParams({days: 8, per_page: 100000, page: 1}));

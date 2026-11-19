@@ -20,7 +20,7 @@ from collections.abc import Sequence
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from . import brands, classify, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, store
+from . import brands, classify, companies, digest, glossary, jurisdictions, kind_pages, memegen, memes, preferences, rss, store
 from . import COMPASS, pages, poster, seo, subscribers
 from .server import EU_MEMBERS, TEMPLATE
 
@@ -479,6 +479,7 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     memegen.prepare(conn, cards, today)  # the past 7 days' Gemini meme, if the "memes" step made one (no call here)
     meme = memes.payload(cards, today)
     (out / "meme.json").write_text(json.dumps(meme, separators=(",", ":")), encoding="utf-8")
+    (out / "startup.json").write_text(json.dumps(companies.front(cards, today), separators=(",", ":")), encoding="utf-8")
     made = memes.of_the_7_days(cards, date.fromisoformat(meme["to"])) if meme["image"] else None
     jpeg = memes.render(made) if made else None
     if jpeg:  # the finished picture: the template with the past 7 days' captions written on
