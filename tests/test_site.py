@@ -176,6 +176,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     if daily_sample:  # indexed, in the sitemap, with the day's real meme of the day as a picture beside it
         html = (daily / "sample.html").read_text(encoding="utf-8")
         assert "noindex" not in html and "https://projectaipulse.com/daily/sample.html" in sitemap
+        assert all(f'href="/daily/{p}/"' in html for p in ("memes", "words", "top-news", "companies"))  # the archives, linked
         assert "Meme of the day" not in html or 'src="meme-of-the-day.' in html
     assert not days or (daily / "latest.html").read_text(encoding="utf-8") == (daily / days[-1]).read_text(encoding="utf-8")
 
