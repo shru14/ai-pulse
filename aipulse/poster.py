@@ -740,20 +740,23 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
             first = next((c for c, _ in theirs_ if id(c) not in shown), theirs_[0][0])
             href = escape(f"{web_lanes}#{icon}")
             text.append(f"  {title}: {count}")
-            rows.append(f'<tr class="p-row"><td width="30" style="width:30px;padding:11px 0;border-bottom:1px solid #cccccc">'
-                        f'<img src="{_picture("lanes/" + icon)}" width="22" height="22" alt="" style="vertical-align:middle;border:0">'
-                        f'</td><td style="padding:11px 8px;border-bottom:1px solid #cccccc"><a href="{href}" style="color:{INK};'
-                        f'text-decoration:none;font-weight:bold;font-size:15px">{escape(title)}</a><div style="font-size:12px;'
-                        f'color:{GREY};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
-                        f'{escape(first["title"])}</div></td><td width="92" align="right" style="width:92px;padding:11px 0;'
-                        f'border-bottom:1px solid #cccccc;font-size:14px;white-space:nowrap"><a href="{href}" style="color:{INK};'
-                        f'text-decoration:none">{count} ▸</a></td></tr>')
+            rows.append(_table(f'<tr><td valign="top" style="padding:12px 12px 14px;overflow-wrap:break-word;word-break:break-word">'
+                               f'<img src="{_picture("lanes/" + icon)}" width="22" height="22" alt="" style="display:block;border:0">'
+                               f'<a class="p-tt" href="{href}" style="display:block;margin-top:8px;color:{INK};text-decoration:none;'
+                               f'font-weight:bold;font-size:15px">{escape(title)}</a><div class="p-ts" style="font-size:12px;'
+                               f'color:{GREY};margin-top:3px;line-height:1.4">{escape(first["title"])}</div>'
+                               f'<div style="margin-top:8px;font-size:13px"><a href="{href}" style="color:{INK};text-decoration:none">'
+                               f'{count} ▸</a></div></td></tr>', f"border:2px solid {INK}"))
         text.append("")
+        # two blocks to a row on every screen, as table cells so no mail app wraps them; a short last row keeps its width
+        rows += [""] * (-len(rows) % 2)
+        rows = ["<tr>" + "".join(f'<td class="p-tile" width="50%" valign="top" style="width:50%;padding:0 5px 10px">{b}</td>'
+                                 for b in rows[i:i + 2]) + "</tr>" for i in range(0, len(rows), 2)]
         html.append(f'<tr><td class="p-pad" style="padding:18px 20px 16px;background:{INK};color:#ffffff">'
                     f'<div style="font-family:{HEAD};font-weight:900;font-size:20px;line-height:1.2;color:#ffffff">Pick your lane</div>'
                     f'<div style="font-size:14px;margin-top:4px;color:#ffffff">The day sorted by who it matters to.</div></td></tr>'
-                    f'<tr><td class="p-pad" style="padding:6px 20px 22px">{_table("".join(rows))}<div style="margin-top:16px">'
-                    f'{_button("See every lane →", web_lanes)}</div></td></tr>')
+                    f'<tr><td class="p-pad" style="padding:16px 20px 22px"><div style="margin:0 -5px">{_table("".join(rows))}'
+                    f'</div><div style="margin-top:6px">{_button("See every lane →", web_lanes)}</div></td></tr>')
 
     # How useful is it: 1 to 5, each opens the site's review form with that number picked (all five alike)
     review = rss.SITE + "review/"
