@@ -21,6 +21,16 @@ def _card(day, title, *others):
             "also": [{"source": s, "title": title} for s in others]}
 
 
+def test_front_tile_keeps_the_last_finished_week(monkeypatch):
+    _pin(monkeypatch)
+    # Thursday 19 Nov: the week of 9-14 Nov had no picks, so this week so far (16-19 Nov)
+    assert (companies.front([], date(2026, 11, 19))["from"], companies.front([], date(2026, 11, 19))["to"]) == \
+        ("2026-11-16", "2026-11-19")
+    # Sunday 22 Nov to Saturday 28 Nov: the week of 16-21 Nov, the same pick all week
+    got = [companies.front([], date(2026, 11, d)) for d in range(22, 29)]
+    assert {(g["from"], g["to"], g["startup"]["name"]) for g in got} == {("2026-11-16", "2026-11-21", "Model ML")}
+
+
 def test_no_profile_no_box():
     assert poster._company_of_day(date(2026, 11, 10)) == ([], "")
 
