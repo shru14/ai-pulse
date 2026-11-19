@@ -137,6 +137,8 @@ ENTITY = (47, 35, 140, "2024-12-05", "https://www.federalregister.gov/documents/
 
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://the-decoder.com/chinese-tech-firms-face-a-double-hit-as-chip-shipments-stop-and-overseas-cloud-access-disappears/":
+        "same as US, 2026-11-16; no official notice named, shipment halt is a Financial Times report",
     "https://w.media/firebirds-us-5-billion-kazakhstan-ai-factory-gets-green-light-for-45000-nvidia-gpus/":
         "grid: Firebird says it secured a US export licence for 45,000 Nvidia Grace Blackwell GPUs for Kazakhstan; "
         "a company's licence, no agency or day named, no published rule",
