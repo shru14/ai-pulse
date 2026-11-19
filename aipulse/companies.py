@@ -22,7 +22,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from . import classify, money
 
-CHECKED_TO = "2026-11-18"  # stories up to this day are checked
+CHECKED_TO = "2026-11-19"  # stories up to this day are checked
 GAP = 30  # days before a company can be featured again
 REASONS = ("Concept", "Revenue", "Business model")  # why it's here
 
@@ -44,11 +44,16 @@ PROFILES: list[tuple[str, str, str, str, str, str, str, str, str]] = [
      "Founded in February, it reports revenue within months and has raised $47M in a Series A.",
      "https://techcrunch.com/2026/11/18/accel-backs-indias-humyn-labs-to-supply-training-data-needed-by-u-s-robotics-ai-developers/",
      "TechCrunch"),
+    ("2026-11-19", "Disseqt AI", "Software that tests, watches and audits companies' AI systems, with records meant to satisfy rules like the EU AI Act.",
+     "Built for large companies; the story gives no prices.", "$8M raised", "Concept",
+     "As AI rules come into force, it sells the proof that a company's AI follows them.",
+     "https://yourstory.com/2026/11/disseqt-ai-raises-8m-to-build-enterprise-ai-safeguards", "YourStory"),
 ]
 
-# A company's official website, checked by hand (the story links to it), for the front page's tile
+# A company's official website, checked by hand, for the front page's tile and the email's company box
 SITES: dict[str, str] = {
     "Humyn Labs": "https://humynlabs.ai/",
+    "Disseqt AI": "https://disseqt.ai/",
 }
 
 # Stories checked and not picked (a big company's, a round still in talks, a pick already made that day)
