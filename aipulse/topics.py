@@ -308,6 +308,14 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.xataka.com/empresas-y-economia/anthropic-su-s-1-tenemos-historial-perdidas-posible-que-no-generemos-ingresos-suficientes-futuro": "Anthropic's S-1 warns of a record of losses and uncertain future revenue",
         "https://www.xataka.com/robotica-e-ia/anthropic-ha-disenado-peculiar-sistema-poder-para-evitar-que-sus-accionistas-controlen-despues-su-salida-a-bolsa": "Anthropic designs a power system to keep shareholders from controlling it after its stock market exit",
         "https://www.xataka.com/empresas-y-economia/anthropic-propone-destinar-5-sus-acciones-a-fondo-que-podria-abordar-impacto-laboral-ia": "Anthropic proposes putting 5 per cent of its shares into a fund for AI's labour impact",
+        "https://www.channelnewsasia.com/business/anthropic-draws-bullish-wall-street-calls-ahead-nasdaq-debut-6566741": "Wall Street analysts make bullish calls on Anthropic ahead of its Nasdaq debut",
+        "https://www.xataka.com/empresas-y-economia/amazon-google-accionistas-proveedores-canal-venta-anthropic-todo-a-vez": "Anthropic's S-1 shows Amazon and Google as shareholders, suppliers and sales channel all at once",
+        "https://olhardigital.com.br/2026/11/19/pro/por-r-60-brasileiros-ja-podem-investir-na-anthropic/": "Anthropic's Brazilian depositary receipts debut at B3 for about R$ 60",
+        "https://techcrunch.com/2026/11/19/at-nasdaq-opening-bell-anthropic-ceo-recommits-to-pacing-ai-development/": "Dario Amodei speaks at the Nasdaq opening bell as Anthropic lists",
+        "https://tecnoblog.net/noticias/anthropic-dona-do-claude-estreia-na-bolsa-valendo-us-15-trilhao/": "Anthropic debuts on the US stock market with shares at $83",
+        "https://www.channelnewsasia.com/business/anthropics-historic-debut-put-ais-promise-and-peril-wall-st-test-6565741": "Anthropic's debut puts AI to the test on Wall Street",
+        "https://www.channelnewsasia.com/business/anthropic-options-could-begin-trading-monday-expected-draw-strong-demand-6563536": "Anthropic options could begin trading on Monday, with strong demand expected",
+        "https://www.xataka.com/empresas-y-economia/anthropic-quiere-tu-dinero-te-ha-escrito-94-paginas-explicando-que-podria-salir-mal-doble-habitual": "Anthropic's S-1 spends 94 pages on what could go wrong, twice the usual",
     },
     "deepseek-us": {
         "https://dplnews.com/estados-unidos-ordena-retirar-deepseek/": "US bans federal civil agencies from buying DeepSeek products and orders existing ones removed",
@@ -339,6 +347,8 @@ ADDED: dict[str, dict[str, str]] = {
         "https://olhardigital.com.br/2026/11/16/pro/estados-unidos-ampliam-restricoes-a-chips-de-ia-e-incluem-o-brasil/": "New US rule requires authorisation to export advanced chips to five countries to stop Chinese firms getting round sanctions through data centres abroad",
         "https://www.channelnewsasia.com/east-asia/nvidia-jensen-huang-megaspeed-international-6505791": "Huang says Nvidia's dealings with Megaspeed were proper and it checked that no AI chips were diverted to China",
         "https://olhardigital.com.br/2026/11/10/pro/caso-de-espia-chinesa-facilitou-envio-de-r-40-bi-em-chips-da-nvidia-a-china/": "Report that the alleged spy used Nvidia and distributor contacts to help send chips to China",
+        "http://www.bernama.com/en/news.php?id=2635379": "The US moves to close a loophole that allowed remote access to its advanced AI chips and servers through third countries",
+        "https://tecnoblog.net/noticias/eua-impoem-restricoes-ao-brasil-para-compra-de-chips-de-ia/": "The US adds Brazil to the countries that need a licence to import advanced chips for data centres",
     },
     "nvidia-huang-scandal": {
         "https://olhardigital.com.br/2026/11/09/pro/trump-diz-que-ceo-da-nvidia-nao-sabia-que-mulher-com-quem-teve-caso-seria-espia/": "Trump says he was surprised by the accusations and believes Huang's version that he did not know the woman was a spy",
@@ -360,10 +370,41 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.fayerwayer.com/internet/2026/11/12/quien-es-colette-kress-la-nueva-ceo-interina-de-nvidia-tras-la-salida-de-jensen-huang/": "Colette Kress becomes Nvidia's interim CEO after Huang leaves",
         "https://www.dawn.com/news/2044062/who-is-nvidia-interim-ceo-colette-kress": "Nvidia says finance chief Colette Kress will take over as interim CEO from Huang",
         "https://www.channelnewsasia.com/business/nvidia-next-ceo-candidates-engineer-cfo-6544986": "Ian Buck and CFO Colette Kress are seen as the likeliest candidates to succeed Huang",
+        "https://techcentral.co.za/nvidia-results-kress-board-rules-out-huang-return/288506/": "Interim CEO Colette Kress reassures investors on her first call after Huang's departure, with the board ruling out his return",
+        "https://www.businesskorea.co.kr/news/articleView.html?idxno=281346": "Huang seeks to return to Nvidia's helm four days after resigning, as shareholders step up pressure",
+        "https://techcrunch.com/2026/11/14/elon-musk-other-tech-execs-sign-petition-calling-on-nvidia-to-reinstate-jensen-huang/": "Elon Musk and other tech executives sign a petition for Nvidia to reinstate Huang, with over 115,000 signatures",
     },
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # Stan Shih's call for wise AI and chip resilience at APEC, nothing about US chip rules or China's response
+    "https://focustaiwan.tw/business/202611190021",
+    # Study on data centres' air pollution, not about pushback, protests or votes
+    "https://news.mit.edu/2026/study-reveals-data-centers-long-distance-damage-air-quality-1119",
+    # History of boards dumping misbehaving CEOs, an explainer with nothing new about the Huang case
+    "https://theconversation.com/nvidia-isnt-the-first-company-to-dump-a-misbehaving-ceo-history-shows-its-in-the-interest-of-corporate-boards-to-act-296800",
+    # Law exam cheating allegations in South Korea, not about the AI Basic Act
+    "https://e.vnexpress.net/news/news/education/south-korea-s-top-law-exam-scorer-found-dead-amid-ai-cheating-allegations-5146600.html",
+    # Lawmakers seek a briefing on a possible ByteDance access deal, can't tell from the summary it changes the OpenAI and Microsoft partnership
+    "https://www.channelnewsasia.com/world/us-microsoft-bytedance-openai-access-6563751",
+    # Opinion piece on an agreement with OpenAI, not about the restructuring or Musk's case
+    "https://dplnews.com/el-espejismo-de-ia-soberana-observaciones-al-acuerdo-con-openai/",
+    # Luckey's opinion that Huang should be reinstated, a comment with nothing new about chip rules
+    "https://techcrunch.com/2026/11/18/palmer-luckey-thinks-china-is-thrilled-to-have-jensen-out-so-he-wants-the-ousted-nvidia-ceo-reinstated/",
+    # Vals AI test of models on drone targets, not about Anthropic's dispute with the Pentagon
+    "https://the-decoder.com/anthropic-openai-and-google-models-readily-marked-medics-journalists-and-surrendering-soldiers-as-kamikaze-drone-targets/",
+    # General piece on pushback complicating data centre buildouts, nothing new in one case
+    "https://www.datacenterknowledge.com/data-center-construction/public-pushback-complicates-data-center-buildouts",
+    # Nvidia's startup stakes and Huang's exit putting deals in doubt, an investment story rather than a development in the case
+    "https://techcrunch.com/2026/11/17/nvidias-startup-stakes-ballooned-to-65b-but-huangs-exit-puts-future-deals-in-doubt/",
+    # Nvidia's revenue outlook despite the turmoil, earnings news rather than a development in the case
+    "https://techcrunch.com/2026/11/17/nvidia-promises-that-revenue-will-keep-soaring-for-now/",
+    # Questions Nvidia should answer ahead of its results, a preview that reports nothing new
+    "https://techcrunch.com/2026/11/16/all-the-questions-nvidia-should-answer-on-tuesday-but-probably-wont/",
+    # South Korean chipmakers and Wall Street doubts, not about US chip rules or China's response
+    "https://www.xataka.com/robotica-e-ia/corea-sur-se-ha-convertido-termometro-ia-sus-fabricantes-chips-estan-pagando-dudas-wall-street",
+    # Huang's comment on AI doomsday warnings, before the scandal and nothing about it
+    "https://japantoday.com/category/tech/nvidia-boss-criticises-%27cheap%27-ai-doomsday-warnings",
     # Microsoft on a ban of Chinese parts in US data centres, not about selling AI chips to China
     "https://olhardigital.com.br/2026/11/10/pro/microsoft-tenta-barrar-proibicao-de-tecnologia-chinesa-em-data-centers/",
     # Malaysian customs seizure of smuggled AI chips, can't tell from the summary it involves Nvidia, China or the US rules
