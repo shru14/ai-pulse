@@ -343,8 +343,8 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 .sub-steps b{display:block;font:700 15px var(--head);margin-bottom:2px}
 .sub-hint{grid-column:2;grid-row:2;margin:-8px 0 0;font-size:13px}
 .sub-head{grid-row:span 2;align-self:start}
-.sub-inside{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
-.sub-inside li{font:600 12.5px/1 var(--body);padding:6px 8px;background:#000;color:#F0E442}
+.sub-inside{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-width:420px}  /* two even columns, every chip the same width */
+.sub-inside li{font:600 12.5px/1.2 var(--body);padding:6px 8px;background:#000;color:#F0E442}
 .sub-act{display:flex;flex-direction:column;align-items:center;gap:8px}
 .sub-act small{font-size:12px;opacity:.8;white-space:nowrap}
 .sub-yesterday{font-size:13.5px;font-weight:600;color:inherit}
@@ -994,8 +994,8 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
   .sub-strip,.month-bar{grid-template-columns:minmax(0,1fr)}  /* the rows inside swipe, never widen the page */
   .sub-strip{padding:12px!important;gap:8px}
   .sub-strip h2{font-size:16px}
-  .sub-strip .sub-inside{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:8px}
-  .sub-strip .sub-inside li{flex:none;white-space:nowrap;font-size:10.5px;padding:4px 6px}
+  .sub-strip .sub-inside{margin-top:8px;gap:4px;max-width:none}  /* all six in view, two to a row */
+  .sub-strip .sub-inside li{font-size:10.5px;padding:4px 6px}
   .sub-strip .sub-steps{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;padding-bottom:4px}
   .sub-strip .sub-steps li{flex:0 0 70%;scroll-snap-align:start;padding:6px 8px 6px 32px;font-size:11px;background:rgba(255,255,255,.55);border:1.5px solid #141925}
   .sub-strip .sub-steps li::before{top:7px;left:7px;width:18px;height:18px;font-size:10px;line-height:18px}
@@ -1260,7 +1260,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
       <div class="tile sub-tile sub-strip" id="sub-strip">
         <div class="sub-head"><span class="label">Daily email</span><h2>Yesterday in AI, every morning</h2>
           <ul class="sub-inside" aria-label="In every email"><li>Top news that matters</li><li>The rest in brief</li>
-            <li>Word of the day</li><li>Meme of the day</li><li>Every story in one table</li></ul></div>
+            <li>Word of the day</li><li>Meme of the day</li><li>Startup of the day</li><li>Every story in one table</li></ul></div>
         <ol class="sub-steps">
           <li><b>Pick streams</b>Releases, Industry, Research, Regulation, Policy, Infra</li>
           <li><b>More of</b>Topics, companies, places and people you follow fill 5 of your 10</li>
