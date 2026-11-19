@@ -337,7 +337,14 @@ def sample_page(cards: list[dict], day: date, out: Path | None = None) -> str | 
         return None
     note = ('<div style="max-width:640px;margin:16px auto;padding:12px 16px;border:3px solid #000;background:#F0E442;'
             'font:600 15px Arial,sans-serif;color:#000">A sample of the daily email. '
-            '<a href="/#subscribe" style="color:#000">Subscribe to get the real one every morning →</a></div>')
+            '<a href="/#subscribe" style="color:#000">Subscribe to get the real time every morning →</a>'
+            # the email's parts from every day so far (archives.py), boxed links in one line
+            '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">' + "".join(
+                f'<a href="/daily/{p}/" style="flex:1 1 auto;white-space:nowrap;padding:6px 8px;border:2px solid #000;border-radius:6px;font-size:13px;'
+                f'background:#fff;color:#000;text-decoration:none;font-weight:600">{escape(a[2])}</a>'
+                for p, a in archives.ARCHIVES.items())
+            + '<a href="/daily/" style="flex:1 1 auto;white-space:nowrap;padding:6px 8px;border:2px solid #000;border-radius:6px;font-size:13px;'
+              'background:#fff;color:#000;text-decoration:none;font-weight:600">Every daily edition</a></div></div>')
     html = re.sub(r"<body[^>]*>", lambda m: m.group(0) + note, page[2], count=1)
     # The meme the email shows (the week's on a Sunday), as a picture beside the page, never inside it
     week = digest.weekly(day)
