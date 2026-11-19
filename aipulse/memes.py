@@ -20,7 +20,7 @@ from html import escape
 from io import BytesIO
 from pathlib import Path
 
-from . import glossary
+from . import glossary, shown
 
 _SERIOUS_TAGS = {"Misuse", "Deepfakes", "Defense", "Elections", "Existential Risk", "Security", "Jobs & Labor",
                  "Surveillance", "Healthcare", "AI-incident", "Safety", "Alignment"}  # AI safety: never a joke (owner's rule)
@@ -452,6 +452,19 @@ def _made(want: str, f: dict, span: str, have: bool) -> dict | None:
     return made or ({"format": want, **_v(f, STANDBY[want]), "based_on": []} if have else None)
 
 
+def _not_shown(want: str, f: dict, span: str, have: bool, made: dict | None, day: date) -> dict | None:
+    """The day's meme, never one shown before (shown.py, from shown.START): `made` if it is new, else the
+    template's other wordings in turn (the rule's, then the standby ones); when all have been shown, the one shown
+    longest ago."""
+    before = shown.memes_before(day)
+    if not made or shown.meme_key(made) not in before:
+        return made
+    standby: list[dict] = STANDBY[want]  # type: ignore[assignment]
+    options = [made] + [m for k in range(1, len(standby)) if (m := _made(want, {**f, "turn": f["turn"] + k}, span, have))]
+    options += [{"format": want, **o, "based_on": []} for o in standby] if have else []
+    return shown.fresh(options, before, shown.meme_key)
+
+
 def template_of(day: date) -> str:
     return ROTATION[(day.toordinal() + 2) % len(ROTATION)]
 
@@ -480,21 +493,30 @@ def last_7_days(cards: list[dict], today: date) -> list[dict]:
 def of_the_day(cards: list[dict], day: date) -> dict | None:
     """The day's meme, from that day's stories (the same for every reader), on the day's template (none if the
     stories can't fill it)."""
+    if (kept := shown.MEMES.get(("day", day))):
+        return kept  # what daily/memes/ shows for the day
     made, want = GENERATED.get(("day", day)), template_of(day)
+    # +2: the site's tile shows this template 6 days earlier on the same turn (of_the_7_days), so the email
+    # takes another wording, never the one readers saw on the site that week (owner, 2026-11-13)
+    f = {**facts([c for c in cards if c.get("date") == day.isoformat()]), "turn": _turn(day) + 2}
+    have = day.isoformat() in {c.get("date") for c in cards}
     if not (made and made.get("format") == want and not plugs(made)):
-        # +2: the site's tile shows this template 6 days earlier on the same turn (of_the_7_days), so the email
-        # takes another wording, never the one readers saw on the site that week (owner, 2026-11-13)
-        f = {**facts([c for c in cards if c.get("date") == day.isoformat()]), "turn": _turn(day) + 2}
-        made = _made(want, f, "today", day.isoformat() in {c.get("date") for c in cards})
+        made = _made(want, f, "today", have)
+    made = _not_shown(want, f, "today", have, made, day)
     return made and {**made, "title": "Meme of the day"}
 
 
 def of_the_week(cards: list[dict], monday: date) -> dict | None:
     """The meme of the week from Monday to Sunday's stories."""
     week = [c for c in cards if monday.isoformat() <= (c.get("date") or "") < (monday + timedelta(days=7)).isoformat()]
+    saturday = monday + timedelta(days=5)  # Sunday's email covers Monday to Saturday, kept under the Saturday
+    if (kept := shown.MEMES.get(("week", saturday))):
+        return kept
     made, want = GENERATED.get(("week", monday)), template_of_week(monday)
+    f = {**facts(week), "turn": _turn(monday, 28)}
     if not (made and made.get("format") == want and not plugs(made)):
-        made = _made(want, {**facts(week), "turn": _turn(monday, 28)}, "this week", bool(week))
+        made = _made(want, f, "this week", bool(week))
+    made = _not_shown(want, f, "this week", bool(week), made, saturday)
     return made and {**made, "title": "Meme of the week"}
 
 

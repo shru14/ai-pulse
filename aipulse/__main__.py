@@ -408,6 +408,8 @@ def main():
         day = date.fromisoformat(a.day) if a.day else digest.yesterday()
         conn = store.connect(a.db)
         digest.load_week_words(conn)  # the words of the week shown so far, which Sunday's skips
+        from . import shown
+        shown.load(conn)  # every word and meme of the day shown so far, which the email never shows again
         # The day, and the four weeks before it (what a usual day looks like; Sunday's word of the week, never
         # the week before's, is worked out from 3 weeks back)
         cards, _ = store.cards(conn, days=(date.today() - day).days + max(quality.HISTORY_DAYS, 28) + 2, limit=10**6)
