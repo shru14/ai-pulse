@@ -149,7 +149,7 @@ def build(conn, cards: list[dict], days: list[date], total: int, out: Path) -> l
                 f'<section class="arc"><h3><a href="/daily/{d.isoformat()}.html">{digest.long_day(d)}</a>'
                 f'<span class="meta">{sunday}</span></h3>{html}</section>')
         body = (pages.band(colour, icon, ART, title, question,
-                           escape(intro) + ' <a href="/#subscribe">Get it in your inbox</a>')
+                           '<a href="/#subscribe">Get it in your inbox</a>')
                 + _links(p)
                 + ("".join(f'<h2>{m}</h2>\n' + "\n".join(rows) for m, rows in months.items())
                    or '<p class="intro">Nothing here yet.</p>'))
