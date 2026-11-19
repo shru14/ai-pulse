@@ -109,8 +109,8 @@ def _entries(cards: list[dict], day: date, idf: dict[str, float]) -> dict[str, s
 
 
 def _links(here: str) -> str:
-    """The other archives, as boxed links (the back link above the heading opens every edition)."""
-    boxes = [(f"/daily/{p}/", a[2]) for p, a in ARCHIVES.items() if p != here]
+    """The other archives and every edition, as boxed links in one line."""
+    boxes = [(f"/daily/{p}/", a[2]) for p, a in ARCHIVES.items() if p != here] + [("/daily/", "Every daily edition")]
     return '<nav class="places one" aria-label="Daily archives">' + "".join(
         f'<a href="{u}">{escape(w)}</a>' for u, w in boxes) + "</nav>\n"
 
