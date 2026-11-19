@@ -96,7 +96,24 @@ def of_week(cards: list[dict], saturday: date) -> tuple[dict, int, int, int, str
     the most days in the news, then the latest. Returns (profile, outlets, days, how many picks it was chosen from,
     what put it first: "only", "outlets", "days" or "latest")."""
     monday = saturday - timedelta(days=saturday.weekday())
-    days = [(monday + timedelta(days=k)).isoformat() for k in range((saturday - monday).days + 1)]
+    return _ranked(cards, [(monday + timedelta(days=k)).isoformat() for k in range((saturday - monday).days + 1)])
+
+
+def of_7_days(cards: list[dict], today: date) -> tuple[dict, int, int, int, str] | None:
+    """The front page's startup of the week: of the past 7 days' daily picks (today and the 6 days before, as the
+    word and the meme of the week), ranked as of_week ranks the email's."""
+    return _ranked(cards, [(today - timedelta(days=k)).isoformat() for k in range(6, -1, -1)])
+
+
+def front(cards: list[dict], today: date) -> dict:
+    """startup.json, for the front page's Startup of the week tile: the past 7 days and the pick (None: no tile)."""
+    got = of_7_days(cards, today)
+    keys = ("name", "does", "number", "why", "url", "source")
+    return {"from": (today - timedelta(days=6)).isoformat(), "to": today.isoformat(),
+            "startup": got and {k: got[0][k] for k in keys}}
+
+
+def _ranked(cards: list[dict], days: list[str]) -> tuple[dict, int, int, int, str] | None:
     picks = [p for p in profiles() if p["day"] in days]
     if not picks:
         return None

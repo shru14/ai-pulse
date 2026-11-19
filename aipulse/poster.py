@@ -391,14 +391,16 @@ def _company_tile(kicker: str, p: dict, why: str) -> tuple[list[str], str]:
     it's here, a row each, and the story it came from."""
     rows = [("What it does", p["does"]), ("How it makes money", p["money"]), ("The number", p["number"]),
             ("Why it's here", why)]
-    text = [f"{kicker}: {p['name']}", *(f"{k}: {v}" for k, v in rows), f"{p['source']}: {p['url']}", ""]
+    text = [f"{kicker}: {p['name']}", *(f"{k}: {v}" for k, v in rows), f"{p['source']}: {p['url']}",
+            f"Startup of the week on Pulse Central: {rss.SITE}#week", ""]
     cell = "padding:6px 0;vertical-align:top;font-size:14px;line-height:1.45;border-top:1px solid #d9d9d9"
     grid = "".join(f'<tr><td width="34%" style="width:34%;{cell};color:{GREY};padding-right:10px">{escape(k)}</td>'
                    f'<td style="{cell}">{escape(v)}</td></tr>' for k, v in rows)
     html = _table(f'<tr><td style="padding:14px 16px 14px;border:2px solid {INK};background:#ffffff">{_label(kicker)}'
                   f'<div style="font-family:{HEAD};font-weight:900;font-size:22px;line-height:1.2;margin:8px 0 8px">'
                   f'{escape(p["name"])}</div>{_table(grid)}<div style="font-size:12px;margin-top:8px">{escape(p["source"])} · '
-                  f'<a href="{escape(clean_url(p["url"]))}" style="color:{INK};font-weight:bold">Read it →</a></div></td></tr>',
+                  f'<a href="{escape(clean_url(p["url"]))}" style="color:{INK};font-weight:bold">Read it →</a> · '
+                  f'<a href="{rss.SITE}#week" style="color:{INK};font-weight:bold">Startup of the week on Pulse Central →</a></div></td></tr>',
                   "margin:0 0 26px")
     return text, html
 
