@@ -46,6 +46,11 @@ PROFILES: list[tuple[str, str, str, str, str, str, str, str, str]] = [
      "TechCrunch"),
 ]
 
+# A company's official website, checked by hand (the story links to it), for the front page's tile
+SITES: dict[str, str] = {
+    "Humyn Labs": "https://humynlabs.ai/",
+}
+
 # Stories checked and not picked (a big company's, a round still in talks, a pick already made that day)
 LEFT_OUT: list[str] = [
     # Not a company's news: banks' policy on AI agents
@@ -64,7 +69,7 @@ def _outlets(c: dict) -> int:
 
 def profiles() -> list[dict]:
     keys = ("day", "name", "does", "money", "number", "why", "because", "url", "source")
-    return [dict(zip(keys, p)) for p in PROFILES]
+    return [{**dict(zip(keys, p)), "site": SITES.get(p[1])} for p in PROFILES]
 
 
 def of_day(day: date) -> dict | None:
@@ -108,7 +113,7 @@ def of_7_days(cards: list[dict], today: date) -> tuple[dict, int, int, int, str]
 def front(cards: list[dict], today: date) -> dict:
     """startup.json, for the front page's Startup of the week tile: the past 7 days and the pick (None: no tile)."""
     got = of_7_days(cards, today)
-    keys = ("name", "does", "number", "why", "url", "source")
+    keys = ("name", "does", "number", "why", "url", "source", "site")
     return {"from": (today - timedelta(days=6)).isoformat(), "to": today.isoformat(),
             "startup": got and {k: got[0][k] for k in keys}}
 
