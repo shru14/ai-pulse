@@ -598,11 +598,11 @@ def _spread(ranked: list[dict], taken: list[dict], n: int, stream_of: dict[int, 
     return out
 
 
-def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict], streams: list[str], day: date,
-          prefs: dict | None, dossier: dict | None, unsubscribe: str, change: str, stop: str,
-          listen: bool = False) -> tuple[str, str, str]:
-    """(subject, plain text, HTML) of the poster email (see digest.build for the arguments; `listen`: the bar to the
-    reader's clip under the masthead, when the site has it)."""
+def top_news(cards: list[dict], by_stream: dict[str, list[dict]], streams: list[str], prefs: dict | None = None,
+             idf: dict[str, float] | None = None) -> tuple[list[dict], set[int], dict[int, str], list[dict], list[dict]]:
+    """The email's hot story and top news (top[0] the hot story), up to PICKS of the reader's own first; with the
+    reader's picks (by id), each story's stream, and the day's stories ranked (all, and without SIDE_KINDS). `idf`:
+    cluster.idf_weights(cards), when the caller already has it."""
     todays = [c for n in streams for c in by_stream[n]]
     stream_of = {id(c): n for n in streams for c in by_stream[n]}
     ranked = sorted([c for c in todays if digest._fits_top(c)], key=digest._rank, reverse=True)
@@ -616,7 +616,18 @@ def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict],
     taken = lead + [c for c in mine if c not in lead]
     top = taken[:1 + TOP_NEWS]
     top += _spread([c for c in main if c not in mine] or ranked, top, 1 + TOP_NEWS - len(top), stream_of,
-                   cluster.idf_weights(cards))
+                   cluster.idf_weights(cards) if idf is None else idf)
+    return top, picks, stream_of, ranked, main
+
+
+def build(cards: list[dict], by_stream: dict[str, list[dict]], left: list[dict], streams: list[str], day: date,
+          prefs: dict | None, dossier: dict | None, unsubscribe: str, change: str, stop: str,
+          listen: bool = False) -> tuple[str, str, str]:
+    """(subject, plain text, HTML) of the poster email (see digest.build for the arguments; `listen`: the bar to the
+    reader's clip under the masthead, when the site has it)."""
+    todays = [c for n in streams for c in by_stream[n]]
+    prefs = prefs or {}
+    top, picks, stream_of, ranked, main = top_news(cards, by_stream, streams, prefs)
     shown = {id(c) for c in top}
     text, html = [], []
     stories = len(todays)  # stories, not outlets: the stream rows add up to it
