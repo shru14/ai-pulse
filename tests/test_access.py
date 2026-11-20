@@ -115,12 +115,12 @@ def test_the_secret_holds_no_password(tmp_path, monkeypatch):
 
 def test_login_box_asks_each_clients_own_username_and_gives_one_email():
     # 15 Nov 2026, owner: each client its own username and password, typed in the box (6 Nov: one shared username);
-    # under it the prices (on request until set) and Start a conversation (12 Nov 2026)
+    # under it Start a conversation (12 Nov 2026); no price table while every price is on request (owner, 20 Nov 2026)
     box = access._get_login()
-    assert len(access.PRICES) == 5 and box.count("<tr>") == 6 + len(access.STORE_ADDONS)
-    assert "Price on request" in box and "Start a conversation" in box and "mailto:" not in box and "Bought once" in box and "No login needed" in box
+    assert len(access.PRICES) == 5 and "<table" not in box and "Price on request" not in box
+    assert "Start a conversation" in box and "mailto:" not in box
     assert "Or write to" not in box and "Pulse Store /" not in access.REQUEST and "Pulse Store)" not in access.REQUEST
-    # the Store's paid add-ons (4 Nov 2026): priced in the box and named in the email; browsing the Store stays free
+    # the Store's paid add-ons (4 Nov 2026): named in the email; browsing the Store stays free
     assert "$xx" not in box and "Price (USD)" not in box
     # 6 Nov 2026, owner: no amount until set; readers email to ask
     assert all(p[2] == "Price on request" for p in access.PAID)

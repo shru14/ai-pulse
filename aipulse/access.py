@@ -231,16 +231,13 @@ REQUEST = ("Hello Pulse Central,\n\nI would like a Pulse Pro Engine login.\n\n"
 
 
 def _get_login() -> str:
-    """Under the form: what a login costs and a ready-written email asking for one."""
-    from html import escape
+    """Under the form: how to get a login. 20 Nov 2026, owner: no price table while every price is on request; a
+    list of names with no prices added nothing."""
     from urllib.parse import quote
-    rows = "".join(f"<tr><td>{escape(n)}<small>{escape(k)}</small></td><td>{escape(p)}"
-                   + (f"<small>or {escape(y)}</small>" if y else "") + "</td></tr>" for n, k, p, y in PRICES + STORE_ADDONS)
     # 12 Nov 2026, owner: "Start a conversation" (the Pulse Pro Engine contact form) instead of an email link
     href = f"/{CONTACT}?about={quote('Prices')}"
     return ('<div class="compass-get"><h2>No login yet?</h2>'
             '<p>Logins are paid. Tell us which product you need and we reply with the price and an invoice.</p>'
-            f'<table><thead><tr><th>Product</th><th>Price</th></tr></thead><tbody>{rows}</tbody></table>'
             f'<a class="cg-mail" href="{href}">Start a conversation</a>'
             '<p class="cg-note">Your username and password follow once the invoice is paid. Please don\'t send card numbers.</p></div>')
 
