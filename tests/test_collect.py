@@ -90,6 +90,31 @@ def test_migrates_old_schema(tmp_path):
                                "category": "research", "date": "2026-01-02", "authors": ["A B"]})
     conn.commit()
     assert store.connect(path).execute("SELECT COUNT(*) FROM items").fetchone()[0] == 2
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == store.SCHEMA_VERSION
+
+
+def test_schema_version_runs_upgrades_once(tmp_path):
+    path = tmp_path / "a.db"
+    conn = store.connect(path)
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == store.SCHEMA_VERSION
+    assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+    conn.execute("CREATE TABLE models (x)")  # an older file's leftover is dropped by the upgrade, not on every open
+    conn.execute("PRAGMA user_version = 0"); conn.commit(); conn.close()
+    conn = store.connect(path)
+    assert not conn.execute("SELECT 1 FROM sqlite_master WHERE name = 'models'").fetchone()
+    assert "alerted" in {r["name"] for r in conn.execute("PRAGMA table_info(sources)")}
+
+
+def test_maintain_checks_and_vacuums(tmp_path):
+    conn = store.connect(tmp_path / "m.db")
+    conn.execute("CREATE TABLE filler (x TEXT)")
+    conn.executemany("INSERT INTO filler VALUES (?)", [("x" * 2000,)] * 500)
+    conn.commit()
+    conn.execute("DELETE FROM filler"); conn.commit()
+    r = store.maintain(conn)
+    assert r["check"] == "ok" and r["vacuumed"]
+    assert conn.execute("PRAGMA freelist_count").fetchone()[0] == 0
+    assert not store.maintain(conn)["vacuumed"]  # nothing left to reclaim
 
 
 def test_hugging_face_papers_keep_big_tech_and_professors():
