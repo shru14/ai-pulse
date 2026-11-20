@@ -82,6 +82,39 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-19', by='Apollo Research', kind='framework',
+         title='Towards embedded evaluations for AI monitoring',
+         url='https://www.apolloresearch.ai/blog/towards-embedded-evaluations-for-ai-monitoring',
+         original="",
+         models=(), risks=('control', 'misalign'),
+         abstract=("This year we observed multiple rogue agent incidents. AI monitors, built from the developers' own "
+                   'internal models, are now the main oversight of internally deployed agents. Embedded evaluations '
+                   'address this gap: independent evaluators work inside the developer and test its safety claims. Our '
+                   'first pilot towards an embedded evaluation was announced with OpenAI. This is the third post in a '
+                   'series. Principles for Embedded Evaluations describes our claim-based approach to embedded '
+                   'evaluations. Towards embedded evaluations for scheming propensities details the claims across the '
+                   'deployment stages. This post applies them to AI monitoring, i.e. the system that detects model '
+                   'misbehaviour during internal deployment. We explicitly do not discuss containment mechanisms in '
+                   'this post, like sandboxes or blocking interventions, which could help constrain damage from an '
+                   'incident. Rather, we focus on whether an agent subverting a monitor would be noticed and the '
+                   'incident disclosed appropriately. …')),
+    dict(date='2026-11-13', by='Anthropic', kind='framework',
+         title='Building strong safety evaluations',
+         url='https://www.anthropic.com/research/building-strong-safety-evaluations',
+         original="",
+         models=(), risks=('cbrn', 'cyber', 'harm'),
+         abstract=('Safety evaluations inform some of the most consequential decisions we make about an AI model, '
+                   'including whether it’s ready to deploy, which safeguards ship alongside it, and what our next round '
+                   'of safety training and research should focus on. When we say a model is “safer than its '
+                   'predecessor,” we mean that it scored better on a set of evals someone built. But a safety claim is '
+                   'only as sound as the eval behind it, and good ones are hard to build. A safety eval measures a '
+                   'model’s propensity to cause or contribute to harm, whether its response to a request makes harm '
+                   'more or less likely, and how severe that harm would be, rather than measuring specific '
+                   'capabilities. It can cover different types of harm. For example, a user may actively request '
+                   'harmful outputs (such as seeking instructions on how to harm themselves), or they may request '
+                   'outputs that are intended to be harmless, but that come with high risk of unintended harm (such as '
+                   'seeking information on the appropriate dose of a drug). Essentially, a safety eval asks, “Given a '
+                   'specific input, did the model do the right thing?” …')),
     dict(date='2026-11-10', by='Google DeepMind', kind='card',
          title='Gemini 4 Carbon Safety & Security Report',
          url='https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available/',
@@ -1633,6 +1666,10 @@ LEFT_OUT: set[str] = {
     'https://www.nist.gov/blogs/caissi-research-blog/cheating-ai-agent-evaluations',
     'https://www.thelec.net/news/articleView.html?idxno=15338',  # news: Korean Financial Security Institute cloud security assessments, not an AI safety document
     'https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/',  # product launch; its model card is product information with no safety evaluation
+    'https://www.frontiermodelforum.org/updates/introducing-the-fmf-jailbreak-rating-framework-for-frontier-cyber-threats/',  # news about the FMF Jailbreak Rating Framework, already in DOCS
+    'https://www.anthropic.com/claude-fable-and-mythos-5-2',  # product launch of Claude Fable 5.2 and Mythos 5.2; its system card is already in DOCS
+    'https://www.anthropic.com/research/claude-electronics-design',  # capability showcase (Claude designing electronics), not a safety evaluation
+    'https://www.anthropic.com/research/claude-black-hole-physics',  # science results (Claude on black-hole physics), not a safety document
 }
 
 # a story that may be a safety document: from a publisher the hub reads, or a headline naming one
