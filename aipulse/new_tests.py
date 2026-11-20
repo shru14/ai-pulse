@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-11-16"
+CHECKED_TO = "2026-11-19"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -579,9 +579,17 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "Whether AI models that read images can recognise, structure and interpret the notation in sheet music.",
         "No top score: across twelve models, different ones lead transcription of excerpts, single pages and "
         "multipage scores", "", None),
+    "https://www.microsoft.com/en-us/research/publication/wordinferbench-can-agents-infer-how-to-edit-from-word-document-context/": (
+        "WordInferBench", "agents",
+        "Whether coding agents can work out how to format a Word document from the document itself, without every "
+        "change being spelled out.",
+        "62.9% of tasks passed when every change is spelled out, but only 40.7% when the agent must infer it",
+        "Claude Code with Opus 4.6", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://www.microsoft.com/en-us/research/publication/memorydojo-benchmarking-poisoning-through-llm-agent-memory/":
+        "MemoryDojo tests five memory systems, not AI models, and names no models or scores; it also proposes a poisoning method",
     "https://arxiv.org/abs/2610.34051": "BEHAVIOR-Spatial reports only the authors' own baseline, no best result across models",
     "https://arxiv.org/abs/2610.26081": "mainly a new model (DeOverlay), with a benchmark",
     "https://arxiv.org/abs/2610.13644": "SelectArena compares statistics methods for picking data columns, not AI models",
@@ -638,8 +646,11 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
     "https://arxiv.org/abs/2606.09426": (
         "https://arxiv.org/abs/2608.01964", "2026-08-03", "80.7% on WeaveBench",
         "Qwen 3.7-Plus in the LongHorizon-Harness agent harness"),
+    "https://arxiv.org/abs/2609.40325": (
+        "https://arxiv.org/abs/2611.25543", "2026-11-19", "55.9% of the same 213 tasks",
+        "the authors' own auditor, a swarm of small explorers with a frontier model reviewing their reports"),
 }
-BEATS_CHECKED_TO = "2026-11-13"
+BEATS_CHECKED_TO = "2026-11-19"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
