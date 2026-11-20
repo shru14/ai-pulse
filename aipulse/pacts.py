@@ -138,6 +138,9 @@ BANS = [
 
 # Orders, investigations and court cases a government brought: (day, government, company, kind, what, its story)
 ORDERS = [
+    ("2026-11-19", "California (Attorney General)", "Nvidia", "Investigation", "Serves an investigative subpoena to "
+     "learn whether advanced chips or confidential information reached China and whether Nvidia deceived investors",
+     "https://www.fayerwayer.com/internet/2026/11/20/california-cito-a-nvidia-para-investigar-chips-y-engano/"),
     ("2026-09-30", "US (FTC)", "OpenAI, Anthropic and others", "Investigation", "Consumer-protection probe",
      "https://the-decoder.com/ftc-launches-sweeping-probe-into-openai-anthropic-and-other-ai-labs-over-consumer-"
      "protection-concerns/"),

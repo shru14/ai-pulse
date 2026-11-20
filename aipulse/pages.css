@@ -1630,6 +1630,11 @@ a.subscribe-btn{text-decoration:none}
 @media (max-width:640px){.cp .nt-glance{grid-auto-flow:row}.cp .nt-glance div{padding:12px 14px}
   .cp .nt-glance div+div{border-left:0;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
   .cp .nt-glance .nt-n1{font-size:24px}}
+.cp .nt-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 6px;padding:0 0 6px;border-bottom:1px solid color-mix(in srgb,var(--ink) 18%,transparent);cursor:pointer;list-style:none}  /* each subject's tests fold under its name */
+.cp .nt-fold>summary::-webkit-details-marker{display:none}
+.cp .nt .nt-fold>summary h3{flex:1;margin:0}
+.cp .nt-fold>summary::after{content:"";flex:none;width:9px;height:9px;margin:0 6px 4px 0;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(45deg);transition:transform .15s}
+.cp .nt-fold[open]>summary::after{transform:rotate(-135deg);margin:4px 6px 0 0}
 .cp .nt .nt-how{margin:0 0 14px;max-width:none;font-size:14.5px;color:var(--muted)}
 .cp .nt-scores{list-style:none;margin:0 0 34px;padding:0;border-top:2px solid var(--line)}
 .cp .nt-scores li{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 6.5rem;gap:14px;align-items:center;

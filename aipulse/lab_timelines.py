@@ -220,6 +220,20 @@ LEFT_OUT = {
         "Survey news on developers, not a model price or place change",
     "https://techcrunch.com/2026/11/11/nvidias-stock-drops-as-board-reportedly-preps-to-oust-ceo-jensen-huang/":
         "A company's stock and leadership news, not a model price change",
+    "https://dplnews.com/openshift-5-ya-esta-disponible-red-hat-suma-agentes-de-ia-a-la-operacion-de-nube-hibrida/":
+        "A software platform release, not a model price or place change",
+    "https://aws.amazon.com/blogs/machine-learning/amazon-sagemaker-inference-2026-launches-in-review-part-2/":
+        "A review of cloud service launches, not a model price or place change",
+    "https://www.xataka.com/seleccion/llegan-a-espana-primeros-minipcs-nvidia-rtx-spark-quieres-comprarlos-prepara-cartera":
+        "Computer hardware reaching Spain, not an AI model",
+    "https://techcentral.co.za/anthropic-81-billion-ipo-biggest-in-history/288534/":
+        "A company's IPO, not a model price change",
+    "https://siliconangle.com/2026/11/18/after-anthropic-prices-ipo-higher-than-expected-shares-shoot-up-34-trading-debut/":
+        "A company's IPO share price, not a model price change",
+    "https://japantoday.com/category/tech/anthropic-forges-ahead-with-its-ipo-even-as-ai-fears-mount-and-markets-wobble":
+        "A company's IPO, not a model price change",
+    "https://techcrunch.com/2026/11/17/google-to-keep-gemini-chats-for-two-months-up-from-72-hours-even-with-history-off/":
+        "A consumer app's data retention setting, not a model price, place or pulled change",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"

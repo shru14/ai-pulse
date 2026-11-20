@@ -262,6 +262,9 @@ RELEASES = [
      "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/", ""),
     ("2026-11-12", "Google", "Gemini 4 Hydrogen", "Closed", "", "", "", "Worldwide from launch, says Google", False,
      "$1.50 / $7.50", "https://deepmind.google/blog/introducing-gemini-4-hydrogen/", ""),
+    ("2026-11-17", "OpenAI", "GPT-6.2 Astra and Sol", "Closed", "", "", "", "", False,
+     "Astra $8 / $40; Sol $2 / $10",
+     "https://the-decoder.com/openai-launches-gpt-6-2-astra-and-sol-with-lower-api-prices-and-some-benchmark-gains/", ""),
 ]
 # what each release is for, from its story: "General" reads and writes text (images or audio too, for some);
 # the rest do one job. The adoption planner lists a model only for the jobs its kind can do
@@ -294,6 +297,7 @@ KIND = {
     "ERNIE 5.5 Flash Base": "General", "Gemini Omni 1.2 Flash": "Video", "GPT-6 Cyber": "Cyber",
     "Inkling 2 Small": "General", "Claude Fable 5.2": "General", "Muse Ember": "General",
     "Gemini Decision 1": "Classification", "Gemini 4 Hydrogen": "General",
+    "GPT-6.2 Astra and Sol": "General",
 }
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -301,7 +305,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-15"
+SAFETY_CHECKED = "2026-11-20"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -340,6 +344,10 @@ SAFETY = {
     "Claude Fable 5.2": ("2026-11-09", "https://www.anthropic.com/claude-fable-and-mythos-5-2", "In the launch post"),
     "Gemini 4 Hydrogen": ("2026-11-12", "https://deepmind.google/models/model-cards/gemini-4-hydrogen/",
                           "In its model card"),
+    "GPT-6.2 Astra and Sol": ("2026-11-17", "https://deploymentsafety.openai.com/gpt-6-2-astra-sol", ""),
+    "Gemini Omni 1.2 Flash": ("", "https://deepmind.google/models/model-cards/gemini-omni-1-2-flash/",
+                              "Model card gives no test results for it"),
+    "Genie 4": ("", "https://deepmind.google/models/model-cards/genie-4/", "Model card gives no test results for it"),
     "Muse Ember": ("", "https://research.meta.ai/static/muse-ember-evaluation-report",
                    "Evaluation report gives no safety test results for it"),
     "Gemini 3.8 Live": ("", "https://deepmind.google/models/model-cards/gemini-3-8-audio/",
@@ -686,10 +694,21 @@ LEFT_OUT = {
     "https://www.marktechpost.com/2026/11/13/google-gemini-4-hydrogen/": "same as Gemini 4 Hydrogen",
     "https://www.xataka.com/robotica-e-ia/google-cree-haber-dado-santo-grial-ia-gemini-4-hydrogen-rapido-bueno-casi-barato":
         "same as Gemini 4 Hydrogen",
+    "https://openai.com/index/introducing-gpt-6-2-astra-sol": "same as GPT-6.2 Astra and Sol",
+    "https://siliconangle.com/2026/11/17/openai-rolls-out-gpt-6-2-astra-for-professional-work-and-gpt-6-2-sol-for-everyday-work/":
+        "same as GPT-6.2 Astra and Sol",
+    "https://www.marktechpost.com/2026/11/17/openai-gpt-6-2-astra-sol-release/": "same as GPT-6.2 Astra and Sol",
+    "https://olhardigital.com.br/2026/11/17/pro/openai-lanca-gpt-6-2-astra-e-sol-com-novas-restricoes-de-seguranca/":
+        "same as GPT-6.2 Astra and Sol",
+    "https://developers.googleblog.com/gemini-hydrogen-for-robotics/": "same as Gemini 4 Hydrogen",
+    "https://siliconangle.com/2026/11/17/microsoft-rolls-out-new-first-party-models-and-updates-to-agentic-ai-continuous-improvement/":
+        "MAI-Code-2: one news outlet within 3 days",
+    "https://elevenlabs.io/blog/scribe-v3-live-medical": "Scribe v3 Live Medical: no news outlet within 3 days",
+    "https://huggingface.co/inworld/voice-isolator": "voice-isolator: no news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-12"
+CHECKED_TO = "2026-11-17"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
