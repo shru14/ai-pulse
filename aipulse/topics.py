@@ -316,6 +316,8 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.channelnewsasia.com/business/anthropics-historic-debut-put-ais-promise-and-peril-wall-st-test-6565741": "Anthropic's debut puts AI to the test on Wall Street",
         "https://www.channelnewsasia.com/business/anthropic-options-could-begin-trading-monday-expected-draw-strong-demand-6563536": "Anthropic options could begin trading on Monday, with strong demand expected",
         "https://www.xataka.com/empresas-y-economia/anthropic-quiere-tu-dinero-te-ha-escrito-94-paginas-explicando-que-podria-salir-mal-doble-habitual": "Anthropic's S-1 spends 94 pages on what could go wrong, twice the usual",
+        "https://www.channelnewsasia.com/business/anthropics-post-debut-stumble-delivers-reality-check-ai-trade-6569081": "Anthropic's stock stumbles after its debut",
+        "https://olhardigital.com.br/2026/11/19/pro/anthropic-movimenta-mercado-em-estreia-na-nasdaq-veja-como-foi-o-primeiro-dia/": "Anthropic's first day on the Nasdaq, with shares up 39 per cent in trading before losing strength by the close",
     },
     "deepseek-us": {
         "https://dplnews.com/estados-unidos-ordena-retirar-deepseek/": "US bans federal civil agencies from buying DeepSeek products and orders existing ones removed",
@@ -334,6 +336,7 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.engadget.com/2307590/openai-says-it-will-protect-local-resources-and-report-on-the-impact-of-its-data-centers/": "OpenAI pledges to protect local resources and report on its data centres' impact after the vote",
         "https://www.xataka.com/robotica-e-ia/centros-datos-tambien-se-presentaban-a-elecciones-eeuu-han-perdido-estrepitosamente": "Data centres lost heavily in the US elections",
         "https://www.engadget.com/2306534/americans-overwhelmingly-voted-against-data-centers-in-the-midterms/": "Americans voted overwhelmingly against data centres in the midterms",
+        "https://www.selc.org/news/the-2026-midterms-were-the-data-center-election/": "Americans voted overwhelmingly for candidates who promised to push back on data centres in the midterms",
         "https://www.xataka.com/robotica-e-ia/eeuu-ha-votado-masa-centros-datos-todos-pueblo-dakota-norte-mil-habitantes": "The US voted heavily against data centres, with one small North Dakota town the exception",
         "https://www.xataka.com/robotica-e-ia/elon-musk-tiene-plan-para-acabar-vecinos-quejandose-centros-datos-cerca-comprar-sus-casas": "Plan to buy the houses of neighbours who complain about a nearby data centre",
         "https://tecnoblog.net/noticias/spacex-quer-comprar-casas-de-vizinhos-incomodados-com-seus-data-centers/": "SpaceX wants to buy houses from neighbours bothered by its data centres",
@@ -349,6 +352,7 @@ ADDED: dict[str, dict[str, str]] = {
         "https://olhardigital.com.br/2026/11/10/pro/caso-de-espia-chinesa-facilitou-envio-de-r-40-bi-em-chips-da-nvidia-a-china/": "Report that the alleged spy used Nvidia and distributor contacts to help send chips to China",
         "http://www.bernama.com/en/news.php?id=2635379": "The US moves to close a loophole that allowed remote access to its advanced AI chips and servers through third countries",
         "https://tecnoblog.net/noticias/eua-impoem-restricoes-ao-brasil-para-compra-de-chips-de-ia/": "The US adds Brazil to the countries that need a licence to import advanced chips for data centres",
+        "https://cset.georgetown.edu/article/dutch-resist-unacceptable-us-bid-to-tighten-semiconductor-export-controls/": "The Netherlands opposes proposed US restrictions on semiconductor exports to China",
     },
     "nvidia-huang-scandal": {
         "https://olhardigital.com.br/2026/11/09/pro/trump-diz-que-ceo-da-nvidia-nao-sabia-que-mulher-com-quem-teve-caso-seria-espia/": "Trump says he was surprised by the accusations and believes Huang's version that he did not know the woman was a spy",
@@ -373,10 +377,48 @@ ADDED: dict[str, dict[str, str]] = {
         "https://techcentral.co.za/nvidia-results-kress-board-rules-out-huang-return/288506/": "Interim CEO Colette Kress reassures investors on her first call after Huang's departure, with the board ruling out his return",
         "https://www.businesskorea.co.kr/news/articleView.html?idxno=281346": "Huang seeks to return to Nvidia's helm four days after resigning, as shareholders step up pressure",
         "https://techcrunch.com/2026/11/14/elon-musk-other-tech-execs-sign-petition-calling-on-nvidia-to-reinstate-jensen-huang/": "Elon Musk and other tech executives sign a petition for Nvidia to reinstate Huang, with over 115,000 signatures",
+        "https://www.engadget.com/2319982/nvidias-board-chair-says-the-company-is-not-considering-reinstating-jensen-huang-as-ceo/": "Nvidia's board chair says the company is not considering bringing Huang back as CEO",
+        "https://olhardigital.com.br/2026/11/17/pro/jensen-huang-admite-erros-pede-desculpas-e-sinaliza-possivel-retorno-a-nvidia/": "Huang admits mistakes, apologizes and says he would agree to return as CEO while the board investigates",
+        "https://www.engadget.com/2319382/jensen-huang-said-hed-be-honored-to-return-as-nvidia-ceo-because-of-course-he-would/": "Huang says he would be honored to return as CEO and is set to testify before congressional committees",
+        "https://www.xataka.com/empresas-y-economia/trump-quiere-vuelta-a-jensen-huang-eso-justo-que-impide-al-consejo-nvidia-readmitirlo": "Trump says he would not mind Huang's return while a source says the board does not intend to readmit him",
+        "https://www.xataka.com/empresas-y-economia/guerra-interna-control-nvidia-vuelta-jensen-huang-como-ceo-esta-encima-mesa": "Huang's possible return as CEO is on the table in an internal fight over control of Nvidia",
+        "https://www.businesskorea.co.kr/news/articleView.html?idxno=281472": "Trump is open to Huang's return but Nvidia's board rules out reinstating him",
     },
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # Spain's data centre decree sets renewable, efficiency and sovereignty targets, not about who pays for electricity
+    "https://dplnews.com/espana-aprueba-reglamento-centros-de-datos/",
+    # Opinion on whether the IPO signals a top in the AI trade, nothing new about the listing itself
+    "https://siliconangle.com/2026/11/20/anthropic-goes-public-but-is-it-too-late-to-save-the-ai-trade/",
+    # Reports of humiliations and threats at Nvidia under Huang, not about the affair, the inquiry or Congress
+    "https://olhardigital.com.br/2026/11/20/pro/jensen-huang-fez-da-humilhacao-uma-rotina-na-nvidia-diz-jornal/",
+    # Opinion piece on whether Anthropic's listing was a vote of confidence, nothing new about the IPO
+    "https://theconversation.com/was-anthropics-record-us-81-billion-listing-a-vote-of-confidence-in-ai-and-whats-next-297151",
+    # US weighing disclosure of Chinese AI use by firms, not about chip rules or Nvidia
+    "https://www.channelnewsasia.com/world/us-weighs-forcing-us-firms-disclose-chinese-ai-use-6562396",
+    # Analysis of the listing's effect on Nasdaq against the NYSE, can't tell from the summary it reports a new development in the IPO
+    "https://www.channelnewsasia.com/business/analysisanthropic-listing-extends-nasdaqs-dominant-run-against-arch-rival-nyse-6567516",
+    # Shareholder lawsuit against Alibaba, can't tell from the summary it is about chip rules or Nvidia's case
+    "https://www.channelnewsasia.com/business/alibaba-defrauded-shareholders-concealing-ties-suspected-spy-in-nvidia-scandal-lawsuit-says-6567496",
+    # Nvidia's quarterly revenue beat, earnings news rather than a development in the case
+    "https://www.thelec.net/news/articleView.html?idxno=15723",
+    # Nvidia's open source strategy under its interim CEO, a company strategy story rather than a development in the case
+    "https://techcrunch.com/2026/11/17/nvidia-says-its-open-source-ai-strategy-remains-intact-after-jensen-huangs-exit/",
+    # Wealthy investors trimming Nvidia stakes, an investor story rather than a development in the case
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=281502",
+    # Column on the Trump and Xi meeting, an opinion piece with nothing new about chip rules
+    "https://olhardigital.com.br/2026/11/17/colunistas/spotlight-trump-e-xi-se-encontram-apos-crise-na-nvidia-wharrysson-lacerda/",
+    # Debate on founder succession at big tech firms, an explainer with nothing new about the case
+    "https://olhardigital.com.br/2026/11/16/pro/saida-de-jensen-huang-reacende-debate-sobre-sucessao-nas-bigtechs/",
+    # Profile of Huang from before the scandal, nothing new about the case
+    "https://olhardigital.com.br/2026/11/09/pro/quem-e-jensen-huang-ceo-da-nvidia-segunda-empresa-mais-valiosa-do-mundo/",
+    # Opinion on who wins after the midterms, nothing new about the pushback or votes
+    "https://siliconangle.com/2026/11/06/midterm-elections-will-put-ai-and-data-centers-on-trial-but-big-tech-may-end-up-winning-anyway/",
+    # Oracle cancelling a chip leasing deal with Tencent, can't tell from the summary it is about US chip rules
+    "https://www.thelec.net/news/articleView.html?idxno=15309",
+    # Grid operators' tariff plans for large loads at FERC, not about California laws or state preemption
+    "https://www.powermag.com/five-grid-operators-respond-to-ferc-with-distinct-plans-for-large-load-integration/",
     # Stan Shih's call for wise AI and chip resilience at APEC, nothing about US chip rules or China's response
     "https://focustaiwan.tw/business/202611190021",
     # Study on data centres' air pollution, not about pushback, protests or votes
