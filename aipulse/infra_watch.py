@@ -290,6 +290,8 @@ LEFT_OUT: set[str] = {
     "https://w.media/australia-sets-30mw-threshold-for-new-data-centre-grid-standards/",  # grid connection standard for all large inverter-based loads, not specific to data centres
     "https://www.techerati.com/news-hub/polarise-plans-150mw-ai-data-centre-expansion-in-germany-by-2028/",  # can't read to check
     "https://www.powermag.com/rowan-digital-infrastructure-secures-1-5-billion-in-financing-for-hyperscale-development-platform/",  # press release on corporate credit facilities for a pipeline, no single new campus
+    "https://w.media/heptamax-to-acquire-singapore-data-center-operator-racks-central-in-us-388-million-reverse-takeover/",  # takeover of an existing operator
+    "https://www.telesemana.com/blog/2026/11/19/delloro-proyecta-que-el-mercado-de-energia-de-alta-densidad-para-centros-de-datos-superara-los-us-42-000-millones-en-2030/",  # market forecast
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
