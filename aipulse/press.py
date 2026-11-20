@@ -230,11 +230,27 @@ CHECKED: dict[str, dict] = {
              subject="science",
              about="Shows that a climate emulator trained on one optimised scenario predicts new scenarios better than "
                    "one trained on six standard scenarios, despite using less training data."),
+    "https://news.mit.edu/2026/ai-helps-researchers-investigate-how-medical-studies-share-code-1119":
+        dict(paper="AI-assisted scoping review of code sharing in clinical prediction model research",
+             link="https://doi.org/10.1038/s41591-026-04691-1", subject="science",
+             about="Finds that only 482 of 3,967 clinical prediction studies (12.2%) shared their code, using an AI "
+                   "pipeline to screen the studies and check the shared code."),
+    "https://news.mit.edu/2026/study-reveals-data-centers-long-distance-damage-air-quality-1119":
+        dict(paper="Spatially distributed air quality and health impacts of data center electricity demand in the United States",
+             link="https://doi.org/10.1088/1748-9326/aebbd4", subject="people",
+             about="Estimates that the power supplied to US data centers in 2023 caused about 650 premature deaths a year "
+                   "from air pollution, with states hosting few data centers sometimes bearing a large share."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://pandaily.com/biomap-xtrimotox-nonclinical-drug-safety-assessment-system",  # a product launch, no paper
+    "https://sakana.ai/security-research-group/",  # a company page announcing a team, no paper
+    "https://olhardigital.com.br/2026/11/19/pro/anthropic-movimenta-mercado-em-estreia-na-nasdaq-veja-como-foi-o-primeiro-dia/",  # a market news story, no paper
+    "https://olhardigital.com.br/2026/11/19/games-e-consoles/rockstar-usou-inteligencia-artificial-em-gta-vi/",  # a news story on a game, no paper
+    "https://cltc.berkeley.edu/2026/11/19/new-cltc-white-paper-on-ai-enabled-cybercrime/",  # a centre's white paper, on no preprint server or journal
+    "https://www.404media.co/redlining-ai-data-centers-and-race-study/",  # paper found (GWU/American University study, no venue named) but its page can't be read to check: mdp.law.gwu.edu refuses us
     "https://elevenlabs.io/blog/impact-sofia-oxford-said",  # a company blog post (ElevenLabs), not a paper
     "https://www.sciencedaily.com/releases/2026/11/261110042553.htm",  # can't read to check (the site refuses us)
     "https://tecnoblog.net/noticias/chatgpt-e-gemini-indicam-lojas-falsas-para-compras-aponta-estudo/",  # a company report (Podqi, AI Search Brand Risk Report 2026), no paper
