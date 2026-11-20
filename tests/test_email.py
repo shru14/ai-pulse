@@ -647,16 +647,16 @@ def test_each_days_meme_template_comes_back_only_after_5_days():
     weekly = [memes.template_of_week(m) for m in mondays]
     assert all(a != b for a, b in zip(weekly, weekly[1:])) and set(weekly[:4]) == set(memes.WEEK_ROTATION)
     assert not set(memes.WEEK_ROTATION) & memes.TALL  # only wide ones, readable in the site's tile
-    # the site's meme of the week: the past 7 days (today and the 6 days before), the next template each day
-    days7 = [date(2026, 10, 10) + timedelta(days=k) for k in range(8)]
-    assert all(memes.template_of_7_days(a) != memes.template_of_7_days(b) for a, b in zip(days7, days7[1:]))
-    today = date(2026, 10, 10)
+    # the site's meme of the week: the last finished week (Monday to Saturday), the same all week from Sunday
+    assert {memes.last_week(date(2026, 11, d)) for d in range(22, 29)} == {date(2026, 11, 16)}
+    assert memes.last_week(date(2026, 11, 21)) == date(2026, 11, 9)  # Saturday: the week before, until Sunday
+    today = date(2026, 10, 10)  # a Saturday: the week of 28 Sep to 3 Oct
     cards = [{"title": f"Story {k}", "summary": "", "url": f"https://e.com/{k}", "source": "E", "category": "news",
-              "kind": "news", "date": (today - timedelta(days=k)).isoformat(), "also": [], "tags": []} for k in range(9)]
-    assert [c["title"] for c in memes.last_7_days(cards, today)] == [f"Story {k}" for k in range(7)]
+              "kind": "news", "date": (today - timedelta(days=k)).isoformat(), "also": [], "tags": []} for k in range(14)]
     p = memes.payload(cards, today)
-    assert (p["from"], p["to"], p["week"]) == ("2026-10-04", "2026-10-10", 7)
-    assert p["image"] == "memes/7days-2026-10-10.jpg" and p["format"] == memes.template_of_7_days(today)
+    assert (p["from"], p["to"], p["week"]) == ("2026-09-28", "2026-10-03", 6)
+    assert p["image"] == "memes/week-2026-09-28.jpg" and p["format"] == memes.template_of_week(date(2026, 9, 28))
+    assert memes.payload(cards, date(2026, 10, 9))["html"] == p["html"]  # the same meme every day of the week
 
 
 def test_dossier_sections_pick_the_week_and_never_write(tmp_path, monkeypatch):
