@@ -62,6 +62,7 @@ def main():
     sub.add_parser("sources", help="show each source's health: last success, failures in a row, last error")
     sub.add_parser("regroup", help="regroup every stored story into cards (one card per event)")
     sub.add_parser("status", help="Markdown summary of the feed and failing sources (for the run page)")
+    sub.add_parser("maintain", help="end-of-run upkeep: SQLite's check, planner statistics, and VACUUM when over a fifth is empty")
     sa = sub.add_parser("source-alert", help="email the project inbox about sources that just started failing (once each)")
     sa.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     bf = sub.add_parser("backfill", help="one-time history: every stream back to --since (default 2023-01-01)")
@@ -363,6 +364,13 @@ def main():
     elif a.cmd == "status":
         from .collect import status_report
         print(status_report(store.connect(a.db)))
+    elif a.cmd == "maintain":
+        try:
+            r = store.maintain(store.connect(a.db))
+        except ValueError as e:
+            print(f"::error::{e}")
+            raise SystemExit(1) from None
+        print(f"SQLite check: {r['check']}; {r['empty']} of {r['pages']} pages empty" + ("; vacuumed" if r["vacuumed"] else ""))
     elif a.cmd == "source-alert":
         # Sources failing store.FAILING_AFTER runs in a row, told once each (it resets when one works again)
         from . import digest

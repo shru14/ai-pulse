@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
-CATEGORIES = ("tool", "news", "policy", "research", "regulation", "infra")
+CATEGORIES = ("tool", "news", "policy", "research", "regulation", "infra")  # a change here needs SCHEMA_VERSION + 1 (connect)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS items (
@@ -94,25 +94,27 @@ FUTURE = ("UPDATE items SET date = substr(added_at, 1, 10) WHERE category != 're
           "AND substr(date, 1, 10) > substr(added_at, 1, 10)")
 
 
+# 20 Nov 2026: the schema's version, kept in SQLite's own PRAGMA user_version. The one-time upgrades below run only
+# while the file is older than this, so opening an up-to-date database never checks columns or drops tables. A new
+# schema change = a new numbered step in _upgrade() and this number + 1.
+SCHEMA_VERSION = 1
+
+
 def connect(path: str | Path) -> sqlite3.Connection:
     conn = sqlite3.connect(path, timeout=30)
     conn.row_factory = sqlite3.Row
     # WAL lets the web server read while a separate scheduled collection writes.
     conn.execute("PRAGMA journal_mode=WAL")
-    rebuilt = _migrate(conn)
+    # links declared with REFERENCES are checked (SQLite leaves this off unless each connection asks)
+    conn.execute("PRAGMA foreign_keys=ON")
+    rebuilt = _upgrade(conn) if conn.execute("PRAGMA user_version").fetchone()[0] < SCHEMA_VERSION else False
     conn.executescript(SCHEMA)
-    # OpenRouter's model list, left from the old model tracker (removed 26 Sep 2026): its terms ban robots, so its
-    # rows go. Only dropped when there: opening the database shouldn't wait for another process's write lock.
-    if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='models'").fetchone():
-        conn.execute("DROP TABLE models")
-        conn.commit()
+    _stand_alone(conn)
     # a story dated after the day we found it is an event's date, not the story's (Data Center Knowledge listed a
     # December conference in October): it takes the day it was found. Tracker records keep their official dates.
     if conn.execute(FUTURE.replace("UPDATE items SET date = substr(added_at, 1, 10)", "SELECT 1 FROM items")).fetchone():
         conn.execute(FUTURE)
         conn.commit()
-    if "alerted" not in {r["name"] for r in conn.execute("PRAGMA table_info(sources)")}:
-        conn.execute("ALTER TABLE sources ADD COLUMN alerted INTEGER NOT NULL DEFAULT 0")
     conn.executescript(FTS_SCHEMA)
     from .bills import connect_tables  # bills/ imports this module
     connect_tables(conn)
@@ -147,12 +149,46 @@ def _migrate(conn: sqlite3.Connection) -> bool:
     for column in ("cluster", "bill"):
         if column not in have:
             conn.execute(f"ALTER TABLE items ADD COLUMN {column} TEXT NOT NULL DEFAULT ''")
+    return rebuilt
+
+
+def _upgrade(conn: sqlite3.Connection) -> bool:
+    """The one-time schema steps, run only while PRAGMA user_version is below SCHEMA_VERSION. Each step is safe to run
+    on a file that already has it (the files in use predate the version number). Returns True if items was rebuilt."""
+    # step 1 (all changes before 20 Nov 2026): the items table's categories and columns, the alerted column, and
+    # OpenRouter's model list, left from the old model tracker (removed 26 Sep 2026): its terms ban robots, so its
+    # rows go. Never name a new table "models".
+    rebuilt = _migrate(conn)
+    conn.executescript(SCHEMA)
+    if "alerted" not in {r["name"] for r in conn.execute("PRAGMA table_info(sources)")}:
+        conn.execute("ALTER TABLE sources ADD COLUMN alerted INTEGER NOT NULL DEFAULT 0")
+    conn.execute("DROP TABLE IF EXISTS models")
+    conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
+    conn.commit()
+    return rebuilt
+
+
+def _stand_alone(conn: sqlite3.Connection) -> None:
     # Stories without a card of their own yet stand alone until the next regroup. Only write when
     # there are some: opening the database shouldn't wait for another process's write lock.
     if conn.execute("SELECT 1 FROM items WHERE cluster = '' LIMIT 1").fetchone():
         conn.execute("UPDATE items SET cluster = id WHERE cluster = ''")
         conn.commit()
-    return rebuilt
+
+
+def maintain(conn: sqlite3.Connection, vacuum_over: float = 0.2) -> dict:
+    """End-of-run upkeep (20 Nov 2026): SQLite's own check, fresh planner statistics, and a VACUUM when more than
+    `vacuum_over` of the file is empty pages. Raises ValueError when the check fails, so a damaged file is not saved."""
+    result = conn.execute("PRAGMA quick_check").fetchone()[0]
+    if result != "ok":
+        raise ValueError(f"SQLite check failed: {result}")
+    conn.execute("PRAGMA optimize")
+    pages, free = (conn.execute(f"PRAGMA {p}").fetchone()[0] for p in ("page_count", "freelist_count"))
+    vacuumed = bool(pages) and free / pages > vacuum_over
+    if vacuumed:
+        conn.commit()
+        conn.execute("VACUUM")
+    return {"check": result, "pages": pages, "empty": free, "vacuumed": vacuumed}
 
 
 def title_exists(conn: sqlite3.Connection, title: str) -> bool:

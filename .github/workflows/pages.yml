@@ -2,10 +2,11 @@
 # In between, every 30 minutes, a quick run reads only the labs' and companies' own blogs (where launches appear
 # first: "Introducing Claude Sonnet 5.5") and republishes; it skips the re-sort, which the full run does.
 # The database is carried from run to run in the Actions cache, and each full run also keeps a backup of it for 14
-# days (an artifact named "database"). A run that finds no cache (GitHub empties it after 7 days unused, or when the
-# repo's caches pass 10 GB) starts from the newest backup, and only without one from data/seed.db.gz, which may be
-# weeks older. The "v4" in the cache key marks the seed with history back to 2023 (python -m aipulse backfill); bump
-# it whenever a new seed should replace the saved database.
+# days (an artifact named "database") and, once a week, a copy for 8 weeks (the "database-backups" release, with a
+# SHA-256 checksum). A run that finds no cache (GitHub empties it after 7 days unused, or when the repo's caches pass
+# 10 GB) starts from the newest backup, then the newest weekly copy, and only without either from data/seed.db.gz,
+# which may be weeks older. The "v4" in the cache key marks the seed with history back to 2023 (python -m aipulse
+# backfill); bump it whenever a new seed should replace the saved database.
 # A push to main (a change to the code or the page) only rebuilds and publishes the site from the saved database, in
 # a few minutes: no collecting, re-sorting, memes or dossiers (the next scheduled run does those, and "Run workflow"
 # by hand does everything at once). Run workflow with run=build does the same as a push: the private Pulse Compass
@@ -103,6 +104,8 @@ jobs:
           url=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=database&per_page=1"                 --jq '.artifacts[0] | select(.expired | not) | .archive_download_url' || true)
           if [ -n "$url" ] && gh api "$url" > "$RUNNER_TEMP/database.zip"              && unzip -p "$RUNNER_TEMP/database.zip" aipulse.db.gz | gunzip > aipulse.db && ok; then
             echo "::notice::The cache had no database: started from the newest backup"
+          elif week=$(gh release view database-backups -R "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' 2>/dev/null | grep -E '^aipulse-[0-9]{4}-W[0-9]{2}\.db\.gz$' | sort | tail -n 1) && [ -n "$week" ] && gh release download database-backups -R "$GITHUB_REPOSITORY" -p "$week" -p "$week.sha256" -D "$RUNNER_TEMP" && (cd "$RUNNER_TEMP" && sha256sum -c "$week.sha256") && gunzip -c "$RUNNER_TEMP/$week" > aipulse.db && ok; then
+            echo "::notice::The cache had no database and no 14-day backup: started from the weekly copy $week"
           else
             rm -f aipulse.db
             gunzip -c data/seed.db.gz > aipulse.db
@@ -196,12 +199,20 @@ jobs:
         continue-on-error: true
         run: python -m aipulse --db aipulse.db week-word
 
+      # SQLite's own check, fresh planner statistics, and a VACUUM when over a fifth of the file is empty (store.maintain).
+      # Full runs only. A failed check stops a damaged file being saved over the good one in the cache.
+      - name: Check and tidy the database
+        id: tidy
+        if: env.QUICK != 'true' && env.BUILD != 'true'
+        continue-on-error: true
+        run: python -m aipulse --db aipulse.db maintain
+
       - name: Fold the write-ahead log into the database file
         if: always()
         run: python -c "import sqlite3; c = sqlite3.connect('aipulse.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.execute('PRAGMA journal_mode=DELETE'); c.close()"
 
       - name: Save the database
-        if: always()
+        if: always() && steps.tidy.outcome != 'failure'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: aipulse.db
@@ -226,6 +237,26 @@ jobs:
           path: ${{ runner.temp }}/aipulse.db.gz
           retention-days: 14
           compression-level: 0  # already gzipped
+
+      # 20 Nov 2026: a copy that outlives the cache and the 14-day backup. The first full run of each ISO week attaches
+      # the packed database and its SHA-256 checksum to the "database-backups" release (a pre-release, never "latest");
+      # the 8 newest weeks are kept. Public stories only, like the seed and the backup above.
+      - name: Weekly copy of the database (kept 8 weeks)
+        if: steps.pack.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tag=database-backups; name="aipulse-$(date -u +%G-W%V).db.gz"
+          gh release view "$tag" > /dev/null 2>&1 || gh release create "$tag" --title "Database backups" --prerelease --latest=false --notes "Weekly copies of the public database, kept 8 weeks, each with a SHA-256 checksum. Restore: gunzip, then check with sha256sum -c."
+          have=$(gh release view "$tag" --json assets --jq '.assets[].name')
+          echo "$have" | grep -qx "$name" && exit 0
+          cd "$RUNNER_TEMP" && cp aipulse.db.gz "$name" && sha256sum "$name" > "$name.sha256"
+          gh release upload "$tag" "$name" "$name.sha256"
+          { echo "$have"; echo "$name"; } | grep -E '^aipulse-[0-9]{4}-W[0-9]{2}\.db\.gz$' | sort -u | head -n -8 | while read -r old; do
+            gh release delete-asset "$tag" "$old" -y; gh release delete-asset "$tag" "$old.sha256" -y || true
+          done
 
       - name: Build the site
         env:
