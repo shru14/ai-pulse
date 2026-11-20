@@ -741,7 +741,7 @@ def _table(rows: list[dict], links: dict) -> str:
     """Every test, by subject (the most tests first), newest first within each, with its paper's code and demo
     links."""
     groups = {k: [r for r in rows if r["subject"] == k] for k in SUBJECTS}
-    out = []
+    out: list[str] = []
     for k in sorted((k for k in groups if groups[k]), key=lambda k: -len(groups[k])):
         body = "".join(
             f'<tr><td><a href="{escape(r["url"])}" rel="noopener" title="{escape(r["paper"])}">{escape(r["name"])}</a>'
@@ -751,9 +751,11 @@ def _table(rows: list[dict], links: dict) -> str:
                f'rel="noopener">{escape(r["beaten"][2])}</a>, by {escape(r["beaten"][3])}</small>' if r["beaten"] else "")
             + f'</td><td class="cl">{code_links.html(code_links.of(links, r["url"]))}</td><td>{_day(r["date"])}</td></tr>'
             for r in groups[k])
-        out.append(f'<h3>{escape(SUBJECTS[k])} <span class="nt-n">{_plural(len(groups[k]), "test")}</span></h3>\n'
+        out.append(f'<details class="nt-fold"{"" if out else " open"}><summary><h3>{escape(SUBJECTS[k])} '
+                   f'<span class="nt-n">{_plural(len(groups[k]), "test")}</span></h3></summary>\n'
                    '<table class="mt nt-table"><thead><tr><th>Test</th><th>What it tests</th>'
-                   f'<th>Best result reported</th><th>Links</th><th>Paper</th></tr></thead><tbody>{body}</tbody></table>\n')
+                   f'<th>Best result reported</th><th>Links</th><th>Paper</th></tr></thead><tbody>{body}</tbody></table>'
+                   '</details>\n')
     return f'<section><h2>Every test, by subject</h2>\n{"".join(out)}</section>\n'
 
 
