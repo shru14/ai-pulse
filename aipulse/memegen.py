@@ -8,9 +8,9 @@ template, short lines, no harm/politics/crime words, no real person named unless
 taken from a headline) or the rule-based meme is used instead. No key, no network, a quota limit or a bad answer all
 fall back the same way, so the email and the site never wait on it.
 
-A meme is made once per period and kept in the database (meta "meme:7days:<date>", "meme:week:<monday>",
-"meme:day:<date>"), so the site's meme of the week doesn't change at each build and Gemini is asked about twice a day
-(the site's past 7 days and the email's day) plus once a week (Sunday's email).
+A meme is made once per period and kept in the database (meta "meme:week:<monday>", "meme:day:<date>"), so the
+site's meme of the week doesn't change at each build and Gemini is asked about once a day (the email's day) plus once
+a week (the meme of the week: Sunday's email and the site's tile).
 
 Key: GEMINI_API_KEY (environment; never printed or logged). Use a key from a Google AI Studio project with no billing
 account, so nothing can ever be billed. GEMINI_MODEL picks the model (default below).
@@ -248,8 +248,6 @@ def stored(conn, kind: str, when: date, cards: list[dict], make: bool, avoid: Co
         return None
     if kind == "week":
         period = [c for c in cards if when.isoformat() <= (c.get("date") or "") < (when + timedelta(days=7)).isoformat()]
-    elif kind == "7days":
-        period = memes.last_7_days(cards, when)
     else:
         period = [c for c in cards if c.get("date") == when.isoformat()]
     meme = write(period, "day" if kind == "day" else "week", avoid=avoid)
@@ -260,16 +258,12 @@ def stored(conn, kind: str, when: date, cards: list[dict], make: bool, avoid: Co
 
 
 def prepare(conn, cards: list[dict], today: date | None = None, day: date | None = None, make: bool = False) -> None:
-    """Put the past 7 days' (and with day, that day's) Gemini meme where memes.py finds it. Without make, only what
-    the database already holds (the site's build); with make, Gemini is asked for what's missing.
-    On a Sunday (or for a Saturday's email, `day`), this week's too, Monday to Saturday: the Sunday email's meme
-    of the week, kept under its Monday."""
+    """Put the last finished week's (and with day, that day's) Gemini meme where memes.py finds it. Without make, only
+    what the database already holds (the site's build); with make, Gemini is asked for what's missing.
+    The week is Monday to Saturday, kept under its Monday: the site's meme of the week and Sunday's email's (for a
+    Saturday's email, `day`, that week)."""
     today = today or date.today()
-    if (m := stored(conn, "7days", today, cards, make, set(TEMPLATES) - {memes.template_of_7_days(today)})):
-        memes.GENERATED[("7days", today)] = m
-    mondays = []
-    if today.weekday() == 6:
-        mondays.append(today - timedelta(days=6))
+    mondays = [memes.last_week(today)]
     if day and day.weekday() == 5:
         mondays.append(day - timedelta(days=5))
     for monday in dict.fromkeys(mondays):

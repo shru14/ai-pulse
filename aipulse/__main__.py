@@ -353,7 +353,7 @@ def main():
         cards, _ = store.cards(conn, days=16, limit=10**6)
         memegen.prepare(conn, cards, make=True)
         from . import memes
-        print("Meme of the week:", "by Gemini" if any(k[0] == "7days" for k in memes.GENERATED) else "rule-based")
+        print("Meme of the week:", "by Gemini" if ("week", memes.last_week(date.today())) in memes.GENERATED else "rule-based")
     elif a.cmd == "build":
         from .static import build
         print(f"Wrote {build(store.connect(a.db), a.out, a.compass_open)} cards to {a.out}/")

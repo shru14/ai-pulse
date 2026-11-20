@@ -490,13 +490,13 @@ def build(conn, out: str | Path, compass_open: bool = False) -> int:
     words = {d.isoformat(): w for d, w in shown.items() if d >= today - timedelta(weeks=digest.WORD_WEEKS + 2)}
     (out / "glossary.json").write_text(json.dumps({**glossary.payload(cards, today), "weekWords": words},
                                                   separators=(",", ":")), encoding="utf-8")
-    memegen.prepare(conn, cards, today)  # the past 7 days' Gemini meme, if the "memes" step made one (no call here)
+    memegen.prepare(conn, cards, today)  # the last finished week's Gemini meme, if one was made (no call here)
     meme = memes.payload(cards, today)
     (out / "meme.json").write_text(json.dumps(meme, separators=(",", ":")), encoding="utf-8")
     (out / "startup.json").write_text(json.dumps(companies.front(cards, today), separators=(",", ":")), encoding="utf-8")
-    made = memes.of_the_7_days(cards, date.fromisoformat(meme["to"])) if meme["image"] else None
+    made = memes.of_the_front(cards, today)[0] if meme["image"] else None
     jpeg = memes.render(made) if made else None
-    if jpeg:  # the finished picture: the template with the past 7 days' captions written on
+    if jpeg:  # the finished picture: the template with the week's captions written on
         (out / "memes").mkdir(exist_ok=True)
         (out / meme["image"]).write_bytes(jpeg)
     from . import social, today as board

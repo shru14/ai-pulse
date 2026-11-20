@@ -7,7 +7,8 @@ day's or week's launches, raises, papers, power stories and glossary words, name
 templates are used as parody and commentary on a free, non-commercial site, credited under every meme. Jokes are light: about the AI
 industry's habits, never a person; politics and any story about harm, death, crime, lawsuits, layoffs, war or
 children are never used. A format is picked by the date from those the stories can fill, so the same day always
-gives the same meme. The meme of the week is last week's (Monday to Sunday), so it changes every Monday.
+gives the same meme. The site's meme of the week is the last finished week's (Monday to Saturday), the same as that
+Sunday's email, so it changes once a week, on Sunday.
 """
 
 from __future__ import annotations
@@ -469,8 +470,7 @@ def template_of(day: date) -> str:
     return ROTATION[(day.toordinal() + 2) % len(ROTATION)]
 
 
-# The Sunday email's meme of the week takes only the wide templates, the next each Monday (the site's tile takes all
-# of ROTATION, a new one each day: of_the_7_days)
+# The meme of the week (Sunday's email and the site's tile) takes only the wide templates, the next each week
 WEEK_ROTATION = ["distracted", "fine", "yelling", "pigeon"]
 
 
@@ -479,15 +479,9 @@ def template_of_week(monday: date) -> str:
     return WEEK_ROTATION[(monday.toordinal() // 7 + 3) % len(WEEK_ROTATION)]  # set so 21 Sep 2026's week keeps its meme (distracted)
 
 
-def template_of_7_days(today: date) -> str:
-    """The site's meme of the week's template: the next in ROTATION each day, so no format comes back within a week
-    (owner, 2026-11-06); set so 6 Nov 2026 keeps its meme (yelling). Tall ones shrink to the tile; a click opens them."""
-    return ROTATION[(today.toordinal() + 8) % len(ROTATION)]
-
-
-def last_7_days(cards: list[dict], today: date) -> list[dict]:
-    """The stories of today and the 6 days before."""
-    return [c for c in cards if (today - timedelta(days=6)).isoformat() <= (c.get("date") or "") <= today.isoformat()]
+def last_week(today: date) -> date:
+    """The Monday of the last finished week (Monday to Saturday, as Sunday's email): the same from Sunday to Saturday."""
+    return today - timedelta(days=(today.weekday() - 5) % 7 or 7) - timedelta(days=5)
 
 
 def of_the_day(cards: list[dict], day: date) -> dict | None:
@@ -496,8 +490,7 @@ def of_the_day(cards: list[dict], day: date) -> dict | None:
     if (kept := shown.MEMES.get(("day", day))):
         return kept  # what daily/memes/ shows for the day
     made, want = GENERATED.get(("day", day)), template_of(day)
-    # +2: the site's tile shows this template 6 days earlier on the same turn (of_the_7_days), so the email
-    # takes another wording, never the one readers saw on the site that week (owner, 2026-11-13)
+    # +2: another wording than the one readers may have seen on the site (owner, 2026-11-13)
     f = {**facts([c for c in cards if c.get("date") == day.isoformat()]), "turn": _turn(day) + 2}
     have = day.isoformat() in {c.get("date") for c in cards}
     if not (made and made.get("format") == want and not plugs(made)):
@@ -520,27 +513,26 @@ def of_the_week(cards: list[dict], monday: date) -> dict | None:
     return made and {**made, "title": "Meme of the week"}
 
 
-def of_the_7_days(cards: list[dict], today: date) -> dict | None:
-    """The site's meme of the week, from the past 7 days' stories (today and the 6 days before): a new one each day."""
-    week = last_7_days(cards, today)
-    made, want = GENERATED.get(("7days", today)), template_of_7_days(today)
-    if not (made and made.get("format") == want and not plugs(made)):
-        made = _made(want, {**facts(week), "turn": _turn(today + timedelta(days=6))}, "this week", bool(week))
-    return made and {**made, "title": "Meme of the week"}
+def of_the_front(cards: list[dict], today: date) -> tuple[dict | None, date]:
+    """The site's meme of the week and its Monday: the last finished week's (Monday to Saturday), the same meme as that
+    Sunday's email, so the tile changes once a week, on Sunday (owner, 2026-11-20)."""
+    monday = last_week(today)
+    done = [c for c in cards if (c.get("date") or "") <= (monday + timedelta(days=5)).isoformat()]
+    return of_the_week(done, monday), monday
 
 
 def payload(cards: list[dict], today: date | None = None) -> dict:
-    """meme.json for the front page: the past 7 days' meme (today and the 6 days before, UTC, as the word of the
-    week). It changes every day. Its picture is made by the build (memes/7days-<today>.jpg)."""
-    today = today or date.today()
-    meme = of_the_7_days(cards, today)
-    image = f"memes/7days-{today.isoformat()}.jpg"  # the finished picture, written by the build (static.py)
+    """meme.json for the front page: the last finished week's meme (of_the_front). Its picture is made by the build
+    (memes/week-<monday>.jpg)."""
+    meme, monday = of_the_front(cards, today or date.today())
+    saturday = monday + timedelta(days=5)
+    image = f"memes/week-{monday.isoformat()}.jpg"  # the finished picture, written by the build (static.py)
     ok = bool(meme and render(meme))
     # the news behind it, linked to the stories themselves (a meme made from the week's words has none)
-    week = {c["title"]: c for c in last_7_days(cards, today)}
+    week = {c["title"]: c for c in cards if monday.isoformat() <= (c.get("date") or "") <= saturday.isoformat()}
     behind = [{"title": t, "url": week[t]["url"], "source": week[t].get("source") or ""}
               for t in (meme or {}).get("based_on") or [] if t in week and week[t].get("url")][:3]
-    return {"from": (today - timedelta(days=6)).isoformat(), "to": today.isoformat(),
+    return {"from": monday.isoformat(), "to": saturday.isoformat(),
             "html": html(meme, image) if ok and meme else "", "format": meme["format"] if ok and meme else None, "image": image if ok else None,
             "stories": behind if ok else [], "week": len(week)}
 

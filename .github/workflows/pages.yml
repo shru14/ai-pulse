@@ -138,7 +138,7 @@ jobs:
         if: env.BUILD != 'true' && env.QUICK != 'true'
         run: python -m aipulse --db aipulse.db history --stream infra --minutes 12
 
-      # Gemini (free tier, the project's only AI model, for memes only) writes the past 7 days' meme once a day; it is kept in the
+      # Gemini (free tier, the project's only AI model, for memes only) writes the last finished week's meme once a week; it is kept in the
       # database, so later runs reuse it. Without the secret, or on any error, the rule-based meme is used.
       - name: Meme of the week
         if: env.BUILD != 'true'

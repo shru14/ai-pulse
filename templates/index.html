@@ -1314,7 +1314,7 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
           <div class="gl-tile-links"><button class="gl-tile-go" type="button" data-open="glossary">Open the glossary →</button></div>
         </div>
         <div class="tile meme-tile" id="meme-tile" hidden>
-          <div><span class="week-badge"><b>Meme of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="meme-label">Past 7 days</span></span></div>
+          <div><span class="week-badge"><b>Meme of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="meme-label">Last week</span></span></div>
           <div class="meme" id="meme"></div>
           <div class="meme-more" id="meme-more"></div>
           <button class="gl-tile-go meme-go" type="button" data-open="subscribe">Get a meme every day →</button>
@@ -2103,14 +2103,14 @@ async function loadHomeCounts(){
   renderMast();
   if(state.cat === "home") renderHome();
 }
-// The meme of the week: drawn by the build (memes.py) from the past 7 days' stories (today and the 6 days before, UTC),
-// as the word of the week; a new one each day.
+// The meme of the week: drawn by the build (memes.py) from the last finished week's stories (Monday to Saturday), the
+// same as Sunday's email; it changes on Sundays.
 async function loadMeme(){
   try{
     const m = await (await fetch("meme.json", {cache:"no-cache"})).json();
     if(!m.html) return;
     const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
-    $("meme-label").textContent = "Past 7 days · " + fmt(m.from) + " – " + fmt(m.to);
+    $("meme-label").textContent = "Week of " + fmt(m.from) + " – " + fmt(m.to);
     $("meme").innerHTML = m.html;  // our own markup, built from escaped text
     // a click opens the meme full size
     const pic = $("meme").querySelector("img");
@@ -2127,7 +2127,7 @@ async function loadMeme(){
     if((m.stories || []).length){
       more.append(el("div","viz-note","The news behind it"), srcLinks(m.stories));
     }
-    more.append(el("p","meme-next","A new meme every day, from the past 7 days."));  // the button below offers the daily one
+    more.append(el("p","meme-next","A new meme every Sunday, from the week before."));  // the button below offers the daily one
     $("meme-tile").hidden = false;
     const shown = $("meme").querySelector("img");
     if(shown && !shown.complete) shown.addEventListener("load", fitMeme); else fitMeme();
