@@ -152,6 +152,10 @@ LEFT_OUT: dict[str, str] = {
     "https://the-decoder.com/"
     "former-openai-researcher-says-he-found-nvidia-blackwell-fingerprints-hidden-inside-six-chinese-ai-models/":
         "can't read to check",
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=281847":
+        "Chinese universities' chip purchases; its data-centre rule is second-hand, no notice named",
+    "https://cset.georgetown.edu/article/dutch-resist-unacceptable-us-bid-to-tighten-semiconductor-export-controls/":
+        "proposed US restrictions (MATCH Act), no rule published",
 }
 
 # the newest day every story was read for the lists above; the candidates start after it
