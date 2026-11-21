@@ -205,8 +205,8 @@ def feature_head(path: str, title: str, question: str, intro: str, sub: str = ""
 
 
 def page(title: str, description: str, path: str, body: str, data: dict, parts: tuple[str, str],
-         back: tuple[str, str], note: str = "") -> str:
-    """A whole page: `back` is (address, words) for the link above the heading, `note` a line under the content."""
+         back: tuple[str, str] | None, note: str = "") -> str:
+    """A whole page: `back` is (address, words) for the link above the heading (None: no link), `note` a line under the content."""
     url = f"{rss.SITE}{path}"
     header, footer = parts
     description = snippet(description)
@@ -221,6 +221,6 @@ def page(title: str, description: str, path: str, body: str, data: dict, parts: 
             f'<meta name="twitter:card" content="summary_large_image">\n{counter()}'
             f'<script type="application/ld+json">{json.dumps(data, ensure_ascii=False)}</script>\n'
             f'<link rel="stylesheet" href="site.css">\n</head>\n<body>\n<div class="wrap">\n{header}\n<main class="cp">\n'
-            f'<a class="back" href="{back[0]}">← {escape(back[1])}</a>\n{body}\n'
+            + (f'<a class="back" href="{back[0]}">← {escape(back[1])}</a>\n' if back else "") + f'{body}\n'
             + (f'<p class="note">{note}</p>\n' if note else "")
             + f'</main>\n{footer}\n</div>\n{LOCAL_TIME}\n{THEME_BUTTON}\n</body>\n</html>\n')
