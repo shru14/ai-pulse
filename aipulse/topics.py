@@ -387,6 +387,16 @@ ADDED: dict[str, dict[str, str]] = {
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # Tech stocks' weekly loss with Anthropic's shares mentioned in passing, a market-wide story rather than a development in the IPO
+    "https://the-decoder.com/us-technology-stocks-suffer-their-worst-weekly-loss-since-the-pandemic-as-ai-doubts-pile-up/",
+    # Oracle says OpenAI deal is funded, can't tell from the summary it is about Stargate
+    "https://www.channelnewsasia.com/business/oracle-says-openai-infrastructure-deal-fully-funded-after-final-capital-raise-6570701",
+    # Trump urging Nvidia to take Huang back, about the Huang case rather than chip rules
+    "https://www.dawn.com/news/2045939/i-would-love-to-see-him-be-back-trump-urges-nvidia-to-give-jensen-huang-second-chance",
+    # OpenAI's approach to adversarial distillation, not about California laws or state preemption
+    "https://openai.com/index/combatting-adversarial-distillation",
+    # Conference insights on data centre risk, an explainer with nothing new about pushback, protests or votes
+    "https://www.techerati.com/news-hub/data-centre-development-is-becoming-a-longer-term-exercise-in-managing-risk/",
     # Spain's data centre decree sets renewable, efficiency and sovereignty targets, not about who pays for electricity
     "https://dplnews.com/espana-aprueba-reglamento-centros-de-datos/",
     # Opinion on whether the IPO signals a top in the AI trade, nothing new about the listing itself
