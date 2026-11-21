@@ -259,6 +259,12 @@ LEFT_OUT = {
         "IPO plans only; potential raise, no stake",
     "https://techcrunch.com/2026/11/10/openai-acquires-odessia-travel-startup-created-by-sonder-founder/":
         "OpenAI buying a travel startup, not an AI lab",
+    "https://www.channelnewsasia.com/business/oracle-says-openai-infrastructure-deal-fully-funded-after-final-capital-raise-6570701":
+        "can't read to check",
+    "https://olhardigital.com.br/2026/11/08/pro/anthropic-investe-bilhoes-em-geradores-a-gas-para-data-centers/":
+        "Anthropic buying gas generators for its data centers, no stake in a lab",
+    "https://nairametrics.com/2026/11/07/openai-secures-11-billion-in-fresh-funding-at-1-25-trillion-valuation/":
+        "round not fully closed (first close), reported by Bloomberg, doesn't say equity or debt; named investors are funds",
 }
 
 
