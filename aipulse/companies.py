@@ -65,6 +65,9 @@ LEFT_OUT: list[str] = [
 _REVENUE = re.compile(r"\b(revenue|ARR|annuali[sz]ed|run[- ]rate|profitab\w*|customers|subscribers|paying users)\b", re.I)
 _MODEL = re.compile(r"\b(pricing|per[- ](?:task|outcome|seat|use|token)|usage[- ]based|outcome[- ]based|subscription|"
                     r"marketplace|pay[- ]as[- ]you[- ]go|business model|charges?)\b", re.I)
+# "Nvidia bets at least $500 million on Inception's diffusion models": an investor's stake in a startup is its round
+_STAKE = re.compile(r"\b(?i:bets|invests|puts|pours|stakes)\b[^$€£]{0,25}[$€£]\s?[\d.,]+\s*(?i:billion|million|bn|mn|[bm])?\b"
+                    r"[^$€£]{0,20}?\b(?i:in|into|on)\s+([A-Z][\w.-]*(?:\s+[A-Z][\w.-]*)?)")
 _NOT = re.compile(r"\b(in talks|talks to|seeks?|seeking|plans? to raise|is raising|reportedly raising|could|may)\b", re.I)
 
 
@@ -148,6 +151,8 @@ def why_week(outlets: int, seen: int, picks: int, rule: str) -> str:
 
 
 def _company(c: dict) -> str:
+    if not money.read(c) and (m := _STAKE.search(c.get("title") or "")):
+        return m.group(1)
     r = money.read(c)
     return (r or {}).get("company") or money.subject(c.get("title") or "")
 
@@ -165,7 +170,7 @@ def candidates(cards: list[dict], since: str = "") -> list[dict]:
             continue
         t = c.get("title") or ""
         r = money.read(c)
-        what = ("round" if r and r.get("kind") == "round" else "revenue" if _REVENUE.search(t)
+        what = ("round" if (r and r.get("kind") == "round") or (not r and _STAKE.search(t)) else "revenue" if _REVENUE.search(t)
                 else "model" if _MODEL.search(t) else "")
         if not what or _NOT.search(t):
             continue
@@ -200,7 +205,18 @@ def note(base: str, branch: str) -> tuple[str, str, str] | None:
             for p in profiles() if p["url"] not in had["PROFILES"]]
     dropped = [u for u in LEFT_OUT if u not in had["LEFT_OUT"]]
     if not rows and not dropped:
-        return None
+        was = re.search(r'^CHECKED_TO = "([\d-]+)"', base, re.M)
+        return _quiet(branch, was.group(1)) if was and was.group(1) < CHECKED_TO else None
     return approve.note("Company of the day", f"profile{'s' * (len(rows) != 1)}", branch,
                         ("Day", "Company", "What it does", "How it makes money", "The number", "Why it's here", "Story"),
                         rows, dropped)
+
+
+def _quiet(branch: str, since: str) -> tuple[str, str, str]:
+    """The note for a day with no pick: the branch only moves CHECKED_TO on, so a quiet day isn't silence."""
+    from html import escape
+    line = (f"No company today: no startup story after {since} passed the checks, so there is no profile to approve. "
+            f"Nothing needs merging (the branch {branch} only records the day as checked).")
+    html = ('<!doctype html><html><body style="margin:0;padding:16px;font-family:Arial,Helvetica,sans-serif;'
+            f'color:#1a1a1a"><p style="font-size:15px">{escape(line)}</p></body></html>')
+    return "Pulse Central, Company of the day: none today", line, html

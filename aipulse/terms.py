@@ -147,6 +147,10 @@ TERMS: dict[str, tuple[str, str, str]] = {
     "contxto.com": ("no terms", "", "No terms page linked from the site; checked 10 Oct 2026"),
     "www.lavca.org": ("no terms", "", "No terms page linked from the site (its privacy policy says nothing on reading "
                       "the feed); checked 18 Nov 2026"),
+    "latamlist.com": ("no terms", "", "No terms page linked from the site; robots.txt allows the feed; checked 21 Nov 2026"),
+    "www.siliconrepublic.com": ("terms read", "https://www.siliconrepublic.com/terms",
+                                "Terms & Conditions: \"Reproduction without explicit permission is prohibited\"; nothing on "
+                                "robots, feeds or personal use; checked 21 Nov 2026"),
     "dplnews.com": ("terms read", "https://dplnews.com/aviso-legal/",
                     "Aviso legal (Spanish): no reproduction or commercial use of its content without consent; nothing on "
                     "robots, feeds or personal use; checked 10 Oct 2026"),
