@@ -453,6 +453,10 @@ LEFT_OUT = {
     "https://the-decoder.com/the-myth-of-claude-mythos-crumbles-as-small-open-models-hunt-the-same-cybersecurity-bugs-anthropic-showcased/",  # two company blog posts (AISLE, Vidoc), not a paper
     "https://the-decoder.com/chinese-ai-models-are-politically-complex-not-just-government-mouthpieces-study-finds/",  # a Vals AI blog post, not a paper
     "https://japantoday.com/category/features/opinions/spewing-us-election-falsehoods-ai-chatbots-face-scrutiny",  # the outlet refuses automated reads: can't read to check
+    "https://openai.com/index/introducing-medchembench",  # a company page (OpenAI) on a benchmark; its paper is a PDF on the company's own site, not on a preprint server or in a journal
+    "https://dplnews.com/colombia-el-84-senala-que-la-productividad-es-el-principal-beneficio-de-la-ia-solo-el-10-permite-que-la-ia-actue-sin-supervision-humana-estudio-de-tcs-sobre-ia-empresarial/",  # a company survey (TCS), not a paper
+    "https://www.gov.uk/government/news/new-ai-guidance-to-cut-paperwork-and-free-more-time-for-care",  # a government press release on guidance, no paper
+    "https://www.engadget.com/2312279/google-turns-gemini-towards-medical-paperwork/",  # a product launch (Google), no paper
 }
 
 # a headline (or the start of its summary) that may report on a paper
