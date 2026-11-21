@@ -65,7 +65,7 @@ def build(conn, cards: list[dict], out: Path) -> list[str]:
     body = doc(TITLE, escape(WHAT), [(h, f"<p>{escape(p)}</p>" + (button if h == SECTIONS[-1][0] else "")) for h, p in SECTIONS], ("privacy.html", "Privacy"))
     data = {"@context": "https://schema.org", "@type": "WebPage", "name": TITLE, "description": WHAT,
             "url": f"{rss.SITE}{PATH}"}
-    html = pages.page(f"{TITLE} · Pulse Central", WHAT, PATH, body, data, pages.frame(conn, len(cards)), ("/", "Back to Pulse Central"))
+    html = pages.page(f"{TITLE} · Pulse Central", WHAT, PATH, body, data, pages.frame(conn, len(cards)), None)
     (out / PATH).mkdir(parents=True, exist_ok=True)
     (out / PATH / "index.html").write_text(html, encoding="utf-8")
     return [PATH]
