@@ -82,6 +82,18 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-20', by='METR', kind='eval',
+         title='AI R&D-relevant model capabilities are improving rapidly and are getting harder to measure',
+         url='https://metr.org/blog/2026-11-20-q4-2026-capability-update/',
+         original="",
+         models=('Claude Opus 5.5', 'GPT-6 Astra'), risks=('misalign', 'rnd'),
+         abstract=('This post presents evidence from our capability evaluations of public models relevant to AI R&D '
+                   'acceleration, up to Opus 5.5 and GPT-6 Astra. We remain significantly uncertain about central '
+                   'questions, including (1) what capabilities are in practice necessary for drastic acceleration, and '
+                   '(2) how quickly relevant model capabilities are improving. We think that current public evidence is '
+                   'insufficient to rule out drastic AI R&D acceleration in the next couple of years. By drastic AI R&D '
+                   'acceleration we mean a situation where capabilities improve so quickly that humans are no longer '
+                   'able to meaningfully understand, assess, and react to catastrophic risks posed by new AI systems.')),
     dict(date='2026-11-10', by='Google DeepMind', kind='card',
          title='Gemini 4 Carbon Safety & Security Report',
          url='https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available/',
@@ -1633,6 +1645,7 @@ LEFT_OUT: set[str] = {
     'https://www.nist.gov/blogs/caissi-research-blog/cheating-ai-agent-evaluations',
     'https://www.thelec.net/news/articleView.html?idxno=15338',  # news: Korean Financial Security Institute cloud security assessments, not an AI safety document
     'https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/',  # product launch; its model card is product information with no safety evaluation
+    'https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/',  # product launch; its model card is product information, and the full Gemini 4 Neon Safety & Security Report is not yet published
 }
 
 # a story that may be a safety document: from a publisher the hub reads, or a headline naming one
