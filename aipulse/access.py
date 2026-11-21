@@ -244,14 +244,20 @@ def _get_login() -> str:
 
 def _contents() -> str:
     """The report's sections, as its contents page names them: all a visitor sees of the report without a login."""
-    from .planner_example import APPENDIX, DOC
+    from .planner_example import APPENDIX, DOC, LETTERED
     models = {"models", "method"}  # only when the report compares models
 
-    def item(key, name):
-        return f"<li>{name}{' <small>(when models are compared)</small>' if key in models else ''}</li>"
+    def item(key, name, attr=""):
+        return f"<li{attr}>{name}{' <small>(when models are compared)</small>' if key in models else ''}</li>"
+    # letters as the report gives them: an unlettered part (the model method) keeps no letter here either
+    letter, rows = 0, []
+    for k, n in DOC:
+        if k in APPENDIX:
+            letter += k in LETTERED
+            rows.append(item(k, n, f' value="{letter}"' if k in LETTERED else ' style="list-style:none"'))
     return ('<div class="cl-toc"><p class="cl-toc-h">In your report</p><ol>'
             + "".join(item(k, n) for k, n in DOC if k not in APPENDIX)
-            + '<li>Appendix<ol type="A">' + "".join(item(k, n) for k, n in DOC if k in APPENDIX) + "</ol></li></ol></div>")
+            + '<li>Appendix<ol type="A">' + "".join(rows) + "</ol></li></ol></div>")
 
 
 def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: list[str]) -> str:
@@ -261,7 +267,7 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
     head, lead, extra = "Log in to Pulse Pro Engine", "Enter the username and password you were given.", ""
     if path == REPORT:
         head, lead, extra = ("Log in to see your report",
-                             "Your answers are kept for this visit. Enter your username and password to read the report and download it as a PDF.",
+                             "Your answers are kept for this visit. Enter your username and password to read the report, view it as slides and download it as a PDF.",
                              _contents())
     body = (STYLE + '<form class="compass-login" id="compass-form" hidden autocomplete="on">'
               f'<h1>{head}</h1><p class="cl-lead">{lead}</p>{extra}'
