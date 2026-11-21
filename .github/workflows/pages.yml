@@ -101,6 +101,12 @@ jobs:
         run: |
           [ -f aipulse.db ] && exit 0
           ok() { python -c "import sqlite3, sys; sys.exit(sqlite3.connect('aipulse.db').execute('PRAGMA quick_check').fetchone()[0] != 'ok')"; }
+          # 21 Nov 2026: a backup that exists but can't be used makes the seed a loud failure: the inbox is told
+          # (below) and nothing from this run is saved over the cache or the backups, so the next run tries them again
+          # (how many usable backups there are: an unreadable answer counts as some, to stay on the safe side)
+          arts=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=database&per_page=20" --jq '[.artifacts[] | select(.expired | not)] | length' || echo 1)
+          weeks=$(gh release view database-backups -R "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name | select(test("^aipulse-[0-9]{4}-W[0-9]{2}[.]db[.]gz$"))] | length' 2>/dev/null || echo 0)
+          had=$(( arts + weeks ))
           url=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=database&per_page=1"                 --jq '.artifacts[0] | select(.expired | not) | .archive_download_url' || true)
           if [ -n "$url" ] && gh api "$url" > "$RUNNER_TEMP/database.zip"              && unzip -p "$RUNNER_TEMP/database.zip" aipulse.db.gz | gunzip > aipulse.db && ok; then
             echo "::notice::The cache had no database: started from the newest backup"
@@ -109,8 +115,17 @@ jobs:
           else
             rm -f aipulse.db
             gunzip -c data/seed.db.gz > aipulse.db
-            echo "::warning::The cache had no database and no usable backup: started from the seed (data/seed.db.gz)"
+            if [ "$had" -eq 0 ]; then
+              echo "::warning::The cache had no database and there is no backup yet: started from the seed (data/seed.db.gz)"
+            else
+              echo "DB_LOST=The cache had no database and no backup could be restored, so this run started from the seed (data/seed.db.gz) and saved nothing." >> "$GITHUB_ENV"
+              echo "::error::The cache had no database and no backup could be restored: started from the seed, and nothing will be saved"
+            fi
           fi
+
+      # 21 Nov 2026: the story count at the start, so the end of the run can refuse to save a database that lost many
+      - name: Count the stories at the start
+        run: echo "START_STORIES=$(python -c "import sqlite3; print(sqlite3.connect('aipulse.db').execute('SELECT count(*) FROM items').fetchone()[0])")" >> "$GITHUB_ENV"
 
       - name: Collect
         if: env.BUILD != 'true'
@@ -211,8 +226,22 @@ jobs:
         if: always()
         run: python -c "import sqlite3; c = sqlite3.connect('aipulse.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.execute('PRAGMA journal_mode=DELETE'); c.close()"
 
+      # 21 Nov 2026 (backend plan, fix 1): runs drop a few stories (duplicates, a source taken off), never a tenth. A
+      # bigger drop means something went wrong, so this run's database is not saved and the inbox is told (below).
+      - name: Check no stories went missing
+        id: kept
+        if: always() && env.DB_LOST == ''
+        continue-on-error: true  # the site is still built and published; only the save is refused
+        run: |
+          now=$(python -c "import sqlite3; print(sqlite3.connect('aipulse.db').execute('SELECT count(*) FROM items').fetchone()[0])")
+          echo "Stories: $START_STORIES at the start, $now now"
+          if [ -n "$START_STORIES" ] && [ "$now" -lt $(( START_STORIES * 9 / 10 )) ]; then
+            echo "DB_LOST=The run ended with $now stories, down from $START_STORIES at the start, so its database was not saved; the cache and backups keep the last good one." >> "$GITHUB_ENV"
+            echo "::error::Stories fell from $START_STORIES to $now: the database is not saved"; exit 1
+          fi
+
       - name: Save the database
-        if: always() && steps.tidy.outcome != 'failure'
+        if: always() && steps.tidy.outcome != 'failure' && steps.kept.outcome == 'success'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: aipulse.db
@@ -222,7 +251,7 @@ jobs:
       # Artifacts). Full runs only, and only a database that passes SQLite's own check. Public stories only, like the seed.
       - name: Check and pack the database for its backup
         id: pack
-        if: env.QUICK != 'true' && env.BUILD != 'true'
+        if: env.QUICK != 'true' && env.BUILD != 'true' && steps.kept.outcome == 'success'
         continue-on-error: true
         run: |
           python -c "import sqlite3, sys; r = sqlite3.connect('aipulse.db').execute('PRAGMA quick_check').fetchone()[0]; print('SQLite check:', r); sys.exit(r != 'ok')"
@@ -258,9 +287,18 @@ jobs:
             gh release delete-asset "$tag" "$old" -y; gh release delete-asset "$tag" "$old.sha256" -y || true
           done
 
+      - name: Tell the project inbox the database was not saved
+        if: always() && env.DB_LOST != '' && env.QUICK != 'true'
+        continue-on-error: true
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+        run: |
+          python -m aipulse db-alert "$DB_LOST The run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
       - name: Build the site
         env:
-          COMPASS_USERS: ${{ secrets.COMPASS_USERS }}  # who can log in to Pulse Compass: `python -m aipulse compass-user`
+          COMPASS_LOGIN_KEY: ${{ secrets.COMPASS_LOGIN_KEY }}  # today's page key from the login web app (aipulse/access.py)
         run: python -m aipulse --db aipulse.db build --out site
 
       # The daily listen (aipulse/audio.py): yesterday's two-minute clip for everyone and for each reader setup

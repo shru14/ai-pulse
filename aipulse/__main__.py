@@ -63,6 +63,8 @@ def main():
     sub.add_parser("regroup", help="regroup every stored story into cards (one card per event)")
     sub.add_parser("status", help="Markdown summary of the feed and failing sources (for the run page)")
     sub.add_parser("maintain", help="end-of-run upkeep: SQLite's check, planner statistics, and VACUUM when over a fifth is empty")
+    da = sub.add_parser("db-alert", help="email the project inbox that a run's database was not saved (pages.yml)")
+    da.add_argument("why", help="what happened, in a sentence or two")
     sa = sub.add_parser("source-alert", help="email the project inbox about sources that just started failing (once each)")
     sa.add_argument("--dry-run", metavar="FILE", help="write the email's HTML to FILE instead of sending it")
     bf = sub.add_parser("backfill", help="one-time history: every stream back to --since (default 2023-01-01)")
@@ -83,9 +85,9 @@ def main():
     b.add_argument("--out", default="site", help="output folder, replaced (default: site)")
     b.add_argument("--compass-open", action="store_true", help="leave Pulse Compass's pages readable: a local preview "
                    "only, never for publishing (aipulse/access.py)")
-    cu = sub.add_parser("compass-user", help="set who can log in to Pulse Compass: asks for the password, saves it to the "
-                        "site's secret and rebuilds the site")
-    cu.add_argument("action", choices=("add", "remove", "list"), help="add also changes an existing user's password")
+    cu = sub.add_parser("compass-user", help="set who can log in to Pulse Pro Engine: asks for the password and saves it "
+                        "in the login web app, which keeps only a salted hash (setup: once, makes the key between them)")
+    cu.add_argument("action", choices=("setup", "add", "remove", "list"), help="add also changes an existing user's password")
     cu.add_argument("name", nargs="?", help="the username")
 
     dg = sub.add_parser("digest", help="email one day's digest (the four 6-hour updates) to an address")
@@ -371,6 +373,18 @@ def main():
             print(f"::error::{e}")
             raise SystemExit(1) from None
         print(f"SQLite check: {r['check']}; {r['empty']} of {r['pages']} pages empty" + ("; vacuumed" if r["vacuumed"] else ""))
+    elif a.cmd == "db-alert":
+        # 21 Nov 2026 (backend plan, fix 1): the seed used though a backup exists, or a run that lost many stories
+        from html import escape
+        from . import digest
+        if not config.digest_email():
+            raise SystemExit("DIGEST_EMAIL isn't set, so nothing was sent")
+        text = (f"{a.why}\n\nThe site was still built. To bring a backup back by hand: Actions > a recent full run > "
+                "Artifacts > database, or the database-backups release (weekly copies, kept 8 weeks).")
+        para = '<p style="font-family:Arial,sans-serif;font-size:15px">'
+        digest.send(digest.sender(), "Pulse Central: the database was not saved", text,
+                    para + escape(text).replace("\n\n", "</p>" + para) + "</p>")
+        print("Sent to the project inbox.")
     elif a.cmd == "source-alert":
         # Sources failing store.FAILING_AFTER runs in a row, told once each (it resets when one works again)
         from . import digest
