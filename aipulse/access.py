@@ -267,7 +267,7 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
     head, lead, extra = "Log in to Pulse Pro Engine", "Enter the username and password you were given.", ""
     if path == REPORT:
         head, lead, extra = ("Log in to see your report",
-                             "Your answers are kept for this visit. Enter your username and password to read the report, view it as slides and download it as a PDF.",
+                             "Your answers are kept for this visit. Enter your username and password to read the report as a booklet and download it as a PDF.",
                              _contents())
     body = (STYLE + '<form class="compass-login" id="compass-form" hidden autocomplete="on">'
               f'<h1>{head}</h1><p class="cl-lead">{lead}</p>{extra}'
