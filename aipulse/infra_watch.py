@@ -171,6 +171,7 @@ POWER: list[tuple[str, ...]] = [
     ("https://w.media/johor-plans-to-meet-dc-power-demand-with-5-gw-solar-energy-by-2031/", "Johor state government", "renewable", "Solar for data centres and large industry in Johor, Malaysia, by 2030 or 2031", "About 5 GW more", "planned"),
     ("https://w.media/malaysian-firm-lands-2-solar-plus-bess-deals-totalling-189mw-for-data-centers/", "Northern Solar Holdings, for two Malaysian data-centre developers it doesn't name", "renewable", "Solar and batteries for two data centres in Malaysia; letters of award accepted, definitive agreements not yet signed", "100 MW and 89 MW", "planned"),
     ("https://w.media/airtrunk-targets-610mw-of-new-renewable-generation-in-nsw/", "European Energy Australia, for AirTrunk", "renewable", "AirTrunk's data centres in New South Wales, Australia; an exclusivity agreement for solar, wind and batteries in the Hunter region, a long-term power purchase agreement still under discussion", "610 MW", "planned"),
+    ("https://olhardigital.com.br/2026/11/08/pro/anthropic-investe-bilhoes-em-geradores-a-gas-para-data-centers/", "OnePWR Solutions, for Anthropic", "gas", "Gas generators for Anthropic's data centres, a US$ 3.4bn deal", "1.7 GW", "signed"),
 
 ]
 
