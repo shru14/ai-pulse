@@ -265,6 +265,8 @@ RELEASES = [
     ("2026-11-17", "OpenAI", "GPT-6.2 Astra and Sol", "Closed", "", "", "", "", False,
      "Astra $8 / $40; Sol $2 / $10",
      "https://the-decoder.com/openai-launches-gpt-6-2-astra-and-sol-with-lower-api-prices-and-some-benchmark-gains/", ""),
+    ("2026-11-18", "Google", "Gemini 4 Neon", "Closed", "", "", "", "", False, "$3 / $15",
+     "https://the-decoder.com/google-ships-gemini-4-neon-its-fourth-new-gemini-model-in-a-month/", ""),
 ]
 # what each release is for, from its story: "General" reads and writes text (images or audio too, for some);
 # the rest do one job. The adoption planner lists a model only for the jobs its kind can do
@@ -298,6 +300,7 @@ KIND = {
     "Inkling 2 Small": "General", "Claude Fable 5.2": "General", "Muse Ember": "General",
     "Gemini Decision 1": "Classification", "Gemini 4 Hydrogen": "General",
     "GPT-6.2 Astra and Sol": "General",
+    "Gemini 4 Neon": "General",
 }
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -305,7 +308,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-20"
+SAFETY_CHECKED = "2026-11-21"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -345,6 +348,7 @@ SAFETY = {
     "Gemini 4 Hydrogen": ("2026-11-12", "https://deepmind.google/models/model-cards/gemini-4-hydrogen/",
                           "In its model card"),
     "GPT-6.2 Astra and Sol": ("2026-11-17", "https://deploymentsafety.openai.com/gpt-6-2-astra-sol", ""),
+    "Gemini 4 Neon": ("2026-11-18", "https://deepmind.google/models/model-cards/gemini-4-neon/", "In its model card"),
     "Gemini Omni 1.2 Flash": ("", "https://deepmind.google/models/model-cards/gemini-omni-1-2-flash/",
                               "Model card gives no test results for it"),
     "Genie 4": ("", "https://deepmind.google/models/model-cards/genie-4/", "Model card gives no test results for it"),
@@ -703,12 +707,31 @@ LEFT_OUT = {
     "https://developers.googleblog.com/gemini-hydrogen-for-robotics/": "same as Gemini 4 Hydrogen",
     "https://siliconangle.com/2026/11/17/microsoft-rolls-out-new-first-party-models-and-updates-to-agentic-ai-continuous-improvement/":
         "MAI-Code-2: one news outlet within 3 days",
+    "https://the-decoder.com/google-deepminds-project-genie-update-brings-genie-4-chainable-worlds-and-a-community-gallery-for-remixing/":
+        "same as Genie 4",
+    "https://deepmind.google/blog/genie-4-is-now-available/":
+        "same as Genie 4",
+    "https://siliconangle.com/2026/11/18/google-upgrades-geminis-agentic-task-mode-with-new-model-e-commerce-features/":
+        "Gemini agentic Task mode: one news outlet within 3 days",
+    "https://blog.cloudflare.com/open-clairic/":
+        "same as Clairic (open weights: no news outlet within 3 days)",
+    "https://huggingface.co/blog/RadixArk/daisyrose-27b-pushing-the-frontier-of-post-trainin":
+        "DaisyRose-27B: one news outlet within 3 days",
+    "https://huggingface.co/blog/rumble-2-flash":
+        "Rumble-2-Flash: no news outlet within 3 days",
+    "https://pandaily.com/kling-image-4-native-8k-text-coordinated-image-sets":
+        "Kling Image 4.0: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/11/17/sid-ai-sid-2-agentic-search-swarm/":
+        "SID-2: one news outlet within 3 days",
+    "https://siliconangle.com/2026/11/18/googles-latest-midtier-model-gemini-4-neon-is-three-times-faster-than-carbon-and-wins-on-some-metrics/":
+        "same as Gemini 4 Neon",
+    "https://www.marktechpost.com/2026/11/18/google-gemini-4-neon-release/": "same as Gemini 4 Neon",
     "https://elevenlabs.io/blog/scribe-v3-live-medical": "Scribe v3 Live Medical: no news outlet within 3 days",
     "https://huggingface.co/inworld/voice-isolator": "voice-isolator: no news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-17"
+CHECKED_TO = "2026-11-18"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
