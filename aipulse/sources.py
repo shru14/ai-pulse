@@ -368,7 +368,10 @@ SOURCES: list[dict] = [
     {"name": "LatinAmerica Reports", "url": "https://latinamericareports.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Contxto", "url": "https://contxto.com/en/feed/", "category": "news", "ai_in_title": True},  # added 10 Oct 2026
     # Latin America's startup and investor association, about weekly (added 18 Nov 2026, for Company of the day)
-    {"name": "LAVCA", "url": "https://www.lavca.org/feed/", "category": "news", "ai_in_title": True, "max_age_days": 14},
+    # (AI in the title or the description: its round headlines rarely say "AI", 21 Nov 2026)
+    {"name": "LAVCA", "url": "https://www.lavca.org/feed/", "category": "news", "max_age_days": 14},
+    # Latin America's startup news (added 21 Nov 2026, for Company of the day)
+    {"name": "LatamList", "url": "https://latamlist.com/feed/", "category": "news"},
     # Spanish and Portuguese, translated offline (translate.py) before the AI test; added 10 Oct 2026
     {"name": "DPL News", "url": "https://dplnews.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Olhar Digital", "url": "https://olhardigital.com.br/feed/", "category": "news", "ai_in_title": True},
@@ -385,6 +388,8 @@ SOURCES: list[dict] = [
     {"name": "Saudi Gazette", "url": "https://saudigazette.com.sa/rssFeed/74", "category": "news", "ai_in_title": True},
     # Added 18 Nov 2026, for startups beyond the US (Company of the day): India's startup news
     {"name": "YourStory", "url": "https://yourstory.com/feed", "category": "news", "ai_in_title": True},
+    # Ireland and Europe's tech and startup news (added 21 Nov 2026, for Company of the day)
+    {"name": "Silicon Republic", "url": "https://www.siliconrepublic.com/feed", "category": "news", "ai_in_title": True},
     # Africa
     {"name": "IT News Africa", "url": "https://www.itnewsafrica.com/feed/", "category": "news", "ai_in_title": True},
     {"name": "Nairametrics", "url": "https://nairametrics.com/feed/", "category": "news", "ai_in_title": True},

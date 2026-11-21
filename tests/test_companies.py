@@ -77,3 +77,17 @@ def test_hacker_news_keeps_ai_launches_two_weeks(tmp_path):
     assert social.payload(conn)["launches"] == []
     companies_rows = companies.launches({"launches": [t]})
     assert [r["title"] for r in companies_rows] == [t["title"]]
+
+
+def test_an_investors_stake_in_a_startup_counts_as_its_round():
+    found = companies.candidates([_card("2026-11-20", "Nvidia bets at least $500 million on Inception's diffusion models"),
+                                  _card("2026-11-20", "Google invests $2 billion in Anthropic")])
+    assert [(c["company"], c["signal"]) for c in found] == [("Inception", "round")]
+
+
+def test_a_quiet_day_still_sends_a_note():
+    base = 'CHECKED_TO = "2026-11-16"\nPROFILES = [("2026-11-16", "Noeri", "d", "m", "n", "Concept", "b", ' \
+           '"https://n.example", "N"), ("2026-11-17", "Model ML", "d", "m", "n", "Concept", "b", "https://m.example", "M")]\n'
+    subject, text, _ = companies.note(base, "companies/2026-11-17")
+    assert subject.endswith("none today") and "after 2026-11-16" in text
+    assert companies.note(base.replace("2026-11-16\"\n", "2026-11-17\"\n", 1), "companies/2026-11-17") is None
