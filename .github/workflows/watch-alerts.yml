@@ -1,0 +1,61 @@
+# Pulse Watch alerts (owner, 22 Nov 2026): the requests saved on the Watch page's Any company tab ("tell me when
+# Anthropic's next model comes out", "when a lab has an IPO") are matched against yesterday's records, page changes
+# and IPO news, and each address with a match gets one email (compass aipulse/watch_alerts.py). No AI, nothing billed.
+# By hand only for now, and a dry run unless send is ticked: the owner switches on the daily schedule after reading a
+# sample. Addresses never appear in the log.
+name: Pulse Watch alerts
+
+on:
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Send the emails (unticked: count them only)"
+        type: boolean
+        default: false
+      day:
+        description: "Day to check, YYYY-MM-DD (default: yesterday)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: watch-alerts
+  cancel-in-progress: false
+
+jobs:
+  alerts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Fetch Pulse Compass
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: shru14/ai-pulse-compass
+          ssh-key: ${{ secrets.COMPASS_DEPLOY_KEY }}
+          persist-credentials: false
+          path: compass
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Restore the database (read only)
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: aipulse.db
+          key: aipulse-db-v4-${{ github.run_id }}
+          restore-keys: aipulse-db-v4-
+          fail-on-cache-miss: true
+
+      - name: Match and send
+        env:
+          DIGEST_EMAIL: ${{ secrets.DIGEST_EMAIL }}
+          DIGEST_APP_PASSWORD: ${{ secrets.DIGEST_APP_PASSWORD }}
+          DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the alert requests from the sign-up web app
+        run: |
+          day="${{ inputs.day }}"
+          python -m aipulse.watch_alerts --db aipulse.db --live --day "${day:-$(date -u -d yesterday +%F)}" ${{ inputs.send && '--send' || '' }}
