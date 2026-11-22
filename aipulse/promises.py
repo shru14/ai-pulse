@@ -101,6 +101,8 @@ CHECKED: dict[str, str | None] = {
         None,  # Dots is already out; a wider rollout in Europe "in a few weeks", no new product named
     "https://techcrunch.com/2026/11/02/google-takes-dreambeans-to-india-in-bid-to-bring-ai-generated-personal-stories-to-the-masses/":
         None,  # launch day's
+    "https://www.channelnewsasia.com/business/google-picks-bezos-blue-origin-launch-ai-computing-satellites-in-2029-6566241":
+        None,  # a launch-service deal, Blue Origin to fly the satellites; no Google product named to ship
 }
 
 _V = (r"(launch|release|ship|roll out|unveil|debut|open[- ]source|introduce|bring|add|offer|start|begin"
