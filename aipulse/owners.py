@@ -259,6 +259,10 @@ LEFT_OUT = {
         "IPO plans only; potential raise, no stake",
     "https://techcrunch.com/2026/11/10/openai-acquires-odessia-travel-startup-created-by-sonder-founder/":
         "OpenAI buying a travel startup, not an AI lab",
+    "https://olhardigital.com.br/2026/11/18/pro/voce-pode-investir-no-claude-por-menos-de-r-100-ipo-da-anthropic-e-nesta-quinta/":
+        "IPO news only; buying shares in Anthropic's IPO, no company stake",
+    "https://olhardigital.com.br/2026/11/18/pro/anthropic-pode-elevar-preco-de-acoes-em-ipo-apos-forte-demanda/":
+        "IPO news only; Anthropic 'can' raise its share price, no stake",
 }
 
 
