@@ -9,7 +9,7 @@ Secrets (repo secrets)
   DIGEST_APP_PASSWORD   that Gmail account's app password
   DIGEST_LIST_KEY       the key for the readers' list (the Apps Script web app); sent in a POST body, never a URL
   DIGEST_SIGNUP_URL     the address of that web app
-  COMPASS_USERS         Pulse Compass's users: salts and derived keys, no passwords (aipulse/access.py)
+  COMPASS_LOGIN_KEY     Pulse Pro Engine's login: the build's key to the sign-up web app (aipulse/access.py)
   CONGRESS_API_KEY      congress.gov's free API, for US bills
   GITHUB_TOKEN          GitHub's API: labs' new repositories (set by Actions itself)
   GEMINI_API_KEY        the weekly meme's and the poster's wording; without it the rule-based versions are used
@@ -50,8 +50,8 @@ def digest_signup_url() -> str:
     return secret("DIGEST_SIGNUP_URL")
 
 
-def compass_users() -> str:
-    return secret("COMPASS_USERS")
+def compass_login_key() -> str:
+    return secret("COMPASS_LOGIN_KEY")
 
 
 def congress_key() -> str:

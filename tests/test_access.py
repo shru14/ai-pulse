@@ -1,4 +1,5 @@
-"""The Pulse Compass login (aipulse/access.py): nothing paid is readable in what gets published."""
+"""The Pulse Pro Engine login (aipulse/access.py): nothing paid is readable in what gets published, and nothing in it
+lets a password be guessed offline (21 Nov 2026: the web app checks passwords)."""
 import base64
 import json
 
@@ -11,8 +12,8 @@ SECRET = "the words only a paying reader may read"
 
 def site(tmp_path, monkeypatch):
     # the login page itself comes from Compass, which a public clone hasn't got
-    monkeypatch.setattr(access, "_shell", lambda conn, cards, path, page, table, files: json.dumps(
-        {"page": page, "table": table, "files": files}))
+    monkeypatch.setattr(access, "_shell", lambda conn, cards, path, page, login, files: json.dumps(
+        {"page": page, "login": login, "files": files}))
     out = tmp_path / "site"
     for rel, text in (("planner/index.html", "the product page"), ("planner/sample-report/index.html", "the sample"), ("planner/smartfeed/index.html", "the feed page"), ("planner/source-check/index.html", "the tool"),
                       ("planner/example/index.html", SECRET), ("planner/example/sheet.csv", SECRET),
@@ -30,8 +31,9 @@ def everything(out):
     return "".join(p.read_text(encoding="utf-8") for p in out.rglob("*") if p.is_file())
 
 
-def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
-    monkeypatch.delenv("COMPASS_USERS", raising=False)
+def test_without_a_page_key_nothing_paid_is_published(tmp_path, monkeypatch):
+    monkeypatch.delenv("COMPASS_LOGIN_KEY", raising=False)
+    monkeypatch.setattr(access, "_ask", lambda fields: pytest.fail("asked the web app with no secret"))
     out = site(tmp_path, monkeypatch)
     access.seal(out, None, [])
     assert SECRET not in everything(out)
@@ -49,68 +51,88 @@ def test_without_users_nothing_paid_is_published(tmp_path, monkeypatch):
     assert (out / "about/index.html").read_text(encoding="utf-8") == "free"
 
 
-def test_a_broken_secret_counts_as_no_users(monkeypatch):
-    for bad in ("not json", "[]", '{"a": {}}', '{"a": {"salt": "", "kek": "AAAA"}}'):
-        monkeypatch.setenv("COMPASS_USERS", bad)
-        assert access.users() == {}
+def test_a_refused_or_broken_answer_counts_as_no_key(monkeypatch):
+    monkeypatch.setenv("COMPASS_LOGIN_KEY", "k" * 30)
+    for answer in ({"ok": False}, {"ok": True, "kid": "", "key": base64.b64encode(b"x" * 32).decode()},
+                   {"ok": True, "kid": "2026-11-21-ab", "key": base64.b64encode(b"short").decode()}, {"ok": True}):
+        monkeypatch.setattr(access, "_ask", lambda fields, a=answer: a)
+        assert access.page_key() is None
+
+    def down(fields):
+        raise OSError("no network")
+    monkeypatch.setattr(access, "_ask", down)
+    assert access.page_key() is None
+    seen = []
+    monkeypatch.setattr(access, "_ask", lambda fields: seen.append(fields) or {"ok": True, "kid": "2026-11-21-ab",
+                                                                              "key": base64.b64encode(b"k" * 32).decode()})
+    assert access.page_key() == ("2026-11-21-ab", b"k" * 32)
+    assert seen == [{"action": "pro-key", "key": "k" * 30}]  # the secret goes in the body, never the address
 
 
-def test_sealed_pages_open_only_with_the_right_password(tmp_path, monkeypatch):
+def test_sealed_pages_open_only_with_the_build_key_and_carry_nothing_to_guess_from(tmp_path, monkeypatch):
     aead = pytest.importorskip("cryptography.hazmat.primitives.ciphers.aead")
     from cryptography.exceptions import InvalidTag
     out = site(tmp_path, monkeypatch)
-    monkeypatch.setenv("COMPASS_USERS", json.dumps({"client one": access.new_user("client one", "long enough password")}))
-    assert access.seal(out, None, []) == 3  # the report, its sheet and Source check
+    key = bytes(range(32))
+    assert access.seal(out, None, [], ("2026-11-21-ab", key), "https://script.example/exec") == 3  # the report, its sheet and Source check
     published = everything(out)
-    assert SECRET not in published and "client one" not in published and "long enough password" not in published
+    assert SECRET not in published and base64.b64encode(key).decode() not in published
     assert not (out / "planner/example/sheet.csv").exists()
     sealed = json.loads((out / "planner/example/index.html").read_text(encoding="utf-8"))
     assert sealed["files"] == ["planner/example/sheet.csv"]
-    entry = sealed["table"][access.user_id("Client One ")]  # as the browser looks it up: any case, spaces trimmed
-    salt, iv, wrapped = (base64.b64decode(entry[k]) for k in ("salt", "iv", "key"))
+    # the page names its key and where to log in, and nothing more: no salts, no wrapped keys, no user list
+    assert sealed["login"] == {"url": "https://script.example/exec", "kid": "2026-11-21-ab"}
 
-    def read(password, box):
-        key = aead.AESGCM(access.derive("client one", password, salt)).decrypt(iv, wrapped, None)
+    def read(k, box):
         raw = base64.b64decode(box)
-        return aead.AESGCM(key).decrypt(raw[:12], raw[12:], None).decode()
+        return aead.AESGCM(k).decrypt(raw[:12], raw[12:], None).decode()
 
-    assert read("long enough password", sealed["page"]) == SECRET
-    assert read("long enough password", (out / "planner/example/sheet.csv.sealed").read_text(encoding="ascii")) == SECRET
+    assert read(key, sealed["page"]) == SECRET
+    assert read(key, (out / "planner/example/sheet.csv.sealed").read_text(encoding="ascii")) == SECRET
     with pytest.raises(InvalidTag):  # the wrong key fails the AES-GCM check
-        read("the wrong password here", sealed["page"])
+        read(bytes(32), sealed["page"])
 
 
-def test_each_build_has_its_own_key_so_a_removed_user_is_shut_out(tmp_path, monkeypatch):
-    pytest.importorskip("cryptography")
-    people = {"a": access.new_user("a", "first long password"), "b": access.new_user("b", "second long password")}
-    out = site(tmp_path, monkeypatch)
-    access.seal(out, None, [], people)
-    first = json.loads((out / "planner/example/index.html").read_text(encoding="utf-8"))
-    out2 = site(tmp_path / "again", monkeypatch)
-    access.seal(out2, None, [], {"b": people["b"]})
-    second = json.loads((out2 / "planner/example/index.html").read_text(encoding="utf-8"))
-    assert access.user_id("a") in first["table"] and access.user_id("a") not in second["table"]
-    assert first["table"][access.user_id("b")]["key"] != second["table"][access.user_id("b")]["key"]
+def test_the_login_box_asks_the_web_app_and_never_hashes_a_password_itself():
+    js = access.SCRIPT
+    assert "action:'pro-login'" in js and "kid:L.kid" in js and "compass-login-at" in js
+    assert "PBKDF2" not in js and "deriveBits" not in js and "compass-table" not in js
+    assert "Too many tries" in js  # the web app's lock, told plainly
+
+
+def _owner(tmp_path, monkeypatch, password="a very long password"):
+    monkeypatch.setattr(access, "LOCAL_KEY", tmp_path / "key")
+    monkeypatch.delenv("COMPASS_LOGIN_KEY", raising=False)
+    (tmp_path / "key").write_text("owner-secret-" + "x" * 20, encoding="utf-8")
+    monkeypatch.setattr(access.getpass, "getpass", lambda *_: password)
+    sent, built = [], []
+    monkeypatch.setattr(access, "_ask", lambda fields: sent.append(fields) or {"ok": True})
+    monkeypatch.setattr(access, "_rebuild", lambda: built.append(1))
+    return sent, built
 
 
 def test_short_passwords_are_refused(tmp_path, monkeypatch):
-    monkeypatch.setattr(access, "LOCAL", tmp_path / "users.json")
-    monkeypatch.setattr(access.getpass, "getpass", lambda *_: "short")
-    monkeypatch.setattr(access, "_publish", lambda people: pytest.fail("published"))
+    sent, _ = _owner(tmp_path, monkeypatch, "short")
     with pytest.raises(SystemExit, match="Too short"):
         access.manage("add", "someone")
-    assert not access.LOCAL.exists()
+    assert sent == []
 
 
-def test_the_secret_holds_no_password(tmp_path, monkeypatch):
-    monkeypatch.setattr(access, "LOCAL", tmp_path / "users.json")
-    monkeypatch.setattr(access.getpass, "getpass", lambda *_: "a very long password")
-    told = []
-    monkeypatch.setattr(access, "_publish", told.append)
-    access.manage("add", "Someone")
-    assert list(told[0]) == ["someone"] and "a very long password" not in json.dumps(told[0])
+def test_users_are_kept_by_the_web_app_and_removing_one_rebuilds(tmp_path, monkeypatch):
+    sent, built = _owner(tmp_path, monkeypatch)
+    access.manage("add", "Someone ")
+    assert sent[-1] == {"action": "pro-user", "op": "add", "name": "someone", "key": "owner-secret-" + "x" * 20,
+                        "password": "a very long password"} and not built  # a new user needs no rebuild
     access.manage("remove", "someone")
-    assert told[-1] == {}
+    assert sent[-1]["op"] == "remove" and "password" not in sent[-1] and built == [1]  # a new key, which they never get
+    assert not list(tmp_path.glob("*.json"))  # nothing about users is kept on the PC
+
+
+def test_no_owner_key_means_no_change(tmp_path, monkeypatch):
+    monkeypatch.setattr(access, "LOCAL_KEY", tmp_path / "missing")
+    monkeypatch.delenv("COMPASS_LOGIN_KEY", raising=False)
+    with pytest.raises(SystemExit, match="compass-user setup"):
+        access.manage("remove", "someone")
 
 
 def test_login_box_asks_each_clients_own_username_and_gives_one_email():

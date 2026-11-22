@@ -298,7 +298,7 @@ jobs:
 
       - name: Build the site
         env:
-          COMPASS_USERS: ${{ secrets.COMPASS_USERS }}  # who can log in to Pulse Compass: `python -m aipulse compass-user`
+          COMPASS_LOGIN_KEY: ${{ secrets.COMPASS_LOGIN_KEY }}  # today's page key from the login web app (aipulse/access.py)
         run: python -m aipulse --db aipulse.db build --out site
 
       # The daily listen (aipulse/audio.py): yesterday's two-minute clip for everyone and for each reader setup
