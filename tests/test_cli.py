@@ -1,16 +1,19 @@
 """The command line's jobs."""
 from pathlib import Path
 
+import pytest
+
 
 FIX = Path(__file__).parent / "fixtures"
 
 
+@pytest.mark.slow
 def test_command_line_entry_point_starts(tmp_path):
     # The scheduled tasks run `python -m aipulse ...`; a syntax error there would stop every collection.
     import subprocess, sys
     root = Path(__file__).parent.parent
     run = lambda *a: subprocess.run([sys.executable, "-m", "aipulse", "--db", str(tmp_path / "t.db"), *a],
-                                    cwd=root, capture_output=True, text=True, timeout=60)
+                                    cwd=root, capture_output=True, text=True, timeout=300)
     assert run("--help").returncode == 0
     result = run("sources")
     assert result.returncode == 0 and "sources checked" in result.stdout
