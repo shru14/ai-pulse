@@ -457,6 +457,8 @@ LEFT_OUT = {
     "https://dplnews.com/colombia-el-84-senala-que-la-productividad-es-el-principal-beneficio-de-la-ia-solo-el-10-permite-que-la-ia-actue-sin-supervision-humana-estudio-de-tcs-sobre-ia-empresarial/",  # a company survey (TCS), not a paper
     "https://www.gov.uk/government/news/new-ai-guidance-to-cut-paperwork-and-free-more-time-for-care",  # a government press release on guidance, no paper
     "https://www.engadget.com/2312279/google-turns-gemini-towards-medical-paperwork/",  # a product launch (Google), no paper
+    "https://www.sciencedaily.com/releases/2026/11/261120075701.htm",  # paper found (Nature Machine Intelligence, reverse predictivity) but its abstract can't be read to check: nature.com asks for a login, no preprint found
+    "https://olhardigital.com.br/2026/11/22/ciencia-e-espaco/agentes-de-ia-encontraram-um-sitio-maia-inedito-nao-veja-como-dados-sem-revisao-geram-ruido/",  # a story on an AI claim about a Maya site; the linked paper is an archaeology paper, not AI research
 }
 
 # a headline (or the start of its summary) that may report on a paper
