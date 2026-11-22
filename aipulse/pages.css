@@ -69,6 +69,7 @@
 .cp .arc .meta a{color:var(--accent);text-decoration:none}
 .cp .note{margin-top:28px;font-size:14px;color:var(--muted)}
 .cp .note a{color:var(--accent)}
+.cp:has(.hr-list) > .note{font-size:12px;line-height:1.7}  /* Harm → rule: the sources line by line */
 .cp:has(> .ti) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .ti{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}  /* the topics index runs wide, like a topic page */
 .cp .topics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:22px}
@@ -489,7 +490,7 @@ a.subscribe-btn{text-decoration:none}
 .cp .er:last-child{border-bottom:0}
 .cp .er > summary{list-style:none;cursor:pointer;padding:14px 0}
 .cp .er > summary::-webkit-details-marker{display:none}
-.cp .er > summary:hover,.cp .er[open] > summary{background:color-mix(in srgb,#F0E442 30%,var(--bg))}
+.cp .er > summary:hover,.cp .er[open] > summary{background:color-mix(in srgb,#56B4E9 14%,transparent)}
 .cp .er .nm{position:relative;padding:0 12px 0 34px;font-weight:600;font-size:15px;line-height:1.25}
 .cp .er .nm::before{content:"+";position:absolute;left:12px;top:-1px;font:700 16px var(--mono);color:var(--accent)}
 .cp .er[open] .nm::before{content:"−"}

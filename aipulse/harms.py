@@ -205,8 +205,8 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
     data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "Harm → rule", "description": what,
             "url": f"{rss.SITE}{PATH}"}
     note = ('Harms: the <a href="https://incidentdatabase.ai/">AI Incident Database</a> (Responsible AI Collaborative), '
-            'CC BY-SA 4.0, each linking to its incident. Rules: the Regulation tracker\'s official records. Updated with '
-            'every run. <a href="/rule-echoes/">Rule echoes</a>')
+            'CC BY-SA 4.0, each linking to its incident.<br>Rules: the Regulation tracker\'s official records.<br>'
+            'Updated with every run.<br><a href="/rule-echoes/">Rule echoes</a>')
     (out / PATH / "index.html").write_text(
         pages.page("Harm → rule · Pulse Central", what, PATH, body, data, pages.frame(conn, len(cards)),
                    ("/regulation/", "Back to the Regulation tracker"), note), encoding="utf-8")
