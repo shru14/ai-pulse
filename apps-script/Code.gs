@@ -37,16 +37,6 @@
  *                                            body, never the address, so it stays out of Google's logs)
  *   POST action=interests   key             every interest readers follow, once each and without who follows it,
  *                                            for the site's weekly dossiers (key = LIST_KEY)
- *   POST action=pro-login   name, password, Pulse Pro Engine's login box (aipulse/access.py): the password is checked
- *                           kid             here against a salted hash, so nothing a visitor can download lets them
- *                                            guess it offline; 5 wrong tries lock that username for 15 minutes.
- *                                            Right: the page keys kept now ({kid: key}); kid names the build's key
- *   POST action=pro-key     key             the site's build: today's page key, made on the first build of the UTC
- *                                            day; the newest 2 are kept, so a visit over midnight carries on
- *                                            (key = PRO_KEY)
- *   POST action=pro-user    key, op, name,  the owner's `python -m aipulse compass-user`: op add (with password),
- *                           password        remove or list (key = PRO_KEY). Removing someone also drops the page
- *                                            keys, so even an open visit can't read the next build
  *   POST action=watch-alert email, company, Pulse Watch's Notify me form: a row in the "Pulse Watch alerts" Sheet
  *                           events          (events: model, shutdown, ipo, money, court, government, pages)
  *   POST action=watch-alerts key            the active alert requests, for the daily alert job (key = LIST_KEY)
@@ -54,8 +44,7 @@
  * With format=json the site gets {ok, title, text}; without it (an old link opened here) a small page.
  * The project inbox gets a short note when someone subscribes, changes streams or unsubscribes.
  *
- * Script property LIST_KEY: a long random secret, also saved as the GitHub secret DIGEST_LIST_KEY. PRO_KEY
- * likewise, saved as the GitHub secret COMPASS_LOGIN_KEY (`python -m aipulse compass-user setup` makes it). They're
+ * Script property LIST_KEY: a long random secret, also saved as the GitHub secret DIGEST_LIST_KEY. It's
  * set in Project Settings > Script properties, never in this file (the repository is public).
  * Deploy: Deploy > New deployment > Web app, "Execute as: Me", "Who has access: Anyone". After editing:
  * Deploy > Manage deployments > edit > Version: New version (the address stays the same).
@@ -93,9 +82,6 @@ function doPost(e) {
   if (p.action === "interests") return json(interests(p.key));
   if (p.action === "comments") return json(comments(p));
   if (p.action === "comment") return json(comment(p));
-  if (p.action === "pro-login") return json(proLogin(p));
-  if (p.action === "pro-key") return json(proKey(p.key));
-  if (p.action === "pro-user") return json(proUser(p));
   if (p.action === "watch-alert") return json(watchAlert(p));
   if (p.action === "watch-alerts") return json(watchAlerts(p.key));
   if (p.action === "watch-stop") return json(watchStop(p.t));
@@ -529,85 +515,6 @@ function startDailyEmail(check) {
          (token ? `GitHub answered ${code}: ${answer.getContentText().slice(0, 300)}` : "No GITHUB_TOKEN script property.") +
          "\nThe token may have expired or lost its Actions permission: make a new one and save it as GITHUB_TOKEN." +
          " The workflow's own schedule may still send it; to send by hand: GitHub > Actions > Daily digest > Run workflow, dry run unticked.");
-}
-
-// ------------------------------------------------------------------ Pulse Pro Engine's login (fixed 21 Nov 2026)
-// Users are kept as "pro:u:<name>" = {salt, hash, added}; hash = HMAC-SHA256 of salt, name and password with
-// PRO_PEPPER, a secret made here on first use that never leaves this account. Page keys: "pro:keys" =
-// [{kid, key}] newest first. Wrong tries are counted in the script cache, per username.
-const PRO_TRIES = 5, PRO_LOCK_SECONDS = 15 * 60, PRO_MIN_PASSWORD = 12, PRO_KEYS_KEPT = 2;
-const b64 = bytes => Utilities.base64Encode(bytes);
-const proName = n => String(n || "").trim().toLowerCase();
-const proOwner = key => { const s = store().getProperty("PRO_KEY"); return !!(s && s.length >= 24 && key === s); };
-const proKeys = () => JSON.parse(store().getProperty("pro:keys") || "[]");
-const random = n => { let s = ""; while (s.length < n) s += Utilities.getUuid().replace(/-/g, ""); return s.slice(0, n); };
-
-function proHash(salt, name, password) {
-  let pepper = store().getProperty("PRO_PEPPER");
-  if (!pepper) { pepper = random(64); store().setProperty("PRO_PEPPER", pepper); }
-  return b64(Utilities.computeHmacSha256Signature(`${salt}\n${name}\n${password}`, pepper));
-}
-
-function same(a, b) {  // the same time for any mismatch, so the answer's speed says nothing
-  let d = a.length ^ b.length;
-  for (let i = 0; i < Math.max(a.length, b.length); i++) d |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
-  return d === 0;
-}
-
-function proLogin(p) {
-  const name = proName(p.name), cache = CacheService.getScriptCache(), tries = "pro:f:" + name;
-  const failed = Number(cache.get(tries) || 0);
-  if (!name || failed >= PRO_TRIES) return {ok: false, locked: failed >= PRO_TRIES};
-  const rec = JSON.parse(store().getProperty("pro:u:" + name) || "null");
-  const right = rec ? same(proHash(rec.salt, name, String(p.password || "")), rec.hash) : (proHash("-", name, "-"), false);
-  if (!right) {  // an unknown name counts too, so trying names tells nothing
-    cache.put(tries, String(failed + 1), PRO_LOCK_SECONDS);
-    return {ok: false, locked: failed + 1 >= PRO_TRIES};
-  }
-  cache.remove(tries);
-  const keys = proKeys();
-  if (p.kid && !keys.some(k => k.kid === p.kid)) return {ok: false, stale: true};  // a page from before a reset
-  return {ok: true, keys: Object.fromEntries(keys.map(k => [k.kid, k.key]))};
-}
-
-function proKey(key) {
-  if (!proOwner(key)) return {ok: false};
-  const lock = LockService.getScriptLock();
-  lock.waitLock(20000);
-  try {
-    let keys = proKeys();
-    if (!keys.length || keys[0].kid.slice(0, 10) !== today()) {  // the first build of the day makes the day's key
-      const raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, random(64) + Date.now());
-      keys = [{kid: `${today()}-${random(8)}`, key: b64(raw)}, ...keys].slice(0, PRO_KEYS_KEPT);
-      store().setProperty("pro:keys", JSON.stringify(keys));
-    }
-    return {ok: true, kid: keys[0].kid, key: keys[0].key};
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function proUser(p) {
-  if (!proOwner(p.key)) return {ok: false, text: "PRO_KEY doesn't match."};
-  const name = proName(p.name), props = store();
-  if (p.op === "list")
-    return {ok: true, names: Object.keys(props.getProperties()).filter(k => k.startsWith("pro:u:")).map(k => k.slice(6)).sort()};
-  if (!name || name.length > 80) return {ok: false, text: "Say which user."};
-  if (p.op === "remove") {
-    if (!props.getProperty("pro:u:" + name)) return {ok: false, text: `No user called ${name}.`};
-    props.deleteProperty("pro:u:" + name);
-    props.deleteProperty("pro:keys");  // the next build makes a new key, which this user never gets
-    return {ok: true};
-  }
-  if (p.op === "add") {
-    const password = String(p.password || "");
-    if (password.length < PRO_MIN_PASSWORD) return {ok: false, text: `At least ${PRO_MIN_PASSWORD} characters.`};
-    const salt = random(32);
-    props.setProperty("pro:u:" + name, JSON.stringify({salt, hash: proHash(salt, name, password), added: today()}));
-    CacheService.getScriptCache().remove("pro:f:" + name);
-    return {ok: true};
-  }
-  return {ok: false, text: "op is add, remove or list."};
 }
 
 // A note to the project inbox when someone subscribes, changes streams or unsubscribes. It never stops the

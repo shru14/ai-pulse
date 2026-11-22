@@ -1,27 +1,23 @@
-"""The login for Pulse Pro Engine's paid outputs (under planner/). The site is static (GitHub Pages): every paid page and
-file is encrypted when the site is built (AES-256-GCM), and what is published is a login box and unreadable bytes.
+"""The login for Pulse Compass, the paid product (planner/). The site is static (GitHub Pages), so nothing can check a
+password on a server: instead every paid page is encrypted when the site is built, and opens in the browser only with a
+username and password the owner has set. Without one, what is published is a login box and unreadable bytes.
 
-21 Nov 2026 (backend plan, fix 3): the password is checked by the project's Apps Script web app (apps-script/Code.gs),
-never in the page. Until then each page carried every user's key wrapped with their password, so anyone could download
-a page and guess passwords offline as fast as their computer allowed. Now the page carries only the name of its key
-(kid); the login box posts the username and password to the web app, which checks a salted hash, locks a username for
-15 minutes after 5 wrong tries, and only then hands back the key. The key is the web app's own, one per UTC day (the
-newest 2 kept); the build fetches today's with the COMPASS_LOGIN_KEY secret. Removing a user (`python -m aipulse
-compass-user remove NAME`) works at once and drops the keys, so the next build is sealed with one they never get. The web
-app unreachable, or the secret unset: the paid pages aren't published at all.
+Each build makes a new random key and encrypts the pages with it (AES-256-GCM). For each user that key is encrypted again
+with a key made from their username and password (PBKDF2-SHA256), so removing a user and building again shuts them out of
+every later build. Passwords are never stored: `python -m aipulse compass-user` keeps only each user's salt and derived
+key, on the owner's PC and in the COMPASS_USERS repo secret. There is no server to slow password guessing, so passwords
+must be long. No users set, or no secret readable: the paid pages aren't published at all.
 """
 from __future__ import annotations
 
 import base64
 import getpass
+import hashlib
 import json
 import logging
 import os
 import shutil
-import secrets
 import subprocess
-import urllib.parse
-import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
@@ -62,65 +58,61 @@ def is_open(rel: str) -> bool:
     return not (rel.startswith(SOLD) or rel in SOLD_PAGES)
 
 
+ROUNDS = 600_000  # OWASP's figure for PBKDF2-SHA256; about half a second in a browser
 MIN_PASSWORD = 12
-LOCAL_KEY = Path.home() / ".ai-pulse-compass-login-key"  # the owner's copy of COMPASS_LOGIN_KEY (the web app's PRO_KEY)
+LOCAL = Path.home() / ".ai-pulse-compass-users.json"  # the owner's copy of the secret: salts and derived keys, no passwords
 REPO = config.REPO
 # 15 Nov 2026, owner: each client its own username and password (python -m aipulse compass-user add NAME), typed in the
-# login box, so removing one client shuts out only that client. The shared "pulse-client" of 6 Nov still works while it
-# is in the list, typed as its username
+# login box, so removing one client and building again shuts out only that client. The shared "pulse-client" of 6 Nov
+# still works while it is in the list, typed as its username
 
 
 def _b64(raw: bytes) -> str:
     return base64.b64encode(raw).decode()
 
 
-def login_url() -> str:
-    from .subscribers import SIGNUP_URL
-    return SIGNUP_URL
+def user_id(name: str) -> str:
+    """How the published table names a user: a hash, so the page doesn't list who the clients are."""
+    return hashlib.sha256(f"pulse-compass:{name.strip().lower()}".encode()).hexdigest()
 
 
-def _ask(fields: dict) -> dict:
-    """One POST to the web app (secrets in the body, never the address); Google answers with a redirect to the reply."""
-    body = urllib.parse.urlencode(fields).encode()
-    with urllib.request.urlopen(urllib.request.Request(login_url(), data=body), timeout=60) as r:
-        return json.loads(r.read().decode("utf-8"))
+def derive(name: str, password: str, salt: bytes) -> bytes:
+    return hashlib.pbkdf2_hmac("sha256", f"{name.strip().lower()}\n{password}".encode(), salt, ROUNDS, 32)
 
 
-def page_key() -> tuple[str, bytes] | None:
-    """Today's page key from the web app, as (kid, key); None (and a warning) when it can't be had."""
-    secret = config.compass_login_key()
-    if not secret:
-        log.warning("COMPASS_LOGIN_KEY isn't set: the paid pages stay unpublished.")
-        return None
+def new_user(name: str, password: str) -> dict:
+    salt = os.urandom(16)
+    return {"salt": _b64(salt), "kek": _b64(derive(name, password, salt))}
+
+
+def users() -> dict:
+    """The users the build may let in, from the COMPASS_USERS secret; anything unreadable counts as no users."""
     try:
-        got = _ask({"action": "pro-key", "key": secret})
-        if not got.get("ok"):
-            raise ValueError("refused")
-        kid, key = str(got["kid"]), base64.b64decode(got["key"])
-        if len(key) != 32 or not kid:
-            raise ValueError("not a key")
-        return kid, key
-    except Exception as e:  # noqa: BLE001  any failure means no key, and nothing paid published
-        log.warning("The login web app gave no page key (%s): the paid pages stay unpublished.", e)
-        return None
+        found = json.loads(config.compass_users() or "{}")
+        return {n: u for n, u in found.items() if len(base64.b64decode(u["kek"])) == 32 and base64.b64decode(u["salt"])}
+    except (ValueError, TypeError, KeyError, AttributeError):
+        log.warning("COMPASS_USERS can't be read: the paid pages stay unpublished.")
+        return {}
 
 
 # Runs on every sealed page: a saved login opens it at once, otherwise the form. The page replaces this one in place, so
 # its address, its own scripts and the reader's saved answers all work as usual.
 SCRIPT = r"""<script>
 (function(){
-var KEY='compass-login',S=crypto.subtle,L=JSON.parse(document.getElementById('compass-login-at').textContent),
+var KEY='compass-login',S=crypto.subtle,T=JSON.parse(document.getElementById('compass-table').textContent),
     F=JSON.parse(document.getElementById('compass-files').textContent),
     P=document.getElementById('compass-page').textContent.trim(),f=document.getElementById('compass-form'),
-    root=document.documentElement;
+    root=document.documentElement,enc=new TextEncoder();
 function bytes(s){return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0)})}
+function b64(a){return btoa(String.fromCharCode.apply(null,new Uint8Array(a)))}
 function saved(){try{return JSON.parse(sessionStorage.getItem(KEY))}catch(e){return null}}
 function forget(){try{sessionStorage.removeItem(KEY)}catch(e){}}
 function box(key,s){var a=bytes(s);return S.decrypt({name:'AES-GCM',iv:a.slice(0,12)},key,a.slice(12))}
+function aes(raw,use){return S.importKey('raw',raw,'AES-GCM',false,[use])}
 function show(){root.style.visibility='';if(f)f.hidden=false}
-async function opened(keys){  // this build's key, from the keys the web app gave at login
-  var k=keys&&keys[L.kid];if(!k||!P)throw 0;
-  return S.importKey('raw',bytes(k),'AES-GCM',false,['decrypt'])}
+async function opened(id,kek){
+  var e=T[id];if(!e||!P)throw 0;
+  return aes(await S.decrypt({name:'AES-GCM',iv:bytes(e.iv)},await aes(kek,'decrypt'),bytes(e.key)),'decrypt')}
 async function enter(key){
   var html=new TextDecoder().decode(await box(key,P));
   if(document.readyState!=='complete')await new Promise(function(r){addEventListener('load',r)});  // over a page still loading, the write would add to it
@@ -154,24 +146,22 @@ var AFTER='<sc'+'ript>('+function(){
 }+')()</sc'+'ript>';
 var s=saved();
 (async function(){
-  if(s&&s.keys){try{await enter(await opened(s.keys));return}catch(e){}}
+  if(s&&s.id&&s.kek){try{await enter(await opened(s.id,bytes(s.kek)));return}catch(e){forget()}}
   show()})();
 if(f)f.onsubmit=async function(e){
   e.preventDefault();
   var msg=document.getElementById('compass-msg'),b=f.querySelector('button'),name=f.name_.value.trim().toLowerCase(),pw=f.password.value;
   msg.textContent='Checking…';b.disabled=true;
-  var r;
-  try{r=await (await fetch(L.url,{method:'POST',body:new URLSearchParams({action:'pro-login',name:name,password:pw,kid:L.kid})})).json()}
-  catch(x){msg.textContent='The login could not be reached. Please try again.';b.disabled=false;return}
   try{
-    if(!r.ok)throw r;
-    var key=await opened(r.keys);
-    try{sessionStorage.setItem(KEY,JSON.stringify({keys:r.keys,name:name}))}catch(x){}
+    var id=Array.from(new Uint8Array(await S.digest('SHA-256',enc.encode('pulse-compass:'+name)))).map(function(x){return x.toString(16).padStart(2,'0')}).join(''),
+        e0=T[id];
+    if(!e0)throw 0;
+    var raw=await S.importKey('raw',enc.encode(name+'\n'+pw),'PBKDF2',false,['deriveBits']),
+        kek=await S.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:bytes(e0.salt),iterations:T._rounds},raw,256),
+        key=await opened(id,kek);
+    try{sessionStorage.setItem(KEY,JSON.stringify({id:id,kek:b64(kek),name:name}))}catch(x){}
     await enter(key)
-  }catch(x){
-    msg.textContent=x&&x.locked?'Too many tries. Please wait 15 minutes and try again.'
-      :x&&(x.stale||x.ok)?'The site is being updated. Please try again in a few minutes.'
-      :'That username or password is not right.';b.disabled=false}
+  }catch(x){msg.textContent='That username or password is not right.';b.disabled=false}
 }})();
 </script>"""
 HIDE = ("<script>try{if(sessionStorage.getItem('compass-login'))document.documentElement.style.visibility='hidden'}"
@@ -270,7 +260,7 @@ def _contents() -> str:
             + '<li>Appendix<ol type="A">' + "".join(rows) + "</ol></li></ol></div>")
 
 
-def _shell(conn, cards: list[dict], path: str, page: str, login: dict, files: list[str]) -> str:
+def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: list[str]) -> str:
     """The published page: the login box, with the real page beside it as unreadable bytes."""
     from . import adoption  # type: ignore[attr-defined]  # private repo, joined to the package at run time
     from . import pages, rss
@@ -287,7 +277,7 @@ def _shell(conn, cards: list[dict], path: str, page: str, login: dict, files: li
               f'{_get_login()}'
               f'<p class="compass-more"><a class="cg-more" href="/{FAMILY}">What Pulse Pro Engine is</a></p></form>'
               '<noscript><p>Logging in needs JavaScript switched on.</p></noscript>'
-              f'<script type="application/json" id="compass-login-at">{json.dumps(login)}</script>'
+              f'<script type="application/json" id="compass-table">{json.dumps(table)}</script>'
               f'<script type="application/json" id="compass-files">{json.dumps(files)}</script>'
               f'<script type="text/plain" id="compass-page">{page}</script>' + SCRIPT)
     html = pages.page("Log in · Pulse Pro Engine", "Log in to Pulse Pro Engine.", path,
@@ -299,35 +289,40 @@ def _shell(conn, cards: list[dict], path: str, page: str, login: dict, files: li
     return html.replace('<meta charset="utf-8">', f'<meta charset="utf-8">\n<meta name="robots" content="noindex">\n{HIDE}', 1)
 
 
-def seal(out: Path, conn, cards: list[dict], key: tuple[str, bytes] | None = None, url: str | None = None) -> int:
-    """Replace every paid file under planner/ with its sealed form. Runs last in the build; returns the files sealed.
-    key is (kid, key), today's from the web app when not given; url is where the login box posts."""
+def seal(out: Path, conn, cards: list[dict], people: dict | None = None) -> int:
+    """Replace every paid file under planner/ with its sealed form. Runs last in the build; returns the files sealed."""
     root = out / ROOT
     if not root.is_dir():
         return 0
-    key = page_key() if key is None else key
-    box: Callable[[bytes], str] | None = None  # seals a page; None when no key could be had
-    login = {"url": url or login_url(), "kid": key[0] if key else ""}
-    if key:  # only then is the library needed: with no key nothing gets encrypted
+    people = users() if people is None else people
+    box: Callable[[bytes], str] | None = None  # seals a page; None when nobody can log in
+    table: dict = {"_rounds": ROUNDS}
+    if people:  # only then is the library needed: with no users nothing gets encrypted
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-        sealer = AESGCM(key[1])
+        key = os.urandom(32)
+        sealer = AESGCM(key)
 
         def seal(raw: bytes) -> str:
             iv = os.urandom(12)
             return _b64(iv + sealer.encrypt(iv, raw, None))
         box = seal
+
+        for name, u in people.items():
+            iv = os.urandom(12)
+            table[user_id(name)] = {"salt": u["salt"], "iv": _b64(iv),
+                                    "key": _b64(AESGCM(base64.b64decode(u["kek"])).encrypt(iv, key, None))}
     paid = [p for p in sorted(root.rglob("*")) if p.is_file() and not is_open(p.relative_to(out).as_posix())]
     files = [p.relative_to(out).as_posix() for p in paid if p.name != "index.html"]
     for p in paid:
         rel = p.relative_to(out).as_posix()
         raw = p.read_bytes()
         if p.name == "index.html":
-            p.write_text(_shell(conn, cards, rel[:-len("index.html")], box(raw) if box else "", login, files), encoding="utf-8")
+            p.write_text(_shell(conn, cards, rel[:-len("index.html")], box(raw) if box else "", table, files), encoding="utf-8")
         else:
             if box:
                 p.with_name(p.name + ".sealed").write_text(box(raw), encoding="ascii")
             p.unlink()
-    log.info("Pulse Pro Engine: %d paid files %s.", len(paid), "sealed" if box else "left out (no page key)")
+    log.info("Pulse Compass: %d paid files sealed for %d users.", len(paid), len(people))
     return len(paid)
 
 
@@ -338,48 +333,31 @@ def _gh() -> str:
     return shutil.which("gh") or r"C:\Program Files\GitHub CLI\gh.exe"
 
 
-def _rebuild() -> None:
+def _publish(people: dict) -> None:
+    """Put the list in the repo secret and rebuild the site, so the change is live in a few minutes."""
+    subprocess.run([_gh(), "secret", "set", "COMPASS_USERS", "--repo", REPO], input=json.dumps(people).encode(), check=True)
     subprocess.run([_gh(), "workflow", "run", "pages.yml", "--repo", REPO, "--ref", "main", "-f", "run=quick"], check=True)
-
-
-def _owner_key() -> str:
-    key = config.compass_login_key() or (LOCAL_KEY.read_text(encoding="utf-8").strip() if LOCAL_KEY.exists() else "")
-    if not key:
-        raise SystemExit("No login key on this PC yet: run python -m aipulse compass-user setup first.")
-    return key
+    print("Saved. The site is rebuilding: the change is live in about 5 minutes.")
 
 
 def manage(action: str, name: str | None) -> None:
-    """The owner's command. Users live in the login web app; the password goes to it over HTTPS and is kept there
-    only as a salted hash."""
-    if action == "setup":  # once: the secret the build and this command use to talk to the web app
-        key = secrets.token_urlsafe(36)
-        subprocess.run([_gh(), "secret", "set", "COMPASS_LOGIN_KEY", "--repo", REPO], input=key.encode(), check=True)
-        LOCAL_KEY.write_text(key, encoding="utf-8")
-        print("Saved as the GitHub secret COMPASS_LOGIN_KEY and on this PC. Now, in the sign-up script at\n"
-              "script.google.com: Project Settings > Script properties > add PRO_KEY with this value, then save:\n\n"
-              f"{key}\n\nThen add each user again: python -m aipulse compass-user add NAME")
-        return
+    people = json.loads(LOCAL.read_text(encoding="utf-8")) if LOCAL.exists() else {}
     if action == "list":
-        got = _ask({"action": "pro-user", "op": "list", "key": _owner_key()})
-        print("\n".join(got.get("names") or []) or ("No users yet." if got.get("ok") else got.get("text", "Refused.")))
+        print("\n".join(sorted(people)) or "No users yet.")
         return
     if not name:
         raise SystemExit(f"Say which user: python -m aipulse compass-user {action} NAME")
     name = name.strip().lower()
-    fields = {"action": "pro-user", "op": action, "name": name, "key": _owner_key()}
-    if action == "add":
+    if action == "remove":
+        if name not in people:
+            raise SystemExit(f"No user called {name}.")
+        del people[name]
+    else:
         password = getpass.getpass(f"Password for {name} (at least {MIN_PASSWORD} characters; nothing shows as you type): ")
         if len(password) < MIN_PASSWORD:
-            raise SystemExit(f"Too short: at least {MIN_PASSWORD} characters.")
+            raise SystemExit(f"Too short: at least {MIN_PASSWORD} characters. With no server to stop repeated guesses, length is the protection.")
         if password != getpass.getpass("The same password again: "):
             raise SystemExit("The two didn't match; nothing changed.")
-        fields["password"] = password
-    got = _ask(fields)
-    if not got.get("ok"):
-        raise SystemExit(got.get("text") or "The web app refused it.")
-    if action == "remove":
-        _rebuild()  # the web app dropped the page keys: the rebuild seals everything with a new one
-        print(f"Removed {name}: they can't log in from now. The site is rebuilding with a new key (about 5 minutes).")
-    else:
-        print(f"Saved {name}. They can log in now; nothing needs rebuilding.")
+        people[name] = new_user(name, password)
+    LOCAL.write_text(json.dumps(people, indent=1), encoding="utf-8")
+    _publish(people)
