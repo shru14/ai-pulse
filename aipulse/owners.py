@@ -59,6 +59,8 @@ DEALS = [
      "https://techcrunch.com/2026/05/28/anthropic-raises-65-billion-nears-1t-valuation-ahead-of-ipo/"),
     ("Micron", "Anthropic", "Joined $65B Series H", "May 2026", True,
      "https://siliconangle.com/2026/05/28/anthropic-launches-claude-opus-4-8-raises-65b-new-funding/"),
+    ("TSMC", "Anthropic", "$500M for a 0.03% stake", "Nov 2026", True,
+     "https://focustaiwan.tw/business/202611190023"),
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
@@ -263,6 +265,14 @@ LEFT_OUT = {
         "IPO news only; buying shares in Anthropic's IPO, no company stake",
     "https://olhardigital.com.br/2026/11/18/pro/anthropic-pode-elevar-preco-de-acoes-em-ipo-apos-forte-demanda/":
         "IPO news only; Anthropic 'can' raise its share price, no stake",
+    "https://www.xataka.com/empresas-y-economia/amazon-google-accionistas-proveedores-canal-venta-anthropic-todo-a-vez":
+        "same as Amazon in Anthropic and Google in Anthropic; post-IPO shares are forecasts, private placement has no per-buyer amounts",
+    "https://olhardigital.com.br/2026/11/19/pro/por-r-60-brasileiros-ja-podem-investir-na-anthropic/":
+        "Brazilian receipts of Anthropic shares; no company stake",
+    "https://yourstory.com/2026/11/meet-the-8-women-powering-indias-deeptech-future-anthropic-ipo":
+        "can't read to check",
+    "https://the-decoder.com/anthropics-1-5-trillion-ipo-hits-resistance-as-investors-balk-at-valuation/":
+        "IPO plans and valuation only; no stake named",
 }
 
 
