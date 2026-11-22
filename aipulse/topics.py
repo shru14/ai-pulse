@@ -318,6 +318,7 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.xataka.com/empresas-y-economia/anthropic-quiere-tu-dinero-te-ha-escrito-94-paginas-explicando-que-podria-salir-mal-doble-habitual": "Anthropic's S-1 spends 94 pages on what could go wrong, twice the usual",
         "https://www.channelnewsasia.com/business/anthropics-post-debut-stumble-delivers-reality-check-ai-trade-6569081": "Anthropic's stock stumbles after its debut",
         "https://olhardigital.com.br/2026/11/19/pro/anthropic-movimenta-mercado-em-estreia-na-nasdaq-veja-como-foi-o-primeiro-dia/": "Anthropic's first day on the Nasdaq, with shares up 39 per cent in trading before losing strength by the close",
+        "https://olhardigital.com.br/2026/11/20/pro/acoes-da-anthropic-caem-quase-6-apos-estreia-recorde-na-nasdaq/": "Anthropic's shares fall almost 6 per cent after its record Nasdaq debut",
     },
     "deepseek-us": {
         "https://dplnews.com/estados-unidos-ordena-retirar-deepseek/": "US bans federal civil agencies from buying DeepSeek products and orders existing ones removed",
@@ -383,10 +384,24 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.xataka.com/empresas-y-economia/trump-quiere-vuelta-a-jensen-huang-eso-justo-que-impide-al-consejo-nvidia-readmitirlo": "Trump says he would not mind Huang's return while a source says the board does not intend to readmit him",
         "https://www.xataka.com/empresas-y-economia/guerra-interna-control-nvidia-vuelta-jensen-huang-como-ceo-esta-encima-mesa": "Huang's possible return as CEO is on the table in an internal fight over control of Nvidia",
         "https://www.businesskorea.co.kr/news/articleView.html?idxno=281472": "Trump is open to Huang's return but Nvidia's board rules out reinstating him",
+        "https://olhardigital.com.br/2026/11/17/pro/jensen-huang-quer-voltar-a-nvidia-mas-conselho-fecha-as-portas/": "Board president says the board is closed to Huang's return after he said he would agree to come back",
+        "https://www.channelnewsasia.com/business/trump-calls-nvidias-huang-honorable-says-he-has-not-discussed-allegations-him-6534881": "Trump calls Huang honorable and says he has not discussed the allegations with him",
     },
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # Nvidia accounting probe by the securities regulator, can't tell from the summary it is part of the Huang affair
+    "https://olhardigital.com.br/2026/11/22/pro/contabilidade-da-nvidia-e-alvo-de-investigacao-nos-estados-unidos/",
+    # Explainer on who decides whether a data centre has a social licence, nothing new about pushback or votes
+    "https://theconversation.com/who-gets-to-decide-whether-an-ai-data-centre-has-a-social-licence-to-operate-295729",
+    # Column contrasting Nvidia's earnings with tech executives calling for Huang's return, comment with nothing new
+    "https://techcrunch.com/2026/11/21/a-tale-of-two-nvidias/",
+    # Roundup of data centre industry events on power readiness, not about who pays for electricity
+    "https://datacenterpost.com/from-investment-to-operations-bisnow-dice-events-examine-what-it-takes-to-deliver/?utm_source=rss&utm_medium=rss&utm_campaign=from-investment-to-operations-bisnow-dice-events-examine-what-it-takes-to-deliver",
+    # Explainer on data centre water use, not about who pays for electricity
+    "https://theconversation.com/data-centres-may-consume-far-more-water-than-developers-suggest-296245",
+    # An outside expert's estimate of whether Huang keeps his job, opinion with nothing new in the case
+    "https://techcrunch.com/2026/11/08/is-jensen-huangs-job-on-the-line-yales-jeffrey-sonnenfeld-estimates-its-about-a-50-50/",
     # Spain's data centre decree sets renewable, efficiency and sovereignty targets, not about who pays for electricity
     "https://dplnews.com/espana-aprueba-reglamento-centros-de-datos/",
     # Opinion on whether the IPO signals a top in the AI trade, nothing new about the listing itself
