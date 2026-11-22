@@ -85,9 +85,9 @@ def main():
     b.add_argument("--out", default="site", help="output folder, replaced (default: site)")
     b.add_argument("--compass-open", action="store_true", help="leave Pulse Compass's pages readable: a local preview "
                    "only, never for publishing (aipulse/access.py)")
-    cu = sub.add_parser("compass-user", help="set who can log in to Pulse Pro Engine: asks for the password and saves it "
-                        "in the login web app, which keeps only a salted hash (setup: once, makes the key between them)")
-    cu.add_argument("action", choices=("setup", "add", "remove", "list"), help="add also changes an existing user's password")
+    cu = sub.add_parser("compass-user", help="set who can log in to Pulse Compass: asks for the password, saves it to the "
+                        "site's secret and rebuilds the site")
+    cu.add_argument("action", choices=("add", "remove", "list"), help="add also changes an existing user's password")
     cu.add_argument("name", nargs="?", help="the username")
 
     dg = sub.add_parser("digest", help="email one day's digest (the four 6-hour updates) to an address")
