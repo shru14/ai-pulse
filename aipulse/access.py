@@ -220,8 +220,8 @@ PRICES = (("Pulse Compass evidence report", "Bought once", "Price on request", "
           ("Pulse Store", "Free", "No login needed", ""))
 # the Store's paid add-ons (owner, 4 Nov 2026): browsing stays free; the bundle check is bought once, the other two run
 # on. Same columns as PRICES; the login box and What Pulse Pro Engine is list them under Pulse Store
-STORE_ADDONS = (("Pulse Store Bundles", "Bought once", "Price on request", ""),
-                ("Pulse Store Plus", "Subscription", "Price on request", ""),
+# the Store's paid add-ons (private store_pro.py): since 22 Nov 2026 our recommendations are one add-on, and for Firms
+STORE_ADDONS = (("Pulse Store Recommended for you", "Subscription", "Price on request", ""),
                 ("Pulse Store for Firms", "Subscription", "Price on request", ""))
 PAID = [p for p in PRICES + STORE_ADDONS if p[1] != "Free"]
 REQUEST = ("Hello Pulse Central,\n\nI would like a Pulse Pro Engine login.\n\n"
