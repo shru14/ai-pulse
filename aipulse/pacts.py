@@ -180,6 +180,8 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://techcrunch.com/2026/11/17/sec-reportedly-investigating-nvidia-amid-huang-exit/":
+        "SEC civil probe of Nvidia only as the Wall Street Journal reports it; no SEC or Nvidia confirmation",
     "https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-"
     "jensen/":
         "Analysis of Chinese models on export-banned chips; only an undated mention of probes into Megaspeed, a "
