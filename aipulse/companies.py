@@ -22,7 +22,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from . import classify, money
 
-CHECKED_TO = "2026-11-21"  # stories up to this day are checked
+CHECKED_TO = "2026-11-22"  # stories up to this day are checked
 GAP = 30  # days before a company can be featured again
 REASONS = ("Concept", "Revenue", "Business model")  # why it's here
 
