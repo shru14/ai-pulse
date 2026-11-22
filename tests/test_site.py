@@ -5,6 +5,8 @@ import re
 from datetime import date
 from pathlib import Path
 
+import pytest
+
 from aipulse import COMPASS, store
 from aipulse.collect import collect
 
@@ -60,6 +62,7 @@ def test_country_filter_includes_eu_wide_rules_for_members(tmp_path):
     assert tally["cards"] == 3 and tally["national"] == {"FR": 1, "EU": 1, "US": 1} and tally["laws"]["US"] == 1
 
 
+@pytest.mark.slow
 def test_static_build_holds_every_card(tmp_path, monkeypatch):
     import json
     from aipulse import consultations
@@ -222,6 +225,7 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     assert (tmp_path / "site.css").is_file()
 
 
+@pytest.mark.slow
 def test_static_build_escapes_hostile_titles_on_every_page(tmp_path, monkeypatch):
     """Titles are outside text, and the pages are built from strings, so escaping is by hand: whatever a title holds,
     no built page may carry it as live HTML or let it end a <script> early. Collecting already strips tags from feed
@@ -250,6 +254,7 @@ def test_static_build_escapes_hostile_titles_on_every_page(tmp_path, monkeypatch
         assert hostile[0] not in re.sub(r"<script[ >].*?</script>", "", text, flags=re.S | re.I), where
 
 
+@pytest.mark.slow
 def test_static_build_puts_old_cards_in_yearly_archive(tmp_path):
     import json
     from datetime import date
