@@ -110,6 +110,13 @@ def main():
     gl = sub.add_parser("glossary", help="words recent stories use that the glossary doesn't explain yet (to write up by hand)")
     gl.add_argument("--data", metavar="FILE", help="read the stories from the site's data.json (or data.json.gz) instead "
                     "of the database")
+    ms = sub.add_parser("meme-stories", help="the day's stories a meme may use, and the templates (for the memes job)")
+    ms.add_argument("--data", required=True, metavar="FILE", help="the site's data.json (or data.json.gz)")
+    ms.add_argument("--day", help="YYYY-MM-DD (default today, UTC); a Saturday gives the week's (Monday to Saturday)")
+    mc = sub.add_parser("meme-check", help="check the day's written meme (memes_written.py) and draw it")
+    mc.add_argument("--data", required=True, metavar="FILE", help="the site's data.json (or data.json.gz)")
+    mc.add_argument("--day", help="YYYY-MM-DD (default today, UTC)")
+    mc.add_argument("--out", metavar="FILE", help="write the finished picture to FILE (a .jpg, never in the repo)")
     gn = sub.add_parser("glossary-note", help="email the project inbox the words a glossary/ branch adds, to approve")
     gn.add_argument("--base", required=True, metavar="FILE", help="main's aipulse/glossary.py, to compare with")
     gn.add_argument("--branch", required=True, help="the branch the words are on (glossary/<day>)")
@@ -191,7 +198,7 @@ def main():
                          ("timelines", "lab_timelines"), ("pacts", "pacts"), ("tests", "new_tests"), ("fines", "fines"),
                          ("chips", "chip_rules"), ("promises", "promises"), ("buyouts", "buyouts"), ("govai", "gov_ai"),
                          ("prices", "planner"), ("uses", "finance_uses"), ("mistakes", "mistakes"), ("topics", "topics"),
-                         ("companies", "companies")):
+                         ("companies", "companies"), ("memes", "memes_written")):
         q = sub.add_parser(f"{name}-note", help=f"email the project inbox what a {name}/ branch adds, to approve")
         q.add_argument("--base", required=True, metavar="FILE", help=f"main's aipulse/{module}.py, to compare with")
         q.add_argument("--branch", required=True, help=f"the branch the drafts are on ({name}/<day>)")
@@ -524,6 +531,27 @@ def main():
         else:
             digest.send(a.to, *email)
             print(f"Checked, no problems. Sent: {email[0]} {counts}")
+    elif a.cmd in ("meme-stories", "meme-check"):
+        # The evening memes job: what it may joke about, then a check of what it wrote (memes_written.py)
+        from . import memes, memes_written
+        day = date.fromisoformat(a.day) if a.day else datetime.now(timezone.utc).date()
+        kind, when = ("week", day - timedelta(days=5)) if day.weekday() == 5 else ("day", day)
+        cards = site_data(a.data)
+        if a.cmd == "meme-stories":
+            print(f"Write the meme under the key \"{kind}:{when.isoformat()}\" in WRITTEN.\n")
+            print(memes_written.brief(cards, kind, when, memes_written.recent_templates(day)))
+        else:
+            meme = memes_written.WRITTEN.get(f"{kind}:{when.isoformat()}")
+            ok = meme and memes_written.checked(meme, cards, kind, when)
+            if not ok:
+                sys.exit(f"{kind}:{when.isoformat()}: " + ("no meme written" if not meme else
+                         "fails a check (a template's fields, a caption over 72 characters, a headline not "
+                         "copied exactly from meme-stories, a number not in a headline, or a banned word)"))
+            picture = memes.render(ok)
+            if a.out and picture:
+                open(a.out, "wb").write(picture)
+            print(f"{kind}:{when.isoformat()} passes: {ok['format']} | " + " | ".join(memes.captions(ok))
+                  + (f"\nPicture: {a.out}" if a.out and picture else ""))
     elif a.cmd == "glossary":
         from . import glossary
         if a.data:  # the site's own data.json (the daily glossary job has no database)
@@ -683,10 +711,11 @@ def main():
             print(f"Safety reports to look for again ({len(due)}): {', '.join(due) or 'none'}")
     elif a.cmd in ("court-note", "press-note", "safety-note", "infra-note", "owners-note", "consultations-note",
                    "releases-note", "timelines-note", "pacts-note", "tests-note", "promises-note", "fines-note",
-                   "chips-note", "buyouts-note", "govai-note", "prices-note", "uses-note", "mistakes-note", "topics-note", "companies-note"):
+                   "chips-note", "buyouts-note", "govai-note", "prices-note", "uses-note", "mistakes-note", "topics-note", "companies-note",
+                   "memes-note"):
         # A court/, press/, safety/ or infra/<day> branch's drafts, to the project inbox for approval
         from . import (buyouts, chip_rules, companies, consultations, court, digest, fines, gov_ai, infra_watch, lab_timelines,
-                       new_tests, owners, pacts, press, promises, release_cards, safety, topics)
+                       memes_written, new_tests, owners, pacts, press, promises, release_cards, safety, topics)
         # Pulse Compass's lists: only in the private repo's checkout (aipulse/__init__.py)
         planner = import_module(".planner", __package__) if a.cmd == "prices-note" else None
         finance_uses = import_module(".finance_uses", __package__) if a.cmd == "uses-note" else None
@@ -696,7 +725,8 @@ def main():
              "timelines-note": lab_timelines, "pacts-note": pacts, "tests-note": new_tests,
              "promises-note": promises, "fines-note": fines, "chips-note": chip_rules, "buyouts-note": buyouts,
              "govai-note": gov_ai, "prices-note": planner, "uses-note": finance_uses,
-             "mistakes-note": mistakes, "topics-note": topics, "companies-note": companies}[a.cmd]
+             "mistakes-note": mistakes, "topics-note": topics, "companies-note": companies,
+             "memes-note": memes_written}[a.cmd]
         extra = [open(a.base_money, encoding="utf-8").read()] if getattr(a, "base_money", None) else []
         note = m.note(open(a.base, encoding="utf-8").read(), a.branch, *extra)
         if not note:

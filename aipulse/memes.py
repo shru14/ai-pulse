@@ -2,7 +2,8 @@
 
 Each meme is a well-known internet meme template (Drake, Distracted Boyfriend, This Is Fine, Two Buttons, Expanding
 Brain, Woman Yelling at Cat, Is This a Pigeon?, Panik Kalm Panik; copies in templates/memes/, from Imgflip's free
-template list) with captions written onto it: by Gemini (memegen.py) or, without it, filled from our own data: the
+template list) with captions written onto it: by the evening memes draft job once the owner approves it (memes_written.py), else
+by Gemini (memegen.py) or, without either, filled from our own data: the
 day's or week's launches, raises, papers, power stories and glossary words, named as the headlines name them. The
 templates are used as parody and commentary on a free, non-commercial site, credited under every meme. Jokes are light: about the AI
 industry's habits, never a person; politics and any story about harm, death, crime, lawsuits, layoffs, war or
@@ -493,7 +494,8 @@ def of_the_day(cards: list[dict], day: date) -> dict | None:
     # +2: another wording than the one readers may have seen on the site (owner, 2026-11-13)
     f = {**facts([c for c in cards if c.get("date") == day.isoformat()]), "turn": _turn(day) + 2}
     have = day.isoformat() in {c.get("date") for c in cards}
-    if not (made and made.get("format") == want and not plugs(made)):
+    # a written meme (memes_written.py) may be on any template: the job picks one not shown in the last days
+    if not (made and (made.get("format") == want or made.get("by") == "written") and not plugs(made)):
         made = _made(want, f, "today", have)
     made = _not_shown(want, f, "today", have, made, day)
     return made and {**made, "title": "Meme of the day"}
@@ -507,7 +509,7 @@ def of_the_week(cards: list[dict], monday: date) -> dict | None:
         return kept
     made, want = GENERATED.get(("week", monday)), template_of_week(monday)
     f = {**facts(week), "turn": _turn(monday, 28)}
-    if not (made and made.get("format") == want and not plugs(made)):
+    if not (made and (made.get("format") == want or made.get("by") == "written") and not plugs(made)):
         made = _made(want, f, "this week", bool(week))
     made = _not_shown(want, f, "this week", bool(week), made, saturday)
     return made and {**made, "title": "Meme of the week"}
