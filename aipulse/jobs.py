@@ -105,6 +105,7 @@ CHECKED: dict[str, dict] = {
 # forecasts and plans, cuts no one blamed on AI, and stories we can't read to check the company's words.
 LEFT_OUT = {
     "https://www.channelnewsasia.com/commentary/commentary-microsoft-discovers-ai-cant-keep-email-going-6552846",  # a commentary (opinion piece), not a company job cut
+    "https://techcrunch.com/2026/11/18/microsoft-ceo-satya-nadella-explains-why-he-asked-60k-employees-to-quit/",  # not a cut: a voluntary buyout offer (about 60,000 staff offered), no number of leavers; Nadella's interview words are not about a cut, no memo or statement found
     "https://olhardigital.com.br/2026/11/14/colunistas/a-ia-nao-esta-eliminando-todos-os-empregos-esta-mudando-quem-consegue-entrar-no-mercado/",  # an opinion column (colunistas) about the job market, not a company job cut
     "https://www.channelnewsasia.com/world/qantas-cut-850-jobs-ai-accenture-india-6538201",  # can't read to check: the page refuses automated reads (Qantas cut of 850 jobs; check Qantas's own statement)
     "https://www.channelnewsasia.com/business/australian-companies-face-ai-washing-claims-after-wave-job-cuts-offshoring-6543886",  # can't read to check: the page refuses automated reads; looks like an analysis piece
