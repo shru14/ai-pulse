@@ -273,6 +273,12 @@ LEFT_OUT = {
         "can't read to check",
     "https://the-decoder.com/anthropics-1-5-trillion-ipo-hits-resistance-as-investors-balk-at-valuation/":
         "IPO plans and valuation only; no stake named",
+    "https://www.channelnewsasia.com/business/oracle-says-openai-infrastructure-deal-fully-funded-after-final-capital-raise-6570701":
+        "can't read to check",
+    "https://olhardigital.com.br/2026/11/08/pro/anthropic-investe-bilhoes-em-geradores-a-gas-para-data-centers/":
+        "Anthropic buying gas generators for its data centers, no stake in a lab",
+    "https://nairametrics.com/2026/11/07/openai-secures-11-billion-in-fresh-funding-at-1-25-trillion-valuation/":
+        "round not fully closed (first close), reported by Bloomberg, doesn't say equity or debt; named investors are funds",
 }
 
 
