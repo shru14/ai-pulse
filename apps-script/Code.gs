@@ -37,6 +37,10 @@
  *                                            body, never the address, so it stays out of Google's logs)
  *   POST action=interests   key             every interest readers follow, once each and without who follows it,
  *                                            for the site's weekly dossiers (key = LIST_KEY)
+ *   POST action=watch-alert email, company, Pulse Watch's Notify me form: a row in the "Pulse Watch alerts" Sheet
+ *                           events          (events: model, shutdown, ipo, money, court, government, pages)
+ *   POST action=watch-alerts key            the active alert requests, for the daily alert job (key = LIST_KEY)
+ *   POST action=watch-stop  t               the Stop link in each alert email: that address's requests stop
  * With format=json the site gets {ok, title, text}; without it (an old link opened here) a small page.
  * The project inbox gets a short note when someone subscribes, changes streams or unsubscribes.
  *
@@ -78,6 +82,9 @@ function doPost(e) {
   if (p.action === "interests") return json(interests(p.key));
   if (p.action === "comments") return json(comments(p));
   if (p.action === "comment") return json(comment(p));
+  if (p.action === "watch-alert") return json(watchAlert(p));
+  if (p.action === "watch-alerts") return json(watchAlerts(p.key));
+  if (p.action === "watch-stop") return json(watchStop(p.t));
   const result = p.action === "subscribe" ? subscribe(p)
     : p.action === "confirm" ? confirm(p.t)
     : p.action === "unsubscribe" ? unsubscribe(p.t)
@@ -407,6 +414,74 @@ function comments(p) {
   const rows = commentSheet().getDataRange().getValues().slice(1);
   return {ok: true, comments: rows.filter(r => r[1] === post && r[4] === true)
     .map(r => ({date: r[0] instanceof Date ? r[0].toISOString().slice(0, 10) : String(r[0]), name: String(r[2]), text: String(r[3])}))};
+}
+
+// Pulse Watch alerts (owner, 22 Nov 2026): on the Watch page's Any company tab a client names a company or lab and
+// the events it wants to hear about; each request is a row in the "Pulse Watch alerts" Sheet in this account. The
+// daily alert job (compass aipulse/watch_alerts.py) reads the active rows with LIST_KEY and sends one email a day per
+// address; the Stop link in it (SITE planner/vendor-watch/#stop=token) turns that address's rows off.
+// Setup, once: run setUpWatchAlerts from the editor and allow the Sheets permission it asks for, then deploy.
+const WATCH_A_DAY = 60, WATCH_PER_EMAIL = 20;
+const WATCH_EVENTS = ["model", "shutdown", "ipo", "money", "court", "government", "pages"];
+const WATCH_HEAD = ["Date", "Email", "Company", "Events", "Token", "Active"];
+
+function watchSheet() {
+  const id = store().getProperty("WATCH_SHEET");
+  if (id) return SpreadsheetApp.openById(id).getSheets()[0];
+  const book = SpreadsheetApp.create("Pulse Watch alerts"), sheet = book.getSheets()[0];
+  sheet.appendRow(WATCH_HEAD);
+  sheet.setFrozenRows(1);
+  store().setProperty("WATCH_SHEET", book.getId());
+  return sheet;
+}
+
+function setUpWatchAlerts() {
+  Logger.log("Watch alerts Sheet: " + watchSheet().getParent().getUrl());
+}
+
+function watchAlert(p) {
+  if (p.website) return {ok: true};  // the hidden field only bots fill in
+  const email = oneLine(p.email, 200).toLowerCase(), company = oneLine(p.company, 80);
+  const events = String(p.events || "").split(",").filter(e => WATCH_EVENTS.includes(e));
+  if (!EMAIL.test(email) || !company || !events.length) return {ok: false, error: "missing"};
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const props = store(), key = "watch:" + today(), n = Number(props.getProperty(key) || 0);
+    if (n >= WATCH_A_DAY) return {ok: false, error: "busy"};
+    const sheet = watchSheet(), rows = sheet.getDataRange().getValues().slice(1);
+    const mine = rows.filter(r => r[1] === email && r[5] === true);
+    if (mine.length >= WATCH_PER_EMAIL) return {ok: false, error: "busy"};
+    // one token per address, so the Stop link in its email stops all of its requests
+    const token = (mine[0] && mine[0][4]) || Utilities.getUuid().replace(/-/g, "");
+    const same = rows.findIndex(r => r[1] === email && String(r[2]).toLowerCase() === company.toLowerCase() && r[5] === true);
+    if (same >= 0) sheet.getRange(same + 2, 4).setValue(events.join(","));  // the same company again: new picks
+    else sheet.appendRow([today(), email, company, events.join(","), token, true]);
+    props.setProperty(key, String(n + 1));
+  } finally {
+    lock.releaseLock();
+  }
+  return {ok: true};
+}
+
+function watchAlerts(key) {
+  const secret = store().getProperty("LIST_KEY");
+  if (!secret || secret.length < 24 || key !== secret) return {ok: false};
+  for (const k of Object.keys(store().getProperties()))
+    if (k.startsWith("watch:") && k < "watch:" + today()) store().deleteProperty(k);
+  if (!store().getProperty("WATCH_SHEET")) return {ok: true, requests: []};
+  const rows = watchSheet().getDataRange().getValues().slice(1).filter(r => r[5] === true);
+  return {ok: true, requests: rows.map(r => ({email: String(r[1]), company: String(r[2]),
+                                               events: String(r[3]).split(","), token: String(r[4])}))};
+}
+
+function watchStop(t) {
+  t = String(t || "").replace(/[^A-Za-z0-9]/g, "");
+  if (!t || !store().getProperty("WATCH_SHEET")) return {ok: false};
+  const sheet = watchSheet(), rows = sheet.getDataRange().getValues();
+  let n = 0;
+  rows.forEach((r, i) => { if (i && r[4] === t && r[5] === true) { sheet.getRange(i + 1, 6).setValue(false); n++; } });
+  return {ok: n > 0};
 }
 
 // The daily email starts here, on time: GitHub's own scheduler starts runs late or not at all (it never started the
