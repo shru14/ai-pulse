@@ -705,10 +705,14 @@ LEFT_OUT = {
         "MAI-Code-2: one news outlet within 3 days",
     "https://elevenlabs.io/blog/scribe-v3-live-medical": "Scribe v3 Live Medical: no news outlet within 3 days",
     "https://huggingface.co/inworld/voice-isolator": "voice-isolator: no news outlet within 3 days",
+    "https://siliconangle.com/2026/11/19/resolve-ais-sre-1-model-finds-root-causes-of-production-alerts-as-ai-agents-go-on-call/":
+        "SRE-1: one news outlet within 3 days",
+    "https://the-decoder.com/googles-latest-ai-model-is-faster-cheaper-and-smarter-than-its-flagship-predecessor-from-just-weeks-ago/":
+        "same as Gemini 4 Neon",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-17"
+CHECKED_TO = "2026-11-19"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
