@@ -26,7 +26,7 @@ import urllib.error
 import urllib.request
 from datetime import date, timedelta
 
-from . import config, memes
+from . import config, memes, memes_written
 
 log = logging.getLogger(__name__)
 
@@ -269,11 +269,13 @@ def prepare(conn, cards: list[dict], today: date | None = None, day: date | None
     for monday in dict.fromkeys(mondays):
         upto = [c for c in cards if (c.get("date") or "") < (monday + timedelta(days=6)).isoformat()] \
             if monday + timedelta(days=6) > today - timedelta(days=1) else cards  # a week not over: no Sunday yet
-        if (m := stored(conn, "week", monday, upto, make, set(TEMPLATES) - {memes.template_of_week(monday)})):
+        # an approved meme the evening memes job wrote goes first, and then Gemini isn't asked (memes_written.py)
+        if (m := memes_written.get(upto, "week", monday)
+                or stored(conn, "week", monday, upto, make, set(TEMPLATES) - {memes.template_of_week(monday)})):
             memes.GENERATED[("week", monday)] = m
     if day and day.weekday() == 5:
         return  # Sunday's email has the meme of the week, not one of the day
     if day:
         avoid = set(TEMPLATES) - {memes.template_of(day)}  # the day's template only (memes.ROTATION)
-        if (m := stored(conn, "day", day, cards, make, avoid)):
+        if (m := memes_written.get(cards, "day", day) or stored(conn, "day", day, cards, make, avoid)):
             memes.GENERATED[("day", day)] = m
