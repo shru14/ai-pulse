@@ -128,7 +128,9 @@ def privacy_page() -> str:
         # 12 Nov 2026, owner: one short privacy notice for the whole site, Pulse Pro Engine included
         ("Pulse Pro Engine", '<p>Start a conversation sends your name, email, firm and message to our inbox, only so we can '
                       'reply. A login is set up from the details you send to buy one. Pro pages read your code and files '
-                      'in your browser; nothing is uploaded to us. A blog comment keeps the name and words you give; '
+                      'in your browser; nothing is uploaded to us. Product details you send us, and any code link, may '
+                      'be read with the help of AI tools to prepare your results; we delete them 90 days after your last '
+                      'change. A blog comment keeps the name and words you give; '
                       'once approved, both show under the post. Ask by email and we delete it.</p>'),
         ("Your rights", '<p>Ask to see, correct or delete your data by email. You can also complain to your data '
                         f'protection authority.</p><p class="pol-acts">{mail}</p>')], ("terms/", "Terms of service"))
