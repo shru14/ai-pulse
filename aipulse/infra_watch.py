@@ -291,6 +291,8 @@ LEFT_OUT: set[str] = {
     "https://w.media/australia-sets-30mw-threshold-for-new-data-centre-grid-standards/",  # grid connection standard for all large inverter-based loads, not specific to data centres
     "https://www.techerati.com/news-hub/polarise-plans-150mw-ai-data-centre-expansion-in-germany-by-2028/",  # can't read to check
     "https://www.powermag.com/rowan-digital-infrastructure-secures-1-5-billion-in-financing-for-hyperscale-development-platform/",  # press release on corporate credit facilities for a pipeline, no single new campus
+    "https://w.media/iren-details-900mw-wagga-campus-but-transgrid-capacity-not-yet-secured/",  # same as the IREN Wagga Wagga row: still early planning, Transgrid capacity not decided
+    "https://www.canarymedia.com/articles/batteries/24-7-clean-power-giant-heat-batteries",  # explainer on a think-tank report; no named deal or plan
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
