@@ -180,6 +180,13 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://focustaiwan.tw/business/202611090006":
+        "Nvidia's own board probe of its CEO; no government action on a company",
+    "https://www.dawn.com/news/2043245/nvidia-probes-whether-ceo-huang-was-target-of-foreign-spying-as-he-admits-"
+    "affair":
+        "Nvidia's own board probe of its CEO; a congressional briefing only requested, no government action",
+    "https://www.businesskorea.co.kr/news/articleView.html?idxno=280772":
+        "Nvidia's own board probe of its CEO; a senator only says he will pursue an investigation, no government action",
     "https://techcrunch.com/2026/11/17/sec-reportedly-investigating-nvidia-amid-huang-exit/":
         "SEC civil probe of Nvidia only as the Wall Street Journal reports it; no SEC or Nvidia confirmation",
     "https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-"
