@@ -230,11 +230,18 @@ CHECKED: dict[str, dict] = {
              subject="science",
              about="Shows that a climate emulator trained on one optimised scenario predicts new scenarios better than "
                    "one trained on six standard scenarios, despite using less training data."),
+    "https://www.sciencedaily.com/releases/2026/11/261120075604.htm":
+        dict(paper="Early Detection of Bladder Cancer Using Advanced Feature Engineering and Swarm Intelligence "
+                   "Optimization on EHRs",
+             link="https://doi.org/10.1109/TBME.2026.3658230", subject="science",
+             about="Tests a machine-learning model that screens primary-care health records for bladder cancer, "
+                   "finding it caught 85% of cases at its high-risk threshold."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://the-decoder.com/security-researchers-show-how-cheap-ai-inference-providers-steal-keys-and-snoop-on-users/",  # a story on a security company's blog post (Dragos), no paper named
     "https://elevenlabs.io/blog/impact-sofia-oxford-said",  # a company blog post (ElevenLabs), not a paper
     "https://www.sciencedaily.com/releases/2026/11/261110042553.htm",  # can't read to check (the site refuses us)
     "https://tecnoblog.net/noticias/chatgpt-e-gemini-indicam-lojas-falsas-para-compras-aponta-estudo/",  # a company report (Podqi, AI Search Brand Risk Report 2026), no paper
