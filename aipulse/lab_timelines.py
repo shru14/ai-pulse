@@ -234,6 +234,8 @@ LEFT_OUT = {
         "A company's IPO, not a model price change",
     "https://techcrunch.com/2026/11/17/google-to-keep-gemini-chats-for-two-months-up-from-72-hours-even-with-history-off/":
         "A consumer app's data retention setting, not a model price, place or pulled change",
+    "https://huggingface.co/inworld/voice-isolator":
+        "A model page on Hugging Face, no price, place or pulled change stated",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
