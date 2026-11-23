@@ -386,10 +386,21 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.businesskorea.co.kr/news/articleView.html?idxno=281472": "Trump is open to Huang's return but Nvidia's board rules out reinstating him",
         "https://olhardigital.com.br/2026/11/17/pro/jensen-huang-quer-voltar-a-nvidia-mas-conselho-fecha-as-portas/": "Board president says the board is closed to Huang's return after he said he would agree to come back",
         "https://www.channelnewsasia.com/business/trump-calls-nvidias-huang-honorable-says-he-has-not-discussed-allegations-him-6534881": "Trump calls Huang honorable and says he has not discussed the allegations with him",
+        "https://www.dawn.com/news/2044060/jensen-huang-steps-down-as-nvidia-ceo-after-reports-of-extramarital-affairs": "Huang resigns as Nvidia chief executive after reports of two extramarital affairs, one with a woman accused of spying for China",
+        "https://www.businesskorea.co.kr/news/articleView.html?idxno=280772": "Nvidia opens an independent probe into Huang amid the China spy allegations",
+        "https://nairametrics.com/2026/11/23/nvidia-ceo-scandal-alice-huang-kept-in-touch-with-chinese-intelligence-official-during-affair-report/": "Report that Alice Huang kept in contact with an official of China's Ministry of State Security for over a year",
+        "https://www.xataka.com/empresas-y-economia/escandalo-nvidia-suma-nuevo-capitulo-eeuu-llevaba-ano-vigilando-a-alice-huang-nyt": "New York Times says Alice Huang had contact with a Chinese State Security Ministry officer for over a year",
+        "https://www.channelnewsasia.com/world/alice-huang-chinese-spy-nvidia-affair-6573671": "Alice Huang was in touch with an officer of China's Ministry of State Security during the affair, the New York Times reports",
+        "https://techcrunch.com/2026/11/23/jensen-huang-isnt-out-of-the-woods-yet/": "Huang returns as Nvidia CEO after resigning over the affairs",
+        "https://www.xataka.com/empresas-y-economia/jensen-huang-tenia-as-escondido-casa-blanca-su-apoyo-ha-sido-clave-para-su-vuelta-al-frente-nvidia": "White House support was key to Huang's return to the head of Nvidia",
     },
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # Taiwan industry head says Nvidia's probe of Huang is unlikely to disrupt the supply chain, a comment with nothing new in the case
+    "https://focustaiwan.tw/business/202611090006",
+    # California attorney general's lawsuit against OpenAI, can't tell from the summary it is about the restructuring or Musk's suit
+    "https://www.channelnewsasia.com/business/california-ag-bonta-filed-lawsuit-against-openai-over-model-security-public-safety-6574006",
     # Nvidia accounting probe by the securities regulator, can't tell from the summary it is part of the Huang affair
     "https://olhardigital.com.br/2026/11/22/pro/contabilidade-da-nvidia-e-alvo-de-investigacao-nos-estados-unidos/",
     # Explainer on who decides whether a data centre has a social licence, nothing new about pushback or votes
