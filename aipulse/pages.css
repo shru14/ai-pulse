@@ -142,7 +142,8 @@
 .cp .sd .what{font-size:14.5px}
 @media (max-width:860px){.cp .sd .cols{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;padding-bottom:8px}
   .cp .sd section{flex:0 0 85%;scroll-snap-align:start}}
-.cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
+.cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px));font:500 14px/1 var(--body);padding:9px 14px;border-radius:8px;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);text-decoration:none}
+.cp:has(> .tp) > .back:hover{border-color:var(--ink)}
 .cp .tp{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .topic-hero{position:relative;height:clamp(150px,18vw,220px);margin-top:16px;border:2px solid var(--line);overflow:hidden;box-shadow:none}
 .cp .topic-hero .photo{object-position:right center}  /* the cartoon sits on the right, clear of the title */
