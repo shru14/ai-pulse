@@ -911,6 +911,28 @@ def test_sunday_listen_starts_with_the_week():
     assert audio.line(plan, list(rss.FEEDS), None, 140) == "2 minutes · the week's important updates, then Saturday in short"
 
 
+def test_listen_voice_is_gemini_then_piper(tmp_path, monkeypatch):
+    """The clip is read by Gemini (owner, 24 Nov 2026); after its first refusal Piper reads the rest of the run, and
+    with neither no clip is made."""
+    from aipulse import audio
+    day = date(2026, 10, 23)
+    cards = [{"id": f"c{i}", "title": f"Story {i}", "summary": "", "source": "S", "url": f"https://ex.com/{i}",
+              "category": cat, "kind": "news", "date": day.isoformat(), "added_at": f"{day}T10:00:00+00:00", "tags": [],
+              "also": []} for i, cat in enumerate(["news", "policy", "research"])]
+    asked, read = [], []
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setattr(audio, "gemini", lambda text, key, log: asked.append(text) or (b"G" if len(asked) == 1 else None))
+    monkeypatch.setattr(audio, "_voice", lambda: "piper")
+    monkeypatch.setattr(audio, "speak", lambda text, voice: read.append(text) or b"P")
+    setups = [(["policy"], {}), (["research"], {})]
+    assert audio.make(cards, day, setups, tmp_path, log=lambda m: None) == 3
+    assert len(asked) == 2 and len(read) == 2  # Gemini read the first, refused the second; Piper read the last two
+    assert (tmp_path / f"{day}-everyone.mp3").read_bytes() == b"G"
+    monkeypatch.setattr(audio, "_voice", lambda: None)
+    monkeypatch.delenv("GEMINI_API_KEY")
+    assert audio.make(cards, day + timedelta(days=1), setups, tmp_path, log=lambda m: None) == 0
+
+
 def test_no_meme_is_promotional():
     """Memes joke about AI, never plug us (owner, 2026-10-21 and 2026-11-06): every standby wording passes, and a
     meme that plugs, whoever wrote it, is replaced."""

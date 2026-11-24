@@ -302,8 +302,8 @@ jobs:
         run: python -m aipulse --db aipulse.db build --out site
 
       # The daily listen (aipulse/audio.py): yesterday's two-minute clip for everyone and for each reader setup
-      # (streams and choices; never who), read by Piper, an open-source voice (MIT) run on the runner: no API, nothing
-      # billed. The voice (~110 MB, from Piper's own list, trained on public-domain recordings) is cached; the clips are
+      # (streams and choices; never who), read by Gemini's Iapetus voice (free tier, nothing billed; it reads our script
+      # as given), or by Piper, an open-source voice (MIT) run on the runner, when Gemini can't. Piper's voice (~110 MB, from Piper's own list, trained on public-domain recordings) is cached; the clips are
       # kept between runs (7 days), so a push or quick run publishes them as they are and a full run speaks only what
       # changed.
       - name: Restore the listen clips
@@ -326,6 +326,7 @@ jobs:
         timeout-minutes: 15  # never holds up the site; a clip not made means that email has no bar
         env:
           DIGEST_LIST_KEY: ${{ secrets.DIGEST_LIST_KEY }}  # reads the readers' streams and choices (the log shows counts only)
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}  # the clip's voice, Gemini's Iapetus (free tier; Piper reads without it)
         run: |
           pip install --quiet piper-tts==1.8.0 lameenc==1.9.0  # pinned, as in requirements.txt
           voice="$(python -c 'from aipulse import audio; print(audio.VOICE)')"

@@ -1,4 +1,4 @@
-"""The daily listen: a two-minute clip of the day's top six stories, one from each stream, read by an offline voice.
+"""The daily listen: a two-minute clip of the day's top six stories, one from each stream, read aloud by a voice.
 
 Which six (picks): each stream's biggest story of the day (digest._rank: most outlets first), so every stream is
 heard; a stream with nothing that day gives its place to the biggest story left from the other streams. A reader who
@@ -7,24 +7,28 @@ stream their own picks first. Readers whose six come out the same share one clip
 never from the reader).
 
 The script is filled in from what the email already shows (headline, who reported it, the summary's
-first sentence), so nothing is written by AI. The voice is Piper (MIT licence, runs offline on the CPU; no API, nothing
-billed; VOICE_NAME); without it (`pip install piper-tts lameenc` and the VOICE model) no clip is made and the email has no button.
+first sentence), so nothing is written by AI. The voice is Gemini's "Iapetus" (GEMINI_VOICE; owner's choice, 24 Nov
+2026): Gemini only reads our script aloud, on the free tier (GEMINI_API_KEY, no billing account, nothing billed). Without
+the key, or when Gemini refuses or the day's allowance is used up, Piper reads (MIT licence, offline on the CPU;
+VOICE_NAME); without either (`pip install piper-tts lameenc` and the VOICE model) no clip is made and the email has no button.
 """
 from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import Any
+import base64
 import hashlib
 import io
 import json
 import re
 import shutil
+import urllib.error
 import urllib.request
 import wave
 from datetime import date, timedelta
 from pathlib import Path
 
-from . import digest, rss
+from . import config, digest, rss
 
 TOP = 6  # one per stream
 WEEK_ALSO = 8  # Sunday: the week's other important updates, after the story of the week
@@ -34,6 +38,11 @@ IMPORTANT = 4  # outlets: a week's story this widely carried is always in Sunday
 VOICE_NAME, VOICE_PATH = "en_US-ljspeech-high", "en/en_US/ljspeech/high"
 VOICE = Path(__file__).resolve().parent.parent / "data" / "voice" / f"{VOICE_NAME}.onnx"
 VOICE_URL = f"https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/{VOICE_PATH}/{VOICE_NAME}"  # + .onnx, .onnx.json
+# The daily clip's voice since 24 Nov 2026 (owner's choice): Gemini's Iapetus ("clear"), free tier; it reads the
+# script as given and writes nothing. Topic beats (topics.speak) keep Piper.
+GEMINI_VOICE, GEMINI_TTS, GEMINI_RATE = "Iapetus", "gemini-2.5-flash-preview-tts", 24000  # 16-bit mono PCM back
+GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+GEMINI_STYLE = "Read this news briefing in a calm, clear newsreader voice:\n\n"
 FOLDER = "listen"  # on the site: listen/<day>-<setup>.mp3
 KEEP_DAYS = 7  # clips older than this are taken off the site (emails link only the newest)
 BITRATE = 48  # kbps, mono: about 0.7 MB for two minutes
@@ -133,25 +142,32 @@ def url(day: date, streams: list[str], prefs: dict | None) -> str:
 def make(cards: list[dict], day: date, setups: list[tuple[list[str], dict]], folder: Path, log=print) -> int:
     """Every setup's clip for `day` in `folder` (the site's listen/, kept between runs): each distinct set of
     stories spoken once into store/, then copied to <day>-<setup>.mp3. Files older than KEEP_DAYS go. Returns how
-    many were spoken this run (0 without Piper: then no clip, and the email shows no bar)."""
+    many were spoken this run (0 without any voice: then no clip, and the email shows no bar). Gemini reads while
+    it answers; after its first refusal Piper reads the rest of the run."""
     store = folder / "store"
     store.mkdir(parents=True, exist_ok=True)
     first = (day - timedelta(days=KEEP_DAYS - 1)).isoformat()
     for f in [*folder.glob("*.mp3"), *store.glob("*.mp3")]:
         if f.name[:10] < first:
             f.unlink()
-    voice, spoken = None, 0
+    voice, spoken, key = None, 0, config.gemini_key()
     for streams, prefs in [(list(rss.FEEDS), {})] + setups:
         plan_ = plan(cards, day, streams, prefs)
         if not plan_["six"] and not plan_.get("week"):
             continue
         kept = store / name(day, plan_)
         if not kept.exists():
-            voice = voice or _voice()
-            mp3 = speak(script(day, plan_, _own(streams, prefs)), voice) if voice else None
+            text = script(day, plan_, _own(streams, prefs))
+            mp3 = gemini(text, key, log) if key else None
+            if key and not mp3:  # refused, busy or out of allowance: Piper reads the rest of this run
+                key = ""
             if not mp3:
-                log("listen: no voice (pip install piper-tts lameenc, and the VOICE model); no clips")
-                return 0
+                voice = voice or _voice()
+                mp3 = speak(text, voice) if voice else None
+            if not mp3:
+                log("listen: no voice (GEMINI_API_KEY, or pip install piper-tts lameenc and the VOICE model); "
+                    "no more clips")
+                return spoken
             kept.write_bytes(mp3)
             spoken += 1
         shutil.copyfile(kept, folder / f"{day.isoformat()}-{setup(streams, prefs)}.mp3")
@@ -267,11 +283,35 @@ def speak(text: str, voice=None) -> bytes | None:
     voice = voice or _voice()
     if voice is None:
         return None
-    import lameenc
     rate, pcm = 0, b""
     for part in text.split("\n\n"):  # a story at a time, with a short pause after each
         rate, sound = _part(part, voice)
         pcm += sound + b"\x00\x00" * int(rate * 0.6)
+    return _mp3(pcm, rate)
+
+
+def gemini(text: str, key: str, log=print) -> bytes | None:
+    """The script read by Gemini's GEMINI_VOICE, as an MP3; None when Gemini refuses, is busy, is out of the day's
+    free allowance or sends no sound (the log names the HTTP code only, never the key or the text)."""
+    body = json.dumps({"contents": [{"parts": [{"text": GEMINI_STYLE + text}]}],
+                       "generationConfig": {"responseModalities": ["AUDIO"], "speechConfig": {
+                           "voiceConfig": {"prebuiltVoiceConfig": {"voiceName": GEMINI_VOICE}}}}}).encode()
+    req = urllib.request.Request(GEMINI_API.format(model=GEMINI_TTS), data=body, method="POST",
+                                 headers={"Content-Type": "application/json", "x-goog-api-key": key})  # key in a header
+    try:
+        with urllib.request.urlopen(req, timeout=300) as r:
+            pcm = base64.b64decode(json.loads(r.read())["candidates"][0]["content"]["parts"][0]["inlineData"]["data"])
+    except urllib.error.HTTPError as e:
+        log(f"listen: Gemini voice unavailable (HTTP {e.code}); Piper reads instead")
+        return None
+    except Exception as e:  # no answer, or no sound in it
+        log(f"listen: Gemini voice unavailable ({type(e).__name__}); Piper reads instead")
+        return None
+    return _mp3(pcm, GEMINI_RATE) if len(pcm) > GEMINI_RATE else None  # under half a second: nothing was read
+
+
+def _mp3(pcm: bytes, rate: int) -> bytes:
+    import lameenc
     enc = lameenc.Encoder()
     enc.set_bit_rate(BITRATE)
     enc.set_in_sample_rate(rate)
