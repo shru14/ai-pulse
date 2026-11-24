@@ -234,6 +234,16 @@ LEFT_OUT = {
         "A company's IPO, not a model price change",
     "https://techcrunch.com/2026/11/17/google-to-keep-gemini-chats-for-two-months-up-from-72-hours-even-with-history-off/":
         "A consumer app's data retention setting, not a model price, place or pulled change",
+    "https://techcrunch.com/2026/11/23/anthropic-launches-claude-ship-letting-ai-agents-review-fix-and-approve-code-changes/":
+        "A coding product launch for Team and Enterprise plans, not a model price, place or pulled change",
+    "https://www.404media.co/im-not-going-to-remove-the-repository/":
+        "A hacking tool taken down by its author, not an AI model pulled by a lab",
+    "https://www.thelec.net/news/articleView.html?idxno=15795":
+        "A company's stock price, not a model price change",
+    "https://www.channelnewsasia.com/business/stocks-wobble-focus-anthropic-debut-oil-prices-rise-6564336":
+        "Stock and oil prices, not a model price change",
+    "https://techpolicy.press/could-the-government-seize-anthropic-at-a-discount":
+        "Opinion on a company's ownership, not a model price, place or pulled change",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
