@@ -135,7 +135,7 @@ def privacy_page() -> str:
         ("Your rights", '<p>Ask to see, correct or delete your data by email. You can also complain to your data '
                         f'protection authority.</p><p class="pol-acts">{mail}</p>')], ("terms/", "Terms of service"))
     data = {"@context": "https://schema.org", "@type": "WebPage", "name": "Privacy", "description": what}
-    return pages.page("Privacy · Pulse Central", what, "privacy.html", body, data, pages.frame(), None)
+    return pages.page("Privacy · Pulse Central", what, "privacy.html", body, data, pages.frame(), None, signup=False)
 
 
 # What each page needs to draw itself at once, written into it as JSON (id="boot"), so no page waits for

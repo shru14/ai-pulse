@@ -283,7 +283,7 @@ def _shell(conn, cards: list[dict], path: str, page: str, table: dict, files: li
     html = pages.page("Log in · Pulse Pro Engine", "Log in to Pulse Pro Engine.", path,
                       f'<div class="ft jb ap">{body}</div>',
                       {"@context": "https://schema.org", "@type": "WebPage", "name": "Pulse Compass", "url": f"{rss.SITE}{path}"},
-                      pages.frame(conn, len(cards)), ("/planner/", "About Pulse Compass"))
+                      pages.frame(conn, len(cards)), ("/planner/", "About Pulse Compass"), signup=False)
     # the Pulse Pro Engine top bar, as on the product page, in place of the news masthead; its Pro pill is the way back
     html = adoption.product_header(html).replace('<a class="back" href="/planner/">← About Pulse Compass</a>\n', "", 1)
     return html.replace('<meta charset="utf-8">', f'<meta charset="utf-8">\n<meta name="robots" content="noindex">\n{HIDE}', 1)

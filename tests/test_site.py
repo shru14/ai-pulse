@@ -555,3 +555,14 @@ def test_settings_and_secrets_are_read_only_in_config():
     listed = config.__doc__
     named = set(re.findall(r'secret\("([A-Z_]+)"\)|os\.environ\.get\("([A-Z_]+)"', (here / "config.py").read_text(encoding="utf-8")))
     assert all((a or b) in listed for a, b in named)  # each one it reads is described at the top
+
+
+def test_signup_popup_on_inner_pages_not_privacy():
+    from aipulse import pages, subscribers
+    from aipulse.static import privacy_page
+    page = pages.page("RAG · Pulse Central", "What RAG means.", "glossary/rag/", "<h1>RAG</h1>", {}, pages.frame(), None)
+    assert page.count('<dialog class="pz"') == 1 and subscribers.SIGNUP_URL in page and "__SIGNUP_URL__" not in page
+    script = page.split('<dialog class="pz"')[1]
+    # the success message's line breaks stay escaped for the script (a raw newline in a JS string stops it)
+    assert r'"\n\nAdd "' in script and "free" not in script.lower()
+    assert '<dialog class="pz"' not in privacy_page()
