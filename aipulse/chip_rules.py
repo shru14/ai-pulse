@@ -156,6 +156,8 @@ LEFT_OUT: dict[str, str] = {
         "Chinese universities' chip purchases; its data-centre rule is second-hand, no notice named",
     "https://cset.georgetown.edu/article/dutch-resist-unacceptable-us-bid-to-tighten-semiconductor-export-controls/":
         "proposed US restrictions (MATCH Act), no rule published",
+    "https://www.itweb.co.za/article/nvidia-is-comeback-kid-as-shares-rocket/rxP3jMBEJRg7A2ye":
+        "company earnings and share news; export limits only as background",
 }
 
 # the newest day every story was read for the lists above; the candidates start after it
