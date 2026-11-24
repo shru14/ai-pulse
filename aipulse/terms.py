@@ -349,6 +349,6 @@ PLATFORM: dict[str, tuple[str, str, str]] = {
     "imgflip.com": ("owner's choice", "", "Meme templates (copyrighted pictures) used as parody and commentary on a "
                     "non-commercial site; kept by the owner's decision of 7 Oct 2026"),
     "generativelanguage.googleapis.com": ("owner's choice", "https://ai.google.dev/gemini-api/terms",
-                                          "Gemini free tier for meme captions; its terms ask for paid use when an app "
+                                          "Gemini free tier for meme captions, email subjects and the daily listen's voice; its terms ask for paid use when an app "
                                           "is offered to EU/UK users: we read it as a background job, not an app"),
 }
