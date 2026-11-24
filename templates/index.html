@@ -350,6 +350,11 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 .sub-strip-follow .social a,.sub-strip-follow .social a:hover{border-color:currentColor;background:transparent;color:inherit}
 @media (max-width:860px){.sub-strip-follow{align-items:flex-start}}
 .gl-tile-links{display:flex;flex-direction:column;align-items:center;gap:10px}
+.gl-also{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:12px;font-size:13px;text-align:left}
+.gl-also[hidden]{display:none}
+.gl-also>div{display:flex;flex-wrap:wrap;gap:6px}
+.gl-also a{color:inherit;text-decoration:none;border:1.5px solid currentColor;border-radius:8px;padding:3px 9px;font-size:13px;line-height:1.3}
+.gl-also a:hover,.gl-also a:focus-visible{background:#FFFFFF;color:#0072B2}
 .az-btn{text-decoration:none}
 .az-btn svg{display:none}  /* the words alone; the icon only on phones, where the words don't fit */
 .sub-strip .sub-tile-go{align-self:center;flex:none;font-size:16px;padding:12px 26px;background:#0072B2;color:#FFFFFF;box-shadow:3px 3px 0 #141925}
@@ -1309,7 +1314,9 @@ header.top .menu-btn:hover{background:color-mix(in srgb,var(--ink) 8%,var(--bg))
           <div><span class="week-badge"><b>Word of the week</b></span><span class="week-dates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="gl-label">Past 7 days</span></span>
             <div class="gl-card"><span class="gl-kind">From the Pulse Central glossary</span><b id="gl-word"><mark>Glossary</mark></b>
               <p id="gl-word-def">Plain-English meanings of the hard words in AI stories.</p></div>
-            <div class="gl-viz" id="gl-viz"></div></div>
+            <div class="gl-viz" id="gl-viz"></div>
+            <!-- the past 7 days' most-used glossary words, each a link to its own page (glossary/<word>/) -->
+            <div class="gl-also" id="gl-also" hidden><span>Also in this week's stories:</span><div id="gl-also-words"></div></div></div>
           <div class="gl-tile-links"><button class="gl-tile-go" type="button" data-open="glossary">Open the glossary →</button></div>
         </div>
         <div class="tile meme-tile" id="meme-tile" hidden>
@@ -2222,8 +2229,19 @@ function pickWord(){
   const skip = new Set(Object.entries(GL.weekWords).filter(([d]) => d < from && d >= after.toISOString().slice(0, 10)).map(([, w]) => w));
   HOME.word = GL.hard.find(id => !skip.has(id) && mentions(GL.byId[id], its).length >= GL.weekWordStories) || null;
 }
+// Under the word of the week: the 6 glossary words most used in the past 7 days' stories (glossary.json's recent),
+// each a button to its own page, so readers and search engines reach the word pages from the front page.
+function renderAlso(skip){
+  const hot = GL.entries.filter(e => e.recent && e.id !== skip).sort((a, b) => b.recent - a.recent).slice(0, 6);
+  $("gl-also-words").replaceChildren(...hot.map(e => {
+    const a = el("a", null, e.term); a.href = "/glossary/" + e.id + "/";
+    a.title = e.recent + (e.recent === 1 ? " story" : " stories") + " in the past 7 days"; return a;
+  }));
+  $("gl-also").hidden = !hot.length;
+}
 function renderWord(){
   pickWord();
+  if(GL.ready) renderAlso(HOME.word);
   const box = $("gl-viz"), e = HOME.word && GL.byId[HOME.word];
   box.replaceChildren();
   if(!e) return;
