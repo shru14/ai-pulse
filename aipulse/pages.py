@@ -61,6 +61,9 @@ def write_css(out: Path) -> None:
     """site.css: the front page's styles (its masthead and footer) and these pages' own, then these pages' type a size
     smaller on phones."""
     style = _part(r"<style>(.*?)</style>", TEMPLATE.read_text(encoding="utf-8"))[1]
+    # the masthead's name is a plain .np-name on these pages (see frame), styled exactly as the front page's <h1>
+    style = style.replace("h1{font-family", "h1,.np-name{display:block;font-family", 1).replace(
+        "header.top .brand h1", "header.top .brand :is(h1,.np-name)")
     (out / "site.css").write_text(style + STYLE + phone_type(STYLE), encoding="utf-8")
 
 
@@ -70,6 +73,9 @@ def frame(conn=None, total: int = 0) -> tuple[str, str]:
     t = TEMPLATE.read_text(encoding="utf-8")
     last = ((store.last_run(conn) or {}).get("ran_at") or "") if conn else ""
     header = _part(r'<header class="top home">.*?</header>', t)[0]
+    # one main heading per page, the page's own ("RAG", "Topics"): search engines read the <h1> as what a page is
+    # about, so the site name is a heading only on the front page (owner, 24 Nov 2026)
+    header = header.replace("<h1>Pulse Central</h1>", '<span class="np-name">Pulse Central</span>')
     header = re.sub(r"\s*<!-- Each stream.*?</nav>", "", header, flags=re.S)
     header = re.sub(r'<button class="(subscribe-btn[^"]*)" id="(\w+)-open" type="button" aria-haspopup="dialog"',
                     r'<a class="\1" href="/#\2"', header).replace("</button>", "</a>")
