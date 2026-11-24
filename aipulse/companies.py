@@ -59,6 +59,7 @@ PROFILES: list[tuple[str, str, str, str, str, str, str, str, str]] = [
 SITES: dict[str, str] = {
     "Humyn Labs": "https://humynlabs.ai/",
     "Disseqt AI": "https://disseqt.ai/",
+    "Verra": "https://verra.com/",
 }
 
 # Stories checked and not picked (a big company's, a round still in talks, a pick already made that day)
