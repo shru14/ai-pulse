@@ -22,7 +22,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from . import classify, money
 
-CHECKED_TO = "2026-11-22"  # stories up to this day are checked
+CHECKED_TO = "2026-11-24"  # stories up to this day are checked
 GAP = 30  # days before a company can be featured again
 REASONS = ("Concept", "Revenue", "Business model")  # why it's here
 
@@ -48,6 +48,11 @@ PROFILES: list[tuple[str, str, str, str, str, str, str, str, str]] = [
      "Built for large companies; the story gives no prices.", "$8M raised", "Concept",
      "As AI rules come into force, it sells the proof that a company's AI follows them.",
      "https://yourstory.com/2026/11/disseqt-ai-raises-8m-to-build-enterprise-ai-safeguards", "YourStory"),
+    ("2026-11-24", "Verra", "Agents that draft consulting work in Word, PowerPoint and Excel from a firm's past deliverables.",
+     "Built for consulting firms, running in each firm's own cloud; the story gives no prices.", "$5M raised",
+     "Concept", "It indexes a firm's past proposals and reports so agents can draft new client work from them.",
+     "https://siliconangle.com/2026/11/24/verra-raises-5m-to-help-consulting-firms-forget-their-institutional-amnesia/",
+     "SiliconANGLE"),
 ]
 
 # A company's official website, checked by hand, for the front page's tile and the email's company box
@@ -62,6 +67,8 @@ LEFT_OUT: list[str] = [
     "https://techcrunch.com/2026/11/18/more-banks-says-customers-using-ai-agents-are-on-their-own-even-if-they-get-hacked/",
     # Talks only: Nvidia "nearing a deal" to acquire Inception, not a closed round
     "https://the-decoder.com/nvidia-bets-at-least-500-million-on-inceptions-diffusion-models-to-strengthen-its-open-source-nemotron-lineup/",
+    # Not a company's news: Tracxn's totals for India's AI funding
+    "https://yourstory.com/2026/11/india-ai-funding-nearly-doubles-jan-sept-2026-tracxn",
 ]
 
 _REVENUE = re.compile(r"\b(revenue|ARR|annuali[sz]ed|run[- ]rate|profitab\w*|customers|subscribers|paying users)\b", re.I)
