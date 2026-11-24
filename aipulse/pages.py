@@ -211,8 +211,9 @@ def feature_head(path: str, title: str, question: str, intro: str, sub: str = ""
 
 
 def page(title: str, description: str, path: str, body: str, data: dict, parts: tuple[str, str],
-         back: tuple[str, str] | None, note: str = "") -> str:
-    """A whole page: `back` is (address, words) for the link above the heading (None: no link), `note` a line under the content."""
+         back: tuple[str, str] | None, note: str = "", image: str = "og-pulse.png") -> str:
+    """A whole page: `back` is (address, words) for the link above the heading (None: no link), `note` a line under the
+    content, `image` its link preview picture (a path under the site; glossary words and topics draw their own)."""
     url = f"{rss.SITE}{path}"
     header, footer = parts
     description = snippet(description)
@@ -222,7 +223,7 @@ def page(title: str, description: str, path: str, body: str, data: dict, parts: 
             f'<title>{escape(title)}</title>\n<meta name="description" content="{escape(description)}">\n'
             f'<link rel="canonical" href="{url}">\n<link rel="icon" href="/favicon.ico">\n'
             f'<meta property="og:title" content="{escape(title)}">\n<meta property="og:description" content="{escape(description)}">\n'
-            f'<meta property="og:url" content="{url}">\n<meta property="og:image" content="{rss.SITE}og-pulse.png">\n'
+            f'<meta property="og:url" content="{url}">\n<meta property="og:image" content="{rss.SITE}{image}">\n'
             '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
             f'<meta name="twitter:card" content="summary_large_image">\n{counter()}'
             f'<script type="application/ld+json">{json.dumps(data, ensure_ascii=False)}</script>\n'
