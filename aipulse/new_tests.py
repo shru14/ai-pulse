@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-11-19"
+CHECKED_TO = "2026-11-24"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -585,6 +585,11 @@ TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
         "change being spelled out.",
         "62.9% of tasks passed when every change is spelled out, but only 40.7% when the agent must infer it",
         "Claude Code with Opus 4.6", None),
+    "https://arxiv.org/abs/2611.30916": (
+        "TrialAgentBench", "agents",
+        "Whether AI agents can analyse simulated clinical trials and make drug-development decisions, in nearly 3,500 tasks.",
+        "On drug programmes the best agent reaches 48% of the value an oracle achieves, against 58% for a rule-based "
+        "developer", "", None),
 }
 # papers checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
@@ -650,7 +655,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2611.25543", "2026-11-19", "55.9% of the same 213 tasks",
         "the authors' own auditor, a swarm of small explorers with a frontier model reviewing their reports"),
 }
-BEATS_CHECKED_TO = "2026-11-19"
+BEATS_CHECKED_TO = "2026-11-24"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
