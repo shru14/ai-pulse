@@ -19,6 +19,12 @@ from html import escape
 
 # One meme a key: the template's fields as memes.py keeps them, and "based_on": the headlines it jokes about, word for word.
 WRITTEN: dict[str, dict] = {
+    "day:2026-11-24": {
+        "format": "pigeon",
+        "labels": ["The mailer", "A data center"],
+        "caption": "Is this a research computing center?",
+        "based_on": ["University of Michigan Mailer Promises Its Data Center Isn’t Really a Data Center"],
+    },
     "day:2026-11-23": {
         "format": "pooh",
         "labels": ["Running 28 layers twice", "Loop architecture"],
