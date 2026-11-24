@@ -457,6 +457,12 @@ LEFT_OUT = {
     "https://dplnews.com/colombia-el-84-senala-que-la-productividad-es-el-principal-beneficio-de-la-ia-solo-el-10-permite-que-la-ia-actue-sin-supervision-humana-estudio-de-tcs-sobre-ia-empresarial/",  # a company survey (TCS), not a paper
     "https://www.gov.uk/government/news/new-ai-guidance-to-cut-paperwork-and-free-more-time-for-care",  # a government press release on guidance, no paper
     "https://www.engadget.com/2312279/google-turns-gemini-towards-medical-paperwork/",  # a product launch (Google), no paper
+    "https://news.mit.edu/2026/many-languages-one-common-neural-code-1123",  # paper found (Nature Neuroscience, shared meaning component across languages) but its abstract can't be read to check: nature.com asks for a sign-in, no preprint found
+    "https://www.datacenterknowledge.com/sustainability/study-ties-403-us-data-centers-to-25-7m-metric-tons-of-co2",  # paper found (Nature Sustainability, Harvard-led study of 403 data centers) but its abstract can't be read to check: nature.com asks for a sign-in
+    "https://www.aisi.gov.uk/blog/attack-policy-selection-can-make-monitor-evaluations-misleading",  # a company blog post (UK AI Security Institute); its paper is a PDF on the Institute's own site, on no preprint server or journal, and its title isn't given
+    "https://blog.google/innovation-and-ai/products/gemini-app/gemini-canvas-tasks/",  # a company blog post (Google) about a product, no paper
+    "https://dcnnmagazine.com/industry-insight/1111-systems-research-finds-rising-uk-infrastructure-costs/",  # a company-commissioned survey (11:11 Systems), not a paper
+    "https://www.xataka.com/robotica-e-ia/geoffrey-hinton-nobel-padre-ia-historia-humanidad-fuera-dia-probablemente-estariamos-ultimo-segundo",  # an interview and opinion roundup, no one paper reported on
 }
 
 # a headline (or the start of its summary) that may report on a paper
