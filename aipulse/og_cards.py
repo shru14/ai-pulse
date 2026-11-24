@@ -7,7 +7,10 @@ from __future__ import annotations
 from functools import cache
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # Pillow loads only when a picture is drawn, so the draft-note jobs (no Pillow) can import topics
+    from PIL import ImageDraw, ImageFont
 
 FONTS = Path(__file__).resolve().parent.parent / "templates" / "fonts"
 W, H, PAD = 1200, 630, 62
@@ -18,6 +21,7 @@ GLOSSARY, TOPIC = "#CC79A7", "#F0E442"  # the glossary's and the topics' section
 
 @cache
 def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
+    from PIL import ImageFont
     return ImageFont.truetype(str(FONTS / name), size)
 
 
@@ -34,6 +38,7 @@ def _wrap(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, wi
 def draw(path: Path, label: str, colour: str, headline: str, line: str, address: str) -> None:
     """One 1200x630 picture: "Pulse Central" and the section's pill, the headline (smaller, then two lines, when
     long), the page's line (at most 3 lines) and its address."""
+    from PIL import Image, ImageDraw
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
     for x in range(0, W, 40):
