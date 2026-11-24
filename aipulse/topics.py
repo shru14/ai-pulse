@@ -251,10 +251,13 @@ TOPICS: dict[str, dict] = {
         related=("openai-restructuring",)),
     "always-on-agents": dict(
         name="The always-on agent race", kind="Company",
-        what="AI labs racing to sell agents that keep working in the background: OpenAI's Dots, Anthropic's Claude "
-             "Duet, xAI's Grok Bot and Google's Gemini Spark.",
+        what="AI labs racing to sell agents that keep working in the background: Meta's Muse, OpenAI's Dots, "
+             "Anthropic's Claude Duet, xAI's Grok Bot and Google's Gemini Spark.",
         words=r"\balways[- ]on (AI )?agents?\b|\bClaude Duet\b|\bGrok Bot\b|\bDots agents?\b"
-              r"|\b(OpenAI|ChatGPT)'?s?\b.{0,40}\bDots\b|\bDots\b.{0,40}\b(OpenAI|agents?)\b",
+              r"|\b(OpenAI|ChatGPT)'?s?\b.{0,40}\bDots\b|\bDots\b.{0,40}\b(OpenAI|agents?)\b"
+              # Meta's Muse agent, not its other Muse products (models, Image, Code)
+              r"|\bMeta'?s?\b.{0,40}\bMuse\b(?![ -](Spark|Wonder|Ember|Glimmer|Voice|Image|Code)\b)"
+              r"|\bMuse\b(?![ -](Spark|Wonder|Ember|Glimmer|Voice|Image|Code)\b).{0,40}\b(Meta|agents?)\b",
         exclude=r"\bNemotron\b"),
 }
 
