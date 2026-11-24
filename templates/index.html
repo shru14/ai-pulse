@@ -147,6 +147,8 @@ header.top .brand:has(+ .pro-btn){margin-right:0}
 }
 @media (max-width:480px){.subscribe-btn.cta span{display:inline}.subscribe-btn.cta{width:auto;padding:0 12px}}
 .subscribe{width:min(460px,calc(100vw - 32px));border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:22px 22px 16px;box-shadow:none}
+.subscribe:focus{outline:none}
+@media (max-width:640px){.subscribe{max-height:calc(100dvh - 32px);overflow:auto}}
 .subscribe::backdrop{background:rgba(10,12,18,.45)}
 .subscribe h2{font-family:var(--display);font-weight:400;font-size:21px;line-height:1.2;margin:0 28px 8px 0}
 .sub-lede{margin:0 0 14px;color:var(--muted);font-size:15px;line-height:1.5}
@@ -2549,9 +2551,13 @@ function showFollow(){ const box = $("sub-follow"), links = document.querySelect
   box.hidden = !links; }
 { const links = document.querySelector(".site-foot .social"), box = $("sub-strip-follow");  // the sign-up strip: follow us, same icons as the footer
   if(links && box) box.append(links.cloneNode(true)); else if(box) box.hidden = true; }
-function openSubscribe(){ subMessage(""); subDialog.showModal(); $("sub-email").focus(); }
+function openSubscribe(auto){
+  subMessage(""); subDialog.showModal();
+  // the pop-up on a phone doesn't bring up the keyboard until the reader taps the box
+  if(auto && matchMedia("(max-width:640px)").matches){ subDialog.tabIndex = -1; subDialog.focus(); } else $("sub-email").focus();
+}
 subDialog.addEventListener("change", () => { $("subscribe-go").disabled = !chosenStreams().length; });
-$("subscribe-open").addEventListener("click", openSubscribe);
+$("subscribe-open").addEventListener("click", () => openSubscribe());
 subDialog.addEventListener("click", e => { if(e.target === subDialog) subDialog.close(); });  // a click outside closes it
 if(location.hash === "#subscribe") openSubscribe();  // the "Change streams" link in every digest
 // Links in our emails come here, not to the web app (a script.google.com link looks like phishing to spam
@@ -2922,10 +2928,9 @@ document.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click"
 
 // The subscribe form pops up as the site loads, once a visit (not again on reloads in the same tab session); never
 // for a reader who subscribed from this browser, nor over a link from an email (confirm, unsubscribe, choices, glossary).
-// Not on phones: it covers the whole screen and brings up the keyboard; the Subscribe button is in the header.
+// On phones too, without bringing up the keyboard.
 const SUB_PROMPT = "aipulse-sub-prompt";
 function promptSubscribe(){
-  if(matchMedia("(max-width:640px)").matches) return;
   if(location.hash && !/^#(home|all|tool|news|research|regulation|policy|infra)?$/.test(location.hash)) return;
   try{
     if(localStorage.getItem(SUB_PROMPT) === "subscribed" || sessionStorage.getItem(SUB_PROMPT)) return;
@@ -2933,7 +2938,7 @@ function promptSubscribe(){
   setTimeout(() => {
     if(document.querySelector("dialog[open]")) return;  // the reader is already in a panel
     try{ sessionStorage.setItem(SUB_PROMPT, "shown"); }catch(e){}
-    openSubscribe();
+    openSubscribe(true);
   }, 1200);
 }
 showPage();
