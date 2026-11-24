@@ -401,6 +401,19 @@ jobs:
         with:
           path: site
 
+      # GitHub can take a moment to list a just-finished upload; deploying at once failed with "No artifacts named
+      # github-pages" on about 1 run in 4 (24 Nov 2026). Wait until it is listed, at most 2 minutes.
+      - name: Wait until the site upload is listed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 24); do
+            n=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=github-pages" --jq '.total_count' || echo 0)
+            [ "$n" -gt 0 ] && echo "Listed after $(( (i - 1) * 5 ))s" && exit 0
+            sleep 5
+          done
+          echo "::warning::The site upload still isn't listed after 2 minutes; trying to deploy anyway"
+
       - id: deploy
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
