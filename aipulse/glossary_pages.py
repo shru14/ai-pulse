@@ -65,14 +65,31 @@ def title(e: dict) -> str:
     if (first[1:] == first[1:].lower() and (rest or not e["case"])
             and all(w == w.lower() or w == w.upper() for w in rest)):
         term = term[0].lower() + term[1:]  # "vector database", "sovereign AI"; names stay: "Claude", "Hugging Face"
+    return f"What {'are' if _plural(term) else 'is'} {term}? Meaning and definition · Pulse Central AI glossary"
+
+
+def _plural(term: str) -> bool:
     last = term.split()[-1]
-    plural = (last.endswith("s") and not last.endswith(("ss", "us", "as")) and term not in SINGULAR) or (
+    return (last.endswith("s") and not last.endswith(("ss", "us", "as")) and term not in SINGULAR) or (
         " and " in term and term.replace(" and ", "").isupper())  # "BF16 and FP8"; not "copyright and fair use"
-    return f"What {'are' if plural else 'is'} {term}? Meaning and definition · Pulse Central AI glossary"
+
+
+def description(e: dict) -> str:
+    """A word page's search snippet as a plain answer: "RAG (Retrieval-augmented generation): the AI first looks up…",
+    "Vector database is a database that…" (owner, 24 Nov 2026)."""
+    term, meaning = e["term"], _first_sentence(e["def"])
+    head, sep, rest = meaning.partition(": ")
+    if sep and "," not in head and len(head.split()) <= 8 and head.lower() != term.lower():
+        return f"{term} ({head}): {rest}"[:300]  # the meaning opens with the term's long form or short name
+    if meaning.split()[0] in ("A", "An", "The"):
+        return f"{term} {'are' if _plural(term) else 'is'} {meaning[0].lower()}{meaning[1:]}"[:300]
+    if meaning[1:2].islower() and not e["case"]:
+        meaning = meaning[0].lower() + meaning[1:]  # "Inference: running a model…"; names keep theirs: "Mistral: Mistral AI…"
+    return f"{term}: {meaning}"[:300]
 
 
 def _first_sentence(text: str) -> str:
-    m = re.match(r"(.+?[.!?])(?=\s+[A-Z\"(]|$)", text)  # not at "e.g. the UK"
+    m = re.match(r"(.+?(?<!e\.g)(?<!i\.e)[.!?])(?=\s+[A-Z\"(]|$)", text)  # not at "e.g. the UK"
     return m.group(1) if m else text
 
 
@@ -194,7 +211,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 "url": f"{rss.SITE}{path}", "inDefinedTermSet": home}
         (out / path).mkdir(parents=True, exist_ok=True)
         (out / path / "index.html").write_text(pages.page(
-            title(e),f"{e['term']}: {_first_sentence(e['def'])}"[:300],
+            title(e), description(e),
             path, body, data, parts, ("/glossary/", "Back to the AI glossary (all words)"), note), encoding="utf-8")
         paths.append(path)
     letters: dict[str, list[dict]] = {}
