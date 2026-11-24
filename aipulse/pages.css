@@ -1,6 +1,8 @@
 
 .cp{max-width:780px;margin:0 auto;padding-bottom:12px}
-.cp .back{display:inline-block;margin-top:24px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:4px}
+/* the back link is a rounded button on every page (owner, 23-24 Nov 2026: buttons, not underlined links) */
+.cp .back{display:inline-block;margin-top:24px;font:500 14px/1 var(--body);color:var(--ink);padding:9px 14px;border-radius:8px;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);text-decoration:none}
+.cp .back:hover{border-color:var(--ink)}
 .cp h1{display:flex;align-items:center;gap:16px;font:400 clamp(28px,5vw,40px)/1.1 var(--display);letter-spacing:0;margin:18px 0 8px}
 .cp .flag{flex:none;width:32px;height:24px;object-fit:cover;border:1px solid var(--line)}
 .cp h1 .flag{width:60px;height:45px;border-width:2px}
@@ -142,8 +144,7 @@
 .cp .sd .what{font-size:14.5px}
 @media (max-width:860px){.cp .sd .cols{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;padding-bottom:8px}
   .cp .sd section{flex:0 0 85%;scroll-snap-align:start}}
-.cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px));font:500 14px/1 var(--body);padding:9px 14px;border-radius:8px;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);text-decoration:none}
-.cp:has(> .tp) > .back:hover{border-color:var(--ink)}
+.cp:has(> .tp) > .back{margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .tp{width:min(1120px,calc(100vw - 32px));margin-left:calc(50% - min(560px,50vw - 16px))}
 .cp .topic-hero{position:relative;height:clamp(150px,18vw,220px);margin-top:16px;border:2px solid var(--line);overflow:hidden;box-shadow:none}
 .cp .topic-hero .photo{object-position:right center}  /* the cartoon sits on the right, clear of the title */
@@ -348,7 +349,6 @@ a.subscribe-btn{text-decoration:none}
 .cp h2:not(.mi *){display:flex;align-items:center;gap:10px;margin:36px 0 10px;padding:0 0 6px;border-top:0;border-bottom:4px solid var(--ink);
   font:400 22px/1.15 var(--display);text-transform:none;letter-spacing:0}
 /* the monthly issue and its insights keep their approved report look, as it was */
-.cp:has(> .mi) > .back{text-decoration-color:#F85C48}
 .cp .mi .topic-hero .kind{background:#F85C48}
 .cp .mi .lg.official::before,.cp .mi .timeline .official .dot{background:#F85C48}
 .cp .mi .timeline .ev.official .box{border-top-color:#F85C48}
