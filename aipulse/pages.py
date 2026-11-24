@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
 
-from . import rss, store
+from . import rss, store, subscribers
 from .server import TEMPLATE
 
 # the pages' own styles, in their own file so an editor reads them as CSS; site.css is built from them (write_css)
@@ -122,6 +122,57 @@ LOCAL_TIME = ('<script>document.querySelectorAll("time[datetime]").forEach(t => 
               'try{new ResizeObserver(f).observe(m)}catch(e){addEventListener("resize",f)}f()}</script>')
 
 
+# The sign-up pop-up on every page but the front page (which has its own) and the privacy and Pro login pages
+# (owner, 24 Nov 2026): readers from search and social land here, so the form comes to them. It opens once the reader
+# is halfway down the page, at most once a visit across the site (the front page's pop-up shares the key), and never
+# for a reader who subscribed from this browser. Phones get it as a sheet from the bottom, the story still in view.
+# Every stream, daily or Sundays only; "Choose your streams" opens the full form on the front page.
+SIGNUP_POPUP = r"""<dialog class="pz" id="pz" aria-labelledby="pz-t" tabindex="-1">
+<form method="dialog"><button class="pz-x" aria-label="Close">&times;</button></form>
+<form class="pz-f" id="pz-f" novalidate>
+<h2 id="pz-t">Get the day's AI news in one email</h2>
+<p class="pz-l">Every morning, the day before in AI: each story with a one-line summary and a link to the original.</p>
+<div class="pz-r"><input class="pz-e" id="pz-e" type="email" autocomplete="email" placeholder="you@example.com" aria-label="Your email">
+<input class="pz-trap" name="website" id="pz-w" tabindex="-1" autocomplete="off" aria-hidden="true">
+<button class="pz-go" id="pz-go" type="submit">Subscribe</button></div>
+<div class="pz-o" role="group" aria-label="How often"><button type="button" data-often="daily" aria-pressed="true">Daily</button><button type="button" data-often="weekly" aria-pressed="false">Sundays only</button></div>
+<div class="pz-b"><a class="pz-q" href="/#subscribe">Choose your streams</a><a class="pz-q" href="privacy.html">Privacy</a></div>
+<p class="pz-m" id="pz-m" role="status" aria-live="polite"></p>
+<p class="pz-s">One-click unsubscribe in every email.</p>
+</form></dialog>
+<script>
+{const d=document.getElementById("pz"),f=document.getElementById("pz-f"),m=document.getElementById("pz-m"),go=document.getElementById("pz-go"),
+K="aipulse-sub-prompt",U="__SIGNUP_URL__",SENDER="projectaipulse@gmail.com",S="releases,news,research,regulation,policy,infra";
+let often="daily";
+const say=(t,k)=>{m.textContent=t;m.dataset.kind=k||""};
+d.querySelectorAll(".pz-o button").forEach(b=>b.addEventListener("click",()=>{often=b.dataset.often;
+  d.querySelectorAll(".pz-o button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)))}));
+d.addEventListener("click",e=>{if(e.target===d)d.close()});
+f.addEventListener("submit",async e=>{e.preventDefault();
+  const email=document.getElementById("pz-e").value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return say("Please enter a valid email address.","error");
+  if(U.startsWith("__"))return say("Sign-up opens soon.","error");
+  go.disabled=true;say("Sending…");
+  try{const r=await(await fetch(U,{method:"POST",body:new URLSearchParams({action:"subscribe",email,streams:S,
+      website:document.getElementById("pz-w").value,more:"",less:"",words:"",often})})).json();
+    if(r.ok){say("You're on the list: "+email+". "+(often==="weekly"?"Your email comes on Sunday.":"Your email comes tomorrow morning.")
+      +"\n\nAdd "+SENDER+" to your contacts so it lands in your inbox, not in spam.","ok");
+      document.getElementById("pz-e").value="";try{localStorage.setItem(K,"subscribed")}catch(err){}}
+    else say({email:"Please enter a valid email address.",streams:"Pick at least one stream.",
+      full:"Pulse Daily is full for now. Please try again in a few weeks.",busy:"We've had many sign-ups today. Please try again tomorrow."}[r.error]
+      ||"Something went wrong. Please try again.","error");
+  }catch(err){say("Couldn't reach the sign-up service. Please try again in a moment.","error")}
+  finally{go.disabled=false}});
+let seen;try{seen=localStorage.getItem(K)==="subscribed"||sessionStorage.getItem(K)}catch(e){seen=true}
+if(!seen){const half=()=>{if(scrollY+innerHeight<document.documentElement.scrollHeight*.5)return;
+  removeEventListener("scroll",half);
+  if(document.querySelector("dialog[open],details.fh-cite[open]"))return;
+  try{if(sessionStorage.getItem(K))return;sessionStorage.setItem(K,"shown")}catch(e){return}
+  say("");d.showModal();d.focus()};
+  addEventListener("scroll",half,{passive:true})}}
+</script>"""
+
+
 # Anonymous visit counts (GoatCounter, chosen 12 Oct 2026; terms.PLATFORM): no cookie, no stored IP address or
 # ID. Only the page's path is sent, never its query or the #codes in sign-up links. Empty = no counter.
 GOATCOUNTER = "ai-pulse"
@@ -211,9 +262,10 @@ def feature_head(path: str, title: str, question: str, intro: str, sub: str = ""
 
 
 def page(title: str, description: str, path: str, body: str, data: dict, parts: tuple[str, str],
-         back: tuple[str, str] | None, note: str = "", image: str = "og-pulse.png") -> str:
+         back: tuple[str, str] | None, note: str = "", image: str = "og-pulse.png", signup: bool = True) -> str:
     """A whole page: `back` is (address, words) for the link above the heading (None: no link), `note` a line under the
-    content, `image` its link preview picture (a path under the site; glossary words and topics draw their own)."""
+    content, `image` its link preview picture (a path under the site; glossary words and topics draw their own),
+    `signup` False leaves out the sign-up pop-up (the privacy and Pro login pages)."""
     url = f"{rss.SITE}{path}"
     header, footer = parts
     description = snippet(description)
@@ -230,4 +282,5 @@ def page(title: str, description: str, path: str, body: str, data: dict, parts: 
             f'<link rel="stylesheet" href="site.css">\n</head>\n<body>\n<div class="wrap">\n{header}\n<main class="cp">\n'
             + (f'<a class="back" href="{back[0]}">← {escape(back[1])}</a>\n' if back else "") + f'{body}\n'
             + (f'<p class="note">{note}</p>\n' if note else "")
-            + f'</main>\n{footer}\n</div>\n{LOCAL_TIME}\n{THEME_BUTTON}\n</body>\n</html>\n')
+            + f'</main>\n{footer}\n</div>\n{LOCAL_TIME}\n{THEME_BUTTON}\n'
+            + (subscribers.fill(SIGNUP_POPUP) + '\n' if signup else '') + '</body>\n</html>\n')
