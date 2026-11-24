@@ -54,6 +54,23 @@ TOGETHER_DAYS, TOGETHER = 30, 14  # a word's page: the words most often in the s
 CLOUD_COLOURS = ["var(--g0)", "var(--g1)", "var(--g2)", "var(--g3)"]
 
 
+SINGULAR = {"Cosmos", "Mixture of Experts"}  # names ending in "s" that take "is"
+
+
+def title(e: dict) -> str:
+    """A word page's <title> in the words people search ("what is rag"): "What is RAG? …", "What are scaling laws? …"
+    (owner, 24 Nov 2026, from Search Console: the "what is" searches saw the pages but rarely clicked)."""
+    term = e["term"]
+    first, *rest = term.split()
+    if (first[1:] == first[1:].lower() and (rest or not e["case"])
+            and all(w == w.lower() or w == w.upper() for w in rest)):
+        term = term[0].lower() + term[1:]  # "vector database", "sovereign AI"; names stay: "Claude", "Hugging Face"
+    last = term.split()[-1]
+    plural = (last.endswith("s") and not last.endswith(("ss", "us", "as")) and term not in SINGULAR) or (
+        " and " in term and term.replace(" and ", "").isupper())  # "BF16 and FP8"; not "copyright and fair use"
+    return f"What {'are' if plural else 'is'} {term}? Meaning and definition · Pulse Central AI glossary"
+
+
 def _first_sentence(text: str) -> str:
     m = re.match(r"(.+?[.!?])(?=\s+[A-Z\"(]|$)", text)  # not at "e.g. the UK"
     return m.group(1) if m else text
@@ -177,7 +194,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 "url": f"{rss.SITE}{path}", "inDefinedTermSet": home}
         (out / path).mkdir(parents=True, exist_ok=True)
         (out / path / "index.html").write_text(pages.page(
-            f"{e['term']}: what it means in AI · Pulse Central glossary", f"{e['term']}: {_first_sentence(e['def'])}"[:300],
+            title(e),f"{e['term']}: {_first_sentence(e['def'])}"[:300],
             path, body, data, parts, ("/glossary/", "Back to the AI glossary (all words)"), note), encoding="utf-8")
         paths.append(path)
     letters: dict[str, list[dict]] = {}
