@@ -42,6 +42,14 @@
 .cp .terms .short{color:var(--muted);font-size:15px}
 .cp .terms .grp{display:block;color:var(--muted);font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
 @media (max-width:560px){.cp .terms li{grid-template-columns:1fr}}
+/* a glossary word's "How it works": label left, text right; on phones the label sits above its text */
+.cp .explain{width:100%;border-collapse:collapse;border:1.5px solid currentColor;margin:8px 0 6px}
+.cp .explain th{width:150px;text-align:left;vertical-align:top;font-weight:400;font-size:13px;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line)}
+.cp .explain td{padding:12px 14px;border-bottom:1px solid var(--line);line-height:1.5}
+.cp .explain tr:last-child th,.cp .explain tr:last-child td{border-bottom:0}
+.cp .explain ol{margin:0;padding-left:20px}.cp .explain ol li{margin:0 0 4px;padding:0;border:0}
+@media (max-width:640px){.cp .explain th,.cp .explain td{display:block;width:auto;border:0}.cp .explain th{padding:12px 12px 2px}
+  .cp .explain td{padding:0 12px 12px}.cp .explain tr+tr th{border-top:1px solid var(--line)}}
 .cp .cloud{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:2px 12px;padding:12px 14px;border:2px solid var(--line);background:var(--bg);line-height:1.15}
 .cp .cloud a{font-weight:600;text-decoration:none}
 .cp .cloud a.big{font-family:var(--display);font-weight:400}
