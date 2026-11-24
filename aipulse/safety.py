@@ -82,6 +82,41 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-23', by='OpenAI', kind='card',
+         title='GPT-6.2 in ChatGPT System Card',
+         url='https://deploymentsafety.openai.com/gpt-6-2-chatgpt',
+         original='https://deploymentsafety.openai.com/gpt-6-2-chatgpt/gpt-6-2-chatgpt.pdf',
+         models=('GPT-6.2',),
+         risks=('cbrn', 'cyber', 'harm', 'injection', 'jailbreak', 'misalign', 'rnd'),
+         abstract=('Today, we are releasing a version of GPT-6.2, optimized for the chat tab, for Plus and Pro users. '
+                   'We refer to the updated model as GPT-6.2 (November 23) throughout the remainder of this system '
+                   'card. Read more about this model in our Release Notes GPT-6.2 (November 23) in ChatGPT meets the '
+                   'critical threshold for Cybersecurity capabilities and High threshold for Bio and Chemical '
+                   'capabilities under our Preparedness Framework [1]. GPT-6.2 meets the High threshold for AI '
+                   'Self-Improvement capabilities, The most important things to know about the safety of this launch '
+                   'are as follows: GPT-6.2 demonstrated the strongest overall safety performance of any chat model '
+                   'we have deployed on evaluations. GPT-6.2 will be deployed with similar safeguards for Bio, Cyber, '
+                   'Alignment, and Distillation as GPT-6.2 Astra and GPT-6.2 Sol. See the Safeguard section below for '
+                   'details.')),
+    dict(date='2026-11-22', by='UK AI Security Institute', kind='eval',
+         title='Attack Policy Selection can Mislead Monitor Evaluators',
+         url='https://www.aisi.gov.uk/research/attack-policy-selection-can-mislead-monitor-evaluators',
+         original='https://cdn.prod.website-files.com/663bd486c5e4c81588db7a1d/6b0467dd6cee6fe4658fd661_attack_policy_selection_paper.pdf',
+         models=(), risks=('control',),
+         abstract=('AI companies rely on monitoring systems to flag dangerous behaviour by AI agents, and report '
+                   'monitor evasion evaluations that try to assess whether agents can cause harm without being '
+                   'flagged. Control-style evaluations measure a monitor’s false negative rate (FNR, also known as '
+                   '“miss rate”) on transcripts depicting attempts at harmful behaviour. These evaluations have two '
+                   'components: a control task specifies a user-requested main task and a harmful side task in an '
+                   'evaluation environment; an attack policy generates side-task attempts as proxies for dangerous '
+                   'agent behaviour. We evaluate an ex-production OpenAI monitor as a case study (Section 1) and find '
+                   'that measured FNR is highly sensitive to both the method used to generate attack policies and the '
+                   'level of optimisation applied within that method (Section 2). We hold the deployment scenario and '
+                   'control tasks fixed and vary only the attack policy. FNR ranged from 0.5% to 20.8% across '
+                   'optimisation levels of a single method (reinforcement learning), and from 6.4% to 23.0% across '
+                   'methods at their best observed optimisation level (optimised prompting vs. transcript editing). '
+                   'Every attack policy was developed against proxy monitors only: all reported FNRs show attacks '
+                   'transferring to the held-out GPT-5.4 target monitor. …')),
     dict(date='2026-11-20', by='METR', kind='eval',
          title='AI R&D-relevant model capabilities are improving rapidly and are getting harder to measure',
          url='https://metr.org/blog/2026-11-20-q4-2026-capability-update/',
