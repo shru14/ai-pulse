@@ -9,8 +9,8 @@
 # backfill); bump it whenever a new seed should replace the saved database.
 # A push to main (a change to the code or the page) only rebuilds and publishes the site from the saved database, in
 # a few minutes: no collecting, re-sorting, memes or dossiers (the next scheduled run does those, and "Run workflow"
-# by hand does everything at once). Run workflow with run=build does the same as a push: the private Pulse Compass
-# repo starts it on each push to its main (its publish-site.yml), so Compass changes go live in minutes.
+# by hand does everything at once). Run workflow with run=build does the same as a push: the private Pro
+# repo starts it on each push to its main, so Pro changes go live in minutes.
 # The heartbeat (heartbeat.yml) starts these runs on time, with run=full or run=quick; GitHub's own schedule below
 # is best-effort (it left most runs unstarted or hours late) and stays only as a backup for the full runs.
 name: Collect and publish
@@ -50,13 +50,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Pulse Compass, the paid product, from its private repo, with a read-only key. It reaches the site only after
+      # The paid side, from its private repo, with a read-only key. It reaches the site only after
       # the build has encrypted it (aipulse/access.py). If this fails, the free site still publishes, without it.
-      - name: Fetch Pulse Compass
+      - name: Fetch the private repo
         continue-on-error: true
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: shru14/ai-pulse-compass
+          repository: ${{ secrets.PRO_REPO }}
           ssh-key: ${{ secrets.COMPASS_DEPLOY_KEY }}
           persist-credentials: false
           path: compass
@@ -298,7 +298,7 @@ jobs:
 
       - name: Build the site
         env:
-          COMPASS_USERS: ${{ secrets.COMPASS_USERS }}  # who can log in to Pulse Compass: `python -m aipulse compass-user`
+          COMPASS_USERS: ${{ secrets.COMPASS_USERS }}  # who can log in to the paid pages
         run: python -m aipulse --db aipulse.db build --out site
 
       # The daily listen (aipulse/audio.py): yesterday's two-minute clip for everyone and for each reader setup
