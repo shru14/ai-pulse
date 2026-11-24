@@ -60,11 +60,10 @@ Four per stream, each answering one question. Rows checked by hand are drafted d
 | Infra | [Pushback & permits](https://projectaipulse.com/pushback-and-permits/) | Decisions that approved, paused or blocked data centres | Daily, checked by hand |
 | Infra | [Chip export rules](https://projectaipulse.com/chip-export-rules/) | What could be sold to China under each US decision, and the answers | Daily, checked by hand |
 
-## Pulse Pro Engine
+## Pulse Pro
 
-**[Pulse Pro Engine](https://projectaipulse.com/pulse-pro/)** is the paid side: five products for firms, starting with
-**[Pulse Compass](https://projectaipulse.com/planner/)**, a plan for bringing AI into one part of a firm. Its code is in a
-private repo and joins the build through a read-only key.
+**[Pulse Pro](https://projectaipulse.com/pulse-pro/)** is the paid side, for firms. Its code is in a private repo and
+joins the build through a read-only key.
 
 ## How we keep it legal
 
