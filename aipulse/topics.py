@@ -297,6 +297,7 @@ LOOK = {
 # Stories the words miss, checked by hand and approved: slug: {url: why it belongs, in our own words}
 ADDED: dict[str, dict[str, str]] = {
     "ai-ipos": {
+        "https://www.thelec.net/news/articleView.html?idxno=15795": "Anthropic's shares open 34% above the IPO price on trading debut, briefly valuing it above $2 trillion",
         "https://www.channelnewsasia.com/business/anthropic-discloses-month-long-training-pause-ai-security-breaches-in-ipo-filing-6493811": "Anthropic's IPO filing discloses a month-long training pause and AI security breaches",
         "https://techcrunch.com/2026/10/30/anthropic-expected-to-receive-high-junk-rating-from-credit-agencies-following-ipo-report-says/": "Report on the credit rating Anthropic is expected to get after its IPO",
         "https://olhardigital.com.br/2026/10/15/pro/anthropic-investidores-reduzem-expectativa-de-avaliacao-para-ipo-de-r-8-1-trilhoes/": "Investors lower their valuation hopes for Anthropic's planned November IPO",
@@ -396,10 +397,17 @@ ADDED: dict[str, dict[str, str]] = {
         "https://www.channelnewsasia.com/world/alice-huang-chinese-spy-nvidia-affair-6573671": "Alice Huang was in touch with an officer of China's Ministry of State Security during the affair, the New York Times reports",
         "https://techcrunch.com/2026/11/23/jensen-huang-isnt-out-of-the-woods-yet/": "Huang returns as Nvidia CEO after resigning over the affairs",
         "https://www.xataka.com/empresas-y-economia/jensen-huang-tenia-as-escondido-casa-blanca-su-apoyo-ha-sido-clave-para-su-vuelta-al-frente-nvidia": "White House support was key to Huang's return to the head of Nvidia",
+        "https://www.channelnewsasia.com/world/nvidia-jensen-huang-ceo-reinstated-6575201": "Nvidia reinstates Huang as CEO after the affair with an alleged Chinese spy",
+        "https://www.itweb.co.za/article/nvidia-is-comeback-kid-as-shares-rocket/rxP3jMBEJRg7A2ye": "Nvidia rehires Huang and adds almost $1 trillion in value, but congressional scrutiny of export controls looms",
+        "https://olhardigital.com.br/2026/11/23/pro/eua-colocam-empresa-ligada-a-escandalo-da-nvidia-em-lista-comercial-restrita/": "US puts a company linked to the Nvidia scandal on a restricted trade list amid the probe into alleged illegal chip shipments to China",
     },
 }
 # Stories a topic's net caught that don't belong, checked by hand
 LEFT_OUT: set[str] = {
+    # AI circular financing may face tighter US scrutiny, shares only tags with California's AI laws and state preemption
+    "https://focustaiwan.tw/business/202611240016",
+    # University of Michigan approves a data centre project, can't tell from the summary it is about power bills
+    "https://www.404media.co/ypsilanti-michigan-data-center-vote/",
     # Taiwan industry head says Nvidia's probe of Huang is unlikely to disrupt the supply chain, a comment with nothing new in the case
     "https://focustaiwan.tw/business/202611090006",
     # California attorney general's lawsuit against OpenAI, can't tell from the summary it is about the restructuring or Musk's suit
