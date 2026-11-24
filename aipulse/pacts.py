@@ -180,6 +180,9 @@ ORDERS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://www.fayerwayer.com/internet/2026/11/10/donald-trump-confirma-que-el-fbi-investiga-al-ceo-de-nvidia-por-su-"
+    "romance-con-una-presunta-espia-china/":
+        "FBI inquiry into Nvidia's CEO personally, as Trump said it; none into the company, no date given",
     "https://techcrunch.com/2026/11/17/sec-reportedly-investigating-nvidia-amid-huang-exit/":
         "SEC civil probe of Nvidia only as the Wall Street Journal reports it; no SEC or Nvidia confirmation",
     "https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-"
