@@ -80,7 +80,7 @@ def test_static_build_holds_every_card(tmp_path, monkeypatch):
     page = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert 'data-static="1"' in page and "feed.xml" not in page
     meme = json.loads((tmp_path / "site" / "meme.json").read_text(encoding="utf-8"))
-    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "startup.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og-pulse.png", "favicon.ico", "apple-touch-icon.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "terms", "about", "discussing", "saved", "review", "social.json", "today", "today.json", "topics", "monthly",
+    assert {p.name for p in (tmp_path / "site").iterdir()} == {"index.html", "data.json", "glossary.json", "tags.json", ".nojekyll", "feeds", "daily", "fonts", "meme.json", "startup.json", "photos", "dossier.html", "ask.html", "tracker.csv", "robots.txt", "sitemap.xml", "og-pulse.png", "og", "favicon.ico", "apple-touch-icon.png", "tracker", "flags", "glossary", "site.css", "privacy.html", "terms", "about", "discussing", "saved", "review", "social.json", "today", "today.json", "topics", "monthly",
         "rule-echoes", "promises", "harm-to-rule", "jobs-blamed-on-ai", "papers-in-the-news", "ai-in-court", "ai-safety-hub", "data-centre-builds", "who-powers-ai", "pushback-and-permits", "release-cards", "ai-pacts-and-orders", "ai-fines-and-bans", "chip-export-rules", "ai-buyouts", "lab-timelines", "model-economy", "all", "releases", "industry", "research", "regulation", "policy", "infra"} | ({"planner", "pulse-pro", "og-pro.png", "pro.css"} if COMPASS else set()) | ({"memes"} if meme["image"] else set())  # the picture only when last week has one
     # the fonts are the site's own: nothing from Google Fonts (it would send every reader's address to Google)
     assert "fonts.googleapis" not in page and "fonts.gstatic" not in page
@@ -213,7 +213,12 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     # what makes it worth a visit: the words in the same stories, and the week's words as a cloud on glossary/
     assert "<h2>Often in the same stories</h2>" in page and 'href="/glossary/parameters/" style="font-size:' in page
     assert '"@type": "DefinedTerm"' in page and 'rel="canonical" href="https://projectaipulse.com/glossary/mixture-of-experts/"' in page
-    index = (tmp_path / "glossary" / "index.html").read_text(encoding="utf-8")
+    # searched words: the title asks the question; the link picture is the word's own, 1200x630
+    assert "<title>What is Mixture of Experts? Meaning and definition · Pulse Central AI glossary</title>" in page
+    assert 'og:image" content="https://projectaipulse.com/og/glossary/mixture-of-experts.png"' in page
+    from PIL import Image
+    assert Image.open(tmp_path / "og" / "glossary" / "mixture-of-experts.png").size == (1200, 630)
+    index =(tmp_path / "glossary" / "index.html").read_text(encoding="utf-8")
     az = index[index.index("<h2>A to Z</h2>"):]
     assert az.count('<li><div><a href="/glossary/') == len(glossary.ENTRIES) and '<h2 id="A">A</h2>' in az
     assert 'id="levels"' not in index and "Everyday" not in index  # no levels: one list, A to Z, each word with its group

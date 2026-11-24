@@ -12,7 +12,7 @@ from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import glossary, pages, rss, seo
+from . import glossary, og_cards, pages, rss, seo
 
 BOOK = "M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5M4 19.5A2.5 2.5 0 0 1 6.5 17H19M9 7h6M9 10.5h4"  # the header band's icon
 
@@ -57,15 +57,19 @@ CLOUD_COLOURS = ["var(--g0)", "var(--g1)", "var(--g2)", "var(--g3)"]
 SINGULAR = {"Cosmos", "Mixture of Experts"}  # names ending in "s" that take "is"
 
 
-def title(e: dict) -> str:
-    """A word page's <title> in the words people search ("what is rag"): "What is RAG? …", "What are scaling laws? …"
-    (owner, 24 Nov 2026, from Search Console: the "what is" searches saw the pages but rarely clicked)."""
+def question(e: dict) -> str:
+    """A word page's question, for its <title> and link picture, in the words people search ("what is rag"): "What is
+    RAG?", "What are scaling laws?" (owner, 24 Nov 2026, from Search Console: those searches saw the pages, rarely clicked)."""
     term = e["term"]
     first, *rest = term.split()
     if (first[1:] == first[1:].lower() and (rest or not e["case"])
             and all(w == w.lower() or w == w.upper() for w in rest)):
         term = term[0].lower() + term[1:]  # "vector database", "sovereign AI"; names stay: "Claude", "Hugging Face"
-    return f"What {'are' if _plural(term) else 'is'} {term}? Meaning and definition · Pulse Central AI glossary"
+    return f"What {'are' if _plural(term) else 'is'} {term}?"
+
+
+def title(e: dict) -> str:
+    return f"{question(e)} Meaning and definition · Pulse Central AI glossary"
 
 
 def _plural(term: str) -> bool:
@@ -79,8 +83,10 @@ def description(e: dict) -> str:
     "Vector database is a database that…" (owner, 24 Nov 2026)."""
     term, meaning = e["term"], _first_sentence(e["def"])
     head, sep, rest = meaning.partition(": ")
-    if sep and "," not in head and len(head.split()) <= 8 and head.lower() != term.lower():
-        return f"{term} ({head}): {rest}"[:300]  # the meaning opens with the term's long form or short name
+    # the meaning opens with the term's long form or short name ("Retrieval-augmented generation:"), not "A speed-up:"
+    if (sep and "," not in head and len(head.split()) <= 8 and head.lower() != term.lower()
+            and head.split()[0] not in ("A", "An")):
+        return f"{term} ({head}): {rest}"[:300]
     if meaning.split()[0] in ("A", "An", "The"):
         return f"{term} {'are' if _plural(term) else 'is'} {meaning[0].lower()}{meaning[1:]}"[:300]
     if meaning[1:2].islower() and not e["case"]:
@@ -210,9 +216,12 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
         data = {"@context": "https://schema.org", "@type": "DefinedTerm", "name": e["term"], "description": e["def"],
                 "url": f"{rss.SITE}{path}", "inDefinedTermSet": home}
         (out / path).mkdir(parents=True, exist_ok=True)
+        image = f"og/glossary/{e['id']}.png"  # the link preview: the question and the meaning (aipulse/og_cards.py)
+        og_cards.draw(out / image, "AI glossary", og_cards.GLOSSARY, question(e), _first_sentence(e["def"]),
+                      f"projectaipulse.com/{path.rstrip('/')}")
         (out / path / "index.html").write_text(pages.page(
             title(e), description(e),
-            path, body, data, parts, ("/glossary/", "Back to the AI glossary (all words)"), note), encoding="utf-8")
+            path, body, data, parts, ("/glossary/", "Back to the AI glossary (all words)"), note, image), encoding="utf-8")
         paths.append(path)
     letters: dict[str, list[dict]] = {}
     for e in words:

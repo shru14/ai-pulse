@@ -22,7 +22,7 @@ from datetime import date, timedelta
 from html import escape
 from pathlib import Path
 
-from . import countries, pages, rss, seo
+from . import countries, og_cards, pages, rss, seo
 
 QUIET_DAYS = 90  # a topic with no new event for this long is Concluded (kept, never deleted)
 # Topics are ranked by how much they're in the news: over the last TREND_DAYS, each event counts once per outlet that
@@ -1439,8 +1439,12 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
                 + f'</div>\n{STORY_JS}\n{TIMELINE_JS}')
         data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": t["name"],
                 "description": t["what"], "url": f"{rss.SITE}{p}"}
+        image = f"og/topics/{slug}.png"  # the link preview: the topic and its one line (aipulse/og_cards.py)
+        og_cards.draw(out / image, "Follow the story", og_cards.TOPIC, t["name"], t["what"],
+                      f"projectaipulse.com/{p.rstrip('/')}")
         (out / p / "index.html").write_text(
-            pages.page(f"{t['name']} · Pulse Central", t["what"], p, body, data, parts, ("/topics/", "All topics")), encoding="utf-8")
+            pages.page(f"{t['name']} · Pulse Central", t["what"], p, body, data, parts, ("/topics/", "All topics"),
+                       image=image), encoding="utf-8")
         paths.append(p)
         flags = sorted({countries.flag(f) for f in LOOK[slug]} | {e["flag"] for e in ev if e.get("flag")})
         blocks.append({"slug": slug, "done": done, "latest": latest, "badges": badges, "score": trend(ev, today),
