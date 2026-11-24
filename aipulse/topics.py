@@ -256,8 +256,7 @@ TOPICS: dict[str, dict] = {
         words=r"\balways[- ]on (AI )?agents?\b|\bClaude Duet\b|\bGrok Bot\b|\bDots agents?\b"
               r"|\b(OpenAI|ChatGPT)'?s?\b.{0,40}\bDots\b|\bDots\b.{0,40}\b(OpenAI|agents?)\b"
               # Meta's Muse agent, not its other Muse products (models, Image, Code)
-              r"|\bMeta'?s?\b.{0,40}\bMuse\b(?![ -](Spark|Wonder|Ember|Glimmer|Voice|Image|Code)\b)"
-              r"|\bMuse\b(?![ -](Spark|Wonder|Ember|Glimmer|Voice|Image|Code)\b).{0,40}\b(Meta|agents?)\b",
+              r"|\bMeta['’]?s?\b.{0,40}\bMuse\b(?![ -](Spark|Wonder|Ember|Glimmer|Voice|Image|Code)\b)"              r"|\bMuse\b(?![ -](Spark|Wonder|Ember|Glimmer|Voice|Image|Code)\b).{0,40}\b(Meta|agents?)\b",
         exclude=r"\bNemotron\b"),
 }
 
@@ -296,6 +295,9 @@ LOOK = {
 }
 # Stories the words miss, checked by hand and approved: slug: {url: why it belongs, in our own words}
 ADDED: dict[str, dict[str, str]] = {
+    "always-on-agents": {
+        "https://techcrunch.com/2026/09/21/metas-ai-agent-has-been-blocked-from-using-amazon-com/": "Amazon blocks Meta's Muse agent from shopping on Amazon.com",
+    },
     "ai-ipos": {
         "https://www.channelnewsasia.com/business/anthropic-discloses-month-long-training-pause-ai-security-breaches-in-ipo-filing-6493811": "Anthropic's IPO filing discloses a month-long training pause and AI security breaches",
         "https://techcrunch.com/2026/10/30/anthropic-expected-to-receive-high-junk-rating-from-credit-agencies-following-ipo-report-says/": "Report on the credit rating Anthropic is expected to get after its IPO",
