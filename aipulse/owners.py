@@ -64,6 +64,8 @@ DEALS = [
 ]
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT = {
+    "https://www.thelec.net/news/articleView.html?idxno=15795":
+        "$26B placement among seven companies, no amount per company; Nvidia, Microsoft, Google, Micron, TSMC already in Anthropic; one source",
     "https://siliconangle.com/2026/10/22/report-openai-closing-on-30b-bridge-funding-round-to-tide-it-over-before-ipo/":
         "Report that the round is 'closing'; not closed, no per-investor amount",
     "https://openai.com/index/franklin-templeton":

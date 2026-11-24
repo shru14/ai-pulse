@@ -142,6 +142,8 @@ SHARES_BACK = [
 
 # stories checked by hand for ROUNDS and COMPUTE and left out, with why, so they aren't checked again
 SKIPPED: dict[str, str] = {
+    "https://www.thelec.net/news/articleView.html?idxno=15795":
+        "IPO coverage; the $26B placement is in one source only, left out to be safe",
     "https://www.channelnewsasia.com/business/kuaishous-kling-ai-unit-completes-near-3-billion-funding-round-6507461":
         "can't read to check",
     "https://www.businesskorea.co.kr/news/articleView.html?idxno=280033": "market value of a public company",
