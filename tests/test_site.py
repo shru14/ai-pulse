@@ -218,6 +218,12 @@ def test_the_glossary_has_a_page_per_word_like_a_dictionary(tmp_path):
     assert 'og:image" content="https://projectaipulse.com/og/glossary/mixture-of-experts.png"' in page
     from PIL import Image
     assert Image.open(tmp_path / "og" / "glossary" / "mixture-of-experts.png").size == (1200, 630)
+    # "How it works" only on the words written for it (glossary.EXPLAIN), right after the meaning
+    rag = (tmp_path / "glossary" / "rag" / "index.html").read_text(encoding="utf-8")
+    assert "<h2>How RAG works</h2>" in rag and rag.count("<li>") >= 3 and '<th scope="row">Example</th>' in rag
+    assert rag.index('<p class="intro">') <rag.index("How RAG works") < rag.index("<h2>Related terms</h2>")
+    assert "<h2>How an API works</h2>" in (tmp_path / "glossary" / "api" / "index.html").read_text(encoding="utf-8")
+    assert 'class="explain"' not in page  # Mixture of Experts has none yet
     index =(tmp_path / "glossary" / "index.html").read_text(encoding="utf-8")
     az = index[index.index("<h2>A to Z</h2>"):]
     assert az.count('<li><div><a href="/glossary/') == len(glossary.ENTRIES) and '<h2 id="A">A</h2>' in az

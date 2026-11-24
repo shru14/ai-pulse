@@ -415,6 +415,54 @@ HARD = ["KL divergence", "On-policy distillation", "On-policy learning", "Specul
         "Diffusion model", "World model", "Vector database", "Context window", "Prompt injection", "Acquihire", "Hyperscaler"]
 WEEK_WORD_STORIES = 2
 
+# "How it works" on a word's own page (glossary/<id>/), under its meaning: steps, one example a reader can picture,
+# and why it matters, in plain words; our own writing, approved by the owner (24 Nov 2026), for the words people
+# search most. `head` only where "How <word> works" doesn't read right. Not in glossary.json: the pages only.
+EXPLAIN: dict[str, dict] = {
+    "rag": {
+        "steps": ["You ask a question.",
+                  "The system searches a set of documents (company files, a website, a database) for the parts that match.",
+                  "The AI writes its answer from those parts and can point to where each fact came from."],
+        "example": "A bank's help chatbot answers “what's the fee for an international transfer?” by finding the "
+                   "bank's current fee page, not by guessing.",
+        "why": "It cuts made-up answers and lets an AI use private or recent information it was never trained on."},
+    "ai-agent": {
+        "head": "How an AI agent works",
+        "steps": ["You give it a goal.",
+                  "It plans steps and uses tools: a browser, files, code, email.",
+                  "After each step it checks the result and decides what to do next, until the task is done or it needs you."],
+        "example": "Asked to “find three flights under £300 and put them in a table,” it searches airline sites, "
+                   "compares prices and fills in the table.",
+        "why": "It moves AI from giving advice to doing work, which also raises the stakes when it makes a mistake."},
+    "llama": {
+        "steps": ["Meta trains the models.",
+                  "It publishes the weights, the model's learned numbers.",
+                  "Developers run them on their own computers or servers and adapt them for their own uses, under Meta's licence."],
+        "example": "A hospital could run a Llama model on its own servers so patient notes never leave the building.",
+        "why": "Open-weight models let companies and researchers build AI without renting it from one provider."},
+    "inference": {
+        "steps": ["Training happens once: the model learns from huge amounts of data.",
+                  "Inference happens every time someone uses it.",
+                  "Each answer needs computing power, so millions of users mean millions of these runs."],
+        "example": "Every message you send a chatbot is one inference.",
+        "why": "Inference is most of AI's everyday running cost, which is why companies race to make it faster and cheaper."},
+    "api": {
+        "head": "How an API works",
+        "steps": ["A developer's app sends a request, for example some text and a question.",
+                  "The AI company's model processes it.",
+                  "The answer comes back to the app, and the developer pays for how much text went in and out."],
+        "example": "A travel app adds a “plan my trip” button that sends your request to an AI model through its API "
+                   "and shows you the reply.",
+        "why": "APIs are how most apps get AI features without building their own models."},
+    "hugging-face": {
+        "steps": ["Labs and developers upload models and data.",
+                  "Anyone can browse, download or try them in the browser.",
+                  "Each model has a page explaining what it does and its licence."],
+        "example": "A developer looking for a model that translates Hindi to English can compare several options there "
+                   "and download one in minutes.",
+        "why": "It is where many open models first appear, so it shows what the open AI community is building."},
+}
+
 ENTRIES: list[dict] = [{"id": _key(t), "term": t, "group": g, "def": d, "match": m, "case": cs, "search": SEARCH.get(t, t),
             "added": ADDED.get(t, LAUNCH).isoformat(), "level": "Technical" if t in TECHNICAL else "Everyday"}
            for t, g, d, m, cs in _ENTRIES]

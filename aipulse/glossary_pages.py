@@ -94,6 +94,19 @@ def description(e: dict) -> str:
     return f"{term}: {meaning}"[:300]
 
 
+def explainer(e: dict) -> str:
+    """"How RAG works" under the meaning, for the words with one (glossary.EXPLAIN): the steps, an example and why it
+    matters as a boxed table; the meaning itself is in the band above, so it isn't repeated."""
+    x = glossary.EXPLAIN.get(e["id"])
+    if not x:
+        return ""
+    term = question(e).split(" ", 2)[2].rstrip("?")  # the word as the question writes it: "RAG", "inference"
+    steps = "".join(f"<li>{escape(s)}</li>" for s in x["steps"])
+    rows = (("Step by step", f"<ol>{steps}</ol>"), ("Example", escape(x["example"])), ("Why it matters", escape(x["why"])))
+    return (f'<h2>{escape(x.get("head") or f"How {term} works")}</h2>\n<table class="explain"><tbody>'
+            + "".join(f'<tr><th scope="row">{h}</th><td>{d}</td></tr>' for h, d in rows) + "</tbody></table>\n")
+
+
 def _first_sentence(text: str) -> str:
     m = re.match(r"(.+?(?<!e\.g)(?<!i\.e)[.!?])(?=\s+[A-Z\"(]|$)", text)  # not at "e.g. the UK"
     return m.group(1) if m else text
@@ -195,7 +208,7 @@ def build(conn, cards: list[dict], out: Path, today: date) -> list[str]:
             seen += f" Added to the glossary on {_day(e['added'])}."
         body = (pages.band("research", BOOK, "photos/cartoons/pages/glossary.svg", e["term"], f"What does {e['term']} mean?",
                            meaning, f'<span class="kind"><i>AI glossary</i><i>{escape(e["group"])}</i></span>')
-                + f'<p class="intro">{seen}</p>\n'
+                + f'<p class="intro">{seen}</p>\n' + explainer(e)
                 + (f'<h2>Often in the same stories</h2>\n<p class="intro">The words that came up with {escape(e["term"])} '
                    f'in the last {TOGETHER_DAYS} days\' stories; the bigger, the more often.</p>\n'
                    + cloud([(by_id[i], k) for i, k in together[e["id"]].most_common(TOGETHER)], "Often in the same stories",
