@@ -28,7 +28,7 @@ from . import code_links, kind_pages, pages, rss
 
 PATH = "new-tests-for-ai/"
 SINCE = "2026-07-17"
-CHECKED_TO = "2026-11-19"
+CHECKED_TO = "2026-11-24"
 QUESTION = "What are researchers testing AI on, and how far short do the best models fall?"
 # the Research stream's subjects (kind_pages.SUBJECTS), without "Benchmarks and evaluation": every row is one
 SUBJECTS = {k: label for k, (label, _, _) in kind_pages.SUBJECTS.items() if k != "benchmarks"}
@@ -39,6 +39,11 @@ BENCHY = re.compile(r"bench(?:mark)?(?:s|ing)?\b|leaderboard|\barena\b", re.I)
 #  the best result the abstract reports, the model that got it as the abstract names it ("" when it names none), the top
 #  score as a percentage when the abstract gives one (None otherwise))
 TESTS: dict[str, tuple[str, str, str, str, str, float | None]] = {
+    "https://www.microsoft.com/en-us/research/publication/magebench-bridging-large-multimodal-models-to-agents/": (
+        "MageBench", "agents",
+        "Whether image-reading AI models can plan and act as agents in a web interface, Sokoban and Football, "
+        "using what they see.",
+        "Current models are still well below human performance", "", None),
     "https://arxiv.org/abs/2610.28679": (
         "VerifierBench", "agents",
         "Whether models can write the checking code that tells if an AI agent has really finished a task.",
@@ -650,7 +655,7 @@ BEATEN: dict[str, tuple[str, str, str, str]] = {
         "https://arxiv.org/abs/2611.25543", "2026-11-19", "55.9% of the same 213 tasks",
         "the authors' own auditor, a swarm of small explorers with a frontier model reviewing their reports"),
 }
-BEATS_CHECKED_TO = "2026-11-19"
+BEATS_CHECKED_TO = "2026-11-24"
 _ATOM = {"a": "http://www.w3.org/2005/Atom"}
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
