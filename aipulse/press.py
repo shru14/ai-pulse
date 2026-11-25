@@ -235,6 +235,9 @@ CHECKED: dict[str, dict] = {
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
 # or about a company page, blog post, poll or report, or the paper couldn't be found or checked.
 LEFT_OUT = {
+    "https://www.siliconrepublic.com/innovation/ai%e2%80%91enabled-scientific-research-threat-stem-field-innovation",  # an opinion column; no paper reported on (one 2024 paper only mentioned in passing)
+    "https://the-decoder.com/german-researchers-call-for-computer-science-to-reinvent-itself-as-computer-and-ai-science/",  # a university position paper (TU Darmstadt, PDF on the university site), not on a preprint server or in a journal
+    "https://montrealethics.ai/opening-statement-by-maiei-to-the-standing-committee-on-access-to-information-privacy-and-ethics-ethi-on-its-study-of-the-use-of-artificial-intelligence-in-algorithmic-pricing/",  # a statement to a parliamentary committee, no paper
     "https://elevenlabs.io/blog/impact-sofia-oxford-said",  # a company blog post (ElevenLabs), not a paper
     "https://www.sciencedaily.com/releases/2026/11/261110042553.htm",  # can't read to check (the site refuses us)
     "https://tecnoblog.net/noticias/chatgpt-e-gemini-indicam-lojas-falsas-para-compras-aponta-estudo/",  # a company report (Podqi, AI Search Brand Risk Report 2026), no paper
