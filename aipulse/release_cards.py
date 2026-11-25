@@ -262,6 +262,8 @@ RELEASES = [
      "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/", ""),
     ("2026-11-12", "Google", "Gemini 4 Hydrogen", "Closed", "", "", "", "Worldwide from launch, says Google", False,
      "$1.50 / $7.50", "https://deepmind.google/blog/introducing-gemini-4-hydrogen/", ""),
+    ("2026-11-16", "Alibaba", "Qwen4-Max", "Closed", "", "", "", "", False, "$1.50 / $4.50",
+     "https://the-decoder.com/alibabas-qwen4-max-takes-on-opus-5-5-gpt-6-and-kimi-k3-1-pro-at-much-lower-prices/", ""),
     ("2026-11-17", "OpenAI", "GPT-6.2 Astra and Sol", "Closed", "", "", "", "", False,
      "Astra $8 / $40; Sol $2 / $10",
      "https://the-decoder.com/openai-launches-gpt-6-2-astra-and-sol-with-lower-api-prices-and-some-benchmark-gains/", ""),
@@ -301,6 +303,7 @@ KIND = {
     "Inkling 2 Small": "General", "Inkling 2 Mini": "General", "Claude Fable 5.2": "General", "Muse Ember": "General",
     "Gemini Decision 1": "Classification", "Gemini 4 Hydrogen": "General",
     "GPT-6.2 Astra and Sol": "General",
+    "Qwen4-Max": "General",
 }
 # the lab's first document with safety test results for a release (a system card, a safety report, a launch post that
 # gives results, or a model card or technical report with a safety section that gives them): model -> (its day, its link, a note). A model missing
@@ -718,6 +721,9 @@ LEFT_OUT = {
     "https://pandaily.com/zoellent-gr-sac-gated-residual-controller-frozen-vla":
         "GR-SAC: one news outlet within 3 days",
     "https://huggingface.co/microsoft/Aion-1.0-Instruct-2.3B": "Aion-1.0-Instruct-2.3B: no news outlet within 3 days",
+    "https://www.liquid.ai/blog/d1-2": "d1.2: one news outlet within 3 days",
+    "https://www.marktechpost.com/2026/11/17/liquid-ai-d1-2-omnimodal-decision-models/":
+        "d1.2: one news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
