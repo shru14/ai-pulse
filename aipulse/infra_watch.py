@@ -141,6 +141,8 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://dplnews.com/eletronet-anuncia-novo-data-center-em-sao-paulo-com-investimento-de-r-25-milhoes/", "Eletronet", "Brazil", "São Paulo", "0.5 MW first, up to 1 MW", "R$ 25m", "building"),
     ("https://dplnews.com/astella-inaugura-data-center-curitiba/", "Astella (Grupo ABL)", "Brazil", "Curitiba", "3.5 MW, up to 5 MW", "R$ 60m", "open"),
     ("https://w.media/syntys-breaks-ground-on-new-20-mw-data-center-in-qatar/", "Syntys", "Qatar", "", "20 MW", "", "building"),
+    ("https://www.thelec.net/news/articleView.html?idxno=15889", "Hanwha Aerospace", "South Korea", "Near its Changwon facility", "180 MW", "10 trillion won earmarked by Hanwha Group for the first phase", "building"),
+    ("https://w.media/lambruk-outlines-staged-350mw-grid-demand-data-centre-proposal-in-nsw/", "Lambruk Mulwala Futures", "Australia", "Mulwala, New South Wales", "350 MW maximum grid demand", "", "announced"),
 
 ]
 
@@ -210,6 +212,9 @@ DECISIONS: list[tuple[str, ...]] = [
     ("http://www.bernama.com/en/news.php?id=2620497", "Malaysia", "Whole country", "Data Centre Task Force, Digital Ministry", "27 data-centre projects approved up to July 2026, RM 226bn in all", "approved"),
     ("https://w.media/odisha-cabinet-greenlights-us-18-62-million-backup-data-center/", "India", "Keonjhar, Odisha", "Odisha state cabinet", "Approved a US$ 18.6m backup data centre", "approved"),
     ("https://w.media/thailand-approves-new-data-center-rules-on-noise-heat-zoning-and-cooling/", "Thailand", "Whole country", "Thailand's Cabinet", "Approved new rules on data-centre noise, heat, zoning and cooling; those over 20 MW must be in industrial zones", "limits"),
+    ("https://w.media/spain-approves-new-energy-and-digital-sovereignty-rules-for-data-centers/", "Spain", "Whole country", "Spain's Council of Ministers", "Approved a Royal Decree on data centres: 80% of their electricity must be renewable, with grid-access and connection requirements above 10 MW", "limits"),
+    ("https://www.canarymedia.com/articles/data-centers/ohio-oks-gas-plant-for-data-centers", "US", "Ashville, Ohio", "Ohio Power Siting Board", "Approved an 800 MW gas plant for EdgeConneX's data-centre complex, despite 81% of voters opposing the village agreement", "approved"),
+    ("https://www.404media.co/ypsilanti-michigan-data-center-vote/", "US", "Ypsilanti Township, Michigan", "University of Michigan Board of Regents", "Approved, 7-1, a US$ 1.25bn data centre for research with Los Alamos National Laboratory", "approved"),
 ]
 
 # Infra stories from after CHECKED_TO checked and left out of all three tables
@@ -291,6 +296,9 @@ LEFT_OUT: set[str] = {
     "https://w.media/australia-sets-30mw-threshold-for-new-data-centre-grid-standards/",  # grid connection standard for all large inverter-based loads, not specific to data centres
     "https://www.techerati.com/news-hub/polarise-plans-150mw-ai-data-centre-expansion-in-germany-by-2028/",  # can't read to check
     "https://www.powermag.com/rowan-digital-infrastructure-secures-1-5-billion-in-financing-for-hyperscale-development-platform/",  # press release on corporate credit facilities for a pipeline, no single new campus
+    "https://w.media/applied-digital-signs-us-5-4-billion-hyperscaler-lease/",  # lease of capacity; tenant and site not named
+    "https://www.foodandwaterwatch.org/press/2026/11/24/shapiros-dep-oversteps-local-approvals-with-project-atlas/",  # advocacy release on a hearing; no decision reported
+    "https://techcrunch.com/2026/11/24/why-a-crusoe-investor-is-betting-on-solar-and-batteries-to-power-future-ai-data-centers/",  # investor interview, opinion; no project or deal
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
