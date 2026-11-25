@@ -265,6 +265,9 @@ RELEASES = [
     ("2026-11-17", "OpenAI", "GPT-6.2 Astra and Sol", "Closed", "", "", "", "", False,
      "Astra $8 / $40; Sol $2 / $10",
      "https://the-decoder.com/openai-launches-gpt-6-2-astra-and-sol-with-lower-api-prices-and-some-benchmark-gains/", ""),
+    ("2026-11-20", "Thinking Machines", "Inkling 2 Mini", "Open", "", "Apache-2.0", "", "", False, "",
+     "https://the-decoder.com/new-open-model-inkling-2-mini-thinks-in-loops-to-solve-problems-with-fewer-words-and-still-runs-on-a-laptop/",
+     "https://huggingface.co/thinkingmachines/Inkling-2-Mini"),
 ]
 # what each release is for, from its story: "General" reads and writes text (images or audio too, for some);
 # the rest do one job. The adoption planner lists a model only for the jobs its kind can do
@@ -295,7 +298,7 @@ KIND = {
     "Nemotron 3.5 Super VL": "General", "Step 5 Preview": "General", "Nemotron 3.5 Bolt 74B-A9B 24GB": "General",
     "Clairic": "Extraction", "MiniMax M3.1 Flash": "General", "Hy4": "General", "Ripple-65B Preview": "General",
     "ERNIE 5.5 Flash Base": "General", "Gemini Omni 1.2 Flash": "Video", "GPT-6 Cyber": "Cyber",
-    "Inkling 2 Small": "General", "Claude Fable 5.2": "General", "Muse Ember": "General",
+    "Inkling 2 Small": "General", "Inkling 2 Mini": "General", "Claude Fable 5.2": "General", "Muse Ember": "General",
     "Gemini Decision 1": "Classification", "Gemini 4 Hydrogen": "General",
     "GPT-6.2 Astra and Sol": "General",
 }
@@ -305,7 +308,7 @@ KIND = {
 # The daily job looks again for each release still without one until RECHECK days after its launch, and moves
 # SAFETY_CHECKED on; every release was first checked on FIRST_CHECKED
 FIRST_CHECKED = "2026-10-20"
-SAFETY_CHECKED = "2026-11-20"
+SAFETY_CHECKED = "2026-11-25"
 RECHECK = 30
 SAFETY = {
     "GPT-Live": ("2026-07-08", "https://deploymentsafety.openai.com/gpt-live", ""),
@@ -341,6 +344,7 @@ SAFETY = {
     "Gemini Robotics 2": ("2026-07-29", "https://storage.googleapis.com/deepmind-media/gemini-robotics/Gemini-Robotics-2-Safety.pdf", ""),
     "GPT-6 Cyber": ("2026-11-05", "https://deploymentsafety.openai.com/gpt-6-cyber", ""),
     "Inkling 2 Small": ("2026-11-05", "https://thinkingmachines.ai/model-card/inkling-2-small/", "In its model card"),
+    "Inkling 2 Mini": ("2026-11-20", "https://huggingface.co/thinkingmachines/Inkling-2-Mini", "In its model card"),
     "Claude Fable 5.2": ("2026-11-09", "https://www.anthropic.com/claude-fable-and-mythos-5-2", "In the launch post"),
     "Gemini 4 Hydrogen": ("2026-11-12", "https://deepmind.google/models/model-cards/gemini-4-hydrogen/",
                           "In its model card"),
@@ -705,10 +709,19 @@ LEFT_OUT = {
         "MAI-Code-2: one news outlet within 3 days",
     "https://elevenlabs.io/blog/scribe-v3-live-medical": "Scribe v3 Live Medical: no news outlet within 3 days",
     "https://huggingface.co/inworld/voice-isolator": "voice-isolator: no news outlet within 3 days",
+    "https://huggingface.co/blog/inkling2mini": "same as Inkling 2 Mini",
+    "https://www.marktechpost.com/2026/11/21/thinking-machines-inkling-2-mini-looped-transformer/":
+        "same as Inkling 2 Mini",
+    "https://www.marktechpost.com/2026/11/22/nvidia-alpamayo-2-edge-2b-reasoning-vla-drive-thor/":
+        "Alpamayo 2 Edge: one news outlet within 3 days",
+    "https://www.sarvam.ai/blogs/sarvam-105b-1711/": "Sarvam-105B-1711: one news outlet within 3 days",
+    "https://pandaily.com/zoellent-gr-sac-gated-residual-controller-frozen-vla":
+        "GR-SAC: one news outlet within 3 days",
+    "https://huggingface.co/microsoft/Aion-1.0-Instruct-2.3B": "Aion-1.0-Instruct-2.3B: no news outlet within 3 days",
 }
 # the newest day every story was read for RELEASES and LEFT_OUT; the candidates start after it. The daily job moves
 # it on to the last day it checked, so stories that aren't model releases need no entry
-CHECKED_TO = "2026-11-17"
+CHECKED_TO = "2026-11-22"
 WINDOW = 3  # days a release has to be reported by a second outlet; a story is checked once they are over
 # a headline from another stream that may be a model release: a release word and a model (the word, weights, or a
 # name with a version number: "Grok 4.7", "Kimi K3", "GLM-5.3"), and not hardware, a product plan or a platform
