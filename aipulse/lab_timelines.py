@@ -234,6 +234,18 @@ LEFT_OUT = {
         "A company's IPO, not a model price change",
     "https://techcrunch.com/2026/11/17/google-to-keep-gemini-chats-for-two-months-up-from-72-hours-even-with-history-off/":
         "A consumer app's data retention setting, not a model price, place or pulled change",
+    "https://montrealethics.ai/the-ai-ethics-brief-204-surveillance-pricing-reaches-parliament/":
+        "Policy newsletter on consumer pricing practices, not a model price change",
+    "https://montrealethics.ai/opening-statement-by-maiei-to-the-standing-committee-on-access-to-information-privacy-and-ethics-ethi-on-its-study-of-the-use-of-artificial-intelligence-in-algorithmic-pricing/":
+        "Policy statement on algorithmic pricing, not a model price change",
+    "https://www.together.ai/blog/introducing-preemptible-compute-the-same-compute-half-the-price":
+        "Cloud compute pricing, not a lab's model API price",
+    "https://www.xataka.com/empresas-y-economia/resurgir-jensen-huang-nvidia-apoyo-trump-tiene-precio-a-china-no-le-van-a-pasar":
+        "Business analysis of Nvidia, not a model price, place or pulled change",
+    "https://techcrunch.com/2026/11/24/tidal-to-ban-and-remove-millions-of-ai-generated-tracks-as-ai-slop-inundates-music-streaming/":
+        "A music service removing tracks, not an AI model pulled by a lab",
+    "https://blog.google/innovation-and-ai/products/gemini-app/switch-ai-assistants-transfer-history/":
+        "An app feature for moving chat history, not a model price, place or pulled change",
 }
 # the newest day every story was read for PRICES, PLACES and LEFT_OUT; the daily job moves it on
 CHECKED_TO = "2026-10-18"
