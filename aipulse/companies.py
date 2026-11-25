@@ -123,17 +123,16 @@ def of_week(cards: list[dict], saturday: date) -> tuple[dict, int, int, int, str
 
 
 def front(cards: list[dict], today: date) -> dict:
-    """startup.json, for the front page's Startup of the week tile: the last finished week (Monday to Saturday), the
-    same pick as that Sunday's email, so the tile changes once a week, on Sunday (owner, 2026-11-19). Until a finished
-    week has picks, this week so far. None: no tile."""
-    saturday = today - timedelta(days=(today.weekday() - 5) % 7 or 7)
-    got = of_week(cards, saturday)
-    if not got:
-        saturday = min(saturday + timedelta(days=7), today)
-        got = of_week(cards, saturday)
+    """startup.json, for the front page's Startup of the week tile: the past 7 days (today and the 6 before), as the
+    story and word of the week, so the tile can change every day (owner, 2026-11-25). With no pick in those days, the
+    7 days ending with the latest pick. None: no tile."""
+    end = today
+    if not _ranked(cards, [(end - timedelta(days=k)).isoformat() for k in range(7)]):
+        end = max((date.fromisoformat(p["day"]) for p in profiles() if p["day"] <= today.isoformat()), default=today)
+    start = end - timedelta(days=6)
+    got = _ranked(cards, [(start + timedelta(days=k)).isoformat() for k in range(7)])
     keys = ("name", "does", "number", "why", "url", "source", "site")
-    return {"from": (saturday - timedelta(days=saturday.weekday())).isoformat(), "to": saturday.isoformat(),
-            "startup": got and {k: got[0][k] for k in keys}}
+    return {"from": start.isoformat(), "to": end.isoformat(), "startup": got and {k: got[0][k] for k in keys}}
 
 
 def _ranked(cards: list[dict], days: list[str]) -> tuple[dict, int, int, int, str] | None:

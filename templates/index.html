@@ -2113,14 +2113,19 @@ async function loadHomeCounts(){
   renderMast();
   if(state.cat === "home") renderHome();
 }
-// The meme of the week: drawn by the build (memes.py) from the last finished week's stories (Monday to Saturday), the
-// same as Sunday's email; it changes on Sundays.
+// "Past 7 days · 19 – 25 Nov" for the build's 7 days (meme.json, startup.json), as the story and word tiles; just the
+// dates when they end before yesterday (a startup tile kept from the latest pick)
+function daysLabel(from, to){
+  const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
+  return (to >= new Date(Date.now() - 864e5).toISOString().slice(0, 10) ? "Past 7 days · " : "") + fmt(from) + " – " + fmt(to);
+}
+// The meme of the week: drawn by the build (memes.py) from the past 7 days' stories, as the story and word of the
+// week; it can change every day.
 async function loadMeme(){
   try{
     const m = await (await fetch("meme.json", {cache:"no-cache"})).json();
     if(!m.html) return;
-    const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
-    $("meme-label").textContent = "Week of " + fmt(m.from) + " – " + fmt(m.to);
+    $("meme-label").textContent = daysLabel(m.from, m.to);
     $("meme").innerHTML = m.html;  // our own markup, built from escaped text
     // a click opens the meme full size
     const pic = $("meme").querySelector("img");
@@ -2137,7 +2142,7 @@ async function loadMeme(){
     if((m.stories || []).length){
       more.append(el("div","viz-note","The news behind it"), srcLinks(m.stories));
     }
-    more.append(el("p","meme-next","A new meme every Sunday, from the week before."));  // the button below offers the daily one
+    more.append(el("p","meme-next","Drawn from the past 7 days' news."));  // the button below offers the daily one
     $("meme-tile").hidden = false;
     const shown = $("meme").querySelector("img");
     if(shown && !shown.complete) shown.addEventListener("load", fitMeme); else fitMeme();
@@ -2158,14 +2163,13 @@ function fitMeme(){
 let memeWidth = 0;
 try{ new ResizeObserver(([e]) => { if(Math.abs(e.contentRect.width - memeWidth) > 1){ memeWidth = e.contentRect.width; requestAnimationFrame(fitMeme); } })
   .observe($("meme-tile")); }catch(e){ addEventListener("resize", fitMeme); }
-// The startup of the week: of the last finished week's companies of the day (checked by hand), the one most outlets
-// reported (companies.front); it changes on Sundays; no tile when none was picked.
+// The startup of the week: of the past 7 days' companies of the day (checked by hand), the one most outlets reported
+// (companies.front); it can change every day; no tile when none was picked.
 async function loadStartup(){
   try{
     const m = await (await fetch("startup.json", {cache:"no-cache"})).json(), s = m.startup;
     if(!s) return;
-    const fmt = d => new Date(d + "T12:00:00Z").toLocaleDateString(undefined, {timeZone:"UTC", day:"numeric", month:"short"});
-    $("co-label").textContent = "Week of " + fmt(m.from) + " – " + fmt(m.to);
+    $("co-label").textContent = daysLabel(m.from, m.to);
     $("co-why").textContent = s.why; $("co-name").textContent = s.name; $("co-does").textContent = s.does;
     const num = $("co-num"); num.replaceChildren(s.number + " · ");
     const src = el("a", null, s.source); src.href = s.url; src.target = "_blank"; src.rel = "noopener"; src.style.color = "inherit";
