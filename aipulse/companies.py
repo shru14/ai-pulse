@@ -22,7 +22,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from . import classify, money
 
-CHECKED_TO = "2026-11-24"  # stories up to this day are checked
+CHECKED_TO = "2026-11-25"  # stories up to this day are checked
 GAP = 30  # days before a company can be featured again
 REASONS = ("Concept", "Revenue", "Business model")  # why it's here
 
@@ -53,6 +53,12 @@ PROFILES: list[tuple[str, str, str, str, str, str, str, str, str]] = [
      "Concept", "It indexes a firm's past proposals and reports so agents can draft new client work from them.",
      "https://siliconangle.com/2026/11/24/verra-raises-5m-to-help-consulting-firms-forget-their-institutional-amnesia/",
      "SiliconANGLE"),
+    ("2026-11-25", "009", "AI agents that automate paperwork and operations in government bodies and industrial firms.",
+     "Built for government entities and industrial enterprises in manufacturing, mining and defence; "
+     "the story gives no prices.", "$1.4M raised", "Concept",
+     "It builds a digital copy of an organisation's operations, an \"agent twin\", to test automation on past data first.",
+     "https://www.wamda.com/2026/11/saudi-ai-startup-009-raises-1-4-million-pre-seed-led-outliers-venture-capital",
+     "Wamda"),
 ]
 
 # A company's official website, checked by hand, for the front page's tile and the email's company box
