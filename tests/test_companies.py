@@ -21,14 +21,17 @@ def _card(day, title, *others):
             "also": [{"source": s, "title": title} for s in others]}
 
 
-def test_front_tile_keeps_the_last_finished_week(monkeypatch):
+def test_front_tile_covers_the_past_7_days(monkeypatch):
     _pin(monkeypatch)
-    # Thursday 19 Nov: the week of 9-14 Nov had no picks, so this week so far (16-19 Nov)
-    assert (companies.front([], date(2026, 11, 19))["from"], companies.front([], date(2026, 11, 19))["to"]) == \
-        ("2026-11-16", "2026-11-19")
-    # Sunday 22 Nov to Saturday 28 Nov: the week of 16-21 Nov, the same pick all week
-    got = [companies.front([], date(2026, 11, d)) for d in range(22, 29)]
-    assert {(g["from"], g["to"], g["startup"]["name"]) for g in got} == {("2026-11-16", "2026-11-21", "Model ML")}
+    # the past 7 days, today included, moving every day
+    for d in (19, 22, 23):
+        g = companies.front([], date(2026, 11, d))
+        assert (g["from"], g["to"], g["startup"]["name"]) == (f"2026-11-{d - 6:02d}", f"2026-11-{d}", "Model ML")
+    # 16 Nov alone in the 7 days: its pick
+    assert companies.front([], date(2026, 11, 16))["startup"]["name"] == "Noeri"
+    # no pick in the past 7 days: the 7 days ending with the latest pick (17 Nov)
+    g = companies.front([], date(2026, 11, 30))
+    assert (g["from"], g["to"], g["startup"]["name"]) == ("2026-11-11", "2026-11-17", "Model ML")
 
 
 def test_no_profile_no_box():
