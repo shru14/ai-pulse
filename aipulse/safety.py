@@ -82,6 +82,21 @@ def maker(model: str) -> tuple[str, str]:
 
 # Every document the page shows, read by hand on the publisher's own pages. Checked 15 Oct 2026.
 DOCS: list[dict] = [
+    dict(date='2026-11-24', by='NIST (CAISI)', kind='eval',
+         title='Towards Best Practices for Evaluating SI-Driven Uplift',
+         url='https://www.nist.gov/news-events/news/2026/11/towards-best-practices-evaluating-si-driven-uplift',
+         original='https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.2400-801.ipd.pdf',
+         models=(), risks=(),
+         abstract=('This draft document provides voluntary practices for conducting evaluations of uplift driven by '
+                   'super intelligence (SI) systems. SI-driven uplift refers to the impact of deploying a super '
+                   'intelligence (SI) system on productivity and other outcomes for people and organizations. The '
+                   'practices are organized into three stages: (1) practices for defining the evaluation objective, '
+                   'uplift hypothesis, and evaluation parameters; (2) practices for designing and executing the '
+                   'study; and (3) practices for documenting, analyzing, and reporting the results. The document '
+                   'also includes a glossary for key terms and concepts with reference to the academic literature. '
+                   'As the science of SI-driven uplift evaluation is still developing, the practices presented in '
+                   'this document are offered as a preliminary set of best practices. They will be updated as the '
+                   'field advances.')),
     dict(date='2026-11-23', by='OpenAI', kind='card',
          title='GPT-6.2 in ChatGPT System Card',
          url='https://deploymentsafety.openai.com/gpt-6-2-chatgpt',
@@ -1633,6 +1648,7 @@ DOCS: list[dict] = [
 # Documents read and left out, so `python -m aipulse safety` doesn't list them again: research on training methods,
 # essays, usage studies, testimony, organisation news, a product launch, and documents from before 2026.
 LEFT_OUT: set[str] = {
+    'https://techpolicy.press/openais-model-card-is-a-great-step-forward-for-child-safety-and-transparency',  # news about the OpenAI CSAM Image Classifier Model Card, which is already left out
     'https://www.aisi.gov.uk/research/alignment-investigation-of-mythos-5s-behaviour-in-uk-aisis-july-2026-security-incident',  # the same report as the AISI blog post already in DOCS (same PDF)
     'https://openai.com/index/community-safety-report-and-new-protections-for-teens',  # document not readable (openai.com refuses, 403)
     'https://www.aisi.gov.uk/research/the-effectiveness-and-durability-of-pretraining-data-filtering-in-protein-language-models',  # research on training-data filtering in protein models, not an evaluation of LLMs
