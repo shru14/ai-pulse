@@ -137,6 +137,8 @@ ENTITY = (47, 35, 140, "2024-12-05", "https://www.federalregister.gov/documents/
 
 # stories checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://www.channelnewsasia.com/world/us-blacklists-megaspeed-chip-firm-linked-nvidia-scandal-6576001":
+        "can't read to check; a single-company blacklisting",
     "https://w.media/firebirds-us-5-billion-kazakhstan-ai-factory-gets-green-light-for-45000-nvidia-gpus/":
         "grid: Firebird says it secured a US export licence for 45,000 Nvidia Grace Blackwell GPUs for Kazakhstan; "
         "a company's licence, no agency or day named, no published rule",
