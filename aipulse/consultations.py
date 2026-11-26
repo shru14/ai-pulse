@@ -96,6 +96,8 @@ COMING: list[tuple[str, str, str, str, str, str]] = [
 ]
 # stories and list entries checked by hand and left out, with why, so they aren't checked again
 LEFT_OUT: dict[str, str] = {
+    "https://www.xataka.com/robotica-e-ia/consultar-voto-ia-que-pesa-respuesta-no-programa-electoral-eres-tu":
+        "no government asking the public (a story on chatbots and voting advice)",
     "https://www.mlaw.gov.sg/public-consultation-on-artificial-intelligence-and-singapore-s-intellectual-property-regime/":
         "Singapore's Ministry of Law: its terms forbid reproducing its content, and linking without its permission",
     "https://www.federalregister.gov/documents/2026/09/30/2026-20023/request-for-information-rfi-regarding-the-digitization-and-modernization-of-the-national-technical":
