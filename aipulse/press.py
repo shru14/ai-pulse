@@ -230,6 +230,12 @@ CHECKED: dict[str, dict] = {
              subject="science",
              about="Shows that a climate emulator trained on one optimised scenario predicts new scenarios better than "
                    "one trained on six standard scenarios, despite using less training data."),
+    "https://news.mit.edu/2026/study-reveals-data-centers-long-distance-damage-air-quality-1119":
+        dict(paper="Spatially distributed air quality and health impacts of data center electricity demand in the United States",
+             link="https://doi.org/10.1088/1748-9326/aebbd4", subject="people",
+             about="Estimates that the electricity US data centers draw, mostly from fossil fuel plants, adds 0.02 to 0.08 "
+                   "micrograms of fine particles per cubic metre of air on average, and that the health burden does not "
+                   "always fall in the states hosting the data centers."),
 }
 
 # Stories from SINCE checked and left out, so `python -m aipulse press` doesn't list them again: not about one paper,
@@ -460,6 +466,38 @@ LEFT_OUT = {
     "https://dplnews.com/colombia-el-84-senala-que-la-productividad-es-el-principal-beneficio-de-la-ia-solo-el-10-permite-que-la-ia-actue-sin-supervision-humana-estudio-de-tcs-sobre-ia-empresarial/",  # a company survey (TCS), not a paper
     "https://www.gov.uk/government/news/new-ai-guidance-to-cut-paperwork-and-free-more-time-for-care",  # a government press release on guidance, no paper
     "https://www.engadget.com/2312279/google-turns-gemini-towards-medical-paperwork/",  # a product launch (Google), no paper
+    "https://olhardigital.com.br/2026/11/25/pro/data-centers-poluem-tres-vezes-mais-do-que-se-estimava-aponta-estudo/",  # no paper named or linked; can't check which paper it reports on
+    "https://huggingface.co/blog/allenai/where-scientists-draw-the-line-on-ai-agents",  # a company blog post (Ai2 on Hugging Face), not a paper
+    "https://techcabal.com/2026/11/25/amini-africa-paper-archives-data-ai/",  # a company profile (Amini), no paper
+    "https://the-decoder.com/anthropic-study-shows-the-hardest-part-of-adopting-ai-at-work-has-little-to-do-with-learning-the-tools/",  # a company report (Anthropic, 'Working with AI', interviews), not on a preprint server or in a journal
+    "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",  # a company blog post (Google DeepMind), not a paper
+    "https://dcnnmagazine.com/industry-insight/1111-systems-research-finds-rising-uk-infrastructure-costs/",  # a company report (11:11 Systems), no paper
+    "https://www.xataka.com/robotica-e-ia/geoffrey-hinton-nobel-padre-ia-historia-humanidad-fuera-dia-probablemente-estariamos-ultimo-segundo",  # an interview, no paper
+    "https://news.mit.edu/2026/many-languages-one-common-neural-code-1123",  # paper found (Nature Neuroscience, 'A shared meaning component across languages in the human brain') but its abstract can't be read to check: nature.com refuses us
+    "https://blog.google/innovation-and-ai/products/gemini-app/gemini-canvas-tasks/",  # a product blog post (Google), no paper
+    "https://www.aisi.gov.uk/blog/attack-policy-selection-can-make-monitor-evaluations-misleading",  # a blog post (UK AI Security Institute), not checked as a paper
+    "https://www.datacenterknowledge.com/sustainability/study-ties-403-us-data-centers-to-25-7m-metric-tons-of-co2",  # paper found (Nature Sustainability) but its abstract can't be read to check: nature.com refuses us
+    "https://www.sciencedaily.com/releases/2026/11/261120075604.htm",  # paper found (IEEE Transactions on Biomedical Engineering) but its abstract can't be read to check: ieeexplore.ieee.org gives no content
+    "https://the-decoder.com/security-researchers-show-how-cheap-ai-inference-providers-steal-keys-and-snoop-on-users/",  # a company blog post (Dragos), not a paper
+    "https://olhardigital.com.br/2026/11/22/ciencia-e-espaco/agentes-de-ia-encontraram-um-sitio-maia-inedito-nao-veja-como-dados-sem-revisao-geram-ruido/",  # a claim on social media and a blog, no paper reported on
+    "https://www.sciencedaily.com/releases/2026/11/261120075701.htm",  # paper found (Nature Machine Intelligence) but its abstract can't be read to check: nature.com refuses us
+    "https://pandaily.com/biomap-xtrimotox-nonclinical-drug-safety-assessment-system",  # a product launch (BioMap), no paper
+    "https://sakana.ai/security-research-group/",  # a company announcement (Sakana AI), no paper
+    "https://olhardigital.com.br/2026/11/19/pro/anthropic-movimenta-mercado-em-estreia-na-nasdaq-veja-como-foi-o-primeiro-dia/",  # a business news story, no paper
+    "https://news.mit.edu/2026/ai-helps-researchers-investigate-how-medical-studies-share-code-1119",  # paper found (Nature Medicine) but its abstract can't be read to check: nature.com refuses us
+    "https://cltc.berkeley.edu/2026/11/19/new-cltc-white-paper-on-ai-enabled-cybercrime/",  # a white paper on a university centre's site, not on a preprint server or in a journal
+    "https://olhardigital.com.br/2026/11/19/games-e-consoles/rockstar-usou-inteligencia-artificial-em-gta-vi/",  # a news story on a game, no paper
+    "https://www.404media.co/redlining-ai-data-centers-and-race-study/",  # paper found (a George Washington University report) but its page can't be read to check (the site refuses us)
+    "https://www.itweb.co.za/article/whitepaper-corporate-ai-adoption/P3gQ2MGAV2EvnRD1",  # a company white paper, no paper
+    "https://www.404media.co/gallup-study-friendship-ai-companions/",  # a survey (Gallup), not a paper
+    "https://www.xataka.com/robotica-e-ia/pusieron-a-unos-agentes-ia-a-jugar-al-minecraft-crearon-algo-no-estaban-disenadas-burocracia",  # an experiment by a company lab (Y Combinator, Olam Labs), no paper named
+    "https://e.vnexpress.net/news/news/education/vietnamese-educator-explores-ai-and-learning-sciences-at-singapore-s-nie-5142512.html",  # a profile, no paper
+    "https://news.mit.edu/2026/learning-language-of-machine-learning-jacob-andreas-1117",  # a profile of a researcher, no paper
+    "https://japantoday.com/category/features/environment/study-estimates-magnitude-of-us-data-center-pollution-as-climate-talks-unveil-clean-ai-pledge",  # can't read to check (the site refuses us)
+    "https://openai.com/index/expanding-chatgpt-for-academic-researchers",  # a product announcement (OpenAI), no paper
+    "https://openai.com/index/science-at-the-frontier",  # a company page (OpenAI), not a paper
+    "https://www.apple.com/newsroom/2026/11/apple-launches-research-study-to-explore-the-use-of-ai-for-health/",  # a company announcement (Apple) of a study launch, no paper
+    "https://www.sciencedaily.com/releases/2026/11/261112230456.htm",  # paper found (Nature) but its abstract can't be read to check: nature.com refuses us
 }
 
 # a headline (or the start of its summary) that may report on a paper
