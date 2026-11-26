@@ -143,6 +143,9 @@ BUILDS: list[tuple[str, ...]] = [
     ("https://w.media/syntys-breaks-ground-on-new-20-mw-data-center-in-qatar/", "Syntys", "Qatar", "", "20 MW", "", "building"),
     ("https://www.thelec.net/news/articleView.html?idxno=15889", "Hanwha Aerospace", "South Korea", "Near its Changwon facility", "180 MW", "10 trillion won earmarked by Hanwha Group for the first phase", "building"),
     ("https://w.media/lambruk-outlines-staged-350mw-grid-demand-data-centre-proposal-in-nsw/", "Lambruk Mulwala Futures", "Australia", "Mulwala, New South Wales", "350 MW maximum grid demand", "", "announced"),
+    ("https://w.media/xtx-markets-launches-22-5-mw-data-center-in-finland-amid-grid-permitting-delays/", "XTX Markets", "Finland", "Kajaani", "22.5 MW", "Over EUR 400m invested in construction so far", "open"),
+    ("https://w.media/nocera-to-invest-us-22-million-in-a-bitrock-ai-data-center/", "BitRock, with an investment from Nocera", "Canada", "Alberta", "10 MW, could grow to 200 MW", "US$ 22m from Nocera for a 44% stake in BitRock", "announced"),
+    ("https://w.media/applied-digital-completes-75-mw-commissioning-at-polaris-forge-2/", "Applied Digital", "US", "Harwood, North Dakota", "First 75 MW of an initial 150 MW building commissioned", "", "open"),
 
 ]
 
@@ -299,6 +302,12 @@ LEFT_OUT: set[str] = {
     "https://w.media/applied-digital-signs-us-5-4-billion-hyperscaler-lease/",  # lease of capacity; tenant and site not named
     "https://www.foodandwaterwatch.org/press/2026/11/24/shapiros-dep-oversteps-local-approvals-with-project-atlas/",  # advocacy release on a hearing; no decision reported
     "https://techcrunch.com/2026/11/24/why-a-crusoe-investor-is-betting-on-solar-and-batteries-to-power-future-ai-data-centers/",  # investor interview, opinion; no project or deal
+    "https://w.media/indian-gas-giant-gail-seeks-partner-for-data-center-joint-venture/",  # a reported plan; partner not yet chosen
+    "https://dcnnmagazine.com/projects-and-infrastructure/airtrunk-advances-1gw-hunter-renewables-partnership/",  # same as the European Energy, for AirTrunk row
+    "https://www.telesemana.com/blog/2026/11/25/schneider-electric-vincula-solar-y-baterias-con-menores-costos-energeticos-para-centros-de-datos/",  # a research report, no project or deal
+    "https://yourstory.com/2026/11/nexent-capital-launches-1-billion-fund-focused-on-ai-data-centres-investments",  # an investment fund, no single project
+    "https://www.techerati.com/press-release/eaton-collaborates-with-nvidia-to-unveil-the-eaton-beam-rubin-dsx-platform-to-address-the-nearly-5-3-trillion-data-centre-buildout-market-from-grid-to-chip/",  # equipment platform press release, judged from its headline
+    "https://www.powermag.com/how-to-underwrite-an-orbital-solar-ppa/",  # explainer, judged from its headline
 }
 
 # a headline that may be a build (a size or an amount beside a data centre), a power deal, or a decision
