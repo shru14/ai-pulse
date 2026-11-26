@@ -36,6 +36,9 @@ _ENTRIES = [
      "also used loosely for any chatbot model.", [r"GPT(?=-|\b)"], True),
     ("Multimodal", "Models", "Able to take in or produce more than one kind of data, such as text, images, audio "
      "and video, in the same model.", [r"multi-?modal", r"MLLMs?"], False),
+    ("Time-series foundation model", "Models", "A model trained on many records of numbers collected over time (sales, "
+     "sensors, web traffic) so it can forecast a new series without being retrained for it.",
+     [r"time[- ]series(?: foundation models?)?", r"TSFMs?"], False),
     ("VLM", "Models", "Vision-language model: a model that understands pictures (or video) and text together, "
      "e.g. describing a photo or reading a chart.", [r"VLMs?", r"[Vv]ision[- ][Ll]anguage [Mm]odels?"], True),
     ("VLA", "Models", "Vision-language-action model: a model that sees, reads an instruction and outputs actions, "
@@ -378,7 +381,7 @@ SEARCH = {"AI agent": "agent", "Open-weight model": "open-weight", "Parameters":
           "Funding rounds": "Series", "Preemption": "preemption", "AI Safety Institute": "AISI", "Evals": "evals",
           "Watermarking": "watermark", "Humanoid robot": "humanoid", "On-device AI": "on-device",
           "Algorithmic bias": "bias", "High-risk AI": "high-risk", "Test-time compute": "test-time",
-          "Computer-use agent": "computer use", "Chain of thought": "chain of thought", "State of the art": "state-of-the-art"}
+          "Computer-use agent": "computer use", "Time-series foundation model": "time series", "Chain of thought": "chain of thought", "State of the art": "state-of-the-art"}
 
 # The day each entry went live: the first 123 on 29 Sep 2026 (LAUNCH), later ones as listed. Words added in the last
 # NEW_DAYS days are "New" on the site.
@@ -391,7 +394,8 @@ ADDED = {**dict.fromkeys(["Supervised fine-tuning", "Reward model", "On-policy d
                           "Model Hardware Standard", "SynthID", "Training-free method", "Millennium Prize problems",
                           "OpenClaw"], date(2026, 10, 10)),
          **dict.fromkeys(["Frozen model"], date(2026, 10, 15)),
-         **dict.fromkeys(["JAX", "OSWorld"], date(2026, 11, 2))}
+         **dict.fromkeys(["JAX", "OSWorld"], date(2026, 11, 2)),
+         **dict.fromkeys(["Time-series foundation model"], date(2026, 11, 26))}
 NEW_DAYS = 30
 
 # Technical: the words specialists use (how models are built, trained and run); every other entry is Everyday.
@@ -403,7 +407,8 @@ TECHNICAL = {"VLM", "VLA", "World model", "Diffusion model", "Transformer", "Att
              "Sandbox", "Evals", "Interpretability", "Recursive self-improvement", "TPU", "NPU", "ASIC", "HBM", "CUDA",
              "KV cache", "Speculative decoding", "BF16 and FP8", "Rack-scale system", "FLOPs", "Test-time compute",
              "SWE-bench", "Zero-shot / few-shot", "JEPA", "Latent", "World action model", "On-policy learning",
-             "Self-supervised learning", "In-context learning", "Training-free method", "Frozen model", "JAX", "OSWorld"}
+             "Self-supervised learning", "In-context learning", "Training-free method", "Frozen model", "JAX", "OSWorld",
+             "Time-series foundation model"}
 
 # The words that can be the word of the week, hardest for a general reader first (chosen by hand): the first one in at
 # least WEEK_WORD_STORIES of the week's stories. Words most readers already know (LLM, GPU, data center) are left out.
