@@ -279,6 +279,8 @@ LEFT_OUT = {
         "Anthropic buying gas generators for its data centers, no stake in a lab",
     "https://nairametrics.com/2026/11/07/openai-secures-11-billion-in-fresh-funding-at-1-25-trillion-valuation/":
         "round not fully closed (first close), reported by Bloomberg, doesn't say equity or debt; named investors are funds",
+    "https://techcrunch.com/2026/11/25/openai-says-heavy-chatgpt-users-may-hit-limits-sooner-as-it-merges-chat-and-work/":
+        "ChatGPT usage limits story; no investment or stake",
 }
 
 
